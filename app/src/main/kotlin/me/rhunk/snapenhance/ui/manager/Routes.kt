@@ -28,6 +28,7 @@ import me.rhunk.snapenhance.ui.manager.pages.social.MessagingPreview
 import me.rhunk.snapenhance.ui.manager.pages.social.SocialRootSection
 import me.rhunk.snapenhance.ui.manager.pages.tracker.EditRule
 import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerManagerRoot
+import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageScriptReposSection
 
 
 data class RouteInfo(
