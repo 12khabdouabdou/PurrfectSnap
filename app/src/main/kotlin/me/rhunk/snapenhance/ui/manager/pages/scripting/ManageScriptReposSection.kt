@@ -45,7 +45,6 @@ class ManageScriptReposSection : Routes.Route() {
                 if (url.startsWith("https://github.com/")) {
                     val splitUrl = modifiedUrl.removePrefix("https://github.com/").split("/")
                     val repoName = splitUrl[0] + "/" + splitUrl[1]
-                    // Fetch the default branch from GitHub API
                     okHttpClient.newCall(
                         okhttp3.Request.Builder().url("https://api.github.com/repos/$repoName").build()
                     ).execute().use { response ->
