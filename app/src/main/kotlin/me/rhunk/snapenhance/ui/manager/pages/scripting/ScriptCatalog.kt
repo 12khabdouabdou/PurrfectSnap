@@ -1,5 +1,6 @@
 package me.rhunk.snapenhance.ui.manager.pages.scripting
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import kotlinx.coroutines.*
+import me.rhunk.snapenhance.common.util.ktx.openLink
 import me.rhunk.snapenhance.storage.getRepositories
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -39,32 +41,44 @@ fun ScriptCatalog(root: ScriptingRootSection) {
     val okHttpClient = remember { OkHttpClient() }
     val gson = remember { context.gson }
 
+    var repositories by remember { mutableStateOf<List<String>>(emptyList()) }
     var repoIndexes by remember { mutableStateOf<Map<String, ScriptRepoManifest>>(emptyMap()) }
     var isLoading by remember { mutableStateOf(false) }
 
     fun refreshIndexes() {
         coroutineScope.launch(Dispatchers.IO) {
             isLoading = true
-            val newIndexes = mutableMapOf<String, ScriptRepoManifest>()
-            context.database.getRepositories().forEach { repoRoot ->
-                val indexUrl = if (repoRoot.endsWith("/")) "${repoRoot}index.json" else "$repoRoot/index.json"
-                try {
-                    val req = Request.Builder().url(indexUrl).build()
-                    okHttpClient.newCall(req).execute().use { response ->
-                        if (response.isSuccessful) {
-                            response.body?.charStream()?.let { reader ->
-                                val parsed = gson.fromJson(reader, ScriptRepoManifest::class.java)
-                                if (!parsed.scripts.isNullOrEmpty()) {
-                                    newIndexes[repoRoot] = parsed
+            val repos = context.database.getRepositories()
+            withContext(Dispatchers.Main) {
+                repositories = repos
+            }
+            
+            if (repos.isNotEmpty()) {
+                val newIndexes = mutableMapOf<String, ScriptRepoManifest>()
+                repos.forEach { repoRoot ->
+                    val indexUrl = if (repoRoot.endsWith("/")) "${repoRoot}index.json" else "$repoRoot/index.json"
+                    try {
+                        val req = Request.Builder().url(indexUrl).build()
+                        okHttpClient.newCall(req).execute().use { response ->
+                            if (response.isSuccessful) {
+                                response.body?.charStream()?.let { reader ->
+                                    val parsed = gson.fromJson(reader, ScriptRepoManifest::class.java)
+                                    if (!parsed.scripts.isNullOrEmpty()) {
+                                        newIndexes[repoRoot] = parsed
+                                    }
                                 }
                             }
                         }
-                    }
-                } catch (_: Exception) {}
-            }
-            withContext(Dispatchers.Main) {
-                repoIndexes = newIndexes
-                isLoading = false
+                    } catch (_: Exception) {}
+                }
+                withContext(Dispatchers.Main) {
+                    repoIndexes = newIndexes
+                    isLoading = false
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    isLoading = false
+                }
             }
         }
     }
@@ -75,9 +89,35 @@ fun ScriptCatalog(root: ScriptingRootSection) {
         manifest.scripts.map { repoUrl to it }
     }
 
+    suspend fun isScriptInstalled(scriptName: String): Boolean {
+        return try {
+            val installedScripts = context.scriptManager.getSyncedModules()
+            installedScripts.any { it.name.equals(scriptName, ignoreCase = true) }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun downloadScript(repoUrl: String, entry: ScriptRepoEntry) {
         coroutineScope.launch(Dispatchers.IO) {
+            // Check if script is already installed
+            if (isScriptInstalled(entry.name)) {
+                withContext(Dispatchers.Main) {
+                    context.shortToast("Script already installed!")
+                }
+                return@launch
+            }
+            
             val rawUrl = if (repoUrl.endsWith("/")) repoUrl + entry.filepath else repoUrl + "/" + entry.filepath
+            
+            // Also check by URL in case it was imported from URL before
+            if (root.isScriptInstalledByUrl(rawUrl)) {
+                withContext(Dispatchers.Main) {
+                    context.shortToast("Script already installed!")
+                }
+                return@launch
+            }
+            
             try {
                 val req = Request.Builder().url(rawUrl).build()
                 okHttpClient.newCall(req).execute().use { response ->
@@ -119,92 +159,146 @@ fun ScriptCatalog(root: ScriptingRootSection) {
         }
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        item {
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else if (allScripts.isEmpty()) {
+    // Check if repositories are empty
+    if (repositories.isEmpty() && !isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(16.dp)
+            ) {
                 Text(
-                    text = "No scripts available from any repo.",
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
+                    text = "No repositories added.",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Light
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-            }
-        }
-        items(allScripts) { (repoUrl, entry) ->
-            var isDownloading by remember { mutableStateOf(false) }
-            ElevatedCard(Modifier.padding(bottom = 8.dp)) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                    modifier = Modifier.padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        Icons.Default.Code, null, Modifier.padding(end = 12.dp)
+                    Text(
+                        text = "Here you can find a list of repos: ",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Column(
-                        Modifier.weight(1f),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            Text(
-                                text = entry.name,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontWeight = FontWeight.Bold
+                    Text(
+                        text = "Link",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            context.androidContext.openLink(
+                                "https://github.com/particle-box/SnapEnhance/blob/script/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
                             )
-                            entry.author?.let {
+                        }
+                    )
+                }
+            }
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            item {
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (allScripts.isEmpty() && repositories.isNotEmpty()) {
+                    Text(
+                        text = "No scripts available from any repo.",
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Light,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            items(allScripts) { (repoUrl, entry) ->
+                var isDownloading by remember { mutableStateOf(false) }
+                var isAlreadyInstalled by remember { mutableStateOf(false) }
+                
+                LaunchedEffect(entry) {
+                    isAlreadyInstalled = isScriptInstalled(entry.name)
+                }
+                
+                ElevatedCard(Modifier.padding(bottom = 8.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Code, null, Modifier.padding(end = 12.dp)
+                        )
+                        Column(
+                            Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.Bottom
+                            ) {
                                 Text(
-                                    text = "by $it",
+                                    text = entry.name,
                                     maxLines = 1,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Light,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                entry.author?.let {
+                                    Text(
+                                        text = "by $it",
+                                        maxLines = 1,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Light,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                            entry.description?.let {
+                                Text(
+                                    text = it,
+                                    fontSize = 12.sp,
+                                    maxLines = 3,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                        }
-                        entry.description?.let {
                             Text(
-                                text = it,
-                                fontSize = 12.sp,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
+                                text = "Version: ${entry.version ?: "N/A"}",
+                                fontWeight = FontWeight.Light,
+                                fontSize = 11.sp
                             )
                         }
-                        Text(
-                            text = "Version: ${entry.version ?: "N/A"}",
-                            fontWeight = FontWeight.Light,
-                            fontSize = 11.sp
-                        )
-                    }
-                    Button(
-                        enabled = !isDownloading,
-                        onClick = {
-                            isDownloading = true
-                            downloadScript(repoUrl, entry)
-                            isDownloading = false
-                        }
-                    ) {
-                        if (isDownloading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text("Download")
+                        Button(
+                            enabled = !isDownloading && !isAlreadyInstalled,
+                            onClick = {
+                                isDownloading = true
+                                downloadScript(repoUrl, entry)
+                                coroutineScope.launch {
+                                    delay(1000)
+                                    isDownloading = false
+                                    isAlreadyInstalled = isScriptInstalled(entry.name)
+                                }
+                            }
+                        ) {
+                            when {
+                                isAlreadyInstalled -> Text("Installed")
+                                isDownloading -> CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                else -> Text("Download")
+                            }
                         }
                     }
                 }
