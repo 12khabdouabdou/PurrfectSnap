@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
@@ -27,7 +26,7 @@ import me.rhunk.snapenhance.storage.removeRepo
 import me.rhunk.snapenhance.ui.manager.Routes
 import okhttp3.OkHttpClient
 
-class ManageReposSection : Routes.Route() {
+class ManageScriptReposSection : Routes.Route() {
     private val updateDispatcher = AsyncUpdateDispatcher()
     private val okHttpClient by lazy { OkHttpClient() }
 
@@ -45,7 +44,7 @@ class ManageReposSection : Routes.Route() {
                 if (url.startsWith("https://github.com/")) {
                     val splitUrl = modifiedUrl.removePrefix("https://github.com/").split("/")
                     val repoName = splitUrl[0] + "/" + splitUrl[1]
-                    // fetch default branch from GitHub API
+                    // Fetch the default branch from GitHub API
                     okHttpClient.newCall(
                         okhttp3.Request.Builder().url("https://api.github.com/repos/$repoName").build()
                     ).execute().use { response ->
@@ -112,9 +111,9 @@ class ManageReposSection : Routes.Route() {
         }
     }
 
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
+    override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        val repositories = rememberAsyncMutableStateList(defaultValue = listOf(), updateDispatcher = updateDispatcher) {
+        val repositories = rememberAsyncMutableStateList(defaultValue = listOf<String>(), updateDispatcher = updateDispatcher) {
             context.database.getRepositories()
         }
 
@@ -141,7 +140,8 @@ class ManageReposSection : Routes.Route() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(Icons.Default.Public, contentDescription = null)
                         Text(text = url, modifier = Modifier.weight(1f))
