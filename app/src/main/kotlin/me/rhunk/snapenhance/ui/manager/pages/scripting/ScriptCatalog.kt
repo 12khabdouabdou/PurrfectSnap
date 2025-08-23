@@ -22,7 +22,6 @@ import me.rhunk.snapenhance.storage.getRepositories
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
-// Data classes for scripts repo parsing
 data class ScriptRepoManifest(
     val scripts: List<ScriptRepoEntry>
 )
@@ -100,7 +99,6 @@ fun ScriptCatalog(root: ScriptingRootSection) {
 
     fun downloadScript(repoUrl: String, entry: ScriptRepoEntry) {
         coroutineScope.launch(Dispatchers.IO) {
-            // Check if script is already installed
             if (isScriptInstalled(entry.name)) {
                 withContext(Dispatchers.Main) {
                     context.shortToast("Script already installed!")
@@ -110,7 +108,6 @@ fun ScriptCatalog(root: ScriptingRootSection) {
             
             val rawUrl = if (repoUrl.endsWith("/")) repoUrl + entry.filepath else repoUrl + "/" + entry.filepath
             
-            // Also check by URL in case it was imported from URL before
             if (root.isScriptInstalledByUrl(rawUrl)) {
                 withContext(Dispatchers.Main) {
                     context.shortToast("Script already installed!")
@@ -129,7 +126,6 @@ fun ScriptCatalog(root: ScriptingRootSection) {
                     if (content != null) {
                         val folder = context.scriptManager.getScriptsFolder()
                         if (folder != null) {
-                            // SAF/DocumentFile writing, mirrors import-from-URL logic.
                             val file = folder.createFile("application/javascript", "${entry.name}.js")
                             if (file != null) {
                                 context.androidContext.contentResolver.openOutputStream(file.uri)?.use { output ->
@@ -159,7 +155,6 @@ fun ScriptCatalog(root: ScriptingRootSection) {
         }
     }
 
-    // Check if repositories are empty
     if (repositories.isEmpty() && !isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
