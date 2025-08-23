@@ -52,6 +52,36 @@ class ScriptingRootSection : Routes.Route() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
 
+    fun isScriptInstalled(scriptUrl: String): Boolean {
+        return try {
+            val scriptName = File(scriptUrl).nameWithoutExtension
+            val installedScripts = context.scriptManager.getSyncedModules()
+            installedScripts.any { it.name.equals(scriptName, ignoreCase = true) }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun downloadScript(scriptUrl: String, onComplete: () -> Unit) {
+        context.coroutineScope.launch {
+            if (isScriptInstalled(scriptUrl)) {
+                context.shortToast("Script already installed!")
+                return@launch
+            }
+            
+            runCatching {
+                context.shortToast("Downloading script...")
+                val moduleInfo = context.scriptManager.importFromUrl(scriptUrl)
+                context.shortToast("Script ${moduleInfo.name} downloaded!")
+                reloadDispatcher.dispatch()
+                onComplete()
+            }.onFailure {
+                context.log.error("Failed to download script", it)
+                context.shortToast("Failed to download script. Check logs for more details")
+            }
+        }
+    }
+
     @Composable
     private fun ImportRemoteScript(
         dismiss: () -> Unit
@@ -103,9 +133,9 @@ class ScriptingRootSection : Routes.Route() {
                             context.coroutineScope.launch {
                                 runCatching {
                                     // Check if script already exists
-                                    val scriptName = url.substringAfterLast("/").substringBeforeLast(".")
+                                    val scriptName = File(url).nameWithoutExtension
                                     val existingScripts = context.scriptManager.getSyncedModules()
-                                    if (existingScripts.any { it.name == scriptName }) {
+                                    if (existingScripts.any { it.name.equals(scriptName, ignoreCase = true) }) {
                                         context.shortToast("Script already installed!")
                                         withContext(Dispatchers.Main) {
                                             dismiss()
@@ -405,36 +435,6 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-    fun isScriptInstalled(scriptUrl: String): Boolean {
-        return try {
-            val scriptName = File(scriptUrl).nameWithoutExtension
-            val installedScripts = context.scriptManager.getSyncedModules()
-            installedScripts.any { it.name.equals(scriptName, ignoreCase = true) }
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    fun downloadScript(scriptUrl: String, onComplete: () -> Unit) {
-        context.coroutineScope.launch {
-            if (isScriptInstalled(scriptUrl)) {
-                context.shortToast("Script already installed!")
-                return@launch
-            }
-            
-            runCatching {
-                context.shortToast("Downloading script...")
-                val moduleInfo = context.scriptManager.importFromUrl(scriptUrl)
-                context.shortToast("Script ${moduleInfo.name} downloaded!")
-                reloadDispatcher.dispatch()
-                onComplete()
-            }.onFailure {
-                context.log.error("Failed to download script", it)
-                context.shortToast("Failed to download script. Check logs for more details")
-            }
-        }
-    }
-
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val scriptingFolder by rememberAsyncMutableState(
             defaultValue = null,
@@ -576,10 +576,7 @@ class ScriptingRootSection : Routes.Route() {
                     }
                 }
                 1 -> {
-                    ScriptCatalog(
-                        rootSection = this@ScriptingRootSection,
-                        repoUrl = "https://github.com/rhunk/SnapEnhance/blob/dev/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
-                    )
+                    ScriptCatalog(this@ScriptingRootSection)
                 }
             }
         }
