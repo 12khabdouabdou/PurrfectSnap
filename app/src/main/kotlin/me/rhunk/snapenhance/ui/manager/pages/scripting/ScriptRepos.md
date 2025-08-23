@@ -18,3 +18,7 @@
 #### 📦 SE-Scripts
 - **URL**: `https://github.com/particle-box/SE-Scripts`
 - **Maintainer**: ΞTΞRNAL
+
+#### 📦 SE-Scripts-Bold
+- **URL**: `https://github.com/sujalsxhu/SE-Scripts-Bold`
+- **Maintainer**: Sujal Sahu
