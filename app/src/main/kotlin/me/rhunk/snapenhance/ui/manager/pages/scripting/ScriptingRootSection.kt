@@ -340,7 +340,7 @@ class ScriptingRootSection : Routes.Route() {
         if (tab == 1) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
-                    onClick = { Routes.routes.manageScriptRepos.open() },
+                    onClick = { Routes.manageScriptRepos.open() },
                     icon = { Icon(Icons.Default.Public, contentDescription = null) },
                     text = { Text("Manage Repos") }
                 )
