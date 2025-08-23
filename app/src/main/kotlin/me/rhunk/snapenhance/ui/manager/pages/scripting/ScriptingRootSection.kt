@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import kotlinx.coroutines.*
 import me.rhunk.snapenhance.common.scripting.type.ModuleInfo
 import me.rhunk.snapenhance.common.scripting.ui.EnumScriptInterface
@@ -46,7 +45,6 @@ import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
 class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
-
     private var selectedTab by mutableStateOf(0)
 
     override val init: () -> Unit = {
@@ -62,8 +60,7 @@ class ScriptingRootSection : Routes.Route() {
             val focusRequester = remember { FocusRequester() }
             var isLoading by remember { mutableStateOf(false) }
             ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier
@@ -141,9 +138,7 @@ class ScriptingRootSection : Routes.Route() {
         dismiss: () -> Unit
     ) {
         Dialog(onDismissRequest = dismiss) {
-            ElevatedCard(modifier = Modifier
-                .fillMaxWidth()
-                .padding(2.dp)) {
+            ElevatedCard(modifier = Modifier.fillMaxWidth().padding(2.dp)) {
                 val actions = remember {
                     mutableMapOf<Pair<String, ImageVector>, suspend () -> Unit>().apply {
                         if (canUpdate) {
@@ -170,10 +165,8 @@ class ScriptingRootSection : Routes.Route() {
                                 val modulePath = context.scriptManager.getModulePath(script.name)!!
                                 context.androidContext.startActivity(
                                     Intent(Intent.ACTION_VIEW).apply {
-                                        data = context.scriptManager.getScriptsFolder()!!
-                                            .findFile(modulePath)!!.uri
-                                        flags =
-                                            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                        data = context.scriptManager.getScriptsFolder()!!.findFile(modulePath)!!.uri
+                                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                                     }
                                 )
                                 dismiss()
@@ -184,8 +177,7 @@ class ScriptingRootSection : Routes.Route() {
                         }
                         put("Clear Module Data" to Icons.Default.Save) {
                             runCatching {
-                                context.scriptManager.getModuleDataFolder(script.name)
-                                    .deleteRecursively()
+                                context.scriptManager.getModuleDataFolder(script.name).deleteRecursively()
                                 context.shortToast("Module data cleared!")
                                 dismiss()
                             }.onFailure {
@@ -210,30 +202,25 @@ class ScriptingRootSection : Routes.Route() {
                         }
                     }.toMap()
                 }
-
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     item {
                         Text(
                             text = "Actions",
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
+                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
                             textAlign = TextAlign.Center,
                         )
                     }
                     items(actions.size) { index ->
                         val action = actions.entries.elementAt(index)
                         ListItem(
-                            modifier = Modifier
-                                .clickable {
-                                    context.coroutineScope.launch {
-                                        action.value()
-                                        dismiss()
-                                    }
+                            modifier = Modifier.clickable {
+                                context.coroutineScope.launch {
+                                    action.value()
+                                    dismiss()
                                 }
-                                .fillMaxWidth(),
+                            }.fillMaxWidth(),
                             leadingContent = {
                                 Icon(
                                     imageVector = action.key.second,
@@ -275,9 +262,7 @@ class ScriptingRootSection : Routes.Route() {
         }
 
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             elevation = CardDefaults.cardElevation()
         ) {
             Row(
@@ -294,21 +279,22 @@ class ScriptingRootSection : Routes.Route() {
                     Icon(
                         imageVector = if (openSettings) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(32.dp),
+                        modifier = Modifier.padding(end = 8.dp).size(32.dp),
                     )
                 }
 
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
+                    modifier = Modifier.weight(1f).padding(end = 8.dp)
                 ) {
                     Text(text = script.displayName ?: script.name, fontSize = 20.sp)
                     Text(text = script.description ?: "No description", fontSize = 14.sp)
                     latestUpdate?.let {
-                        Text(text = "Update available: ${it.version}", fontSize = 14.sp, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            text = "Update available: ${it.version}",
+                            fontSize = 14.sp,
+                            fontStyle = FontStyle.Italic,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
                 IconButton(onClick = { openActions = !openActions }) {
@@ -375,7 +361,7 @@ class ScriptingRootSection : Routes.Route() {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = {
-                        context.navController?.navigate("manage_script_repos")
+                        context.routes.manageScriptRepos.open()
                     },
                     icon = { Icon(Icons.Default.Public, contentDescription = null) },
                     text = { Text("Manage Repos") }
@@ -418,7 +404,6 @@ class ScriptingRootSection : Routes.Route() {
                 context.scriptManager.runtime.getModuleByName(script.name) ?: return@remember null
             (module.getBinding(InterfaceManager::class))?.buildInterface(EnumScriptInterface.SETTINGS)
         }
-
         if (settingsInterface == null) {
             Text(
                 text = "This module does not have any settings",
@@ -430,7 +415,7 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
+    override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val scriptingFolder by rememberAsyncMutableState(
             defaultValue = null,
             updateDispatcher = reloadDispatcher
@@ -542,7 +527,6 @@ class ScriptingRootSection : Routes.Route() {
                             }
                             item { Spacer(modifier = Modifier.height(200.dp)) }
                         }
-
                         PullRefreshIndicator(
                             refreshing = refreshing,
                             state = pullRefreshState,
