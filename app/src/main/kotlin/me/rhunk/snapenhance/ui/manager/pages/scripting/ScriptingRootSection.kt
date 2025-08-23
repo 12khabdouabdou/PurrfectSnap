@@ -56,7 +56,6 @@ class ScriptingRootSection : Routes.Route() {
         return try {
             val installedScripts = context.scriptManager.getSyncedModules()
             installedScripts.any { module ->
-                // Check if any installed script has the same update URL
                 module.updateUrl?.equals(scriptUrl, ignoreCase = true) == true
             }
         } catch (e: Exception) {
@@ -134,7 +133,6 @@ class ScriptingRootSection : Routes.Route() {
                             isLoading = true
                             context.coroutineScope.launch {
                                 runCatching {
-                                    // Check if script already exists by URL
                                     if (isScriptInstalledByUrl(url)) {
                                         context.shortToast("Script already installed!")
                                         withContext(Dispatchers.Main) {
