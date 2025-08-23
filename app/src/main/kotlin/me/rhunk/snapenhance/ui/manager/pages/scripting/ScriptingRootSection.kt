@@ -1,6 +1,7 @@
 package me.rhunk.snapenhance.ui.manager.pages.scripting
 
 import android.content.Intent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,10 +41,12 @@ import me.rhunk.snapenhance.ui.util.chooseFolder
 import me.rhunk.snapenhance.ui.util.pullrefresh.PullRefreshIndicator
 import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
+import me.rhunk.snapenhance.ui.manager.pages.scripting.ScriptCatalog
+import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageReposSection
 
 class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-    private val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
+    val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -56,9 +59,7 @@ class ScriptingRootSection : Routes.Route() {
         Dialog(onDismissRequest = dismiss) {
             var url by remember { mutableStateOf("") }
             val focusRequester = remember { FocusRequester() }
-            var isLoading by remember {
-                mutableStateOf(false)
-            }
+            var isLoading by remember { mutableStateOf(false) }
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -85,23 +86,15 @@ class ScriptingRootSection : Routes.Route() {
                     )
                     TextField(
                         value = url,
-                        onValueChange = {
-                            url = it
-                        },
-                        label = {
-                            Text(text = "Enter URL here:")
-                        },
+                        onValueChange = { url = it },
+                        label = { Text(text = "Enter URL here:") },
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
-                            .onGloballyPositioned {
-                                focusRequester.requestFocus()
-                            }
+                            .onGloballyPositioned { focusRequester.requestFocus() }
                     )
                     LaunchedEffect(Unit) {
-                        context.androidContext.getUrlFromClipboard()?.let {
-                            url = it
-                        }
+                        context.androidContext.getUrlFromClipboard()?.let { url = it }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
@@ -127,8 +120,7 @@ class ScriptingRootSection : Routes.Route() {
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
-                                modifier = Modifier
-                                    .size(30.dp),
+                                modifier = Modifier.size(30.dp),
                                 strokeWidth = 3.dp,
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
@@ -141,21 +133,16 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-
     @Composable
     private fun ModuleActions(
         script: ModuleInfo,
         canUpdate: Boolean,
         dismiss: () -> Unit
     ) {
-        Dialog(
-            onDismissRequest = dismiss,
-        ) {
-            ElevatedCard(
-                modifier = Modifier
+        Dialog(onDismissRequest = dismiss) {
+            ElevatedCard(modifier = Modifier
                     .fillMaxWidth()
-                    .padding(2.dp),
-            ) {
+                    .padding(2.dp)) {
                 val actions = remember {
                     mutableMapOf<Pair<String, ImageVector>, suspend () -> Unit>().apply {
                         if (canUpdate) {
@@ -224,9 +211,7 @@ class ScriptingRootSection : Routes.Route() {
                     }.toMap()
                 }
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     item {
                         Text(
                             text = "Actions",
@@ -326,9 +311,7 @@ class ScriptingRootSection : Routes.Route() {
                         Text(text = "Update available: ${it.version}", fontSize = 14.sp, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                IconButton(onClick = {
-                    openActions = !openActions
-                }) {
+                IconButton(onClick = { openActions = !openActions }) {
                     Icon(imageVector = Icons.Default.Build, contentDescription = "Actions")
                 }
                 Switch(
@@ -347,15 +330,10 @@ class ScriptingRootSection : Routes.Route() {
                                 } else {
                                     context.shortToast("Unloaded script ${script.name}")
                                 }
-
                                 context.database.setScriptEnabled(script.name, isChecked)
-                                withContext(Dispatchers.Main) {
-                                    enabled = isChecked
-                                }
+                                withContext(Dispatchers.Main) { enabled = isChecked }
                             }.onFailure { throwable ->
-                                withContext(Dispatchers.Main) {
-                                    enabled = !isChecked
-                                }
+                                withContext(Dispatchers.Main) { enabled = !isChecked }
                                 ("Failed to ${if (isChecked) "enable" else "disable"} script. Check logs for more details").also {
                                     context.log.error(it, throwable)
                                     context.shortToast(it)
@@ -365,12 +343,10 @@ class ScriptingRootSection : Routes.Route() {
                     }
                 )
             }
-
             if (openSettings) {
                 ScriptSettings(script)
             }
         }
-
         if (openActions) {
             ModuleActions(
                 script = script,
@@ -380,12 +356,19 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     override val floatingActionButton: @Composable () -> Unit = {
-        var showImportDialog by remember {
-            mutableStateOf(false)
-        }
+        var showImportDialog by remember { mutableStateOf(false) }
+        var showToast by remember { mutableStateOf(false) }
+        val scriptingFolder = context.scriptManager.getScriptsFolder()
+        var selectedTab by remember { mutableStateOf(0) } // make sure this is accessible here, else lift up
+
         if (showImportDialog) {
-            ImportRemoteScript {
-                showImportDialog = false
+            ImportRemoteScript { showImportDialog = false }
+        }
+
+        if (showToast) {
+            LaunchedEffect(Unit) {
+                context.shortToast("Please select your scripts folder!")
+                showToast = false
             }
         }
 
@@ -393,37 +376,48 @@ class ScriptingRootSection : Routes.Route() {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.End,
         ) {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    if (context.scriptManager.getScriptsFolder() == null) {
-                        return@ExtendedFloatingActionButton
-                    }
-                    showImportDialog = true
-                },
-                icon = { Icon(imageVector = Icons.Default.Link, contentDescription = "Link") },
-                text = {
-                    Text(text = "Import from URL")
-                },
-            )
-            ExtendedFloatingActionButton(
-                onClick = {
-                    context.scriptManager.getScriptsFolder()?.let {
-                        context.androidContext.openLink(it.uri.toString())
-                    }
-                },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.FolderOpen,
-                        contentDescription = "Folder"
-                    )
-                },
-                text = {
-                    Text(text = "Open Scripts Folder")
-                },
-            )
+            // FAB for Catalog tab: Manage Repo
+            if (selectedTab == 1) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        // Navigate to repo manager: Typically you'd set a nav state,
+                        // or use a modal if navigation not available.
+                        context.navController?.navigate("manage_script_repos")
+                        // Or, if using Compose Multi-Route, swap the route state.
+                        // Or display ManageReposSection as a dialog.
+                    },
+                    icon = { Icon(imageVector = Icons.Default.Public, contentDescription = null) },
+                    text = { Text(text = "Manage repositories") },
+                )
+            } else {
+                // Default FABs for installed tab
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (scriptingFolder == null) {
+                            showToast = true
+                        } else {
+                            showImportDialog = true
+                        }
+                    },
+                    icon = { Icon(imageVector = Icons.Default.Link, contentDescription = "Link") },
+                    text = { Text(text = "Import from URL") },
+                )
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (scriptingFolder == null) {
+                            showToast = true
+                        } else {
+                            scriptingFolder.let {
+                                context.androidContext.openLink(it.uri.toString())
+                            }
+                        }
+                    },
+                    icon = { Icon(imageVector = Icons.Default.FolderOpen, contentDescription = "Folder") },
+                    text = { Text(text = "Open Scripts Folder") },
+                )
+            }
         }
     }
-
 
     @Composable
     fun ScriptSettings(script: ModuleInfo) {
@@ -451,125 +445,171 @@ class ScriptingRootSection : Routes.Route() {
         ) {
             context.scriptManager.getScriptsFolder()
         }
-        val scriptModules by rememberAsyncMutableState(
-            defaultValue = emptyList(),
-            updateDispatcher = reloadDispatcher
-        ) {
-            context.scriptManager.sync()
-            context.scriptManager.getSyncedModules()
-        }
+        var selectedTab by remember { mutableStateOf(0) }
+        val tabTitles = listOf("Installed Scripts", "Catalog")
+        var showToast by remember { mutableStateOf(false) }
+        var showManageRepos by remember { mutableStateOf(false) }
 
-        val coroutineScope = rememberCoroutineScope()
-
-        var refreshing by remember {
-            mutableStateOf(false)
-        }
-
-        LaunchedEffect(Unit) {
-            refreshing = true
-            withContext(Dispatchers.IO) {
-                reloadDispatcher.dispatch()
-                refreshing = false
+        if (showToast) {
+            LaunchedEffect(Unit) {
+                context.shortToast("Please select your scripts folder!")
+                showToast = false
             }
         }
 
-        val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh = {
-            refreshing = true
-            coroutineScope.launch(Dispatchers.IO) {
-                reloadDispatcher.dispatch()
-                refreshing = false
+        Column(Modifier.fillMaxSize()) {
+            TabRow(selectedTabIndex = selectedTab) {
+                tabTitles.forEachIndexed { i, text ->
+                    val enabled = !(i == 1 && scriptingFolder == null)
+                    Tab(
+                        selected = selectedTab == i,
+                        onClick = {
+                            if (!enabled) {
+                                showToast = true
+                            } else {
+                                selectedTab = i
+                            }
+                        },
+                        enabled = enabled,
+                        text = { Text(text) }
+                    )
+                }
             }
-        })
+            when (selectedTab) {
+                0 -> {
+                    // Installed scripts tab (your same logic)
+                    val scriptModules by rememberAsyncMutableState(
+                        defaultValue = emptyList(),
+                        updateDispatcher = reloadDispatcher
+                    ) { context.scriptManager.sync(); context.scriptManager.getSyncedModules() }
+                    val coroutineScope = rememberCoroutineScope()
+                    var refreshing by remember { mutableStateOf(false) }
 
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pullRefresh(pullRefreshState),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                item {
-                    if (scriptingFolder == null && !refreshing) {
-                        Text(
-                            text = "No scripts folder selected",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(8.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = {
-                            activityLauncherHelper.chooseFolder {
-                                context.config.root.scripting.moduleFolder.set(it)
-                                context.config.writeConfig()
-                                coroutineScope.launch {
-                                    reloadDispatcher.dispatch()
+                    LaunchedEffect(Unit) {
+                        refreshing = true
+                        withContext(Dispatchers.IO) {
+                            reloadDispatcher.dispatch()
+                            refreshing = false
+                        }
+                    }
+                    val pullRefreshState = rememberPullRefreshState(refreshing, onRefresh = {
+                        refreshing = true
+                        coroutineScope.launch(Dispatchers.IO) {
+                            reloadDispatcher.dispatch()
+                            refreshing = false
+                        }
+                    })
+
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pullRefresh(pullRefreshState),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            item {
+                                if (scriptingFolder == null && !refreshing) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(320.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Text(
+                                                text = "No scripts folder selected",
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier.padding(bottom = 16.dp)
+                                            )
+                                            Button(
+                                                onClick = {
+                                                    activityLauncherHelper.chooseFolder {
+                                                        context.config.root.scripting.moduleFolder.set(it)
+                                                        context.config.writeConfig()
+                                                        coroutineScope.launch {
+                                                            reloadDispatcher.dispatch()
+                                                        }
+                                                    }
+                                                },
+                                                contentPadding = PaddingValues(horizontal = 28.dp, vertical = 10.dp)
+                                            ) {
+                                                Text(
+                                                    text = "Select folder",
+                                                    fontSize = 18.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                } else if (scriptModules.isEmpty()) {
+                                    Text(
+                                        text = "No scripts found",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
                                 }
                             }
-                        }) {
-                            Text(text = "Select folder")
+                            items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
+                                ModuleItem(scriptModules[index])
+                            }
+                            item { Spacer(modifier = Modifier.height(200.dp)) }
                         }
-                    } else if (scriptModules.isEmpty()) {
-                        Text(
-                            text = "No scripts found",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(8.dp)
+
+                        PullRefreshIndicator(
+                            refreshing = refreshing,
+                            state = pullRefreshState,
+                            modifier = Modifier.align(Alignment.TopCenter)
                         )
                     }
+
+                    var scriptingWarning by remember {
+                        mutableStateOf(context.sharedPreferences.run {
+                            getBoolean("scripting_warning", true).also {
+                                edit().putBoolean("scripting_warning", false).apply()
+                            }
+                        })
+                    }
+
+                    if (scriptingWarning) {
+                        var timeout by remember { mutableIntStateOf(10) }
+                        LaunchedEffect(Unit) {
+                            while (timeout > 0) {
+                                delay(1000)
+                                timeout--
+                            }
+                        }
+                        AlertDialog(onDismissRequest = {
+                            if (timeout == 0) {
+                                scriptingWarning = false
+                            }
+                        }, title = {
+                            Text(text = context.translation["manager.dialogs.scripting_warning.title"])
+                        }, text = {
+                            Text(text = context.translation["manager.dialogs.scripting_warning.content"])
+                        }, confirmButton = {
+                            TextButton(
+                                onClick = { scriptingWarning = false },
+                                enabled = timeout == 0
+                            ) {
+                                Text(text = "OK " + if (timeout > 0) "($timeout)" else "")
+                            }
+                        })
+                    }
                 }
-                items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
-                    ModuleItem(scriptModules[index])
-                }
-                item {
-                    Spacer(modifier = Modifier.height(200.dp))
+                1 -> {
+                    if (showManageRepos) {
+                        ManageReposSection().content(NavBackStackEntry())
+                        // Or if your navigation system supports, push/pop the composable
+                    } else {
+                        ScriptCatalog(this@ScriptingRootSection)
+                    }
                 }
             }
-
-            PullRefreshIndicator(
-                refreshing = refreshing,
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
-        }
-
-        var scriptingWarning by remember {
-            mutableStateOf(context.sharedPreferences.run {
-                getBoolean("scripting_warning", true).also {
-                    edit().putBoolean("scripting_warning", false).apply()
-                }
-            })
-        }
-
-        if (scriptingWarning) {
-            var timeout by remember {
-                mutableIntStateOf(10)
-            }
-
-            LaunchedEffect(Unit) {
-                while (timeout > 0) {
-                    delay(1000)
-                    timeout--
-                }
-            }
-
-            AlertDialog(onDismissRequest = {
-                if (timeout == 0) {
-                    scriptingWarning = false
-                }
-            }, title = {
-                Text(text = context.translation["manager.dialogs.scripting_warning.title"])
-            }, text = {
-                Text(text = context.translation["manager.dialogs.scripting_warning.content"])
-            }, confirmButton = {
-                TextButton(
-                    onClick = {
-                        scriptingWarning = false
-                    },
-                    enabled = timeout == 0
-                ) {
-                    Text(text = "OK " + if (timeout > 0) "($timeout)" else "")
-                }
-            })
         }
     }
 
