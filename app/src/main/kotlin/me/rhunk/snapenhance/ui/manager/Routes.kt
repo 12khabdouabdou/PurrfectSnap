@@ -28,6 +28,7 @@ import me.rhunk.snapenhance.ui.manager.pages.social.MessagingPreview
 import me.rhunk.snapenhance.ui.manager.pages.social.SocialRootSection
 import me.rhunk.snapenhance.ui.manager.pages.tracker.EditRule
 import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerManagerRoot
+import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageScriptReposSection
 
 
 data class RouteInfo(
@@ -69,6 +70,7 @@ class Routes(
     val loggedStories = route(RouteInfo("logged_stories/?id={id}"), LoggedStories()).parent(social)
 
     val scripting = route(RouteInfo("scripts", icon = Icons.Filled.DataObject, primary = true), ScriptingRootSection())
+    val manageScriptRepos = route(RouteInfo("manage_script_repos"), ManageScriptReposSection())
 
     val betterLocation = route(RouteInfo("better_location", showInNavBar = false, primary = true), BetterLocationRoot())
 
