@@ -21,8 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
+import androidx.core.net.toUri
 import kotlinx.coroutines.*
 import me.rhunk.snapenhance.common.scripting.type.ModuleInfo
 import me.rhunk.snapenhance.common.scripting.ui.EnumScriptInterface
@@ -44,9 +43,7 @@ import me.rhunk.snapenhance.ui.util.pullrefresh.PullRefreshIndicator
 import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
 
-class ScriptingRootSection(
-    private val navController: NavController
-) : Routes.Route() {
+class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
 
@@ -311,12 +308,7 @@ class ScriptingRootSection(
                     Text(text = script.displayName ?: script.name, fontSize = 20.sp)
                     Text(text = script.description ?: "No description", fontSize = 14.sp)
                     latestUpdate?.let {
-                        Text(
-                            text = "Update available: ${it.version}",
-                            fontSize = 14.sp,
-                            fontStyle = FontStyle.Italic,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Text(text = "Update available: ${it.version}", fontSize = 14.sp, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 IconButton(onClick = { openActions = !openActions }) {
@@ -383,7 +375,7 @@ class ScriptingRootSection(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = {
-                        navController.navigate("manage_script_repos")
+                        context.navController?.navigate("manage_script_repos")
                     },
                     icon = { Icon(Icons.Default.Public, contentDescription = null) },
                     text = { Text("Manage Repos") }
@@ -442,7 +434,9 @@ class ScriptingRootSection(
         val scriptingFolder by rememberAsyncMutableState(
             defaultValue = null,
             updateDispatcher = reloadDispatcher
-        ) { context.scriptManager.getScriptsFolder() }
+        ) {
+            context.scriptManager.getScriptsFolder()
+        }
         val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
