@@ -1,6 +1,5 @@
 package me.rhunk.snapenhance.ui.manager.pages.scripting
 
-import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,17 +15,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
-import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
+import kotlinx.coroutines.*
 import me.rhunk.snapenhance.storage.getRepositories
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.File
 
-// Data classes for parsing script repo manifests
+// Data classes for scripts repo parsing
 data class ScriptRepoManifest(
     val scripts: List<ScriptRepoEntry>
 )
@@ -45,13 +39,12 @@ fun ScriptCatalog(root: ScriptingRootSection) {
     val okHttpClient = remember { OkHttpClient() }
     val gson = remember { context.gson }
 
-    // Store indexes (repo url -> manifest)
-    var repoIndexes by remember { mutableStateOf(mapOf<String, ScriptRepoManifest>()) }
-    val updateDispatcher = remember { AsyncUpdateDispatcher() }
+    var repoIndexes by remember { mutableStateOf<Map<String, ScriptRepoManifest>>(emptyMap()) }
+    var isLoading by remember { mutableStateOf(false) }
 
-    // Fetch all repo indexes
     fun refreshIndexes() {
         coroutineScope.launch(Dispatchers.IO) {
+            isLoading = true
             val newIndexes = mutableMapOf<String, ScriptRepoManifest>()
             context.database.getRepositories().forEach { repoRoot ->
                 val indexUrl = if (repoRoot.endsWith("/")) "${repoRoot}index.json" else "$repoRoot/index.json"
@@ -61,54 +54,55 @@ fun ScriptCatalog(root: ScriptingRootSection) {
                         if (response.isSuccessful) {
                             response.body?.charStream()?.let { reader ->
                                 val parsed = gson.fromJson(reader, ScriptRepoManifest::class.java)
-                                if (parsed?.scripts != null) {
+                                if (!parsed.scripts.isNullOrEmpty()) {
                                     newIndexes[repoRoot] = parsed
                                 }
                             }
                         }
                     }
-                } catch (e: Exception) {
-                    context.log.error("Failed to fetch or parse script repo at $indexUrl", e)
-                }
+                } catch (_: Exception) {}
             }
             withContext(Dispatchers.Main) {
                 repoIndexes = newIndexes
-                updateDispatcher.dispatch()
+                isLoading = false
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        refreshIndexes()
-    }
+    LaunchedEffect(Unit) { refreshIndexes() }
 
-    // All repo scripts, with repository URL
     val allScripts = repoIndexes.entries.flatMap { (repoUrl, manifest) ->
-        manifest.scripts.map { Pair(repoUrl, it) }
+        manifest.scripts.map { repoUrl to it }
     }
 
     fun downloadScript(repoUrl: String, entry: ScriptRepoEntry) {
         coroutineScope.launch(Dispatchers.IO) {
-            val rawUrl =
-                if (repoUrl.endsWith("/")) repoUrl + entry.filepath else repoUrl + "/" + entry.filepath
+            val rawUrl = if (repoUrl.endsWith("/")) repoUrl + entry.filepath else repoUrl + "/" + entry.filepath
             try {
                 val req = Request.Builder().url(rawUrl).build()
                 okHttpClient.newCall(req).execute().use { response ->
                     if (!response.isSuccessful) {
-                        withContext(Dispatchers.Main) {
-                            context.shortToast("Failed to download script: ${response.code}")
-                        }
+                        withContext(Dispatchers.Main) { context.shortToast("Failed download: ${response.code}") }
                         return@use
                     }
                     val content = response.body?.bytes()
                     if (content != null) {
                         val folder = context.scriptManager.getScriptsFolder()
                         if (folder != null) {
-                            val file = File(folder, "${entry.name}.js")
-                            file.writeBytes(content)
-                            withContext(Dispatchers.Main) {
-                                context.shortToast("Script downloaded!")
-                                root.reloadDispatcher.dispatch()
+                            // SAF/DocumentFile writing, mirrors import-from-URL logic.
+                            val file = folder.createFile("application/javascript", "${entry.name}.js")
+                            if (file != null) {
+                                context.androidContext.contentResolver.openOutputStream(file.uri)?.use { output ->
+                                    output.write(content)
+                                }
+                                withContext(Dispatchers.Main) {
+                                    context.shortToast("Script downloaded!")
+                                    root.reloadDispatcher.dispatch()
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    context.shortToast("Could not create file.")
+                                }
                             }
                         } else {
                             withContext(Dispatchers.Main) {
@@ -130,7 +124,11 @@ fun ScriptCatalog(root: ScriptingRootSection) {
         contentPadding = PaddingValues(8.dp)
     ) {
         item {
-            if (allScripts.isEmpty()) {
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (allScripts.isEmpty()) {
                 Text(
                     text = "No scripts available from any repo.",
                     modifier = Modifier
