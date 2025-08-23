@@ -41,8 +41,6 @@ import me.rhunk.snapenhance.ui.util.chooseFolder
 import me.rhunk.snapenhance.ui.util.pullrefresh.PullRefreshIndicator
 import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
-import me.rhunk.snapenhance.ui.manager.pages.scripting.ScriptCatalog
-import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageReposSection
 
 class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -359,7 +357,8 @@ class ScriptingRootSection : Routes.Route() {
         var showImportDialog by remember { mutableStateOf(false) }
         var showToast by remember { mutableStateOf(false) }
         val scriptingFolder = context.scriptManager.getScriptsFolder()
-        var selectedTab by remember { mutableStateOf(0) } // make sure this is accessible here, else lift up
+        var selectedTab by remember { mutableStateOf(0) }
+        var showManageRepos by remember { mutableStateOf(false) }
 
         if (showImportDialog) {
             ImportRemoteScript { showImportDialog = false }
@@ -376,21 +375,13 @@ class ScriptingRootSection : Routes.Route() {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.End,
         ) {
-            // FAB for Catalog tab: Manage Repo
             if (selectedTab == 1) {
                 ExtendedFloatingActionButton(
-                    onClick = {
-                        // Navigate to repo manager: Typically you'd set a nav state,
-                        // or use a modal if navigation not available.
-                        context.navController?.navigate("manage_script_repos")
-                        // Or, if using Compose Multi-Route, swap the route state.
-                        // Or display ManageReposSection as a dialog.
-                    },
+                    onClick = { showManageRepos = true },
                     icon = { Icon(imageVector = Icons.Default.Public, contentDescription = null) },
                     text = { Text(text = "Manage repositories") },
                 )
             } else {
-                // Default FABs for installed tab
                 ExtendedFloatingActionButton(
                     onClick = {
                         if (scriptingFolder == null) {
@@ -416,6 +407,21 @@ class ScriptingRootSection : Routes.Route() {
                     text = { Text(text = "Open Scripts Folder") },
                 )
             }
+        }
+
+        // Show ManageRepos section as dialog/modal
+        if (showManageRepos) {
+            AlertDialog(
+                onDismissRequest = { showManageRepos = false },
+                text = {
+                    Box(Modifier.fillMaxWidth().height(400.dp)) {
+                        ManageReposSection()
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showManageRepos = false }) { Text("Close") }
+                }
+            )
         }
     }
 
@@ -457,6 +463,21 @@ class ScriptingRootSection : Routes.Route() {
             }
         }
 
+        // Overlay ManageRepos section if activated.
+        if (showManageRepos) {
+            AlertDialog(
+                onDismissRequest = { showManageRepos = false },
+                text = {
+                    Box(Modifier.fillMaxWidth().height(400.dp)) {
+                        ManageReposSection()
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showManageRepos = false }) { Text("Close") }
+                }
+            )
+        }
+
         Column(Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = selectedTab) {
                 tabTitles.forEachIndexed { i, text ->
@@ -477,7 +498,7 @@ class ScriptingRootSection : Routes.Route() {
             }
             when (selectedTab) {
                 0 -> {
-                    // Installed scripts tab (your same logic)
+                    // Your installed scripts logic (unchanged)
                     val scriptModules by rememberAsyncMutableState(
                         defaultValue = emptyList(),
                         updateDispatcher = reloadDispatcher
@@ -602,12 +623,7 @@ class ScriptingRootSection : Routes.Route() {
                     }
                 }
                 1 -> {
-                    if (showManageRepos) {
-                        ManageReposSection().content(NavBackStackEntry())
-                        // Or if your navigation system supports, push/pop the composable
-                    } else {
-                        ScriptCatalog(this@ScriptingRootSection)
-                    }
+                    ScriptCatalog(this@ScriptingRootSection) // This lists scripts from all repos!
                 }
             }
         }
