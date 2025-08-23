@@ -402,17 +402,16 @@ class ScriptingRootSection : Routes.Route() {
         val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
-
         if (showAlreadyInstalledToast) {
             LaunchedEffect(Unit) {
                 context.shortToast("Script already installed!")
                 showAlreadyInstalledToast = false
             }
         }
-
         Column(Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = tab) {
                 tabTitles.forEachIndexed { i, text ->
+                    // Always enable, show toast if catalog and folder not picked
                     Tab(
                         selected = tab == i,
                         onClick = {
@@ -539,7 +538,6 @@ class ScriptingRootSection : Routes.Route() {
                 1 -> {
                     val scriptRepos = context.database.getRepositories()
                     if (scriptRepos.isEmpty()) {
-                        // If no repo, show info/link!
                         val linkUrl =
                             "https://github.com/rhunk/SnapEnhance/blob/dev/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
                         Column(
@@ -562,17 +560,58 @@ class ScriptingRootSection : Routes.Route() {
                             )
                         }
                     } else {
-                        // ---- KEY CHANGE: Install button disables duplicate download ----
+                        // Only change: insert duplicate install check here for "Install" button!
                         val scriptModules = context.scriptManager.getSyncedModules()
-                        ScriptCatalog(
-                            showAlreadyInstalledToast = {
-                                showAlreadyInstalledToast = true
-                            },
-                            reloadDispatcher = reloadDispatcher,
-                            scriptModules = scriptModules,
-                            scriptingFolder = scriptingFolder,
-                            context = context
-                        )
+                        val repoScriptsMap = context.scriptManager.getScriptCatalog()
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            repoScriptsMap.forEach { (repo, scripts) ->
+                                item {
+                                    Text(
+                                        text = repo,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 20.dp, bottom = 4.dp)
+                                    )
+                                }
+                                items(scripts.size) { idx ->
+                                    val entry = scripts[idx]
+                                    Card(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 12.dp, end = 12.dp, bottom = 6.dp)
+                                    ) {
+                                        Column(Modifier.padding(16.dp)) {
+                                            Text(entry.name, fontWeight = FontWeight.Bold)
+                                            Text(entry.description ?: "No description")
+                                            Button(
+                                                enabled = scriptingFolder != null,
+                                                onClick = {
+                                                    if (scriptingFolder == null) {
+                                                        context.shortToast("Please select your scripts folder!")
+                                                        return@onClick
+                                                    }
+                                                    if (scriptModules.any { it.name == entry.name }) {
+                                                        showAlreadyInstalledToast = true
+                                                        return@onClick
+                                                    }
+                                                    context.coroutineScope.launch {
+                                                        runCatching {
+                                                            context.scriptManager.importFromUrl(entry.url)
+                                                            context.shortToast("Script ${entry.name} installed!")
+                                                            reloadDispatcher.dispatch()
+                                                        }.onFailure {
+                                                            context.log.error("Failed to install script", it)
+                                                            context.shortToast("Failed to install script: ${it.message}")
+                                                        }
+                                                    }
+                                                }
+                                            ) {
+                                                Text("Install")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -580,69 +619,6 @@ class ScriptingRootSection : Routes.Route() {
                 LaunchedEffect(Unit) {
                     context.shortToast("Please select your scripts folder!")
                     showToast = false
-                }
-            }
-        }
-    }
-
-    // Expect user's previous ScriptCatalog definition, just wrapping Install buttom logic
-    // This keeps *all* original behavior, we only added the check + toast for duplicate install!
-    @Composable
-    fun ScriptCatalog(
-        showAlreadyInstalledToast: () -> Unit,
-        reloadDispatcher: AsyncUpdateDispatcher,
-        scriptModules: List<ModuleInfo>,
-        scriptingFolder: Any?,
-        context: me.rhunk.snapenhance.core.RemoteSideContext
-    ) {
-        // Your OLDER catalog logic (repo loading, parsing, etc)...
-        val repoScriptsMap = remember { context.scriptManager.getScriptCatalog() }
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            repoScriptsMap.forEach { (repo, scripts) ->
-                item {
-                    Text(
-                        text = repo,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 20.dp, bottom = 4.dp)
-                    )
-                }
-                items(scripts.size) { idx ->
-                    val entry = scripts[idx]
-                    Card(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(start = 12.dp, end = 12.dp, bottom = 6.dp)
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text(entry.name, fontWeight = FontWeight.Bold)
-                            Text(entry.description ?: "No description")
-                            Button(
-                                enabled = scriptingFolder != null,
-                                onClick = {
-                                    if (scriptingFolder == null) {
-                                        context.shortToast("Please select your scripts folder!")
-                                        return@onClick
-                                    }
-                                    if (scriptModules.any { it.name == entry.name }) {
-                                        showAlreadyInstalledToast()
-                                        return@onClick
-                                    }
-                                    context.coroutineScope.launch {
-                                        runCatching {
-                                            context.scriptManager.importFromUrl(entry.url)
-                                            context.shortToast("Script ${entry.name} installed!")
-                                            reloadDispatcher.dispatch()
-                                        }.onFailure {
-                                            context.log.error("Failed to install script", it)
-                                            context.shortToast("Failed to install script: ${it.message}")
-                                        }
-                                    }
-                                }
-                            ) {
-                                Text("Install")
-                            }
-                        }
-                    }
                 }
             }
         }
