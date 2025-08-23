@@ -44,12 +44,14 @@ import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
 
 class ScriptingRootSection : Routes.Route() {
+
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
 
-    // Shared states for both content and FAB:
+    // ------ SHARED TAB AND OVERLAY STATE ------
     private val selectedTabState = mutableStateOf(0)
     private val showManageReposState = mutableStateOf(false)
+    // ------------------------------------------
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -167,7 +169,6 @@ class ScriptingRootSection : Routes.Route() {
                                 }
                             }
                         }
-
                         put("Edit Module" to Icons.Default.Edit) {
                             runCatching {
                                 val modulePath = context.scriptManager.getModulePath(script.name)!!
@@ -375,7 +376,6 @@ class ScriptingRootSection : Routes.Route() {
         }
 
         if (selectedTab == 1) {
-            // Catalog: manage repos FAB
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = { showManageReposState.value = true },
@@ -384,7 +384,6 @@ class ScriptingRootSection : Routes.Route() {
                 )
             }
         } else {
-            // Installed scripts tab: import and open folder
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -443,8 +442,8 @@ class ScriptingRootSection : Routes.Route() {
         val selectedTab = selectedTabState.value
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
-        
-        // Full page overlay for manage repos (shows above everything)
+
+        // --- Full page overlay for Manage Repos ---
         if (showManageReposState.value) {
             Surface(
                 modifier = Modifier
@@ -465,6 +464,7 @@ class ScriptingRootSection : Routes.Route() {
                 }
             }
         }
+        // ----------------------------------------
 
         Column(Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = selectedTab) {
