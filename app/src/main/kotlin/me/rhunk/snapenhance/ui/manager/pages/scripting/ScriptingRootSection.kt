@@ -215,21 +215,13 @@ class ScriptingRootSection : Routes.Route() {
                     items(actions.size) { index ->
                         val action = actions.entries.elementAt(index)
                         ListItem(
-                            modifier = Modifier.clickable {
-                                context.coroutineScope.launch {
-                                    action.value()
-                                    dismiss()
-                                }
-                            }.fillMaxWidth(),
+                            modifier = Modifier
+                                .clickable { context.coroutineScope.launch { action.value(); dismiss() } }
+                                .fillMaxWidth(),
                             leadingContent = {
-                                Icon(
-                                    imageVector = action.key.second,
-                                    contentDescription = action.key.first
-                                )
+                                Icon(action.key.second, action.key.first)
                             },
-                            headlineContent = {
-                                Text(text = action.key.first)
-                            },
+                            headlineContent = { Text(action.key.first) }
                         )
                     }
                 }
@@ -254,11 +246,8 @@ class ScriptingRootSection : Routes.Route() {
         LaunchedEffect(Unit) {
             reloadDispatcher.addCallback(reloadCallback)
         }
-
         DisposableEffect(Unit) {
-            onDispose {
-                reloadDispatcher.removeCallback(reloadCallback)
-            }
+            onDispose { reloadDispatcher.removeCallback(reloadCallback) }
         }
 
         Card(
@@ -268,10 +257,7 @@ class ScriptingRootSection : Routes.Route() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        if (!enabled) return@clickable
-                        openSettings = !openSettings
-                    }
+                    .clickable { if (enabled) openSettings = !openSettings }
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -282,7 +268,6 @@ class ScriptingRootSection : Routes.Route() {
                         modifier = Modifier.padding(end = 8.dp).size(32.dp),
                     )
                 }
-
                 Column(
                     modifier = Modifier.weight(1f).padding(end = 8.dp)
                 ) {
@@ -298,7 +283,7 @@ class ScriptingRootSection : Routes.Route() {
                     }
                 }
                 IconButton(onClick = { openActions = !openActions }) {
-                    Icon(imageVector = Icons.Default.Build, contentDescription = "Actions")
+                    Icon(Icons.Default.Build, "Actions")
                 }
                 Switch(
                     checked = enabled,
@@ -320,10 +305,8 @@ class ScriptingRootSection : Routes.Route() {
                                 withContext(Dispatchers.Main) { enabled = isChecked }
                             }.onFailure { throwable ->
                                 withContext(Dispatchers.Main) { enabled = !isChecked }
-                                ("Failed to ${if (isChecked) "enable" else "disable"} script. Check logs for more details").also {
-                                    context.log.error(it, throwable)
-                                    context.shortToast(it)
-                                }
+                                context.log.error("Failed to ${if (isChecked) "enable" else "disable"} script", throwable)
+                                context.shortToast("Failed to ${if (isChecked) "enable" else "disable"} script. Check logs for more details")
                             }
                         }
                     }
@@ -334,10 +317,7 @@ class ScriptingRootSection : Routes.Route() {
             }
         }
         if (openActions) {
-            ModuleActions(
-                script = script,
-                canUpdate = latestUpdate != null,
-            ) { openActions = false }
+            ModuleActions(script = script, canUpdate = latestUpdate != null) { openActions = false }
         }
     }
 
@@ -360,9 +340,7 @@ class ScriptingRootSection : Routes.Route() {
         if (tab == 1) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
-                    onClick = {
-                        context.routes.manageScriptRepos.open()
-                    },
+                    onClick = { context.routes.manageScriptRepos.open() },
                     icon = { Icon(Icons.Default.Public, contentDescription = null) },
                     text = { Text("Manage Repos") }
                 )
@@ -419,9 +397,7 @@ class ScriptingRootSection : Routes.Route() {
         val scriptingFolder by rememberAsyncMutableState(
             defaultValue = null,
             updateDispatcher = reloadDispatcher
-        ) {
-            context.scriptManager.getScriptsFolder()
-        }
+        ) { context.scriptManager.getScriptsFolder() }
         val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
@@ -468,26 +444,18 @@ class ScriptingRootSection : Routes.Route() {
                         }
                     })
 
-                    Box(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .pullRefresh(pullRefreshState),
+                            modifier = Modifier.fillMaxSize().pullRefresh(pullRefreshState),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             item {
                                 if (scriptingFolder == null && !refreshing) {
                                     Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(320.dp),
+                                        modifier = Modifier.fillMaxWidth().height(320.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                             Text(
                                                 text = "No scripts folder selected",
                                                 style = MaterialTheme.typography.headlineSmall,
@@ -500,9 +468,7 @@ class ScriptingRootSection : Routes.Route() {
                                                     activityLauncherHelper.chooseFolder {
                                                         context.config.root.scripting.moduleFolder.set(it)
                                                         context.config.writeConfig()
-                                                        coroutineScope.launch {
-                                                            reloadDispatcher.dispatch()
-                                                        }
+                                                        coroutineScope.launch { reloadDispatcher.dispatch() }
                                                     }
                                                 },
                                                 contentPadding = PaddingValues(horizontal = 28.dp, vertical = 10.dp)
@@ -533,7 +499,6 @@ class ScriptingRootSection : Routes.Route() {
                             modifier = Modifier.align(Alignment.TopCenter)
                         )
                     }
-
                     var scriptingWarning by remember {
                         mutableStateOf(context.sharedPreferences.run {
                             getBoolean("scripting_warning", true).also {
@@ -541,7 +506,6 @@ class ScriptingRootSection : Routes.Route() {
                             }
                         })
                     }
-
                     if (scriptingWarning) {
                         var timeout by remember { mutableIntStateOf(10) }
                         LaunchedEffect(Unit) {
@@ -551,9 +515,7 @@ class ScriptingRootSection : Routes.Route() {
                             }
                         }
                         AlertDialog(onDismissRequest = {
-                            if (timeout == 0) {
-                                scriptingWarning = false
-                            }
+                            if (timeout == 0) scriptingWarning = false
                         }, title = {
                             Text(text = context.translation["manager.dialogs.scripting_warning.title"])
                         }, text = {
