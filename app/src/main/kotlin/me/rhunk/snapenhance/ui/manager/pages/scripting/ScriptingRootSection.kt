@@ -52,11 +52,13 @@ class ScriptingRootSection : Routes.Route() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
 
-    fun isScriptInstalled(scriptUrl: String): Boolean {
+    suspend fun isScriptInstalledByUrl(scriptUrl: String): Boolean {
         return try {
-            val scriptName = File(scriptUrl).nameWithoutExtension
             val installedScripts = context.scriptManager.getSyncedModules()
-            installedScripts.any { it.name.equals(scriptName, ignoreCase = true) }
+            installedScripts.any { module ->
+                // Check if any installed script has the same update URL
+                module.updateUrl?.equals(scriptUrl, ignoreCase = true) == true
+            }
         } catch (e: Exception) {
             false
         }
@@ -64,7 +66,7 @@ class ScriptingRootSection : Routes.Route() {
 
     fun downloadScript(scriptUrl: String, onComplete: () -> Unit) {
         context.coroutineScope.launch {
-            if (isScriptInstalled(scriptUrl)) {
+            if (isScriptInstalledByUrl(scriptUrl)) {
                 context.shortToast("Script already installed!")
                 return@launch
             }
@@ -132,10 +134,8 @@ class ScriptingRootSection : Routes.Route() {
                             isLoading = true
                             context.coroutineScope.launch {
                                 runCatching {
-                                    // Check if script already exists
-                                    val scriptName = File(url).nameWithoutExtension
-                                    val existingScripts = context.scriptManager.getSyncedModules()
-                                    if (existingScripts.any { it.name.equals(scriptName, ignoreCase = true) }) {
+                                    // Check if script already exists by URL
+                                    if (isScriptInstalledByUrl(url)) {
                                         context.shortToast("Script already installed!")
                                         withContext(Dispatchers.Main) {
                                             dismiss()
@@ -524,12 +524,22 @@ class ScriptingRootSection : Routes.Route() {
                                         modifier = Modifier.fillMaxWidth().height(320.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(
-                                            text = "No scripts found",
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            textAlign = TextAlign.Center
-                                        )
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text(
+                                                text = "No scripts found.",
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                textAlign = TextAlign.Center,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = "Use the catalog tab to add scripts!",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                textAlign = TextAlign.Center,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(top = 8.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
