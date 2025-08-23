@@ -47,6 +47,9 @@ class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
 
+    // Shared tab state for BOTH content and FAB!
+    private val selectedTabState = mutableStateOf(0)
+
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
@@ -132,7 +135,6 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-    // -- Add Repo Dialog (simple in-place dialog for a single entry) --
     @Composable
     private fun AddRepoDialog(onDismiss: () -> Unit) {
         var url by remember { mutableStateOf("") }
@@ -408,7 +410,7 @@ class ScriptingRootSection : Routes.Route() {
         var showToast by remember { mutableStateOf(false) }
         var showAddRepoDialog by remember { mutableStateOf(false) }
         val scriptingFolder = context.scriptManager.getScriptsFolder()
-        var selectedTab by remember { mutableStateOf(0) }
+        val selectedTab = selectedTabState.value // *** This is the shared, real tab state! ***
 
         if (showImportDialog) {
             ImportRemoteScript { showImportDialog = false }
@@ -423,9 +425,7 @@ class ScriptingRootSection : Routes.Route() {
             }
         }
 
-        // Show FAB(s) for current tab
         if (selectedTab == 1) {
-            // Catalog tab: only Add Repo button
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = { showAddRepoDialog = true },
@@ -434,7 +434,6 @@ class ScriptingRootSection : Routes.Route() {
                 )
             }
         } else {
-            // Installed Scripts tab: Import and Open buttons
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -490,7 +489,7 @@ class ScriptingRootSection : Routes.Route() {
         ) {
             context.scriptManager.getScriptsFolder()
         }
-        var selectedTab by remember { mutableStateOf(0) }
+        val selectedTab = selectedTabState.value
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
 
@@ -511,7 +510,7 @@ class ScriptingRootSection : Routes.Route() {
                             if (!enabled) {
                                 showToast = true
                             } else {
-                                selectedTab = i
+                                selectedTabState.value = i // <--- HERE IS THE KEY
                             }
                         },
                         enabled = enabled,
