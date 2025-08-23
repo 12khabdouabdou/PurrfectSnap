@@ -32,14 +32,12 @@ class ManageScriptReposSection : Routes.Route() {
     private val okHttpClient by lazy { OkHttpClient() }
 
     private fun extractRepoInfo(url: String): Pair<String, String> {
-        // Extract repo name and author from GitHub raw URL
         if (url.contains("raw.githubusercontent.com")) {
             val parts = url.removePrefix("https://raw.githubusercontent.com/").split("/")
             if (parts.size >= 2) {
-                return parts[1] to parts[0] // repo name to author
+                return parts[1] to parts[0]
             }
         }
-        // For other URLs, try to extract meaningful info
         return url.substringAfterLast("/").substringBeforeLast(".") to url.substringAfter("://").substringBefore("/")
     }
 
