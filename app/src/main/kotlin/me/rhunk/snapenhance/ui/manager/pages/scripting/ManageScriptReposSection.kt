@@ -31,6 +31,18 @@ class ManageScriptReposSection : Routes.Route() {
     private val updateDispatcher = AsyncUpdateDispatcher()
     private val okHttpClient by lazy { OkHttpClient() }
 
+    private fun extractRepoInfo(url: String): Pair<String, String> {
+        // Extract repo name and author from GitHub raw URL
+        if (url.contains("raw.githubusercontent.com")) {
+            val parts = url.removePrefix("https://raw.githubusercontent.com/").split("/")
+            if (parts.size >= 2) {
+                return parts[1] to parts[0] // repo name to author
+            }
+        }
+        // For other URLs, try to extract meaningful info
+        return url.substringAfterLast("/").substringBeforeLast(".") to url.substringAfter("://").substringBefore("/")
+    }
+
     override val floatingActionButton: @Composable () -> Unit = {
         var showAddDialog by remember { mutableStateOf(false) }
         ExtendedFloatingActionButton(onClick = { showAddDialog = true }) {
@@ -117,41 +129,66 @@ class ManageScriptReposSection : Routes.Route() {
             context.database.getRepositories()
         }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
-        ) {
-            item {
-                if (repositories.isEmpty()) {
-                    Text(
-                        "No repositories added",
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Light,
-                        textAlign = TextAlign.Center
-                    )
-                }
+        if (repositories.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No repositories added",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             }
-            items(repositories) { url ->
-                ElevatedCard {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(8.dp),
+            ) {
+                items(repositories) { url ->
+                    val (repoName, author) = remember(url) { extractRepoInfo(url) }
+                    
+                    ElevatedCard(
+                        modifier = Modifier.padding(bottom = 8.dp)
                     ) {
-                        Icon(Icons.Default.Public, contentDescription = null)
-                        Text(text = url, modifier = Modifier.weight(1f))
-                        Button(
-                            onClick = {
-                                context.database.removeRepo(url)
-                                coroutineScope.launch { updateDispatcher.dispatch() }
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Remove")
+                            Icon(
+                                Icons.Default.Public, 
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = repoName,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
+                                )
+                                Text(
+                                    text = author,
+                                    fontSize = 14.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Button(
+                                onClick = {
+                                    context.database.removeRepo(url)
+                                    coroutineScope.launch { updateDispatcher.dispatch() }
+                                }
+                            ) {
+                                Text("Remove")
+                            }
                         }
                     }
                 }
