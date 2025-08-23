@@ -32,6 +32,7 @@ import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.common.ui.rememberAsyncUpdateDispatcher
 import me.rhunk.snapenhance.common.util.ktx.getUrlFromClipboard
 import me.rhunk.snapenhance.common.util.ktx.openLink
+import me.rhunk.snapenhance.storage.addRepo
 import me.rhunk.snapenhance.storage.isScriptEnabled
 import me.rhunk.snapenhance.storage.setScriptEnabled
 import me.rhunk.snapenhance.ui.manager.Routes
@@ -129,6 +130,55 @@ class ScriptingRootSection : Routes.Route() {
                 }
             }
         }
+    }
+
+    // -- Add Repo Dialog (simple in-place dialog for a single entry) --
+    @Composable
+    private fun AddRepoDialog(onDismiss: () -> Unit) {
+        var url by remember { mutableStateOf("") }
+        var loading by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Add Repository URL") },
+            text = {
+                val focusRequester = remember { FocusRequester() }
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onGloballyPositioned { focusRequester.requestFocus() },
+                    value = url,
+                    onValueChange = { url = it },
+                    label = { Text("Repository URL") }
+                )
+                LaunchedEffect(Unit) {
+                    context.androidContext.getUrlFromClipboard()?.let { url = it }
+                }
+            },
+            confirmButton = {
+                Button(
+                    enabled = url.isNotBlank() && !loading,
+                    onClick = {
+                        loading = true
+                        coroutineScope.launch {
+                            runCatching {
+                                context.database.addRepo(url)
+                                context.shortToast("Repository added successfully!")
+                                onDismiss()
+                            }.onFailure {
+                                context.log.error("Failed to add repository", it)
+                                context.shortToast("Failed to add repository: ${it.message}")
+                            }
+                            loading = false
+                        }
+                    }
+                ) {
+                    if (loading) CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    else Text("Add")
+                }
+            }
+        )
     }
 
     @Composable
@@ -356,14 +406,16 @@ class ScriptingRootSection : Routes.Route() {
     override val floatingActionButton: @Composable () -> Unit = {
         var showImportDialog by remember { mutableStateOf(false) }
         var showToast by remember { mutableStateOf(false) }
+        var showAddRepoDialog by remember { mutableStateOf(false) }
         val scriptingFolder = context.scriptManager.getScriptsFolder()
         var selectedTab by remember { mutableStateOf(0) }
-        var showManageRepos by remember { mutableStateOf(false) }
 
         if (showImportDialog) {
             ImportRemoteScript { showImportDialog = false }
         }
-
+        if (showAddRepoDialog) {
+            AddRepoDialog { showAddRepoDialog = false }
+        }
         if (showToast) {
             LaunchedEffect(Unit) {
                 context.shortToast("Please select your scripts folder!")
@@ -371,17 +423,19 @@ class ScriptingRootSection : Routes.Route() {
             }
         }
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.End,
-        ) {
-            if (selectedTab == 1) {
+        // Show FAB(s) for current tab
+        if (selectedTab == 1) {
+            // Catalog tab: only Add Repo button
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
-                    onClick = { showManageRepos = true },
-                    icon = { Icon(imageVector = Icons.Default.Public, contentDescription = null) },
-                    text = { Text(text = "Manage repositories") },
+                    onClick = { showAddRepoDialog = true },
+                    icon = { Icon(Icons.Default.Public, contentDescription = null) },
+                    text = { Text("Add Repo") }
                 )
-            } else {
+            }
+        } else {
+            // Installed Scripts tab: Import and Open buttons
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         if (scriptingFolder == null) {
@@ -391,7 +445,7 @@ class ScriptingRootSection : Routes.Route() {
                         }
                     },
                     icon = { Icon(imageVector = Icons.Default.Link, contentDescription = "Link") },
-                    text = { Text(text = "Import from URL") },
+                    text = { Text(text = "Import from URL") }
                 )
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -404,24 +458,9 @@ class ScriptingRootSection : Routes.Route() {
                         }
                     },
                     icon = { Icon(imageVector = Icons.Default.FolderOpen, contentDescription = "Folder") },
-                    text = { Text(text = "Open Scripts Folder") },
+                    text = { Text(text = "Open Scripts Folder") }
                 )
             }
-        }
-
-        // Show ManageRepos section as dialog/modal
-        if (showManageRepos) {
-            AlertDialog(
-                onDismissRequest = { showManageRepos = false },
-                text = {
-                    Box(Modifier.fillMaxWidth().height(400.dp)) {
-                        ManageReposSection()
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showManageRepos = false }) { Text("Close") }
-                }
-            )
         }
     }
 
@@ -454,28 +493,12 @@ class ScriptingRootSection : Routes.Route() {
         var selectedTab by remember { mutableStateOf(0) }
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
-        var showManageRepos by remember { mutableStateOf(false) }
 
         if (showToast) {
             LaunchedEffect(Unit) {
                 context.shortToast("Please select your scripts folder!")
                 showToast = false
             }
-        }
-
-        // Overlay ManageRepos section if activated.
-        if (showManageRepos) {
-            AlertDialog(
-                onDismissRequest = { showManageRepos = false },
-                text = {
-                    Box(Modifier.fillMaxWidth().height(400.dp)) {
-                        ManageReposSection()
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showManageRepos = false }) { Text("Close") }
-                }
-            )
         }
 
         Column(Modifier.fillMaxSize()) {
@@ -498,7 +521,6 @@ class ScriptingRootSection : Routes.Route() {
             }
             when (selectedTab) {
                 0 -> {
-                    // Your installed scripts logic (unchanged)
                     val scriptModules by rememberAsyncMutableState(
                         defaultValue = emptyList(),
                         updateDispatcher = reloadDispatcher
@@ -623,7 +645,7 @@ class ScriptingRootSection : Routes.Route() {
                     }
                 }
                 1 -> {
-                    ScriptCatalog(this@ScriptingRootSection) // This lists scripts from all repos!
+                    ScriptCatalog(this@ScriptingRootSection)
                 }
             }
         }
