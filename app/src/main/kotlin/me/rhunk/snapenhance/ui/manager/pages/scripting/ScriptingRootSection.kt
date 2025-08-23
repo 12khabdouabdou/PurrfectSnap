@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -17,15 +16,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.*
@@ -48,6 +41,7 @@ import me.rhunk.snapenhance.ui.util.chooseFolder
 import me.rhunk.snapenhance.ui.util.pullrefresh.PullRefreshIndicator
 import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
+import java.io.File
 
 class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -108,6 +102,17 @@ class ScriptingRootSection : Routes.Route() {
                             isLoading = true
                             context.coroutineScope.launch {
                                 runCatching {
+                                    // Check if script already exists
+                                    val scriptName = url.substringAfterLast("/").substringBeforeLast(".")
+                                    val existingScripts = context.scriptManager.getSyncedModules()
+                                    if (existingScripts.any { it.name == scriptName }) {
+                                        context.shortToast("Script already installed!")
+                                        withContext(Dispatchers.Main) {
+                                            dismiss()
+                                        }
+                                        return@launch
+                                    }
+                                    
                                     val moduleInfo = context.scriptManager.importFromUrl(url)
                                     context.shortToast("Script ${moduleInfo.name} imported!")
                                     reloadDispatcher.dispatch()
@@ -400,138 +405,32 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-    @Composable
-    fun ScriptCatalog(rootSection: ScriptingRootSection) {
-        // Check if scripts folder is selected
-        val scriptingFolder = context.scriptManager.getScriptsFolder()
-        if (scriptingFolder == null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Please select your scripts folder first",
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center
-                )
+    fun isScriptInstalled(scriptUrl: String): Boolean {
+        return try {
+            val scriptName = File(scriptUrl).nameWithoutExtension
+            val installedScripts = context.scriptManager.getSyncedModules()
+            installedScripts.any { it.name.equals(scriptName, ignoreCase = true) }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun downloadScript(scriptUrl: String, onComplete: () -> Unit) {
+        context.coroutineScope.launch {
+            if (isScriptInstalled(scriptUrl)) {
+                context.shortToast("Script already installed!")
+                return@launch
             }
-            return
-        }
-
-        // Get installed scripts
-        val installedScripts by rememberAsyncMutableState(
-            defaultValue = emptyList<String>(),
-            updateDispatcher = rootSection.reloadDispatcher
-        ) {
-            context.scriptManager.getSyncedModules().map { it.name }
-        }
-
-        // Get repos and catalog items
-        val repos by rememberAsyncMutableState(defaultValue = emptyList<String>()) {
-            // Get repos from your storage/config
-            emptyList() // Replace with actual repo fetching logic
-        }
-
-        if (repos.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    val annotatedText = buildAnnotatedString {
-                        append("No repository added. Here you can find a list of available repos: ")
-                        pushStringAnnotation(
-                            tag = "URL",
-                            annotation = "https://github.com/rhunk/SnapEnhance/blob/dev/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
-                        )
-                        withStyle(
-                            style = SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                textDecoration = TextDecoration.Underline
-                            )
-                        ) {
-                            append("Link")
-                        }
-                        pop()
-                    }
-
-                    val uriHandler = LocalUriHandler.current
-                    ClickableText(
-                        text = annotatedText,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            textAlign = TextAlign.Center
-                        ),
-                        onClick = { offset ->
-                            annotatedText.getStringAnnotations(
-                                tag = "URL",
-                                start = offset,
-                                end = offset
-                            ).firstOrNull()?.let { annotation ->
-                                uriHandler.openUri(annotation.item)
-                            }
-                        }
-                    )
-                }
-            }
-        } else {
-            // Show catalog items
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(8.dp)
-            ) {
-                // Add catalog items here
-                // Example structure:
-                items(10) { index ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Script $index",
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "Description for script $index",
-                                    fontSize = 14.sp
-                                )
-                            }
-                            
-                            val scriptName = "Script $index"
-                            val isInstalled = installedScripts.contains(scriptName)
-                            
-                            Button(
-                                onClick = {
-                                    if (isInstalled) {
-                                        context.shortToast("Script already installed!")
-                                    } else {
-                                        // Download script logic here
-                                        context.coroutineScope.launch {
-                                            // Add your download logic
-                                            context.shortToast("Downloading $scriptName...")
-                                            // After successful download:
-                                            rootSection.reloadDispatcher.dispatch()
-                                        }
-                                    }
-                                },
-                                enabled = !isInstalled
-                            ) {
-                                Text(if (isInstalled) "Installed" else "Download")
-                            }
-                        }
-                    }
-                }
+            
+            runCatching {
+                context.shortToast("Downloading script...")
+                val moduleInfo = context.scriptManager.importFromUrl(scriptUrl)
+                context.shortToast("Script ${moduleInfo.name} downloaded!")
+                reloadDispatcher.dispatch()
+                onComplete()
+            }.onFailure {
+                context.log.error("Failed to download script", it)
+                context.shortToast("Failed to download script. Check logs for more details")
             }
         }
     }
@@ -621,11 +520,17 @@ class ScriptingRootSection : Routes.Route() {
                                         }
                                     }
                                 } else if (scriptModules.isEmpty()) {
-                                    Text(
-                                        text = "No scripts found",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        modifier = Modifier.padding(8.dp)
-                                    )
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().height(320.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "No scripts found",
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
                             }
                             items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
@@ -671,7 +576,10 @@ class ScriptingRootSection : Routes.Route() {
                     }
                 }
                 1 -> {
-                    ScriptCatalog(this@ScriptingRootSection)
+                    ScriptCatalog(
+                        rootSection = this@ScriptingRootSection,
+                        repoUrl = "https://github.com/rhunk/SnapEnhance/blob/dev/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
+                    )
                 }
             }
         }
