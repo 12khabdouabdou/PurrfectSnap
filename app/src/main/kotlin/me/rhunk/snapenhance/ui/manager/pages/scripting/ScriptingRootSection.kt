@@ -44,14 +44,12 @@ import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
 
 class ScriptingRootSection : Routes.Route() {
-
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
 
-    // ------ SHARED TAB AND OVERLAY STATE ------
-    private val selectedTabState = mutableStateOf(0)
-    private val showManageReposState = mutableStateOf(false)
-    // ------------------------------------------
+    // -- Top-level Compose state (these MUST be top-level: not using remember!) --
+    private var selectedTab by mutableStateOf(0)
+    private var showManageRepos by mutableStateOf(false)
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -360,7 +358,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     override val floatingActionButton: @Composable () -> Unit = {
-        val selectedTab = selectedTabState.value
+        val tab = selectedTab
         var showImportDialog by remember { mutableStateOf(false) }
         var showToast by remember { mutableStateOf(false) }
         val scriptingFolder = context.scriptManager.getScriptsFolder()
@@ -375,10 +373,10 @@ class ScriptingRootSection : Routes.Route() {
             }
         }
 
-        if (selectedTab == 1) {
+        if (tab == 1) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
-                    onClick = { showManageReposState.value = true },
+                    onClick = { showManageRepos = true },
                     icon = { Icon(Icons.Default.Public, contentDescription = null) },
                     text = { Text("Manage Repos") }
                 )
@@ -439,12 +437,12 @@ class ScriptingRootSection : Routes.Route() {
         ) {
             context.scriptManager.getScriptsFolder()
         }
-        val selectedTab = selectedTabState.value
+        val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
 
         // --- Full page overlay for Manage Repos ---
-        if (showManageReposState.value) {
+        if (showManageRepos) {
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
@@ -457,27 +455,26 @@ class ScriptingRootSection : Routes.Route() {
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(16.dp),
-                        onClick = { showManageReposState.value = false }
+                        onClick = { showManageRepos = false }
                     ) {
                         Icon(Icons.Default.Close, "Close")
                     }
                 }
             }
         }
-        // ----------------------------------------
 
         Column(Modifier.fillMaxSize()) {
-            TabRow(selectedTabIndex = selectedTab) {
+            TabRow(selectedTabIndex = tab) {
                 tabTitles.forEachIndexed { i, text ->
                     val enabled = !(i == 1 && scriptingFolder == null)
                     Tab(
-                        selected = selectedTab == i,
+                        selected = tab == i,
                         onClick = {
                             if (!enabled) {
                                 showToast = true
                             } else {
-                                selectedTabState.value = i
-                                showManageReposState.value = false
+                                selectedTab = i
+                                showManageRepos = false
                             }
                         },
                         enabled = enabled,
@@ -485,7 +482,7 @@ class ScriptingRootSection : Routes.Route() {
                     )
                 }
             }
-            when (selectedTab) {
+            when (tab) {
                 0 -> {
                     val scriptModules by rememberAsyncMutableState(
                         defaultValue = emptyList(),
