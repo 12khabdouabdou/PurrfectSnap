@@ -1,4 +1,4 @@
-# SnapEnhance Script Repositories
+# Snapenhance Script Repositories
 
 ## How to Add a Repository
 
