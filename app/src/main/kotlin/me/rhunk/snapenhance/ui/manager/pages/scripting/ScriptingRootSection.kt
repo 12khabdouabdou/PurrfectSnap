@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,9 +17,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.*
@@ -46,7 +53,6 @@ class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
     private var selectedTab by mutableStateOf(0)
-    private var showAlreadyInstalledToast by mutableStateOf(false)
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -394,6 +400,142 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
+    @Composable
+    fun ScriptCatalog(rootSection: ScriptingRootSection) {
+        // Check if scripts folder is selected
+        val scriptingFolder = context.scriptManager.getScriptsFolder()
+        if (scriptingFolder == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Please select your scripts folder first",
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center
+                )
+            }
+            return
+        }
+
+        // Get installed scripts
+        val installedScripts by rememberAsyncMutableState(
+            defaultValue = emptyList<String>(),
+            updateDispatcher = rootSection.reloadDispatcher
+        ) {
+            context.scriptManager.getSyncedModules().map { it.name }
+        }
+
+        // Get repos and catalog items
+        val repos by rememberAsyncMutableState(defaultValue = emptyList<String>()) {
+            // Get repos from your storage/config
+            emptyList() // Replace with actual repo fetching logic
+        }
+
+        if (repos.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    val annotatedText = buildAnnotatedString {
+                        append("No repository added. Here you can find a list of available repos: ")
+                        pushStringAnnotation(
+                            tag = "URL",
+                            annotation = "https://github.com/rhunk/SnapEnhance/blob/dev/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
+                        )
+                        withStyle(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        ) {
+                            append("Link")
+                        }
+                        pop()
+                    }
+
+                    val uriHandler = LocalUriHandler.current
+                    ClickableText(
+                        text = annotatedText,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            textAlign = TextAlign.Center
+                        ),
+                        onClick = { offset ->
+                            annotatedText.getStringAnnotations(
+                                tag = "URL",
+                                start = offset,
+                                end = offset
+                            ).firstOrNull()?.let { annotation ->
+                                uriHandler.openUri(annotation.item)
+                            }
+                        }
+                    )
+                }
+            }
+        } else {
+            // Show catalog items
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                // Add catalog items here
+                // Example structure:
+                items(10) { index ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Script $index",
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Description for script $index",
+                                    fontSize = 14.sp
+                                )
+                            }
+                            
+                            val scriptName = "Script $index"
+                            val isInstalled = installedScripts.contains(scriptName)
+                            
+                            Button(
+                                onClick = {
+                                    if (isInstalled) {
+                                        context.shortToast("Script already installed!")
+                                    } else {
+                                        // Download script logic here
+                                        context.coroutineScope.launch {
+                                            // Add your download logic
+                                            context.shortToast("Downloading $scriptName...")
+                                            // After successful download:
+                                            rootSection.reloadDispatcher.dispatch()
+                                        }
+                                    }
+                                },
+                                enabled = !isInstalled
+                            ) {
+                                Text(if (isInstalled) "Installed" else "Download")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val scriptingFolder by rememberAsyncMutableState(
             defaultValue = null,
@@ -401,26 +543,19 @@ class ScriptingRootSection : Routes.Route() {
         ) { context.scriptManager.getScriptsFolder() }
         val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
-        var showToast by remember { mutableStateOf(false) }
-        if (showAlreadyInstalledToast) {
-            LaunchedEffect(Unit) {
-                context.shortToast("Script already installed!")
-                showAlreadyInstalledToast = false
-            }
-        }
+
         Column(Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = tab) {
                 tabTitles.forEachIndexed { i, text ->
-                    // Always enable, show toast if catalog and folder not picked
                     Tab(
                         selected = tab == i,
                         onClick = {
-                            selectedTab = i
                             if (i == 1 && scriptingFolder == null) {
-                                showToast = true
+                                context.shortToast("Please select your scripts folder first!")
+                            } else {
+                                selectedTab = i
                             }
                         },
-                        enabled = true,
                         text = { Text(text) }
                     )
                 }
@@ -536,89 +671,7 @@ class ScriptingRootSection : Routes.Route() {
                     }
                 }
                 1 -> {
-                    val scriptRepos = context.database.getRepositories()
-                    if (scriptRepos.isEmpty()) {
-                        val linkUrl =
-                            "https://github.com/rhunk/SnapEnhance/blob/dev/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .wrapContentSize(align = Alignment.Center)
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text("No repository added. Here you can find a list of available repos:")
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                text = "Link",
-                                color = MaterialTheme.colorScheme.primary,
-                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                                modifier = Modifier
-                                    .clickable { context.androidContext.openLink(linkUrl) }
-                                    .padding(4.dp)
-                            )
-                        }
-                    } else {
-                        // Only change: insert duplicate install check here for "Install" button!
-                        val scriptModules = context.scriptManager.getSyncedModules()
-                        val repoScriptsMap = context.scriptManager.getScriptCatalog()
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
-                            repoScriptsMap.forEach { (repo, scripts) ->
-                                item {
-                                    Text(
-                                        text = repo,
-                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 20.dp, bottom = 4.dp)
-                                    )
-                                }
-                                items(scripts.size) { idx ->
-                                    val entry = scripts[idx]
-                                    Card(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .padding(start = 12.dp, end = 12.dp, bottom = 6.dp)
-                                    ) {
-                                        Column(Modifier.padding(16.dp)) {
-                                            Text(entry.name, fontWeight = FontWeight.Bold)
-                                            Text(entry.description ?: "No description")
-                                            Button(
-                                                enabled = scriptingFolder != null,
-                                                onClick = {
-                                                    if (scriptingFolder == null) {
-                                                        context.shortToast("Please select your scripts folder!")
-                                                        return@onClick
-                                                    }
-                                                    if (scriptModules.any { it.name == entry.name }) {
-                                                        showAlreadyInstalledToast = true
-                                                        return@onClick
-                                                    }
-                                                    context.coroutineScope.launch {
-                                                        runCatching {
-                                                            context.scriptManager.importFromUrl(entry.url)
-                                                            context.shortToast("Script ${entry.name} installed!")
-                                                            reloadDispatcher.dispatch()
-                                                        }.onFailure {
-                                                            context.log.error("Failed to install script", it)
-                                                            context.shortToast("Failed to install script: ${it.message}")
-                                                        }
-                                                    }
-                                                }
-                                            ) {
-                                                Text("Install")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (showToast) {
-                LaunchedEffect(Unit) {
-                    context.shortToast("Please select your scripts folder!")
-                    showToast = false
+                    ScriptCatalog(this@ScriptingRootSection)
                 }
             }
         }
