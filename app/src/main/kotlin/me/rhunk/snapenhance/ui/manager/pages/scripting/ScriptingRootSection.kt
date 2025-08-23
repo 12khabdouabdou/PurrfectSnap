@@ -1,7 +1,7 @@
 package me.rhunk.snapenhance.ui.manager.pages.scripting
 
 import android.content.Intent
-import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontStyle
@@ -32,7 +33,6 @@ import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.common.ui.rememberAsyncUpdateDispatcher
 import me.rhunk.snapenhance.common.util.ktx.getUrlFromClipboard
 import me.rhunk.snapenhance.common.util.ktx.openLink
-import me.rhunk.snapenhance.storage.addRepo
 import me.rhunk.snapenhance.storage.isScriptEnabled
 import me.rhunk.snapenhance.storage.setScriptEnabled
 import me.rhunk.snapenhance.ui.manager.Routes
@@ -47,8 +47,9 @@ class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
 
-    // Shared tab state for BOTH content and FAB!
+    // Shared states for both content and FAB:
     private val selectedTabState = mutableStateOf(0)
+    private val showManageReposState = mutableStateOf(false)
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -136,54 +137,6 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun AddRepoDialog(onDismiss: () -> Unit) {
-        var url by remember { mutableStateOf("") }
-        var loading by remember { mutableStateOf(false) }
-        val coroutineScope = rememberCoroutineScope()
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text("Add Repository URL") },
-            text = {
-                val focusRequester = remember { FocusRequester() }
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onGloballyPositioned { focusRequester.requestFocus() },
-                    value = url,
-                    onValueChange = { url = it },
-                    label = { Text("Repository URL") }
-                )
-                LaunchedEffect(Unit) {
-                    context.androidContext.getUrlFromClipboard()?.let { url = it }
-                }
-            },
-            confirmButton = {
-                Button(
-                    enabled = url.isNotBlank() && !loading,
-                    onClick = {
-                        loading = true
-                        coroutineScope.launch {
-                            runCatching {
-                                context.database.addRepo(url)
-                                context.shortToast("Repository added successfully!")
-                                onDismiss()
-                            }.onFailure {
-                                context.log.error("Failed to add repository", it)
-                                context.shortToast("Failed to add repository: ${it.message}")
-                            }
-                            loading = false
-                        }
-                    }
-                ) {
-                    if (loading) CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    else Text("Add")
-                }
-            }
-        )
-    }
-
-    @Composable
     private fun ModuleActions(
         script: ModuleInfo,
         canUpdate: Boolean,
@@ -191,8 +144,8 @@ class ScriptingRootSection : Routes.Route() {
     ) {
         Dialog(onDismissRequest = dismiss) {
             ElevatedCard(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(2.dp)) {
+                .fillMaxWidth()
+                .padding(2.dp)) {
                 val actions = remember {
                     mutableMapOf<Pair<String, ImageVector>, suspend () -> Unit>().apply {
                         if (canUpdate) {
@@ -406,17 +359,13 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     override val floatingActionButton: @Composable () -> Unit = {
+        val selectedTab = selectedTabState.value
         var showImportDialog by remember { mutableStateOf(false) }
         var showToast by remember { mutableStateOf(false) }
-        var showAddRepoDialog by remember { mutableStateOf(false) }
         val scriptingFolder = context.scriptManager.getScriptsFolder()
-        val selectedTab = selectedTabState.value // *** This is the shared, real tab state! ***
 
         if (showImportDialog) {
             ImportRemoteScript { showImportDialog = false }
-        }
-        if (showAddRepoDialog) {
-            AddRepoDialog { showAddRepoDialog = false }
         }
         if (showToast) {
             LaunchedEffect(Unit) {
@@ -426,14 +375,16 @@ class ScriptingRootSection : Routes.Route() {
         }
 
         if (selectedTab == 1) {
+            // Catalog: manage repos FAB
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
-                    onClick = { showAddRepoDialog = true },
+                    onClick = { showManageReposState.value = true },
                     icon = { Icon(Icons.Default.Public, contentDescription = null) },
-                    text = { Text("Add Repo") }
+                    text = { Text("Manage Repos") }
                 )
             }
         } else {
+            // Installed scripts tab: import and open folder
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -492,11 +443,26 @@ class ScriptingRootSection : Routes.Route() {
         val selectedTab = selectedTabState.value
         val tabTitles = listOf("Installed Scripts", "Catalog")
         var showToast by remember { mutableStateOf(false) }
-
-        if (showToast) {
-            LaunchedEffect(Unit) {
-                context.shortToast("Please select your scripts folder!")
-                showToast = false
+        
+        // Full page overlay for manage repos (shows above everything)
+        if (showManageReposState.value) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 0.99f)),
+                color = Color.Transparent
+            ) {
+                Box(Modifier.fillMaxSize()) {
+                    ManageReposSection()
+                    IconButton(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(16.dp),
+                        onClick = { showManageReposState.value = false }
+                    ) {
+                        Icon(Icons.Default.Close, "Close")
+                    }
+                }
             }
         }
 
@@ -510,7 +476,8 @@ class ScriptingRootSection : Routes.Route() {
                             if (!enabled) {
                                 showToast = true
                             } else {
-                                selectedTabState.value = i // <--- HERE IS THE KEY
+                                selectedTabState.value = i
+                                showManageReposState.value = false
                             }
                         },
                         enabled = enabled,
