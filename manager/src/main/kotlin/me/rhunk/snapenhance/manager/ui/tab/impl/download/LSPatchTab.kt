@@ -37,9 +37,16 @@ class LSPatchTab : Tab("lspatch") {
         patchedApk: MutableState<File?>
     ) {
         var apkFile: File? = localItemFile
+        // Download if item provided
         downloadItem?.let {
             log("Fetching download link for ${it.title}...")
-            val downloadLink = apkMirror.fetchDownloadLink(it.downloadPage) ?: run {
+            val downloadLink = try {
+                apkMirror.fetchDownloadLink(it.downloadPage)
+            } catch (e: Exception) {
+                log("Failed to fetch download link: ${e.message}")
+                return
+            }
+            if (downloadLink.isNullOrEmpty()) {
                 log("== Failed to fetch download link ==")
                 return
             }
@@ -75,13 +82,19 @@ class LSPatchTab : Tab("lspatch") {
                 log(throwable)
                 return
             }
-            // Safety: check for download null/missing
-            if (apkFile == null || !apkFile!!.exists()) {
+            // Defensive null/exists check
+            if (apkFile == null || !apkFile.exists()) {
                 log("Downloaded file is missing/null! Aborting patch step.")
+                patchedApk.value = null
                 return
             }
-            // base.apk rename for patch compatibility
-            apkFile!!.renameTo(File(activity.externalCacheDir!!, "base.apk"))
+            // Optionally rename, but verify directory
+            val externalDir = activity.externalCacheDir
+            if (externalDir == null) {
+                log("externalCacheDir is null, cannot rename base.apk!")
+                return
+            }
+            apkFile!!.renameTo(File(externalDir, "base.apk"))
         }
 
         log("== Downloaded apk ==")
