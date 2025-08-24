@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.manager.data.download.SEArtifact
-import me.rhunk.snapenhance.manager.data.download.SEVersion
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -49,23 +48,19 @@ class SEDownloadTab : Tab("se_download") {
                 }
             }
             when (selectedTab) {
-                0 -> ReleaseTabContent()
+                0 -> Text("Release tab here (test build, see Debug tab below)", modifier = Modifier.padding(24.dp))
                 1 -> DebugTabContentMinimal()
             }
         }
     }
 
     @Composable
-    private fun ReleaseTabContent() {
-        // Omitted: Use your release tab logic
-        Text("Release tab here (omitted for brevity)")
-    }
-
-    @Composable
     private fun DebugTabContentMinimal() {
         val coroutineScope = rememberCoroutineScope()
         var builds by remember { mutableStateOf<List<DebugBuild>>(emptyList()) }
-        var expandedBuild by remember { mutableStateOf<DebugBuild?>(null) }
+        // use persistent state sets/maps!
+        var expandedBuilds by remember { mutableStateOf(mutableSetOf<String>()) }
+        var expandedArtifacts by remember { mutableStateOf(mutableSetOf<String>()) }
         var expandedArtifactContents by remember { mutableStateOf<Map<String, DebugArtifactContents>>(emptyMap()) }
         var artifactLoading by remember { mutableStateOf<String?>(null) }
         val context = LocalContext.current
@@ -124,7 +119,7 @@ class SEDownloadTab : Tab("se_download") {
                     return@launch
                 }
                 val tempFile = File.createTempFile("art", ".zip", context.externalCacheDir).also { it.deleteOnExit() }
-                response.body!!.byteStream().use { input -> tempFile.outputStream().use { output -> input.copyTo(output) }}
+                response.body!!.byteStream().use { input -> tempFile.outputStream().use { output -> input.copyTo(output) } }
                 val entries = mutableListOf<String>()
                 ZipInputStream(tempFile.inputStream()).use { zip ->
                     var entry: ZipEntry? = zip.nextEntry
@@ -150,14 +145,17 @@ class SEDownloadTab : Tab("se_download") {
             Text("Debug CI builds", fontSize = 20.sp)
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(builds) { build ->
-                    var isBuildExpanded by remember { mutableStateOf(false) }
+                    val buildKey = build.createdAt + build.name
                     OutlinedCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
                             .clickable {
-                                isBuildExpanded = !isBuildExpanded
-                                expandedBuild = if (isBuildExpanded) build else null
+                                if (expandedBuilds.contains(buildKey)) {
+                                    expandedBuilds = expandedBuilds.toMutableSet().apply { remove(buildKey) }
+                                } else {
+                                    expandedBuilds = expandedBuilds.toMutableSet().apply { add(buildKey) }
+                                }
                             }
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -165,10 +163,9 @@ class SEDownloadTab : Tab("se_download") {
                             Text("Created: ${build.createdAt}", fontSize = 13.sp)
                         }
                     }
-                    if (isBuildExpanded && expandedBuild == build) {
+                    if (expandedBuilds.contains(buildKey)) {
                         val artifacts = fetchArtifactsForBuild(build.artifactsUrl)
                         artifacts.forEach { artifact ->
-                            var isArtifactExpanded by remember { mutableStateOf(false) }
                             val artifactKey = artifact.downloadUrl
                             Column(
                                 modifier = Modifier
@@ -179,11 +176,15 @@ class SEDownloadTab : Tab("se_download") {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clickable {
-                                            isArtifactExpanded = !isArtifactExpanded
-                                            if (isArtifactExpanded && expandedArtifactContents[artifactKey] == null && artifactLoading != artifactKey) {
-                                                enumerateFilesInArtifact(artifact) { contents ->
-                                                    expandedArtifactContents = expandedArtifactContents.toMutableMap().apply {
-                                                        put(artifactKey, contents)
+                                            if (expandedArtifacts.contains(artifactKey)) {
+                                                expandedArtifacts = expandedArtifacts.toMutableSet().apply { remove(artifactKey) }
+                                            } else {
+                                                expandedArtifacts = expandedArtifacts.toMutableSet().apply { add(artifactKey) }
+                                                if (expandedArtifactContents[artifactKey] == null && artifactLoading != artifactKey) {
+                                                    enumerateFilesInArtifact(artifact) { contents ->
+                                                        expandedArtifactContents = expandedArtifactContents.toMutableMap().apply {
+                                                            put(artifactKey, contents)
+                                                        }
                                                     }
                                                 }
                                             }
@@ -195,13 +196,18 @@ class SEDownloadTab : Tab("se_download") {
                                         CircularProgressIndicator(
                                             Modifier
                                                 .padding(start = 8.dp)
-                                                .size(18.dp), strokeWidth = 2.dp)
+                                                .size(18.dp), strokeWidth = 2.dp
+                                        )
                                     }
                                 }
-                                if (isArtifactExpanded) {
+                                if (expandedArtifacts.contains(artifactKey)) {
                                     val contents = expandedArtifactContents[artifactKey]
                                     if (artifactLoading == artifactKey) {
-                                        Text("Reading zip contents...", fontSize = 12.sp, modifier = Modifier.padding(start = 12.dp, bottom=6.dp))
+                                        Text(
+                                            "Reading zip contents...",
+                                            fontSize = 12.sp,
+                                            modifier = Modifier.padding(start = 12.dp, bottom = 6.dp)
+                                        )
                                     } else if (contents != null) {
                                         contents.entries.forEach { name ->
                                             Row(
