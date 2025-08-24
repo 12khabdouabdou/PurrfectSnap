@@ -29,6 +29,9 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.net.UnknownHostException
+import me.rhunk.snapenhance.manager.data.DNSBlockedException // <-- Add this import
+import me.rhunk.snapenhance.manager.ui.components.DnsBlockedDialog // <-- Add this import if you've placed the dialog composable as shown
 
 class InstallPackageTab : Tab("install_app") {
     private lateinit var installPackageIntentLauncher: ActivityResultLauncher<Intent>
@@ -84,6 +87,8 @@ class InstallPackageTab : Tab("install_app") {
         var installStage by remember { mutableStateOf(InstallStage.DOWNLOADING) }
         var downloadProgress by remember { mutableFloatStateOf(-1f) }
         var downloadedFile by remember { mutableStateOf<File?>(null) }
+        // NEW: DNS block dialog state
+        var showDnsDialog by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) {
             uninstallPackageCallback = null
             installPackageCallback = null
@@ -98,6 +103,11 @@ class InstallPackageTab : Tab("install_app") {
             } ?: false
         }
         BackHandler(installStage != InstallStage.DONE && installStage != InstallStage.ERROR) {}
+
+        // NEW: Show DNS blocked dialog if needed
+        if (showDnsDialog) {
+            DnsBlockedDialog { showDnsDialog = false }
+        }
 
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -216,6 +226,10 @@ class InstallPackageTab : Tab("install_app") {
                     }
                 }.onFailure {
                     it.printStackTrace()
+                    // DNS detection and dialog
+                    if (it is DNSBlockedException || it.cause is UnknownHostException) {
+                        showDnsDialog = true
+                    }
                     installStage = InstallStage.ERROR
                     downloadedFile?.delete()
                 }
@@ -223,3 +237,28 @@ class InstallPackageTab : Tab("install_app") {
         }
     }
 }
+
+// ---- Place this composable in manager/ui/components/DnsBlockedDialog.kt ----
+/*
+package me.rhunk.snapenhance.manager.ui.components
+
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+
+@Composable
+fun DnsBlockedDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
+        title = { Text("Connection Problem") },
+        text = {
+            Text(
+                "Unable to resolve or connect to the server. " +
+                "This is often caused by network filtering in India and similar regions.\n\n" +
+                "To fix:\n• Go to Settings → Network & Internet → Private DNS\n• Choose: \"Private DNS provider hostname\"\n• Enter: one.one.one.one\n\n" +
+                "Or install and enable the 1.1.1.1 app from Cloudflare."
+            )
+        }
+    )
+}
+*/
