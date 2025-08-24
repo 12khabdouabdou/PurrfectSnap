@@ -1,15 +1,12 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl.download
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -34,19 +31,16 @@ import okhttp3.Request
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-
 class SEDownloadTab : Tab("se_download") {
     private fun fetchSEReleases(): List<SEVersion>? {
         return runCatching {
             val endpoint = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/releases").build()
             val response = OkHttpClient().newCall(endpoint).execute()
             if (!response.isSuccessful) return null
-
-            val releases = JsonParser.parseString(response.body.string()).asJsonArray.also {
+            val releases = JsonParser.parseString(response.body!!.string()).asJsonArray.also {
                 if (it.size() == 0) return null
             }
             val isoDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
-
             releases.map { releaseObject ->
                 val release = releaseObject.asJsonObject
                 val versionName = release.getAsJsonPrimitive("tag_name").asString
@@ -74,27 +68,44 @@ class SEDownloadTab : Tab("se_download") {
         super.init(activity)
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val coroutineScope = rememberCoroutineScope()
-        val snapEnhanceReleases = remember {
-            mutableStateOf(null as List<SEVersion>?)
-        }
+        var selectedTab by remember { mutableStateOf(0) }
+        val tabs = listOf("Release", "Debug")
 
+        Column {
+            TabRow(selectedTabIndex = selectedTab) {
+                tabs.forEachIndexed { idx, title ->
+                    Tab(selected = selectedTab == idx, onClick = { selectedTab = idx }, text = { Text(title) })
+                }
+            }
+            when (selectedTab) {
+                0 -> ReleaseTabContent()
+                1 -> DebugTabContent()
+            }
+        }
+    }
+
+    @Composable
+    private fun ReleaseTabContent() {
+        val coroutineScope = rememberCoroutineScope()
+        val snapEnhanceReleases = remember { mutableStateOf(null as List<SEVersion>?) }
         var selectedVersion by remember { mutableStateOf(null as SEVersion?) }
         var selectedArtifact by remember { mutableStateOf(null as SEArtifact?) }
         val snapEnhanceApp = remember {
             runCatching { activity.packageManager.getPackageInfo(BuildConfig.APPLICATION_ID, 0) }.getOrNull()
         }
-
         var showDowngradeNotice by remember { mutableStateOf(false) }
-
         fun triggerPackageInstallation(shouldUninstall: Boolean) {
-            navigation.navigateTo(InstallPackageTab::class, Bundle().apply {
-                putString("downloadPath", selectedArtifact?.downloadUrl)
-                putString("appPackage", sharedConfig.snapEnhancePackageName)
-                putBoolean("uninstall", shouldUninstall)
-            }, noHistory = true)
+            navigation.navigateTo(
+                InstallPackageTab::class, Bundle().apply {
+                    putString("downloadPath", selectedArtifact?.downloadUrl)
+                    putString("appPackage", sharedConfig.snapEnhancePackageName)
+                    putBoolean("uninstall", shouldUninstall)
+                },
+                noHistory = true
+            )
         }
 
         if (showDowngradeNotice) {
@@ -104,7 +115,6 @@ class SEDownloadTab : Tab("se_download") {
                 })
             }
         }
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -113,7 +123,6 @@ class SEDownloadTab : Tab("se_download") {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "Choose SnapEnhance version")
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -127,9 +136,7 @@ class SEDownloadTab : Tab("se_download") {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                        ) { CircularProgressIndicator() }
                     }
                 }
                 items(snapEnhanceReleases.value ?: listOf()) { version ->
@@ -140,7 +147,7 @@ class SEDownloadTab : Tab("se_download") {
                                 selectedArtifact =
                                     if (selectedVersion != version) null else selectedArtifact
                                 selectedVersion = if (selectedVersion == version) null else version
-                            },
+                            }
                     ) {
                         Row(
                             modifier = Modifier
@@ -157,18 +164,15 @@ class SEDownloadTab : Tab("se_download") {
                                     .weight(1f),
                                 horizontalArrangement = Arrangement.End,
                                 verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(text = "${version.downloadAssets.size} assets", fontSize = 12.sp)
-                            }
+                            ) { Text(text = "${version.downloadAssets.size} assets", fontSize = 12.sp) }
                         }
                     }
-
                     selectedVersion?.takeIf { it == version }?.let { selVersion ->
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             selVersion.downloadAssets.values.forEach { artifact ->
                                 Row(
@@ -207,6 +211,7 @@ class SEDownloadTab : Tab("se_download") {
                     }
                 }
             }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -216,26 +221,23 @@ class SEDownloadTab : Tab("se_download") {
                     if (sharedConfig.enableRepackage && sharedConfig.snapEnhancePackageName != snapEnhanceApp.packageName) {
                         Button(
                             onClick = {
-                                navigation.navigateTo(RepackageTab::class, Bundle().apply {
-                                    putString("apkPath", snapEnhanceApp.applicationInfo.sourceDir)
-                                    putString("oldPackage", snapEnhanceApp.packageName)
-                                }, noHistory = true)
+                                navigation.navigateTo(
+                                    RepackageTab::class, Bundle().apply {
+                                        putString("apkPath", snapEnhanceApp.applicationInfo.sourceDir)
+                                        putString("oldPackage", snapEnhanceApp.packageName)
+                                    },
+                                    noHistory = true
+                                )
                             },
                             enabled = true,
                             modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(text = "Repackage installed version (>=2.0.0)")
-                        }
+                        ) { Text(text = "Repackage installed version (>=2.0.0)") }
                     }
                     Button(
-                        onClick = {
-                            triggerPackageInstallation(true)
-                        },
+                        onClick = { triggerPackageInstallation(true) },
                         enabled = selectedVersion != null && selectedArtifact != null,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "Uninstall & Install")
-                    }
+                    ) { Text(text = "Uninstall & Install") }
                 }
                 Button(
                     onClick = {
@@ -247,16 +249,14 @@ class SEDownloadTab : Tab("se_download") {
                     },
                     enabled = selectedVersion != null && selectedArtifact != null,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = if (snapEnhanceApp != null) "Update" else "Install")
-                }
+                ) { Text(text = if (snapEnhanceApp != null) "Update" else "Install") }
             }
         }
+        LaunchedEffect(Unit) { coroutineScope.launch(Dispatchers.IO) { snapEnhanceReleases.value = fetchSEReleases() } }
+    }
 
-        LaunchedEffect(Unit) {
-            coroutineScope.launch(Dispatchers.IO) {
-                snapEnhanceReleases.value = fetchSEReleases()
-            }
-        }
+    @Composable
+    private fun DebugTabContent() {
+        DebugSEBuildTab()
     }
 }
