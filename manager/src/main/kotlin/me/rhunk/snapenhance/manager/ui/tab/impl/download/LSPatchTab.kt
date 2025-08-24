@@ -88,13 +88,23 @@ class LSPatchTab : Tab("lspatch") {
                 patchedApk.value = null
                 return
             }
-            // Optionally rename, but verify directory
-            val externalDir = activity.externalCacheDir
-            if (externalDir == null) {
-                log("externalCacheDir is null, cannot rename base.apk!")
+            // Robust: use externalCacheDir or internal cacheDir, always use copyTo for cross-filesystem compatibility.
+            val targetDir = activity.externalCacheDir ?: activity.cacheDir
+            if (targetDir == null) {
+                log("Both externalCacheDir and cacheDir are null, cannot save base.apk!")
+                patchedApk.value = null
                 return
             }
-            apkFile!!.renameTo(File(externalDir, "base.apk"))
+            val baseApkFile = File(targetDir, "base.apk")
+            try {
+                apkFile!!.copyTo(baseApkFile, overwrite = true)
+                log("APK copied to ${baseApkFile.absolutePath}")
+            } catch (e: Exception) {
+                log("Failed to copy APK to ${baseApkFile.absolutePath}: ${e.message}")
+                patchedApk.value = null
+                return
+            }
+            apkFile = baseApkFile
         }
 
         log("== Downloaded apk ==")
