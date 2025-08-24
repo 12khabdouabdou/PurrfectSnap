@@ -3,6 +3,7 @@ package me.rhunk.snapenhance.manager.ui.tab.impl.download
 import android.os.Bundle
 import android.content.Context
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,9 +20,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.manager.BuildConfig
 import me.rhunk.snapenhance.manager.data.download.SEArtifact
 import me.rhunk.snapenhance.manager.data.download.SEVersion
@@ -32,6 +33,7 @@ import okhttp3.Request
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 data class DebugBuild(
@@ -40,9 +42,8 @@ data class DebugBuild(
     val artifactsUrl: String
 )
 
-data class ArtifactApkChoice(
-    val artifact: SEArtifact,
-    val apkList: List<String>
+data class DebugArtifactContents(
+    val entries: List<String>
 )
 
 class SEDownloadTab : Tab("se_download") {
@@ -52,7 +53,7 @@ class SEDownloadTab : Tab("se_download") {
             val endpoint = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/releases").build()
             val response = OkHttpClient().newCall(endpoint).execute()
             if (!response.isSuccessful) return null
-            val releases = JsonParser.parseString(response.body!!.string()).asJsonArray.also {
+            val releases = com.google.gson.JsonParser.parseString(response.body!!.string()).asJsonArray.also {
                 if (it.size() == 0) return null
             }
             val isoDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
@@ -79,9 +80,7 @@ class SEDownloadTab : Tab("se_download") {
         }.getOrNull()
     }
 
-    override fun init(activity: ComponentActivity) {
-        super.init(activity)
-    }
+    override fun init(activity: ComponentActivity) { super.init(activity) }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -101,41 +100,53 @@ class SEDownloadTab : Tab("se_download") {
         }
     }
 
+    // ---- RELEASE TAB ---- //
     @Composable
     private fun ReleaseTabContent() {
         val coroutineScope = rememberCoroutineScope()
-        val snapEnhanceReleases = remember { mutableStateOf(null as List<SEVersion>?) }
+        val releasesState = remember { mutableStateOf(null as List<SEVersion>?) }
         var selectedVersion by remember { mutableStateOf(null as SEVersion?) }
         var selectedArtifact by remember { mutableStateOf(null as SEArtifact?) }
         val snapEnhanceApp = remember {
             runCatching { activity.packageManager.getPackageInfo(BuildConfig.APPLICATION_ID, 0) }.getOrNull()
         }
         var showDowngradeNotice by remember { mutableStateOf(false) }
-        var isInstalling by remember { mutableStateOf(false) }
+        var installing by remember { mutableStateOf(false) }
+        var downloadProgress by remember { mutableStateOf(0f) }
         val context = LocalContext.current
 
-        fun triggerPackageInstallation(shouldUninstall: Boolean) {
-            if (selectedArtifact == null) return
-            isInstalling = true
+        fun startInstallFlow(asset: SEArtifact) {
+            installing = true
             coroutineScope.launch(Dispatchers.IO) {
-                val url = selectedArtifact!!.downloadUrl
+                val url = asset.downloadUrl
                 val endpoint = Request.Builder().url(url).build()
                 val response = OkHttpClient().newCall(endpoint).execute()
-                if (!response.isSuccessful) return@launch
+                if (!response.isSuccessful) {
+                    installing = false
+                    return@launch
+                }
                 val apkFile = File.createTempFile("release", ".apk", context.externalCacheDir).also { it.deleteOnExit() }
                 response.body!!.byteStream().use { input ->
-                    apkFile.outputStream().use { output -> input.copyTo(output) }
+                    val output = apkFile.outputStream()
+                    val buffer = ByteArray(4096)
+                    var read: Int
+                    var written: Long = 0
+                    val size = response.body!!.contentLength()
+                    while (input.read(buffer).also { read = it } != -1) {
+                        output.write(buffer, 0, read)
+                        written += read
+                        if(size > 0) downloadProgress = written / size.toFloat()
+                    }
+                    output.flush()
+                    output.close()
                 }
-                launch(Dispatchers.Main) {
-                    // Pass the real file path to installer
-                    navigation.navigateTo(
-                        InstallPackageTab::class, Bundle().apply {
-                            putString("downloadPath", apkFile.absolutePath)
-                            putString("appPackage", sharedConfig.snapEnhancePackageName)
-                            putBoolean("uninstall", shouldUninstall)
-                        }, noHistory = true
-                    )
-                    isInstalling = false
+                withContext(Dispatchers.Main) {
+                    installing = false
+                    navigation.navigateTo(InstallPackageTab::class, Bundle().apply {
+                        putString("downloadPath", apkFile.absolutePath)
+                        putString("appPackage", BuildConfig.APPLICATION_ID)
+                        putBoolean("uninstall", false)
+                    }, noHistory = true)
                 }
             }
         }
@@ -143,7 +154,7 @@ class SEDownloadTab : Tab("se_download") {
         if (showDowngradeNotice) {
             Dialog(onDismissRequest = { showDowngradeNotice = false }) {
                 DowngradeNoticeDialog(onDismiss = { showDowngradeNotice = false }, onSuccess = {
-                    triggerPackageInstallation(false)
+                    selectedArtifact?.let { startInstallFlow(it) }
                 })
             }
         }
@@ -158,14 +169,14 @@ class SEDownloadTab : Tab("se_download") {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 item {
-                    if (snapEnhanceReleases.value == null) {
+                    if (releasesState.value == null) {
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth().padding(16.dp)
                         ) { CircularProgressIndicator() }
                     }
                 }
-                items(snapEnhanceReleases.value ?: listOf()) { version ->
+                items(releasesState.value ?: listOf()) { version ->
                     OutlinedCard(
                         shape = MaterialTheme.shapes.small,
                         modifier = Modifier.clickable {
@@ -223,56 +234,39 @@ class SEDownloadTab : Tab("se_download") {
                     }
                 }
             }
+            if(installing) {
+                LinearProgressIndicator(progress = downloadProgress, Modifier.fillMaxWidth())
+                Text("Downloading...", modifier = Modifier.padding(top=8.dp))
+            }
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (snapEnhanceApp != null) {
-                    if (sharedConfig.enableRepackage && sharedConfig.snapEnhancePackageName != snapEnhanceApp.packageName) {
-                        Button(
-                            onClick = {
-                                navigation.navigateTo(
-                                    RepackageTab::class, Bundle().apply {
-                                        putString("apkPath", snapEnhanceApp.applicationInfo.sourceDir)
-                                        putString("oldPackage", snapEnhanceApp.packageName)
-                                    },
-                                    noHistory = true
-                                )
-                            },
-                            enabled = true,
-                            modifier = Modifier.fillMaxWidth()
-                        ) { Text(text = "Repackage installed version (>=2.0.0)") }
-                    }
-                    Button(
-                        onClick = { triggerPackageInstallation(true) },
-                        enabled = selectedVersion != null && selectedArtifact != null && !isInstalling,
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text(text = "Uninstall & Install") }
-                }
                 Button(
                     onClick = {
-                        if (snapEnhanceApp != null) {
-                            showDowngradeNotice = true
-                        } else {
-                            triggerPackageInstallation(false)
-                        }
+                        selectedArtifact?.let { startInstallFlow(it) }
                     },
-                    enabled = selectedVersion != null && selectedArtifact != null && !isInstalling,
+                    enabled = selectedVersion != null && selectedArtifact != null && !installing,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text(text = if (snapEnhanceApp != null) "Update" else "Install") }
+                ) { Text("Install") }
             }
         }
-        LaunchedEffect(Unit) { coroutineScope.launch(Dispatchers.IO) { snapEnhanceReleases.value = fetchSEReleases() } }
+        LaunchedEffect(Unit) { coroutineScope.launch(Dispatchers.IO) { releasesState.value = fetchSEReleases() } }
     }
 
+    // ---- DEBUG TAB ---- //
     @Composable
     private fun DebugTabContent() {
         val coroutineScope = rememberCoroutineScope()
         var builds by remember { mutableStateOf<List<DebugBuild>>(emptyList()) }
-        var selectedBuild by remember { mutableStateOf<DebugBuild?>(null) }
-        var artifactApkChoices by remember { mutableStateOf<Map<String, ArtifactApkChoice>>(emptyMap()) }
-        var selectedApk by remember { mutableStateOf<Pair<SEArtifact, String>?>(null) }
-        var isInstalling by remember { mutableStateOf(false) }
+        var expandedBuild by remember { mutableStateOf<DebugBuild?>(null) }
+        // artifact ID or downloadUrl → contents
+        var expandedArtifactContents by remember { mutableStateOf<Map<String, DebugArtifactContents>>(emptyMap()) }
+        var artifactLoading by remember { mutableStateOf<String?>(null) } // artifact currently scanning
+        var showInstallDialog by remember { mutableStateOf(false) }
+        var selectedArtifactFile: Pair<SEArtifact, String>? by remember { mutableStateOf(null) }
+        var downloadStage by remember { mutableStateOf<String?>(null) }
+        var progress by remember { mutableStateOf(0f) }
         val context = LocalContext.current
 
         fun fetchDebugCIs() : List<DebugBuild> {
@@ -280,7 +274,7 @@ class SEDownloadTab : Tab("se_download") {
                 val endpoint = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/actions/workflows/debug.yml/runs?branch=dev&status=completed").build()
                 val response = OkHttpClient().newCall(endpoint).execute()
                 if (!response.isSuccessful) return emptyList()
-                val runs = JsonParser.parseString(response.body!!.string()).asJsonObject["workflow_runs"].asJsonArray
+                val runs = com.google.gson.JsonParser.parseString(response.body!!.string()).asJsonObject["workflow_runs"].asJsonArray
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
                 runs.mapNotNull { runObj ->
                     val runJson = runObj.asJsonObject
@@ -307,7 +301,8 @@ class SEDownloadTab : Tab("se_download") {
                 val endpoint = Request.Builder().url(artifactsUrl).build()
                 val response = OkHttpClient().newCall(endpoint).execute()
                 if (!response.isSuccessful) return emptyList()
-                val artifactsArr = JsonParser.parseString(response.body!!.string()).asJsonObject.getAsJsonArray("artifacts")
+                val artifactsArr = com.google.gson.JsonParser.parseString(response.body!!.string())
+                    .asJsonObject.getAsJsonArray("artifacts")
                 artifactsArr.map { obj ->
                     val artifactObj = obj.asJsonObject
                     SEArtifact(
@@ -319,71 +314,100 @@ class SEDownloadTab : Tab("se_download") {
             }.getOrElse { emptyList() }
         }
 
-        fun fetchApkListFromArtifact(artifact: SEArtifact): List<String> {
-            return runCatching {
-                val client = OkHttpClient()
-                val request = Request.Builder().url(artifact.downloadUrl).build()
-                val response = client.newCall(request).execute()
-                if (!response.isSuccessful) return emptyList()
-                val tmpZipFile = File.createTempFile("debugartifact", ".zip", context.externalCacheDir).also { it.deleteOnExit() }
-                response.body!!.byteStream().use { input ->
-                    tmpZipFile.outputStream().use { output -> input.copyTo(output) }
-                }
-                val apkEntries = mutableListOf<String>()
-                ZipInputStream(tmpZipFile.inputStream()).use { zip ->
-                    var entry = zip.nextEntry
-                    while (entry != null) {
-                        if (!entry.isDirectory && entry.name.endsWith(".apk")) {
-                            apkEntries.add(entry.name)
-                        }
-                        entry = zip.nextEntry
-                    }
-                }
-                tmpZipFile.delete()
-                apkEntries
-            }.getOrElse { emptyList() }
-        }
-
-        fun onInstallClicked(artifact: SEArtifact, apkNameInZip: String) {
-            if (isInstalling) return
-            isInstalling = true
+        // Only index all files inside the zip (without extracting any)
+        fun enumerateFilesInArtifact(artifact: SEArtifact, onDone: (DebugArtifactContents) -> Unit) {
+            artifactLoading = artifact.downloadUrl
             coroutineScope.launch(Dispatchers.IO) {
                 val client = OkHttpClient()
                 val request = Request.Builder().url(artifact.downloadUrl).build()
                 val response = client.newCall(request).execute()
                 if (!response.isSuccessful) {
-                    isInstalling = false
+                    artifactLoading = null
                     return@launch
                 }
-                val tmpZipFile = File.createTempFile("debugartifact", ".zip", context.externalCacheDir).also { it.deleteOnExit() }
-                response.body!!.byteStream().use { input ->
-                    tmpZipFile.outputStream().use { output -> input.copyTo(output) }
+                val tempFile = File.createTempFile("art", ".zip", context.externalCacheDir).also { it.deleteOnExit() }
+                response.body!!.byteStream().use { input -> tempFile.outputStream().use { output -> input.copyTo(output) }}
+                val entries = mutableListOf<String>()
+                ZipInputStream(tempFile.inputStream()).use { zip ->
+                    var entry: ZipEntry? = zip.nextEntry
+                    while (entry != null) {
+                        if (!entry.isDirectory)
+                            entries.add(entry.name)
+                        entry = zip.nextEntry
+                    }
                 }
+                tempFile.delete()
+                withContext(Dispatchers.Main) {
+                    artifactLoading = null
+                    onDone(DebugArtifactContents(entries))
+                }
+            }
+        }
+
+        fun installFromArtifact(artifact: SEArtifact, fileNameInZip: String) {
+            showInstallDialog = true
+            downloadStage = "Downloading ZIP…"
+            progress = 0f
+            coroutineScope.launch(Dispatchers.IO) {
+                val client = OkHttpClient()
+                val request = Request.Builder().url(artifact.downloadUrl).build()
+                val response = client.newCall(request).execute()
+                if (!response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        showInstallDialog = false
+                    }
+                    return@launch
+                }
+                val total = response.body!!.contentLength()
+                var written = 0L
+                val tempZip = File.createTempFile("se_dbg_zip", ".zip", context.externalCacheDir).also { it.deleteOnExit() }
+                response.body!!.byteStream().use { input ->
+                    tempZip.outputStream().use { output ->
+                        val buffer = ByteArray(4096)
+                        var read: Int
+                        while (input.read(buffer).also { read = it } != -1) {
+                            output.write(buffer, 0, read)
+                            written += read
+                            if (total > 0) progress = written / total.toFloat()
+                        }
+                    }
+                }
+                downloadStage = "Extracting APK…"
+                progress = 0.0f
                 var apkFile: File? = null
-                ZipInputStream(tmpZipFile.inputStream()).use { zip ->
+                ZipInputStream(tempZip.inputStream()).use { zip ->
                     var entry = zip.nextEntry
                     while (entry != null) {
-                        if (!entry.isDirectory && entry.name == apkNameInZip) {
-                            val apkTmpFile = File.createTempFile("extracted_debug", ".apk", context.externalCacheDir).also { it.deleteOnExit() }
-                            apkTmpFile.outputStream().use { output -> zip.copyTo(output) }
-                            apkFile = apkTmpFile
+                        if (!entry.isDirectory && entry.name == fileNameInZip) {
+                            val outFile = File.createTempFile("se_dbg_ex", ".apk", context.externalCacheDir).also { it.deleteOnExit() }
+                            outFile.outputStream().use { output -> 
+                                val buffer = ByteArray(4096)
+                                var count: Int
+                                var extracted = 0L
+                                while (zip.read(buffer).also { count = it } != -1) {
+                                    output.write(buffer, 0, count)
+                                    extracted += count
+                                    // Optionally show progress here if wanted, not vital for single files
+                                }
+                            }
+                            apkFile = outFile
                             break
                         }
                         entry = zip.nextEntry
                     }
                 }
-                tmpZipFile.delete()
-                if (apkFile != null) {
-                    launch(Dispatchers.Main) {
+                tempZip.delete()
+                withContext(Dispatchers.Main) {
+                    showInstallDialog = false
+                    if (apkFile != null) {
                         navigation.navigateTo(InstallPackageTab::class, Bundle().apply {
                             putString("downloadPath", apkFile!!.absolutePath)
                             putString("appPackage", BuildConfig.APPLICATION_ID)
                             putBoolean("uninstall", false)
                         }, noHistory = true)
-                        isInstalling = false
+                    } else {
+                        // error could show a toast
                     }
-                } else {
-                    isInstalling = false
                 }
             }
         }
@@ -405,77 +429,70 @@ class SEDownloadTab : Tab("se_download") {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
-                            .clickable { isBuildExpanded = !isBuildExpanded; selectedBuild = if (isBuildExpanded) build else null }
+                            .clickable {
+                                isBuildExpanded = !isBuildExpanded
+                                expandedBuild = if (isBuildExpanded) build else null
+                            }
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(build.name, fontSize = 18.sp)
                             Text("Created: ${build.createdAt}", fontSize = 13.sp)
                         }
                     }
-                    if (isBuildExpanded && selectedBuild == build) {
+                    if (isBuildExpanded && expandedBuild == build) {
                         val artifacts = fetchArtifactsForBuild(build.artifactsUrl)
                         artifacts.forEach { artifact ->
                             var isArtifactExpanded by remember { mutableStateOf(false) }
                             val artifactKey = artifact.downloadUrl
-
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 6.dp)
-                                    .border(
-                                        shape = MaterialTheme.shapes.small,
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                    )
                             ) {
-                                Row(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        isArtifactExpanded = !isArtifactExpanded
-                                        if (isArtifactExpanded && artifactApkChoices[artifactKey] == null) {
-                                            coroutineScope.launch(Dispatchers.IO) {
-                                                val apkList = fetchApkListFromArtifact(artifact)
-                                                artifactApkChoices = artifactApkChoices.toMutableMap()
-                                                    .apply { put(artifactKey, ArtifactApkChoice(artifact, apkList)) }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            isArtifactExpanded = !isArtifactExpanded
+                                            if (isArtifactExpanded && expandedArtifactContents[artifactKey] == null && artifactLoading != artifactKey) {
+                                                enumerateFilesInArtifact(artifact) { contents ->
+                                                    expandedArtifactContents = expandedArtifactContents.toMutableMap().apply {
+                                                        put(artifactKey, contents)
+                                                    }
+                                                }
                                             }
                                         }
-                                    }
-                                    .padding(8.dp)
+                                        .padding(8.dp)
                                 ) {
                                     Text(artifact.fileName, fontSize = 16.sp)
+                                    if (artifactLoading == artifactKey) {
+                                        CircularProgressIndicator(Modifier
+                                            .padding(start=8.dp)
+                                            .size(18.dp), strokeWidth = 2.dp)
+                                    }
                                 }
                                 if (isArtifactExpanded) {
-                                    val choice = artifactApkChoices[artifactKey]
-                                    if (choice == null) {
-                                        Text("Loading APK list...", modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
-                                    } else {
-                                        choice.apkList.forEach { apkName ->
+                                    val contents = expandedArtifactContents[artifactKey]
+                                    if (artifactLoading == artifactKey) {
+                                        Text("Reading zip contents...", fontSize = 12.sp, modifier = Modifier.padding(start = 12.dp, bottom=6.dp))
+                                    } else if (contents != null) {
+                                        contents.entries.forEach { name ->
                                             Row(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .background(
-                                                        if (selectedApk == Pair(artifact, apkName)) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
-                                                        shape = MaterialTheme.shapes.medium
-                                                    )
-                                                    .clickable { selectedApk = Pair(artifact, apkName) }
-                                                    .padding(horizontal = 18.dp, vertical = 9.dp),
-                                                verticalAlignment = Alignment.CenterVertically
+                                                    .clickable { installFromArtifact(artifact, name) }
+                                                    .padding(8.dp)
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Android,
                                                     contentDescription = null,
                                                     modifier = Modifier.padding(end = 8.dp)
                                                 )
-                                                Text(apkName, fontSize = 14.sp)
-                                                Spacer(Modifier.weight(1f))
-                                                Button(
-                                                    enabled = selectedApk == Pair(artifact, apkName) && !isInstalling,
-                                                    onClick = { onInstallClicked(artifact, apkName) }
-                                                ) { Text("Install") }
+                                                Text(name, fontSize = 14.sp)
                                             }
                                         }
-                                        if (choice.apkList.isEmpty()) {
-                                            Text("No APKs found in zip.", modifier = Modifier.padding(start = 24.dp, bottom = 8.dp))
+                                        if (contents.entries.isEmpty()) {
+                                            Text("No files in zip.", modifier = Modifier.padding(start = 14.dp))
                                         }
                                     }
                                 }
@@ -484,8 +501,20 @@ class SEDownloadTab : Tab("se_download") {
                     }
                 }
             }
-            if (isInstalling) {
-                LinearProgressIndicator(Modifier.fillMaxWidth())
+
+            if (showInstallDialog) {
+                Dialog(onDismissRequest = {}) {
+                    Surface(shape = MaterialTheme.shapes.medium, tonalElevation = 6.dp) {
+                        Column(
+                            Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(downloadStage ?: "...")
+                            LinearProgressIndicator(progress = progress, modifier = Modifier.fillMaxWidth().padding(vertical=14.dp))
+                        }
+                    }
+                }
+                BackHandler { /* prevent dismiss */ }
             }
         }
     }
