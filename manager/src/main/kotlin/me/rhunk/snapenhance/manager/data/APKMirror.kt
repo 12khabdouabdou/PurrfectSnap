@@ -6,9 +6,10 @@ import kotlinx.parcelize.Parcelize
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jsoup.Jsoup
+import java.net.UnknownHostException
 import kotlin.math.absoluteValue
 
-// Import the cloudflareOkHttp client
+// Make sure this import exists
 import me.rhunk.snapenhance.manager.data.cloudflareOkHttp
 
 @Parcelize
@@ -26,7 +27,7 @@ data class DownloadItem(
 }
 
 class APKMirror {
-    // Use Cloudflare DNS for all requests!
+    // Use Cloudflare DNS for ALL OkHttp requests (no direct InetAddress usage here!)
     val okhttpClient: OkHttpClient = cloudflareOkHttp.newBuilder().addInterceptor {
         it.proceed(
             it.request().newBuilder()
@@ -41,44 +42,55 @@ class APKMirror {
     }
 
     fun fetchDownloadLink(downloadPageUri: String): String? {
-        okhttpClient.newCall(
-            Request.Builder()
-                .url("$BASE_URL$downloadPageUri")
-                .build()
-        ).execute().use { response ->
-            if (!response.isSuccessful) return null
-            val finalDownloadPageUri = Jsoup.parse(response.body.string()).getElementsByClass("downloadButton").first()?.attr("href")
-
+        try {
             okhttpClient.newCall(
                 Request.Builder()
-                    .url("$BASE_URL$finalDownloadPageUri")
+                    .url("$BASE_URL$downloadPageUri")
                     .build()
-            ).execute().use { response2 ->
-                if (!response2.isSuccessful) return null
-                val document = Jsoup.parse(response2.body.string())
-                val downloadLink = document.getElementById("download-link")?.attr("href") ?: return null
-                return BASE_URL + downloadLink
+            ).execute().use { response ->
+                if (!response.isSuccessful) return null
+                val finalDownloadPageUri = Jsoup.parse(response.body.string()).getElementsByClass("downloadButton").first()?.attr("href")
+
+                okhttpClient.newCall(
+                    Request.Builder()
+                        .url("$BASE_URL$finalDownloadPageUri")
+                        .build()
+                ).execute().use { response2 ->
+                    if (!response2.isSuccessful) return null
+                    val document = Jsoup.parse(response2.body.string())
+                    val downloadLink = document.getElementById("download-link")?.attr("href") ?: return null
+                    return BASE_URL + downloadLink
+                }
             }
+        } catch (e: UnknownHostException) {
+            throw DNSBlockedException(e)
         }
     }
 
     fun fetchSnapchatVersions(page: Int = 1): List<DownloadItem>? {
-        val versions = mutableListOf<DownloadItem>()
-        okhttpClient.newCall(
-            Request.Builder()
-                .url(FETCH_BUILD_URL.replace("{page}", page.toString()))
-                .build()
-        ).execute().use { response ->
-            if (!response.isSuccessful) return null
-            val document = Jsoup.parse(response.body.string())
-            document.getElementById("primary")?.getElementsByClass("appRow")?.forEach { app ->
-                val title = app.getElementsByTag("h5").first()?.attr("title") ?: return@forEach
-                val releaseDate = app.getElementsByClass("dateyear_utc").attr("data-utcdate") ?: return@forEach
-                val downloadPage = app.getElementsByClass("downloadLink").first()?.attr("href") ?: return@forEach
+        try {
+            val versions = mutableListOf<DownloadItem>()
+            okhttpClient.newCall(
+                Request.Builder()
+                    .url(FETCH_BUILD_URL.replace("{page}", page.toString()))
+                    .build()
+            ).execute().use { response ->
+                if (!response.isSuccessful) return null
+                val document = Jsoup.parse(response.body.string())
+                document.getElementById("primary")?.getElementsByClass("appRow")?.forEach { app ->
+                    val title = app.getElementsByTag("h5").first()?.attr("title") ?: return@forEach
+                    val releaseDate = app.getElementsByClass("dateyear_utc").attr("data-utcdate") ?: return@forEach
+                    val downloadPage = app.getElementsByClass("downloadLink").first()?.attr("href") ?: return@forEach
 
-                versions.add(DownloadItem(title, releaseDate, downloadPage))
+                    versions.add(DownloadItem(title, releaseDate, downloadPage))
+                }
             }
+            return versions
+        } catch (e: UnknownHostException) {
+            throw DNSBlockedException(e)
         }
-        return versions
     }
 }
+
+// Custom exception so UI layer can show dialog specifically for DNS issues
+class DNSBlockedException(e: Throwable): Exception(e)
