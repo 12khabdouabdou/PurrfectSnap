@@ -78,7 +78,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.jsoup)
     implementation(libs.okhttp)
-    implementation("dnsjava:dnsjava:3.5.2") // <--- Cloudflare DNS support for APK downloads
+    implementation("com.squareup.okhttp3:okhttp-dnsoverhttps:4.12.0")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3)
     implementation(libs.androidx.activity.ktx)
