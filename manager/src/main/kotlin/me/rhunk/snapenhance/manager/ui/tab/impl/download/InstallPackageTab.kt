@@ -171,36 +171,38 @@ class InstallPackageTab : Tab("install_app") {
         LaunchedEffect(downloadPath) {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
-                    val file = when {
-                        downloadPath.startsWith("http") ->
-                            downloadArtifact(downloadPath) { downloadProgress = it }
-                        else -> File(downloadPath)
-                    }
-                    downloadedFile = file ?: run {
-                        installStage = InstallStage.ERROR
-                        return@launch
-                    }
-                    if (shouldUninstall) {
-                        installStage = InstallStage.UNINSTALLING
-                        if (hasRoot && uninstallPackageRoot()) {
-                            installPackage()
-                            return@launch
-                        }
-                        val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
-                            data = "package:$appPackage".toUri()
-                            putExtra(Intent.EXTRA_RETURN_RESULT, true)
-                        }
-                        uninstallPackageCallback = { resultCode ->
-                            if (resultCode != Activity.RESULT_OK) {
-                                installStage = InstallStage.ERROR
-                                downloadedFile?.delete()
-                                return@uninstallPackageCallback
-                            }
-                            installPackage()
-                        }
-                        uninstallPackageIntentLauncher.launch(intent)
+                    val file: File? = if (downloadPath.startsWith("http")) {
+                        downloadArtifact(downloadPath) { downloadProgress = it }
                     } else {
-                        installPackage()
+                        File(downloadPath)
+                    }
+                    if (file == null || !file.exists()) {
+                        installStage = InstallStage.ERROR
+                        downloadedFile?.delete()
+                    } else {
+                        downloadedFile = file
+                        if (shouldUninstall) {
+                            installStage = InstallStage.UNINSTALLING
+                            if (hasRoot && uninstallPackageRoot()) {
+                                installPackage()
+                            } else {
+                                val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
+                                    data = "package:$appPackage".toUri()
+                                    putExtra(Intent.EXTRA_RETURN_RESULT, true)
+                                }
+                                uninstallPackageCallback = { resultCode ->
+                                    if (resultCode != Activity.RESULT_OK) {
+                                        installStage = InstallStage.ERROR
+                                        downloadedFile?.delete()
+                                    } else {
+                                        installPackage()
+                                    }
+                                }
+                                uninstallPackageIntentLauncher.launch(intent)
+                            }
+                        } else {
+                            installPackage()
+                        }
                     }
                 }.onFailure {
                     it.printStackTrace()
