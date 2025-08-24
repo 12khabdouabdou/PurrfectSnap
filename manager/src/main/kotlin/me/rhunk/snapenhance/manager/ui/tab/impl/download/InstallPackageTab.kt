@@ -47,7 +47,6 @@ class InstallPackageTab : Tab("install_app") {
         }
     }
 
-    // Always copy file to external cache, use FileProvider for the intent
     private fun downloadArtifact(url: String, progress: (Float) -> Unit): File? {
         val uri = Uri.parse(url)
         if (uri.scheme != "https" && uri.scheme != "http") {
@@ -173,7 +172,8 @@ class InstallPackageTab : Tab("install_app") {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
                     val file = when {
-                        downloadPath.startsWith("http") -> downloadArtifact(downloadPath) { downloadProgress = it }
+                        downloadPath.startsWith("http") ->
+                            downloadArtifact(downloadPath) { downloadProgress = it }
                         else -> File(downloadPath)
                     }
                     downloadedFile = file ?: run {
