@@ -5,10 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,10 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import me.rhunk.snapenhance.manager.data.APKMirror
 import me.rhunk.snapenhance.manager.data.DownloadItem
 import me.rhunk.snapenhance.manager.patch.LSPatch
@@ -40,10 +34,9 @@ class LSPatchTab : Tab("lspatch") {
         downloadItem: DownloadItem? = null,
         snapEnhanceModule: File? = null,
         localItemFile: File? = null,
-        patchedApk: MutableState<File?>,
+        patchedApk: MutableState<File?>
     ) {
         var apkFile: File? = localItemFile
-
         downloadItem?.let {
             log("Fetching download link for ${it.title}...")
             val downloadLink = apkMirror.fetchDownloadLink(it.downloadPage) ?: run {
@@ -51,54 +44,64 @@ class LSPatchTab : Tab("lspatch") {
                 return
             }
             log("Downloading apk...")
-
             val downloadResponse = apkMirror.okhttpClient.newCall(
                 okhttp3.Request.Builder()
                     .url(downloadLink)
                     .build()
             ).execute()
-
             if (!downloadResponse.isSuccessful) {
                 log("== Failed to download apk ==")
                 log("Response code: ${downloadResponse.code}")
                 return
             }
-
             apkFile = sharedConfig.apkCache.resolve("${it.hash}.apk")
-            apkFile!!.outputStream().use { outputStream ->
-                runCatching {
-                    downloadResponse.body.byteStream().use { inputStream ->
+            runCatching {
+                apkFile!!.outputStream().use { outputStream ->
+                    downloadResponse.body?.byteStream()?.use { inputStream ->
                         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
                         var read: Int
                         var totalRead = 0L
-                        val totalSize = downloadResponse.body.contentLength()
+                        val totalSize = downloadResponse.body?.contentLength() ?: -1L
                         while (inputStream.read(buffer).also { read = it } != -1) {
                             outputStream.write(buffer, 0, read)
                             totalRead += read
-                            onProgress(totalRead.toFloat() / totalSize.toFloat())
+                            if (totalSize > 0)
+                                onProgress(totalRead.toFloat() / totalSize.toFloat())
                         }
                     }
-                }.onFailure { throwable ->
-                    log("== Failed to download apk ==")
-                    log(throwable)
-                    return
                 }
+            }.onFailure { throwable ->
+                log("== Failed to download apk ==")
+                log(throwable)
+                return
             }
-
+            // Safety: check for download null/missing
+            if (apkFile == null || !apkFile!!.exists()) {
+                log("Downloaded file is missing/null! Aborting patch step.")
+                return
+            }
+            // base.apk rename for patch compatibility
             apkFile!!.renameTo(File(activity.externalCacheDir!!, "base.apk"))
         }
 
         log("== Downloaded apk ==")
-        snapEnhanceModule?.let { module ->
-            val lsPatch = LSPatch(activity, mapOf(
-                sharedConfig.snapEnhancePackageName to module,
-            ), printLog = {
-                log("[LSPatch] $it")
-            }, obfuscate = sharedConfig.obfuscateLSPatch)
 
+        // Only patch if apkFile is not null and exists!
+        if (apkFile == null || !apkFile.exists()) {
+            log("Downloaded APK file is null or missing. Aborting patch.")
+            patchedApk.value = null
+            return
+        }
+
+        snapEnhanceModule?.let { module ->
+            val lsPatch = LSPatch(
+                activity,
+                mapOf(sharedConfig.snapEnhancePackageName to module),
+                printLog = { log("[LSPatch] $it") },
+                obfuscate = sharedConfig.obfuscateLSPatch
+            )
             log("== Patching apk ==")
             val outputFiles = lsPatch.patchSplits(listOf(apkFile!!))
-
             patchedApk.value = outputFiles["base.apk"] ?: run {
                 log("== Failed to patch apk ==")
                 return
@@ -122,18 +125,16 @@ class LSPatchTab : Tab("lspatch") {
                 progress = -1f
             }
         }
-
         navGraphBuilder.composable(route) {
             var showDowngradeNoticeDialog by remember { mutableStateOf(false) }
-
             LaunchedEffect(Unit) {
                 if (isRunning) return@LaunchedEffect
                 status.value = ""
-                coroutineScope.launch(Dispatchers.IO) {
+                currentJob = coroutineScope.launch(Dispatchers.IO) {
                     isRunning = true
                     runCatching {
                         patch(
-                            localItemFile = getArguments()?.getString("localItemFile")?.let { File(it) } ,
+                            localItemFile = getArguments()?.getString("localItemFile")?.let { File(it) },
                             log = {
                                 coroutineScope.launch {
                                     status.value += when (it) {
@@ -143,9 +144,7 @@ class LSPatchTab : Tab("lspatch") {
                                 }
                             },
                             downloadItem = getArguments()?.getParcelable("downloadItem"),
-                            snapEnhanceModule = getArguments()?.getString("modulePath")?.let {
-                                File(it)
-                            },
+                            snapEnhanceModule = getArguments()?.getString("modulePath")?.let { File(it) },
                             patchedApk = patchedApk,
                             onProgress = { progress = it }
                         )
@@ -155,18 +154,15 @@ class LSPatchTab : Tab("lspatch") {
                         }
                     }
                     isRunning = false
-                }.also { currentJob = it }
+                }
             }
-
             DisposableEffect(Unit) {
                 onDispose {
                     if (isRunning) return@onDispose
                     patchedApk.value = null
                 }
             }
-
             val scrollState = rememberScrollState()
-
             fun triggerInstallation(shouldUninstall: Boolean) {
                 navigation.navigateTo(InstallPackageTab::class, args = Bundle().apply {
                     putString("downloadPath", patchedApk.value?.absolutePath)
@@ -192,32 +188,26 @@ class LSPatchTab : Tab("lspatch") {
                             .fillMaxSize()
                             .verticalScroll(scrollState)
                     ) {
-                        Text(text = status.value, overflow = TextOverflow.Visible, modifier = Modifier.padding(10.dp))
+                        Text(
+                            text = status.value,
+                            overflow = TextOverflow.Visible,
+                            modifier = Modifier.padding(10.dp)
+                        )
                     }
                 }
                 if (progress != -1f) {
                     LinearProgressIndicator(progress = progress, modifier = Modifier.height(10.dp), strokeCap = StrokeCap.Round)
                 }
-
                 if (patchedApk.value != null) {
-                    Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                        triggerInstallation(true)
-                    }) {
+                    Button(modifier = Modifier.fillMaxWidth(), onClick = { triggerInstallation(true) }) {
                         Text(text = "Uninstall & Install")
                     }
-
-                    Button(modifier = Modifier.fillMaxWidth(), onClick = {
-                        showDowngradeNoticeDialog = true
-                    }) {
+                    Button(modifier = Modifier.fillMaxWidth(), onClick = { showDowngradeNoticeDialog = true }) {
                         Text(text = "Update")
                     }
                 }
-
-                LaunchedEffect(status) {
-                    scrollState.scrollTo(scrollState.maxValue)
-                }
+                LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
             }
-
             if (showDowngradeNoticeDialog) {
                 Dialog(onDismissRequest = { showDowngradeNoticeDialog = false }) {
                     DowngradeNoticeDialog(onDismiss = { showDowngradeNoticeDialog = false }, onSuccess = {
