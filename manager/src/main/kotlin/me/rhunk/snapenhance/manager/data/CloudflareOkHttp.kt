@@ -1,14 +1,14 @@
-import okhttp3.*
-import java.net.InetAddress
-import java.net.UnknownHostException
-import java.util.concurrent.TimeUnit
+package me.rhunk.snapenhance.manager.data
+
+import okhttp3.Dns
+import okhttp3.OkHttpClient
 import org.xbill.DNS.Lookup
 import org.xbill.DNS.SimpleResolver
 import org.xbill.DNS.Type
 import org.xbill.DNS.Record
-
-// Add to your build.gradle:
-// implementation("dnsjava:dnsjava:3.5.2")
+import java.net.InetAddress
+import java.net.UnknownHostException
+import java.util.concurrent.TimeUnit
 
 object CloudflareDns : Dns {
     private val resolver = SimpleResolver("1.1.1.1")
@@ -16,13 +16,10 @@ object CloudflareDns : Dns {
         return try {
             val lookup = Lookup(hostname, Type.A)
             lookup.setResolver(resolver)
-            val records: Array<Record>? = lookup.run()
+            val records = lookup.run()
             if (records != null) {
-                records.map {
-                    InetAddress.getByName(it.rdataToString())
-                }
+                records.map { InetAddress.getByName(it.rdataToString()) }
             } else {
-                // fallback to default
                 Dns.SYSTEM.lookup(hostname)
             }
         } catch (e: Exception) {
@@ -31,8 +28,7 @@ object CloudflareDns : Dns {
     }
 }
 
-// Use this OkHttpClient for snapchat downloads
-val cloudflareOkHttp = OkHttpClient.Builder()
+val cloudflareOkHttp: OkHttpClient = OkHttpClient.Builder()
     .dns(CloudflareDns)
     .connectTimeout(30, TimeUnit.SECONDS)
     .readTimeout(2, TimeUnit.MINUTES)
