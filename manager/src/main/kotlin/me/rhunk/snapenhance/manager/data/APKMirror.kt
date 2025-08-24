@@ -9,8 +9,8 @@ import org.jsoup.Jsoup
 import java.net.UnknownHostException
 import kotlin.math.absoluteValue
 
-// Make sure this import exists
-import me.rhunk.snapenhance.manager.data.cloudflareOkHttp
+// Import DoH client
+import me.rhunk.snapenhance.manager.data.dohOkHttp
 
 @Parcelize
 data class DownloadItem(
@@ -27,8 +27,8 @@ data class DownloadItem(
 }
 
 class APKMirror {
-    // Use Cloudflare DNS for ALL OkHttp requests (no direct InetAddress usage here!)
-    val okhttpClient: OkHttpClient = cloudflareOkHttp.newBuilder().addInterceptor {
+    // Use Cloudflare DoH for ALL OkHttp requests (no direct InetAddress usage here!)
+    val okhttpClient: OkHttpClient = dohOkHttp.newBuilder().addInterceptor {
         it.proceed(
             it.request().newBuilder()
                 .addHeader("User-Agent", System.getProperty("http.agent")!!)
