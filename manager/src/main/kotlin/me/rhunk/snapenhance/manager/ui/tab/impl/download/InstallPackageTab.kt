@@ -30,13 +30,11 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 
-
 class InstallPackageTab : Tab("install_app") {
     private lateinit var installPackageIntentLauncher: ActivityResultLauncher<Intent>
     private lateinit var uninstallPackageIntentLauncher: ActivityResultLauncher<Intent>
     private var uninstallPackageCallback: ((resultCode: Int) -> Unit)? = null
     private var installPackageCallback: ((resultCode: Int) -> Unit)? = null
-
     private val hasRoot get() = sharedConfig.useRootInstaller
 
     override fun init(activity: ComponentActivity) {
@@ -49,67 +47,58 @@ class InstallPackageTab : Tab("install_app") {
         }
     }
 
+    // Always copy file to external cache, use FileProvider for the intent
     private fun downloadArtifact(url: String, progress: (Float) -> Unit): File? {
-        val urlScheme = Uri.parse(url).scheme
-        if (urlScheme != "https" && urlScheme != "http") {
+        val uri = Uri.parse(url)
+        if (uri.scheme != "https" && uri.scheme != "http") {
             val file = File(url)
-            val dest = File(activity.externalCacheDirs.first(), file.name).also {
-                it.deleteOnExit()
-            }
-            if (dest.exists()) return file
-            file.copyTo(dest)
-            return dest
+            if (file.exists()) return file
+            return null
         }
-
         val endpoint = Request.Builder().url(url).build()
         val response = OkHttpClient().newCall(endpoint).execute()
         if (!response.isSuccessful) throw Throwable("Failed to download artifact: ${response.code}")
-
         return response.body.byteStream().use { input ->
             val file = File.createTempFile("artifact", ".apk", activity.externalCacheDirs.first()).also {
                 it.deleteOnExit()
             }
-            runCatching {
-                file.outputStream().use { output ->
-                    val buffer = ByteArray(4 * 1024)
-                    var read: Int
-                    var totalRead = 0L
-                    val totalSize = response.body.contentLength()
-                    while (input.read(buffer).also { read = it } != -1) {
-                        output.write(buffer, 0, read)
-                        totalRead += read
-                        progress(totalRead.toFloat() / totalSize.toFloat())
-                    }
+            file.outputStream().use { output ->
+                val buffer = ByteArray(4 * 1024)
+                var read: Int
+                var totalRead = 0L
+                val totalSize = response.body.contentLength()
+                while (input.read(buffer).also { read = it } != -1) {
+                    output.write(buffer, 0, read)
+                    totalRead += read
+                    progress(if (totalSize > 0) totalRead.toFloat() / totalSize else -1f)
                 }
-                file
-            }.getOrNull()
+            }
+            file
         }
     }
 
-
     @Composable
-    @Suppress("DEPRECATION")
     override fun Content() {
         val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
         var installStage by remember { mutableStateOf(InstallStage.DOWNLOADING) }
         var downloadProgress by remember { mutableFloatStateOf(-1f) }
         var downloadedFile by remember { mutableStateOf<File?>(null) }
-
         LaunchedEffect(Unit) {
             uninstallPackageCallback = null
             installPackageCallback = null
         }
-
         val downloadPath = remember { getArguments()?.getString("downloadPath") } ?: return
         val appPackage = remember { getArguments()?.getString("appPackage") } ?: return
-        val shouldUninstall = remember { getArguments()?.getBoolean("uninstall")?.let {
-            if (runCatching { activity.packageManager.getPackageInfo(appPackage, 0) }.getOrNull() == null) {
-                false
-            } else it
-        } ?: false }
+        val shouldUninstall = remember {
+            getArguments()?.getBoolean("uninstall")?.let {
+                if (runCatching { activity.packageManager.getPackageInfo(appPackage, 0) }.getOrNull() == null) {
+                    false
+                } else it
+            } ?: false
+        }
+        BackHandler(installStage != InstallStage.DONE && installStage != InstallStage.ERROR) {}
 
-        BackHandler(installStage != InstallStage.DONE || installStage != InstallStage.ERROR) {}
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -123,7 +112,6 @@ class InstallPackageTab : Tab("install_app") {
                     CircularProgressIndicator()
                 }
             }
-
             when (installStage) {
                 InstallStage.DOWNLOADING -> {
                     Text(text = "Downloading ...")
@@ -144,16 +132,12 @@ class InstallPackageTab : Tab("install_app") {
                 InstallStage.ERROR -> Text(text = "Failed to install $appPackage. Check logcat for more details.")
             }
         }
-
         fun uninstallPackageRoot(): Boolean {
             val result = Shell.su("pm uninstall $appPackage").exec()
-            if (result.isSuccess) {
-                return true
-            }
+            if (result.isSuccess) return true
             toast("Root uninstall failed: ${result.out}")
             return false
         }
-
         fun installPackageRoot(): Boolean {
             val result = Shell.su(
                 "cp \"${downloadedFile!!.absolutePath}\" /data/local/tmp/",
@@ -167,34 +151,32 @@ class InstallPackageTab : Tab("install_app") {
             toast("Root install failed: ${result.out}")
             return false
         }
-
         fun installPackage() {
             installStage = InstallStage.INSTALLING
             if (hasRoot && installPackageRoot()) {
                 downloadedFile?.delete()
                 return
             }
-            installPackageCallback = resultCallbacks@{ code ->
-                installStage = if (code != Activity.RESULT_OK) {
-                    InstallStage.ERROR
-                } else {
-                    InstallStage.DONE
-                }
+            installPackageCallback = { code ->
+                installStage = if (code != Activity.RESULT_OK) InstallStage.ERROR else InstallStage.DONE
                 downloadedFile?.delete()
             }
-
+            val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", downloadedFile!!)
             installPackageIntentLauncher.launch(Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
-                data = FileProvider.getUriForFile(context, "me.rhunk.snapenhance.manager.provider", downloadedFile!!)
+                data = fileUri
                 setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 putExtra(Intent.EXTRA_RETURN_RESULT, true)
             })
         }
-
-
-        LaunchedEffect(Unit) {
+        LaunchedEffect(downloadPath) {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
-                    downloadedFile = downloadArtifact(downloadPath) { downloadProgress = it } ?: run {
+                    // NOTE: If path is already an APK, just return file, otherwise download
+                    val file = when {
+                        downloadPath.startsWith("http") -> downloadArtifact(downloadPath) { downloadProgress = it }
+                        else -> File(downloadPath)
+                    }
+                    downloadedFile = file ?: run {
                         installStage = InstallStage.ERROR
                         return@launch
                     }
@@ -208,11 +190,11 @@ class InstallPackageTab : Tab("install_app") {
                             data = "package:$appPackage".toUri()
                             putExtra(Intent.EXTRA_RETURN_RESULT, true)
                         }
-                        uninstallPackageCallback = resultCallback@{ resultCode ->
+                        uninstallPackageCallback = { resultCode ->
                             if (resultCode != Activity.RESULT_OK) {
                                 installStage = InstallStage.ERROR
                                 downloadedFile?.delete()
-                                return@resultCallback
+                                return@uninstallPackageCallback
                             }
                             installPackage()
                         }
