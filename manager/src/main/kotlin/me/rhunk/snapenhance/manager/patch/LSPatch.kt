@@ -1,216 +1,220 @@
-package me.rhunk.snapenhance.manager.patch
+package me.rhunk.snapenhance.manager.ui.tab.impl.download
 
-import android.content.Context
-import com.android.tools.build.apkzlib.zip.AlignmentRules
-import com.android.tools.build.apkzlib.zip.ZFile
-import com.android.tools.build.apkzlib.zip.ZFileOptions
-import com.google.gson.Gson
-import com.wind.meditor.core.ManifestEditor
-import com.wind.meditor.property.AttributeItem
-import com.wind.meditor.property.ModificationProperty
-import me.rhunk.snapenhance.manager.patch.config.Constants.PROXY_APP_COMPONENT_FACTORY
-import me.rhunk.snapenhance.manager.patch.config.PatchConfig
-import me.rhunk.snapenhance.manager.patch.util.ApkSignatureHelper
-import me.rhunk.snapenhance.manager.patch.util.ApkSignatureHelper.provideSigningExtension
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
+import android.os.Bundle
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import kotlinx.coroutines.*
+import me.rhunk.snapenhance.manager.data.APKMirror
+import me.rhunk.snapenhance.manager.data.DownloadItem
+import me.rhunk.snapenhance.manager.patch.LSPatch
+import me.rhunk.snapenhance.manager.ui.components.DowngradeNoticeDialog
+import me.rhunk.snapenhance.manager.ui.tab.Tab
+import okio.use
 import java.io.File
-import java.util.zip.ZipFile
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlin.random.Random
+import kotlin.properties.Delegates
 
-class LSPatch(
-    private val context: Context,
-    private val modules: Map<String, File>, //packageName -> file
-    private val obfuscate: Boolean,
-    private val printLog: (Any) -> Unit
-) {
+class LSPatchTab : Tab("lspatch") {
+    private val apkMirror = APKMirror()
 
-    private fun patchManifest(data: ByteArray, lspatchMetadata: Pair<String, String>): ByteArray {
-        val property = ModificationProperty()
-        property.addApplicationAttribute(AttributeItem("appComponentFactory", PROXY_APP_COMPONENT_FACTORY))
-        property.addMetaData(ModificationProperty.MetaData(lspatchMetadata.first, lspatchMetadata.second))
-        return ByteArrayOutputStream().apply {
-            ManifestEditor(ByteArrayInputStream(data), this, property).processManifest()
-            flush()
-            close()
-        }.toByteArray()
-    }
-
-    private fun resignApk(inputApkFile: File, outputFile: File) {
-        printLog("Resigning ${inputApkFile.absolutePath} to ${outputFile.absolutePath}")
-        val dstZFile = ZFile.openReadWrite(outputFile, ZFileOptions())
-        val inZFile = ZFile.openReadOnly(inputApkFile)
-        inZFile.entries().forEach { entry -> dstZFile.add(entry.centralDirectoryHeader.name, entry.open()) }
-        runCatching {
-            provideSigningExtension(context.assets.open("lspatch/keystore.jks")).register(dstZFile)
-        }.onFailure { throw Exception("Failed to sign apk", it) }
-        dstZFile.realign()
-        dstZFile.close()
-        inZFile.close()
-        printLog("Done")
-    }
-
-    private fun uniqueHash(): String = Random.nextBytes(Random.nextInt(5, 10)).joinToString("") { "%02x".format(it) }
-
-    @Suppress("UNCHECKED_CAST")
-    @OptIn(ExperimentalEncodingApi::class)
-    private fun patchApk(inputApkFile: File, outputFile: File) {
-        printLog("Patching ${inputApkFile.absolutePath} to ${outputFile.absolutePath}")
-
-        // Defensive check for cache dir
-        val cacheRoot = context.cacheDir ?: throw IllegalStateException("context.cacheDir is null")
-        val obfuscationCacheFolder = File(cacheRoot, "lspatch").apply {
-            if (exists()) deleteRecursively()
-            mkdirs()
-        }
-        val lspatchObfuscation = LSPatchObfuscation(obfuscationCacheFolder) { printLog(it) }
-        val dexObfuscationConfig = if (obfuscate) DexObfuscationConfig(
-            packageName = uniqueHash(),
-            metadataManifestField = uniqueHash(),
-            metaLoaderFilePath = uniqueHash(),
-            configFilePath = uniqueHash(),
-            loaderFilePath = uniqueHash(),
-            libNativeFilePath = mapOf(
-                "arm64-v8a" to uniqueHash() + ".so",
-                "armeabi-v7a" to uniqueHash() + ".so"
-            ),
-            originApkPath = uniqueHash(),
-            cachedOriginApkPath = uniqueHash(),
-            openAtApkPath = uniqueHash(),
-            assetModuleFolderPath = uniqueHash()
-        ) else null
-
-        val dstZFile = ZFile.openReadWrite(outputFile, ZFileOptions().setAlignmentRule(
-            AlignmentRules.compose(
-                AlignmentRules.constantForSuffix(".so", 4096),
-                AlignmentRules.constantForSuffix("assets/" + (dexObfuscationConfig?.originApkPath ?: "lspatch/origin.apk"), 4096)
-            )
-        ))
-
-        val origSign = ApkSignatureHelper.getApkSignInfo(inputApkFile.absolutePath)
-        val patchConfig = PatchConfig(
-            useManager = false,
-            debuggable = false,
-            overrideVersionCode = false,
-            sigBypassLevel = 2,
-            originalSignature = origSign,
-            appComponentFactory = "androidx.core.app.CoreComponentFactory"
-        ).let { Gson().toJson(it) }
-
-        runCatching {
-            provideSigningExtension(context.assets.open("lspatch/keystore.jks")).register(dstZFile)
-        }.onFailure { throw Exception("Failed to sign apk", it) }
-
-        printLog("Patching manifest")
-        val sourceApkFile = dstZFile.addNestedZip({ "assets/" + (dexObfuscationConfig?.originApkPath ?: "lspatch/origin.apk") }, inputApkFile, false)
-        val originalManifestEntry = sourceApkFile.get("AndroidManifest.xml") ?: throw Exception("No original manifest found in base APK")
-        originalManifestEntry.open().use { inputStream ->
-            val patchedManifestData = patchManifest(inputStream.readBytes(), (dexObfuscationConfig?.metadataManifestField ?: "lspatch") to Base64.encode(patchConfig.toByteArray()))
-            dstZFile.add("AndroidManifest.xml", patchedManifestData.inputStream())
-        }
-
-        // Add patch config
-        printLog("Adding config")
-        dstZFile.add("assets/" + (dexObfuscationConfig?.configFilePath ?: "lspatch/config.json"), ByteArrayInputStream(patchConfig.toByteArray()))
-
-        // Add loader dex
-        printLog("Adding loader dex")
-        context.assets.open("lspatch/dexes/loader.dex").use { inputStream ->
-            dstZFile.add("assets/" + (dexObfuscationConfig?.loaderFilePath ?: "lspatch/loader.dex"), dexObfuscationConfig?.let {
-                lspatchObfuscation.obfuscateLoader(inputStream, it).inputStream()
-            } ?: inputStream)
-        }
-        // Add natives
-        printLog("Adding natives")
-        context.assets.list("lspatch/so")?.forEach { native ->
-            dstZFile.add("assets/${dexObfuscationConfig?.libNativeFilePath?.get(native) ?: "lspatch/so/$native/liblspatch.so"}", context.assets.open("lspatch/so/$native/liblspatch.so"), false)
-        }
-        // Embed modules
-        printLog("Embedding modules")
-        modules.forEach { (packageName, module) ->
-            val obfuscatedPackageName = dexObfuscationConfig?.packageName ?: packageName
-            printLog("- $obfuscatedPackageName")
-            dstZFile.add("assets/${dexObfuscationConfig?.assetModuleFolderPath ?: "lspatch/modules"}/$obfuscatedPackageName.apk", module.inputStream())
-        }
-        // Link apk entries
-        printLog("Linking apk entries")
-        for (entry in sourceApkFile.entries()) {
-            val name = entry.centralDirectoryHeader.name
-            if (dexObfuscationConfig == null && name.startsWith("classes") && name.endsWith(".dex")) continue
-            if (dstZFile[name] != null) continue
-            if (name == "AndroidManifest.xml") continue
-            if (name.startsWith("META-INF") && (name.endsWith(".SF") || name.endsWith(".MF") || name.endsWith(".RSA"))) continue
-            sourceApkFile.addFileLink(name, name)
-        }
-        printLog("Adding meta loader dex")
-        context.assets.open("lspatch/dexes/metaloader.dex").use { inputStream ->
-            dstZFile.add(dexObfuscationConfig?.let {
-                val dexFileIndex = sourceApkFile.entries().count {
-                    it.centralDirectoryHeader.name.startsWith("classes") && it.centralDirectoryHeader.name.endsWith(".dex")
-                } + 1
-                "classes${dexFileIndex}.dex"
-            } ?: "classes.dex", dexObfuscationConfig?.let {
-                lspatchObfuscation.obfuscateMetaLoader(inputStream, it).inputStream()
-            } ?: inputStream)
-        }
-        printLog("Writing apk")
-        dstZFile.realign()
-        dstZFile.close()
-        sourceApkFile.close()
-        printLog("Cleaning obfuscation cache")
-        obfuscationCacheFolder.deleteRecursively()
-        printLog("Done")
-    }
-
-    fun patchSplits(inputs: List<File>): Map<String, File> {
-        val outputs = mutableMapOf<String, File>()
-        val extCacheDir = context.externalCacheDir ?: context.cacheDir ?: throw IllegalStateException("No valid cache dir")
-        inputs.forEach { input ->
-            val outputFile = File.createTempFile("patched", ".apk", extCacheDir)
-            if (input.name.contains("split")) {
-                resignApk(input, outputFile)
-                outputs[input.name] = outputFile
-                return@forEach
+    private fun patch(
+        log: (Any?) -> Unit,
+        onProgress: (Float) -> Unit,
+        downloadItem: DownloadItem? = null,
+        snapEnhanceModule: File? = null,
+        localItemFile: File? = null,
+        patchedApk: MutableState<File?>
+    ) {
+        var apkFile: File? = localItemFile
+        downloadItem?.let {
+            log("Fetching download link for ${it.title}...")
+            val downloadLink = apkMirror.fetchDownloadLink(it.downloadPage) ?: run {
+                log("== Failed to fetch download link ==")
+                return
             }
-            patch(input, outputFile)
-            outputs["base.apk"] = outputFile
+            log("Downloading apk...")
+            val downloadResponse = apkMirror.okhttpClient.newCall(
+                okhttp3.Request.Builder()
+                    .url(downloadLink)
+                    .build()
+            ).execute()
+            if (!downloadResponse.isSuccessful) {
+                log("== Failed to download apk ==")
+                log("Response code: ${downloadResponse.code}")
+                return
+            }
+            apkFile = sharedConfig.apkCache.resolve("${it.hash}.apk")
+            runCatching {
+                apkFile!!.outputStream().use { outputStream ->
+                    downloadResponse.body?.byteStream()?.use { inputStream ->
+                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                        var read: Int
+                        var totalRead = 0L
+                        val totalSize = downloadResponse.body?.contentLength() ?: -1L
+                        while (inputStream.read(buffer).also { read = it } != -1) {
+                            outputStream.write(buffer, 0, read)
+                            totalRead += read
+                            if (totalSize > 0)
+                                onProgress(totalRead.toFloat() / totalSize.toFloat())
+                        }
+                    }
+                }
+            }.onFailure { throwable ->
+                log("== Failed to download apk ==")
+                log(throwable)
+                return
+            }
+            // Safety: check for download null/missing
+            if (apkFile == null || !apkFile!!.exists()) {
+                log("Downloaded file is missing/null! Aborting patch step.")
+                return
+            }
+            // base.apk rename for patch compatibility
+            apkFile!!.renameTo(File(activity.externalCacheDir!!, "base.apk"))
         }
-        return outputs
-    }
 
-    private fun patch(input: File, outputFile: File) {
-        // Defensive check - must have input file and output file path
-        if (!input.exists()) {
-            printLog("!! Input file does not exist: ${input.absolutePath}")
+        log("== Downloaded apk ==")
+
+        // Only patch if apkFile is not null and exists!
+        if (apkFile == null || !apkFile.exists()) {
+            log("Downloaded APK file is null or missing. Aborting patch.")
+            patchedApk.value = null
             return
         }
-        if (outputFile.exists()) outputFile.delete()
 
-        var isAlreadyPatched = false
-        var inputFile = input
+        snapEnhanceModule?.let { module ->
+            val lsPatch = LSPatch(
+                activity,
+                mapOf(sharedConfig.snapEnhancePackageName to module),
+                printLog = { log("[LSPatch] $it") },
+                obfuscate = sharedConfig.obfuscateLSPatch
+            )
+            log("== Patching apk ==")
+            val outputFiles = lsPatch.patchSplits(listOf(apkFile!!))
+            patchedApk.value = outputFiles["base.apk"] ?: run {
+                log("== Failed to patch apk ==")
+                return
+            }
+            return
+        }
+        patchedApk.value = apkFile
+    }
 
-        // Try to extract original for already-patched APKs
-        printLog("Extracting origin apk")
-        ZipFile(input).use { zipFile ->
-            zipFile.getEntry("assets/lspatch/origin.apk")?.apply {
-                inputFile = File.createTempFile("origin", ".apk", context.cacheDir ?: context.externalCacheDir)
-                inputFile.outputStream().use {
-                    zipFile.getInputStream(this).copyTo(it)
-                }
-                isAlreadyPatched = true
+    @Suppress("DEPRECATION")
+    override fun build(navGraphBuilder: NavGraphBuilder) {
+        var currentJob: Job? = null
+        val coroutineScope = CoroutineScope(Dispatchers.IO)
+        val patchedApk = mutableStateOf<File?>(null)
+        val status = mutableStateOf("")
+        var progress by mutableFloatStateOf(-1f)
+        var isRunning by Delegates.observable(false) { _, _, newValue ->
+            if (!newValue) {
+                currentJob?.cancel()
+                currentJob = null
+                progress = -1f
             }
         }
-
-        printLog("Patching apk")
-        runCatching {
-            patchApk(inputFile, outputFile)
-        }.onFailure {
-            if (isAlreadyPatched) inputFile.delete()
-            outputFile.delete()
-            printLog("Failed to patch")
-            printLog(it)
+        navGraphBuilder.composable(route) {
+            var showDowngradeNoticeDialog by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                if (isRunning) return@LaunchedEffect
+                status.value = ""
+                currentJob = coroutineScope.launch(Dispatchers.IO) {
+                    isRunning = true
+                    runCatching {
+                        patch(
+                            localItemFile = getArguments()?.getString("localItemFile")?.let { File(it) },
+                            log = {
+                                coroutineScope.launch {
+                                    status.value += when (it) {
+                                        is Throwable -> it.message + "\n" + it.stackTraceToString()
+                                        else -> it.toString()
+                                    } + "\n"
+                                }
+                            },
+                            downloadItem = getArguments()?.getParcelable("downloadItem"),
+                            snapEnhanceModule = getArguments()?.getString("modulePath")?.let { File(it) },
+                            patchedApk = patchedApk,
+                            onProgress = { progress = it }
+                        )
+                    }.onFailure {
+                        coroutineScope.launch {
+                            status.value += it.message + "\n" + it.stackTraceToString()
+                        }
+                    }
+                    isRunning = false
+                }
+            }
+            DisposableEffect(Unit) {
+                onDispose {
+                    if (isRunning) return@onDispose
+                    patchedApk.value = null
+                }
+            }
+            val scrollState = rememberScrollState()
+            fun triggerInstallation(shouldUninstall: Boolean) {
+                navigation.navigateTo(InstallPackageTab::class, args = Bundle().apply {
+                    putString("downloadPath", patchedApk.value?.absolutePath)
+                    putString("appPackage", sharedConfig.snapchatPackageName)
+                    putBoolean("uninstall", shouldUninstall)
+                })
+            }
+            BackHandler(isRunning) {}
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(10.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                    ) {
+                        Text(
+                            text = status.value,
+                            overflow = TextOverflow.Visible,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                }
+                if (progress != -1f) {
+                    LinearProgressIndicator(progress = progress, modifier = Modifier.height(10.dp), strokeCap = StrokeCap.Round)
+                }
+                if (patchedApk.value != null) {
+                    Button(modifier = Modifier.fillMaxWidth(), onClick = { triggerInstallation(true) }) {
+                        Text(text = "Uninstall & Install")
+                    }
+                    Button(modifier = Modifier.fillMaxWidth(), onClick = { showDowngradeNoticeDialog = true }) {
+                        Text(text = "Update")
+                    }
+                }
+                LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
+            }
+            if (showDowngradeNoticeDialog) {
+                Dialog(onDismissRequest = { showDowngradeNoticeDialog = false }) {
+                    DowngradeNoticeDialog(onDismiss = { showDowngradeNoticeDialog = false }, onSuccess = {
+                        triggerInstallation(false)
+                    })
+                }
+            }
         }
     }
 }
