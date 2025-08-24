@@ -168,10 +168,10 @@ class InstallPackageTab : Tab("install_app") {
                 putExtra(Intent.EXTRA_RETURN_RESULT, true)
             })
         }
+
         LaunchedEffect(downloadPath) {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
-                    // NOTE: If path is already an APK, just return file, otherwise download
                     val file = when {
                         downloadPath.startsWith("http") -> downloadArtifact(downloadPath) { downloadProgress = it }
                         else -> File(downloadPath)
