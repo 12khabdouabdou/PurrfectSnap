@@ -1,7 +1,6 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl.download
 
 import android.os.Bundle
-import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -42,9 +41,7 @@ data class DebugBuild(
     val artifactsUrl: String
 )
 
-data class DebugArtifactContents(
-    val entries: List<String>
-)
+data class DebugArtifactContents(val entries: List<String>)
 
 class SEDownloadTab : Tab("se_download") {
 
@@ -53,9 +50,7 @@ class SEDownloadTab : Tab("se_download") {
             val endpoint = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/releases").build()
             val response = OkHttpClient().newCall(endpoint).execute()
             if (!response.isSuccessful) return null
-            val releases = com.google.gson.JsonParser.parseString(response.body!!.string()).asJsonArray.also {
-                if (it.size() == 0) return null
-            }
+            val releases = com.google.gson.JsonParser.parseString(response.body!!.string()).asJsonArray
             val isoDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
             releases.map { releaseObject ->
                 val release = releaseObject.asJsonObject
@@ -75,8 +70,6 @@ class SEDownloadTab : Tab("se_download") {
                 }
                 SEVersion(versionName, releaseDate, downloadAssets)
             }
-        }.onFailure {
-            it.printStackTrace()
         }.getOrNull()
     }
 
@@ -100,7 +93,6 @@ class SEDownloadTab : Tab("se_download") {
         }
     }
 
-    // ---- RELEASE TAB ---- //
     @Composable
     private fun ReleaseTabContent() {
         val coroutineScope = rememberCoroutineScope()
@@ -254,15 +246,13 @@ class SEDownloadTab : Tab("se_download") {
         LaunchedEffect(Unit) { coroutineScope.launch(Dispatchers.IO) { releasesState.value = fetchSEReleases() } }
     }
 
-    // ---- DEBUG TAB ---- //
     @Composable
     private fun DebugTabContent() {
         val coroutineScope = rememberCoroutineScope()
         var builds by remember { mutableStateOf<List<DebugBuild>>(emptyList()) }
         var expandedBuild by remember { mutableStateOf<DebugBuild?>(null) }
-        // artifact ID or downloadUrl → contents
         var expandedArtifactContents by remember { mutableStateOf<Map<String, DebugArtifactContents>>(emptyMap()) }
-        var artifactLoading by remember { mutableStateOf<String?>(null) } // artifact currently scanning
+        var artifactLoading by remember { mutableStateOf<String?>(null) }
         var showInstallDialog by remember { mutableStateOf(false) }
         var selectedArtifactFile: Pair<SEArtifact, String>? by remember { mutableStateOf(null) }
         var downloadStage by remember { mutableStateOf<String?>(null) }
@@ -314,7 +304,6 @@ class SEDownloadTab : Tab("se_download") {
             }.getOrElse { emptyList() }
         }
 
-        // Only index all files inside the zip (without extracting any)
         fun enumerateFilesInArtifact(artifact: SEArtifact, onDone: (DebugArtifactContents) -> Unit) {
             artifactLoading = artifact.downloadUrl
             coroutineScope.launch(Dispatchers.IO) {
@@ -372,25 +361,22 @@ class SEDownloadTab : Tab("se_download") {
                         }
                     }
                 }
-                downloadStage = "Extracting APK…"
+                downloadStage = "Extracting file…"
                 progress = 0.0f
-                var apkFile: File? = null
+                var outFile: File? = null
                 ZipInputStream(tempZip.inputStream()).use { zip ->
                     var entry = zip.nextEntry
                     while (entry != null) {
                         if (!entry.isDirectory && entry.name == fileNameInZip) {
-                            val outFile = File.createTempFile("se_dbg_ex", ".apk", context.externalCacheDir).also { it.deleteOnExit() }
-                            outFile.outputStream().use { output -> 
+                            val destFile = File.createTempFile("se_dbg_ex", ".apk", context.externalCacheDir).also { it.deleteOnExit() }
+                            destFile.outputStream().use { output -> 
                                 val buffer = ByteArray(4096)
                                 var count: Int
-                                var extracted = 0L
                                 while (zip.read(buffer).also { count = it } != -1) {
                                     output.write(buffer, 0, count)
-                                    extracted += count
-                                    // Optionally show progress here if wanted, not vital for single files
                                 }
                             }
-                            apkFile = outFile
+                            outFile = destFile
                             break
                         }
                         entry = zip.nextEntry
@@ -399,14 +385,12 @@ class SEDownloadTab : Tab("se_download") {
                 tempZip.delete()
                 withContext(Dispatchers.Main) {
                     showInstallDialog = false
-                    if (apkFile != null) {
+                    if (outFile != null) {
                         navigation.navigateTo(InstallPackageTab::class, Bundle().apply {
-                            putString("downloadPath", apkFile!!.absolutePath)
+                            putString("downloadPath", outFile!!.absolutePath)
                             putString("appPackage", BuildConfig.APPLICATION_ID)
                             putBoolean("uninstall", false)
                         }, noHistory = true)
-                    } else {
-                        // error could show a toast
                     }
                 }
             }
