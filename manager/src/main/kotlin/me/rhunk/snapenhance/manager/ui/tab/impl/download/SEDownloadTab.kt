@@ -57,7 +57,7 @@ class SEDownloadTab : Tab("se_download") {
 
         fun fetchDebugPrereleases(): List<SEVersion> {
             return runCatching {
-                val req = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/releases").build()
+                val req = Request.Builder().url("https://api.github.com/repos/particle-box/SnapEnhance/releases").build()
                 val resp = OkHttpClient().newCall(req).execute()
                 if (!resp.isSuccessful) return emptyList()
                 val arr = com.google.gson.JsonParser.parseString(resp.body!!.string()).asJsonArray
