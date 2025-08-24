@@ -11,6 +11,8 @@ on:
 jobs:
   job_armv8:
     runs-on: ubuntu-latest
+    outputs:
+      armv8_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -64,23 +66,16 @@ jobs:
           mv ${{steps.sign_app.outputs.signedReleaseFile}} app/build/outputs/apk/armv8/debug/snapenhance-${{ env.version }}-armv8-${GITHUB_SHA::7}.apk
 
       - name: Upload artifact
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
           name: snapenhance-armv8-debug
           path: app/build/outputs/apk/armv8/debug/*.apk
 
-      - name: Create GitHub prerelease (armv8)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create debug-${{ github.run_id }}-armv8-${GITHUB_SHA::7} app/build/outputs/apk/armv8/debug/*.apk \
-            --repo ${{ github.repository }} \
-            --title "Debug CI armv8 ${{ env.version }} ($GITHUB_SHA)" \
-            --notes "Auto-generated debug prerelease for armv8 [CI run ${{ github.run_id }} SHA $GITHUB_SHA]" \
-            --prerelease
-
   job_armv7:
     runs-on: ubuntu-latest
+    outputs:
+      armv7_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -108,7 +103,7 @@ jobs:
 
       - name: Determine the latest Build Tools version installed
         shell: bash
-        run: echo "BUILD_TOOL_VERSION=$(ls "$ANDROID_HOME/build-tools/" | tail -n 1)" >> $GITHUB_ENV
+        run: echo "BUILD_TOOL_VERSION=$(ls \"$ANDROID_HOME/build-tools/\" | tail -n 1)" >> $GITHUB_ENV
 
       - name: Sign APK
         id: sign_app
@@ -134,23 +129,16 @@ jobs:
           mv ${{steps.sign_app.outputs.signedReleaseFile}} app/build/outputs/apk/armv7/debug/snapenhance-${{ env.version }}-armv7-${GITHUB_SHA::7}.apk
 
       - name: Upload artifact
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
           name: snapenhance-armv7-debug
           path: app/build/outputs/apk/armv7/debug/*.apk
 
-      - name: Create GitHub prerelease (armv7)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create debug-${{ github.run_id }}-armv7-${GITHUB_SHA::7} app/build/outputs/apk/armv7/debug/*.apk \
-            --repo ${{ github.repository }} \
-            --title "Debug CI armv7 ${{ env.version }} ($GITHUB_SHA)" \
-            --notes "Auto-generated debug prerelease for armv7 [CI run ${{ github.run_id }} SHA $GITHUB_SHA]" \
-            --prerelease
-
   job_manager:
     runs-on: ubuntu-latest
+    outputs:
+      manager_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -171,6 +159,7 @@ jobs:
         run: ./gradlew manager:assembleDebug
 
       - name: Upload artifact
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
           name: manager
@@ -178,6 +167,8 @@ jobs:
 
   job_core:
     runs-on: ubuntu-latest
+    outputs:
+      core_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -201,7 +192,34 @@ jobs:
         run: ./gradlew assembleCoreDebug
 
       - name: Upload artifact
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
           name: core
           path: app/build/outputs/apk/core/debug/*.apk
+
+  # Download all artifacts and create a unique prerelease
+  make_prerelease:
+    needs: [job_armv7, job_armv8, job_manager, job_core]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./all-apks
+      - name: Display all files for debug
+        run: find ./all-apks
+      - name: Set up GitHub CLI
+        run: |
+          sudo apt-get install -y gh
+      - name: Create Debug Prerelease with all APKs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="debug-${{ github.run_id }}-${{ github.sha }}"
+          TITLE="Debug CI $VERSION"
+          NOTE="Auto-generated debug prerelease including all APKs from jobs."
+          # Find every APK inside ./all-apks, space joined
+          APKLIST=$(find ./all-apks -type f -name '*.apk' | tr '\n' ' ')
+          echo "APKS: $APKLIST"
+          gh release create "$VERSION" $APKLIST --repo ${{ github.repository }} --title "$TITLE" --notes "$NOTE" --prerelease
