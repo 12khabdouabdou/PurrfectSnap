@@ -3,6 +3,7 @@ package me.rhunk.snapenhance.manager.ui.tab.impl.download
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,7 +19,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,7 +35,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class SEDownloadTab : Tab("se_download") {
-
     override fun init(activity: ComponentActivity) { super.init(activity) }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -57,11 +56,28 @@ class SEDownloadTab : Tab("se_download") {
     }
 
     @Composable
+    private fun ModernLoadingBox(modifier: Modifier = Modifier) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(54.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                strokeWidth = 5.dp
+            )
+        }
+    }
+
+    @Composable
     private fun ReleaseTabContent() {
         val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
 
-        var releases by remember { mutableStateOf<List<SEVersion>>(emptyList()) }
+        var releases by remember { mutableStateOf<List<SEVersion>?>(null) }
         var expandedRelease by remember { mutableStateOf<String?>(null) }
         var downloadingApk by remember { mutableStateOf<String?>(null) }
         var downloadProgress by remember { mutableFloatStateOf(0f) }
@@ -157,74 +173,81 @@ class SEDownloadTab : Tab("se_download") {
                 modifier = Modifier.padding(top = 16.dp, bottom = 10.dp, start = 18.dp),
                 color = MaterialTheme.colorScheme.primary
             )
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 20.dp)
-            ) {
-                items(releases) { rel ->
-                    Card(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 7.dp)
-                            .shadow(
-                                elevation = if (expandedRelease == rel.versionName) 6.dp else 2.dp,
-                                shape = RoundedCornerShape(18.dp)
-                            )
-                            .clickable { expandedRelease = if (expandedRelease == rel.versionName) null else rel.versionName },
-                        shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (expandedRelease == rel.versionName)
-                                lerp(MaterialTheme.colorScheme.primaryContainer, Color.White, 0.8f)
-                            else MaterialTheme.colorScheme.surface
-                        ),
-                        elevation = CardDefaults.cardElevation(if (expandedRelease == rel.versionName) 8.dp else 2.dp)
+
+            Crossfade(targetState = releases, modifier = Modifier.weight(1f)) { releasesList ->
+                if (releasesList == null) {
+                    ModernLoadingBox()
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
-                        Column(Modifier.padding(18.dp)) {
-                            Text(rel.versionName, fontSize = 17.sp, color = MaterialTheme.colorScheme.primary)
-                            Text("Published: ${rel.releaseDate}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (expandedRelease == rel.versionName) {
-                            Divider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
-                            rel.downloadAssets.values.forEach { asset ->
-                                Row(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 13.dp, end = 4.dp, top = 9.dp, bottom = 9.dp)
-                                        .background(
-                                            if (downloadingApk == asset.fileName) MaterialTheme.colorScheme.secondary.copy(alpha = 0.13f)
-                                            else Color.Transparent,
-                                            shape = RoundedCornerShape(8.dp)
-                                        ),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Default.Android,
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(end = 14.dp),
-                                        tint = MaterialTheme.colorScheme.primary
+                        items(releasesList) { rel ->
+                            val isExpanded = expandedRelease == rel.versionName
+                            Card(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 7.dp)
+                                    .shadow(
+                                        elevation = if (isExpanded) 6.dp else 2.dp,
+                                        shape = RoundedCornerShape(18.dp)
                                     )
-                                    Column(Modifier.weight(1f)) {
-                                        Text(asset.fileName, fontSize = 16.sp)
-                                        Text(
-                                            "${asset.size / 1024 / 1024} MB",
-                                            fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    if (downloadingApk == asset.fileName) {
-                                        Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
-                                            CircularProgressIndicator(progress = downloadProgress, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
-                                        }
-                                    } else {
-                                        Button(
-                                            onClick = { installApk(asset) },
-                                            shape = RoundedCornerShape(6.dp),
-                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                            modifier = Modifier.height(35.dp)
+                                    .clickable { expandedRelease = if (isExpanded) null else rel.versionName },
+                                shape = RoundedCornerShape(18.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isExpanded)
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surface
+                                ),
+                                elevation = CardDefaults.cardElevation(if (isExpanded) 8.dp else 2.dp)
+                            ) {
+                                Column(Modifier.padding(18.dp)) {
+                                    Text(rel.versionName, fontSize = 17.sp, color = MaterialTheme.colorScheme.primary)
+                                    Text("Published: ${rel.releaseDate}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                if (isExpanded) {
+                                    Divider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
+                                    rel.downloadAssets.values.forEach { asset ->
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 13.dp, end = 4.dp, top = 9.dp, bottom = 9.dp)
+                                                .background(
+                                                    if (downloadingApk == asset.fileName) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                                    else Color.Transparent,
+                                                    shape = RoundedCornerShape(8.dp)
+                                                ),
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(Icons.Default.Download, contentDescription = null, Modifier.size(15.dp))
-                                            Spacer(Modifier.width(7.dp))
-                                            Text("Install", fontSize = 15.sp)
+                                            Icon(
+                                                Icons.Default.Android,
+                                                contentDescription = null,
+                                                modifier = Modifier.padding(end = 14.dp).size(23.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Column(Modifier.weight(1f)) {
+                                                Text(asset.fileName, fontSize = 16.sp)
+                                                Text(
+                                                    "${asset.size / 1024 / 1024} MB",
+                                                    fontSize = 11.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                            if (downloadingApk == asset.fileName) {
+                                                Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
+                                                    CircularProgressIndicator(progress = downloadProgress, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
+                                                }
+                                            } else {
+                                                Button(
+                                                    onClick = { installApk(asset) },
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                                    modifier = Modifier.height(35.dp)
+                                                ) {
+                                                    Icon(Icons.Default.Download, contentDescription = null, Modifier.size(15.dp))
+                                                    Spacer(Modifier.width(7.dp))
+                                                    Text("Install", fontSize = 15.sp)
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -239,7 +262,7 @@ class SEDownloadTab : Tab("se_download") {
     @Composable
     private fun DebugTabDebugReleasesContent() {
         val coroutineScope = rememberCoroutineScope()
-        var debugReleases by remember { mutableStateOf<List<SEVersion>>(emptyList()) }
+        var debugReleases by remember { mutableStateOf<List<SEVersion>?>(null) }
         var expandedRelease by remember { mutableStateOf<String?>(null) }
         val context = LocalContext.current
 
@@ -339,74 +362,78 @@ class SEDownloadTab : Tab("se_download") {
                 modifier = Modifier.padding(top = 16.dp, bottom = 10.dp, start = 18.dp),
                 color = MaterialTheme.colorScheme.primary
             )
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 20.dp)
-            ) {
-                items(debugReleases) { rel ->
-                    Card(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 7.dp)
-                            .shadow(
-                                elevation = if (expandedRelease == rel.versionName) 6.dp else 2.dp,
-                                shape = RoundedCornerShape(18.dp)
-                            )
-                            .clickable { expandedRelease = if (expandedRelease == rel.versionName) null else rel.versionName },
-                        shape = RoundedCornerShape(18.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (expandedRelease == rel.versionName)
-                                lerp(MaterialTheme.colorScheme.primaryContainer, Color.White, 0.8f)
-                            else MaterialTheme.colorScheme.surface
-                        ),
-                        elevation = CardDefaults.cardElevation(if (expandedRelease == rel.versionName) 8.dp else 2.dp)
-                    ) {
-                        Column(Modifier.padding(18.dp)) {
-                            Text(rel.versionName, fontSize = 17.sp, color = MaterialTheme.colorScheme.primary)
-                            Text("Published: ${rel.releaseDate}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        if (expandedRelease == rel.versionName) {
-                            Divider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
-                            rel.downloadAssets.values.forEach { asset ->
-                                Row(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 13.dp, end = 4.dp, top = 9.dp, bottom = 9.dp)
-                                        .background(
-                                            if (downloadingApk == asset.fileName) MaterialTheme.colorScheme.secondary.copy(alpha = 0.13f)
-                                            else Color.Transparent,
-                                            shape = RoundedCornerShape(8.dp)
-                                        ),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Default.Android,
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(end = 14.dp),
-                                        tint = MaterialTheme.colorScheme.primary
+            Crossfade(targetState = debugReleases, modifier = Modifier.weight(1f)) { releasesList ->
+                if (releasesList == null) {
+                    ModernLoadingBox()
+                } else {
+                    LazyColumn(contentPadding = PaddingValues(bottom = 24.dp)) {
+                        items(releasesList) { rel ->
+                            val isExpanded = expandedRelease == rel.versionName
+                            Card(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 7.dp)
+                                    .shadow(
+                                        elevation = if (isExpanded) 6.dp else 2.dp,
+                                        shape = RoundedCornerShape(18.dp)
                                     )
-                                    Column(Modifier.weight(1f)) {
-                                        Text(asset.fileName, fontSize = 16.sp)
-                                        Text(
-                                            "${asset.size / 1024 / 1024} MB",
-                                            fontSize = 11.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    if (downloadingApk == asset.fileName) {
-                                        Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
-                                            CircularProgressIndicator(progress = downloadProgress, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
-                                        }
-                                    } else {
-                                        Button(
-                                            onClick = { installApk(asset) },
-                                            shape = RoundedCornerShape(6.dp),
-                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                                            modifier = Modifier.height(35.dp)
+                                    .clickable { expandedRelease = if (isExpanded) null else rel.versionName },
+                                shape = RoundedCornerShape(18.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isExpanded)
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surface
+                                ),
+                                elevation = CardDefaults.cardElevation(if (isExpanded) 8.dp else 2.dp)
+                            ) {
+                                Column(Modifier.padding(18.dp)) {
+                                    Text(rel.versionName, fontSize = 17.sp, color = MaterialTheme.colorScheme.primary)
+                                    Text("Published: ${rel.releaseDate}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                if (isExpanded) {
+                                    Divider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
+                                    rel.downloadAssets.values.forEach { asset ->
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(start = 13.dp, end = 4.dp, top = 9.dp, bottom = 9.dp)
+                                                .background(
+                                                    if (downloadingApk == asset.fileName) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                                    else Color.Transparent,
+                                                    shape = RoundedCornerShape(8.dp)
+                                                ),
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(Icons.Default.Download, contentDescription = null, Modifier.size(15.dp))
-                                            Spacer(Modifier.width(7.dp))
-                                            Text("Install", fontSize = 15.sp)
+                                            Icon(
+                                                Icons.Default.Android,
+                                                contentDescription = null,
+                                                modifier = Modifier.padding(end = 14.dp).size(23.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Column(Modifier.weight(1f)) {
+                                                Text(asset.fileName, fontSize = 16.sp)
+                                                Text(
+                                                    "${asset.size / 1024 / 1024} MB",
+                                                    fontSize = 11.sp,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                            if (downloadingApk == asset.fileName) {
+                                                Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
+                                                    CircularProgressIndicator(progress = downloadProgress, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
+                                                }
+                                            } else {
+                                                Button(
+                                                    onClick = { installApk(asset) },
+                                                    shape = RoundedCornerShape(6.dp),
+                                                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                                    modifier = Modifier.height(35.dp)
+                                                ) {
+                                                    Icon(Icons.Default.Download, contentDescription = null, Modifier.size(15.dp))
+                                                    Spacer(Modifier.width(7.dp))
+                                                    Text("Install", fontSize = 15.sp)
+                                                }
+                                            }
                                         }
                                     }
                                 }
