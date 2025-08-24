@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    namespace = rootProject.ext["applicationId"].toString() + ".manager"
+    namespace = rootProject.extra["applicationId"].toString() + ".manager"
     compileSdk = 34
 
     androidResources {
@@ -21,8 +21,8 @@ android {
     }
 
     defaultConfig {
-        buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
-        applicationId = rootProject.ext["applicationId"].toString() + ".manager"
+        buildConfigField("String", "APPLICATION_ID", "\"${rootProject.extra["applicationId"]}\"")
+        applicationId = rootProject.extra["applicationId"].toString() + ".manager"
         versionCode = 1
         versionName = "1.0.0"
         minSdk = 28
@@ -31,11 +31,11 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = true
             proguardFiles += file("proguard-rules.pro")
         }
-        debug {
+        getByName("debug") {
             (properties["debug_flavor"] == null).also {
                 isDebuggable = !it
                 isMinifyEnabled = it
@@ -78,7 +78,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.jsoup)
     implementation(libs.okhttp)
-    implementation 'dnsjava:dnsjava:3.5.2' // <--- Cloudflare DNS support
+    implementation("dnsjava:dnsjava:3.5.2") // <--- Cloudflare DNS support for APK downloads
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3)
     implementation(libs.androidx.activity.ktx)
