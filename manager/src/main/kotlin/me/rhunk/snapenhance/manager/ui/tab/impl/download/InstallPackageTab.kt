@@ -47,7 +47,7 @@ class InstallPackageTab : Tab("install_app") {
         }
     }
 
-    private fun downloadArtifact(url: String, progress: (Float) -> Unit): File? {
+    private fun downloadArtifact(context: android.content.Context, url: String, progress: (Float) -> Unit): File? {
         val uri = Uri.parse(url)
         if (uri.scheme != "https" && uri.scheme != "http") {
             val file = File(url)
@@ -58,7 +58,8 @@ class InstallPackageTab : Tab("install_app") {
         val response = OkHttpClient().newCall(endpoint).execute()
         if (!response.isSuccessful) throw Throwable("Failed to download artifact: ${response.code}")
         return response.body.byteStream().use { input ->
-            val file = File.createTempFile("artifact", ".apk", activity.externalCacheDirs.first()).also {
+            // FIX: Always use supported dir!
+            val file = File.createTempFile("artifact", ".apk", context.externalCacheDir).also {
                 it.deleteOnExit()
             }
             file.outputStream().use { output ->
@@ -160,6 +161,7 @@ class InstallPackageTab : Tab("install_app") {
                 installStage = if (code != Activity.RESULT_OK) InstallStage.ERROR else InstallStage.DONE
                 downloadedFile?.delete()
             }
+            // Must be a file in supported location!
             val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", downloadedFile!!)
             installPackageIntentLauncher.launch(Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
                 data = fileUri
@@ -172,9 +174,17 @@ class InstallPackageTab : Tab("install_app") {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
                     val file: File? = if (downloadPath.startsWith("http")) {
-                        downloadArtifact(downloadPath) { downloadProgress = it }
+                        downloadArtifact(context, downloadPath) { downloadProgress = it }
                     } else {
-                        File(downloadPath)
+                        // For local path, if not in a supported dir, copy to externalCacheDir!
+                        val src = File(downloadPath)
+                        val extCache = context.externalCacheDir ?: context.cacheDir
+                        val dest = File(extCache, src.name)
+                        if (src.absolutePath != dest.absolutePath && src.exists()) {
+                            src.copyTo(dest, overwrite = true)
+                            dest.deleteOnExit()
+                            dest
+                        } else if (src.exists()) src else null
                     }
                     if (file == null || !file.exists()) {
                         installStage = InstallStage.ERROR
