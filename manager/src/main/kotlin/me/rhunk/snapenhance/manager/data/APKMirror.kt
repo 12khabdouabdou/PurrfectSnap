@@ -38,7 +38,8 @@ class APKMirror {
 
     companion object {
         private const val BASE_URL = "https://www.apkmirror.com"
-        private const val FETCH_BUILD_URL = "$BASE_URL/apk/snap-inc/snapchat/variant-%7B%22arches_slug%22%3A%5B%22arm64-v8a%22%2C%22armeabi-v7a%22%5D%2C%22dpis_slug%22%3A%5B%22nodpi%22%5D%7D/page/{page}/"
+        private const val FETCH_BUILD_URL =
+            "$BASE_URL/apk/snap-inc/snapchat/variant-%7B%22arches_slug%22%3A%5B%22arm64-v8a%22%2C%22armeabi-v7a%22%5D%2C%22dpis_slug%22%3A%5B%22nodpi%22%5D%7D/page/{page}/"
     }
 
     fun fetchDownloadLink(downloadPageUri: String): String? {
@@ -49,7 +50,10 @@ class APKMirror {
                     .build()
             ).execute().use { response ->
                 if (!response.isSuccessful) return null
-                val finalDownloadPageUri = Jsoup.parse(response.body.string()).getElementsByClass("downloadButton").first()?.attr("href")
+                val bodyString = response.body?.string() ?: return null
+                val finalDownloadPageUri = Jsoup.parse(bodyString).getElementsByClass("downloadButton").first()?.attr("href")
+
+                if (finalDownloadPageUri.isNullOrEmpty()) return null
 
                 okhttpClient.newCall(
                     Request.Builder()
@@ -57,7 +61,8 @@ class APKMirror {
                         .build()
                 ).execute().use { response2 ->
                     if (!response2.isSuccessful) return null
-                    val document = Jsoup.parse(response2.body.string())
+                    val bodyString2 = response2.body?.string() ?: return null
+                    val document = Jsoup.parse(bodyString2)
                     val downloadLink = document.getElementById("download-link")?.attr("href") ?: return null
                     return BASE_URL + downloadLink
                 }
@@ -76,7 +81,8 @@ class APKMirror {
                     .build()
             ).execute().use { response ->
                 if (!response.isSuccessful) return null
-                val document = Jsoup.parse(response.body.string())
+                val bodyString = response.body?.string() ?: return null
+                val document = Jsoup.parse(bodyString)
                 document.getElementById("primary")?.getElementsByClass("appRow")?.forEach { app ->
                     val title = app.getElementsByTag("h5").first()?.attr("title") ?: return@forEach
                     val releaseDate = app.getElementsByClass("dateyear_utc").attr("data-utcdate") ?: return@forEach
