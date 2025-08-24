@@ -1,5 +1,7 @@
 package me.rhunk.snapenhance.manager.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -25,6 +27,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Permission check for Install Unknown Apps
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val pm = packageManager
+            if (!pm.canRequestPackageInstalls()) {
+                startActivity(
+                    Intent(
+                        android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            }
+        }
 
         Shell.enableVerboseLogging = BuildConfig.DEBUG;
         Shell.setDefaultBuilder(Shell.Builder.create()
