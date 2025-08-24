@@ -34,6 +34,13 @@ import java.util.Locale
 import java.util.zip.ZipInputStream
 import java.io.File
 
+// --- FIX: Move data class outside so it's visible everywhere in this file ---
+data class DebugBuild(
+    val name: String,
+    val createdAt: String,
+    val artifactsUrl: String
+)
+
 class SEDownloadTab : Tab("se_download") {
 
     private fun fetchSEReleases(): List<SEVersion>? {
@@ -262,17 +269,12 @@ class SEDownloadTab : Tab("se_download") {
     @Composable
     private fun DebugTabContent() {
         val coroutineScope = rememberCoroutineScope()
-        var builds by remember { mutableStateOf(listOf<DebugBuild>()) }
+        // --- FIX: Specify explicit types for state ---
+        var builds by remember { mutableStateOf<List<DebugBuild>>(emptyList()) }
         var selectedBuild by remember { mutableStateOf<DebugBuild?>(null) }
         var selectedArtifact by remember { mutableStateOf<SEArtifact?>(null) }
         var isInstalling by remember { mutableStateOf(false) }
         val context = LocalContext.current
-
-        data class DebugBuild(
-            val name: String,
-            val createdAt: String,
-            val artifactsUrl: String
-        )
 
         fun fetchDebugCIs() : List<DebugBuild> {
             return runCatching {
@@ -283,7 +285,6 @@ class SEDownloadTab : Tab("se_download") {
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
                 runs.mapNotNull { runObj ->
                     val runJson = runObj.asJsonObject
-                    // only those with name == "Debug CI", path contains debug.yml, etc.
                     if (runJson["name"].asString != "Debug CI" ||
                         runJson["path"].asString != ".github/workflows/debug.yml")
                         return@mapNotNull null
@@ -323,7 +324,6 @@ class SEDownloadTab : Tab("se_download") {
             if (isInstalling) return
             isInstalling = true
             coroutineScope.launch(Dispatchers.IO) {
-                // Download ZIP and extract APK
                 val client = OkHttpClient()
                 val request = Request.Builder().url(artifact.downloadUrl).build()
                 val response = client.newCall(request).execute()
@@ -335,7 +335,6 @@ class SEDownloadTab : Tab("se_download") {
                 response.body!!.byteStream().use { input ->
                     tmpZipFile.outputStream().use { output -> input.copyTo(output) }
                 }
-                // extract first APK
                 var apkFile: File? = null
                 ZipInputStream(tmpZipFile.inputStream()).use { zip ->
                     var entry = zip.nextEntry
@@ -350,14 +349,12 @@ class SEDownloadTab : Tab("se_download") {
                     }
                 }
                 tmpZipFile.delete()
-                // Now trigger installer
                 if (apkFile != null) {
                     val bundle = Bundle().apply {
                         putString("downloadPath", apkFile!!.absolutePath)
                         putString("appPackage", BuildConfig.APPLICATION_ID)
                         putBoolean("uninstall", false)
                     }
-                    // switch to main thread for navigation
                     launch(Dispatchers.Main) {
                         navigation.navigateTo(InstallPackageTab::class, bundle, noHistory = true)
                     }
@@ -365,8 +362,6 @@ class SEDownloadTab : Tab("se_download") {
                 isInstalling = false
             }
         }
-
-        // UI
         LaunchedEffect(Unit) {
             coroutineScope.launch(Dispatchers.IO) { builds = fetchDebugCIs() }
         }
