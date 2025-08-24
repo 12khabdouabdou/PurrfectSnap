@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient
 import okhttp3.dnsoverhttps.DnsOverHttps
 import java.net.InetAddress
 import java.net.UnknownHostException
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 // Cloudflare DNS-over-HTTPS endpoint
 private const val CLOUDFLARE_DOH_URL = "https://cloudflare-dns.com/dns-query"
