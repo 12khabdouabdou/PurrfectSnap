@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -21,6 +22,8 @@ import androidx.navigation.compose.rememberNavController
 import me.rhunk.snapenhance.RemoteSideContext
 import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
+import me.rhunk.snapenhance.common.ui.ThemeMode
+import me.rhunk.snapenhance.common.ui.ThemePreferences
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
@@ -41,7 +44,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-
         super.onCreate(savedInstanceState)
         managerContext = SharedContextHolder.remote(this).apply {
             activity = this@MainActivity
@@ -49,7 +51,17 @@ class MainActivity : ComponentActivity() {
         }
         val routes = Routes(managerContext)
         routes.getRoutes().forEach { it.init() }
+
         setContent {
+            // Observe themeMode from DataStore for app-wide theme switching
+            val context = LocalContext.current
+            val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
+            val isDarkTheme = when (themeMode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
+
             navController = rememberNavController()
             val navigation = remember {
                 Navigation(managerContext, navController, routes.also {
@@ -58,11 +70,9 @@ class MainActivity : ComponentActivity() {
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
 
-            AppMaterialTheme {
-                // Calculate isLight from the theme background using correct API
+            AppMaterialTheme(isDarkTheme = isDarkTheme) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
-
                 val view = LocalView.current
                 SideEffect {
                     val window = (view.context as Activity).window
@@ -73,7 +83,6 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-
                 Scaffold(
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = { navigation.TopBar() },
