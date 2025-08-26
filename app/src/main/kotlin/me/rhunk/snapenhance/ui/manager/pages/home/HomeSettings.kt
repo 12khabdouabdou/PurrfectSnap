@@ -1,17 +1,18 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
 import android.content.SharedPreferences
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,15 +23,15 @@ import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.action.EnumAction
 import me.rhunk.snapenhance.common.bridge.InternalFileHandleType
+import me.rhunk.snapenhance.common.ui.ThemeChooserDialog
+import me.rhunk.snapenhance.common.ui.ThemeMode
+import me.rhunk.snapenhance.common.ui.ThemePreferences
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.saveFile
-import me.rhunk.snapenhance.common.ui.ThemeChooser
-import me.rhunk.snapenhance.common.ui.ThemeMode
-import me.rhunk.snapenhance.common.ui.ThemePreferences
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -132,30 +133,58 @@ class HomeSettings : Routes.Route() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val contextC = context.androidContext
+        val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
+        var showThemeDialog by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // === Modern Theme Chooser Section ===
+            // APP THEME (Popup)
             Spacer(Modifier.height(20.dp))
-            ThemeChooser(
-                selected = themeMode,
-                onSelect = { mode ->
-                    scope.launch {
-                        ThemePreferences.setThemeMode(contextC, mode)
-                    }
-                },
+            Card(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
                     .fillMaxWidth()
-            )
+                    .padding(horizontal = 16.dp)
+                    .clickable { showThemeDialog = true },
+                shape = MaterialTheme.shapes.medium,
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Brightness4,
+                        contentDescription = "Theme",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(26.dp)
+                    )
+                    Spacer(modifier = Modifier.width(18.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("App Theme", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                        Text(themeMode.displayName, color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
+                    }
+                }
+            }
+            if (showThemeDialog) {
+                ThemeChooserDialog(
+                    selected = themeMode,
+                    onSelect = { mode ->
+                        scope.launch {
+                            ThemePreferences.setThemeMode(contextC, mode)
+                        }
+                    },
+                    onDismiss = { showThemeDialog = false }
+                )
+            }
             Spacer(Modifier.height(20.dp))
-            // === Rest of your settings ===
+
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
