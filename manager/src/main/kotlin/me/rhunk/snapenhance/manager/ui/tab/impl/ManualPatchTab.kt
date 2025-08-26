@@ -76,7 +76,7 @@ class ManualPatchTab : Tab("manualpatch") {
                         } ?: run {
                             Text(text = "Not installed", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                         }
-                        Icon(imageVector = Icons.Default.OpenInNew, contentDescription = null, Modifier.padding(10.dp))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, Modifier.padding(10.dp))
                     }
                 }
             }
