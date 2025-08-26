@@ -1,6 +1,7 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
 import android.content.SharedPreferences
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -27,25 +28,24 @@ import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.saveFile
+import me.rhunk.snapenhance.common.ui.ThemeChooser
+import me.rhunk.snapenhance.common.ui.ThemeMode
+import me.rhunk.snapenhance.common.ui.ThemePreferences
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
-
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, false)) }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -67,13 +67,11 @@ class HomeSettings : Routes.Route() {
             }, modifier = Modifier.padding(end = 26.dp))
         }
     }
-
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
         var confirmationDialog by remember {
             mutableStateOf(false)
         }
-
         fun takeAction() {
             if (requireConfirmation) {
                 confirmationDialog = true
@@ -81,7 +79,6 @@ class HomeSettings : Routes.Route() {
                 action()
             }
         }
-
         if (requireConfirmation && confirmationDialog) {
             Dialog(onDismissRequest = { confirmationDialog = false }) {
                 dialogs.ConfirmDialog(title = context.translation["manager.dialogs.action_confirm.title"], onConfirm = {
@@ -92,7 +89,6 @@ class HomeSettings : Routes.Route() {
                 })
             }
         }
-
         ShiftedRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,7 +116,6 @@ class HomeSettings : Routes.Route() {
             }
         }
     }
-
     @Composable
     private fun ShiftedRow(
         modifier: Modifier = Modifier,
@@ -137,11 +132,30 @@ class HomeSettings : Routes.Route() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
+        val contextC = context.androidContext
+        val scope = rememberCoroutineScope()
+        val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // === Modern Theme Chooser Section ===
+            Spacer(Modifier.height(20.dp))
+            ThemeChooser(
+                selected = themeMode,
+                onSelect = { mode ->
+                    scope.launch {
+                        ThemePreferences.setThemeMode(contextC, mode)
+                    }
+                },
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+            )
+            Spacer(Modifier.height(20.dp))
+            // === Rest of your settings ===
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
@@ -225,7 +239,6 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-
             RowTitle(title = translation["debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -238,7 +251,6 @@ class HomeSettings : Routes.Route() {
                         .padding(start = 26.dp)
                 ) {
                     var expanded by remember { mutableStateOf(false) }
-
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
@@ -250,7 +262,6 @@ class HomeSettings : Routes.Route() {
                             readOnly = true,
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
                         )
-
                         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             InternalFileHandleType.entries.forEach { fileType ->
                                 DropdownMenuItem(onClick = {
