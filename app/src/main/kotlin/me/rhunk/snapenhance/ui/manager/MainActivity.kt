@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatDelegate // <-- ADD THIS IMPORT
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.remember
@@ -32,16 +33,16 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // *** This ensures your app responds to system day/night mode ***
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        
         super.onCreate(savedInstanceState)
-
         managerContext = SharedContextHolder.remote(this).apply {
             activity = this@MainActivity
             checkForRequirements()
         }
-
         val routes = Routes(managerContext)
         routes.getRoutes().forEach { it.init() }
-
         setContent {
             navController = rememberNavController()
             val navigation = remember {
@@ -50,7 +51,6 @@ class MainActivity : ComponentActivity() {
                 })
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
-
             AppMaterialTheme {
                 Scaffold(
                     containerColor = MaterialTheme.colorScheme.background,
