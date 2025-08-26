@@ -125,7 +125,7 @@ class InstallPackageTab : Tab("install_app") {
             when (installStage) {
                 InstallStage.DOWNLOADING -> {
                     Text(text = "Downloading ...")
-                    LinearProgressIndicator(progress = downloadProgress, Modifier.fillMaxWidth().height(4.dp), strokeCap = StrokeCap.Round)
+                    LinearProgressIndicator(progress = { downloadProgress, Modifier.fillMaxWidth().height(4.dp), strokeCap = StrokeCap.Round} )
                 }
                 InstallStage.UNINSTALLING -> {
                     Text(text = "Uninstalling app $appPackage...")
