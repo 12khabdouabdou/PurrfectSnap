@@ -43,11 +43,6 @@ class ManualPatchTab : Tab("manualpatch") {
         val coroutineScope = rememberCoroutineScope()
         var snapchatAppInfo by remember { mutableStateOf(null as PackageInfo?) }
         var snapEnhanceInfo by remember { mutableStateOf(null as PackageInfo?) }
-
-        // Use your actual package name constants here if you don't have sharedConfig
-        val snapchatPackageName = Constants.SNAPCHAT_PACKAGE_NAME // fallback: "com.snapchat.android"
-        val snapEnhancePackageName = Constants.SNAPENHANCE_PACKAGE_NAME // fallback: "me.rhunk.snapenhance"
-
         Column {
             Card(
                 modifier = Modifier
@@ -71,8 +66,7 @@ class ManualPatchTab : Tab("manualpatch") {
                         }
                     }
                     Row(
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -106,8 +100,7 @@ class ManualPatchTab : Tab("manualpatch") {
                         }
                     }
                     Row(
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -129,14 +122,12 @@ class ManualPatchTab : Tab("manualpatch") {
         }
         SideEffect {
             coroutineScope.launch(Dispatchers.IO) {
-                runCatching {
-                    snapchatAppInfo = runCatching {
-                        context.packageManager.getPackageInfo(snapchatPackageName, 0)
-                    }.getOrNull()
-                    snapEnhanceInfo = runCatching {
-                        context.packageManager.getPackageInfo(snapEnhancePackageName, 0)
-                    }.getOrNull()
-                }
+                snapchatAppInfo = runCatching {
+                    context.packageManager.getPackageInfo(Constants.SNAPCHAT_PACKAGE_NAME, 0)
+                }.getOrNull()
+                snapEnhanceInfo = runCatching {
+                    context.packageManager.getPackageInfo(Constants.SNAPENHANCE_PACKAGE_NAME, 0)
+                }.getOrNull()
             }
         }
     }
