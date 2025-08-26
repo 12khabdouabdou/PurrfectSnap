@@ -4,7 +4,11 @@ import android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE
 import android.content.pm.PackageInfo
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -31,6 +35,8 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
 class ManualPatchTab : Tab("manualpatch") {
     override fun init(activity: ComponentActivity) {
         super.init(activity)
+        registerNestedTab(SEDownloadTab::class)
+        registerNestedTab(SnapchatPatchTab::class)
     }
     @Composable
     override fun Content() {
@@ -39,18 +45,17 @@ class ManualPatchTab : Tab("manualpatch") {
         var snapchatAppInfo by remember { mutableStateOf(null as PackageInfo?) }
         var snapEnhanceInfo by remember { mutableStateOf(null as PackageInfo?) }
         Column {
-            // SnapEnhance Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
-                    .clickable {
-                        navigation.navigateTo(SEDownloadTab::class, noHistory = true)
-                    }
+                    .padding(10.dp),
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable {
+                            navigation.navigateTo(SEDownloadTab::class)
+                        }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -75,18 +80,17 @@ class ManualPatchTab : Tab("manualpatch") {
                     }
                 }
             }
-            // Snapchat Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
-                    .clickable {
-                        navigation.navigateTo(SnapchatPatchTab::class, noHistory = true)
-                    }
+                    .padding(10.dp),
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clickable {
+                            navigation.navigateTo(SnapchatPatchTab::class)
+                        }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
