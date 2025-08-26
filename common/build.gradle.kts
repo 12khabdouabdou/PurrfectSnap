@@ -44,6 +44,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation(libs.coroutines)
     implementation(libs.gson)
     implementation(libs.okhttp)
