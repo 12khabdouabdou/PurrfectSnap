@@ -4,7 +4,11 @@ import android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE
 import android.content.pm.PackageInfo
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -26,11 +30,13 @@ import me.rhunk.snapenhance.manager.patch.config.Constants
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
-import me.rhunk.snapenhance.manager.ui.tab.sharedConfig
 
 class ManualPatchTab : Tab("manualpatch") {
-    override fun init(activity: ComponentActivity) { super.init(activity) }
-
+    override fun init(activity: ComponentActivity) {
+        super.init(activity)
+        registerNestedTab(SEDownloadTab::class)
+        registerNestedTab(SnapchatPatchTab::class)
+    }
     @Composable
     override fun Content() {
         val context = LocalContext.current
@@ -38,8 +44,11 @@ class ManualPatchTab : Tab("manualpatch") {
         var snapchatAppInfo by remember { mutableStateOf(null as PackageInfo?) }
         var snapEnhanceInfo by remember { mutableStateOf(null as PackageInfo?) }
 
+        // Use your actual package name constants here if you don't have sharedConfig
+        val snapchatPackageName = Constants.SNAPCHAT_PACKAGE_NAME // fallback: "com.snapchat.android"
+        val snapEnhancePackageName = Constants.SNAPENHANCE_PACKAGE_NAME // fallback: "me.rhunk.snapenhance"
+
         Column {
-            // SnapEnhance Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -55,53 +64,27 @@ class ManualPatchTab : Tab("manualpatch") {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(
-                            text = "SnapEnhance",
-                            fontSize = 24.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(text = "SnapEnhance", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                         snapEnhanceInfo?.let {
-                            Text(
-                                text = "${it.versionName} (${it.longVersionCode}) - ${if ((it.applicationInfo.flags and FLAG_DEBUGGABLE) != 0) "Debug" else "Release"}",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = it.packageName,
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "${it.versionName} (${it.longVersionCode}) - ${if ((it.applicationInfo.flags and FLAG_DEBUGGABLE) != 0) "Debug" else "Release"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(it.packageName, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     Row(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         snapEnhanceInfo?.let {
-                            Text(
-                                text = "Installed",
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            Text(text = "Installed", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                         } ?: run {
-                            Text(
-                                text = "Not installed",
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            Text(text = "Not installed", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                         }
-                        Icon(
-                            imageVector = Icons.Default.OpenInNew,
-                            contentDescription = null,
-                            Modifier.padding(10.dp)
-                        )
+                        Icon(imageVector = Icons.Default.OpenInNew, contentDescription = null, Modifier.padding(10.dp))
                     }
                 }
             }
-
-            // Snapchat Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,22 +100,14 @@ class ManualPatchTab : Tab("manualpatch") {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(
-                            text = "Snapchat",
-                            fontSize = 24.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(text = "Snapchat", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                         snapchatAppInfo?.let {
-                            Text(
-                                text = "${it.versionName} (${it.longVersionCode})",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "${it.versionName} (${it.longVersionCode})", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     Row(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -143,34 +118,24 @@ class ManualPatchTab : Tab("manualpatch") {
                                 Text(text = "Patched", fontSize = 16.sp)
                             } else {
                                 Icon(imageVector = Icons.Default.Close, contentDescription = null)
-                                Text(
-                                    text = "Not patched",
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                Text(text = "Not patched", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                             }
                         } ?: run {
-                            Text(
-                                text = "Not installed",
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            Text(text = "Not installed", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
             }
-
-            // Info state update
-            SideEffect {
-                coroutineScope.launch(Dispatchers.IO) {
-                    runCatching {
-                        snapchatAppInfo = runCatching {
-                            context.packageManager.getPackageInfo(sharedConfig.snapchatPackageName, 0)
-                        }.getOrNull()
-                        snapEnhanceInfo = runCatching {
-                            context.packageManager.getPackageInfo(sharedConfig.snapEnhancePackageName, 0)
-                        }.getOrNull()
-                    }
+        }
+        SideEffect {
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching {
+                    snapchatAppInfo = runCatching {
+                        context.packageManager.getPackageInfo(snapchatPackageName, 0)
+                    }.getOrNull()
+                    snapEnhanceInfo = runCatching {
+                        context.packageManager.getPackageInfo(snapEnhancePackageName, 0)
+                    }.getOrNull()
                 }
             }
         }
