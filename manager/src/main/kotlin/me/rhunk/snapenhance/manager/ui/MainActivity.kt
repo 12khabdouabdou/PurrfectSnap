@@ -19,10 +19,12 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.SettingsTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.InstallPackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.RepackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
+import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
+import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
 
 class MainActivity : ComponentActivity() {
     companion object {
-        // Only the main tabs you want in the bottom nav!
+        // Only primary (main/bottom-bar) tabs here!
         private val primaryTabs = listOf(
             HomeTab::class,
             SettingsTab::class
@@ -50,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 .setTimeout(10)
         )
 
-        // Build tab list with only main tabs as primary
+        // Main and routable tabs setup
         val tabs = primaryTabs.mapNotNull {
             runCatching { it.java.constructors.first().newInstance() as Tab }.getOrNull()
         }.toMutableList().apply {
@@ -61,8 +63,11 @@ class MainActivity : ComponentActivity() {
                     addNestedTabsRecursively(tab.nestedTabs)
                 }
             }
-            // Add accessible but non-primary screens (e.g., ManualPatchTab)
+            // Ensure all routable/non-bottom-bar tabs are present, to avoid crash!
             if (none { it.route == "manualpatch" }) add(ManualPatchTab())
+            if (none { it.route == "sedownload" }) add(SEDownloadTab())
+            if (none { it.route == "snapchatpatch" }) add(SnapchatPatchTab())
+            // (If InstallPackageTab or RepackageTab are also navigated to directly, add here too)
             toList().forEach { addNestedTabsRecursively(it.nestedTabs) }
         }
 
