@@ -4,12 +4,9 @@ import android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE
 import android.content.pm.PackageInfo
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -32,8 +29,12 @@ import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
 
-class ManualPatchTab : Tab("manualpatch", true) { // true marks it as a main tab if needed
-    // NO registerNestedTab for SEDownloadTab or SnapchatPatchTab -- these must be navigated by their own routes
+// Provide icon = Icons.Default.Build (or any other valid icon)
+class ManualPatchTab : Tab("manualpatch", true, icon = Icons.Default.Build) {
+    override fun init(activity: ComponentActivity) {
+        super.init(activity)
+        // No registerNestedTab! These are not nested tabs anymore
+    }
     @Composable
     override fun Content() {
         val context = LocalContext.current
@@ -41,6 +42,7 @@ class ManualPatchTab : Tab("manualpatch", true) { // true marks it as a main tab
         var snapchatAppInfo by remember { mutableStateOf(null as PackageInfo?) }
         var snapEnhanceInfo by remember { mutableStateOf(null as PackageInfo?) }
         Column {
+            // SnapEnhance Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -76,6 +78,7 @@ class ManualPatchTab : Tab("manualpatch", true) { // true marks it as a main tab
                     }
                 }
             }
+            // Snapchat Card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
