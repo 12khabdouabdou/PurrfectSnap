@@ -1,5 +1,4 @@
 package me.rhunk.snapenhance.manager.ui
-
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -22,21 +21,16 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.download.RepackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
 
 class MainActivity : ComponentActivity() {
-
     companion object {
-        // List ONLY the main tabs you want as bottom bar items
+        // Only the main tabs you want in the bottom nav!
         private val primaryTabs = listOf(
             HomeTab::class,
-            ManualPatchTab::class,
-            SettingsTab::class,
-            InstallPackageTab::class,
-            RepackageTab::class
+            SettingsTab::class
         )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Permission check for Install Unknown Apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val pm = packageManager
@@ -49,7 +43,6 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-
         Shell.enableVerboseLogging = BuildConfig.DEBUG
         Shell.setDefaultBuilder(
             Shell.Builder.create()
@@ -57,20 +50,19 @@ class MainActivity : ComponentActivity() {
                 .setTimeout(10)
         )
 
-        // This will ensure you only have one *unique* Tab instance per route in main tabs;
-        // Nested tabs will be handled separately.
+        // Build tab list with only main tabs as primary
         val tabs = primaryTabs.mapNotNull {
             runCatching { it.java.constructors.first().newInstance() as Tab }.getOrNull()
         }.toMutableList().apply {
             forEach { it.init(this@MainActivity) }
             fun addNestedTabsRecursively(tabs: List<Tab>) {
                 tabs.forEach { tab ->
-                    // Add each nestedTab only ONCE by route.
                     if (none { it.route == tab.route }) add(tab)
                     addNestedTabsRecursively(tab.nestedTabs)
                 }
             }
-            // Recursively add nestedTabs for ALL primary tabs:
+            // Add accessible but non-primary screens (e.g., ManualPatchTab)
+            if (none { it.route == "manualpatch" }) add(ManualPatchTab())
             toList().forEach { addNestedTabsRecursively(it.nestedTabs) }
         }
 
@@ -87,7 +79,7 @@ class MainActivity : ComponentActivity() {
                     Navigation(
                         navHostController = navHostController,
                         tabs = tabs,
-                        defaultTab = HomeTab::class // HomeTab IS the default first screen/tab
+                        defaultTab = HomeTab::class
                     ).also {
                         tabs.forEach { tab ->
                             tab.navigation = it
