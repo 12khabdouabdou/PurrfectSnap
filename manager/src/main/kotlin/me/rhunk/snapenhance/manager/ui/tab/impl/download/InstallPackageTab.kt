@@ -1,5 +1,4 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl.download
-
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -29,10 +28,10 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
-import android.content.pm.PackageInstaller
+import android.content.pm.PackageInstaller // <-- ADDED
 import java.net.UnknownHostException
-import me.rhunk.snapenhance.manager.data.DNSBlockedException // <-- Add this import
-import me.rhunk.snapenhance.manager.ui.components.DnsBlockedDialog // <-- Add this import if you've placed the dialog composable as shown
+import me.rhunk.snapenhance.manager.data.DNSBlockedException
+import me.rhunk.snapenhance.manager.ui.components.DnsBlockedDialog
 
 class InstallPackageTab : Tab("install_app") {
     private lateinit var installPackageIntentLauncher: ActivityResultLauncher<Intent>
@@ -50,7 +49,6 @@ class InstallPackageTab : Tab("install_app") {
             uninstallPackageCallback?.invoke(it.resultCode)
         }
     }
-
     private fun downloadArtifact(context: android.content.Context, url: String, progress: (Float) -> Unit): File? {
         val uri = Uri.parse(url)
         if (uri.scheme != "https" && uri.scheme != "http") {
@@ -62,7 +60,6 @@ class InstallPackageTab : Tab("install_app") {
         val response = OkHttpClient().newCall(endpoint).execute()
         if (!response.isSuccessful) throw Throwable("Failed to download artifact: ${response.code}")
         return response.body.byteStream().use { input ->
-            // FIX: Always use supported dir!
             val file = File.createTempFile("artifact", ".apk", context.externalCacheDir).also {
                 it.deleteOnExit()
             }
@@ -88,7 +85,6 @@ class InstallPackageTab : Tab("install_app") {
         var installStage by remember { mutableStateOf(InstallStage.DOWNLOADING) }
         var downloadProgress by remember { mutableFloatStateOf(-1f) }
         var downloadedFile by remember { mutableStateOf<File?>(null) }
-        // NEW: DNS block dialog state
         var showDnsDialog by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) {
             uninstallPackageCallback = null
@@ -104,12 +100,9 @@ class InstallPackageTab : Tab("install_app") {
             } ?: false
         }
         BackHandler(installStage != InstallStage.DONE && installStage != InstallStage.ERROR) {}
-
-        // NEW: Show DNS blocked dialog if needed
         if (showDnsDialog) {
             DnsBlockedDialog { showDnsDialog = false }
         }
-
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -126,7 +119,7 @@ class InstallPackageTab : Tab("install_app") {
             when (installStage) {
                 InstallStage.DOWNLOADING -> {
                     Text(text = "Downloading ...")
-                    LinearProgressIndicator(progress = { downloadProgress, Modifier.fillMaxWidth().height(4.dp), strokeCap = StrokeCap.Round} )
+                    LinearProgressIndicator(progress = { downloadProgress }, Modifier.fillMaxWidth().height(4.dp), strokeCap = StrokeCap.Round)
                 }
                 InstallStage.UNINSTALLING -> {
                     Text(text = "Uninstalling app $appPackage...")
@@ -153,7 +146,7 @@ class InstallPackageTab : Tab("install_app") {
             val result = Shell.cmd(
                 "cp \"${downloadedFile!!.absolutePath}\" /data/local/tmp/",
                 "pm install -r \"/data/local/tmp/${downloadedFile!!.name}\"",
-                "rm /data/local/tmp/${downloadedFile!!.name}"
+                "rm /data/local/tmp/${downloadedFile!!.name}\""
             ).exec()
             if (result.isSuccess) {
                 installStage = InstallStage.DONE
@@ -172,22 +165,19 @@ class InstallPackageTab : Tab("install_app") {
                 installStage = if (code != Activity.RESULT_OK) InstallStage.ERROR else InstallStage.DONE
                 downloadedFile?.delete()
             }
-            // Must be a file in supported location!
             val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", downloadedFile!!)
-            installPackageIntentLauncher.launch(Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+            installPackageIntentLauncher.launch(Intent(PackageInstaller.ACTION_INSTALL_PACKAGE).apply {
                 data = fileUri
                 setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 putExtra(Intent.EXTRA_RETURN_RESULT, true)
             })
         }
-
         LaunchedEffect(downloadPath) {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
                     val file: File? = if (downloadPath.startsWith("http")) {
                         downloadArtifact(context, downloadPath) { downloadProgress = it }
                     } else {
-                        // For local path, if not in a supported dir, copy to externalCacheDir!
                         val src = File(downloadPath)
                         val extCache = context.externalCacheDir ?: context.cacheDir
                         val dest = File(extCache, src.name)
@@ -207,7 +197,8 @@ class InstallPackageTab : Tab("install_app") {
                             if (hasRoot && uninstallPackageRoot()) {
                                 installPackage()
                             } else {
-                                val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
+                                // Uninstall intent using new constant
+                                val intent = Intent(PackageInstaller.ACTION_UNINSTALL_PACKAGE).apply {
                                     data = "package:$appPackage".toUri()
                                     putExtra(Intent.EXTRA_RETURN_RESULT, true)
                                 }
@@ -227,7 +218,6 @@ class InstallPackageTab : Tab("install_app") {
                     }
                 }.onFailure {
                     it.printStackTrace()
-                    // DNS detection and dialog
                     if (it is DNSBlockedException || it.cause is UnknownHostException) {
                         showDnsDialog = true
                     }
