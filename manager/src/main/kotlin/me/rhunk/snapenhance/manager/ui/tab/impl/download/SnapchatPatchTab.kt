@@ -1,5 +1,4 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl.download
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
@@ -31,24 +30,21 @@ import java.util.zip.ZipFile
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SnapchatPatchTab : Tab("snapchat_download") {
-    private val apkMirror =  APKMirror()
+    private val apkMirror = APKMirror()
     private val cachedDownloadItems = mutableListOf<DownloadItem>()
     private var currentPage by mutableIntStateOf(1)
-
     override fun init(activity: ComponentActivity) {
         super.init(activity)
         registerNestedTab(LSPatchTab::class)
     }
-
     @Composable
     override fun TopBar() {
         var deleteAllDialog by remember { mutableStateOf(false) }
         IconButton(onClick = { deleteAllDialog = true }) {
             Icon(imageVector = Icons.Default.DeleteForever, contentDescription = null)
         }
-
         if (deleteAllDialog) {
-            AlertDialog(onDismissRequest = { deleteAllDialog = false }) {
+            BasicAlertDialog(onDismissRequest = { deleteAllDialog = false }) {
                 ConfirmationDialog(title = "Are you sure you want to delete all downloads?", onDismiss = { deleteAllDialog = false }) {
                     deleteAllDialog = false
                     runCatching {
@@ -62,7 +58,6 @@ class SnapchatPatchTab : Tab("snapchat_download") {
             }
         }
     }
-
     @Composable
     private fun DownloadItemRow(item: DownloadItem, onSelected: () -> Unit = {}) {
         ElevatedCard(
@@ -100,14 +95,11 @@ class SnapchatPatchTab : Tab("snapchat_download") {
             }
         }
     }
-
-
     @Composable
     private fun SelectSnapchatVersionDialog(onSelected: (DownloadItem) -> Unit = {}) {
         val coroutineScope = rememberCoroutineScope()
         var isFetching by remember { mutableStateOf(false) }
         val downloadItems = remember { cachedDownloadItems.toMutableStateList() }
-
         LazyColumn {
             items(downloadItems, key = { it.hash }) { item ->
                 DownloadItemRow(item) {
@@ -146,23 +138,19 @@ class SnapchatPatchTab : Tab("snapchat_download") {
             }
         }
     }
-
     @Composable
     override fun Content() {
         var showSelectSnapchatVersionDialog by remember { mutableStateOf(false) }
         var showRestoreMenuDialog by remember { mutableStateOf(false) }
-
         var selectedSnapchatVersion by remember { mutableStateOf(null as DownloadItem?) }
         val installedSnapEnhanceVersion = remember { runCatching { activity.packageManager.getPackageInfo(
             sharedConfig.snapEnhancePackageName, 0) }.getOrNull() }
-
         val installedSnapchatPackage = remember { runCatching { activity.packageManager.getPackageInfo(
             sharedConfig.snapchatPackageName, 0) }.getOrNull() }
         val isInstalledSnapchatPatched = remember { installedSnapchatPackage?.applicationInfo?.appComponentFactory == Constants.PROXY_APP_COMPONENT_FACTORY }
         val isSnapchatNotSplitConfig = remember {
             installedSnapchatPackage?.applicationInfo?.let { it.splitSourceDirs == null || it.splitSourceDirs?.isEmpty() == true } ?: false
         }
-
         if (showRestoreMenuDialog) {
             fun triggerSnapchatInstallation(shouldUninstall: Boolean) {
                 val apkFile = File(installedSnapchatPackage?.applicationInfo?.sourceDir ?: return).also {
@@ -182,17 +170,14 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                         return
                     }
                 }
-
                 showRestoreMenuDialog = false
-
                 navigation.navigateTo(InstallPackageTab::class, args = Bundle().apply {
                     putString("downloadPath", originApk.absolutePath)
                     putString("appPackage", sharedConfig.snapchatPackageName)
                     putBoolean("uninstall", shouldUninstall)
                 }, noHistory = true)
             }
-
-            AlertDialog(onDismissRequest = { showRestoreMenuDialog = false }) {
+            BasicAlertDialog(onDismissRequest = { showRestoreMenuDialog = false }) {
                 Card {
                     Column(
                         modifier = Modifier.padding(16.dp).fillMaxWidth(),
@@ -213,24 +198,20 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                 }
             }
         }
-
-
         if (showSelectSnapchatVersionDialog) {
-            AlertDialog(onDismissRequest = { showSelectSnapchatVersionDialog = false }) {
+            BasicAlertDialog(onDismissRequest = { showSelectSnapchatVersionDialog = false }) {
                 SelectSnapchatVersionDialog {
                     selectedSnapchatVersion = it
                     showSelectSnapchatVersionDialog = false
                 }
             }
         }
-
         Column(
             modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Text("Patch Snapchat")
-
             ElevatedCard(
                 modifier = Modifier.padding(10.dp),
             ) {
@@ -251,7 +232,6 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                     }
                 }
             }
-
             ElevatedCard(
                 modifier = Modifier.padding(10.dp),
             ) {
@@ -266,7 +246,6 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                     Text(text = installedSnapEnhanceVersion?.versionName ?: "Not installed")
                 }
             }
-
             Column(
                 modifier = Modifier.padding(top = 10.dp, bottom = 10.dp, start = 20.dp, end = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -284,7 +263,6 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                 ) {
                     Text("Download & Patch")
                 }
-
                 if (isSnapchatNotSplitConfig) {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
@@ -298,7 +276,6 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                         Text("Patch from existing installation")
                     }
                 }
-
                 Text("Restore Snapchat", modifier = Modifier.padding(20.dp))
                 Button(
                     modifier = Modifier.fillMaxWidth(),
@@ -311,7 +288,6 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                 ) {
                     Text("Install/Restore Original Snapchat")
                 }
-
                 if (isInstalledSnapchatPatched && isSnapchatNotSplitConfig) {
                     Button(
                         modifier = Modifier.fillMaxWidth(),
