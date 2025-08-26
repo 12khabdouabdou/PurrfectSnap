@@ -86,4 +86,5 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.androidx.material.ripple)
     implementation(libs.androidx.material.icons.extended)
+    implementation(project(":common"))
 }
