@@ -1,5 +1,4 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl.download
-
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -36,7 +35,6 @@ import java.util.*
 
 class SEDownloadTab : Tab("se_download") {
     override fun init(activity: ComponentActivity) { super.init(activity) }
-
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
@@ -54,7 +52,6 @@ class SEDownloadTab : Tab("se_download") {
             }
         }
     }
-
     @Composable
     private fun ModernLoadingBox(modifier: Modifier = Modifier) {
         Box(
@@ -71,17 +68,14 @@ class SEDownloadTab : Tab("se_download") {
             )
         }
     }
-
     @Composable
     private fun ReleaseTabContent() {
         val coroutineScope = rememberCoroutineScope()
         val context = LocalContext.current
-
         var releases by remember { mutableStateOf<List<SEVersion>?>(null) }
         var expandedRelease by remember { mutableStateOf<String?>(null) }
         var downloadingApk by remember { mutableStateOf<String?>(null) }
         var downloadProgress by remember { mutableFloatStateOf(0f) }
-
         fun fetchReleases(): List<SEVersion> {
             return runCatching {
                 val endpoint = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/releases").build()
@@ -112,7 +106,6 @@ class SEDownloadTab : Tab("se_download") {
                 }
             }.getOrElse { emptyList() }
         }
-
         fun installApk(asset: SEArtifact) {
             downloadingApk = asset.fileName
             coroutineScope.launch(Dispatchers.IO) {
@@ -157,11 +150,9 @@ class SEDownloadTab : Tab("se_download") {
                 }
             }
         }
-
         LaunchedEffect(Unit) {
             coroutineScope.launch(Dispatchers.IO) { releases = fetchReleases() }
         }
-
         Column(
             Modifier
                 .fillMaxSize()
@@ -173,7 +164,6 @@ class SEDownloadTab : Tab("se_download") {
                 modifier = Modifier.padding(top = 16.dp, bottom = 10.dp, start = 18.dp),
                 color = MaterialTheme.colorScheme.primary
             )
-
             Crossfade(targetState = releases, modifier = Modifier.weight(1f)) { releasesList ->
                 if (releasesList == null) {
                     ModernLoadingBox()
@@ -205,7 +195,7 @@ class SEDownloadTab : Tab("se_download") {
                                     Text("Published: ${rel.releaseDate}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 if (isExpanded) {
-                                    Divider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
+                                    HorizontalDivider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
                                     rel.downloadAssets.values.forEach { asset ->
                                         Row(
                                             Modifier
@@ -234,7 +224,7 @@ class SEDownloadTab : Tab("se_download") {
                                             }
                                             if (downloadingApk == asset.fileName) {
                                                 Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator(progress = downloadProgress, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
+                                                    CircularProgressIndicator(progress = { downloadProgress }, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
                                                 }
                                             } else {
                                                 Button(
@@ -265,10 +255,8 @@ class SEDownloadTab : Tab("se_download") {
         var debugReleases by remember { mutableStateOf<List<SEVersion>?>(null) }
         var expandedRelease by remember { mutableStateOf<String?>(null) }
         val context = LocalContext.current
-
         var downloadingApk by remember { mutableStateOf<String?>(null) }
         var downloadProgress by remember { mutableFloatStateOf(0f) }
-
         fun fetchDebugPrereleases(): List<SEVersion> {
             return runCatching {
                 val req = Request.Builder().url("https://api.github.com/repos/particle-box/SnapEnhance/releases").build()
@@ -301,7 +289,6 @@ class SEDownloadTab : Tab("se_download") {
                 }
             }.getOrElse { emptyList() }
         }
-
         fun installApk(apk: SEArtifact) {
             downloadingApk = apk.fileName
             coroutineScope.launch(Dispatchers.IO) {
@@ -346,11 +333,9 @@ class SEDownloadTab : Tab("se_download") {
                 }
             }
         }
-
         LaunchedEffect(Unit) {
             coroutineScope.launch(Dispatchers.IO) { debugReleases = fetchDebugPrereleases() }
         }
-
         Column(
             Modifier
                 .fillMaxSize()
@@ -391,7 +376,7 @@ class SEDownloadTab : Tab("se_download") {
                                     Text("Published: ${rel.releaseDate}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 if (isExpanded) {
-                                    Divider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
+                                    HorizontalDivider(Modifier.padding(horizontal = 9.dp, vertical = 1.dp))
                                     rel.downloadAssets.values.forEach { asset ->
                                         Row(
                                             Modifier
@@ -420,7 +405,7 @@ class SEDownloadTab : Tab("se_download") {
                                             }
                                             if (downloadingApk == asset.fileName) {
                                                 Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
-                                                    CircularProgressIndicator(progress = downloadProgress, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
+                                                    CircularProgressIndicator(progress = { downloadProgress }, strokeWidth = 3.dp, modifier = Modifier.size(32.dp))
                                                 }
                                             } else {
                                                 Button(
