@@ -27,7 +27,6 @@ import kotlin.properties.Delegates
 
 class LSPatchTab : Tab("lspatch") {
     private val apkMirror = APKMirror()
-
     private fun patch(
         log: (Any?) -> Unit,
         onProgress: (Float) -> Unit,
@@ -106,16 +105,13 @@ class LSPatchTab : Tab("lspatch") {
             }
             apkFile = baseApkFile
         }
-
         log("== Downloaded apk ==")
-
         // Only patch if apkFile is not null and exists!
         if (apkFile == null || !apkFile.exists()) {
             log("Downloaded APK file is null or missing. Aborting patch.")
             patchedApk.value = null
             return
         }
-
         snapEnhanceModule?.let { module ->
             val lsPatch = LSPatch(
                 activity,
@@ -181,7 +177,7 @@ class LSPatchTab : Tab("lspatch") {
             }
             DisposableEffect(Unit) {
                 onDispose {
-                    if (isRunning) return@onDispose
+                    // Correction—NO always false condition!
                     patchedApk.value = null
                 }
             }
