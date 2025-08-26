@@ -29,6 +29,7 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import android.content.pm.PackageInstaller
 import java.net.UnknownHostException
 import me.rhunk.snapenhance.manager.data.DNSBlockedException // <-- Add this import
 import me.rhunk.snapenhance.manager.ui.components.DnsBlockedDialog // <-- Add this import if you've placed the dialog composable as shown
@@ -143,13 +144,13 @@ class InstallPackageTab : Tab("install_app") {
             }
         }
         fun uninstallPackageRoot(): Boolean {
-            val result = Shell.su("pm uninstall $appPackage").exec()
+            val result = Shell.cmd("pm uninstall $appPackage").exec()
             if (result.isSuccess) return true
             toast("Root uninstall failed: ${result.out}")
             return false
         }
         fun installPackageRoot(): Boolean {
-            val result = Shell.su(
+            val result = Shell.cmd(
                 "cp \"${downloadedFile!!.absolutePath}\" /data/local/tmp/",
                 "pm install -r \"/data/local/tmp/${downloadedFile!!.name}\"",
                 "rm /data/local/tmp/${downloadedFile!!.name}"
@@ -237,28 +238,3 @@ class InstallPackageTab : Tab("install_app") {
         }
     }
 }
-
-// ---- Place this composable in manager/ui/components/DnsBlockedDialog.kt ----
-/*
-package me.rhunk.snapenhance.manager.ui.components
-
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-
-@Composable
-fun DnsBlockedDialog(onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
-        title = { Text("Connection Problem") },
-        text = {
-            Text(
-                "Unable to resolve or connect to the server. " +
-                "This is often caused by network filtering in India and similar regions.\n\n" +
-                "To fix:\n• Go to Settings → Network & Internet → Private DNS\n• Choose: \"Private DNS provider hostname\"\n• Enter: one.one.one.one\n\n" +
-                "Or install and enable the 1.1.1.1 app from Cloudflare."
-            )
-        }
-    )
-}
-*/
