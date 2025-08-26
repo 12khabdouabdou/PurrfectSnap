@@ -1,4 +1,5 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl.download
+
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
@@ -28,7 +29,6 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
-import android.content.pm.PackageInstaller // <-- ADDED
 import java.net.UnknownHostException
 import me.rhunk.snapenhance.manager.data.DNSBlockedException
 import me.rhunk.snapenhance.manager.ui.components.DnsBlockedDialog
@@ -49,6 +49,7 @@ class InstallPackageTab : Tab("install_app") {
             uninstallPackageCallback?.invoke(it.resultCode)
         }
     }
+
     private fun downloadArtifact(context: android.content.Context, url: String, progress: (Float) -> Unit): File? {
         val uri = Uri.parse(url)
         if (uri.scheme != "https" && uri.scheme != "http") {
@@ -86,6 +87,7 @@ class InstallPackageTab : Tab("install_app") {
         var downloadProgress by remember { mutableFloatStateOf(-1f) }
         var downloadedFile by remember { mutableStateOf<File?>(null) }
         var showDnsDialog by remember { mutableStateOf(false) }
+
         LaunchedEffect(Unit) {
             uninstallPackageCallback = null
             installPackageCallback = null
@@ -99,10 +101,13 @@ class InstallPackageTab : Tab("install_app") {
                 } else it
             } ?: false
         }
+
         BackHandler(installStage != InstallStage.DONE && installStage != InstallStage.ERROR) {}
+
         if (showDnsDialog) {
             DnsBlockedDialog { showDnsDialog = false }
         }
+
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -136,12 +141,14 @@ class InstallPackageTab : Tab("install_app") {
                 InstallStage.ERROR -> Text(text = "Failed to install $appPackage. Check logcat for more details.")
             }
         }
+
         fun uninstallPackageRoot(): Boolean {
             val result = Shell.cmd("pm uninstall $appPackage").exec()
             if (result.isSuccess) return true
             toast("Root uninstall failed: ${result.out}")
             return false
         }
+
         fun installPackageRoot(): Boolean {
             val result = Shell.cmd(
                 "cp \"${downloadedFile!!.absolutePath}\" /data/local/tmp/",
@@ -155,6 +162,7 @@ class InstallPackageTab : Tab("install_app") {
             toast("Root install failed: ${result.out}")
             return false
         }
+
         fun installPackage() {
             installStage = InstallStage.INSTALLING
             if (hasRoot && installPackageRoot()) {
@@ -166,12 +174,13 @@ class InstallPackageTab : Tab("install_app") {
                 downloadedFile?.delete()
             }
             val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", downloadedFile!!)
-            installPackageIntentLauncher.launch(Intent(PackageInstaller.ACTION_INSTALL_PACKAGE).apply {
+            installPackageIntentLauncher.launch(Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
                 data = fileUri
-                setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                 putExtra(Intent.EXTRA_RETURN_RESULT, true)
             })
         }
+
         LaunchedEffect(downloadPath) {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
@@ -197,8 +206,7 @@ class InstallPackageTab : Tab("install_app") {
                             if (hasRoot && uninstallPackageRoot()) {
                                 installPackage()
                             } else {
-                                // Uninstall intent using new constant
-                                val intent = Intent(PackageInstaller.ACTION_UNINSTALL_PACKAGE).apply {
+                                val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
                                     data = "package:$appPackage".toUri()
                                     putExtra(Intent.EXTRA_RETURN_RESULT, true)
                                 }
