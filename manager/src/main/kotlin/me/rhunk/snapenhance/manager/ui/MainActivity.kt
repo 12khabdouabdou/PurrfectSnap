@@ -19,15 +19,21 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.SettingsTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.InstallPackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.RepackageTab
+import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab // <-- IMPORT THIS LINE
 
 class MainActivity : ComponentActivity() {
-    companion object{
-        private val primaryTabs = listOf(HomeTab::class, SettingsTab::class, InstallPackageTab::class, RepackageTab::class)
+    companion object {
+        private val primaryTabs = listOf(
+            HomeTab::class,
+            ManualPatchTab::class, // <-- ADD THIS LINE
+            SettingsTab::class,
+            InstallPackageTab::class,
+            RepackageTab::class
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Permission check for Install Unknown Apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val pm = packageManager
@@ -40,11 +46,11 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-
         Shell.enableVerboseLogging = BuildConfig.DEBUG;
-        Shell.setDefaultBuilder(Shell.Builder.create()
-            .setFlags(Shell.FLAG_REDIRECT_STDERR)
-            .setTimeout(10)
+        Shell.setDefaultBuilder(
+            Shell.Builder.create()
+                .setFlags(Shell.FLAG_REDIRECT_STDERR)
+                .setTimeout(10)
         );
         val tabs = primaryTabs.mapNotNull {
             runCatching { it.java.constructors.first().newInstance() as Tab }.getOrNull()
@@ -67,8 +73,6 @@ class MainActivity : ComponentActivity() {
             ) {
                 val navHostController = rememberNavController()
                 val sharedConfig = remember { SharedConfig(this) }
-
-
                 val navigation = remember {
                     Navigation(
                         navHostController = navHostController,
@@ -81,7 +85,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-
                 Scaffold(
                     bottomBar = { navigation.BottomBar() },
                     topBar = { navigation.TopBar() },
