@@ -11,12 +11,14 @@ val Context.themeDataStore by preferencesDataStore("theme_prefs")
 
 object ThemePreferences {
     private val THEME_KEY = stringPreferencesKey("theme_mode")
-
     fun getThemeModeFlow(context: Context): Flow<ThemeMode> =
         context.themeDataStore.data.map { prefs ->
-            ThemeMode.values().find { it.name == prefs[THEME_KEY] } ?: ThemeMode.SYSTEM
+            when (prefs[THEME_KEY]) {
+                ThemeMode.LIGHT.name -> ThemeMode.LIGHT
+                ThemeMode.DARK.name -> ThemeMode.DARK
+                else -> ThemeMode.SYSTEM
+            }
         }
-
     suspend fun setThemeMode(context: Context, mode: ThemeMode) {
         context.themeDataStore.edit { it[THEME_KEY] = mode.name }
     }
