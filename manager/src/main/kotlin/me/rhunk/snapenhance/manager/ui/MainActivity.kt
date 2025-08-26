@@ -1,4 +1,5 @@
 package me.rhunk.snapenhance.manager.ui
+
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -18,16 +19,16 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.SettingsTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.InstallPackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.RepackageTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
+import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab // <-- IMPORT THIS LINE
 
 class MainActivity : ComponentActivity() {
     companion object {
-        // Only primary (main/bottom-bar) tabs here!
         private val primaryTabs = listOf(
             HomeTab::class,
-            SettingsTab::class
+            ManualPatchTab::class, // <-- ADD THIS LINE
+            SettingsTab::class,
+            InstallPackageTab::class,
+            RepackageTab::class
         )
     }
 
@@ -45,32 +46,24 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-        Shell.enableVerboseLogging = BuildConfig.DEBUG
+        Shell.enableVerboseLogging = BuildConfig.DEBUG;
         Shell.setDefaultBuilder(
             Shell.Builder.create()
                 .setFlags(Shell.FLAG_REDIRECT_STDERR)
                 .setTimeout(10)
-        )
-
-        // Main and routable tabs setup
+        );
         val tabs = primaryTabs.mapNotNull {
             runCatching { it.java.constructors.first().newInstance() as Tab }.getOrNull()
         }.toMutableList().apply {
             forEach { it.init(this@MainActivity) }
             fun addNestedTabsRecursively(tabs: List<Tab>) {
                 tabs.forEach { tab ->
-                    if (none { it.route == tab.route }) add(tab)
+                    add(tab)
                     addNestedTabsRecursively(tab.nestedTabs)
                 }
             }
-            // Ensure all routable/non-bottom-bar tabs are present, to avoid crash!
-            if (none { it.route == "manualpatch" }) add(ManualPatchTab())
-            if (none { it.route == "sedownload" }) add(SEDownloadTab())
-            if (none { it.route == "snapchatpatch" }) add(SnapchatPatchTab())
-            // (If InstallPackageTab or RepackageTab are also navigated to directly, add here too)
             toList().forEach { addNestedTabsRecursively(it.nestedTabs) }
         }
-
         setContent {
             MaterialTheme(
                 colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
