@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.rhunk.snapenhance.manager.patch.config.Constants
+import me.rhunk.snapenhance.common.Constants
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
