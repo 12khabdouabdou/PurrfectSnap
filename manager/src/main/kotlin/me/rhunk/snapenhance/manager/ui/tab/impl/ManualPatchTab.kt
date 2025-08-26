@@ -26,7 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.rhunk.snapenhance.common.Constants  // <-- CORRECT IMPORT!
+import me.rhunk.snapenhance.common.Constants as CommonConstants
+import me.rhunk.snapenhance.manager.patch.config.Constants as PatchConstants
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
@@ -66,8 +67,7 @@ class ManualPatchTab : Tab("manualpatch") {
                         }
                     }
                     Row(
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -101,13 +101,12 @@ class ManualPatchTab : Tab("manualpatch") {
                         }
                     }
                     Row(
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         snapchatAppInfo?.let { appInfo ->
-                            val isLSPatched = appInfo.applicationInfo.appComponentFactory == Constants.PROXY_APP_COMPONENT_FACTORY
+                            val isLSPatched = appInfo.applicationInfo.appComponentFactory == PatchConstants.PROXY_APP_COMPONENT_FACTORY
                             if (isLSPatched) {
                                 Icon(imageVector = Icons.Default.Check, contentDescription = null)
                                 Text(text = "Patched", fontSize = 16.sp)
@@ -125,10 +124,10 @@ class ManualPatchTab : Tab("manualpatch") {
         SideEffect {
             coroutineScope.launch(Dispatchers.IO) {
                 snapchatAppInfo = runCatching {
-                    context.packageManager.getPackageInfo(Constants.SNAPCHAT_PACKAGE_NAME, 0)
+                    context.packageManager.getPackageInfo(CommonConstants.SNAPCHAT_PACKAGE_NAME, 0)
                 }.getOrNull()
                 snapEnhanceInfo = runCatching {
-                    context.packageManager.getPackageInfo(Constants.SNAPENHANCE_PACKAGE_NAME, 0)
+                    context.packageManager.getPackageInfo(CommonConstants.SE_PACKAGE_NAME, 0)
                 }.getOrNull()
             }
         }
