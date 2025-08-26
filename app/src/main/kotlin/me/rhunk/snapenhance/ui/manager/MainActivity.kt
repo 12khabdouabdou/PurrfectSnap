@@ -8,9 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -40,7 +40,6 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Ensure your app responds to system day/night mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
         super.onCreate(savedInstanceState)
@@ -59,21 +58,22 @@ class MainActivity : ComponentActivity() {
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
 
-            // -- THIS BLOCK REMOVES STATUS BAR/NAV BAR COLOR, MAKES THEM TRANSPARENT --
-            val view = LocalView.current
-            SideEffect {
-                val window = (view.context as Activity).window
-                window.statusBarColor = Color.Transparent.toArgb()
-                window.navigationBarColor = Color.Transparent.toArgb()
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                val insetsController = WindowInsetsControllerCompat(window, window.decorView)
-                val isLight = MaterialTheme.colorScheme.background.luminance() > 0.5f
-                insetsController.isAppearanceLightStatusBars = isLight
-                insetsController.isAppearanceLightNavigationBars = isLight
-            }
-            //--------------------------------------------------------------------------
-
             AppMaterialTheme {
+                // Calculate isLight from the theme background using correct API
+                val background = MaterialTheme.colorScheme.background
+                val isLight = background.luminance() > 0.5f
+
+                val view = LocalView.current
+                SideEffect {
+                    val window = (view.context as Activity).window
+                    window.statusBarColor = Color.Transparent.toArgb()
+                    window.navigationBarColor = Color.Transparent.toArgb()
+                    WindowCompat.setDecorFitsSystemWindows(window, false)
+                    val insetsController = WindowInsetsControllerCompat(window, window.decorView)
+                    insetsController.isAppearanceLightStatusBars = isLight
+                    insetsController.isAppearanceLightNavigationBars = isLight
+                }
+
                 Scaffold(
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = { navigation.TopBar() },
