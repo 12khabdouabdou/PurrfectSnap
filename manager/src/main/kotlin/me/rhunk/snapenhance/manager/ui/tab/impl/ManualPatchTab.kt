@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -29,11 +28,9 @@ import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
 
-// Provide icon = Icons.Default.Build (or any other valid icon)
-class ManualPatchTab : Tab("manualpatch", true, icon = Icons.Default.Build) {
+class ManualPatchTab : Tab("manualpatch") {
     override fun init(activity: ComponentActivity) {
         super.init(activity)
-        // No registerNestedTab! These are not nested tabs anymore
     }
     @Composable
     override fun Content() {
