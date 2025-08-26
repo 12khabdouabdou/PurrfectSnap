@@ -32,12 +32,8 @@ import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
 
-class ManualPatchTab : Tab("manualpatch") {
-    override fun init(activity: ComponentActivity) {
-        super.init(activity)
-        registerNestedTab(SEDownloadTab::class)
-        registerNestedTab(SnapchatPatchTab::class)
-    }
+class ManualPatchTab : Tab("manualpatch", true) { // true marks it as a main tab if needed
+    // NO registerNestedTab for SEDownloadTab or SnapchatPatchTab -- these must be navigated by their own routes
     @Composable
     override fun Content() {
         val context = LocalContext.current
@@ -48,14 +44,14 @@ class ManualPatchTab : Tab("manualpatch") {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(10.dp)
+                    .clickable {
+                        navigation.navigateTo(SEDownloadTab::class, noHistory = true)
+                    }
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            navigation.navigateTo(SEDownloadTab::class)
-                        }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -83,14 +79,14 @@ class ManualPatchTab : Tab("manualpatch") {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(10.dp)
+                    .clickable {
+                        navigation.navigateTo(SnapchatPatchTab::class, noHistory = true)
+                    }
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            navigation.navigateTo(SnapchatPatchTab::class)
-                        }
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
