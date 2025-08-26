@@ -13,9 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.rhunk.snapenhance.manager.ui.tab.Tab
+import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
 
 class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
-
     @Composable
     override fun Content() {
         Column(Modifier.fillMaxWidth()) {
@@ -24,8 +24,8 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     .fillMaxWidth()
                     .padding(16.dp)
                     .clickable {
-                        // Navigate to ManualPatchTab when clicked
-                        navigation.navigateTo(ManualPatchTab::class)
+                        // This will switch to ManualPatchTab as a main tab (not as a nested route!)
+                        navigation.navigateTo(ManualPatchTab::class, noHistory = true)
                     }
             ) {
                 Row(
