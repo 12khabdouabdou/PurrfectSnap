@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.rhunk.snapenhance.common.Constants
+import me.rhunk.snapenhance.common.Constants  // <-- CORRECT IMPORT!
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SEDownloadTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.SnapchatPatchTab
@@ -66,7 +66,8 @@ class ManualPatchTab : Tab("manualpatch") {
                         }
                     }
                     Row(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f),
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -100,7 +101,8 @@ class ManualPatchTab : Tab("manualpatch") {
                         }
                     }
                     Row(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
