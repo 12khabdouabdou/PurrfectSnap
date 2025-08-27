@@ -2,11 +2,7 @@ package me.rhunk.snapenhance.common.ui
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -72,6 +68,12 @@ val md_theme_dark_inversePrimary = Color(0xFF6750A4)
 val md_theme_dark_surfaceTint = Color(0xFFCFBCFF)
 val md_theme_dark_outlineVariant = Color(0xFF49454E)
 val md_theme_dark_scrim = Color(0xFF000000)
+
+// AMOLED (true black) scheme
+val md_theme_amoled_background = Color(0xFF000000)
+val md_theme_amoled_surface = Color(0xFF000000)
+val md_theme_amoled_onBackground = Color(0xFFE6E1E6)
+val md_theme_amoled_onSurface = Color(0xFFE6E1E6)
 
 // For completeness (looks unused)
 val seed = Color(0xFF6750A4)
@@ -141,18 +143,51 @@ private val DarkThemeColors = darkColorScheme(
     scrim = md_theme_dark_scrim
 )
 
+// AMOLED black colorScheme
+private val AmoledThemeColors = darkColorScheme(
+    primary = md_theme_dark_primary,
+    onPrimary = md_theme_dark_onPrimary,
+    primaryContainer = md_theme_dark_primaryContainer,
+    onPrimaryContainer = md_theme_dark_onPrimaryContainer,
+    secondary = md_theme_dark_secondary,
+    onSecondary = md_theme_dark_onSecondary,
+    secondaryContainer = md_theme_dark_secondaryContainer,
+    onSecondaryContainer = md_theme_dark_onSecondaryContainer,
+    tertiary = md_theme_dark_tertiary,
+    onTertiary = md_theme_dark_onTertiary,
+    tertiaryContainer = md_theme_dark_tertiaryContainer,
+    onTertiaryContainer = md_theme_dark_onTertiaryContainer,
+    error = md_theme_dark_error,
+    onError = md_theme_dark_onError,
+    errorContainer = md_theme_dark_errorContainer,
+    onErrorContainer = md_theme_dark_onErrorContainer,
+    background = md_theme_amoled_background,
+    onBackground = md_theme_amoled_onBackground,
+    surface = md_theme_amoled_surface,
+    onSurface = md_theme_amoled_onSurface,
+    surfaceVariant = md_theme_dark_surfaceVariant,
+    onSurfaceVariant = md_theme_dark_onSurfaceVariant,
+    outline = md_theme_dark_outline,
+    inverseOnSurface = md_theme_dark_inverseOnSurface,
+    inverseSurface = md_theme_dark_inverseSurface,
+    inversePrimary = md_theme_dark_inversePrimary,
+    surfaceTint = md_theme_dark_surfaceTint,
+    outlineVariant = md_theme_dark_outlineVariant,
+    scrim = md_theme_dark_scrim
+)
+
 @Composable
 fun AppMaterialTheme(
-    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM, // changed param for explicit ThemeMode usage
     content: @Composable () -> Unit
 ) {
     val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val context = LocalContext.current
-    val colorScheme = when {
-        dynamicColor && isDarkTheme -> dynamicDarkColorScheme(context)
-        dynamicColor && !isDarkTheme -> dynamicLightColorScheme(context)
-        isDarkTheme -> DarkThemeColors
-        else -> LightThemeColors
+    val colorScheme = when (themeMode) {
+        ThemeMode.AMOLED -> AmoledThemeColors
+        ThemeMode.DARK -> DarkThemeColors
+        ThemeMode.LIGHT -> LightThemeColors
+        ThemeMode.SYSTEM -> if (isSystemInDarkTheme()) DarkThemeColors else LightThemeColors
     }
     MaterialTheme(
         colorScheme = colorScheme,
