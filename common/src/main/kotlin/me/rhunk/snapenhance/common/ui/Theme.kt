@@ -107,7 +107,6 @@ private val LightThemeColors = lightColorScheme(
     outlineVariant = md_theme_light_outlineVariant,
     scrim = md_theme_light_scrim
 )
-
 // Dark colorScheme object
 private val DarkThemeColors = darkColorScheme(
     primary = md_theme_dark_primary,
@@ -140,7 +139,6 @@ private val DarkThemeColors = darkColorScheme(
     outlineVariant = md_theme_dark_outlineVariant,
     scrim = md_theme_dark_scrim
 )
-
 // AMOLED black colorScheme
 private val AmoledThemeColors = darkColorScheme(
     primary = md_theme_dark_primary,
@@ -181,14 +179,21 @@ fun AppMaterialTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    // Backward-compatible param handoff
+    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val effectiveThemeMode = themeMode ?: if (isDarkTheme) ThemeMode.DARK else ThemeMode.LIGHT
+
     val colorScheme = when (effectiveThemeMode) {
         ThemeMode.AMOLED -> AmoledThemeColors
-        ThemeMode.DARK -> DarkThemeColors
-        ThemeMode.LIGHT -> LightThemeColors
-        ThemeMode.SYSTEM -> if (isSystemInDarkTheme()) DarkThemeColors else LightThemeColors
+        ThemeMode.DARK -> if (dynamicColor) dynamicDarkColorScheme(context) else DarkThemeColors
+        ThemeMode.LIGHT -> if (dynamicColor) dynamicLightColorScheme(context) else LightThemeColors
+        ThemeMode.SYSTEM -> when {
+            isSystemInDarkTheme() && dynamicColor -> dynamicDarkColorScheme(context)
+            !isSystemInDarkTheme() && dynamicColor -> dynamicLightColorScheme(context)
+            isSystemInDarkTheme() -> DarkThemeColors
+            else -> LightThemeColors
+        }
     }
+
     MaterialTheme(
         colorScheme = colorScheme,
         content = content
