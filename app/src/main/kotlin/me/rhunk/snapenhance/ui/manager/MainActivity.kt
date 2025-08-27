@@ -28,12 +28,11 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.ui.Alignment
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private lateinit var managerContext: RemoteSideContext
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (::navController.isInitialized.not()) return
@@ -85,9 +84,11 @@ class MainActivity : ComponentActivity() {
                     floatingActionButton = { navigation.FloatingActionButton() }
                 ) { innerPadding ->
                     // Only apply innerPadding ONCE, at the root of content!
-                    Box(Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
                         navigation.Content(PaddingValues(0.dp), startDestination)
                     }
                     // The floating bottom bar is absolutely overlaid and uses its own insets
