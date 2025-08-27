@@ -4,14 +4,19 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,27 +36,26 @@ class Navigation(
     val routes: Routes = Routes(context).also {
         it.navController = navController
     }
-){
+) {
     @Composable
     fun TopBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
-
-        val canGoBack = remember(navBackStackEntry) { currentRoute?.let {
-            !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination)
-        } == true }
-
+        val canGoBack = remember(navBackStackEntry) {
+            currentRoute?.let {
+                !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination)
+            } == true
+        }
         TopAppBar(title = {
             currentRoute?.apply {
                 title?.invoke() ?: routeInfo.translatedKey?.value?.let {
                     Text(text = it)
                 }
             }
-        }, navigationIcon =  {
+        }, navigationIcon = {
             val backButtonAnimation by animateFloatAsState(if (canGoBack) 1f else 0f,
                 label = "backButtonAnimation"
             )
-
             Box(
                 modifier = Modifier
                     .graphicsLayer { alpha = backButtonAnimation }
@@ -73,33 +77,59 @@ class Navigation(
         })
     }
 
+    /**
+     * This is the floating bottom navigation bar!
+     * Add this as an overlay in your main layout with Box.
+     */
     @Composable
-    fun BottomBar() {
+    fun FloatingBottomBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         val primaryRoutes = remember { routes.getRoutes().filter { it.routeInfo.showInNavBar } }
-
-        NavigationBar {
-            primaryRoutes.forEach { route ->
-                NavigationBarItem(
-                    alwaysShowLabel = true,
-                    icon = {
-                        Icon(imageVector = route.routeInfo.icon, contentDescription = null)
-                    },
-                    label = {
-                        Text(
-                            textAlign = TextAlign.Center,
-                            softWrap = false,
-                            fontSize = 12.sp,
-                            modifier = Modifier.wrapContentWidth(unbounded = true),
-                            text = remember(context.translation.loadedLocale) { context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"] },
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp)
+                .wrapContentHeight()
+                .align(Alignment.BottomCenter)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                shadowElevation = 12.dp,
+                tonalElevation = 5.dp,
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .clip(RoundedCornerShape(24.dp))
+            ) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                ) {
+                    primaryRoutes.forEach { route ->
+                        NavigationBarItem(
+                            alwaysShowLabel = true,
+                            icon = {
+                                Icon(imageVector = route.routeInfo.icon, contentDescription = null)
+                            },
+                            label = {
+                                Text(
+                                    textAlign = TextAlign.Center,
+                                    softWrap = false,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.wrapContentWidth(unbounded = true),
+                                    text = remember(context.translation.loadedLocale) { context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"] },
+                                )
+                            },
+                            selected = currentRoute == route,
+                            onClick = { route.navigateReset() }
                         )
-                    },
-                    selected = currentRoute == route,
-                    onClick = {
-                        route.navigateReset()
                     }
-                )
+                }
             }
         }
     }
