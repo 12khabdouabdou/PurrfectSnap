@@ -1,6 +1,9 @@
 package me.rhunk.snapenhance.ui.setup.screens
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -30,4 +33,16 @@ abstract class SetupScreen {
 
     @Composable
     abstract fun Content()
+
+    // Use this as a wrapper in each screen for edge-to-edge and orientation fix
+    @Composable
+    fun EdgeToEdge(content: @Composable () -> Unit) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .systemBarsPadding() // Ensures full height in all orientations and proper landscape!
+        ) {
+            content()
+        }
+    }
 }
