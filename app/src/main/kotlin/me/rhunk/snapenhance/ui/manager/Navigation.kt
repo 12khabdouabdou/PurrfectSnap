@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
@@ -26,7 +28,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import me.rhunk.snapenhance.RemoteSideContext
-import androidx.compose.foundation.layout.navigationBarsPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 class Navigation(
@@ -77,7 +78,7 @@ class Navigation(
     }
 
     /**
-     * Floating bottom navigation bar—no leftover space and perfectly hugs the gesture bar!
+     * Floating bottom navigation bar—dynamically adapts label width only if needed.
      */
     @Composable
     fun FloatingBottomBar() {
@@ -109,12 +110,24 @@ class Navigation(
                                 Icon(imageVector = route.routeInfo.icon, contentDescription = null)
                             },
                             label = {
+                                val label = remember(context.translation.loadedLocale) {
+                                    context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
+                                }
+                                val isLong = label.length > 11 // threshold, adjust if needed
                                 Text(
+                                    text = label,
                                     textAlign = TextAlign.Center,
-                                    softWrap = false,
                                     fontSize = 12.sp,
-                                    modifier = Modifier.wrapContentWidth(unbounded = true),
-                                    text = remember(context.translation.loadedLocale) { context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"] },
+                                    maxLines = if (isLong) 2 else 1,
+                                    overflow = if (isLong) TextOverflow.Ellipsis else TextOverflow.Clip,
+                                    softWrap = isLong,
+                                    modifier = if (isLong) {
+                                        Modifier
+                                            .widthIn(max = 80.dp)
+                                            .wrapContentWidth(Alignment.CenterHorizontally)
+                                    } else {
+                                        Modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                                    }
                                 )
                             },
                             selected = currentRoute == route,
