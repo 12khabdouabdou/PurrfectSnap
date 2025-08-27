@@ -10,27 +10,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 
 class MappingsScreen : SetupScreen() {
     @Composable
-    override fun Content() = EdgeToEdge {
+    override fun Content() {
         val coroutineScope = rememberCoroutineScope()
         var infoText by remember { mutableStateOf(null as String?) }
         var isGenerating by remember { mutableStateOf(false) }
+
         if (infoText != null) {
-            fun dismiss() {
+            Dialog(onDismissRequest = {
                 infoText = null
-                goNext()
-            }
-            Dialog(onDismissRequest = { dismiss() }) {
+            }) {
                 remember { AlertDialogs(context.translation) }.InfoDialog(title = infoText!!) {
-                    dismiss()
+                    infoText = null
+                    goNext()
                 }
             }
         }
+
         LaunchedEffect(Unit) {
             coroutineScope.launch(Dispatchers.IO) {
                 if (isGenerating) return@launch
@@ -39,17 +39,8 @@ class MappingsScreen : SetupScreen() {
                     if (context.installationSummary.snapchatInfo == null) {
                         throw Exception(context.translation["setup.mappings.generate_failure_no_snapchat"])
                     }
-                    val warnings = context.mappings.refresh()
-                    if (warnings.isNotEmpty()) {
-                        isGenerating = false
-                        infoText = "${warnings.size} warning(s) occurred while generating mappings:\n\n${warnings.joinToString("\n")}".also {
-                            context.log.warn(it)
-                        }
-                        return@launch
-                    }
-                    withContext(Dispatchers.Main) {
-                        goNext()
-                    }
+                    context.mappings.refresh()
+                    goNext()
                 }.onFailure {
                     isGenerating = false
                     infoText = context.translation["setup.mappings.generate_failure"] + "\n\n" + it.message
@@ -57,6 +48,7 @@ class MappingsScreen : SetupScreen() {
                 }
             }
         }
+
         if (isGenerating) {
             DialogText(text = context.translation["setup.mappings.dialog"])
             CircularProgressIndicator(
