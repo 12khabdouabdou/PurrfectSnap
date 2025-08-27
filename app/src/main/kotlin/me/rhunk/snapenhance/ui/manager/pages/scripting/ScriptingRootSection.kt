@@ -42,12 +42,12 @@ import me.rhunk.snapenhance.ui.util.pullrefresh.PullRefreshIndicator
 import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
 import java.io.File
-import androidx.compose.foundation.layout.navigationBarsPadding
 
 class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
     private var selectedTab by mutableStateOf(0)
+
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
@@ -69,6 +69,7 @@ class ScriptingRootSection : Routes.Route() {
                 context.shortToast("Script already installed!")
                 return@launch
             }
+            
             runCatching {
                 context.shortToast("Downloading script...")
                 val moduleInfo = context.scriptManager.importFromUrl(scriptUrl)
@@ -139,6 +140,7 @@ class ScriptingRootSection : Routes.Route() {
                                         }
                                         return@launch
                                     }
+                                    
                                     val moduleInfo = context.scriptManager.importFromUrl(url)
                                     context.shortToast("Script ${moduleInfo.name} imported!")
                                     reloadDispatcher.dispatch()
@@ -274,17 +276,20 @@ class ScriptingRootSection : Routes.Route() {
         }
         var openSettings by remember(script) { mutableStateOf(false) }
         var openActions by remember { mutableStateOf(false) }
+
         val dispatcher = rememberAsyncUpdateDispatcher()
         val reloadCallback = remember { suspend { dispatcher.dispatch() } }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null, updateDispatcher = dispatcher, keys = arrayOf(script)) {
             context.scriptManager.checkForUpdate(script)
         }
+
         LaunchedEffect(Unit) {
             reloadDispatcher.addCallback(reloadCallback)
         }
         DisposableEffect(Unit) {
             onDispose { reloadDispatcher.removeCallback(reloadCallback) }
         }
+
         Card(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             elevation = CardDefaults.cardElevation()
@@ -356,6 +361,60 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
+    override val floatingActionButton: @Composable () -> Unit = {
+        val tab = selectedTab
+        var showImportDialog by remember { mutableStateOf(false) }
+        var showToast by remember { mutableStateOf(false) }
+        val scriptingFolder = context.scriptManager.getScriptsFolder()
+
+        if (showImportDialog) {
+            ImportRemoteScript { showImportDialog = false }
+        }
+        if (showToast) {
+            LaunchedEffect(Unit) {
+                context.shortToast("Please select your scripts folder!")
+                showToast = false
+            }
+        }
+
+        if (tab == 1) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
+                ExtendedFloatingActionButton(
+                    onClick = { routes.manageScriptRepos.navigate() },
+                    icon = { Icon(Icons.Default.Public, contentDescription = null) },
+                    text = { Text("Manage Repos") }
+                )
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (scriptingFolder == null) {
+                            showToast = true
+                        } else {
+                            showImportDialog = true
+                        }
+                    },
+                    icon = { Icon(imageVector = Icons.Default.Link, contentDescription = "Link") },
+                    text = { Text(text = "Import from URL") }
+                )
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (scriptingFolder == null) {
+                            showToast = true
+                        } else {
+                            scriptingFolder.let {
+                                context.androidContext.openLink(it.uri.toString())
+                            }
+                        }
+                    },
+                    icon = { Icon(imageVector = Icons.Default.FolderOpen, contentDescription = "Folder") },
+                    text = { Text(text = "Open Scripts Folder") }
+                )
+            }
+        }
+    }
+
     @Composable
     fun ScriptSettings(script: ModuleInfo) {
         val settingsInterface = remember {
@@ -381,12 +440,8 @@ class ScriptingRootSection : Routes.Route() {
         ) { context.scriptManager.getScriptsFolder() }
         val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
-        Column(
-            Modifier
-                .fillMaxSize()
-                .navigationBarsPadding()
-                .padding(bottom = 72.dp)
-        ) {
+
+        Column(Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = tab) {
                 tabTitles.forEachIndexed { i, text ->
                     Tab(
@@ -410,6 +465,7 @@ class ScriptingRootSection : Routes.Route() {
                     ) { context.scriptManager.sync(); context.scriptManager.getSyncedModules() }
                     val coroutineScope = rememberCoroutineScope()
                     var refreshing by remember { mutableStateOf(false) }
+
                     LaunchedEffect(Unit) {
                         refreshing = true
                         withContext(Dispatchers.IO) {
@@ -424,14 +480,10 @@ class ScriptingRootSection : Routes.Route() {
                             refreshing = false
                         }
                     })
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    ) {
+
+                    Box(modifier = Modifier.fillMaxSize()) {
                         LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .pullRefresh(pullRefreshState),
+                            modifier = Modifier.fillMaxSize().pullRefresh(pullRefreshState),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             item {
@@ -492,6 +544,7 @@ class ScriptingRootSection : Routes.Route() {
                             items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
                                 ModuleItem(scriptModules[index])
                             }
+                            item { Spacer(modifier = Modifier.height(200.dp)) }
                         }
                         PullRefreshIndicator(
                             refreshing = refreshing,
