@@ -36,18 +36,15 @@ data class PermissionData(
 
 class PermissionsScreen : SetupScreen() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-
     override fun init() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     @Composable
     private fun RequestButton(onClick: () -> Unit) {
         Button(onClick = onClick) {
             Text(text = context.translation["setup.permissions.request_button"])
         }
     }
-
     @Composable
     private fun GrantedIcon() {
         Icon(
@@ -58,10 +55,9 @@ class PermissionsScreen : SetupScreen() {
                 .padding(5.dp)
         )
     }
-
     @SuppressLint("BatteryLife")
     @Composable
-    override fun Content() {
+    override fun Content() = EdgeToEdge {
         val coroutineScope = rememberCoroutineScope()
         val grantedPermissions = remember {
             mutableStateMapOf<String, Boolean>()
@@ -123,7 +119,6 @@ class PermissionsScreen : SetupScreen() {
                 )
             )
         }
-
         fun updateState() {
             permissions.forEach { perm ->
                 grantedPermissions[perm.translationKey] = perm.isPermissionGranted()
@@ -132,7 +127,6 @@ class PermissionsScreen : SetupScreen() {
                 goNext()
             }
         }
-
         OnLifecycleEvent { _, event ->
             if (event != Lifecycle.Event.ON_RESUME) return@OnLifecycleEvent
             coroutineScope.launch {
@@ -141,13 +135,10 @@ class PermissionsScreen : SetupScreen() {
                 updateState()
             }
         }
-
         LaunchedEffect(Unit) {
             updateState()
         }
-
         DialogText(text = context.translation["setup.permissions.dialog"])
-
         OutlinedCard(
             modifier = Modifier
                 .fillMaxWidth(),
