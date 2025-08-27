@@ -32,7 +32,6 @@ import me.rhunk.snapenhance.common.ui.ThemePreferences
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private lateinit var managerContext: RemoteSideContext
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (::navController.isInitialized.not()) return
@@ -45,7 +44,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         super.onCreate(savedInstanceState)
@@ -57,7 +55,6 @@ class MainActivity : ComponentActivity() {
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
-            // ThemeMode is tracked directly
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
             navController = rememberNavController()
             val navigation = remember {
@@ -66,7 +63,6 @@ class MainActivity : ComponentActivity() {
                 })
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
-
             AppMaterialTheme(themeMode = themeMode) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
@@ -86,9 +82,18 @@ class MainActivity : ComponentActivity() {
                         topBar = { navigation.TopBar() },
                         floatingActionButton = { navigation.FloatingActionButton() }
                     ) { innerPadding ->
-                        navigation.Content(innerPadding, startDestination)
+                        // Add safe bottom padding for floating bar & gestures!
+                        val floatingBarHeight = 66.dp
+                        val safeBottomPadding = with(LocalView.current) { WindowInsets.navigationBars.getBottom(this) }.dp + floatingBarHeight
+                        Box(
+                            Modifier
+                                .padding(innerPadding)
+                                .padding(bottom = safeBottomPadding)
+                                .fillMaxSize()
+                        ) {
+                            navigation.Content(innerPadding, startDestination)
+                        }
                     }
-                    // Use a Box with align to ensure correct floating
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -100,4 +105,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+// Helper to convert pixel to dp for bottom inset
+val Int.dp: Dp @Composable get() = with(LocalContext.current.resources.displayMetrics) {
+    (this@dp / density).dp
 }
