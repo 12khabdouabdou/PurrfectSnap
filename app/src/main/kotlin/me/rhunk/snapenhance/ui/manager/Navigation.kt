@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
@@ -46,40 +45,35 @@ class Navigation(
                 !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination)
             } == true
         }
-        TopAppBar(
-            title = {
-                currentRoute?.apply {
-                    title?.invoke() ?: routeInfo.translatedKey?.value?.let {
-                        Text(text = it)
-                    }
+        TopAppBar(title = {
+            currentRoute?.apply {
+                title?.invoke() ?: routeInfo.translatedKey?.value?.let {
+                    Text(text = it)
                 }
-            },
-            navigationIcon = {
-                val backButtonAnimation by animateFloatAsState(
-                    if (canGoBack) 1f else 0f,
-                    label = "backButtonAnimation"
-                )
-                Box(
-                    modifier = Modifier
-                        .graphicsLayer { alpha = backButtonAnimation }
-                        .width(lerp(0.dp, 48.dp, backButtonAnimation))
-                        .height(48.dp)
-                ) {
-                    IconButton(
-                        onClick = {
-                            if (canGoBack) {
-                                navController.popBackStack()
-                            }
-                        }
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                }
-            },
-            actions = {
-                currentRoute?.topBarActions?.invoke(this)
             }
-        )
+        }, navigationIcon = {
+            val backButtonAnimation by animateFloatAsState(if (canGoBack) 1f else 0f,
+                label = "backButtonAnimation"
+            )
+            Box(
+                modifier = Modifier
+                    .graphicsLayer { alpha = backButtonAnimation }
+                    .width(lerp(0.dp, 48.dp, backButtonAnimation))
+                    .height(48.dp)
+            ) {
+                IconButton(
+                    onClick = {
+                        if (canGoBack) {
+                            navController.popBackStack()
+                        }
+                    }
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                }
+            }
+        }, actions = {
+            currentRoute?.topBarActions?.invoke(this)
+        })
     }
 
     /**
@@ -90,6 +84,7 @@ class Navigation(
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         val primaryRoutes = remember { routes.getRoutes().filter { it.routeInfo.showInNavBar } }
+
         Box(
             Modifier
                 .fillMaxWidth()
@@ -118,12 +113,8 @@ class Navigation(
                                     textAlign = TextAlign.Center,
                                     softWrap = false,
                                     fontSize = 12.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.wrapContentWidth(unbounded = true),
-                                    text = remember(context.translation.loadedLocale) {
-                                        context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
-                                    },
+                                    text = remember(context.translation.loadedLocale) { context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"] },
                                 )
                             },
                             selected = currentRoute == route,
