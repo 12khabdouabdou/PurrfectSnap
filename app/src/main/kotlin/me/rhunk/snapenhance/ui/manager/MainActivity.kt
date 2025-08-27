@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -28,7 +28,6 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
-import androidx.compose.foundation.isSystemInDarkTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
@@ -58,6 +57,7 @@ class MainActivity : ComponentActivity() {
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
+            // ThemeMode is tracked directly
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
             navController = rememberNavController()
             val navigation = remember {
@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
                 })
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
+
             AppMaterialTheme(themeMode = themeMode) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
@@ -79,25 +80,21 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-                Scaffold(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    topBar = { navigation.TopBar() },
-                    floatingActionButton = { navigation.FloatingActionButton() }
-                ) { innerPadding ->
+                Box(Modifier.fillMaxSize()) {
+                    Scaffold(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        topBar = { navigation.TopBar() },
+                        floatingActionButton = { navigation.FloatingActionButton() }
+                    ) { innerPadding ->
+                        navigation.Content(innerPadding, startDestination)
+                    }
+                    // Use a Box with align to ensure correct floating
                     Box(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
                     ) {
-                        navigation.Content(PaddingValues(0.dp), startDestination)
-                        // The floating bottom bar is absolutely overlaid and aligned to bottom center
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.BottomCenter)
-                        ) {
-                            navigation.FloatingBottomBar()
-                        }
+                        navigation.FloatingBottomBar()
                     }
                 }
             }
