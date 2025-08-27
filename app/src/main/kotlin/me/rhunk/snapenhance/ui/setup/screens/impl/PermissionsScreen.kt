@@ -2,7 +2,6 @@ package me.rhunk.snapenhance.ui.setup.screens.impl
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -36,15 +36,18 @@ data class PermissionData(
 
 class PermissionsScreen : SetupScreen() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
+
     override fun init() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
+
     @Composable
     private fun RequestButton(onClick: () -> Unit) {
         Button(onClick = onClick) {
             Text(text = context.translation["setup.permissions.request_button"])
         }
     }
+
     @Composable
     private fun GrantedIcon() {
         Icon(
@@ -55,9 +58,10 @@ class PermissionsScreen : SetupScreen() {
                 .padding(5.dp)
         )
     }
+
     @SuppressLint("BatteryLife")
     @Composable
-    override fun Content() = EdgeToEdge {
+    override fun Content() {
         val coroutineScope = rememberCoroutineScope()
         val grantedPermissions = remember {
             mutableStateMapOf<String, Boolean>()
@@ -77,7 +81,7 @@ class PermissionsScreen : SetupScreen() {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             activityLauncherHelper.requestPermission(Manifest.permission.POST_NOTIFICATIONS) { resultCode, _ ->
                                 coroutineScope.launch {
-                                    grantedPermissions[perm.translationKey] = resultCode == Activity.RESULT_OK
+                                    grantedPermissions[perm.translationKey] = resultCode == ComponentActivity.RESULT_OK
                                 }
                             }
                         }
@@ -119,6 +123,7 @@ class PermissionsScreen : SetupScreen() {
                 )
             )
         }
+
         fun updateState() {
             permissions.forEach { perm ->
                 grantedPermissions[perm.translationKey] = perm.isPermissionGranted()
@@ -127,18 +132,22 @@ class PermissionsScreen : SetupScreen() {
                 goNext()
             }
         }
+
         OnLifecycleEvent { _, event ->
             if (event != Lifecycle.Event.ON_RESUME) return@OnLifecycleEvent
+            updateState()
             coroutineScope.launch {
-                updateState()
                 delay(1000)
                 updateState()
             }
         }
+
         LaunchedEffect(Unit) {
             updateState()
         }
+
         DialogText(text = context.translation["setup.permissions.dialog"])
+
         OutlinedCard(
             modifier = Modifier
                 .fillMaxWidth(),
