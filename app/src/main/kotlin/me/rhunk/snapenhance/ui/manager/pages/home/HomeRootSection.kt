@@ -48,13 +48,14 @@ import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.data.Updater
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import java.text.DateFormat
-import androidx.compose.foundation.layout.navigationBarsPadding  // Add this import
 
 class HomeRootSection : Routes.Route() {
     companion object {
         val cardMargin = 10.dp
     }
+
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
+
     private val cards by lazy {
         EnumQuickActions.entries.map {
             (context.translation["actions.${it.key}.name"] to it.icon) to it.action
@@ -68,6 +69,7 @@ class HomeRootSection : Routes.Route() {
             }
         }
     }
+
     @Composable
     private fun InfoCard(
         content: @Composable ColumnScope.() -> Unit,
@@ -90,6 +92,7 @@ class HomeRootSection : Routes.Route() {
             }
         }
     }
+
     @Composable
     fun ExternalLinkIcon(
         modifier: Modifier = Modifier,
@@ -106,10 +109,13 @@ class HomeRootSection : Routes.Route() {
                 .then(modifier)
         )
     }
+
     override val title: @Composable (() -> Unit)? = {}
+
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
+
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
         TopBarActionButton(
             onClick = {
@@ -127,6 +133,7 @@ class HomeRootSection : Routes.Route() {
             text = context.translation["manager.routes.home_settings"]
         )
     }
+
     @OptIn(ExperimentalLayoutApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val avenirNext = remember {
@@ -134,12 +141,11 @@ class HomeRootSection : Routes.Route() {
                 Font(R.font.avenir_next_medium, FontWeight.Medium)
             )
         }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .padding(bottom = 66.dp) // Safe space for floating nav bar
         ) {
             Icon(
                 imageVector = Snapenhance, contentDescription = null,
@@ -149,6 +155,7 @@ class HomeRootSection : Routes.Route() {
                     .align(Alignment.CenterHorizontally),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+
             Text(
                 text = translation.format(
                     "version_title",
@@ -158,6 +165,7 @@ class HomeRootSection : Routes.Route() {
                 fontFamily = avenirNext,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(
                     15.dp, Alignment.CenterHorizontally
@@ -173,12 +181,14 @@ class HomeRootSection : Routes.Route() {
                     },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
                 )
+
                 ExternalLinkIcon(
                     modifier = Modifier.clickable {
                         context.androidContext.openLink("https://github.com/rhunk/SnapEnhance")
                     },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
                 )
+
                 ExternalLinkIcon(
                     modifier = Modifier.offset(x = (-3).dp).clickable {
                         context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/wiki")
@@ -187,10 +197,13 @@ class HomeRootSection : Routes.Route() {
                     imageVector = Icons.AutoMirrored.Default.Help,
                 )
             }
+
             val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
                 context.database.getQuickTiles()
             }
+
             val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
+
             if (latestUpdate != null) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -226,6 +239,7 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             }
+
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -290,7 +304,9 @@ class HomeRootSection : Routes.Route() {
                     )
                 }
             }
+
             var showQuickActionsMenu by remember { mutableStateOf(false) }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -322,6 +338,7 @@ class HomeRootSection : Routes.Route() {
                                     context.database.setQuickTiles(selectedTiles)
                                 }
                             }
+
                             DropdownMenuItem(onClick = { toggle() }, text = {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -340,6 +357,7 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             }
+
             FlowRow(
                 modifier = Modifier
                     .padding(all = cardMargin)
@@ -350,6 +368,7 @@ class HomeRootSection : Routes.Route() {
                 val tileHeight = LocalDensity.current.run {
                     remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
                 }
+
                 remember(selectedTiles.size, context.translation.loadedLocale) {
                     selectedTiles.mapNotNull {
                         cards.entries.find { entry -> entry.key.first == it }
