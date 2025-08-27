@@ -75,6 +75,7 @@ class MainActivity : ComponentActivity() {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
                 val view = LocalView.current
+
                 SideEffect {
                     val window = (view.context as Activity).window
                     window.statusBarColor = Color.Transparent.toArgb()
@@ -84,15 +85,28 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-                Box(Modifier.fillMaxSize()) {
+
+                // Edge-to-edge Box, background base color always fills screen
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                ) {
                     Scaffold(
-                        containerColor = MaterialTheme.colorScheme.background,
+                        containerColor = Color.Transparent, // To keep background color under system bars
                         topBar = { navigation.TopBar() },
                         floatingActionButton = { navigation.FloatingActionButton() }
                     ) { innerPadding ->
-                        navigation.Content(innerPadding, startDestination)
+                        // Ensure content fits with system bars in all orientations
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                        ) {
+                            navigation.Content(PaddingValues(0.dp), startDestination)
+                        }
                     }
-                    // Use a Box with align to ensure correct floating
+                    // Floating bottom bar, always at proper bottom
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
