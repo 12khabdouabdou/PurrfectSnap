@@ -57,12 +57,8 @@ class MainActivity : ComponentActivity() {
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
+            // ThemeMode is tracked directly
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
-            val isDarkTheme = when (themeMode) {
-                ThemeMode.LIGHT -> false
-                ThemeMode.DARK -> true
-                ThemeMode.SYSTEM -> isSystemInDarkTheme()
-            }
             navController = rememberNavController()
             val navigation = remember {
                 Navigation(managerContext, navController, routes.also {
@@ -71,7 +67,7 @@ class MainActivity : ComponentActivity() {
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
 
-            AppMaterialTheme(isDarkTheme = isDarkTheme) {
+            AppMaterialTheme(themeMode = themeMode) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
                 val view = LocalView.current
