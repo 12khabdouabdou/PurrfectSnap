@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -28,7 +28,6 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
-import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
@@ -78,18 +77,18 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-                Box(Modifier.fillMaxSize()) {
-                    Scaffold(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        topBar = { navigation.TopBar() },
-                        floatingActionButton = { navigation.FloatingActionButton() }
-                    ) { innerPadding ->
-                        // Pass innerPadding ONLY to content, which should apply it at root (no extras!)
-                        Box(Modifier.padding(innerPadding)) {
-                            navigation.Content(PaddingValues(0.dp), startDestination)
-                        }
+                Scaffold(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    topBar = { navigation.TopBar() },
+                    floatingActionButton = { navigation.FloatingActionButton() }
+                ) { innerPadding ->
+                    // Only apply innerPadding ONCE, at the root of content!
+                    Box(Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)) {
+                        navigation.Content(PaddingValues(0.dp), startDestination)
                     }
-                    // Floating bottom bar overlays, uses its own insets/padding
+                    // The floating bottom bar is absolutely overlaid and uses its own insets
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
