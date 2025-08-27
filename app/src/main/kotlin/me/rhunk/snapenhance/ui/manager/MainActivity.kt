@@ -28,7 +28,6 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
@@ -47,7 +46,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         super.onCreate(savedInstanceState)
@@ -59,7 +57,6 @@ class MainActivity : ComponentActivity() {
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
-            // ThemeMode is tracked directly
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
             navController = rememberNavController()
             val navigation = remember {
@@ -72,7 +69,6 @@ class MainActivity : ComponentActivity() {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
                 val view = LocalView.current
-
                 SideEffect {
                     val window = (view.context as Activity).window
                     window.statusBarColor = Color.Transparent.toArgb()
@@ -82,24 +78,23 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-
                 Box(Modifier.fillMaxSize()) {
                     Scaffold(
                         containerColor = MaterialTheme.colorScheme.background,
                         topBar = { navigation.TopBar() },
                         floatingActionButton = { navigation.FloatingActionButton() }
                     ) { innerPadding ->
-                        // Apply BOTH navigationBarsPadding and bottom padding for bar
+                        // Don't apply bottom padding or navigationBarsPadding here!
+                        // Let each screen (if needed) apply appropriate padding for its own FAB or content
                         Box(
                             Modifier
                                 .fillMaxSize()
                                 .padding(innerPadding)
-                                .navigationBarsPadding()
-                                .padding(bottom = 72.dp) // Match your floating nav bar height!
                         ) {
                             navigation.Content(innerPadding, startDestination)
                         }
                     }
+                    // Your floating bar itself should handle system nav area with .navigationBarsPadding() as its own modifier
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
