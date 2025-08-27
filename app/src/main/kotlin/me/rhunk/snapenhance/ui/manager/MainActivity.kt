@@ -25,6 +25,8 @@ import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
@@ -52,7 +54,6 @@ class MainActivity : ComponentActivity() {
         }
         val routes = Routes(managerContext)
         routes.getRoutes().forEach { it.init() }
-
         setContent {
             // Observe themeMode from DataStore for app-wide theme switching
             val context = LocalContext.current
@@ -62,7 +63,6 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
-
             navController = rememberNavController()
             val navigation = remember {
                 Navigation(managerContext, navController, routes.also {
@@ -70,7 +70,6 @@ class MainActivity : ComponentActivity() {
                 })
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
-
             AppMaterialTheme(isDarkTheme = isDarkTheme) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
@@ -84,12 +83,19 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-                Scaffold(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    topBar = { navigation.TopBar() },
-                    bottomBar = { navigation.BottomBar() },
-                    floatingActionButton = { navigation.FloatingActionButton() }
-                ) { innerPadding -> navigation.Content(innerPadding, startDestination) }
+                // MAIN: Use Box as root to overlay floating bar
+                Box(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
+                    Scaffold(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        topBar = { navigation.TopBar() },
+                        // Remove bottomBar! We add FloatingBottomBar as an overlay instead.
+                        floatingActionButton = { navigation.FloatingActionButton() }
+                    ) { innerPadding ->
+                        navigation.Content(innerPadding, startDestination)
+                    }
+                    // Floating Bottom Bar overlay at bottom
+                    navigation.FloatingBottomBar()
+                }
             }
         }
     }
