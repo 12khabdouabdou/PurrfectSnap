@@ -43,17 +43,15 @@ import me.rhunk.snapenhance.common.ui.transparentTextFieldColors
 import me.rhunk.snapenhance.ui.manager.MainActivity
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.*
+import androidx.compose.foundation.layout.navigationBarsPadding
 
 class FeaturesRootSection : Routes.Route() {
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
-
     companion object {
         const val FEATURE_CONTAINER_ROUTE = "feature_container/{name}"
         const val SEARCH_FEATURE_ROUTE = "search_feature/{keyword}"
     }
-
     private var activityLauncherHelper: ActivityLauncherHelper? = null
-
     private val allContainers by lazy {
         val containers = mutableMapOf<String, PropertyPair<*>>()
         fun queryContainerRecursive(container: ConfigContainer) {
@@ -67,7 +65,6 @@ class FeaturesRootSection : Routes.Route() {
         queryContainerRecursive(context.config.root)
         containers
     }
-
     private val allProperties by lazy {
         val properties = mutableMapOf<PropertyKey<*>, PropertyValue<*>>()
         allContainers.values.forEach {
@@ -78,7 +75,6 @@ class FeaturesRootSection : Routes.Route() {
         }
         properties
     }
-
     private fun navigateToMainRoot() {
         routes.navController.navigate(routeInfo.id, NavOptions.Builder()
             .setPopUpTo(routes.navController.graph.findStartDestination().id, false)
@@ -86,28 +82,30 @@ class FeaturesRootSection : Routes.Route() {
             .build()
         )
     }
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     private fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
         activityLauncherHelper?.let(block) ?: run {
-            //open manager if activity launcher is null
             val intent = Intent(context.androidContext, MainActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.putExtra("route", routeInfo.id)
             context.androidContext.startActivity(intent)
         }
     }
-
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        Container(context.config.root)
+        // Correct bottom padding for floating bar/gesture area
+        Column(
+            Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .padding(bottom = 72.dp)
+        ) {
+            Container(context.config.root)
+        }
     }
-
     override val customComposables: NavGraphBuilder.() -> Unit = {
         routeInfo.childIds.addAll(listOf(FEATURE_CONTAINER_ROUTE, SEARCH_FEATURE_ROUTE))
-
         composable(FEATURE_CONTAINER_ROUTE, enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(100))
         }, exitTransition = {
@@ -115,11 +113,17 @@ class FeaturesRootSection : Routes.Route() {
         }) { backStackEntry ->
             backStackEntry.arguments?.getString("name")?.let { containerName ->
                 allContainers[containerName]?.let {
-                    Container(it.value.get() as ConfigContainer)
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .navigationBarsPadding()
+                            .padding(bottom = 72.dp)
+                    ) {
+                        Container(it.value.get() as ConfigContainer)
+                    }
                 }
             }
         }
-
         composable(SEARCH_FEATURE_ROUTE) { backStackEntry ->
             backStackEntry.arguments?.getString("keyword")?.let { keyword ->
                 val properties = allProperties.filter {
@@ -127,8 +131,14 @@ class FeaturesRootSection : Routes.Route() {
                             context.translation[it.key.propertyName()].contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyDescription()].contains(keyword, ignoreCase = true)
                 }.map { PropertyPair(it.key, it.value) }
-
-                PropertiesView(properties)
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding()
+                        .padding(bottom = 72.dp)
+                ) {
+                    PropertiesView(properties)
+                }
             }
         }
     }
@@ -137,9 +147,7 @@ class FeaturesRootSection : Routes.Route() {
     private fun PropertyAction(property: PropertyPair<*>, registerClickCallback: RegisterClickCallback) {
         var showDialog by remember { mutableStateOf(false) }
         var dialogComposable by remember { mutableStateOf<@Composable () -> Unit>({}) }
-
         fun registerDialogOnClickCallback() = registerClickCallback { showDialog = true }
-
         if (showDialog) {
             Dialog(
                 properties = DialogProperties(
@@ -150,9 +158,7 @@ class FeaturesRootSection : Routes.Route() {
                 dialogComposable()
             }
         }
-
         val propertyValue = property.value
-
         if (property.key.params.flags.contains(ConfigFlag.USER_IMPORT)) {
             registerDialogOnClickCallback()
             dialogComposable = {
@@ -170,7 +176,6 @@ class FeaturesRootSection : Routes.Route() {
                 var selectedFile by remember(files.size) { mutableStateOf(files.firstOrNull { it.name == propertyValue.getNullable() }.also {
                     if (files.isNotEmpty() && it == null) propertyValue.setAny(null)
                 }?.name) }
-
                 Card(
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier
@@ -230,11 +235,9 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 }
             }
-
             Icon(Icons.Filled.AttachFile, contentDescription = null)
             return
         }
-
         if (property.key.params.flags.contains(ConfigFlag.FOLDER)) {
             IconButton(onClick = registerClickCallback {
                 activityLauncher {
@@ -247,7 +250,6 @@ class FeaturesRootSection : Routes.Route() {
             }
             return
         }
-
         when (val dataType = remember { property.key.dataType.type }) {
             DataProcessors.Type.BOOLEAN -> {
                 var state by remember { mutableStateOf(propertyValue.get() as Boolean) }
@@ -259,7 +261,6 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 )
             }
-
             DataProcessors.Type.MAP_COORDINATES -> {
                 registerDialogOnClickCallback()
                 dialogComposable = {
@@ -267,7 +268,6 @@ class FeaturesRootSection : Routes.Route() {
                         showDialog = false
                     }
                 }
-
                 Text(
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
@@ -277,14 +277,11 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 )
             }
-
             DataProcessors.Type.STRING_UNIQUE_SELECTION -> {
                 registerDialogOnClickCallback()
-
                 dialogComposable = {
                     alertDialogs.UniqueSelectionDialog(property)
                 }
-
                 Text(
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
@@ -294,7 +291,6 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 )
             }
-
             DataProcessors.Type.STRING_MULTIPLE_SELECTION, DataProcessors.Type.STRING, DataProcessors.Type.INTEGER, DataProcessors.Type.FLOAT -> {
                 dialogComposable = {
                     when (dataType) {
@@ -307,7 +303,6 @@ class FeaturesRootSection : Routes.Route() {
                         else -> {}
                     }
                 }
-
                 registerDialogOnClickCallback().let { { it.invoke(true) } }.also {
                     if (dataType == DataProcessors.Type.INTEGER ||
                         dataType == DataProcessors.Type.FLOAT) {
@@ -325,35 +320,27 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 }
             }
-
             DataProcessors.Type.INT_COLOR -> {
                 dialogComposable = {
                     alertDialogs.ColorPickerPropertyDialog(property) {
                         showDialog = false
                     }
                 }
-
                 registerDialogOnClickCallback().let { { it.invoke(true) } }.also {
                     CircularAlphaTile(selectedColor = (propertyValue.getNullable() as? Int)?.let { Color(it) })
                 }
             }
-
             DataProcessors.Type.CONTAINER -> {
                 val container = propertyValue.get() as ConfigContainer
-
                 registerClickCallback {
                     routes.navController.navigate(FEATURE_CONTAINER_ROUTE.replace("{name}", property.name))
                 }
-
                 if (!container.hasGlobalState) return
-
                 var state by remember { mutableStateOf(container.globalState ?: false) }
-
                 Box(
                     modifier = Modifier
                         .padding(end = 15.dp),
                 ) {
-
                     Box(modifier = Modifier
                         .height(50.dp)
                         .width(1.dp)
@@ -362,7 +349,6 @@ class FeaturesRootSection : Routes.Route() {
                             shape = RoundedCornerShape(5.dp)
                         ))
                 }
-
                 Switch(
                     checked = state,
                     onCheckedChange = {
@@ -372,7 +358,6 @@ class FeaturesRootSection : Routes.Route() {
                 )
             }
         }
-
     }
 
     @Composable
@@ -383,11 +368,9 @@ class FeaturesRootSection : Routes.Route() {
             FeatureNotice.BAN_RISK.key to Color(0xFFFF8585),
             FeatureNotice.INTERNAL_BEHAVIOR.key to Color(0xFFFFFB87),
         )
-
         val versionCheck = remember { property.key.params.versionCheck }
         val versionCheckPair = remember(property) { versionCheck?.checkVersion(context.installationSummary.snapchatInfo?.versionCode ?: return@remember null)}
         val isComponentDisabled = remember { versionCheckPair != null && versionCheck?.isDisabled == true }
-
         ElevatedCard(
             modifier = Modifier
                 .fillMaxWidth()
@@ -415,7 +398,6 @@ class FeaturesRootSection : Routes.Route() {
                             .padding(start = 10.dp)
                     )
                 }
-
                 Column(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
@@ -443,7 +425,6 @@ class FeaturesRootSection : Routes.Route() {
                             lineHeight = 15.sp
                         )
                     }
-
                     if (versionCheckPair != null) {
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
@@ -457,7 +438,6 @@ class FeaturesRootSection : Routes.Route() {
                         )
                     }
                 }
-
                 Row(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
@@ -486,7 +466,6 @@ class FeaturesRootSection : Routes.Route() {
         var searchValue by remember { mutableStateOf("") }
         val scope = rememberCoroutineScope()
         var currentSearchJob by remember { mutableStateOf<Job?>(null) }
-
         rowScope.apply {
             TextField(
                 value = searchValue,
@@ -506,7 +485,6 @@ class FeaturesRootSection : Routes.Route() {
                         )
                     }.also { currentSearchJob = it }
                 },
-
                 keyboardActions = KeyboardActions(onDone = {
                     focusRequester.freeFocus()
                 }),
@@ -524,15 +502,12 @@ class FeaturesRootSection : Routes.Route() {
     override val topBarActions: @Composable (RowScope.() -> Unit) = topBarActions@{
         var showSearchBar by remember { mutableStateOf(false) }
         val focusRequester = remember { FocusRequester() }
-
         if (showSearchBar) {
             FeatureSearchBar(this, focusRequester)
             LaunchedEffect(true) {
                 focusRequester.requestFocus()
             }
         }
-
-
         if (showSearchBar) {
             IconButton(onClick = {
                 showSearchBar = false
@@ -554,13 +529,10 @@ class FeaturesRootSection : Routes.Route() {
                 text = translation["search_button"]
             )
         }
-
         if (showSearchBar) return@topBarActions
-
         var showExportDropdownMenu by remember { mutableStateOf(false) }
         var showResetConfirmationDialog by remember { mutableStateOf(false) }
         var showExportDialog by remember { mutableStateOf(false) }
-
         if (showResetConfirmationDialog) {
             AlertDialog(
                 title = { Text(text = context.translation["manager.dialogs.reset_config.title"]) },
@@ -588,7 +560,6 @@ class FeaturesRootSection : Routes.Route() {
                 }
             )
         }
-
         if (showExportDialog) {
             fun exportConfig(
                 exportSensitiveData: Boolean
@@ -608,7 +579,6 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 }
             }
-
             AlertDialog(
                 title = { Text(text = context.translation["manager.dialogs.export_config.title"]) },
                 text = { Text(text = context.translation["manager.dialogs.export_config.content"]) },
@@ -629,7 +599,6 @@ class FeaturesRootSection : Routes.Route() {
                 }
             )
         }
-
         val actions = remember {
             mapOf(
                 translation["export_option"] to { showExportDialog = true },
@@ -654,7 +623,6 @@ class FeaturesRootSection : Routes.Route() {
                 translation["reset_option"] to { showResetConfirmationDialog = true }
             )
         }
-
         if (context.activity != null) {
             IconButton(onClick = { showExportDropdownMenu = !showExportDropdownMenu}) {
                 Icon(
@@ -663,7 +631,6 @@ class FeaturesRootSection : Routes.Route() {
                 )
             }
         }
-
         if (showExportDropdownMenu) {
             DropdownMenu(expanded = true, onDismissRequest = { showExportDropdownMenu = false }) {
                 actions.forEach { (name, action) ->
@@ -685,23 +652,18 @@ class FeaturesRootSection : Routes.Route() {
     private fun PropertiesView(
         properties: List<PropertyPair<*>>
     ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            content = { innerPadding ->
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(innerPadding),
-                    //save button space
-                    contentPadding = PaddingValues(top = 10.dp, bottom = 110.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    items(properties, key = { it.key.propertyName() }) {
-                        PropertyCard(it)
-                    }
-                }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxHeight()
+                .navigationBarsPadding()
+                .padding(bottom = 72.dp),
+            contentPadding = PaddingValues(top = 10.dp),
+            verticalArrangement = Arrangement.Top
+        ) {
+            items(properties, key = { it.key.propertyName() }) {
+                PropertyCard(it)
             }
-        )
+        }
     }
 
     override val floatingActionButton: @Composable () -> Unit = {
@@ -711,20 +673,17 @@ class FeaturesRootSection : Routes.Route() {
                 context.log.verbose("saved config!")
             }
         }
-
         OnLifecycleEvent { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
                 saveConfig()
             }
         }
-
         DisposableEffect(Unit) {
             onDispose {
                 saveConfig()
             }
         }
     }
-
 
     @Composable
     private fun Container(
