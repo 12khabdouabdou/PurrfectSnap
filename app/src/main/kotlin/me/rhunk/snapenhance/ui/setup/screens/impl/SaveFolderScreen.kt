@@ -13,13 +13,11 @@ import me.rhunk.snapenhance.ui.util.chooseFolder
 
 class SaveFolderScreen : SetupScreen() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-
     override fun init() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     @Composable
-    override fun Content() {
+    override fun Content() = EdgeToEdge {
         DialogText(text = context.translation["setup.dialogs.save_folder"])
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
