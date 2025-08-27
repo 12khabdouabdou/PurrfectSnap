@@ -29,7 +29,7 @@ fun ThemeChooserDialog(
         },
         text = {
             Column {
-                ThemeMode.values().forEach { mode ->
+                ThemeMode.values().forEachIndexed { idx, mode ->
                     val (icon, label) = when (mode) {
                         ThemeMode.LIGHT -> Icons.Filled.LightMode to "Light"
                         ThemeMode.DARK -> Icons.Filled.DarkMode to "Dark"
@@ -68,7 +68,8 @@ fun ThemeChooserDialog(
                             )
                         }
                     }
-                    if (mode != ThemeMode.SYSTEM && mode != ThemeMode.AMOLED) Spacer(Modifier.height(7.dp))
+                    // Add a spacer between all buttons except the last
+                    if (idx < ThemeMode.values().lastIndex) Spacer(Modifier.height(8.dp))
                 }
             }
         }
