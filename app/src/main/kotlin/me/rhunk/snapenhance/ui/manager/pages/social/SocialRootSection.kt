@@ -33,11 +33,11 @@ import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.coil.BitmojiImage
 import me.rhunk.snapenhance.ui.util.pagerTabIndicatorOffset
-import androidx.compose.foundation.layout.navigationBarsPadding
 
 class SocialRootSection : Routes.Route() {
     private var friendList: List<MessagingFriendInfo> by mutableStateOf(emptyList())
     private var groupList: List<MessagingGroupInfo> by mutableStateOf(emptyList())
+
     private fun updateScopeLists() {
         context.coroutineScope.launch {
             friendList = context.database.getFriends(descOrder = true)
@@ -48,18 +48,19 @@ class SocialRootSection : Routes.Route() {
     @Composable
     private fun ScopeList(scope: SocialScope) {
         val remainingHours = remember { context.config.root.streaksReminder.remainingHours.get() }
+
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding()
-                .padding(bottom = 72.dp),
-            contentPadding = PaddingValues(top = 10.dp, start = 8.dp, end = 8.dp),
+                .fillMaxSize(),
+            contentPadding = PaddingValues(top = 10.dp, bottom = 110.dp, start = 8.dp, end = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            //check if scope list is empty
             val listSize = when (scope) {
                 SocialScope.GROUP -> groupList.size
                 SocialScope.FRIEND -> friendList.size
             }
+
             if (listSize == 0) {
                 item {
                     Text(
@@ -69,11 +70,13 @@ class SocialRootSection : Routes.Route() {
                     )
                 }
             }
+
             items(listSize) { index ->
                 val id = when (scope) {
                     SocialScope.GROUP -> groupList[index].conversationId
                     SocialScope.FRIEND -> friendList[index].userId
                 }
+
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -107,11 +110,13 @@ class SocialRootSection : Routes.Route() {
                                     )
                                 }
                             }
+
                             SocialScope.FRIEND -> {
                                 val friend = friendList[index]
                                 val streaks by rememberAsyncMutableState(defaultValue = friend.streaks) {
                                     context.database.getFriendStreaks(friend.userId)
                                 }
+
                                 BitmojiImage(
                                     context = context,
                                     url = BitmojiSelfie.getBitmojiSelfie(
@@ -120,6 +125,7 @@ class SocialRootSection : Routes.Route() {
                                         BitmojiSelfie.BitmojiSelfieType.NEW_THREE_D
                                     )
                                 )
+
                                 Column(
                                     modifier = Modifier
                                         .padding(start = 7.dp)
@@ -161,6 +167,7 @@ class SocialRootSection : Routes.Route() {
                                 }
                             }
                         }
+
                         FilledIconButton(onClick = {
                             routes.messagingPreview.navigate {
                                 put("id", id)
@@ -183,6 +190,7 @@ class SocialRootSection : Routes.Route() {
         val coroutineScope = rememberCoroutineScope()
         val pagerState = rememberPagerState { titles.size }
         var addFriendDialog by remember { mutableStateOf(null as AddFriendDialog?) }
+
         if (addFriendDialog != null) {
             addFriendDialog?.Content {
                 addFriendDialog = null
@@ -193,11 +201,11 @@ class SocialRootSection : Routes.Route() {
                 }
             }
         }
+
         LaunchedEffect(Unit) {
             updateScopeLists()
         }
 
-        // Make Scaffold take safe area into account for bar & FAB
         Scaffold(
             floatingActionButton = {
                 FloatingActionButton(
@@ -225,9 +233,7 @@ class SocialRootSection : Routes.Route() {
                             pinnedIds = (friendList.map { it.userId } + groupList.map { it.conversationId }).reversed(),
                         )
                     },
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .navigationBarsPadding(), // keep FAB above nav bar
+                    modifier = Modifier.padding(10.dp),
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = RoundedCornerShape(16.dp),
@@ -239,12 +245,7 @@ class SocialRootSection : Routes.Route() {
                 }
             }
         ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .navigationBarsPadding()
-                    .padding(bottom = 72.dp)
-            ) {
+            Column(modifier = Modifier.padding(paddingValues)) {
                 TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.pagerTabIndicatorOffset(
@@ -271,10 +272,9 @@ class SocialRootSection : Routes.Route() {
                         )
                     }
                 }
+
                 HorizontalPager(
-                    modifier = Modifier
-                        .navigationBarsPadding()
-                        .padding(bottom = 72.dp),
+                    modifier = Modifier.padding(paddingValues),
                     state = pagerState
                 ) { page ->
                     when (page) {
