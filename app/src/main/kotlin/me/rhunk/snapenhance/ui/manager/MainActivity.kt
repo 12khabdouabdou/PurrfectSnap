@@ -9,11 +9,14 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -24,9 +27,6 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
@@ -55,7 +55,6 @@ class MainActivity : ComponentActivity() {
         val routes = Routes(managerContext)
         routes.getRoutes().forEach { it.init() }
         setContent {
-            // Observe themeMode from DataStore for app-wide theme switching
             val context = LocalContext.current
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
             val isDarkTheme = when (themeMode) {
@@ -70,6 +69,7 @@ class MainActivity : ComponentActivity() {
                 })
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
+
             AppMaterialTheme(isDarkTheme = isDarkTheme) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
@@ -83,18 +83,22 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-                // MAIN: Use Box as root to overlay floating bar
-                Box(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxSize()) {
                     Scaffold(
                         containerColor = MaterialTheme.colorScheme.background,
                         topBar = { navigation.TopBar() },
-                        // Remove bottomBar! We add FloatingBottomBar as an overlay instead.
                         floatingActionButton = { navigation.FloatingActionButton() }
                     ) { innerPadding ->
                         navigation.Content(innerPadding, startDestination)
                     }
-                    // Floating Bottom Bar overlay at bottom
-                    navigation.FloatingBottomBar()
+                    // Use a Box with align to ensure correct floating
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                    ) {
+                        navigation.FloatingBottomBar()
+                    }
                 }
             }
         }
