@@ -16,21 +16,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import me.rhunk.snapenhance.RemoteSideContext
+import androidx.compose.foundation.layout.navigationBarsPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 class Navigation(
@@ -81,7 +77,7 @@ class Navigation(
     }
 
     /**
-     * Floating bottom navigation bar—absolutely aligned, minimal system gesture bar gap.
+     * Floating bottom navigation bar—no leftover space and perfectly hugs the gesture bar!
      */
     @Composable
     fun FloatingBottomBar() {
@@ -89,22 +85,11 @@ class Navigation(
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         val primaryRoutes = remember { routes.getRoutes().filter { it.routeInfo.showInNavBar } }
 
-        // Calculate the real gesture bar inset (if present) and add just a bit of padding above
-        val view = LocalView.current
-        val density = LocalDensity.current
-        // default fallback (minimal for most phones), will be replaced if system inset found
-        var bottomPadding: Dp = 8.dp
-        ViewCompat.getRootWindowInsets(view)?.let { insets ->
-            val gestureInset = insets.getInsets(WindowInsetsCompat.Type.systemGestures()).bottom
-            if (gestureInset > 0) {
-                with(density) { bottomPadding = gestureInset.toDp() + 6.dp }
-            }
-        }
-
         Box(
             Modifier
                 .fillMaxWidth()
-                .padding(bottom = bottomPadding, start = 16.dp, end = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
+                .navigationBarsPadding(),
             contentAlignment = Alignment.BottomCenter
         ) {
             Surface(
