@@ -4,7 +4,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -13,9 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -77,8 +76,7 @@ class Navigation(
     }
 
     /**
-     * Floating bottom navigation bar: No .align(Alignment.BottomCenter) in this function!
-     * Align in your root Box (MainActivity) instead.
+     * Floating bottom navigation bar—icons and labels perfectly centered!
      */
     @Composable
     fun FloatingBottomBar() {
@@ -98,7 +96,6 @@ class Navigation(
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
                     .clip(RoundedCornerShape(24.dp))
             ) {
                 NavigationBar(
@@ -112,7 +109,14 @@ class Navigation(
                         NavigationBarItem(
                             alwaysShowLabel = true,
                             icon = {
-                                Icon(imageVector = route.routeInfo.icon, contentDescription = null)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .wrapContentSize(Alignment.Center),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(imageVector = route.routeInfo.icon, contentDescription = null)
+                                }
                             },
                             label = {
                                 Text(
