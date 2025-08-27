@@ -29,6 +29,7 @@ import me.rhunk.snapenhance.common.scripting.ui.ScriptInterface
 import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
 import me.rhunk.snapenhance.common.ui.TopBarActionButton
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
+import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
 import me.rhunk.snapenhance.common.ui.rememberAsyncUpdateDispatcher
 import me.rhunk.snapenhance.common.util.ktx.getUrlFromClipboard
 import me.rhunk.snapenhance.common.util.ktx.openLink
@@ -42,6 +43,7 @@ import me.rhunk.snapenhance.ui.util.pullrefresh.PullRefreshIndicator
 import me.rhunk.snapenhance.ui.util.pullrefresh.pullRefresh
 import me.rhunk.snapenhance.ui.util.pullrefresh.rememberPullRefreshState
 import java.io.File
+import androidx.compose.foundation.layout.navigationBarsPadding
 
 class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -69,7 +71,7 @@ class ScriptingRootSection : Routes.Route() {
                 context.shortToast("Script already installed!")
                 return@launch
             }
-            
+
             runCatching {
                 context.shortToast("Downloading script...")
                 val moduleInfo = context.scriptManager.importFromUrl(scriptUrl)
@@ -140,7 +142,6 @@ class ScriptingRootSection : Routes.Route() {
                                         }
                                         return@launch
                                     }
-                                    
                                     val moduleInfo = context.scriptManager.importFromUrl(url)
                                     context.shortToast("Script ${moduleInfo.name} imported!")
                                     reloadDispatcher.dispatch()
@@ -276,20 +277,17 @@ class ScriptingRootSection : Routes.Route() {
         }
         var openSettings by remember(script) { mutableStateOf(false) }
         var openActions by remember { mutableStateOf(false) }
-
         val dispatcher = rememberAsyncUpdateDispatcher()
         val reloadCallback = remember { suspend { dispatcher.dispatch() } }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null, updateDispatcher = dispatcher, keys = arrayOf(script)) {
             context.scriptManager.checkForUpdate(script)
         }
-
         LaunchedEffect(Unit) {
             reloadDispatcher.addCallback(reloadCallback)
         }
         DisposableEffect(Unit) {
             onDispose { reloadDispatcher.removeCallback(reloadCallback) }
         }
-
         Card(
             modifier = Modifier.fillMaxWidth().padding(8.dp),
             elevation = CardDefaults.cardElevation()
@@ -366,7 +364,6 @@ class ScriptingRootSection : Routes.Route() {
         var showImportDialog by remember { mutableStateOf(false) }
         var showToast by remember { mutableStateOf(false) }
         val scriptingFolder = context.scriptManager.getScriptsFolder()
-
         if (showImportDialog) {
             ImportRemoteScript { showImportDialog = false }
         }
@@ -376,7 +373,6 @@ class ScriptingRootSection : Routes.Route() {
                 showToast = false
             }
         }
-
         if (tab == 1) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
                 ExtendedFloatingActionButton(
@@ -440,8 +436,12 @@ class ScriptingRootSection : Routes.Route() {
         ) { context.scriptManager.getScriptsFolder() }
         val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
-
-        Column(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .padding(bottom = 72.dp)
+        ) {
             TabRow(selectedTabIndex = tab) {
                 tabTitles.forEachIndexed { i, text ->
                     Tab(
@@ -465,7 +465,6 @@ class ScriptingRootSection : Routes.Route() {
                     ) { context.scriptManager.sync(); context.scriptManager.getSyncedModules() }
                     val coroutineScope = rememberCoroutineScope()
                     var refreshing by remember { mutableStateOf(false) }
-
                     LaunchedEffect(Unit) {
                         refreshing = true
                         withContext(Dispatchers.IO) {
@@ -480,10 +479,16 @@ class ScriptingRootSection : Routes.Route() {
                             refreshing = false
                         }
                     })
-
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize().pullRefresh(pullRefreshState),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pullRefresh(pullRefreshState)
+                                .navigationBarsPadding()
+                                .padding(bottom = 72.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             item {
@@ -544,7 +549,6 @@ class ScriptingRootSection : Routes.Route() {
                             items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
                                 ModuleItem(scriptModules[index])
                             }
-                            item { Spacer(modifier = Modifier.height(200.dp)) }
                         }
                         PullRefreshIndicator(
                             refreshing = refreshing,
@@ -589,7 +593,6 @@ class ScriptingRootSection : Routes.Route() {
             }
         }
     }
-
     override val topBarActions: @Composable() (RowScope.() -> Unit) = {
         TopBarActionButton(
             onClick = {
