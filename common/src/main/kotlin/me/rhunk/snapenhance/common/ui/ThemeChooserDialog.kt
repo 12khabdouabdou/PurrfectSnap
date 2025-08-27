@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.InvertColors // AMOLED icon
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ fun ThemeChooserDialog(
                         ThemeMode.LIGHT -> Icons.Filled.LightMode to "Light"
                         ThemeMode.DARK -> Icons.Filled.DarkMode to "Dark"
                         ThemeMode.SYSTEM -> Icons.Filled.Brightness4 to "System Default"
+                        ThemeMode.AMOLED -> Icons.Filled.InvertColors to "AMOLED"
                     }
                     Row(
                         modifier = Modifier
@@ -66,7 +68,7 @@ fun ThemeChooserDialog(
                             )
                         }
                     }
-                    if(mode != ThemeMode.SYSTEM) Spacer(Modifier.height(7.dp))
+                    if (mode != ThemeMode.SYSTEM && mode != ThemeMode.AMOLED) Spacer(Modifier.height(7.dp))
                 }
             }
         }
