@@ -28,6 +28,7 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
+import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
