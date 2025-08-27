@@ -75,9 +75,6 @@ val md_theme_amoled_surface = Color(0xFF000000)
 val md_theme_amoled_onBackground = Color(0xFFE6E1E6)
 val md_theme_amoled_onSurface = Color(0xFFE6E1E6)
 
-// For completeness (looks unused)
-val seed = Color(0xFF6750A4)
-
 // Light colorScheme object
 private val LightThemeColors = lightColorScheme(
     primary = md_theme_light_primary,
@@ -110,7 +107,8 @@ private val LightThemeColors = lightColorScheme(
     outlineVariant = md_theme_light_outlineVariant,
     scrim = md_theme_light_scrim
 )
-// Dark colorScheme object (use darkColorScheme!)
+
+// Dark colorScheme object
 private val DarkThemeColors = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
@@ -178,12 +176,14 @@ private val AmoledThemeColors = darkColorScheme(
 
 @Composable
 fun AppMaterialTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM, // changed param for explicit ThemeMode usage
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode? = null,
     content: @Composable () -> Unit
 ) {
-    val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val context = LocalContext.current
-    val colorScheme = when (themeMode) {
+    // Backward-compatible param handoff
+    val effectiveThemeMode = themeMode ?: if (isDarkTheme) ThemeMode.DARK else ThemeMode.LIGHT
+    val colorScheme = when (effectiveThemeMode) {
         ThemeMode.AMOLED -> AmoledThemeColors
         ThemeMode.DARK -> DarkThemeColors
         ThemeMode.LIGHT -> LightThemeColors
