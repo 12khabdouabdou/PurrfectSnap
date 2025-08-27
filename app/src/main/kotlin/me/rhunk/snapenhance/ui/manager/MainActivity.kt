@@ -29,6 +29,7 @@ import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.Alignment
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
