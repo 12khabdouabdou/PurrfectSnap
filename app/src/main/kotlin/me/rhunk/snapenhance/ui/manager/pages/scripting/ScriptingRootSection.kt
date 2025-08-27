@@ -49,7 +49,6 @@ class ScriptingRootSection : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
     private var selectedTab by mutableStateOf(0)
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
@@ -71,7 +70,6 @@ class ScriptingRootSection : Routes.Route() {
                 context.shortToast("Script already installed!")
                 return@launch
             }
-
             runCatching {
                 context.shortToast("Downloading script...")
                 val moduleInfo = context.scriptManager.importFromUrl(scriptUrl)
@@ -486,9 +484,7 @@ class ScriptingRootSection : Routes.Route() {
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .pullRefresh(pullRefreshState)
-                                .navigationBarsPadding()
-                                .padding(bottom = 72.dp),
+                                .pullRefresh(pullRefreshState),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             item {
@@ -593,6 +589,7 @@ class ScriptingRootSection : Routes.Route() {
             }
         }
     }
+
     override val topBarActions: @Composable() (RowScope.() -> Unit) = {
         TopBarActionButton(
             onClick = {
