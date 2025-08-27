@@ -32,7 +32,6 @@ import me.rhunk.snapenhance.common.ui.ThemePreferences
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private lateinit var managerContext: RemoteSideContext
-
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (::navController.isInitialized.not()) return
@@ -57,7 +56,6 @@ class MainActivity : ComponentActivity() {
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
-            // ThemeMode is tracked directly
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
             navController = rememberNavController()
             val navigation = remember {
@@ -66,7 +64,6 @@ class MainActivity : ComponentActivity() {
                 })
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
-
             AppMaterialTheme(themeMode = themeMode) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
@@ -86,9 +83,12 @@ class MainActivity : ComponentActivity() {
                         topBar = { navigation.TopBar() },
                         floatingActionButton = { navigation.FloatingActionButton() }
                     ) { innerPadding ->
-                        navigation.Content(innerPadding, startDestination)
+                        // Pass innerPadding ONLY to content, which should apply it at root (no extras!)
+                        Box(Modifier.padding(innerPadding)) {
+                            navigation.Content(PaddingValues(0.dp), startDestination)
+                        }
                     }
-                    // Use a Box with align to ensure correct floating
+                    // Floating bottom bar overlays, uses its own insets/padding
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
