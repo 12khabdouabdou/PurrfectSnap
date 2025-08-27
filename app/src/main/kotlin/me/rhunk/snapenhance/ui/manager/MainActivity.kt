@@ -84,21 +84,20 @@ class MainActivity : ComponentActivity() {
                     topBar = { navigation.TopBar() },
                     floatingActionButton = { navigation.FloatingActionButton() }
                 ) { innerPadding ->
-                    // Only apply innerPadding ONCE, at the root of content!
                     Box(
                         Modifier
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
                         navigation.Content(PaddingValues(0.dp), startDestination)
-                    }
-                    // The floating bottom bar is absolutely overlaid and uses its own insets
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                    ) {
-                        navigation.FloatingBottomBar()
+                        // The floating bottom bar is absolutely overlaid and aligned to bottom center
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                        ) {
+                            navigation.FloatingBottomBar()
+                        }
                     }
                 }
             }
