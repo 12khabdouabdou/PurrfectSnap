@@ -76,47 +76,35 @@ class Navigation(
     }
 
     /**
-     * Floating bottom navigation bar—icons and labels perfectly centered!
+     * Perfectly floating bottom navigation bar.
      */
     @Composable
     fun FloatingBottomBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         val primaryRoutes = remember { routes.getRoutes().filter { it.routeInfo.showInNavBar } }
+
         Box(
             Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp)
-                .wrapContentHeight()
+                .padding(bottom = 24.dp, start = 16.dp, end = 16.dp),
+            contentAlignment = Alignment.BottomCenter
         ) {
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 shadowElevation = 12.dp,
                 tonalElevation = 5.dp,
-                color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(24.dp))
+                color = MaterialTheme.colorScheme.surface
             ) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 0.dp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
+                    tonalElevation = 0.dp
                 ) {
                     primaryRoutes.forEach { route ->
                         NavigationBarItem(
                             alwaysShowLabel = true,
                             icon = {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .wrapContentSize(Alignment.Center),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(imageVector = route.routeInfo.icon, contentDescription = null)
-                                }
+                                Icon(imageVector = route.routeInfo.icon, contentDescription = null)
                             },
                             label = {
                                 Text(
