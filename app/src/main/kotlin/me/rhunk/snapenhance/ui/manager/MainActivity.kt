@@ -28,10 +28,12 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
+import androidx.compose.foundation.layout.navigationBarsPadding
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private lateinit var managerContext: RemoteSideContext
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (::navController.isInitialized.not()) return
@@ -44,6 +46,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         super.onCreate(savedInstanceState)
@@ -55,6 +58,7 @@ class MainActivity : ComponentActivity() {
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
+            // ThemeMode is tracked directly
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
             navController = rememberNavController()
             val navigation = remember {
@@ -67,6 +71,7 @@ class MainActivity : ComponentActivity() {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
                 val view = LocalView.current
+
                 SideEffect {
                     val window = (view.context as Activity).window
                     window.statusBarColor = Color.Transparent.toArgb()
@@ -76,20 +81,20 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
+
                 Box(Modifier.fillMaxSize()) {
                     Scaffold(
                         containerColor = MaterialTheme.colorScheme.background,
                         topBar = { navigation.TopBar() },
                         floatingActionButton = { navigation.FloatingActionButton() }
                     ) { innerPadding ->
-                        // Add safe bottom padding for floating bar & gestures!
-                        val floatingBarHeight = 66.dp
-                        val safeBottomPadding = with(LocalView.current) { WindowInsets.navigationBars.getBottom(this) }.dp + floatingBarHeight
+                        // Apply BOTH navigationBarsPadding and bottom padding for bar
                         Box(
                             Modifier
-                                .padding(innerPadding)
-                                .padding(bottom = safeBottomPadding)
                                 .fillMaxSize()
+                                .padding(innerPadding)
+                                .navigationBarsPadding()
+                                .padding(bottom = 72.dp) // Match your floating nav bar height!
                         ) {
                             navigation.Content(innerPadding, startDestination)
                         }
@@ -105,9 +110,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-// Helper to convert pixel to dp for bottom inset
-val Int.dp: Dp @Composable get() = with(LocalContext.current.resources.displayMetrics) {
-    (this@dp / density).dp
 }
