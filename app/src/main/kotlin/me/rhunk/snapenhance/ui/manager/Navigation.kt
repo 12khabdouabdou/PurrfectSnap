@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -78,8 +77,8 @@ class Navigation(
     }
 
     /**
-     * This is the floating bottom navigation bar!
-     * Add this as an overlay in your main layout with Box.
+     * Floating bottom navigation bar: No .align(Alignment.BottomCenter) in this function!
+     * Align in your root Box (MainActivity) instead.
      */
     @Composable
     fun FloatingBottomBar() {
@@ -91,7 +90,6 @@ class Navigation(
                 .fillMaxWidth()
                 .padding(bottom = 24.dp, start = 16.dp, end = 16.dp)
                 .wrapContentHeight()
-                .align(Alignment.BottomCenter)
         ) {
             Surface(
                 shape = RoundedCornerShape(24.dp),
