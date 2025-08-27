@@ -29,7 +29,6 @@ import me.rhunk.snapenhance.common.scripting.ui.ScriptInterface
 import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
 import me.rhunk.snapenhance.common.ui.TopBarActionButton
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
-import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
 import me.rhunk.snapenhance.common.ui.rememberAsyncUpdateDispatcher
 import me.rhunk.snapenhance.common.util.ktx.getUrlFromClipboard
 import me.rhunk.snapenhance.common.util.ktx.openLink
@@ -354,58 +353,6 @@ class ScriptingRootSection : Routes.Route() {
         }
         if (openActions) {
             ModuleActions(script = script, canUpdate = latestUpdate != null) { openActions = false }
-        }
-    }
-
-    override val floatingActionButton: @Composable () -> Unit = {
-        val tab = selectedTab
-        var showImportDialog by remember { mutableStateOf(false) }
-        var showToast by remember { mutableStateOf(false) }
-        val scriptingFolder = context.scriptManager.getScriptsFolder()
-        if (showImportDialog) {
-            ImportRemoteScript { showImportDialog = false }
-        }
-        if (showToast) {
-            LaunchedEffect(Unit) {
-                context.shortToast("Please select your scripts folder!")
-                showToast = false
-            }
-        }
-        if (tab == 1) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
-                ExtendedFloatingActionButton(
-                    onClick = { routes.manageScriptRepos.navigate() },
-                    icon = { Icon(Icons.Default.Public, contentDescription = null) },
-                    text = { Text("Manage Repos") }
-                )
-            }
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.End) {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        if (scriptingFolder == null) {
-                            showToast = true
-                        } else {
-                            showImportDialog = true
-                        }
-                    },
-                    icon = { Icon(imageVector = Icons.Default.Link, contentDescription = "Link") },
-                    text = { Text(text = "Import from URL") }
-                )
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        if (scriptingFolder == null) {
-                            showToast = true
-                        } else {
-                            scriptingFolder.let {
-                                context.androidContext.openLink(it.uri.toString())
-                            }
-                        }
-                    },
-                    icon = { Icon(imageVector = Icons.Default.FolderOpen, contentDescription = "Folder") },
-                    text = { Text(text = "Open Scripts Folder") }
-                )
-            }
         }
     }
 
