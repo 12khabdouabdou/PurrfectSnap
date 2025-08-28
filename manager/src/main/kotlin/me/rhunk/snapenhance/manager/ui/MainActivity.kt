@@ -2,6 +2,7 @@ package me.rhunk.snapenhance.manager.ui
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
