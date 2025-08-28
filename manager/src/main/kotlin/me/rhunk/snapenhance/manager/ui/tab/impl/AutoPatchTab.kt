@@ -316,7 +316,7 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
 
-        BackHandler(isRunning)
+        BackHandler(isRunning) { /* Do nothing, block back press if running */ }
 
         Column(
             modifier = Modifier
