@@ -1,5 +1,6 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -13,9 +14,10 @@ import androidx.compose.ui.unit.sp
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 
 class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
-    override fun init(activity: androidx.activity.ComponentActivity) {
+
+    override fun init(activity: ComponentActivity) {
         super.init(activity)
-        // Register new tabs if not already present
+        // Ensure nested tabs are known to navigation
         registerNestedTab(ManualPatchTab::class)
         registerNestedTab(AutoPatchTab::class)
     }
@@ -23,8 +25,9 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
     @Composable
     override fun Content() {
         var showAutoPatchDialog by remember { mutableStateOf(false) }
+
         Column(Modifier.fillMaxWidth()) {
-            // Manual Patch Card (already exists in your UI)
+            // Manual Patch (existing)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -42,7 +45,8 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     )
                 }
             }
-            // New: Auto Patch Card
+
+            // Auto Patch (new)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -60,24 +64,20 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     )
                 }
             }
-            // Confirmation Dialog
+
             if (showAutoPatchDialog) {
                 AlertDialog(
                     onDismissRequest = { showAutoPatchDialog = false },
                     title = { Text("Auto Patch") },
                     text = { Text("Are you sure to continue?") },
                     confirmButton = {
-                        TextButton(
-                            onClick = {
-                                showAutoPatchDialog = false
-                                navigation.navigateTo(AutoPatchTab::class)
-                            }
-                        ) { Text("Yes") }
+                        TextButton(onClick = {
+                            showAutoPatchDialog = false
+                            navigation.navigateTo(AutoPatchTab::class)
+                        }) { Text("Yes") }
                     },
                     dismissButton = {
-                        TextButton(
-                            onClick = { showAutoPatchDialog = false }
-                        ) { Text("No") }
+                        TextButton(onClick = { showAutoPatchDialog = false }) { Text("No") }
                     }
                 )
             }
