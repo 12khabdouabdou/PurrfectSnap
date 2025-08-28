@@ -3,7 +3,6 @@ package me.rhunk.snapenhance.manager.ui
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -19,13 +18,15 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.SettingsTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.InstallPackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.RepackageTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab // <-- IMPORT THIS LINE
+import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
+import me.rhunk.snapenhance.manager.ui.tab.impl.AutoPatchTab // <-- IMPORT THIS LINE
 
 class MainActivity : ComponentActivity() {
     companion object {
         private val primaryTabs = listOf(
             HomeTab::class,
-            ManualPatchTab::class, // <-- ADD THIS LINE
+            ManualPatchTab::class,
+            AutoPatchTab::class, // <-- ADD THIS LINE
             SettingsTab::class,
             InstallPackageTab::class,
             RepackageTab::class
