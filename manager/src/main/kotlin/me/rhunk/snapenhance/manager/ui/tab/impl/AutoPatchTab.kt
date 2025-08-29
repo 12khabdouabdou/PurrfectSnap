@@ -2,6 +2,7 @@ package me.rhunk.snapenhance.manager.ui.tab.impl
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.activity.ComponentActivity
@@ -222,7 +223,64 @@ class AutoPatchTab : Tab("auto_patch") {
             return null
         }
 
-        // Warm up the free server (handle cold starts)
+        // Robust package presence check (fallback if result code is unreliable)
+        fun isPackageInstalled(pkg: String): Boolean {
+            return try {
+                val pm = context.packageManager
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0))
+                } else {
+                    @Suppress("DEPRECATION")
+                    pm.getPackageInfo(pkg, 0)
+                }
+                true
+            } catch (_: PackageManager.NameNotFoundException) {
+                false
+            }
+        }
+
+        // Install with Activity Result API and fallback poll of PackageManager
+        suspend fun installPackage(file: File, packageName: String): Boolean {
+            if (sharedConfig.useRootInstaller) {
+                val res = Shell.cmd(
+                    "cp \"${file.absolutePath}\" /data/local/tmp/",
+                    "pm install -r \"/data/local/tmp/${file.name}\"",
+                    "rm \"/data/local/tmp/${file.name}\""
+                ).exec()
+                if (res.isSuccess) return true
+                // If root install reports failure, still check if the package appeared
+                repeat(10) { // ~10s fallback poll
+                    if (isPackageInstalled(packageName)) return true
+                    Thread.sleep(1000)
+                }
+                return false
+            }
+
+            val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+            val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+                data = uri
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                // Ask the package installer to return a result
+                putExtra(Intent.EXTRA_RETURN_RESULT, true)
+            }
+
+            val deferred = CompletableDeferred<Int>()
+            installDeferred = deferred
+            // Launch via Activity Result API (reliable callback)
+            installLauncher.launch(intent)
+
+            // Await result; RESULT_OK indicates success
+            val resultCode = deferred.await()
+            if (resultCode == Activity.RESULT_OK) return true
+
+            // Fallback: poll PackageManager in case some OEMs don’t return proper result codes
+            repeat(15) { // ~15s poll
+                if (isPackageInstalled(packageName)) return true
+                Thread.sleep(1000)
+            }
+            return false
+        }
+
         fun warmUpServer(baseUrl: String, maxWaitMs: Long = 120_000L, intervalMs: Long = 3000L): Boolean {
             val warmClient = longClient.newBuilder()
                 .connectTimeout(30, TimeUnit.SECONDS)
@@ -247,28 +305,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 }
             }
             return false
-        }
-
-        suspend fun installPackage(file: File, packageName: String): Boolean {
-            if (sharedConfig.useRootInstaller) {
-                val res = Shell.cmd(
-                    "cp \"${file.absolutePath}\" /data/local/tmp/",
-                    "pm install -r \"/data/local/tmp/${file.name}\"",
-                    "rm \"/data/local/tmp/${file.name}\""
-                ).exec()
-                return res.isSuccess
-            }
-            val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-            val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
-                data = uri
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                putExtra(Intent.EXTRA_RETURN_RESULT, true)
-            }
-            val deferred = CompletableDeferred<Int>()
-            installDeferred = deferred
-            activity?.startActivityForResult(intent, 1)
-            val code = deferred.await()
-            return code == Activity.RESULT_OK
         }
 
         fun startPatchAndInstall() {
@@ -315,9 +351,7 @@ class AutoPatchTab : Tab("auto_patch") {
                     // 4) Warm up free server
                     log("Warming up patch server (free cold start may take ~30–60s)...")
                     val warmed = warmUpServer("https://auto-patch-server.onrender.com/health")
-                    if (!warmed) {
-                        log("Proceeding with upload despite warm-up not confirming; long timeouts will handle cold start.")
-                    }
+                    if (!warmed) log("Proceeding with upload despite warm-up not confirming; long timeouts will handle cold start.")
 
                     // 5) Upload only core.apk and Snapchat APK for patching
                     log("Uploading for patch (only core.apk and Snapchat APK)...")
@@ -341,11 +375,11 @@ class AutoPatchTab : Tab("auto_patch") {
                         }
                         log("Patched Snapchat APK received. Installing...")
 
-                        // 6) Install SnapEnhance first
+                        // 6) Install SnapEnhance first (robust, waits for result and/or polls PM)
                         if (!installPackage(seApk, sharedConfig.snapEnhancePackageName)) throw RuntimeException("SnapEnhance install failed")
                         log("SnapEnhance installed.")
 
-                        // 7) Install patched Snapchat
+                        // 7) Install patched Snapchat (same robust flow)
                         if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat install failed")
                         log("Patched Snapchat installed. Done!")
                         isDone = true
@@ -426,5 +460,7 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
         }
+
+        BackHandler(enabled = isRunning) { /* block back while running */ }
     }
 }
