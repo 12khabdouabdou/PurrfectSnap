@@ -97,7 +97,6 @@ class AutoPatchTab : Tab("auto_patch") {
             val resp = OkHttpClient().newCall(request).execute()
             if (!resp.isSuccessful) return null
             val arr = JSONArray(resp.body?.string() ?: return null)
-            // Find latest prerelease with matching SnapEnhance ABI and core.apk
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
                 if (!obj.optBoolean("prerelease", false)) continue
@@ -230,51 +229,72 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
 
-        if (!isRunning && !isDone && !isError) {
-            Button(onClick = { showDialog = true }, modifier = Modifier.fillMaxWidth()) {
-                Text("Start Auto Patch")
-            }
-        }
-
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text("Continue with Auto Patch?") },
-                text = { Text("Are you sure you want to patch Snapchat?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showDialog = false
-                        isRunning = true
-                        status = ""
-                        isDone = false
-                        isError = false
-                        startPatchAndInstall()
-                    }) { Text("Yes") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false }) { Text("No") }
-                }
-            )
-        }
-        if (status.isNotBlank()) {
-            Card(modifier = Modifier.weight(1f).padding(8.dp)) {
-                Column(modifier = Modifier.verticalScroll(scrollState).padding(8.dp)) {
-                    Text(status, overflow = TextOverflow.Visible)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (!isRunning && !isDone && !isError) {
+                Button(onClick = { showDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Start Auto Patch")
                 }
             }
-        }
-        if (progress >= 0f) {
-            LinearProgressIndicator(
-                progress = progress,
-                modifier = Modifier.fillMaxWidth().height(8.dp),
-                strokeCap = StrokeCap.Round
-            )
-        }
-        if (isDone || isError) {
-            Button(onClick = { navigation.navigateTo(HomeTab::class, noHistory = true) }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (isDone) "Back to Home" else "Close")
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("Continue with Auto Patch?") },
+                    text = { Text("Are you sure you want to patch Snapchat?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDialog = false
+                            isRunning = true
+                            status = ""
+                            isDone = false
+                            isError = false
+                            startPatchAndInstall()
+                        }) { Text("Yes") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) { Text("No") }
+                    }
+                )
             }
+            if (status.isNotBlank()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f) // This is correct: Card inside Column
+                        .padding(8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .verticalScroll(scrollState)
+                            .padding(8.dp)
+                    ) {
+                        Text(status, overflow = TextOverflow.Visible)
+                    }
+                }
+            }
+            if (progress >= 0f) {
+                LinearProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp),
+                    strokeCap = StrokeCap.Round
+                )
+            }
+            if (isDone || isError) {
+                Button(
+                    onClick = { navigation.navigateTo(HomeTab::class, noHistory = true) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (isDone) "Back to Home" else "Close")
+                }
+            }
+            LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
         }
-        LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
     }
 }
