@@ -25,6 +25,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.data.APKMirror
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -37,7 +38,6 @@ import java.util.zip.ZipFile
 class AutoPatchTab : Tab("auto_patch") {
     private lateinit var installLauncher: ActivityResultLauncher<Intent>
     private var installDeferred: CompletableDeferred<Int>? = null
-    private val hasRoot get() = sharedConfig.useRootInstaller
 
     override fun init(activity: ComponentActivity) {
         super.init(activity)
@@ -88,9 +88,6 @@ class AutoPatchTab : Tab("auto_patch") {
             else listOf(Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE), Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
                 Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE), Regex("\\bv7a\\b", RegexOption.IGNORE_CASE))
 
-        fun AssetResult.isSnapEnhanceMatchesAbi(abi: AbiChoice): Boolean {
-            return patternsFor(abi.assetLabel).any { it.containsMatchIn(snapEnhanceName) }
-        }
         fun verifyApkMatchesAbi(apk: File, desiredLibDir: String): Boolean =
             try { ZipFile(apk).use { zf -> zf.entries().asSequence().any { it.name.startsWith("lib/$desiredLibDir/") } } }
             catch (_: Throwable) { false }
@@ -103,12 +100,12 @@ class AutoPatchTab : Tab("auto_patch") {
             // Find latest prerelease with matching SnapEnhance ABI and core.apk
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
-                if (!obj.optBoolean("prerelease", false)) continue // Must be prerelease
+                if (!obj.optBoolean("prerelease", false)) continue
                 val assetsArr = obj.optJSONArray("assets") ?: continue
                 var snapAssetName: String? = null
                 var snapAssetUrl: String? = null
-                var coreAssetUrl: String? = null
                 var coreAssetName: String? = null
+                var coreAssetUrl: String? = null
                 for (j in 0 until assetsArr.length()) {
                     val a = assetsArr.getJSONObject(j)
                     val name = a.optString("name", "")
@@ -117,13 +114,10 @@ class AutoPatchTab : Tab("auto_patch") {
                         coreAssetName = name
                         coreAssetUrl = url
                     }
-                    // Find matching SnapEnhance APK for assetLabel
                     if (name.endsWith(".apk", true) && !name.equals("core.apk", true) &&
                         patternsFor(assetLabel).any { it.containsMatchIn(name) }) {
-                        if (snapAssetName == null || a.optLong("size", 0L) > 0L) {
-                            snapAssetName = name
-                            snapAssetUrl = url
-                        }
+                        snapAssetName = name
+                        snapAssetUrl = url
                     }
                 }
                 if (snapAssetName != null && coreAssetName != null && snapAssetUrl != null && coreAssetUrl != null)
@@ -154,7 +148,7 @@ class AutoPatchTab : Tab("auto_patch") {
         }
 
         suspend fun installPackage(file: File, packageName: String): Boolean {
-            if (hasRoot) {
+            if (sharedConfig.useRootInstaller) {
                 val res = Shell.cmd(
                     "cp \"${file.absolutePath}\" /data/local/tmp/",
                     "pm install -r \"/data/local/tmp/${file.name}\"",
@@ -179,11 +173,9 @@ class AutoPatchTab : Tab("auto_patch") {
             scope.launch {
                 try {
                     val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
-                    // 1. Get ABI
                     val abi = detectAbiChoice()
                     log("Detected ABI: ${abi.desiredLibDir}")
 
-                    // 2. Download SnapEnhance + core.apk from the same prerelease asset
                     log("Looking for SnapEnhance & core.apk release assets...")
                     val assets = fetchSnapEnhanceAndCoreAssets(abi.assetLabel)
                         ?: throw RuntimeException("No SnapEnhance/core.apk pair found in prereleases for ABI: ${abi.assetLabel}")
@@ -198,7 +190,6 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
 
-                    // 3. Download Snapchat 12.33.1.19 APK
                     log("Fetching Snapchat 12.33.1.19...")
                     val apkMirror = APKMirror()
                     val versions = apkMirror.fetchSnapchatVersions(1) ?: emptyList()
@@ -211,7 +202,6 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download Snapchat APK")
                     log("All APKs downloaded. Uploading for patch...")
 
-                    // 4. Upload to server
                     progress = -1f
                     val client = OkHttpClient()
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
@@ -225,14 +215,11 @@ class AutoPatchTab : Tab("auto_patch") {
                     response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
                     log("Patched Snapchat APK received. Installing...")
 
-                    // 5. Install SnapEnhance (update allowed)
                     if (!installPackage(seApk, sharedConfig.snapEnhancePackageName)) throw RuntimeException("SnapEnhance install failed")
                     log("SnapEnhance installed.")
 
-                    // 6. Install patched Snapchat APK
                     if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat install failed")
                     log("Patched Snapchat installed. Done!")
-
                     isDone = true
                 } catch (t: Throwable) {
                     log("ERROR: ${t.message}")
