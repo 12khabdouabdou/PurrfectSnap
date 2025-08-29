@@ -24,6 +24,7 @@ import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.data.APKMirror
@@ -34,6 +35,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONArray
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
 
 class AutoPatchTab : Tab("auto_patch") {
@@ -60,6 +62,16 @@ class AutoPatchTab : Tab("auto_patch") {
         var isError by remember { mutableStateOf(false) }
         val scrollState = rememberScrollState()
         var showDialog by remember { mutableStateOf(false) }
+
+        // Long-timeout OkHttp client reused for all network operations
+        val longClient = remember {
+            OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS)   // handle cold start connect latency
+                .readTimeout(5, TimeUnit.MINUTES)       // large for patching/upload/download
+                .writeTimeout(5, TimeUnit.MINUTES)      // large for upload of APKs
+                .callTimeout(10, TimeUnit.MINUTES)      // overall per-call cap
+                .build()
+        }
 
         fun log(any: Any?) {
             status += when (any) {
@@ -95,9 +107,11 @@ class AutoPatchTab : Tab("auto_patch") {
 
         fun fetchSnapEnhanceAndCoreAssets(assetLabel: String): AssetResult? {
             val request = Request.Builder().url("https://api.github.com/repos/particle-box/SnapEnhance/releases").build()
-            val resp = OkHttpClient().newCall(request).execute()
+            val resp = longClient.newCall(request).execute()
             if (!resp.isSuccessful) return null
-            val arr = JSONArray(resp.body?.string() ?: return null)
+            val body = resp.body?.string() ?: return null
+            val arr = JSONArray(body)
+            // Find latest prerelease with matching SnapEnhance ABI and core.apk
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
                 if (!obj.optBoolean("prerelease", false)) continue
@@ -127,7 +141,7 @@ class AutoPatchTab : Tab("auto_patch") {
         }
 
         fun downloadWithOkHttp(url: String, toDir: File, onProgress: (Float) -> Unit): File? {
-            val resp = OkHttpClient().newCall(Request.Builder().url(url).build()).execute()
+            val resp = longClient.newCall(Request.Builder().url(url).build()).execute()
             if (!resp.isSuccessful) return null
             val out = File.createTempFile("artifact", ".apk", toDir).apply { deleteOnExit() }
             resp.body?.byteStream()?.use { input ->
@@ -147,9 +161,13 @@ class AutoPatchTab : Tab("auto_patch") {
             return out
         }
 
-        // --- BEGIN PATCH: Download Snapchat logic (as requested) ---
         fun downloadWithDoh(url: String, toDir: File, onProgress: (Float) -> Unit): File? {
-            val dohClient = APKMirror().okhttpClient
+            val dohClient = APKMirror().okhttpClient.newBuilder()
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(5, TimeUnit.MINUTES)
+                .writeTimeout(5, TimeUnit.MINUTES)
+                .callTimeout(10, TimeUnit.MINUTES)
+                .build()
             val resp = dohClient.newCall(Request.Builder().url(url).build()).execute()
             if (!resp.isSuccessful) return null
             val out = File.createTempFile("artifact", ".apk", toDir).apply { deleteOnExit() }
@@ -169,6 +187,7 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             return out
         }
+
         suspend fun findSnapchatVersionItem(
             apkMirror: APKMirror,
             targetVersion: String,
@@ -188,7 +207,33 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             return null
         }
-        // --- END PATCH ---
+
+        // Warm up the free server (handle cold starts)
+        fun warmUpServer(baseUrl: String, maxWaitMs: Long = 120_000L, intervalMs: Long = 3_000L): Boolean {
+            val warmClient = longClient.newBuilder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .callTimeout(60, TimeUnit.SECONDS)
+                .build()
+            val start = System.currentTimeMillis()
+            while (System.currentTimeMillis() - start < maxWaitMs) {
+                try {
+                    val req = Request.Builder().url(baseUrl).get().build()
+                    warmClient.newCall(req).execute().use { resp ->
+                        if (resp.isSuccessful) return true
+                    }
+                } catch (_: Throwable) {
+                    // ignore and retry
+                }
+                try {
+                    Thread.sleep(intervalMs)
+                } catch (_: InterruptedException) {
+                    break
+                }
+            }
+            return false
+        }
 
         suspend fun installPackage(file: File, packageName: String): Boolean {
             if (sharedConfig.useRootInstaller) {
@@ -233,7 +278,6 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
 
-                    // --- PATCHED Snapchat download logic (identical to your requested code) ---
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "12.33.1.19"
                     log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
@@ -248,18 +292,22 @@ class AutoPatchTab : Tab("auto_patch") {
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download Snapchat")
                     log("Downloaded Snapchat -> ${snapchatApk.absolutePath}")
-                    // --- END PATCH ---
 
-                    log("All APKs downloaded. Uploading for patch...")
+                    // Warm up free server (cold start)
+                    log("Warming up patch server (free cold start may take ~30–60s)...")
+                    val warmed = warmUpServer("https://auto-patch-server.onrender.com/")
+                    if (!warmed) {
+                        log("Proceeding with upload despite warm-up not confirming; long timeouts will handle cold start.")
+                    }
 
+                    log("Uploading for patch (only core.apk and Snapchat APK)...")
                     progress = -1f
-                    val client = OkHttpClient()
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .addFormDataPart("apk", "snapchat.apk", snapchatApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .build()
                     val request = Request.Builder().url("https://auto-patch-server.onrender.com/patch").post(reqBody).build()
-                    val response = client.newCall(request).execute()
+                    val response = longClient.newCall(request).execute()
                     if (!response.isSuccessful) throw RuntimeException("Server failed patch: ${response.message}")
                     val patchedFile = File(cacheDir, "PatchedSnapchat.apk")
                     response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
