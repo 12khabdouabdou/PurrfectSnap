@@ -26,9 +26,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.manager.data.APKMirror
-import me.rhunk.snapenhance.manager.data.DNSBlockedException
-import me.rhunk.snapenhance.manager.ui.tab.Tab
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONArray
 import java.io.File
 import java.util.*
@@ -87,6 +87,7 @@ class AutoPatchTab : Tab("auto_patch") {
                     Regex("\\bv8a\\b", RegexOption.IGNORE_CASE))
             else listOf(Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE), Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
                 Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE), Regex("\\bv7a\\b", RegexOption.IGNORE_CASE))
+
         fun AssetResult.isSnapEnhanceMatchesAbi(abi: AbiChoice): Boolean {
             return patternsFor(abi.assetLabel).any { it.containsMatchIn(snapEnhanceName) }
         }
@@ -119,7 +120,6 @@ class AutoPatchTab : Tab("auto_patch") {
                     // Find matching SnapEnhance APK for assetLabel
                     if (name.endsWith(".apk", true) && !name.equals("core.apk", true) &&
                         patternsFor(assetLabel).any { it.containsMatchIn(name) }) {
-                        // Prefer the largest matching APK
                         if (snapAssetName == null || a.optLong("size", 0L) > 0L) {
                             snapAssetName = name
                             snapAssetUrl = url
@@ -193,17 +193,18 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download SnapEnhance")
                     if (!verifyApkMatchesAbi(seApk, abi.desiredLibDir)) throw RuntimeException("SnapEnhance APK does not match ABI")
                     log("SnapEnhance APK ready.")
-                    log("Downloading core.apk...")
+                    log("Downloading core.apk (no ABI check needed)...")
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
 
-                    // 3. Download Snapchat 12.33.1.19 APK (same as your previous logic)
+                    // 3. Download Snapchat 12.33.1.19 APK
                     log("Fetching Snapchat 12.33.1.19...")
                     val apkMirror = APKMirror()
-                    val versionItem = with(apkMirror) { fetchSnapchatVersions(1).find { it.title.contains("12.33.1.19") } }
+                    val versions = apkMirror.fetchSnapchatVersions(1) ?: emptyList()
+                    val versionItem = versions.find { it.title.contains("12.33.1.19") }
                         ?: throw RuntimeException("Snapchat v12.33.1.19 not found!")
-                    val downloadUrl = with(apkMirror) { fetchDownloadLink(versionItem.downloadPage) }
+                    val downloadUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
                         ?: throw RuntimeException("Could not resolve Snapchat direct download link")
                     log("Downloading Snapchat APK...")
                     val snapchatApk = downloadWithOkHttp(downloadUrl, cacheDir) { progress = it }
