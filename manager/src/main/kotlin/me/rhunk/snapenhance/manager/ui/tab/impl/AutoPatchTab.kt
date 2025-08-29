@@ -23,6 +23,12 @@ import java.util.Locale
 import java.util.zip.ZipFile
 import me.rhunk.snapenhance.manager.data.APKMirror
 import me.rhunk.snapenhance.manager.data.DNSBlockedException
+// REQUIRED COMPOSE LAYOUT IMPORTS:
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 
 class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
 
@@ -173,7 +179,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
         ctx: android.content.Context,
         snapchatApk: File,
         snapenhanceApk: File,
-        onLog: (String) -> Unit
+        onLog: (Any) -> Unit
     ): File? {
         return try {
             val lspatch = LSPatch(ctx, mapOf("me.rhunk.snapenhance" to snapenhanceApk), false, onLog)
@@ -216,7 +222,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
                         ?: throw RuntimeException("No matching SnapEnhance debug APK found")
                     appendStatus("Downloading SnapEnhance: ${firstPick.first}")
                     progress = 0.1f
-                    var seApk = downloadWithOkHttp(firstPick.second, cacheDir) { progress = it * 0.3f } 
+                    var seApk = downloadWithOkHttp(firstPick.second, cacheDir) { progress = it * 0.3f }
                         ?: throw RuntimeException("Failed to download SnapEnhance")
                     // Verify ABI inside the APK; if mismatch, try the opposite arch once
                     if (!verifyApkMatchesAbi(seApk, abi.desiredLibDir)) {
@@ -255,7 +261,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
                     appendStatus("Patching Snapchat APK with SnapEnhance module...")
                     progress = 0.92f
                     val patchedFile = patchApk(context, snapchatApk, seApk) { msg ->
-                        coroutineScope.launch(Dispatchers.Main) { appendStatus(msg) }
+                        coroutineScope.launch(Dispatchers.Main) { appendStatus(msg.toString()) }
                     } ?: throw RuntimeException("Failed to patch APK.")
                     appendStatus("Patched APK ready: ${patchedFile.absolutePath}")
 
