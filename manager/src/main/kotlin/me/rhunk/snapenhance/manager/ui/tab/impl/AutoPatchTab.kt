@@ -38,12 +38,14 @@ import org.json.JSONArray
 import java.io.File
 import java.util.Locale
 import java.util.zip.ZipFile
+
 class AutoPatchTab : Tab("auto_patch") {
     private lateinit var installLauncher: ActivityResultLauncher<Intent>
     private lateinit var uninstallLauncher: ActivityResultLauncher<Intent>
     private var installDeferred: CompletableDeferred<Int>? = null
     private var uninstallDeferred: CompletableDeferred<Int>? = null
     private val hasRoot get() = sharedConfig.useRootInstaller
+
     override fun init(activity: ComponentActivity) {
         super.init(activity)
         installLauncher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -55,6 +57,7 @@ class AutoPatchTab : Tab("auto_patch") {
             uninstallDeferred = null
         }
     }
+
     @Composable
     override fun Content() {
         val context = LocalContext.current
@@ -65,46 +68,42 @@ class AutoPatchTab : Tab("auto_patch") {
         var isDone by remember { mutableStateOf(false) }
         var isError by remember { mutableStateOf(false) }
         val scrollState = rememberScrollState()
+
         fun log(any: Any?) {
             status += when (any) {
                 is Throwable -> any.message + "\n" + any.stackTraceToString()
                 else -> any.toString()
             } + "\n"
         }
+
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
         fun detectAbiChoice(): AbiChoice {
             val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
             return when {
-                "arm64" in abis || "v8a" in abis || "aarch64" in abis || "armv8" in abis ->
-                    AbiChoice(assetLabel = "armv8", desiredLibDir = "arm64-v8a")
-                "armeabi-v7a" in abis || "armv7" in abis || "armeabi" in abis || "v7a" in abis ->
-                    AbiChoice(assetLabel = "armv7", desiredLibDir = "armeabi-v7a")
-                else ->
-                    AbiChoice(assetLabel = "armv8", desiredLibDir = "arm64-v8a")
+                "arm64" in abis || "v8a" in abis || "aarch64" in abis || "armv8" in abis -> AbiChoice(assetLabel = "armv8", desiredLibDir = "arm64-v8a")
+                "armeabi-v7a" in abis || "armv7" in abis || "armeabi" in abis || "v7a" in abis -> AbiChoice(assetLabel = "armv7", desiredLibDir = "armeabi-v7a")
+                else -> AbiChoice(assetLabel = "armv8", desiredLibDir = "arm64-v8a")
             }
         }
         fun patternsFor(assetLabel: String): List<Regex> {
             return if (assetLabel == "armv8") {
                 listOf(
                     Regex("arm64[-_]?v8a", RegexOption.IGNORE_CASE),
-                    Regex("\barm64\b", RegexOption.IGNORE_CASE),
-                    Regex("\barmv8\b", RegexOption.IGNORE_CASE),
-                    Regex("\baarch64\b", RegexOption.IGNORE_CASE),
-                    Regex("\bv8a\b", RegexOption.IGNORE_CASE)
+                    Regex("\\barm64\\b", RegexOption.IGNORE_CASE),
+                    Regex("\\barmv8\\b", RegexOption.IGNORE_CASE),
+                    Regex("\\baarch64\\b", RegexOption.IGNORE_CASE),
+                    Regex("\\bv8a\\b", RegexOption.IGNORE_CASE)
                 )
             } else {
                 listOf(
                     Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE),
-                    Regex("\barmv7\b", RegexOption.IGNORE_CASE),
-                    Regex("\barmeabi\b", RegexOption.IGNORE_CASE),
-                    Regex("\bv7a\b", RegexOption.IGNORE_CASE)
+                    Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
+                    Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
+                    Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
                 )
             }
         }
-        fun chooseAssetForArch(
-            assets: Map<String, Pair<Long, String>>,
-            assetLabel: String
-        ): Pair<String, String>? {
+        fun chooseAssetForArch(assets: Map<String, Pair<Long, String>>, assetLabel: String): Pair<String, String>? {
             val pats = patternsFor(assetLabel)
             val apkAssets = assets.entries.filter { it.key.endsWith(".apk", true) }
             val preferred = apkAssets
@@ -241,6 +240,7 @@ class AutoPatchTab : Tab("auto_patch") {
             val out = patcher.patchSplits(listOf(baseApk))
             return out["base.apk"]
         }
+
         LaunchedEffect(Unit) {
             if (isRunning) return@LaunchedEffect
             isRunning = true
@@ -285,11 +285,21 @@ class AutoPatchTab : Tab("auto_patch") {
                         throw RuntimeException("SnapEnhance install failed")
                     }
                     log("SnapEnhance installed")
-                    // 4) Download Snapchat base via DoH URL (provided)
-                    val snapchatUrl = "https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=4764674&key=bd0c88c47174308d9c6862f815bc96246d5077a8&forcebaseapk=true"
-                    log("Downloading Snapchat via DoH...")
+                    // 4) Download Snapchat base (v12.33.1.19) via APKMirror logic
+                    val apkMirror = APKMirror()
+                    val snapchatTargetVersion = "12.33.1.19"
+                    log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
+                    val versions = apkMirror.fetchSnapchatVersions(page = 1)
+                        ?: throw RuntimeException("Failed to fetch versions from APKMirror")
+                    val versionItem = versions.firstOrNull { it.title.contains(snapchatTargetVersion) }
+                        ?: throw RuntimeException("Snapchat version $snapchatTargetVersion not found on APKMirror")
+                    log("Found version: ${versionItem.title} (${versionItem.releaseDate})")
+                    log("Resolving download link...")
+                    val realSnapchatUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
+                        ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
+                    log("Downloading Snapchat from resolved URL...")
                     progress = 0f
-                    val snapchatBase = downloadWithDoh(snapchatUrl, cacheDir) { progress = it }
+                    val snapchatBase = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download Snapchat")
                     log("Downloaded Snapchat -> ${snapchatBase.absolutePath}")
                     // 5) Install Snapchat base (update allowed)
