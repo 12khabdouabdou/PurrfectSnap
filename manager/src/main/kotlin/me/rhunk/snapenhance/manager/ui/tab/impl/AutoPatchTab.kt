@@ -1,81 +1,51 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl
 
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
+import android.content.Context
+import android.os.Bundle
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
-import androidx.core.net.toUri
-import com.topjohnwu.superuser.Shell
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import me.rhunk.snapenhance.manager.data.APKMirror
+import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.*
 import me.rhunk.snapenhance.manager.patch.LSPatch
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import java.io.File
+import java.io.IOException
 import java.util.Locale
 import java.util.zip.ZipFile
+import me.rhunk.snapenhance.manager.data.APKMirror
+import me.rhunk.snapenhance.manager.data.DNSBlockedException
 
-class AutoPatchTab : Tab("auto_patch") {
-    private lateinit var installLauncher: ActivityResultLauncher<Intent>
-    private lateinit var uninstallLauncher: ActivityResultLauncher<Intent>
-    private var installDeferred: CompletableDeferred<Int>? = null
-    private var uninstallDeferred: CompletableDeferred<Int>? = null
-    private val hasRoot get() = sharedConfig.useRootInstaller
-    override fun init(activity: ComponentActivity) {
-        super.init(activity)
-        installLauncher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            installDeferred?.complete(it.resultCode)
-            installDeferred = null
-        }
-        uninstallLauncher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            uninstallDeferred?.complete(it.resultCode)
-            uninstallDeferred = null
-        }
-    }
+class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val scope = remember { CoroutineScope(Dispatchers.IO) }
+        val coroutineScope = rememberCoroutineScope()
         var status by remember { mutableStateOf("") }
+        var running by remember { mutableStateOf(false) }
         var progress by remember { mutableFloatStateOf(-1f) }
-        var isRunning by remember { mutableStateOf(false) }
-        var isDone by remember { mutableStateOf(false) }
-        var isError by remember { mutableStateOf(false) }
-        val scrollState = rememberScrollState()
-        fun log(any: Any?) {
-            status += when (any) {
-                is Throwable -> any.message + "\n" + any.stackTraceToString()
-                else -> any.toString()
-            } + "\n"
+        var showConfirm by remember { mutableStateOf(false) }
+        var done by remember { mutableStateOf(false) }
+
+        fun appendStatus(msg: String) {
+            status += msg + "\n"
         }
 
-        // ---- Correct SE Download Logic starts here
+        // --- Latest ABI detection & correct SE APK download logic begins ---
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
+
         fun detectAbiChoice(): AbiChoice {
             val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
             return when {
@@ -87,6 +57,7 @@ class AutoPatchTab : Tab("auto_patch") {
                     AbiChoice(assetLabel = "armv8", desiredLibDir = "arm64-v8a")
             }
         }
+
         fun patternsFor(assetLabel: String): List<Regex> {
             return if (assetLabel == "armv8") {
                 listOf(
@@ -105,6 +76,7 @@ class AutoPatchTab : Tab("auto_patch") {
                 )
             }
         }
+
         fun chooseAssetForArch(
             assets: Map<String, Pair<Long, String>>,
             assetLabel: String
@@ -115,10 +87,10 @@ class AutoPatchTab : Tab("auto_patch") {
                 .filter { entry -> pats.any { it.containsMatchIn(entry.key) } }
                 .maxByOrNull { it.value.first }
             if (preferred != null) return preferred.key to preferred.value.second
-            // fallback to any debug apk if patterns not found
             val any = apkAssets.maxByOrNull { it.value.first } ?: return null
             return any.key to any.value.second
         }
+
         fun fetchLatestSEDebugAssetForArch(assetLabel: String): Pair<String, String>? {
             val req = Request.Builder()
                 .url("https://api.github.com/repos/particle-box/SnapEnhance/releases")
@@ -147,6 +119,7 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             return null
         }
+
         fun verifyApkMatchesAbi(apk: File, desiredLibDir: String): Boolean {
             runCatching {
                 ZipFile(apk).use { zf ->
@@ -155,224 +128,165 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             return false
         }
-        fun downloadWithOkHttp(url: String, toDir: File, onProgress: (Float) -> Unit): File? {
-            val resp = OkHttpClient().newCall(Request.Builder().url(url).build()).execute()
-            if (!resp.isSuccessful) return null
-            val out = File.createTempFile("artifact", ".apk", toDir).apply { deleteOnExit() }
-            resp.body?.byteStream()?.use { input ->
-                out.outputStream().use { output ->
-                    val buf = ByteArray(8 * 1024)
-                    var read: Int
-                    var total = 0L
-                    val size = resp.body?.contentLength() ?: -1L
-                    while (input.read(buf).also { read = it } != -1) {
-                        output.write(buf, 0, read)
-                        total += read
-                        if (size > 0) onProgress(total.toFloat() / size.toFloat()) else onProgress(-1f)
-                    }
-                    output.flush()
-                }
-            }
-            return out
-        }
-        // ---- End correct SE Download Logic
+        // --- End of correct SE debug APK download logic ---
 
-        fun downloadWithDoh(url: String, toDir: File, onProgress: (Float) -> Unit): File? {
-            val dohClient = APKMirror().okhttpClient
-            val resp = dohClient.newCall(Request.Builder().url(url).build()).execute()
-            if (!resp.isSuccessful) return null
-            val out = File.createTempFile("artifact", ".apk", toDir).apply { deleteOnExit() }
-            resp.body?.byteStream()?.use { input ->
-                out.outputStream().use { output ->
-                    val buf = ByteArray(8 * 1024)
-                    var read: Int
-                    var total = 0L
-                    val size = resp.body?.contentLength() ?: -1L
-                    while (input.read(buf).also { read = it } != -1) {
-                        output.write(buf, 0, read)
-                        total += read
-                        if (size > 0) onProgress(total.toFloat() / size.toFloat()) else onProgress(-1f)
-                    }
-                    output.flush()
-                }
-            }
-            return out
-        }
-        suspend fun uninstallPackage(packageName: String): Boolean {
-            if (hasRoot) {
-                val res = Shell.cmd("pm uninstall $packageName").exec()
-                return res.isSuccess
-            }
-            val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
-                data = "package:$packageName".toUri()
-                putExtra(Intent.EXTRA_RETURN_RESULT, true)
-            }
-            val deferred = CompletableDeferred<Int>()
-            uninstallDeferred = deferred
-            uninstallLauncher.launch(intent)
-            val code = deferred.await()
-            return code == Activity.RESULT_OK
-        }
-        suspend fun installPackage(file: File, packageName: String, uninstallBefore: Boolean): Boolean {
-            if (uninstallBefore) {
-                if (!uninstallPackage(packageName)) return false
-            }
-            if (hasRoot) {
-                val res = Shell.cmd(
-                    "cp \"${file.absolutePath}\" /data/local/tmp/",
-                    "pm install -r \"/data/local/tmp/${file.name}\"",
-                    "rm \"/data/local/tmp/${file.name}\""
-                ).exec()
-                return res.isSuccess
-            }
-            val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-            val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
-                data = uri
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                putExtra(Intent.EXTRA_RETURN_RESULT, true)
-            }
-            val deferred = CompletableDeferred<Int>()
-            installDeferred = deferred
-            installLauncher.launch(intent)
-            val code = deferred.await()
-            return code == Activity.RESULT_OK
-        }
-        fun patchWithLSPatch(baseApk: File, seModule: File, onLog: (Any?) -> Unit): File? {
-            val patcher = LSPatch(
-                activity,
-                modules = mapOf(sharedConfig.snapEnhancePackageName to seModule),
-                obfuscate = sharedConfig.obfuscateLSPatch,
-                printLog = { onLog("[LSPatch] $it") }
-            )
-            val out = patcher.patchSplits(listOf(baseApk))
-            return out["base.apk"]
-        }
-        LaunchedEffect(Unit) {
-            if (isRunning) return@LaunchedEffect
-            isRunning = true
-            isDone = false
-            isError = false
-            status = ""
-            progress = -1f
-            scope.launch {
-                try {
-                    val cacheDir = activity.externalCacheDir ?: activity.cacheDir
-                    // 1) Detect ABI and choose label
-                    val abi = detectAbiChoice()
-                    log("Detected ABI: ${abi.desiredLibDir} (asset label: ${abi.assetLabel})")
-                    // 2) Fetch and download latest SnapEnhance debug for ABI
-                    log("Fetching latest SnapEnhance debug asset for ${abi.assetLabel}...")
-                    val firstPick = fetchLatestSEDebugAssetForArch(abi.assetLabel)
-                        ?: throw RuntimeException("No matching SnapEnhance debug APK found")
-                    log("Downloading SnapEnhance: ${firstPick.first}")
-                    progress = 0f
-                    var seApk = downloadWithOkHttp(firstPick.second, cacheDir) { progress = it }
-                        ?: throw RuntimeException("Failed to download SnapEnhance")
-                    // Verify ABI inside the APK; if mismatch, try the opposite arch once
-                    if (!verifyApkMatchesAbi(seApk, abi.desiredLibDir)) {
-                        log("Downloaded SE APK does not contain lib/${abi.desiredLibDir}, retrying with opposite arch...")
-                        val opposite = if (abi.assetLabel == "armv8") "armv7" else "armv8"
-                        val secondPick = fetchLatestSEDebugAssetForArch(opposite)
-                            ?: throw RuntimeException("Fallback SnapEnhance APK not found")
-                        log("Downloading SnapEnhance (fallback): ${secondPick.first}")
-                        progress = 0f
-                        val fallback = downloadWithOkHttp(secondPick.second, cacheDir) { progress = it }
-                            ?: throw RuntimeException("Failed to download fallback SnapEnhance")
-                        seApk = fallback
-                        if (!verifyApkMatchesAbi(seApk, if (opposite == "armv8") "arm64-v8a" else "armeabi-v7a")) {
-                            throw RuntimeException("Downloaded SnapEnhance APK does not match any expected ABI")
+        fun downloadFile(
+            ctx: Context,
+            url: String,
+            useDns: Boolean = false,
+            onProgress: (Float) -> Unit = {}
+        ): File? {
+            return try {
+                val client = if (!useDns) OkHttpClient() else APKMirror().okhttpClient
+                val req = Request.Builder().url(url).build()
+                client.newCall(req).execute().use { resp ->
+                    if (!resp.isSuccessful) throw IOException("network error code ${resp.code}")
+                    val length = resp.body?.contentLength() ?: -1L
+                    val tmpFile =
+                        File.createTempFile("download", ".apk", ctx.externalCacheDir).apply { deleteOnExit() }
+                    resp.body?.byteStream()?.use { input ->
+                        tmpFile.outputStream().use { output ->
+                            val buf = ByteArray(4096)
+                            var read: Int
+                            var written = 0L
+                            while (input.read(buf).also { read = it } != -1) {
+                                output.write(buf, 0, read)
+                                written += read
+                                if (length > 0) onProgress(written.toFloat() / length)
+                            }
+                            output.flush()
                         }
                     }
-                    log("SnapEnhance ready at ${seApk.absolutePath}")
-                    // 3) Install SnapEnhance (update allowed)
-                    log("Installing SnapEnhance...")
-                    progress = -1f
-                    if (!installPackage(seApk, sharedConfig.snapEnhancePackageName, uninstallBefore = false)) {
-                        throw RuntimeException("SnapEnhance install failed")
+                    tmpFile
+                }
+            } catch (e: DNSBlockedException) {
+                throw e
+            } catch (e: Exception) {
+                appendStatus("Download error: ${e.message}")
+                null
+            }
+        }
+
+        fun patchApk(
+            ctx: Context,
+            snapchatApk: File,
+            snapenhanceApk: File,
+            onLog: (String) -> Unit
+        ): File? {
+            return try {
+                val lspatch = LSPatch(ctx, mapOf("me.rhunk.snapenhance" to snapenhanceApk), false, onLog)
+                val outputMap = lspatch.patchSplits(listOf(snapchatApk))
+                outputMap["base.apk"]
+            } catch (e: Exception) {
+                onLog("Patch failed: ${e.message}")
+                null
+            }
+        }
+        
+        fun runPipeline() {
+            running = true
+            done = false
+            coroutineScope.launch(Dispatchers.IO) {
+                try {
+                    appendStatus("Detecting device architecture...")
+                    val abi = detectAbiChoice()
+                    appendStatus("Detected architecture: ${abi.desiredLibDir} (label: ${abi.assetLabel})")
+                    appendStatus("Looking up latest SnapEnhance debug asset for this architecture...")
+                    val debugAsset = fetchLatestSEDebugAssetForArch(abi.assetLabel)
+                        ?: throw Exception("No matching SnapEnhance debug APK found.")
+                    appendStatus("Downloading SnapEnhance APK: ${debugAsset.first} ...")
+                    progress = 0.05f
+                    var snapenhanceApk = downloadFile(context, debugAsset.second, useDns = false) {
+                        progress = 0.05f + it * 0.4f
+                    } ?: throw Exception("Failed to download SnapEnhance APK.")
+                    // Double check ABI inside the APK
+                    if (!verifyApkMatchesAbi(snapenhanceApk, abi.desiredLibDir)) {
+                        appendStatus("Warning: APK does not contain native code for expected ABI ${abi.desiredLibDir}")
                     }
-                    log("SnapEnhance installed")
-                    // 4) Download Snapchat base via DoH URL (provided)
-                    val snapchatUrl = "https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=4764674&key=bd0c88c47174308d9c6862f815bc96246d5077a8&forcebaseapk=true"
-                    log("Downloading Snapchat via DoH...")
-                    progress = 0f
-                    val snapchatBase = downloadWithDoh(snapchatUrl, cacheDir) { progress = it }
-                        ?: throw RuntimeException("Failed to download Snapchat")
-                    log("Downloaded Snapchat -> ${snapchatBase.absolutePath}")
-                    // 5) Install Snapchat base (update allowed)
-                    log("Installing Snapchat base...")
-                    progress = -1f
-                    if (!installPackage(snapchatBase, sharedConfig.snapchatPackageName, uninstallBefore = false)) {
-                        throw RuntimeException("Snapchat base install failed")
+                    appendStatus("Downloaded SnapEnhance APK: ${snapenhanceApk.name}")
+                    val snapchatUrl =
+                        "https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=4764674&key=bd0c88c47174308d9c6862f815bc96246d5077a8&forcebaseapk=true"
+                    appendStatus("Downloading Snapchat APK (DNS-over-HTTPS)...")
+                    progress = 0.55f
+                    val snapchatApk = try {
+                        downloadFile(context, snapchatUrl, useDns = true) {
+                            progress = 0.55f + it * 0.35f
+                        }
+                    } catch (e: DNSBlockedException) {
+                        appendStatus("DNS-Blocked! Try a different network.")
+                        running = false
+                        return@launch
+                    } ?: throw Exception("Failed to download Snapchat APK.")
+                    appendStatus("Downloaded Snapchat APK: ${snapchatApk.name}")
+                    appendStatus("Patching Snapchat APK with SnapEnhance module...")
+                    progress = 0.92f
+                    val patchedFile = patchApk(context, snapchatApk, snapenhanceApk) { msg ->
+                        coroutineScope.launch(Dispatchers.Main) { appendStatus(msg) }
+                    } ?: throw Exception("Failed to patch APK.")
+                    appendStatus("Patched APK ready: ${patchedFile.absolutePath}")
+                    appendStatus("Launching installer...")
+                    progress = 1f
+                    (context as? ComponentActivity)?.runOnUiThread {
+                        navigation.navigateTo(
+                            me.rhunk.snapenhance.manager.ui.tab.impl.download.InstallPackageTab::class,
+                            Bundle().apply {
+                                putString("downloadPath", patchedFile.absolutePath)
+                                putString("appPackage", "com.snapchat.android")
+                                putBoolean("uninstall", false)
+                            }
+                        )
                     }
-                    log("Snapchat base installed")
-                    // 6) Patch Snapchat with LSPatch using SnapEnhance module
-                    log("Patching Snapchat with LSPatch...")
-                    val patched = patchWithLSPatch(snapchatBase, seApk) { msg -> log(msg) }
-                        ?: throw RuntimeException("Patching failed")
-                    log("Patched APK -> ${patched.absolutePath}")
-                    // 7) Uninstall original Snapchat and install patched
-                    log("Uninstalling original Snapchat...")
-                    if (!uninstallPackage(sharedConfig.snapchatPackageName)) {
-                        throw RuntimeException("Failed to uninstall Snapchat before installing patched build")
-                    }
-                    log("Installing patched Snapchat...")
-                    if (!installPackage(patched, sharedConfig.snapchatPackageName, uninstallBefore = false)) {
-                        throw RuntimeException("Patched Snapchat install failed")
-                    }
-                    log("All done!")
-                    isDone = true
-                } catch (t: Throwable) {
-                    log("ERROR: ${t.message}")
-                    isError = true
+                    appendStatus("Done!")
+                    done = true
+                } catch (e: Exception) {
+                    appendStatus("ERROR: ${e.message}")
                 } finally {
-                    isRunning = false
+                    running = false
                 }
             }
         }
-        BackHandler(enabled = isRunning) { /* block back while running */ }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(10.dp),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(12.dp)
-                ) {
-                    Text(
-                        text = status,
-                        overflow = TextOverflow.Visible,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            if (progress >= 0f) {
-                LinearProgressIndicator(
-                    progress = progress,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp),
-                    strokeCap = StrokeCap.Round
+
+        Column(Modifier.padding(24.dp)) {
+            Text(
+                "Auto Patch Wizard", fontSize = 22.sp, color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(Modifier.height(10.dp))
+            Text("This will download SnapEnhance and Snapchat APKs, patch and auto-install!", fontSize = 16.sp)
+            Spacer(Modifier.height(18.dp))
+            OutlinedButton(
+                enabled = !running && !done,
+                onClick = { showConfirm = true }
+            ) { Text("Start Auto Patch") }
+            if (showConfirm) {
+                AlertDialog(
+                    onDismissRequest = { showConfirm = false },
+                    title = { Text("Auto Patch") },
+                    text = { Text("Are you sure to continue?") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showConfirm = false
+                                status = ""
+                                runPipeline()
+                            }
+                        ) { Text("Yes") }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showConfirm = false }
+                        ) { Text("No") }
+                    }
                 )
             }
-            if (isDone || isError) {
-                Button(
-                    onClick = { navigation.navigateTo(HomeTab::class, noHistory = true) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (isDone) "Back to Home" else "Close")
-                }
-            }
-            LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
+            Spacer(Modifier.height(12.dp))
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth().height(7.dp),
+                progress = if (progress < 0f) 0f else progress,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.height(12.dp))
+            Text("Status:\n${status.trim()}", fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
