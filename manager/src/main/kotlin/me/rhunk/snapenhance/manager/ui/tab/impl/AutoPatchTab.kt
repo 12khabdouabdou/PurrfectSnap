@@ -3,7 +3,6 @@ package me.rhunk.snapenhance.manager.ui.tab.impl
 import android.content.Context
 import android.os.Bundle
 import android.os.Build
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
@@ -23,11 +22,10 @@ import org.json.JSONArray
 import java.io.File
 import java.io.IOException
 import java.util.Locale
-import java.util.zip.ZipFile
 import me.rhunk.snapenhance.manager.data.APKMirror
 import me.rhunk.snapenhance.manager.data.DNSBlockedException
 
-// Compose layout imports (fixes unresolved reference errors):
+// Compose layout imports:
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -50,18 +48,17 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
             status += msg + "\n"
         }
 
-        // --- ABI detection & SE APK selection logic ---
-        data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
-
+        // --- ABI detection & SE debug APK selection logic (NO zip entry parse) ---
+        data class AbiChoice(val assetLabel: String, val display: String)
         fun detectAbiChoice(): AbiChoice {
             val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
             return when {
                 "arm64" in abis || "v8a" in abis || "aarch64" in abis || "armv8" in abis ->
-                    AbiChoice(assetLabel = "armv8", desiredLibDir = "arm64-v8a")
+                    AbiChoice("armv8", "arm64-v8a")
                 "armeabi-v7a" in abis || "armv7" in abis || "armeabi" in abis || "v7a" in abis ->
-                    AbiChoice(assetLabel = "armv7", desiredLibDir = "armeabi-v7a")
+                    AbiChoice("armv7", "armeabi-v7a")
                 else ->
-                    AbiChoice(assetLabel = "armv8", desiredLibDir = "arm64-v8a")
+                    AbiChoice("armv8", "arm64-v8a")
             }
         }
 
@@ -127,15 +124,16 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
             return null
         }
 
-        fun verifyApkMatchesAbi(apk: File, desiredLibDir: String): Boolean {
-            runCatching {
-                ZipFile(apk).use { zf ->
-                    return zf.entries().asSequence().any { it.name.startsWith("lib/$desiredLibDir/") }
-                }
+        // --- Sanity check on plain APK file ---
+        fun File.isApkFile(): Boolean {
+            if (!exists() || length() < 4) return false
+            return inputStream().use {
+                val hdr = ByteArray(4)
+                if (it.read(hdr) == 4)
+                    hdr[0] == 0x50.toByte() && hdr[1] == 0x4B.toByte() // "PK"
+                else false
             }
-            return false
         }
-        // --- End of ABI/Apk logic ---
 
         fun downloadFile(
             ctx: Context,
@@ -177,8 +175,13 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
             ctx: Context,
             snapchatApk: File,
             snapenhanceApk: File,
-            onLog: (Any?) -> Unit // FIXED: Accepts Any? for log
+            onLog: (Any?) -> Unit
         ): File? {
+            // Just check basic existence & is APK (not zip content)
+            if (!snapenhanceApk.isApkFile())
+                throw Exception("SnapEnhance APK is missing or corrupt!")
+            if (!snapchatApk.isApkFile())
+                throw Exception("Snapchat APK is missing or corrupt!")
             return try {
                 val lspatch = LSPatch(ctx, mapOf("me.rhunk.snapenhance" to snapenhanceApk), false, onLog)
                 val outputMap = lspatch.patchSplits(listOf(snapchatApk))
@@ -196,18 +199,15 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
                 try {
                     appendStatus("Detecting device architecture...")
                     val abi = detectAbiChoice()
-                    appendStatus("Detected architecture: ${abi.desiredLibDir} (label: ${abi.assetLabel})")
+                    appendStatus("Detected architecture: ${abi.display} (label: ${abi.assetLabel})")
                     appendStatus("Looking up latest SnapEnhance debug asset for this architecture...")
                     val debugAsset = fetchLatestSEDebugAssetForArch(abi.assetLabel)
                         ?: throw Exception("No matching SnapEnhance debug APK found.")
                     appendStatus("Downloading SnapEnhance APK: ${debugAsset.first} ...")
                     progress = 0.05f
-                    var snapenhanceApk = downloadFile(context, debugAsset.second, useDns = false) {
+                    val snapenhanceApk = downloadFile(context, debugAsset.second, useDns = false) {
                         progress = 0.05f + it * 0.4f
                     } ?: throw Exception("Failed to download SnapEnhance APK.")
-                    if (!verifyApkMatchesAbi(snapenhanceApk, abi.desiredLibDir)) {
-                        appendStatus("Warning: APK does not contain native code for expected ABI ${abi.desiredLibDir}")
-                    }
                     appendStatus("Downloaded SnapEnhance APK: ${snapenhanceApk.name}")
                     val snapchatUrl =
                         "https://www.apkmirror.com/wp-content/themes/APKMirror/download.php?id=4764674&key=bd0c88c47174308d9c6862f815bc96246d5077a8&forcebaseapk=true"
@@ -226,7 +226,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
                     appendStatus("Patching Snapchat APK with SnapEnhance module...")
                     progress = 0.92f
                     val patchedFile = patchApk(context, snapchatApk, snapenhanceApk) { msg ->
-                        coroutineScope.launch(Dispatchers.Main) { appendStatus(msg.toString()) } // Accepts Any?
+                        coroutineScope.launch(Dispatchers.Main) { appendStatus(msg.toString()) }
                     } ?: throw Exception("Failed to patch APK.")
                     appendStatus("Patched APK ready: ${patchedFile.absolutePath}")
                     appendStatus("Launching installer...")
