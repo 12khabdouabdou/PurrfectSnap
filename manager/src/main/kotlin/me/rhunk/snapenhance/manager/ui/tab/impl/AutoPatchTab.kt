@@ -27,6 +27,13 @@ import java.util.zip.ZipFile
 import me.rhunk.snapenhance.manager.data.APKMirror
 import me.rhunk.snapenhance.manager.data.DNSBlockedException
 
+// Compose layout imports (fixes unresolved reference errors):
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
+
 class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -43,7 +50,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
             status += msg + "\n"
         }
 
-        // --- Latest ABI detection & correct SE APK download logic begins ---
+        // --- ABI detection & SE APK selection logic ---
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
 
         fun detectAbiChoice(): AbiChoice {
@@ -128,7 +135,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
             }
             return false
         }
-        // --- End of correct SE debug APK download logic ---
+        // --- End of ABI/Apk logic ---
 
         fun downloadFile(
             ctx: Context,
@@ -142,8 +149,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
                 client.newCall(req).execute().use { resp ->
                     if (!resp.isSuccessful) throw IOException("network error code ${resp.code}")
                     val length = resp.body?.contentLength() ?: -1L
-                    val tmpFile =
-                        File.createTempFile("download", ".apk", ctx.externalCacheDir).apply { deleteOnExit() }
+                    val tmpFile = File.createTempFile("download", ".apk", ctx.externalCacheDir).apply { deleteOnExit() }
                     resp.body?.byteStream()?.use { input ->
                         tmpFile.outputStream().use { output ->
                             val buf = ByteArray(4096)
@@ -171,7 +177,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
             ctx: Context,
             snapchatApk: File,
             snapenhanceApk: File,
-            onLog: (String) -> Unit
+            onLog: (Any?) -> Unit // FIXED: Accepts Any? for log
         ): File? {
             return try {
                 val lspatch = LSPatch(ctx, mapOf("me.rhunk.snapenhance" to snapenhanceApk), false, onLog)
@@ -199,7 +205,6 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
                     var snapenhanceApk = downloadFile(context, debugAsset.second, useDns = false) {
                         progress = 0.05f + it * 0.4f
                     } ?: throw Exception("Failed to download SnapEnhance APK.")
-                    // Double check ABI inside the APK
                     if (!verifyApkMatchesAbi(snapenhanceApk, abi.desiredLibDir)) {
                         appendStatus("Warning: APK does not contain native code for expected ABI ${abi.desiredLibDir}")
                     }
@@ -221,7 +226,7 @@ class AutoPatchTab : Tab("autopatch", icon = Icons.Default.Build) {
                     appendStatus("Patching Snapchat APK with SnapEnhance module...")
                     progress = 0.92f
                     val patchedFile = patchApk(context, snapchatApk, snapenhanceApk) { msg ->
-                        coroutineScope.launch(Dispatchers.Main) { appendStatus(msg) }
+                        coroutineScope.launch(Dispatchers.Main) { appendStatus(msg.toString()) } // Accepts Any?
                     } ?: throw Exception("Failed to patch APK.")
                     appendStatus("Patched APK ready: ${patchedFile.absolutePath}")
                     appendStatus("Launching installer...")
