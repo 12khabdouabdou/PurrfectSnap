@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import me.rhunk.snapenhance.manager.data.APKMirror
+import me.rhunk.snapenhance.manager.data.DNSBlockedException
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -146,6 +147,49 @@ class AutoPatchTab : Tab("auto_patch") {
             return out
         }
 
+        // --- BEGIN PATCH: Download Snapchat logic (as requested) ---
+        fun downloadWithDoh(url: String, toDir: File, onProgress: (Float) -> Unit): File? {
+            val dohClient = APKMirror().okhttpClient
+            val resp = dohClient.newCall(Request.Builder().url(url).build()).execute()
+            if (!resp.isSuccessful) return null
+            val out = File.createTempFile("artifact", ".apk", toDir).apply { deleteOnExit() }
+            resp.body?.byteStream()?.use { input ->
+                out.outputStream().use { output ->
+                    val buf = ByteArray(8 * 1024)
+                    var read: Int
+                    var total = 0L
+                    val size = resp.body?.contentLength() ?: -1L
+                    while (input.read(buf).also { read = it } != -1) {
+                        output.write(buf, 0, read)
+                        total += read
+                        if (size > 0) onProgress(total.toFloat() / size.toFloat()) else onProgress(-1f)
+                    }
+                    output.flush()
+                }
+            }
+            return out
+        }
+        suspend fun findSnapchatVersionItem(
+            apkMirror: APKMirror,
+            targetVersion: String,
+            maxPages: Int = 100
+        ): me.rhunk.snapenhance.manager.data.DownloadItem? {
+            for (page in 1..maxPages) {
+                val items = try {
+                    apkMirror.fetchSnapchatVersions(page)
+                } catch (e: DNSBlockedException) {
+                    throw e
+                } catch (_: Throwable) {
+                    null
+                }
+                if (items.isNullOrEmpty()) break
+                val match = items.firstOrNull { it.title.contains(targetVersion) }
+                if (match != null) return match
+            }
+            return null
+        }
+        // --- END PATCH ---
+
         suspend fun installPackage(file: File, packageName: String): Boolean {
             if (sharedConfig.useRootInstaller) {
                 val res = Shell.cmd(
@@ -189,16 +233,23 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
 
-                    log("Fetching Snapchat 12.33.1.19...")
+                    // --- PATCHED Snapchat download logic (identical to your requested code) ---
                     val apkMirror = APKMirror()
-                    val versions = apkMirror.fetchSnapchatVersions(1) ?: emptyList()
-                    val versionItem = versions.find { it.title.contains("12.33.1.19") }
-                        ?: throw RuntimeException("Snapchat v12.33.1.19 not found!")
-                    val downloadUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
-                        ?: throw RuntimeException("Could not resolve Snapchat direct download link")
-                    log("Downloading Snapchat APK...")
-                    val snapchatApk = downloadWithOkHttp(downloadUrl, cacheDir) { progress = it }
-                        ?: throw RuntimeException("Failed to download Snapchat APK")
+                    val snapchatTargetVersion = "12.33.1.19"
+                    log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
+                    val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion)
+                        ?: throw RuntimeException("Snapchat version $snapchatTargetVersion not found on APKMirror.")
+                    log("Found version: ${versionItem.title} (${versionItem.releaseDate})")
+                    log("Resolving download link...")
+                    val realSnapchatUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
+                        ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
+                    log("Downloading Snapchat from resolved URL: $realSnapchatUrl")
+                    progress = 0f
+                    val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
+                        ?: throw RuntimeException("Failed to download Snapchat")
+                    log("Downloaded Snapchat -> ${snapchatApk.absolutePath}")
+                    // --- END PATCH ---
+
                     log("All APKs downloaded. Uploading for patch...")
 
                     progress = -1f
@@ -265,7 +316,7 @@ class AutoPatchTab : Tab("auto_patch") {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f) // This is correct: Card inside Column
+                        .weight(1f)
                         .padding(8.dp)
                 ) {
                     Column(
