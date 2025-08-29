@@ -243,25 +243,24 @@ class AutoPatchTab : Tab("auto_patch") {
         }
 
         suspend fun findSnapchatVersionItem(
-            apkMirror: APKMirror,
-            targetVersion: String,
-            maxPages: Int = 5
-        ): me.rhunk.snapenhance.manager.data.DownloadItem? {
-            for (page in 1..maxPages) {
-                val items = try {
-                    apkMirror.fetchSnapchatVersions(page)
-                } catch (e: DNSBlockedException) {
-                    throw e
-                } catch (_: Throwable) {
-                    null
-                }
-                if (items != null) {
-                    val match = items.firstOrNull { it.title.contains(targetVersion) }
-                    if (match != null) return match
-                }
-            }
-            return null
+    apkMirror: APKMirror,
+    targetVersion: String,
+    maxPages: Int = 100 // Increased for deep paging
+): me.rhunk.snapenhance.manager.data.DownloadItem? {
+    for (page in 1..maxPages) {
+        val items = try {
+            apkMirror.fetchSnapchatVersions(page)
+        } catch (e: DNSBlockedException) {
+            throw e
+        } catch (_: Throwable) {
+            null
         }
+        if (items.isNullOrEmpty()) break // Stop if no more results
+        val match = items.firstOrNull { it.title.contains(targetVersion) }
+        if (match != null) return match
+    }
+    return null
+}
 
         LaunchedEffect(Unit) {
             if (isRunning) return@LaunchedEffect
