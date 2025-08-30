@@ -38,7 +38,6 @@ import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import me.rhunk.snapenhance.manager.ui.tab.Tab
-import me.rhunk.snapenhance.manager.data.APKMirror
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -64,7 +63,7 @@ class AutoPatchTab : Tab("auto_patch") {
         Idle, Patching12, Uploading12, AwaitingLogin, TestModeDialog, Disclaimer, Patching13, Uploading13, Finished, Error
     }
 
-    // APK direct URLs from your release
+    // Use your actual release asset URLs here!
     private val SNAP12_URL = "https://github.com/particle-box/auto-patch-server/releases/download/v1.0.0/snapchat-12.33.1.19.apk"
     private val SNAP13_URL = "https://github.com/particle-box/auto-patch-server/releases/download/v1.0.0/snapchat-13.51.0.56.apk"
 
@@ -75,6 +74,7 @@ class AutoPatchTab : Tab("auto_patch") {
             installDeferred = null
         }
     }
+
     @Composable
     override fun Content() {
         val context = LocalContext.current
@@ -92,7 +92,7 @@ class AutoPatchTab : Tab("auto_patch") {
         var stepShortMsg by remember { mutableStateOf("") }
         var specialNotice by remember { mutableStateOf("") }
 
-        // Glowy log border
+        // Glowy animated border for logs
         val neonColors = listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
             MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
@@ -152,9 +152,9 @@ class AutoPatchTab : Tab("auto_patch") {
         fun logStep(idx: Int, msg: String, special: String? = null) = log(msg, asStep = true, showShort = shortSteps.getOrNull(idx), special = special)
         fun logError(msg: String) = log("❌ $msg", asError = true, showShort = "Error: see logs")
 
-        // PATCHING HELPERS
         data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
+
         fun detectAbiChoice(): AbiChoice {
             val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
             return when {
@@ -401,7 +401,6 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
 
-        // Compose UI as previously (including logs, glowy border, loader, all phase blocks, etc)
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceVariant) {
             Box(Modifier.fillMaxSize()) {
                 Column(
@@ -437,14 +436,316 @@ class AutoPatchTab : Tab("auto_patch") {
                                 }
                             }
                         }
-                        // Compose UI for all other phases (as in last provided code)
-                        // ...
-                        // (Copy all the modern, glowy, download-progress aware Compose phase blocks as before!)
-                        // (Nothing omitted)
-                        // ...
-                        else -> { /* ...rest of the Compose composables for AwaitingLogin, Disclaimer, Finished, Error etc... (see previous replies for those in full) ... */ }
+                        Phase.Patching12, Phase.Patching13, Phase.Uploading12, Phase.Uploading13 -> {
+                            Column(
+                                Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                AnimatedContent(targetState = stepShortMsg, label = "") { msg ->
+                                    Text(
+                                        msg,
+                                        fontWeight = FontWeight.SemiBold,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(0.dp, 14.dp, 0.dp, 18.dp)
+                                    )
+                                }
+                                if (isDownloading) {
+                                    LinearProgressIndicator(
+                                        progress = progress,
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.65f)
+                                            .height(8.dp)
+                                            .clip(RoundedCornerShape(16.dp)),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                } else {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(40.dp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        trackColor = MaterialTheme.colorScheme.surface
+                                    )
+                                }
+                                if (specialNotice.isNotBlank()) {
+                                    Spacer(Modifier.height(18.dp))
+                                    Text(
+                                        specialNotice,
+                                        color = Color(0xFFFFEE58),
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                                Spacer(Modifier.height(8.dp))
+                                Button(
+                                    onClick = { logsExpanded = !logsExpanded },
+                                    modifier = Modifier.padding(top = 16.dp),
+                                    shape = RoundedCornerShape(21.dp)
+                                ) {
+                                    if (logsExpanded) {
+                                        Icon(Icons.Filled.ExpandLess, contentDescription = null)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Hide Logs")
+                                    } else {
+                                        Icon(Icons.Filled.ExpandMore, contentDescription = null)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Show Logs")
+                                    }
+                                }
+                                AnimatedVisibility(
+                                    visible = logsExpanded,
+                                    enter = expandVertically() + fadeIn(),
+                                    exit = shrinkVertically() + fadeOut()
+                                ) {
+                                    Column(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 20.dp)
+                                    ) {
+                                        Surface(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .border(
+                                                    width = 2.8.dp,
+                                                    brush = borderBrush,
+                                                    shape = RoundedCornerShape(24.dp)
+                                                )
+                                                .clip(RoundedCornerShape(24.dp)),
+                                            color = MaterialTheme.colorScheme.surface,
+                                            tonalElevation = 4.dp
+                                        ) {
+                                            LaunchedEffect(status, logsExpanded) {
+                                                delay(150)
+                                                logsScrollState.scrollTo(logsScrollState.maxValue)
+                                            }
+                                            val logLines = status.lines()
+                                            Column(
+                                                Modifier
+                                                    .padding(12.dp)
+                                                    .verticalScroll(logsScrollState)
+                                            ) {
+                                                logLines.forEachIndexed { idx, line ->
+                                                    val isCurrent = idx == currentLogLine
+                                                    AnimatedContent(targetState = isCurrent, label = "", transitionSpec = {
+                                                        fadeIn(tween(200)) togetherWith fadeOut(tween(200))
+                                                    }) { highlight ->
+                                                        if (highlight)
+                                                            Text(
+                                                                text = line,
+                                                                color = Color(0xFFFFF176),
+                                                                fontWeight = FontWeight.Bold,
+                                                                style = MaterialTheme.typography.bodyMedium
+                                                            )
+                                                        else
+                                                            Text(
+                                                                text = line,
+                                                                color = MaterialTheme.colorScheme.onSurface,
+                                                                fontWeight = FontWeight.Normal,
+                                                                style = MaterialTheme.typography.bodySmall
+                                                            )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Phase.AwaitingLogin -> {
+                            Spacer(Modifier.height(16.dp))
+                            Text("Next Steps (Please follow carefully)", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                            Spacer(Modifier.height(8.dp))
+                            Card(
+                                shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
+                            ) {
+                                Column(Modifier.padding(18.dp)) {
+                                    Text("1. Open SnapEnhance and complete initial setup (ignore mapping errors if any).", fontWeight = FontWeight.Medium)
+                                    Text("2. In SnapEnhance settings, ENABLE Test mode.", fontWeight = FontWeight.Medium)
+                                    Text("3. Open Snapchat and log in. If you see 'temporarily disabled', go to Snapchat App Info, Force Stop, and retry login.", fontWeight = FontWeight.Medium)
+                                    Text("4. After login, in SnapEnhance, turn OFF Test mode.", fontWeight = FontWeight.Medium)
+                                    Text("5. Come back here and press 'Login Done'.")
+                                }
+                            }
+                            Spacer(Modifier.height(26.dp))
+                            Button(
+                                onClick = { showTestModeDialog = true },
+                                shape = RoundedCornerShape(14.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Login Done")
+                            }
+                        }
+                        Phase.Disclaimer -> {
+                            Box(
+                                Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            0.3f to MaterialTheme.colorScheme.secondaryContainer,
+                                            1f to MaterialTheme.colorScheme.background
+                                        ),
+                                        RoundedCornerShape(24.dp)
+                                    )
+                                    .padding(12.dp)
+                            ) {
+                                Column(
+                                    Modifier.verticalScroll(rememberScrollState()).fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        "⚠️ Important: Test Mode Warning",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                    Spacer(Modifier.height(18.dp))
+                                    Text(
+                                    """
+Before you proceed, you *MUST* turn OFF "Test mode" in SnapEnhance settings!
+
+**Why?**
+- "Test mode" is only required for logging into 12.33.
+- ON NEWER VERSIONS, "test mode" allows detection and will cause your account to be locked!
+- You MUST turn test mode OFF before continuing.
+
+If you haven't already:
+  • Open SnapEnhance settings
+  • Ensure "Test Mode" is toggled OFF
+  • Proceed ONLY if you're 100% sure
+
+If you don't do this, your account may be locked!
+                                        """.trimIndent(),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(Modifier.height(34.dp))
+                                    Button(
+                                        onClick = { startPatchV13() },
+                                        shape = RoundedCornerShape(24.dp),
+                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                                    ) {
+                                        Text("Yes, I understand. Test mode is OFF. Let's proceed!")
+                                    }
+                                }
+                            }
+                        }
+                        Phase.Finished -> {
+                            Icon(
+                                Icons.Filled.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(62.dp)
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Text("Done! Snapchat is patched!", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
+                            Text(
+                                "Open SnapEnhance and let it regenerate mappings, then open Snapchat and enjoy!",
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(vertical = 10.dp)
+                            )
+                            Spacer(Modifier.height(20.dp))
+                            Button(
+                                onClick = {
+                                    setPhase(Phase.Idle)
+                                    status = ""
+                                    persistState(newStatus = "")
+                                },
+                                Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(18.dp)
+                            ) {
+                                Text("Back to Home")
+                            }
+                        }
+                        Phase.Error -> {
+                            Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(40.dp))
+                            Text("An error occurred", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(12.dp))
+                            Text("Please review the log below for details.", style = MaterialTheme.typography.bodyLarge)
+                            Spacer(Modifier.height(24.dp))
+                            Button(
+                                onClick = {
+                                    setPhase(Phase.Idle)
+                                    status = ""
+                                    persistState(newStatus = "")
+                                },
+                                Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Text("Retry", color = MaterialTheme.colorScheme.onError)
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { logsExpanded = !logsExpanded },
+                                shape = RoundedCornerShape(21.dp),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                if (logsExpanded) {
+                                    Icon(Icons.Filled.ExpandLess, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Hide Logs")
+                                } else {
+                                    Icon(Icons.Filled.ExpandMore, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Show Logs")
+                                }
+                            }
+                            AnimatedVisibility(
+                                visible = logsExpanded,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 20.dp)
+                                ) {
+                                    Surface(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .border(
+                                                width = 2.8.dp,
+                                                brush = borderBrush,
+                                                shape = RoundedCornerShape(24.dp)
+                                            )
+                                            .clip(RoundedCornerShape(24.dp)),
+                                        color = MaterialTheme.colorScheme.surface,
+                                        tonalElevation = 4.dp
+                                    ) {
+                                        LaunchedEffect(status, logsExpanded) {
+                                            delay(150)
+                                            logsScrollState.scrollTo(logsScrollState.maxValue)
+                                        }
+                                        val logLines = status.lines()
+                                        Column(
+                                            Modifier
+                                                .padding(12.dp)
+                                                .verticalScroll(logsScrollState)
+                                        ) {
+                                            logLines.forEachIndexed { idx, line ->
+                                                val isCurrent = idx == currentLogLine
+                                                AnimatedContent(targetState = isCurrent, label = "") { highlight ->
+                                                    if (highlight)
+                                                        Text(
+                                                            text = line,
+                                                            color = Color(0xFFFFF176),
+                                                            fontWeight = FontWeight.Bold,
+                                                            style = MaterialTheme.typography.bodyMedium
+                                                        )
+                                                    else
+                                                        Text(
+                                                            text = line,
+                                                            color = MaterialTheme.colorScheme.onSurface,
+                                                            fontWeight = FontWeight.Normal,
+                                                            style = MaterialTheme.typography.bodySmall
+                                                        )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else -> {}
                     }
-                    // ...Show/Hide logs, dialogs etc as before (see above)
                     if (showTestModeDialog) {
                         AlertDialog(
                             onDismissRequest = { showTestModeDialog = false },
