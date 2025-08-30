@@ -39,6 +39,8 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
+
+// -------- DataStore imports and extension --------
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -72,11 +74,12 @@ class AutoPatchTab : Tab("auto_patch") {
         val scope = remember { CoroutineScope(Dispatchers.IO) }
         val scrollState = rememberScrollState()
 
+        // Phase and status are restored from DataStore
         var phase by remember { mutableStateOf(Phase.Idle) }
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(-1f) }
 
-        // Restore phase and status from DataStore
+        // Restore phase and status from DataStore at composition start
         LaunchedEffect(Unit) {
             val prefs = context.dataStore.data.first()
             phase = runCatching { Phase.valueOf(prefs[KEY_PHASE] ?: Phase.Idle.name) }.getOrElse { Phase.Idle }
@@ -123,7 +126,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 else -> AbiChoice("armv8", "arm64-v8a")
             }
         }
-
         fun patternsFor(assetLabel: String): List<Regex> =
             if (assetLabel == "armv8")
                 listOf(
@@ -140,7 +142,6 @@ class AutoPatchTab : Tab("auto_patch") {
                     Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
                     Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
                 )
-
         fun verifyApkMatchesAbi(apk: File, desiredLibDir: String): Boolean =
             try { ZipFile(apk).use { zf -> zf.entries().asSequence().any { it.name.startsWith("lib/$desiredLibDir/") } } }
             catch (_: Throwable) { false }
@@ -179,7 +180,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 return null
             }
         }
-
         fun downloadWithOkHttp(url: String, toDir: File, onProgress: (Float) -> Unit): File? {
             longClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
                 if (!resp.isSuccessful) return null
