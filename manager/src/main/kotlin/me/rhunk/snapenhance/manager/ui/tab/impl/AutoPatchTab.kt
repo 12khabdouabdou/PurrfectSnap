@@ -13,17 +13,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
@@ -33,10 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import androidx.core.content.FileProvider
 import com.topjohnwu.superuser.Shell
@@ -92,14 +89,12 @@ class AutoPatchTab : Tab("auto_patch") {
         var logsExpanded by remember { mutableStateOf(false) }
         val logsScrollState = rememberScrollState()
         var activeStepIdx by remember { mutableIntStateOf(0) }
-        var processMsg by remember { mutableStateOf("") }
         var stepShortMsg by remember { mutableStateOf("") }
-        // Restore persisted state
+        // Restore persisted state on fresh launch
         LaunchedEffect(Unit) {
             val prefs = context.dataStore.data.first()
             phase = runCatching { Phase.valueOf(prefs[KEY_PHASE] ?: Phase.Idle.name) }.getOrElse { Phase.Idle }
             status = prefs[KEY_STATUS] ?: ""
-            // Always scroll to log bottom on launch if expanded
             delay(150)
             logsScrollState.scrollTo(logsScrollState.maxValue)
         }
@@ -135,17 +130,14 @@ class AutoPatchTab : Tab("auto_patch") {
             "Installing patched Snapchat 13.51..."
         )
         fun logAndStep(msg: String, userMsg: String? = null, idx: Int? = null) {
-            log(msg)
+            val s = when (msg) {
+                is Throwable -> msg.message + "\n" + msg.stackTraceToString()
+                else -> msg.toString()
+            }
+            status += s + "\n"
+            persistState(newStatus = status)
             userMsg?.let { stepShortMsg = it }
             idx?.let { activeStepIdx = it }
-        }
-        fun log(any: Any?) {
-            val msg = when (any) {
-                is Throwable -> any.message + "\n" + any.stackTraceToString()
-                else -> any.toString()
-            }
-            status += msg + "\n"
-            persistState(newStatus = status)
         }
         // --- PATCHING HELPERS ---
         data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
@@ -335,19 +327,16 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             return false
         }
-
         fun setPhase(newPhase: Phase) {
             phase = newPhase
             persistState(newPhase)
         }
-
         fun clearApkCache() {
             val cacheDirs = listOfNotNull(activity?.externalCacheDir, activity?.cacheDir)
             cacheDirs.forEach { dir ->
                 dir?.listFiles()?.forEach { f -> if (f.name.endsWith(".apk")) f.delete() }
             }
         }
-
         fun startPatchV12() {
             scope.launch {
                 setPhase(Phase.Patching12)
@@ -401,7 +390,7 @@ class AutoPatchTab : Tab("auto_patch") {
                         setPhase(Phase.AwaitingLogin)
                     }
                 } catch (t: Throwable) {
-                    log(t)
+                    logAndStep(t.toString(), null, 6)
                     setPhase(Phase.Error)
                 }
             }
@@ -449,18 +438,17 @@ class AutoPatchTab : Tab("auto_patch") {
                         logAndStep("Patched Snapchat 13.51 APK received. Installing...", "Installing patched Snapchat 13.51...", 12)
                         if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat 13.51 install failed")
                         logAndStep("Patched Snapchat 13.51 installed. All steps complete!", "Finished!", steps.lastIndex)
-                        // Clean APKs
                         clearApkCache()
                         setPhase(Phase.Finished)
                     }
                 } catch (t: Throwable) {
-                    log(t)
+                    logAndStep(t.toString(), null, 12)
                     setPhase(Phase.Error)
                 }
             }
         }
 
-        // ------------------ UI ------------------
+        // Main UI
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceVariant) {
             Box(Modifier.fillMaxSize()) {
                 Column(
@@ -472,9 +460,8 @@ class AutoPatchTab : Tab("auto_patch") {
                     when (phase) {
                         Phase.Idle -> {
                             Card(
-                                Modifier
-                                    .shadow(8.dp, RoundedCornerShape(18.dp))
-                                    .padding(12.dp)
+                                Modifier.padding(12.dp),
+                                shape = RoundedCornerShape(20.dp)
                             ) {
                                 Column(
                                     Modifier.padding(20.dp),
@@ -487,8 +474,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                     )
                                     Spacer(Modifier.height(12.dp))
                                     Text(
-                                        "Time required: Approximately 10 minutes.\n\n" +
-                                        "This is an automated process which spares you the hassle of manually needing to download and patching apks. You will be properly instructed when an action is required.",
+                                        "Time required: Approximately 10 minutes.\n\nThis is an automated process which spares you the hassle of manually needing to download and patching apks. You will be properly instructed when an action is required.",
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                     Spacer(Modifier.height(32.dp))
@@ -505,10 +491,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                     .wrapContentSize(Alignment.Center),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                AnimatedContent(targetState = stepShortMsg, transitionSpec = {
-                                    fadeIn(animationSpec = tween(320, easing = FastOutLinearInEasing)) togetherWith
-                                    fadeOut(animationSpec = tween(280, easing = FastOutLinearInEasing))
-                                }) { msg ->
+                                AnimatedContent(targetState = stepShortMsg, label = "") { msg ->
                                     Text(
                                         msg,
                                         fontWeight = FontWeight.SemiBold,
@@ -518,9 +501,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                     )
                                 }
                                 when (phase) {
-                                    Phase.Patching12, Phase.Patching13,
-                                    Phase.SearchingV12, Phase.SearchingV13,
-                                    Phase.Uploading12, Phase.Uploading13 -> {
+                                    Phase.Patching12, Phase.Patching13, Phase.SearchingV12, Phase.SearchingV13, Phase.Uploading12, Phase.Uploading13 -> {
                                         if ((phase == Phase.SearchingV12 || phase == Phase.SearchingV13 || phase == Phase.Uploading12 || phase == Phase.Uploading13) || progress < 0f) {
                                             CircularProgressIndicator(
                                                 modifier = Modifier.size(40.dp),
@@ -578,14 +559,14 @@ class AutoPatchTab : Tab("auto_patch") {
                                         Spacer(Modifier.height(4.dp))
                                         Surface(
                                             Modifier
-                                                .fillMaxWidth()
-                                                .shadow(4.dp, RoundedCornerShape(24.dp))
-                                                .clip(RoundedCornerShape(24.dp)),
-                                            color = MaterialTheme.colorScheme.surface
+                                                .fillMaxWidth(),
+                                            shape = RoundedCornerShape(24.dp),
+                                            color = MaterialTheme.colorScheme.surface,
+                                            tonalElevation = 4.dp
                                         ) {
                                             LaunchedEffect(status) {
                                                 delay(250)
-                                                logsScrollState.animateScrollTo(logsScrollState.maxValue)
+                                                logsScrollState.scrollTo(logsScrollState.maxValue)
                                             }
                                             val logLines = status.lines()
                                             Column(
@@ -595,7 +576,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                             ) {
                                                 logLines.forEachIndexed { idx, line ->
                                                     val isCurrent = idx == logLines.lastIndex || (phase != Phase.Error && idx == activeStepIdx)
-                                                    AnimatedContent(targetState = isCurrent, transitionSpec = { fadeIn() + expandVertically() togetherWith fadeOut() + shrinkVertically() }) { highlight ->
+                                                    AnimatedContent(targetState = isCurrent, label = "") { highlight ->
                                                         if (highlight)
                                                             Text(
                                                                 text = line,
@@ -623,8 +604,7 @@ class AutoPatchTab : Tab("auto_patch") {
                             Text("Next Steps (Please follow carefully)", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
                             Spacer(Modifier.height(8.dp))
                             Card(
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
+                                shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
                             ) {
                                 Column(Modifier.padding(18.dp)) {
                                     Text("1. Open SnapEnhance and complete initial setup (ignore mapping errors if any).", fontWeight = FontWeight.Medium)
@@ -668,7 +648,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                     )
                                     Spacer(Modifier.height(18.dp))
                                     Text(
-                                        """
+                                    """
 Before you proceed, you *MUST* turn OFF "Test mode" in SnapEnhance settings!
 
 **Why?**
@@ -699,9 +679,9 @@ If you don't do this, your account may be locked!
                         }
                         Phase.Finished -> {
                             Icon(
-                                painter = rememberVectorPainter(Icons.Filled.DoneAll),
-                                tint = MaterialTheme.colorScheme.primary,
+                                Icons.Filled.CheckCircle,
                                 contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(62.dp)
                             )
                             Spacer(Modifier.height(12.dp))
@@ -725,7 +705,7 @@ If you don't do this, your account may be locked!
                             }
                         }
                         Phase.Error -> {
-                            Icon(Icons.Filled.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(40.dp))
+                            Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(40.dp))
                             Text("An error occurred", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(12.dp))
                             Text("Please review the log below for details.", style = MaterialTheme.typography.bodyLarge)
@@ -744,7 +724,6 @@ If you don't do this, your account may be locked!
                         }
                         else -> {}
                     }
-
                     if (showTestModeDialog) {
                         AlertDialog(
                             onDismissRequest = { showTestModeDialog = false },
