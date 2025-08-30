@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -40,7 +41,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
 
-// -------- DataStore imports and extension --------
+// DataStore imports
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -57,7 +58,9 @@ class AutoPatchTab : Tab("auto_patch") {
         private val KEY_STATUS = stringPreferencesKey("patch_status")
     }
 
-    enum class Phase { Idle, Patching12, AwaitingLogin, Patching13, Finished, Error }
+    enum class Phase {
+        Idle, Patching12, AwaitingLogin, TestModeDialog, Disclaimer, Patching13, Finished, Error
+    }
 
     override fun init(activity: ComponentActivity) {
         super.init(activity)
@@ -74,12 +77,12 @@ class AutoPatchTab : Tab("auto_patch") {
         val scope = remember { CoroutineScope(Dispatchers.IO) }
         val scrollState = rememberScrollState()
 
-        // Phase and status are restored from DataStore
         var phase by remember { mutableStateOf(Phase.Idle) }
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(-1f) }
+        var showTestModeDialog by remember { mutableStateOf(false) }
+        var showTestModeNoMsg by remember { mutableStateOf(false) }
 
-        // Restore phase and status from DataStore at composition start
         LaunchedEffect(Unit) {
             val prefs = context.dataStore.data.first()
             phase = runCatching { Phase.valueOf(prefs[KEY_PHASE] ?: Phase.Idle.name) }.getOrElse { Phase.Idle }
@@ -135,13 +138,12 @@ class AutoPatchTab : Tab("auto_patch") {
                     Regex("\\baarch64\\b", RegexOption.IGNORE_CASE),
                     Regex("\\bv8a\\b", RegexOption.IGNORE_CASE)
                 )
-            else
-                listOf(
-                    Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE),
-                    Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
-                    Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
-                    Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
-                )
+            else listOf(
+                Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE),
+                Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
+                Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
+                Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
+            )
         fun verifyApkMatchesAbi(apk: File, desiredLibDir: String): Boolean =
             try { ZipFile(apk).use { zf -> zf.entries().asSequence().any { it.name.startsWith("lib/$desiredLibDir/") } } }
             catch (_: Throwable) { false }
@@ -228,7 +230,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 return out
             }
         }
-
         suspend fun findSnapchatVersionItem(
             apkMirror: APKMirror, targetVersion: String, maxPages: Int
         ): me.rhunk.snapenhance.manager.data.DownloadItem? {
@@ -381,6 +382,7 @@ class AutoPatchTab : Tab("auto_patch") {
                 }
             }
         }
+
         fun startPatchV13() {
             scope.launch {
                 setPhase(Phase.Patching13)
@@ -442,6 +444,8 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
 
+
+        // ---- MAIN UI PHASE FLOW ----
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -467,10 +471,60 @@ class AutoPatchTab : Tab("auto_patch") {
                     )
                     Spacer(Modifier.height(16.dp))
                     Button(
-                        onClick = { startPatchV13() },
+                        onClick = { showTestModeDialog = true },
                         Modifier.fillMaxWidth()
                     ) {
                         Text("Login Done")
+                    }
+                }
+                Phase.TestModeDialog -> {
+                    // See dialog overlay below!
+                }
+                Phase.Disclaimer -> {
+                    Card(
+                        Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(12.dp)
+                    ) {
+                        Column(
+                            Modifier
+                                .verticalScroll(scrollState)
+                                .padding(20.dp)
+                        ) {
+                            Text("Important: Test Mode Warning", fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                """
+Before you proceed, you *MUST* turn OFF "Test mode" under SnapEnhance settings!
+
+**Why?**
+
+- "Test mode" is only needed for the login step on Snapchat 12.33.
+- With Test mode ON, all patches/modules are in a highly visible state for debugging.
+- **On latest Snapchat versions, if Test mode is ON, your account WILL be flagged and likely banned.**
+- Test mode disables several anti-detection protections.
+
+**What does this mean for you?**
+- You were asked to enable Test mode to get login working on 12.33 -- that version is safe because there are no new detections.
+- On newer Snapchat, TEST MODE _MUST_ BE OFF before patching and logging in to avoid bans!
+- If you are unsure: Open SnapEnhance, go to Settings, and make 100% certain Test mode is disabled.
+- We cannot help you recover the account if you ignore this!
+
+**Summary: Only use Test mode for the first login, and ALWAYS disable it before continuing to patch Snapchat 13.51 or using the SnapEnhance module on new versions.**
+
+Scroll down and press confirm only if you have already disabled Test mode in SnapEnhance.
+                                """.trimIndent(),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(Modifier.height(40.dp))
+                            Button(
+                                onClick = { startPatchV13() },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("Yes, I understand. I have turned off test mode, let's proceed")
+                            }
+                        }
                     }
                 }
                 Phase.Finished -> {
@@ -512,6 +566,37 @@ class AutoPatchTab : Tab("auto_patch") {
                     progress = progress,
                     modifier = Modifier.fillMaxWidth().height(8.dp),
                     strokeCap = StrokeCap.Round
+                )
+            }
+            // Dialog for test mode confirmation AFTER LOGIN
+            if (showTestModeDialog) {
+                AlertDialog(
+                    onDismissRequest = { showTestModeDialog = false },
+                    title = { Text("Have you turned OFF Test mode in SnapEnhance settings?") },
+                    text = { Text("Test mode must be OFF before continuing or you may get banned!") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showTestModeDialog = false
+                            setPhase(Phase.Disclaimer)
+                        }) { Text("Yes") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showTestModeDialog = false
+                            showTestModeNoMsg = true
+                        }) { Text("No") }
+                    }
+                )
+            }
+            if (showTestModeNoMsg) {
+                AlertDialog(
+                    onDismissRequest = { showTestModeNoMsg = false },
+                    title = { Text("Turn off Test mode first!") },
+                    text = { Text("Please open SnapEnhance settings and ensure Test mode is turned OFF before continuing.") },
+                    confirmButton = {
+                        TextButton(onClick = { showTestModeNoMsg = false }) { Text("OK") }
+                    },
+                    dismissButton = {}
                 )
             }
             LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
