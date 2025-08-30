@@ -11,7 +11,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -61,11 +60,13 @@ class AutoPatchTab : Tab("auto_patch") {
         private val KEY_PHASE = stringPreferencesKey("patch_phase")
         private val KEY_STATUS = stringPreferencesKey("patch_status")
     }
+
     enum class Phase {
         Idle,
         Patching12, SearchingV12, Uploading12, AwaitingLogin, TestModeDialog, Disclaimer,
         Patching13, SearchingV13, Uploading13, Finished, Error
     }
+
     override fun init(activity: ComponentActivity) {
         super.init(activity)
         installLauncher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -73,6 +74,7 @@ class AutoPatchTab : Tab("auto_patch") {
             installDeferred = null
         }
     }
+
     @Composable
     override fun Content() {
         val context = LocalContext.current
@@ -85,9 +87,10 @@ class AutoPatchTab : Tab("auto_patch") {
         var showTestModeNoMsg by remember { mutableStateOf(false) }
         var logsExpanded by remember { mutableStateOf(false) }
         val logsScrollState = rememberScrollState()
-        var activeStepIdx by remember { mutableIntStateOf(0) }
+        var currentLogLine by remember { mutableIntStateOf(-1) }
         var stepShortMsg by remember { mutableStateOf("") }
-        // Step => concise user-facing message
+
+        // Short user-facing phase messages
         val shortSteps = listOf(
             "Downloading SnapEnhance...",
             "Downloading core.apk...",
@@ -103,7 +106,7 @@ class AutoPatchTab : Tab("auto_patch") {
             "Uploading files (13.51) to patch server (may take 3–4 minutes)...",
             "Installing patched Snapchat 13.51..."
         )
-        // Restore on launch
+        // Restore state from DataStore at startup
         LaunchedEffect(Unit) {
             val prefs = context.dataStore.data.first()
             phase = runCatching { Phase.valueOf(prefs[KEY_PHASE] ?: Phase.Idle.name) }.getOrElse { Phase.Idle }
@@ -128,20 +131,18 @@ class AutoPatchTab : Tab("auto_patch") {
                 .build()
         }
 
-        fun log(msg: String) {
+        // --- Logging: track current step by last log line number ---
+        fun log(msg: String, asStep: Boolean = false, asError: Boolean = false, showShort: String? = null) {
+            val linesBefore = status.lineSequence().count()
             status += msg + "\n"
+            if (asStep || asError) currentLogLine = linesBefore // Highlight new line as current step
+            if (showShort != null) stepShortMsg = showShort
             persistState(newStatus = status)
         }
-        fun logStep(msg: String, stepIx: Int) {
-            log(msg)
-            stepShortMsg = shortSteps.getOrNull(stepIx) ?: ""
-            activeStepIdx = stepIx
-        }
-        fun logError(msg: String) {
-            log("❌ $msg")
-            stepShortMsg = "Error: see logs"
-        }
-        // PATCHING HELPERS (as robust as before)
+        fun logStep(idx: Int, msg: String) = log(msg, asStep = true, showShort = shortSteps.getOrNull(idx))
+        fun logError(msg: String) = log("❌ $msg", asError = true, showShort = "Error: see logs")
+
+        // PATCHING HELPERS (rest unchanged, but logs always call log/step)
         data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
         fun detectAbiChoice(): AbiChoice {
@@ -347,34 +348,34 @@ class AutoPatchTab : Tab("auto_patch") {
                 try {
                     val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
                     val abi = detectAbiChoice()
-                    logStep("Detected ABI: ${abi.desiredLibDir}", 0)
-                    logStep("Looking for SnapEnhance & core.apk release assets...", 0)
+                    logStep(0, "Detected ABI: ${abi.desiredLibDir}")
+                    logStep(0, "Looking for SnapEnhance & core.apk release assets...")
                     val assets = fetchSnapEnhanceAndCoreAssets(abi.assetLabel)
                         ?: throw RuntimeException("No SnapEnhance/core.apk pair found in prereleases for ABI: ${abi.assetLabel}")
                     progress = 0f
-                    logStep("Downloading SnapEnhance from: ${assets.snapEnhanceName}", 0)
+                    logStep(0, "Downloading SnapEnhance from: ${assets.snapEnhanceName}")
                     val seApk = downloadWithOkHttp(assets.snapEnhanceUrl, cacheDir, { progress = it }, "snapenhance.apk")
                         ?: throw RuntimeException("Failed to download SnapEnhance")
-                    logStep("SnapEnhance APK ready.", 1)
+                    logStep(1, "SnapEnhance APK ready.")
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir, { progress = it }, "core.apk")
                         ?: throw RuntimeException("Failed to download core.apk")
-                    logStep("core.apk ready.", 2)
+                    logStep(2, "core.apk ready.")
                     setPhase(Phase.SearchingV12)
-                    logStep("Searching APKMirror for Snapchat 12.33.1.19... This may take 3–4 minutes to get the old download link.", 2)
+                    logStep(2, "Searching APKMirror for Snapchat 12.33.1.19... This may take 3–4 minutes to get the old download link.")
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "12.33.1.19"
                     val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion, 100)
                         ?: throw RuntimeException("Snapchat version $snapchatTargetVersion not found on APKMirror.")
-                    logStep("Found version: ${versionItem.title} (${versionItem.releaseDate})", 3)
+                    logStep(3, "Found version: ${versionItem.title} (${versionItem.releaseDate})")
                     val realSnapchatUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
                         ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
-                    logStep("Downloading Snapchat from: $realSnapchatUrl", 3)
+                    logStep(3, "Downloading Snapchat from: $realSnapchatUrl")
                     progress = 0f
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir, { progress = it }, "snapchat12.apk")
                         ?: throw RuntimeException("Failed to download Snapchat")
-                    logStep("Downloaded Snapchat -> ${snapchatApk.absolutePath}", 4)
+                    logStep(4, "Downloaded Snapchat -> ${snapchatApk.absolutePath}")
                     setPhase(Phase.Uploading12)
-                    logStep("Uploading for patch (core.apk & Snapchat 12.33)... This will take 3–4 minutes depending on your network and server load.", 4)
+                    logStep(4, "Uploading for patch (core.apk & Snapchat 12.33)... This will take 3–4 minutes depending on your network and server load.")
                     warmUpServer("https://auto-patch-server.onrender.com/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -388,11 +389,11 @@ class AutoPatchTab : Tab("auto_patch") {
                         }
                         val patchedFile = File(cacheDir, "PatchedSnapchat12.apk")
                         response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
-                        logStep("Patched Snapchat APK received. Installing...", 5)
+                        logStep(5, "Patched Snapchat APK received. Installing...")
                         if (!installPackage(seApk, sharedConfig.snapEnhancePackageName)) throw RuntimeException("SnapEnhance install failed")
-                        logStep("SnapEnhance installed.", 6)
+                        logStep(6, "SnapEnhance installed.")
                         if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat 12.33 install failed")
-                        logStep("Patched Snapchat 12.33 installed.", 7)
+                        logStep(7, "Patched Snapchat 12.33 installed.")
                         setPhase(Phase.AwaitingLogin)
                     }
                 } catch (t: Throwable) {
@@ -409,28 +410,28 @@ class AutoPatchTab : Tab("auto_patch") {
                 try {
                     val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
                     val abi = detectAbiChoice()
-                    logStep("Downloading core.apk (latest) for 13.51...", 8)
+                    logStep(8, "Downloading core.apk (latest) for 13.51...")
                     val assets = fetchSnapEnhanceAndCoreAssets(abi.assetLabel)
                         ?: throw RuntimeException("No SnapEnhance/core.apk pair found in prereleases for ABI: ${abi.assetLabel}")
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir, { progress = it }, "core.apk")
                         ?: throw RuntimeException("Failed to download core.apk")
-                    logStep("core.apk ready.", 9)
+                    logStep(9, "core.apk ready.")
                     setPhase(Phase.SearchingV13)
-                    logStep("Searching APKMirror for Snapchat 13.51.0.56...", 9)
+                    logStep(9, "Searching APKMirror for Snapchat 13.51.0.56...")
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "13.51.0.56"
                     val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion, 100)
                         ?: throw RuntimeException("Snapchat version $snapchatTargetVersion not found on APKMirror.")
-                    logStep("Found version: ${versionItem.title} (${versionItem.releaseDate})", 10)
+                    logStep(10, "Found version: ${versionItem.title} (${versionItem.releaseDate})")
                     val realSnapchatUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
                         ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
-                    logStep("Downloading Snapchat 13.51 from: $realSnapchatUrl", 10)
+                    logStep(10, "Downloading Snapchat 13.51 from: $realSnapchatUrl")
                     progress = 0f
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir, { progress = it }, "snapchat13.apk")
                         ?: throw RuntimeException("Failed to download Snapchat (13.51)")
-                    logStep("Downloaded Snapchat 13.51", 11)
+                    logStep(11, "Downloaded Snapchat 13.51")
                     setPhase(Phase.Uploading13)
-                    logStep("Uploading core.apk and Snapchat 13.51 APK to patch server... This will take 3–4 minutes depending on your network and server load.", 11)
+                    logStep(11, "Uploading core.apk and Snapchat 13.51 APK to patch server... This will take 3–4 minutes depending on your network and server load.")
                     warmUpServer("https://auto-patch-server.onrender.com/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -444,9 +445,9 @@ class AutoPatchTab : Tab("auto_patch") {
                         }
                         val patchedFile = File(cacheDir, "PatchedSnapchat13.apk")
                         response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
-                        logStep("Patched Snapchat 13.51 APK received. Installing...", 12)
+                        logStep(12, "Patched Snapchat 13.51 APK received. Installing...")
                         if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat 13.51 install failed")
-                        logStep("Patched Snapchat 13.51 installed. All steps complete!", 12)
+                        logStep(12, "Patched Snapchat 13.51 installed. All steps complete!")
                         clearApkCache()
                         setPhase(Phase.Finished)
                     }
@@ -526,25 +527,19 @@ class AutoPatchTab : Tab("auto_patch") {
                                     )
                                 }
                                 Spacer(Modifier.height(8.dp))
-                                AnimatedVisibility(
-                                    visible = !logsExpanded || phase == Phase.Error,
-                                    enter = fadeIn(),
-                                    exit = fadeOut()
+                                Button(
+                                    onClick = { logsExpanded = !logsExpanded },
+                                    modifier = Modifier.padding(top = 16.dp),
+                                    shape = RoundedCornerShape(21.dp)
                                 ) {
-                                    Button(
-                                        onClick = { logsExpanded = !logsExpanded },
-                                        modifier = Modifier.padding(top = 16.dp),
-                                        shape = RoundedCornerShape(21.dp)
-                                    ) {
-                                        if (logsExpanded) {
-                                            Icon(Icons.Filled.ExpandLess, contentDescription = null)
-                                            Spacer(Modifier.width(8.dp))
-                                            Text("Hide Logs")
-                                        } else {
-                                            Icon(Icons.Filled.ExpandMore, contentDescription = null)
-                                            Spacer(Modifier.width(8.dp))
-                                            Text("Show Logs")
-                                        }
+                                    if (logsExpanded) {
+                                        Icon(Icons.Filled.ExpandLess, contentDescription = null)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Hide Logs")
+                                    } else {
+                                        Icon(Icons.Filled.ExpandMore, contentDescription = null)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Show Logs")
                                     }
                                 }
                                 AnimatedVisibility(
@@ -563,8 +558,8 @@ class AutoPatchTab : Tab("auto_patch") {
                                             color = MaterialTheme.colorScheme.surface,
                                             tonalElevation = 4.dp
                                         ) {
-                                            LaunchedEffect(status) {
-                                                delay(200)
+                                            LaunchedEffect(status, logsExpanded) {
+                                                delay(150)
                                                 logsScrollState.scrollTo(logsScrollState.maxValue)
                                             }
                                             val logLines = status.lines()
@@ -574,8 +569,10 @@ class AutoPatchTab : Tab("auto_patch") {
                                                     .verticalScroll(logsScrollState)
                                             ) {
                                                 logLines.forEachIndexed { idx, line ->
-                                                    val isCurrent = idx == activeStepIdx
-                                                    AnimatedContent(targetState = isCurrent, label = "") { highlight ->
+                                                    val isCurrent = idx == currentLogLine
+                                                    AnimatedContent(targetState = isCurrent, label = "", transitionSpec = {
+                                                        fadeIn(tween(200)) togetherWith fadeOut(tween(200))
+                                                    }) { highlight ->
                                                         if (highlight)
                                                             Text(
                                                                 text = line,
@@ -719,6 +716,71 @@ If you don't do this, your account may be locked!
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                             ) {
                                 Text("Retry", color = MaterialTheme.colorScheme.onError)
+                            }
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { logsExpanded = !logsExpanded },
+                                shape = RoundedCornerShape(21.dp),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                if (logsExpanded) {
+                                    Icon(Icons.Filled.ExpandLess, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Hide Logs")
+                                } else {
+                                    Icon(Icons.Filled.ExpandMore, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Show Logs")
+                                }
+                            }
+                            AnimatedVisibility(
+                                visible = logsExpanded,
+                                enter = expandVertically() + fadeIn(),
+                                exit = shrinkVertically() + fadeOut()
+                            ) {
+                                Column(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 20.dp)
+                                ) {
+                                    Surface(
+                                        Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(24.dp),
+                                        color = MaterialTheme.colorScheme.surface,
+                                        tonalElevation = 4.dp
+                                    ) {
+                                        LaunchedEffect(status, logsExpanded) {
+                                            delay(150)
+                                            logsScrollState.scrollTo(logsScrollState.maxValue)
+                                        }
+                                        val logLines = status.lines()
+                                        Column(
+                                            Modifier
+                                                .padding(12.dp)
+                                                .verticalScroll(logsScrollState)
+                                        ) {
+                                            logLines.forEachIndexed { idx, line ->
+                                                val isCurrent = idx == currentLogLine
+                                                AnimatedContent(targetState = isCurrent, label = "") { highlight ->
+                                                    if (highlight)
+                                                        Text(
+                                                            text = line,
+                                                            color = MaterialTheme.colorScheme.primary,
+                                                            fontWeight = FontWeight.Bold,
+                                                            style = MaterialTheme.typography.bodyMedium
+                                                        )
+                                                    else
+                                                        Text(
+                                                            text = line,
+                                                            color = MaterialTheme.colorScheme.onSurface,
+                                                            fontWeight = FontWeight.Normal,
+                                                            style = MaterialTheme.typography.bodySmall
+                                                        )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                         else -> {}
