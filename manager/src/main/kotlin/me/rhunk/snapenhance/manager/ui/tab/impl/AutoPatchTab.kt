@@ -11,8 +11,9 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,13 +84,35 @@ class AutoPatchTab : Tab("auto_patch") {
         var phase by remember { mutableStateOf(Phase.Idle) }
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(0f) }
+        var isDownloading by remember { mutableStateOf(false) }
         var showTestModeDialog by remember { mutableStateOf(false) }
         var showTestModeNoMsg by remember { mutableStateOf(false) }
         var logsExpanded by remember { mutableStateOf(false) }
         val logsScrollState = rememberScrollState()
         var currentLogLine by remember { mutableIntStateOf(-1) }
         var stepShortMsg by remember { mutableStateOf("") }
-
+        var specialNotice by remember { mutableStateOf("") }
+        // -- Log border glow --
+        val neonColors = listOf(
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
+            Color(0xFFFFF176).copy(alpha = 0.65f),
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+        )
+        val animTransition = rememberInfiniteTransition(label = "glow")
+        val phaseTick = animTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(2200, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "glowTick"
+        )
+        val borderBrush = Brush.sweepGradient(
+            neonColors,
+            center = Offset.Zero
+        )
         // Short user-facing phase messages
         val shortSteps = listOf(
             "Downloading SnapEnhance...",
@@ -132,17 +155,18 @@ class AutoPatchTab : Tab("auto_patch") {
         }
 
         // --- Logging: track current step by last log line number ---
-        fun log(msg: String, asStep: Boolean = false, asError: Boolean = false, showShort: String? = null) {
+        fun log(msg: String, asStep: Boolean = false, asError: Boolean = false, showShort: String? = null, special: String? = null) {
             val linesBefore = status.lineSequence().count()
             status += msg + "\n"
             if (asStep || asError) currentLogLine = linesBefore // Highlight new line as current step
             if (showShort != null) stepShortMsg = showShort
+            if (special != null) specialNotice = special else specialNotice = ""
             persistState(newStatus = status)
         }
-        fun logStep(idx: Int, msg: String) = log(msg, asStep = true, showShort = shortSteps.getOrNull(idx))
+        fun logStep(idx: Int, msg: String, special: String? = null) = log(msg, asStep = true, showShort = shortSteps.getOrNull(idx), special = special)
         fun logError(msg: String) = log("❌ $msg", asError = true, showShort = "Error: see logs")
 
-        // PATCHING HELPERS (rest unchanged, but logs always call log/step)
+        // PATCHING HELPERS
         data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
         fun detectAbiChoice(): AbiChoice {
@@ -206,55 +230,70 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
         fun downloadWithOkHttp(url: String, toDir: File, onProgress: (Float) -> Unit, fileNameOverride: String? = null): File? {
-            longClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
-                if (!resp.isSuccessful) return null
-                val out = if (fileNameOverride != null) File(toDir, fileNameOverride) else File.createTempFile("artifact", ".apk", toDir)
-                out.deleteOnExit()
-                val size = resp.body?.contentLength() ?: -1L
-                var total = 0L
-                resp.body?.byteStream()?.use { input ->
-                    out.outputStream().use { output ->
-                        val buf = ByteArray(8 * 1024)
-                        var read: Int
-                        while (input.read(buf).also { read = it } != -1) {
-                            output.write(buf, 0, read)
-                            total += read
-                            if (size > 0) onProgress(total.toFloat() / size.toFloat()) else onProgress(-1f)
+            isDownloading = true
+            var result: File? = null
+            try {
+                longClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
+                    if (!resp.isSuccessful) return null
+                    val out = if (fileNameOverride != null) File(toDir, fileNameOverride) else File.createTempFile("artifact", ".apk", toDir)
+                    out.deleteOnExit()
+                    val size = resp.body?.contentLength() ?: -1L
+                    var total = 0L
+                    resp.body?.byteStream()?.use { input ->
+                        out.outputStream().use { output ->
+                            val buf = ByteArray(8 * 1024)
+                            var read: Int
+                            while (input.read(buf).also { read = it } != -1) {
+                                output.write(buf, 0, read)
+                                total += read
+                                if (size > 0) onProgress(total.toFloat() / size.toFloat()) else onProgress(-1f)
+                            }
+                            output.flush()
                         }
-                        output.flush()
                     }
+                    result = out
                 }
-                return out
+            } finally {
+                isDownloading = false
             }
+            return result
         }
         fun downloadWithDoh(url: String, toDir: File, onProgress: (Float) -> Unit, fileNameOverride: String? = null): File? {
-            val dohClient = APKMirror().okhttpClient.newBuilder()
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(5, TimeUnit.MINUTES)
-                .writeTimeout(5, TimeUnit.MINUTES)
-                .callTimeout(10, TimeUnit.MINUTES)
-                .build()
-            dohClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
-                if (!resp.isSuccessful) return null
-                val out = if (fileNameOverride != null) File(toDir, fileNameOverride) else File.createTempFile("artifact", ".apk", toDir)
-                out.deleteOnExit()
-                val size = resp.body?.contentLength() ?: -1L
-                var total = 0L
-                resp.body?.byteStream()?.use { input ->
-                    out.outputStream().use { output ->
-                        val buf = ByteArray(8 * 1024)
-                        var read: Int
-                        while (input.read(buf).also { read = it } != -1) {
-                            output.write(buf, 0, read)
-                            total += read
-                            if (size > 0) onProgress(total.toFloat() / size.toFloat()) else onProgress(-1f)
+            isDownloading = true
+            var result: File? = null
+            try {
+                val dohClient = APKMirror().okhttpClient.newBuilder()
+                    .connectTimeout(60, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.MINUTES)
+                    .writeTimeout(5, TimeUnit.MINUTES)
+                    .callTimeout(10, TimeUnit.MINUTES)
+                    .build()
+                dohClient.newCall(Request.Builder().url(url).build()).execute().use { resp ->
+                    if (!resp.isSuccessful) return null
+                    val out = if (fileNameOverride != null) File(toDir, fileNameOverride) else File.createTempFile("artifact", ".apk", toDir)
+                    out.deleteOnExit()
+                    val size = resp.body?.contentLength() ?: -1L
+                    var total = 0L
+                    resp.body?.byteStream()?.use { input ->
+                        out.outputStream().use { output ->
+                            val buf = ByteArray(8 * 1024)
+                            var read: Int
+                            while (input.read(buf).also { read = it } != -1) {
+                                output.write(buf, 0, read)
+                                total += read
+                                if (size > 0) onProgress(total.toFloat() / size.toFloat()) else onProgress(-1f)
+                            }
+                            output.flush()
                         }
-                        output.flush()
                     }
+                    result = out
                 }
-                return out
+            } finally {
+                isDownloading = false
             }
+            return result
         }
+
         suspend fun findSnapchatVersionItem(
             apkMirror: APKMirror, targetVersion: String, maxPages: Int
         ): me.rhunk.snapenhance.manager.data.DownloadItem? {
@@ -343,7 +382,7 @@ class AutoPatchTab : Tab("auto_patch") {
         fun startPatchV12() {
             scope.launch {
                 setPhase(Phase.Patching12)
-                status = ""; progress = 0f
+                status = ""; progress = 0f; specialNotice = ""
                 persistState(newStatus = status)
                 try {
                     val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
@@ -361,7 +400,10 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download core.apk")
                     logStep(2, "core.apk ready.")
                     setPhase(Phase.SearchingV12)
-                    logStep(2, "Searching APKMirror for Snapchat 12.33.1.19... This may take 3–4 minutes to get the old download link.")
+                    logStep(
+                        2, "Searching APKMirror for Snapchat 12.33.1.19... This may take 3–4 minutes to get the old download link.",
+                        "This will take 3–4 minutes (old download link)"
+                    )
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "12.33.1.19"
                     val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion, 100)
@@ -371,11 +413,15 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
                     logStep(3, "Downloading Snapchat from: $realSnapchatUrl")
                     progress = 0f
+                    logStep(3, "Downloading Snapchat 12.33...", null)
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir, { progress = it }, "snapchat12.apk")
                         ?: throw RuntimeException("Failed to download Snapchat")
                     logStep(4, "Downloaded Snapchat -> ${snapchatApk.absolutePath}")
                     setPhase(Phase.Uploading12)
-                    logStep(4, "Uploading for patch (core.apk & Snapchat 12.33)... This will take 3–4 minutes depending on your network and server load.")
+                    logStep(
+                        4, "Uploading for patch (core.apk & Snapchat 12.33)... This will take 3–4 minutes depending on your network and server load.",
+                        "This will take 3–4 minutes depending on your network"
+                    )
                     warmUpServer("https://auto-patch-server.onrender.com/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -402,10 +448,11 @@ class AutoPatchTab : Tab("auto_patch") {
                 }
             }
         }
+
         fun startPatchV13() {
             scope.launch {
                 setPhase(Phase.Patching13)
-                status = ""; progress = 0f
+                status = ""; progress = 0f; specialNotice = ""
                 persistState(newStatus = status)
                 try {
                     val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
@@ -417,7 +464,10 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download core.apk")
                     logStep(9, "core.apk ready.")
                     setPhase(Phase.SearchingV13)
-                    logStep(9, "Searching APKMirror for Snapchat 13.51.0.56...")
+                    logStep(
+                        9, "Searching APKMirror for Snapchat 13.51.0.56...",
+                        "This will take 3–4 minutes (server search/cache)"
+                    )
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "13.51.0.56"
                     val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion, 100)
@@ -427,11 +477,15 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
                     logStep(10, "Downloading Snapchat 13.51 from: $realSnapchatUrl")
                     progress = 0f
+                    logStep(10, "Downloading Snapchat 13.51...", null)
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir, { progress = it }, "snapchat13.apk")
                         ?: throw RuntimeException("Failed to download Snapchat (13.51)")
                     logStep(11, "Downloaded Snapchat 13.51")
                     setPhase(Phase.Uploading13)
-                    logStep(11, "Uploading core.apk and Snapchat 13.51 APK to patch server... This will take 3–4 minutes depending on your network and server load.")
+                    logStep(
+                        11, "Uploading core.apk and Snapchat 13.51 APK to patch server... This will take 3–4 minutes depending on your network and server load.",
+                        "This will take 3–4 minutes depending on your network"
+                    )
                     warmUpServer("https://auto-patch-server.onrender.com/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -458,7 +512,7 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
 
-        // ------ UI ------
+        // ------------ UI ----------------
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceVariant) {
             Box(Modifier.fillMaxSize()) {
                 Column(
@@ -510,13 +564,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                         modifier = Modifier.padding(0.dp, 14.dp, 0.dp, 18.dp)
                                     )
                                 }
-                                if ((phase == Phase.SearchingV12 || phase == Phase.SearchingV13 || phase == Phase.Uploading12 || phase == Phase.Uploading13) || progress < 0f) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(40.dp),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        trackColor = MaterialTheme.colorScheme.surface
-                                    )
-                                } else {
+                                if (isDownloading && (phase == Phase.Patching12 || phase == Phase.Patching13 || phase == Phase.SearchingV12 || phase == Phase.SearchingV13)) {
                                     LinearProgressIndicator(
                                         progress = progress,
                                         modifier = Modifier
@@ -524,6 +572,21 @@ class AutoPatchTab : Tab("auto_patch") {
                                             .height(8.dp)
                                             .clip(RoundedCornerShape(16.dp)),
                                         color = MaterialTheme.colorScheme.primary
+                                    )
+                                } else {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(40.dp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        trackColor = MaterialTheme.colorScheme.surface
+                                    )
+                                }
+                                if (specialNotice.isNotBlank()) {
+                                    Spacer(Modifier.height(18.dp))
+                                    Text(
+                                        specialNotice,
+                                        color = Color(0xFFFFEE58),
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyLarge
                                     )
                                 }
                                 Spacer(Modifier.height(8.dp))
@@ -553,8 +616,17 @@ class AutoPatchTab : Tab("auto_patch") {
                                             .padding(top = 20.dp)
                                     ) {
                                         Surface(
-                                            Modifier.fillMaxWidth(),
-                                            shape = RoundedCornerShape(24.dp),
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .border(
+                                                    width = 2.8.dp,
+                                                    brush = Brush.sweepGradient(
+                                                        neonColors,
+                                                        center = Offset.Zero
+                                                    ),
+                                                    shape = RoundedCornerShape(24.dp)
+                                                )
+                                                .clip(RoundedCornerShape(24.dp)),
                                             color = MaterialTheme.colorScheme.surface,
                                             tonalElevation = 4.dp
                                         ) {
@@ -576,7 +648,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                                         if (highlight)
                                                             Text(
                                                                 text = line,
-                                                                color = MaterialTheme.colorScheme.primary,
+                                                                color = Color(0xFFFFF176),
                                                                 fontWeight = FontWeight.Bold,
                                                                 style = MaterialTheme.typography.bodyMedium
                                                             )
@@ -744,8 +816,14 @@ If you don't do this, your account may be locked!
                                         .padding(top = 20.dp)
                                 ) {
                                     Surface(
-                                        Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(24.dp),
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .border(
+                                                width = 3.dp,
+                                                brush = borderBrush,
+                                                shape = RoundedCornerShape(24.dp)
+                                            )
+                                            .clip(RoundedCornerShape(24.dp)),
                                         color = MaterialTheme.colorScheme.surface,
                                         tonalElevation = 4.dp
                                     ) {
@@ -765,7 +843,7 @@ If you don't do this, your account may be locked!
                                                     if (highlight)
                                                         Text(
                                                             text = line,
-                                                            color = MaterialTheme.colorScheme.primary,
+                                                            color = Color(0xFFFFF176),
                                                             fontWeight = FontWeight.Bold,
                                                             style = MaterialTheme.typography.bodyMedium
                                                         )
