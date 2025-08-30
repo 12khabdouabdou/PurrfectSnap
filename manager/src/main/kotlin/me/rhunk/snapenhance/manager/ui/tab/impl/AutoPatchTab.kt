@@ -10,18 +10,28 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CompletableDeferred
@@ -40,9 +50,6 @@ import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
-
-// DataStore imports
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -76,19 +83,18 @@ class AutoPatchTab : Tab("auto_patch") {
         val activity = context as? Activity
         val scope = remember { CoroutineScope(Dispatchers.IO) }
         val scrollState = rememberScrollState()
-
         var phase by remember { mutableStateOf(Phase.Idle) }
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(-1f) }
         var showTestModeDialog by remember { mutableStateOf(false) }
         var showTestModeNoMsg by remember { mutableStateOf(false) }
 
+        // Restore (persisted) state only at first launch
         LaunchedEffect(Unit) {
             val prefs = context.dataStore.data.first()
             phase = runCatching { Phase.valueOf(prefs[KEY_PHASE] ?: Phase.Idle.name) }.getOrElse { Phase.Idle }
             status = prefs[KEY_STATUS] ?: ""
         }
-
         fun persistState(newPhase: Phase? = null, newStatus: String? = null) {
             scope.launch {
                 context.dataStore.edit { prefs ->
@@ -97,7 +103,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 }
             }
         }
-
         val longClient = remember {
             OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
@@ -106,7 +111,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 .callTimeout(10, TimeUnit.MINUTES)
                 .build()
         }
-
         fun log(any: Any?) {
             val msg = when (any) {
                 is Throwable -> any.message + "\n" + any.stackTraceToString()
@@ -115,7 +119,6 @@ class AutoPatchTab : Tab("auto_patch") {
             status += msg + "\n"
             persistState(newStatus = status)
         }
-
         data class AssetResult(
             val snapEnhanceName: String, val snapEnhanceUrl: String,
             val coreName: String, val coreUrl: String
@@ -138,12 +141,13 @@ class AutoPatchTab : Tab("auto_patch") {
                     Regex("\\baarch64\\b", RegexOption.IGNORE_CASE),
                     Regex("\\bv8a\\b", RegexOption.IGNORE_CASE)
                 )
-            else listOf(
-                Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE),
-                Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
-                Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
-                Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
-            )
+            else
+                listOf(
+                    Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE),
+                    Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
+                    Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
+                    Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
+                )
         fun verifyApkMatchesAbi(apk: File, desiredLibDir: String): Boolean =
             try { ZipFile(apk).use { zf -> zf.entries().asSequence().any { it.name.startsWith("lib/$desiredLibDir/") } } }
             catch (_: Throwable) { false }
@@ -333,7 +337,6 @@ class AutoPatchTab : Tab("auto_patch") {
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
-
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "12.33.1.19"
                     log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
@@ -348,7 +351,6 @@ class AutoPatchTab : Tab("auto_patch") {
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download Snapchat")
                     log("Downloaded Snapchat -> ${snapchatApk.absolutePath}")
-
                     log("Warming up patch server (free cold start may take ~30–60s)...")
                     warmUpServer("https://auto-patch-server.onrender.com/health")
                     log("Uploading for patch (only core.apk and Snapchat APK)...")
@@ -382,7 +384,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 }
             }
         }
-
         fun startPatchV13() {
             scope.launch {
                 setPhase(Phase.Patching13)
@@ -412,7 +413,6 @@ class AutoPatchTab : Tab("auto_patch") {
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download Snapchat (13.51)")
                     log("Downloaded Snapchat 13.51 -> ${snapchatApk.absolutePath}")
-
                     log("Warming up patch server...")
                     warmUpServer("https://auto-patch-server.onrender.com/health")
                     log("Uploading for patch (core.apk and Snapchat 13.51 APK)...")
@@ -444,141 +444,233 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
 
-
-        // ---- MAIN UI PHASE FLOW ----
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            when (phase) {
-                Phase.Idle -> {
-                    Button(onClick = { startPatchV12() }, Modifier.fillMaxWidth()) {
-                        Text("Start Auto Patch")
-                    }
-                }
-                Phase.Patching12, Phase.Patching13 -> {
-                    Text("Patching and installing, please wait…", Modifier.padding(8.dp))
-                }
-                Phase.AwaitingLogin -> {
-                    Text("Login required", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        "Please open Snapchat, log in and verify your account.\nOnce done, return to this app and press Login Done below to continue.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    Button(
-                        onClick = { showTestModeDialog = true },
-                        Modifier.fillMaxWidth()
-                    ) {
-                        Text("Login Done")
-                    }
-                }
-                Phase.TestModeDialog -> {
-                    // See dialog overlay below!
-                }
-                Phase.Disclaimer -> {
-                    Card(
-                        Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .padding(12.dp)
-                    ) {
-                        Column(
+        // --- Modern, visually appealing UI ---
+        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceVariant) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 18.dp, horizontal = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(Modifier.height(2.dp))
+                when (phase) {
+                    Phase.Idle -> {
+                        Card(
                             Modifier
-                                .verticalScroll(scrollState)
-                                .padding(20.dp)
+                                .shadow(8.dp, RoundedCornerShape(18.dp))
+                                .padding(16.dp)
                         ) {
-                            Text("Important: Test Mode Warning", fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                """
-Before you proceed, you *MUST* turn OFF "Test mode" under SnapEnhance settings!
-
-**Why?**
-
-- "Test mode" is only needed for the login step on Snapchat 12.33.
-- With Test mode ON, all patches/modules are in a highly visible state for debugging.
-- **On latest Snapchat versions, if Test mode is ON, your account WILL be flagged and likely banned.**
-- Test mode disables several anti-detection protections.
-
-**What does this mean for you?**
-- You were asked to enable Test mode to get login working on 12.33 -- that version is safe because there are no new detections.
-- On newer Snapchat, TEST MODE _MUST_ BE OFF before patching and logging in to avoid bans!
-- If you are unsure: Open SnapEnhance, go to Settings, and make 100% certain Test mode is disabled.
-- We cannot help you recover the account if you ignore this!
-
-**Summary: Only use Test mode for the first login, and ALWAYS disable it before continuing to patch Snapchat 13.51 or using the SnapEnhance module on new versions.**
-
-Scroll down and press confirm only if you have already disabled Test mode in SnapEnhance.
-                                """.trimIndent(),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Spacer(Modifier.height(40.dp))
-                            Button(
-                                onClick = { startPatchV13() },
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            Column(
+                                Modifier.padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("Yes, I understand. I have turned off test mode, let's proceed")
+                                Text("Welcome!", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium)
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    "This tool helps you safely patch Snapchat in two phases.\nYou'll be guided step by step.",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(Modifier.height(32.dp))
+                                Button(onClick = { startPatchV12() }, Modifier.fillMaxWidth()) {
+                                    Text("Start Auto Patch")
+                                }
                             }
                         }
                     }
+                    Phase.Patching12, Phase.Patching13 -> {
+                        Text(
+                            text = "Patience, magic is happening...",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(vertical = 10.dp)
+                        )
+                        LinearProgressIndicator(
+                            progress = { if (progress >= 0f) progress else 0.1f },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(16.dp)),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text("Processing...", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Phase.AwaitingLogin -> {
+                        Icon(Icons.Filled.DoneAll, contentDescription = "", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+                        Spacer(Modifier.height(8.dp))
+                        Text("Login To Snapchat", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                        Spacer(Modifier.height(10.dp))
+                        Card(
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
+                            elevation = CardDefaults.cardElevation(8.dp)
+                        ) {
+                            Column(Modifier.padding(20.dp)) {
+                                Text(
+                                    "1. Open Snapchat and log in fully\n2. Ignore any prompts from SnapEnhance\n3. When completed, switch back here.\n4. Press 'Login Done' below.",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(28.dp))
+                        Button(
+                            onClick = { showTestModeDialog = true },
+                            shape = RoundedCornerShape(14.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Login Done")
+                        }
+                    }
+                    Phase.Disclaimer -> {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        0.3f to MaterialTheme.colorScheme.secondaryContainer,
+                                        1f to MaterialTheme.colorScheme.background
+                                    ),
+                                    RoundedCornerShape(24.dp)
+                                )
+                                .padding(12.dp)
+                        ) {
+                            Column(
+                                Modifier
+                                    .verticalScroll(scrollState)
+                                    .fillMaxWidth()
+                                    .align(Alignment.Center)
+                                    .padding(bottom = 20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "⚠️ Important: Test Mode Warning",
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                                Spacer(Modifier.height(18.dp))
+                                Text(
+                                    """
+Before you proceed, you *MUST* turn OFF "Test mode" in SnapEnhance settings!
+
+**Why?**
+- "Test mode" is only required for logging into 12.33.
+- ON NEWER VERSIONS, "test mode" allows detection and will cause your account to be BANNED.
+- You MUST turn test mode OFF now before we continue.
+
+If you haven't already:
+  • Open SnapEnhance settings
+  • Ensure "Test Mode" is toggled OFF
+  • Proceed ONLY if you're 100% sure
+
+If you don't do this, your account may be permanently lost—there's no recovery!
+                                    """.trimIndent(),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Spacer(Modifier.height(34.dp))
+                                Button(
+                                    onClick = { startPatchV13() },
+                                    shape = RoundedCornerShape(24.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp)
+                                ) {
+                                    Text("Yes, I understand. Test mode is OFF. Let's proceed!")
+                                }
+                            }
+                        }
+                    }
+                    Phase.Finished -> {
+                        Icon(
+                            painter = rememberVectorPainter(Icons.Filled.DoneAll),
+                            tint = MaterialTheme.colorScheme.primary,
+                            contentDescription = null,
+                            modifier = Modifier.size(62.dp)
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text("All done!", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
+                        Text(
+                            "Snapchat is patched. You can safely use all features now.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(vertical = 10.dp)
+                        )
+                        Spacer(Modifier.height(20.dp))
+                        Button(
+                            onClick = {
+                                setPhase(Phase.Idle)
+                                status = ""
+                                persistState(newStatus = "")
+                            },
+                            Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(18.dp)
+                        ) {
+                            Text("Back to Home")
+                        }
+                    }
+                    Phase.Error -> {
+                        Icon(Icons.Filled.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(40.dp))
+                        Text("An error occurred", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(12.dp))
+                        Text("Please review the log below for details.", style = MaterialTheme.typography.bodyLarge)
+                        Spacer(Modifier.height(24.dp))
+                        Button(
+                            onClick = {
+                                setPhase(Phase.Idle)
+                                status = ""
+                                persistState(newStatus = "")
+                            },
+                            Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Retry", color = MaterialTheme.colorScheme.onError)
+                        }
+                    }
+                    else -> {}
                 }
-                Phase.Finished -> {
-                    Text("✨ All done! You may now use the patched Snapchat.", color = MaterialTheme.colorScheme.primary)
-                    Button(
-                        onClick = {
-                            setPhase(Phase.Idle)
-                            status = ""
-                            persistState(newStatus = "")
-                        },
-                        Modifier.fillMaxWidth()
+                if (status.isNotBlank()) {
+                    Spacer(Modifier.height(18.dp))
+                    Surface(
+                        Modifier
+                            .fillMaxWidth()
+                            .shadow(4.dp, RoundedCornerShape(24.dp)),
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(24.dp)
                     ) {
-                        Text("Back to Home")
+                        Column(
+                            Modifier
+                                .padding(18.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            Text(
+                                status.trim(),
+                                style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp),
+                                color = MaterialTheme.colorScheme.onSurface,
+                                overflow = TextOverflow.Visible
+                            )
+                        }
                     }
                 }
-                Phase.Error -> {
-                    Text("❌ An error occurred. Check the log for details.", color = MaterialTheme.colorScheme.error)
-                    Button(
-                        onClick = {
-                            setPhase(Phase.Idle)
-                            status = ""
-                            persistState(newStatus = "")
-                        },
-                        Modifier.fillMaxWidth()
-                    ) {
-                        Text("Retry")
-                    }
+                if (progress >= 0f && (phase == Phase.Patching12 || phase == Phase.Patching13)) {
+                    Spacer(Modifier.height(8.dp))
+                    LinearProgressIndicator(
+                        progress = progress,
+                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(16.dp)),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
-            if (status.isNotBlank()) {
-                Card(Modifier.weight(1f).padding(8.dp)) {
-                    Column(Modifier.verticalScroll(scrollState).padding(8.dp)) {
-                        Text(status, overflow = TextOverflow.Visible)
-                    }
-                }
-            }
-            if (progress >= 0f) {
-                LinearProgressIndicator(
-                    progress = progress,
-                    modifier = Modifier.fillMaxWidth().height(8.dp),
-                    strokeCap = StrokeCap.Round
-                )
-            }
-            // Dialog for test mode confirmation AFTER LOGIN
+
+            // Dialogs, always at end/root of UI tree
             if (showTestModeDialog) {
                 AlertDialog(
                     onDismissRequest = { showTestModeDialog = false },
                     title = { Text("Have you turned OFF Test mode in SnapEnhance settings?") },
-                    text = { Text("Test mode must be OFF before continuing or you may get banned!") },
+                    text = { Text("Test mode must be OFF before continuing — leaving it ON will highly likely result in a Snapchat ban.") },
                     confirmButton = {
                         TextButton(onClick = {
                             showTestModeDialog = false
                             setPhase(Phase.Disclaimer)
-                        }) { Text("Yes") }
+                        }) { Text("Yes, test mode is OFF") }
                     },
                     dismissButton = {
                         TextButton(onClick = {
@@ -591,15 +683,14 @@ Scroll down and press confirm only if you have already disabled Test mode in Sna
             if (showTestModeNoMsg) {
                 AlertDialog(
                     onDismissRequest = { showTestModeNoMsg = false },
-                    title = { Text("Turn off Test mode first!") },
-                    text = { Text("Please open SnapEnhance settings and ensure Test mode is turned OFF before continuing.") },
+                    title = { Text("Turn off Test mode!") },
+                    text = { Text("Please, open SnapEnhance settings and switch OFF Test mode before continuing. This step is critical!") },
                     confirmButton = {
                         TextButton(onClick = { showTestModeNoMsg = false }) { Text("OK") }
                     },
                     dismissButton = {}
                 )
             }
-            LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
         }
         BackHandler(enabled = (phase == Phase.Patching12 || phase == Phase.Patching13)) { }
     }
