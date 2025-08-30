@@ -42,6 +42,8 @@ class AutoPatchTab : Tab("auto_patch") {
     private lateinit var installLauncher: ActivityResultLauncher<Intent>
     private var installDeferred: CompletableDeferred<Int>? = null
 
+    enum class Phase { Idle, Patching12, AwaitingLogin, Patching13, Finished, Error }
+
     override fun init(activity: ComponentActivity) {
         super.init(activity)
         installLauncher = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -58,13 +60,11 @@ class AutoPatchTab : Tab("auto_patch") {
 
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(-1f) }
-        var isRunning by remember { mutableStateOf(false) }
-        var isDone by remember { mutableStateOf(false) }
+        var phase by remember { mutableStateOf(Phase.Idle) }
         var isError by remember { mutableStateOf(false) }
         val scrollState = rememberScrollState()
         var showDialog by remember { mutableStateOf(false) }
 
-        // Long-timeout OkHttp client for large uploads and cold starts
         val longClient = remember {
             OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
@@ -123,7 +123,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 if (!resp.isSuccessful) return null
                 val body = resp.body?.string() ?: return null
                 val arr = JSONArray(body)
-                // Find latest prerelease with matching SnapEnhance ABI and core.apk
                 for (i in 0 until arr.length()) {
                     val obj = arr.getJSONObject(i)
                     if (!obj.optBoolean("prerelease", false)) continue
@@ -174,7 +173,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 return out
             }
         }
-
         fun downloadWithDoh(url: String, toDir: File, onProgress: (Float) -> Unit): File? {
             val dohClient = APKMirror().okhttpClient.newBuilder()
                 .connectTimeout(60, TimeUnit.SECONDS)
@@ -202,7 +200,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 return out
             }
         }
-
         suspend fun findSnapchatVersionItem(
             apkMirror: APKMirror,
             targetVersion: String,
@@ -222,8 +219,6 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             return null
         }
-
-        // Robust package presence check (fallback if result code is unreliable)
         fun isPackageInstalled(pkg: String): Boolean {
             return try {
                 val pm = context.packageManager
@@ -238,8 +233,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 false
             }
         }
-
-        // Install with Activity Result API and fallback poll of PackageManager
         suspend fun installPackage(file: File, packageName: String): Boolean {
             if (sharedConfig.useRootInstaller) {
                 val res = Shell.cmd(
@@ -248,39 +241,23 @@ class AutoPatchTab : Tab("auto_patch") {
                     "rm \"/data/local/tmp/${file.name}\""
                 ).exec()
                 if (res.isSuccess) return true
-                // If root install reports failure, still check if the package appeared
-                repeat(10) { // ~10s fallback poll
-                    if (isPackageInstalled(packageName)) return true
-                    Thread.sleep(1000)
-                }
+                repeat(10) { if (isPackageInstalled(packageName)) return true; Thread.sleep(1000) }
                 return false
             }
-
             val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
             val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
                 data = uri
                 flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                // Ask the package installer to return a result
                 putExtra(Intent.EXTRA_RETURN_RESULT, true)
             }
-
             val deferred = CompletableDeferred<Int>()
             installDeferred = deferred
-            // Launch via Activity Result API (reliable callback)
             installLauncher.launch(intent)
-
-            // Await result; RESULT_OK indicates success
             val resultCode = deferred.await()
             if (resultCode == Activity.RESULT_OK) return true
-
-            // Fallback: poll PackageManager in case some OEMs don’t return proper result codes
-            repeat(15) { // ~15s poll
-                if (isPackageInstalled(packageName)) return true
-                Thread.sleep(1000)
-            }
+            repeat(15) { if (isPackageInstalled(packageName)) return true; Thread.sleep(1000) }
             return false
         }
-
         fun warmUpServer(baseUrl: String, maxWaitMs: Long = 120_000L, intervalMs: Long = 3000L): Boolean {
             val warmClient = longClient.newBuilder()
                 .connectTimeout(30, TimeUnit.SECONDS)
@@ -295,28 +272,20 @@ class AutoPatchTab : Tab("auto_patch") {
                     warmClient.newCall(req).execute().use { resp ->
                         if (resp.isSuccessful) return true
                     }
-                } catch (_: Throwable) {
-                    // ignore and retry
-                }
-                try {
-                    Thread.sleep(intervalMs)
-                } catch (_: InterruptedException) {
-                    break
-                }
+                } catch (_: Throwable) {}
+                try { Thread.sleep(intervalMs) } catch (_: InterruptedException) { break }
             }
             return false
         }
 
-        fun startPatchAndInstall() {
+        fun startPatchV12() {
             scope.launch {
+                phase = Phase.Patching12
+                status = ""; progress = -1f; isError = false
                 try {
                     val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
-
-                    // 1) Detect ABI
                     val abi = detectAbiChoice()
                     log("Detected ABI: ${abi.desiredLibDir}")
-
-                    // 2) Download SnapEnhance + core.apk from latest prerelease
                     log("Looking for SnapEnhance & core.apk release assets...")
                     val assets = fetchSnapEnhanceAndCoreAssets(abi.assetLabel)
                         ?: throw RuntimeException("No SnapEnhance/core.apk pair found in prereleases for ABI: ${abi.assetLabel}")
@@ -326,13 +295,11 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download SnapEnhance")
                     if (!verifyApkMatchesAbi(seApk, abi.desiredLibDir)) throw RuntimeException("SnapEnhance APK does not match ABI")
                     log("SnapEnhance APK ready.")
-
                     log("Downloading core.apk (no ABI check needed)...")
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
 
-                    // 3) Download Snapchat 12.33.1.19 using APKMirror flow
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "12.33.1.19"
                     log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
@@ -348,12 +315,8 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download Snapchat")
                     log("Downloaded Snapchat -> ${snapchatApk.absolutePath}")
 
-                    // 4) Warm up free server
                     log("Warming up patch server (free cold start may take ~30–60s)...")
-                    val warmed = warmUpServer("https://auto-patch-server.onrender.com/health")
-                    if (!warmed) log("Proceeding with upload despite warm-up not confirming; long timeouts will handle cold start.")
-
-                    // 5) Upload only core.apk and Snapchat APK for patching
+                    warmUpServer("https://auto-patch-server.onrender.com/health")
                     log("Uploading for patch (only core.apk and Snapchat APK)...")
                     progress = -1f
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
@@ -369,26 +332,78 @@ class AutoPatchTab : Tab("auto_patch") {
                             val err = response.body?.string()?.take(2000) ?: ""
                             throw RuntimeException("Server failed patch: code=${response.code}, message=${response.message}, body=${err}")
                         }
-                        val patchedFile = File(cacheDir, "PatchedSnapchat.apk")
-                        response.body?.byteStream()?.use { input ->
-                            patchedFile.outputStream().use { output -> input.copyTo(output) }
-                        }
+                        val patchedFile = File(cacheDir, "PatchedSnapchat12.apk")
+                        response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
                         log("Patched Snapchat APK received. Installing...")
-
-                        // 6) Install SnapEnhance first (robust, waits for result and/or polls PM)
                         if (!installPackage(seApk, sharedConfig.snapEnhancePackageName)) throw RuntimeException("SnapEnhance install failed")
                         log("SnapEnhance installed.")
-
-                        // 7) Install patched Snapchat (same robust flow)
-                        if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat install failed")
-                        log("Patched Snapchat installed. Done!")
-                        isDone = true
+                        if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat (12.33) install failed")
+                        log("Patched Snapchat 12.33 installed.")
+                        log("Please login to Snapchat 12.33, then return here and press Login Done below.")
+                        phase = Phase.AwaitingLogin
                     }
                 } catch (t: Throwable) {
                     log("ERROR: ${t.message}")
-                    isError = true
-                } finally {
-                    isRunning = false
+                    phase = Phase.Error
+                }
+            }
+        }
+        fun startPatchV13() {
+            scope.launch {
+                phase = Phase.Patching13
+                status = ""; progress = -1f; isError = false
+                try {
+                    val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
+                    val abi = detectAbiChoice()
+                    log("Downloading core.apk (latest) for 13.51...")
+                    val assets = fetchSnapEnhanceAndCoreAssets(abi.assetLabel)
+                        ?: throw RuntimeException("No SnapEnhance/core.apk pair found in prereleases for ABI: ${abi.assetLabel}")
+                    val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir) { progress = it }
+                        ?: throw RuntimeException("Failed to download core.apk")
+                    log("core.apk ready.")
+
+                    val apkMirror = APKMirror()
+                    val snapchatTargetVersion = "13.51.0.56"
+                    log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
+                    val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion)
+                        ?: throw RuntimeException("Snapchat version $snapchatTargetVersion not found on APKMirror.")
+                    log("Found version: ${versionItem.title} (${versionItem.releaseDate})")
+                    log("Resolving download link...")
+                    val realSnapchatUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
+                        ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
+                    log("Downloading Snapchat from resolved URL: $realSnapchatUrl")
+                    progress = 0f
+                    val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
+                        ?: throw RuntimeException("Failed to download Snapchat (13.51)")
+                    log("Downloaded Snapchat 13.51 -> ${snapchatApk.absolutePath}")
+
+                    log("Warming up patch server...")
+                    warmUpServer("https://auto-patch-server.onrender.com/health")
+                    log("Uploading for patch (core.apk and Snapchat 13.51 APK)...")
+                    progress = -1f
+                    val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
+                        .addFormDataPart("apk", "snapchat.apk", snapchatApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
+                        .build()
+                    val request = Request.Builder()
+                        .url("https://auto-patch-server.onrender.com/patch")
+                        .post(reqBody)
+                        .build()
+                    longClient.newCall(request).execute().use { response ->
+                        if (!response.isSuccessful) {
+                            val err = response.body?.string()?.take(2000) ?: ""
+                            throw RuntimeException("Server failed patch: code=${response.code}, message=${response.message}, body=${err}")
+                        }
+                        val patchedFile = File(cacheDir, "PatchedSnapchat13.apk")
+                        response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
+                        log("Patched Snapchat 13.51 APK received. Installing...")
+                        if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat 13.51 install failed")
+                        log("Patched Snapchat 13.51 installed. All steps complete!")
+                        phase = Phase.Finished
+                    }
+                } catch (t: Throwable) {
+                    log("ERROR: ${t.message}")
+                    phase = Phase.Error
                 }
             }
         }
@@ -400,43 +415,46 @@ class AutoPatchTab : Tab("auto_patch") {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            if (!isRunning && !isDone && !isError) {
-                Button(onClick = { showDialog = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Start Auto Patch")
+            when (phase) {
+                Phase.Idle -> {
+                    Button(onClick = { startPatchV12() }, Modifier.fillMaxWidth()) {
+                        Text("Start Auto Patch")
+                    }
+                }
+                Phase.Patching12, Phase.Patching13 -> {
+                    Text("Patching and installing, please wait…", Modifier.padding(8.dp))
+                }
+                Phase.AwaitingLogin -> {
+                    Text("Login required", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "Please open Snapchat, log in and verify your account.\nOnce done, return to this app and press the button below to continue.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Button(
+                        onClick = { startPatchV13() },
+                        Modifier.fillMaxWidth()
+                    ) {
+                        Text("Login Done")
+                    }
+                }
+                Phase.Finished -> {
+                    Text("✨ All done! You may now use the patched Snapchat.", color = MaterialTheme.colorScheme.primary)
+                    Button(onClick = { navigation.navigateTo(HomeTab::class, noHistory = true) }, Modifier.fillMaxWidth()) {
+                        Text("Back to Home")
+                    }
+                }
+                Phase.Error -> {
+                    Text("❌ An error occurred. Check the log for details.", color = MaterialTheme.colorScheme.error)
+                    Button(onClick = { phase = Phase.Idle }, Modifier.fillMaxWidth()) {
+                        Text("Retry")
+                    }
                 }
             }
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    title = { Text("Continue with Auto Patch?") },
-                    text = { Text("Are you sure you want to patch Snapchat?") },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            showDialog = false
-                            isRunning = true
-                            status = ""
-                            isDone = false
-                            isError = false
-                            startPatchAndInstall()
-                        }) { Text("Yes") }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDialog = false }) { Text("No") }
-                    }
-                )
-            }
             if (status.isNotBlank()) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(8.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .verticalScroll(scrollState)
-                            .padding(8.dp)
-                    ) {
+                Card(Modifier.weight(1f).padding(8.dp)) {
+                    Column(Modifier.verticalScroll(scrollState).padding(8.dp)) {
                         Text(status, overflow = TextOverflow.Visible)
                     }
                 }
@@ -444,23 +462,12 @@ class AutoPatchTab : Tab("auto_patch") {
             if (progress >= 0f) {
                 LinearProgressIndicator(
                     progress = progress,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp),
+                    modifier = Modifier.fillMaxWidth().height(8.dp),
                     strokeCap = StrokeCap.Round
                 )
             }
-            if (isDone || isError) {
-                Button(
-                    onClick = { navigation.navigateTo(HomeTab::class, noHistory = true) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (isDone) "Back to Home" else "Close")
-                }
-            }
             LaunchedEffect(status) { scrollState.scrollTo(scrollState.maxValue) }
         }
-
-        BackHandler(enabled = isRunning) { /* block back while running */ }
+        BackHandler(enabled = (phase == Phase.Patching12 || phase == Phase.Patching13)) { /* block back while running */ }
     }
 }
