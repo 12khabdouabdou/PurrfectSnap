@@ -10,7 +10,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,10 +29,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -66,7 +73,9 @@ class AutoPatchTab : Tab("auto_patch") {
     }
 
     enum class Phase {
-        Idle, Patching12, AwaitingLogin, TestModeDialog, Disclaimer, Patching13, Finished, Error
+        Idle,
+        Patching12, SearchingV12, Uploading12, AwaitingLogin, TestModeDialog, Disclaimer,
+        Patching13, SearchingV13, Uploading13, Finished, Error
     }
 
     override fun init(activity: ComponentActivity) {
@@ -89,7 +98,7 @@ class AutoPatchTab : Tab("auto_patch") {
         var showTestModeDialog by remember { mutableStateOf(false) }
         var showTestModeNoMsg by remember { mutableStateOf(false) }
 
-        // Restore (persisted) state only at first launch
+        // Restore persisted state on fresh launch
         LaunchedEffect(Unit) {
             val prefs = context.dataStore.data.first()
             phase = runCatching { Phase.valueOf(prefs[KEY_PHASE] ?: Phase.Idle.name) }.getOrElse { Phase.Idle }
@@ -103,6 +112,7 @@ class AutoPatchTab : Tab("auto_patch") {
                 }
             }
         }
+
         val longClient = remember {
             OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
@@ -111,6 +121,7 @@ class AutoPatchTab : Tab("auto_patch") {
                 .callTimeout(10, TimeUnit.MINUTES)
                 .build()
         }
+
         fun log(any: Any?) {
             val msg = when (any) {
                 is Throwable -> any.message + "\n" + any.stackTraceToString()
@@ -132,22 +143,22 @@ class AutoPatchTab : Tab("auto_patch") {
                 else -> AbiChoice("armv8", "arm64-v8a")
             }
         }
-        fun patternsFor(assetLabel: String): List<Regex> =
-            if (assetLabel == "armv8")
-                listOf(
-                    Regex("arm64[-_]?v8a", RegexOption.IGNORE_CASE),
-                    Regex("\\barm64\\b", RegexOption.IGNORE_CASE),
-                    Regex("\\barmv8\\b", RegexOption.IGNORE_CASE),
-                    Regex("\\baarch64\\b", RegexOption.IGNORE_CASE),
-                    Regex("\\bv8a\\b", RegexOption.IGNORE_CASE)
-                )
-            else
-                listOf(
-                    Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE),
-                    Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
-                    Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
-                    Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
-                )
+        fun patternsFor(assetLabel: String): List<Regex> = if (assetLabel == "armv8")
+            listOf(
+                Regex("arm64[-_]?v8a", RegexOption.IGNORE_CASE),
+                Regex("\\barm64\\b", RegexOption.IGNORE_CASE),
+                Regex("\\barmv8\\b", RegexOption.IGNORE_CASE),
+                Regex("\\baarch64\\b", RegexOption.IGNORE_CASE),
+                Regex("\\bv8a\\b", RegexOption.IGNORE_CASE)
+            )
+        else
+            listOf(
+                Regex("armeabi[-_]?v7a", RegexOption.IGNORE_CASE),
+                Regex("\\barmv7\\b", RegexOption.IGNORE_CASE),
+                Regex("\\barmeabi\\b", RegexOption.IGNORE_CASE),
+                Regex("\\bv7a\\b", RegexOption.IGNORE_CASE)
+            )
+
         fun verifyApkMatchesAbi(apk: File, desiredLibDir: String): Boolean =
             try { ZipFile(apk).use { zf -> zf.entries().asSequence().any { it.name.startsWith("lib/$desiredLibDir/") } } }
             catch (_: Throwable) { false }
@@ -251,6 +262,7 @@ class AutoPatchTab : Tab("auto_patch") {
             }
             return null
         }
+
         fun isPackageInstalled(pkg: String): Boolean {
             return try {
                 val pm = context.packageManager
@@ -337,24 +349,27 @@ class AutoPatchTab : Tab("auto_patch") {
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
+
+                    setPhase(Phase.SearchingV12)
+                    log("Searching APKMirror for Snapchat 12.33.1.19 (This is an old APK, so resolving the download link may take 3~4 minutes)...")
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "12.33.1.19"
-                    log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
                     val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion, 100)
                         ?: throw RuntimeException("Snapchat version $snapchatTargetVersion not found on APKMirror.")
                     log("Found version: ${versionItem.title} (${versionItem.releaseDate})")
                     log("Resolving download link...")
                     val realSnapchatUrl = apkMirror.fetchDownloadLink(versionItem.downloadPage)
                         ?: throw RuntimeException("Could not resolve Snapchat APK download link from APKMirror")
+
                     log("Downloading Snapchat from resolved URL: $realSnapchatUrl")
                     progress = 0f
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download Snapchat")
                     log("Downloaded Snapchat -> ${snapchatApk.absolutePath}")
-                    log("Warming up patch server (free cold start may take ~30–60s)...")
+
+                    setPhase(Phase.Uploading12)
+                    log("Uploading for patch (only core.apk and Snapchat APK)... This will take 3–4 minutes depending on your network and server load.")
                     warmUpServer("https://auto-patch-server.onrender.com/health")
-                    log("Uploading for patch (only core.apk and Snapchat APK)...")
-                    progress = -1f
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .addFormDataPart("apk", "snapchat.apk", snapchatApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -370,12 +385,19 @@ class AutoPatchTab : Tab("auto_patch") {
                         }
                         val patchedFile = File(cacheDir, "PatchedSnapchat12.apk")
                         response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
-                        log("Patched Snapchat APK received. Installing...")
+                        log("Patched Snapchat 12.33 APK received. Installing...")
                         if (!installPackage(seApk, sharedConfig.snapEnhancePackageName)) throw RuntimeException("SnapEnhance install failed")
                         log("SnapEnhance installed.")
                         if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat (12.33) install failed")
                         log("Patched Snapchat 12.33 installed.")
-                        log("Please login to Snapchat 12.33, then return here and press Login Done below.")
+                        log(
+                            """
+Open SnapEnhance and complete its setup. If any mapping error appears, just ignore it and continue!
+After that, go to SnapEnhance settings and ENABLE Test Mode.
+Now open Snapchat and login. If you see "temporarily disabled", go to Snapchat's App Info, Force Stop it, and try again.
+After a successful login, go to SnapEnhance and TURN OFF Test Mode. Return here to continue.
+                            """.trimIndent()
+                        )
                         setPhase(Phase.AwaitingLogin)
                     }
                 } catch (t: Throwable) {
@@ -384,6 +406,7 @@ class AutoPatchTab : Tab("auto_patch") {
                 }
             }
         }
+
         fun startPatchV13() {
             scope.launch {
                 setPhase(Phase.Patching13)
@@ -399,9 +422,10 @@ class AutoPatchTab : Tab("auto_patch") {
                         ?: throw RuntimeException("Failed to download core.apk")
                     log("core.apk ready.")
 
+                    setPhase(Phase.SearchingV13)
+                    log("Searching APKMirror for Snapchat 13.51.0.56...")
                     val apkMirror = APKMirror()
                     val snapchatTargetVersion = "13.51.0.56"
-                    log("Searching APKMirror for Snapchat $snapchatTargetVersion...")
                     val versionItem = findSnapchatVersionItem(apkMirror, snapchatTargetVersion, 100)
                         ?: throw RuntimeException("Snapchat version $snapchatTargetVersion not found on APKMirror.")
                     log("Found version: ${versionItem.title} (${versionItem.releaseDate})")
@@ -413,10 +437,10 @@ class AutoPatchTab : Tab("auto_patch") {
                     val snapchatApk = downloadWithDoh(realSnapchatUrl, cacheDir) { progress = it }
                         ?: throw RuntimeException("Failed to download Snapchat (13.51)")
                     log("Downloaded Snapchat 13.51 -> ${snapchatApk.absolutePath}")
-                    log("Warming up patch server...")
+
+                    setPhase(Phase.Uploading13)
+                    log("Uploading core.apk and Snapchat 13.51 APK to patch server... This takes 3–4 minutes depending on your network and server load.")
                     warmUpServer("https://auto-patch-server.onrender.com/health")
-                    log("Uploading for patch (core.apk and Snapchat 13.51 APK)...")
-                    progress = -1f
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .addFormDataPart("apk", "snapchat.apk", snapchatApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -434,7 +458,7 @@ class AutoPatchTab : Tab("auto_patch") {
                         response.body?.byteStream()?.use { input -> patchedFile.outputStream().use { output -> input.copyTo(output) } }
                         log("Patched Snapchat 13.51 APK received. Installing...")
                         if (!installPackage(patchedFile, sharedConfig.snapchatPackageName)) throw RuntimeException("Patched Snapchat 13.51 install failed")
-                        log("Patched Snapchat 13.51 installed. All steps complete!")
+                        log("Patched Snapchat 13.51 installed. All steps complete!\nOpen SnapEnhance and let it regenerate mappings, then open Snapchat and enjoy!")
                         setPhase(Phase.Finished)
                     }
                 } catch (t: Throwable) {
@@ -449,69 +473,100 @@ class AutoPatchTab : Tab("auto_patch") {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(vertical = 18.dp, horizontal = 8.dp),
+                    .padding(top = 0.dp, bottom = 10.dp, start = 6.dp, end = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(Modifier.height(2.dp))
+                // Modern header title
+                Text(
+                    text = "auto_patch",
+                    style = MaterialTheme.typography.displaySmall.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 18.dp, bottom = 16.dp)
+                )
                 when (phase) {
                     Phase.Idle -> {
                         Card(
                             Modifier
                                 .shadow(8.dp, RoundedCornerShape(18.dp))
-                                .padding(16.dp)
+                                .padding(12.dp)
                         ) {
                             Column(
                                 Modifier.padding(20.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("Welcome!", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium)
+                                Text("Welcome to Auto Patch", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium)
                                 Spacer(Modifier.height(12.dp))
                                 Text(
-                                    "This tool helps you safely patch Snapchat in two phases.\nYou'll be guided step by step.",
+                                    "Time required: Approximately 10 minutes.\n\n" +
+                                            "Please follow all steps exactly to avoid issues or bans.\n\n" +
+                                            "You'll patch Snapchat 12.33, log in, then patch 13.51. All setup steps will be explained.",
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                                 Spacer(Modifier.height(32.dp))
-                                Button(onClick = { startPatchV12() }, Modifier.fillMaxWidth()) {
+                                Button(onClick = { startPatchV12() }, Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
                                     Text("Start Auto Patch")
                                 }
                             }
                         }
                     }
-                    Phase.Patching12, Phase.Patching13 -> {
-                        Text(
-                            text = "Patience, magic is happening...",
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(vertical = 10.dp)
-                        )
-                        LinearProgressIndicator(
-                            progress = { if (progress >= 0f) progress else 0.1f },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(16.dp)),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text("Processing...", style = MaterialTheme.typography.bodyMedium)
-                    }
-                    Phase.AwaitingLogin -> {
-                        Icon(Icons.Filled.DoneAll, contentDescription = "", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
-                        Spacer(Modifier.height(8.dp))
-                        Text("Login To Snapchat", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
-                        Spacer(Modifier.height(10.dp))
-                        Card(
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
-                            elevation = CardDefaults.cardElevation(8.dp)
-                        ) {
-                            Column(Modifier.padding(20.dp)) {
+                    Phase.Patching12, Phase.Patching13, Phase.SearchingV12, Phase.SearchingV13, Phase.Uploading12, Phase.Uploading13 -> {
+                        val processMsg =
+                            when (phase) {
+                                Phase.SearchingV12 -> "Searching for Snapchat 12.33 (This may take 3-4 minutes to get the old download link)…"
+                                Phase.Uploading12, Phase.Uploading13 -> "Uploading APK(s) for patching. Please have patience: this step often takes 3–4 minutes based on your internet speed and server load."
+                                Phase.SearchingV13 -> "Searching for Snapchat 13.51.0.56—please wait…"
+                                Phase.Patching12, Phase.Patching13 -> "Patience, magic is happening…"
+                                else -> ""
+                            }
+                        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = processMsg,
+                                modifier = Modifier.padding(18.dp, 4.dp, 18.dp, 16.dp),
+                                fontWeight = FontWeight.SemiBold,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            // Modern loader (one only)
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(36.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = MaterialTheme.colorScheme.surface
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            if (phase == Phase.Uploading12 || phase == Phase.Uploading13) {
                                 Text(
-                                    "1. Open Snapchat and log in fully\n2. Ignore any prompts from SnapEnhance\n3. When completed, switch back here.\n4. Press 'Login Done' below.",
-                                    style = MaterialTheme.typography.bodyLarge
+                                    "This upload/patching operation usually takes 3–4 minutes. Please make sure you remain on this screen and keep the app open.\n",
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp, start = 2.dp, end = 2.dp)
                                 )
                             }
                         }
-                        Spacer(Modifier.height(28.dp))
+                    }
+                    Phase.AwaitingLogin -> {
+                        Icon(Icons.Filled.DoneAll, contentDescription = "", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(38.dp))
+                        Spacer(Modifier.height(10.dp))
+                        Text("Next Steps (Please follow carefully)", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                        Spacer(Modifier.height(8.dp))
+                        Card(
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface),
+                        ) {
+                            Column(Modifier.padding(18.dp)) {
+                                Text("1. Open SnapEnhance and complete initial setup (ignore mapping errors if any).", fontWeight = FontWeight.Medium)
+                                Text("2. In SnapEnhance settings, ENABLE Test mode.", fontWeight = FontWeight.Medium)
+                                Text("3. Open Snapchat and log in. If you see 'temporarily disabled', go to Snapchat App Info, Force Stop, and retry login.", fontWeight = FontWeight.Medium)
+                                Text("4. After login, in SnapEnhance, turn OFF Test mode.", fontWeight = FontWeight.Medium)
+                                Text("5. Come back here and press 'Login Done'.")
+                            }
+                        }
+                        Spacer(Modifier.height(26.dp))
                         Button(
                             onClick = { showTestModeDialog = true },
                             shape = RoundedCornerShape(14.dp),
@@ -534,11 +589,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                 .padding(12.dp)
                         ) {
                             Column(
-                                Modifier
-                                    .verticalScroll(scrollState)
-                                    .fillMaxWidth()
-                                    .align(Alignment.Center)
-                                    .padding(bottom = 20.dp),
+                                Modifier.verticalScroll(scrollState).fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
@@ -554,15 +605,15 @@ Before you proceed, you *MUST* turn OFF "Test mode" in SnapEnhance settings!
 
 **Why?**
 - "Test mode" is only required for logging into 12.33.
-- ON NEWER VERSIONS, "test mode" allows detection and will cause your account to be BANNED.
-- You MUST turn test mode OFF now before we continue.
+- ON NEWER VERSIONS, "test mode" allows detection and will cause your account to be locked!
+- You MUST turn test mode OFF before continuing.
 
 If you haven't already:
   • Open SnapEnhance settings
   • Ensure "Test Mode" is toggled OFF
   • Proceed ONLY if you're 100% sure
 
-If you don't do this, your account may be permanently lost—there's no recovery!
+If you don't do this, your account may be locked!
                                     """.trimIndent(),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface,
@@ -571,9 +622,7 @@ If you don't do this, your account may be permanently lost—there's no recovery
                                 Button(
                                     onClick = { startPatchV13() },
                                     shape = RoundedCornerShape(24.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp)
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                                 ) {
                                     Text("Yes, I understand. Test mode is OFF. Let's proceed!")
                                 }
@@ -588,9 +637,9 @@ If you don't do this, your account may be permanently lost—there's no recovery
                             modifier = Modifier.size(62.dp)
                         )
                         Spacer(Modifier.height(12.dp))
-                        Text("All done!", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
+                        Text("Done! Snapchat is patched!", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
                         Text(
-                            "Snapchat is patched. You can safely use all features now.",
+                            "To finish: Open SnapEnhance first and let it regenerate mappings. When done, open Snapchat and enjoy!",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(vertical = 10.dp)
                         )
@@ -627,19 +676,30 @@ If you don't do this, your account may be permanently lost—there's no recovery
                     }
                     else -> {}
                 }
+
+                // --- Animated/log-flash border effect ---
                 if (status.isNotBlank()) {
+                    val infiniteTransition = rememberInfiniteTransition(label = "flashAnim")
+                    val flashColor by infiniteTransition.animateColor(
+                        initialValue = MaterialTheme.colorScheme.primaryContainer,
+                        targetValue = MaterialTheme.colorScheme.primary,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1100, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "logBorderAnim"
+                    )
                     Spacer(Modifier.height(18.dp))
                     Surface(
                         Modifier
                             .fillMaxWidth()
-                            .shadow(4.dp, RoundedCornerShape(24.dp)),
+                            .shadow(4.dp, RoundedCornerShape(24.dp))
+                            .border(2.dp, flashColor, RoundedCornerShape(24.dp)),
                         color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(24.dp)
                     ) {
                         Column(
-                            Modifier
-                                .padding(18.dp)
-                                .verticalScroll(rememberScrollState())
+                            Modifier.padding(18.dp).verticalScroll(rememberScrollState())
                         ) {
                             Text(
                                 status.trim(),
@@ -650,16 +710,7 @@ If you don't do this, your account may be permanently lost—there's no recovery
                         }
                     }
                 }
-                if (progress >= 0f && (phase == Phase.Patching12 || phase == Phase.Patching13)) {
-                    Spacer(Modifier.height(8.dp))
-                    LinearProgressIndicator(
-                        progress = progress,
-                        modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(16.dp)),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
             }
-
             // Dialogs, always at end/root of UI tree
             if (showTestModeDialog) {
                 AlertDialog(
@@ -692,6 +743,13 @@ If you don't do this, your account may be permanently lost—there's no recovery
                 )
             }
         }
-        BackHandler(enabled = (phase == Phase.Patching12 || phase == Phase.Patching13)) { }
+        BackHandler(enabled = (
+            phase == Phase.Patching12 ||
+            phase == Phase.SearchingV12 ||
+            phase == Phase.Uploading12 ||
+            phase == Phase.Patching13 ||
+            phase == Phase.SearchingV13 ||
+            phase == Phase.Uploading13
+        )) { }
     }
 }
