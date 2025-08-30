@@ -51,6 +51,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 
 private val Context.dataStore by preferencesDataStore(name = "auto_patch_state")
+
 class AutoPatchTab : Tab("auto_patch") {
     private lateinit var installLauncher: ActivityResultLauncher<Intent>
     private var installDeferred: CompletableDeferred<Int>? = null
@@ -152,9 +153,48 @@ class AutoPatchTab : Tab("auto_patch") {
         fun logStep(idx: Int, msg: String, special: String? = null) = log(msg, asStep = true, showShort = shortSteps.getOrNull(idx), special = special)
         fun logError(msg: String) = log("❌ $msg", asError = true, showShort = "Error: see logs")
 
+        fun isPackageInstalled(pkg: String): Boolean {
+            return try {
+                val pm = context.packageManager
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0))
+                } else {
+                    @Suppress("DEPRECATION")
+                    pm.getPackageInfo(pkg, 0)
+                }
+                true
+            } catch (_: PackageManager.NameNotFoundException) {
+                false
+            }
+        }
+        suspend fun installPackage(file: File, packageName: String): Boolean {
+            if (sharedConfig.useRootInstaller) {
+                val res = Shell.cmd(
+                    "cp \"${file.absolutePath}\" /data/local/tmp/",
+                    "pm install -r \"/data/local/tmp/${file.name}\"",
+                    "rm \"/data/local/tmp/${file.name}\""
+                ).exec()
+                if (res.isSuccess) return true
+                repeat(10) { if (isPackageInstalled(packageName)) return true; Thread.sleep(1000) }
+                return false
+            }
+            val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+            val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
+                data = uri
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                putExtra(Intent.EXTRA_RETURN_RESULT, true)
+            }
+            val deferred = CompletableDeferred<Int>()
+            installDeferred = deferred
+            installLauncher.launch(intent)
+            val resultCode = deferred.await()
+            if (resultCode == Activity.RESULT_OK) return true
+            repeat(15) { if (isPackageInstalled(packageName)) return true; Thread.sleep(1000) }
+            return false
+        }
+
         data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
-
         fun detectAbiChoice(): AbiChoice {
             val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
             return when {
@@ -227,45 +267,6 @@ class AutoPatchTab : Tab("auto_patch") {
                 isDownloading = false
             }
             return result
-        }
-        suspend fun installPackage(file: File, packageName: String): Boolean {
-            if (sharedConfig.useRootInstaller) {
-                val res = Shell.cmd(
-                    "cp \"${file.absolutePath}\" /data/local/tmp/",
-                    "pm install -r \"/data/local/tmp/${file.name}\"",
-                    "rm \"/data/local/tmp/${file.name}\""
-                ).exec()
-                if (res.isSuccess) return true
-                repeat(10) { if (isPackageInstalled(packageName)) return true; Thread.sleep(1000) }
-                return false
-            }
-            val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
-            val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
-                data = uri
-                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                putExtra(Intent.EXTRA_RETURN_RESULT, true)
-            }
-            val deferred = CompletableDeferred<Int>()
-            installDeferred = deferred
-            installLauncher.launch(intent)
-            val resultCode = deferred.await()
-            if (resultCode == Activity.RESULT_OK) return true
-            repeat(15) { if (isPackageInstalled(packageName)) return true; Thread.sleep(1000) }
-            return false
-        }
-        fun isPackageInstalled(pkg: String): Boolean {
-            return try {
-                val pm = context.packageManager
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0))
-                } else {
-                    @Suppress("DEPRECATION")
-                    pm.getPackageInfo(pkg, 0)
-                }
-                true
-            } catch (_: PackageManager.NameNotFoundException) {
-                false
-            }
         }
         fun warmUpServer(baseUrl: String, maxWaitMs: Long = 120_000L, intervalMs: Long = 3000L): Boolean {
             val warmClient = longClient.newBuilder()
