@@ -64,7 +64,6 @@ class AutoPatchTab : Tab("auto_patch") {
         Idle, Patching12, Uploading12, AwaitingLogin, TestModeDialog, Disclaimer, Patching13, Uploading13, Finished, Error
     }
 
-    // Use your actual release asset URLs here!
     private val SNAP12_URL = "https://github.com/particle-box/auto-patch-server/releases/download/v1.0.0/snapchat-12.33.1.19.apk"
     private val SNAP13_URL = "https://github.com/particle-box/auto-patch-server/releases/download/v1.0.0/snapchat-13.51.0.56.apk"
 
@@ -93,7 +92,6 @@ class AutoPatchTab : Tab("auto_patch") {
         var stepShortMsg by remember { mutableStateOf("") }
         var specialNotice by remember { mutableStateOf("") }
 
-        // Glowy animated border for logs
         val neonColors = listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
             MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
@@ -427,7 +425,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                     )
                                     Spacer(Modifier.height(12.dp))
                                     Text(
-                                        "Time required: Approximately 3–5 minutes (super fast path).\n\nThis is an automated process which spares you the hassle of manually needing to download and patching apks. You will be properly instructed when an action is required.",
+                                        "Time required: Approximately 3–5 minutes.\n\nThis is an automated process which spares you the hassle of manually needing to download and patching apks. You will be properly instructed when an action is required.",
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                     Spacer(Modifier.height(32.dp))
