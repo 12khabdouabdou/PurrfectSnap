@@ -327,12 +327,12 @@ class AutoPatchTab : Tab("auto_patch") {
                         3, "Uploading for patch (core.apk & Snapchat 12.33)... This will take 2–3 minutes depending on your network and server load.",
                         "This will take 2–3 minutes depending on your network"
                     )
-                    warmUpServer("https://auto-patch-server.onrender.com/health")
+                    warmUpServer("https://eternal077-auto-patch-server.hf.space/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .addFormDataPart("apk", "snapchat.apk", snapchatApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .build()
-                    val request = Request.Builder().url("https://auto-patch-server.onrender.com/patch").post(reqBody).build()
+                    val request = Request.Builder().url("https://eternal077-auto-patch-server.hf.space/patch").post(reqBody).build()
                     longClient.newCall(request).execute().use { response ->
                         if (!response.isSuccessful) {
                             val err = response.body?.string()?.take(2000) ?: ""
@@ -376,12 +376,12 @@ class AutoPatchTab : Tab("auto_patch") {
                         9, "Uploading core.apk and Snapchat 13.51 APK to patch server... This will take 2–3 minutes depending on your network and server load.",
                         "This will take 2–3 minutes depending on your network"
                     )
-                    warmUpServer("https://auto-patch-server.onrender.com/health")
+                    warmUpServer("https://eternal077-auto-patch-server.hf.space/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .addFormDataPart("apk", "snapchat.apk", snapchatApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
                         .build()
-                    val request = Request.Builder().url("https://auto-patch-server.onrender.com/patch").post(reqBody).build()
+                    val request = Request.Builder().url("https://eternal077-auto-patch-server.hf.space/patch").post(reqBody).build()
                     longClient.newCall(request).execute().use { response ->
                         if (!response.isSuccessful) {
                             val err = response.body?.string()?.take(2000) ?: ""
