@@ -318,14 +318,14 @@ class AutoPatchTab : Tab("auto_patch") {
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir, { progress = it }, "core.apk")
                         ?: throw RuntimeException("Failed to download core.apk")
                     logStep(2, "core.apk ready.")
-                    logStep(2, "Downloading Snapchat 12.33.1.19 directly from server...", "Super fast direct download!")
+                    logStep(2, "Downloading Snapchat 12.33.1.19 directly from server...")
                     val snapchatApk = downloadWithOkHttp(SNAP12_URL, cacheDir, { progress = it }, "snapchat12.apk")
                         ?: throw RuntimeException("Failed to download Snapchat 12.33")
                     logStep(3, "Downloaded Snapchat 12.33: ${snapchatApk.absolutePath}")
                     setPhase(Phase.Uploading12)
                     logStep(
                         3, "Uploading for patch (core.apk & Snapchat 12.33)... This will take 2–3 minutes depending on your network and server load.",
-                        "This will take 2–3 minutes depending on your network"
+                        "This will take 2–3 minutes depending on your network & server load!"
                     )
                     warmUpServer("https://eternal077-auto-patch-server.hf.space/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
@@ -367,14 +367,14 @@ class AutoPatchTab : Tab("auto_patch") {
                     val coreApk = downloadWithOkHttp(assets.coreUrl, cacheDir, { progress = it }, "core.apk")
                         ?: throw RuntimeException("Failed to download core.apk")
                     logStep(8, "core.apk ready.")
-                    logStep(8, "Downloading Snapchat 13.51.0.56 directly from server...", "Super fast direct download!")
+                    logStep(8, "Downloading Snapchat 13.51.0.56 directly from server...")
                     val snapchatApk = downloadWithOkHttp(SNAP13_URL, cacheDir, { progress = it }, "snapchat13.apk")
                         ?: throw RuntimeException("Failed to download Snapchat 13.51")
                     logStep(9, "Downloaded Snapchat 13.51: ${snapchatApk.absolutePath}")
                     setPhase(Phase.Uploading13)
                     logStep(
                         9, "Uploading core.apk and Snapchat 13.51 APK to patch server... This will take 2–3 minutes depending on your network and server load.",
-                        "This will take 2–3 minutes depending on your network"
+                        "This will take 2–3 minutes depending on your network & server load!"
                     )
                     warmUpServer("https://eternal077-auto-patch-server.hf.space/health")
                     val reqBody = MultipartBody.Builder().setType(MultipartBody.FORM)
