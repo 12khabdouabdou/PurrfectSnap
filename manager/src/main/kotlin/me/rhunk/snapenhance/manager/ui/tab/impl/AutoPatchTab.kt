@@ -68,7 +68,7 @@ class AutoPatchTab : Tab("auto_patch") {
 
     private val SNAP12_URL = "https://github.com/particle-box/auto-patch-server/releases/download/v1.0.0/snapchat-12.33.1.19.apk"
     private val SNAP13_URL = "https://github.com/particle-box/auto-patch-server/releases/download/v1.0.0/snapchat-13.51.0.56.apk"
-    private val PATCH_SERVER_BASE = "https://eternal077-auto-patch-server.hf.space"
+    private val PATCH_SERVER_BASE = "https://auto-patch-server.onrender.com"
 
     override fun init(activity: ComponentActivity) {
         super.init(activity)
