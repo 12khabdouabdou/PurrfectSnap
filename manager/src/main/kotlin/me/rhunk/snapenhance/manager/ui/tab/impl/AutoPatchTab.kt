@@ -87,7 +87,8 @@ class AutoPatchTab : Tab("auto_patch") {
     override fun Content() {
         val context = LocalContext.current
         val activity = context as? Activity
-        val scope = remember { CoroutineScope(Dispatchers.IO) }
+        val scope = rememberCoroutineScope()
+        val ioScope = remember { CoroutineScope(Dispatchers.IO) }
         var phase by remember { mutableStateOf(Phase.Idle) }
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(0f) }
@@ -142,8 +143,16 @@ class AutoPatchTab : Tab("auto_patch") {
             logsScrollState.scrollTo(logsScrollState.maxValue)
         }
         
+        // Auto-scroll logs when status changes
+        LaunchedEffect(status) {
+            if (logsExpanded && status.isNotEmpty()) {
+                delay(50)
+                logsScrollState.animateScrollTo(logsScrollState.maxValue)
+            }
+        }
+        
         fun persistState(newPhase: Phase? = null, newStatus: String? = null) {
-            scope.launch {
+            ioScope.launch {
                 context.dataStore.edit { prefs ->
                     newPhase?.let { prefs[KEY_PHASE] = it.name }
                     newStatus?.let { prefs[KEY_STATUS] = it }
@@ -168,12 +177,6 @@ class AutoPatchTab : Tab("auto_patch") {
             if (showShort != null) stepShortMsg = showShort
             if (special != null) specialNotice = special else specialNotice = ""
             persistState(newStatus = status)
-            
-            // Auto-scroll logs
-            scope.launch {
-                delay(50)
-                logsScrollState.animateScrollTo(logsScrollState.maxValue)
-            }
         }
         
         fun logStep(idx: Int, msg: String, special: String? = null) = log("[STEP] $msg", asStep = true, showShort = shortSteps.getOrNull(idx), special = special)
@@ -421,7 +424,7 @@ class AutoPatchTab : Tab("auto_patch") {
         }
 
         fun startPatchFlow() {
-            scope.launch {
+            ioScope.launch {
                 try {
                     clearApkCache()
                     status = ""; progress = 0f; specialNotice = ""
