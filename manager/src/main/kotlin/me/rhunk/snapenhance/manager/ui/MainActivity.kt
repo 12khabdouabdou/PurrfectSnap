@@ -1,71 +1,25 @@
 package me.rhunk.snapenhance.manager.ui
 
-import android.content.Intent
-import android.net.Uri
-import android.os.Bundle
 import android.os.Build
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.compose.rememberNavController
-import com.topjohnwu.superuser.Shell
-import me.rhunk.snapenhance.manager.BuildConfig
-import me.rhunk.snapenhance.manager.data.SharedConfig
-import me.rhunk.snapenhance.manager.ui.tab.Tab
+import androidx.core.view.WindowCompat
+import me.rhunk.snapenhance.manager.ui.tab.Navigation
+import me.rhunk.snapenhance.manager.ui.tab.SharedConfig
 import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.SettingsTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.download.InstallPackageTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.download.RepackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
-import me.rhunk.snapenhance.manager.ui.tab.impl.AutoPatchTab // <-- IMPORT THIS LINE
+import me.rhunk.snapenhance.manager.ui.tab.impl.AutoPatchTab
+import me.rhunk.snapenhance.manager.ui.tab.impl.SettingsTab
 
 class MainActivity : ComponentActivity() {
-    companion object {
-        private val primaryTabs = listOf(
-            HomeTab::class,
-            ManualPatchTab::class,
-            AutoPatchTab::class, // <-- ADD THIS LINE
-            SettingsTab::class,
-            InstallPackageTab::class,
-            RepackageTab::class
-        )
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Permission check for Install Unknown Apps
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val pm = packageManager
-            if (!pm.canRequestPackageInstalls()) {
-                startActivity(
-                    Intent(
-                        android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                        Uri.parse("package:$packageName")
-                    )
-                )
-            }
-        }
-        Shell.enableVerboseLogging = BuildConfig.DEBUG;
-        Shell.setDefaultBuilder(
-            Shell.Builder.create()
-                .setFlags(Shell.FLAG_REDIRECT_STDERR)
-                .setTimeout(10)
-        );
-        val tabs = primaryTabs.mapNotNull {
-            runCatching { it.java.constructors.first().newInstance() as Tab }.getOrNull()
-        }.toMutableList().apply {
-            forEach { it.init(this@MainActivity) }
-            fun addNestedTabsRecursively(tabs: List<Tab>) {
-                tabs.forEach { tab ->
-                    add(tab)
-                    addNestedTabsRecursively(tab.nestedTabs)
-                }
-            }
-            toList().forEach { addNestedTabsRecursively(it.nestedTabs) }
-        }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
             MaterialTheme(
                 colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -73,27 +27,24 @@ class MainActivity : ComponentActivity() {
                     else dynamicLightColorScheme(LocalContext.current)
                 } else darkColorScheme()
             ) {
-                val navHostController = rememberNavController()
-                val sharedConfig = remember { SharedConfig(this) }
-                val navigation = remember {
-                    Navigation(
-                        navHostController = navHostController,
-                        tabs = tabs,
-                        defaultTab = HomeTab::class
-                    ).also {
-                        tabs.forEach { tab ->
-                            tab.navigation = it
-                            tab.sharedConfig = sharedConfig
-                        }
-                    }
-                }
+                // List of all tab classes
+                val allTabs = listOf(
+                    HomeTab(),
+                    ManualPatchTab(),
+                    AutoPatchTab(),
+                    SettingsTab()
+                )
+                // Construct navigation as in your project
+                val navigation = Navigation(
+                    tabs = allTabs,
+                    defaultTab = HomeTab::class
+                )
                 Scaffold(
-                    bottomBar = { navigation.BottomBar() },
-                    topBar = { navigation.TopBar() },
+                    // Don't use bottomBar or topBar here! HomeTab and others draw what they want.
                     floatingActionButton = { navigation.FloatingActionButtons() },
-                    floatingActionButtonPosition = FabPosition.End,
-                ) {
-                    navigation.NavigationHost(it)
+                    floatingActionButtonPosition = FabPosition.End
+                ) { paddingValues ->
+                    navigation.NavigationHost(paddingValues)
                 }
             }
         }
