@@ -36,7 +36,6 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Permission check for Install Unknown Apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val pm = packageManager
@@ -55,7 +54,6 @@ class MainActivity : ComponentActivity() {
                 .setFlags(Shell.FLAG_REDIRECT_STDERR)
                 .setTimeout(10)
         )
-
         val tabs = primaryTabs.mapNotNull {
             runCatching { it.java.constructors.first().newInstance() as Tab }.getOrNull()
         }.toMutableList().apply {
@@ -68,7 +66,6 @@ class MainActivity : ComponentActivity() {
             }
             toList().forEach { addNestedTabsRecursively(it.nestedTabs) }
         }
-
         setContent {
             MaterialTheme(
                 colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -91,7 +88,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 Scaffold(
-                    bottomBar = { navigation.BottomBar() }, // << Unified bar for all tabs.
                     floatingActionButton = { navigation.FloatingActionButtons() },
                     floatingActionButtonPosition = FabPosition.End,
                 ) { innerPadding ->
