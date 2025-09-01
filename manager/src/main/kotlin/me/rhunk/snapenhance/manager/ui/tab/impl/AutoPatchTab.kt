@@ -41,6 +41,7 @@ import java.util.zip.ZipFile
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlin.coroutines.resume // <<== THIS IMPORT FIXES resume()
 
 private val Context.dataStore by preferencesDataStore(name = "auto_patch_state")
 
@@ -313,7 +314,8 @@ class AutoPatchTab : Tab("auto_patch") {
                     status += "\nTap 'Continue' below after you've logged in.\n"
                     persistState(newStatus = status)
 
-                    suspendCancellableCoroutine<Unit> { cont ->
+                    // -- FIX: suspendCancellableCoroutine needs correct lambda args AND .resume import!
+                    kotlinx.coroutines.suspendCancellableCoroutine<Unit> { cont ->
                         onLoginContinue = { cont.resume(Unit) }
                     }
 
@@ -353,6 +355,8 @@ class AutoPatchTab : Tab("auto_patch") {
                     }
 
                     logStep("8", "Downloading SnapEnhance...")
+                    val assets = fetchSnapEnhanceAndCoreAssets(abi.assetLabel)
+                        ?: throw RuntimeException("No SnapEnhance/core.apk pair found in prereleases for ABI: ${abi.assetLabel}")
                     val seApk = downloadWithOkHttp(assets.snapEnhanceUrl, cacheDir, { progress = it }, "snapenhance.apk")
                         ?: throw RuntimeException("Failed to download SnapEnhance")
                     logStep("9", "Installing SnapEnhance...")
