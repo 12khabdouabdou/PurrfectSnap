@@ -4,10 +4,12 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
+import androidx.navigation.compose.rememberNavController
 import me.rhunk.snapenhance.manager.ui.tab.Navigation
 import me.rhunk.snapenhance.manager.ui.tab.SharedConfig
 import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
@@ -27,22 +29,31 @@ class MainActivity : ComponentActivity() {
                     else dynamicLightColorScheme(LocalContext.current)
                 } else darkColorScheme()
             ) {
-                // List of all tab classes
-                val allTabs = listOf(
+                // Build your navigation controller and shared config
+                val navHostController = rememberNavController()
+                val sharedConfig = remember { SharedConfig(this) }
+                val tabs = listOf(
                     HomeTab(),
                     ManualPatchTab(),
                     AutoPatchTab(),
                     SettingsTab()
                 )
-                // Construct navigation as in your project
-                val navigation = Navigation(
-                    tabs = allTabs,
-                    defaultTab = HomeTab::class
-                )
+                // Instantiate your repo's Navigation system
+                val navigation = remember {
+                    Navigation(
+                        navHostController = navHostController,
+                        tabs = tabs,
+                        defaultTab = HomeTab::class
+                    ).also {
+                        tabs.forEach { tab ->
+                            tab.navigation = it
+                            tab.sharedConfig = sharedConfig
+                        }
+                    }
+                }
                 Scaffold(
-                    // Don't use bottomBar or topBar here! HomeTab and others draw what they want.
                     floatingActionButton = { navigation.FloatingActionButtons() },
-                    floatingActionButtonPosition = FabPosition.End
+                    floatingActionButtonPosition = FabPosition.End,
                 ) { paddingValues ->
                     navigation.NavigationHost(paddingValues)
                 }
