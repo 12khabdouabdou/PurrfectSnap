@@ -1,5 +1,6 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl
 
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
