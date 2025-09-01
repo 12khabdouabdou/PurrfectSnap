@@ -64,7 +64,7 @@ class AutoPatchTab : Tab("auto_patch") {
     }
     
     enum class Phase {
-        Idle, Downloading12, Installing12, AwaitingLogin, Downloading13, Installing13, DownloadingSnapEnhance, InstallingSnapEnhance, Finished, Error
+        Idle, Downloading12, Installing12, AwaitingLogin, DownloadingRecommended, InstallingRecommended, DownloadingSnapEnhance, InstallingSnapEnhance, Finished, Error
     }
 
     override fun init(activity: ComponentActivity) {
@@ -84,33 +84,44 @@ class AutoPatchTab : Tab("auto_patch") {
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(0f) }
         var isDownloading by remember { mutableStateOf(false) }
-        var showLoginConfirmDialog by remember { mutableStateOf(false) }
-        var showLoginFailedDialog by remember { mutableStateOf(false) }
         var logsExpanded by remember { mutableStateOf(false) }
         val logsScrollState = rememberScrollState()
         var currentLogLine by remember { mutableIntStateOf(-1) }
         var stepShortMsg by remember { mutableStateOf("") }
         var specialNotice by remember { mutableStateOf("") }
         var loginContinuation by remember { mutableStateOf<CompletableDeferred<Unit>?>(null) }
+        var savedReleaseAssets by remember { mutableStateOf<ReleaseAssets?>(null) }
 
         val neonColors = listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
             MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
-            Color(0xFFFFF176).copy(alpha = 0.65f),
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.7f),
             MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
         )
-        val animTransition = rememberInfiniteTransition(label = "glow")
+        
+        // Blinking animation for logs border
+        val infiniteTransition = rememberInfiniteTransition(label = "blink")
+        val alpha = infiniteTransition.animateFloat(
+            initialValue = 0.3f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1500, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "alpha"
+        )
+        
         val borderBrush = Brush.sweepGradient(
-            neonColors,
+            neonColors.map { it.copy(alpha = alpha.value) },
             center = Offset.Zero
         )
 
         val shortSteps = listOf(
             "Downloading patched Snapchat 12.33...",
             "Installing patched Snapchat 12.33...",
-            "Login/Setup...",
-            "Downloading patched Snapchat 13.51...",
-            "Installing patched Snapchat 13.51...",
+            "Login Instructions",
+            "Downloading recommended patched Snapchat version...",
+            "Installing recommended patched Snapchat version...",
             "Downloading SnapEnhance...",
             "Installing SnapEnhance..."
         )
@@ -149,12 +160,18 @@ class AutoPatchTab : Tab("auto_patch") {
             if (showShort != null) stepShortMsg = showShort
             if (special != null) specialNotice = special else specialNotice = ""
             persistState(newStatus = status)
+            
+            // Auto-scroll logs
+            scope.launch {
+                delay(50)
+                logsScrollState.animateScrollTo(logsScrollState.maxValue)
+            }
         }
         
-        fun logStep(idx: Int, msg: String, special: String? = null) = log("✅ $msg", asStep = true, showShort = shortSteps.getOrNull(idx), special = special)
-        fun logInfo(msg: String) = log("ℹ️ $msg")
-        fun logError(msg: String) = log("❌ $msg", asError = true, showShort = "Error: see logs")
-        fun logDebug(msg: String) = log("🔍 $msg")
+        fun logStep(idx: Int, msg: String, special: String? = null) = log("[STEP] $msg", asStep = true, showShort = shortSteps.getOrNull(idx), special = special)
+        fun logInfo(msg: String) = log("[INFO] $msg")
+        fun logError(msg: String) = log("[ERROR] $msg", asError = true, showShort = "Error: see logs")
+        fun logDebug(msg: String) = log("[DEBUG] $msg")
 
         fun isPackageInstalled(pkg: String): Boolean {
             return try {
@@ -224,7 +241,14 @@ class AutoPatchTab : Tab("auto_patch") {
 
         data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
         data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
-        data class ReleaseAssets(val snapchat12Url: String, val snapchat13Url: String, val releaseName: String)
+        data class ReleaseAssets(
+            val snapchat12Url: String, 
+            val snapchat12Name: String,
+            val snapchatRecommendedUrl: String, 
+            val snapchatRecommendedName: String,
+            val recommendedVersion: String,
+            val releaseName: String
+        )
         
         fun detectAbiChoice(): AbiChoice {
             val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
@@ -255,7 +279,9 @@ class AutoPatchTab : Tab("auto_patch") {
                     
                     val assets = release.optJSONArray("assets") ?: continue
                     var snapchat12Url: String? = null
-                    var snapchat13Url: String? = null
+                    var snapchat12Name: String? = null
+                    var snapchatOtherUrl: String? = null
+                    var snapchatOtherName: String? = null
                     
                     for (j in 0 until assets.length()) {
                         val asset = assets.getJSONObject(j)
@@ -263,20 +289,34 @@ class AutoPatchTab : Tab("auto_patch") {
                         val url = asset.optString("browser_download_url", "")
                         
                         when {
-                            name == "PatchedSnapchat-12.33-noembed.apk" -> {
+                            name.contains("12.33") && name.endsWith(".apk") -> {
                                 snapchat12Url = url
+                                snapchat12Name = name
                                 logDebug("Found Snapchat 12.33 APK: $name")
                             }
-                            name == "PatchedSnapchat-13.51-embedded.apk" -> {
-                                snapchat13Url = url
-                                logDebug("Found Snapchat 13.51 APK: $name")
+                            name.startsWith("PatchedSnapchat") && !name.contains("12.33") && name.endsWith(".apk") -> {
+                                snapchatOtherUrl = url
+                                snapchatOtherName = name
+                                logDebug("Found recommended Snapchat APK: $name")
                             }
                         }
                     }
                     
-                    if (snapchat12Url != null && snapchat13Url != null) {
+                    if (snapchat12Url != null && snapchatOtherUrl != null && snapchat12Name != null && snapchatOtherName != null) {
+                        // Extract version from the other APK name
+                        val versionRegex = Regex("""(\d+\.\d+\.\d+\.\d+)""")
+                        val version = versionRegex.find(snapchatOtherName)?.groupValues?.get(1) ?: "Latest"
+                        
                         logInfo("Found both patched APKs in release: $releaseName")
-                        return ReleaseAssets(snapchat12Url, snapchat13Url, releaseName)
+                        logInfo("Recommended version: $version")
+                        return ReleaseAssets(
+                            snapchat12Url, 
+                            snapchat12Name,
+                            snapchatOtherUrl, 
+                            snapchatOtherName,
+                            version,
+                            releaseName
+                        )
                     }
                 }
                 logError("No release found with both patched APKs")
@@ -418,8 +458,12 @@ class AutoPatchTab : Tab("auto_patch") {
                     val patchedApks = fetchLatestPatchedApks()
                         ?: throw RuntimeException("Failed to fetch latest patched APKs from GitHub")
                     
-                    logStep(0, "Downloading pre-patched Snapchat 12.33 (no embed)...")
+                    // Save for later use
+                    savedReleaseAssets = patchedApks
+                    
+                    logStep(0, "Downloading pre-patched Snapchat 12.33...")
                     logInfo("Release: ${patchedApks.releaseName}")
+                    logInfo("File: ${patchedApks.snapchat12Name}")
                     val snapchat12File = downloadWithProgress(
                         patchedApks.snapchat12Url,
                         cacheDir,
@@ -435,30 +479,33 @@ class AutoPatchTab : Tab("auto_patch") {
                     logInfo("Successfully installed Snapchat 12.33")
                     
                     setPhase(Phase.AwaitingLogin)
-                    logStep(2, "Please login to Snapchat now", "Please complete the login process before continuing")
+                    logStep(2, "Please complete login instructions")
                     
                     // Wait for user to confirm login
                     val loginDeferred = CompletableDeferred<Unit>()
                     loginContinuation = loginDeferred
-                    showLoginConfirmDialog = true
                     loginDeferred.await()
                     loginContinuation = null
                     
-                    setPhase(Phase.Downloading13)
-                    logStep(3, "Downloading pre-patched Snapchat 13.51 (with embed)...")
-                    val snapchat13File = downloadWithProgress(
-                        patchedApks.snapchat13Url,
+                    logInfo("User confirmed successful login, continuing with process...")
+                    
+                    setPhase(Phase.DownloadingRecommended)
+                    logStep(3, "Downloading recommended patched Snapchat version (${patchedApks.recommendedVersion})...")
+                    logInfo("From same release: ${patchedApks.releaseName}")
+                    logInfo("File: ${patchedApks.snapchatRecommendedName}")
+                    val snapchatRecommendedFile = downloadWithProgress(
+                        patchedApks.snapchatRecommendedUrl,
                         cacheDir,
                         { progress = it },
-                        "PatchedSnapchat-13.51.apk"
-                    ) ?: throw RuntimeException("Failed to download patched Snapchat 13.51")
+                        "PatchedSnapchat-Recommended.apk"
+                    ) ?: throw RuntimeException("Failed to download recommended patched Snapchat version")
                     
-                    setPhase(Phase.Installing13)
-                    logStep(4, "Installing patched Snapchat 13.51...")
-                    if (!installPackage(snapchat13File, sharedConfig.snapchatPackageName)) {
-                        throw RuntimeException("Failed to install patched Snapchat 13.51")
+                    setPhase(Phase.InstallingRecommended)
+                    logStep(4, "Installing recommended patched Snapchat version (${patchedApks.recommendedVersion})...")
+                    if (!installPackage(snapchatRecommendedFile, sharedConfig.snapchatPackageName)) {
+                        throw RuntimeException("Failed to install recommended patched Snapchat version")
                     }
-                    logInfo("Successfully installed Snapchat 13.51")
+                    logInfo("Successfully installed recommended Snapchat version ${patchedApks.recommendedVersion}")
                     
                     // Fetch and install SnapEnhance
                     val abi = detectAbiChoice()
@@ -485,20 +532,13 @@ class AutoPatchTab : Tab("auto_patch") {
                     
                     clearApkCache()
                     setPhase(Phase.Finished)
-                    logInfo("🎉 Auto patch process completed successfully!")
+                    logInfo("Auto patch process completed successfully!")
                     
                 } catch (t: Throwable) {
                     logError("Fatal error: ${t.message}")
                     logDebug("Stack trace: ${t.stackTraceToString()}")
                     setPhase(Phase.Error)
                 }
-            }
-        }
-
-        // Handle login dialog result
-        LaunchedEffect(showLoginConfirmDialog) {
-            if (!showLoginConfirmDialog && loginContinuation != null) {
-                loginContinuation?.complete(Unit)
             }
         }
 
@@ -537,7 +577,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                 }
                             }
                         }
-                        Phase.Downloading12, Phase.Installing12, Phase.Downloading13, Phase.Installing13, Phase.DownloadingSnapEnhance, Phase.InstallingSnapEnhance -> {
+                        Phase.Downloading12, Phase.Installing12, Phase.DownloadingRecommended, Phase.InstallingRecommended, Phase.DownloadingSnapEnhance, Phase.InstallingSnapEnhance -> {
                             Column(
                                 Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -548,7 +588,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                         fontWeight = FontWeight.SemiBold,
                                         style = MaterialTheme.typography.headlineSmall,
                                         color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.padding(0.dp, 14.dp, 0.dp, 18.dp),
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                                         textAlign = TextAlign.Center
                                     )
                                 }
@@ -572,7 +612,10 @@ class AutoPatchTab : Tab("auto_patch") {
                                     Spacer(Modifier.height(18.dp))
                                     Text(
                                         specialNotice,
-                                        color = Color(0xFFFFEE58),
+                                        color = if (MaterialTheme.colorScheme.isLight()) 
+                                            Color(0xFFE65100) 
+                                        else 
+                                            Color(0xFFFFEE58),
                                         fontWeight = FontWeight.Bold,
                                         style = MaterialTheme.typography.bodyLarge,
                                         textAlign = TextAlign.Center
@@ -607,6 +650,7 @@ class AutoPatchTab : Tab("auto_patch") {
                                         Surface(
                                             Modifier
                                                 .fillMaxWidth()
+                                                .height(200.dp)
                                                 .border(
                                                     width = 2.8.dp,
                                                     brush = borderBrush,
@@ -616,10 +660,6 @@ class AutoPatchTab : Tab("auto_patch") {
                                             color = MaterialTheme.colorScheme.surface,
                                             tonalElevation = 4.dp
                                         ) {
-                                            LaunchedEffect(status, logsExpanded) {
-                                                delay(150)
-                                                logsScrollState.scrollTo(logsScrollState.maxValue)
-                                            }
                                             val logLines = status.lines()
                                             Column(
                                                 Modifier
@@ -628,23 +668,24 @@ class AutoPatchTab : Tab("auto_patch") {
                                             ) {
                                                 logLines.forEachIndexed { idx, line ->
                                                     val isCurrent = idx == currentLogLine
-                                                    AnimatedContent(targetState = isCurrent, label = "", transitionSpec = {
+                                                    val isError = line.contains("[ERROR]")
+                                                    AnimatedContent(targetState = isCurrent to isError, label = "", transitionSpec = {
                                                         fadeIn(tween(200)) togetherWith fadeOut(tween(200))
-                                                    }) { highlight ->
-                                                        if (highlight)
-                                                            Text(
-                                                                text = line,
-                                                                color = Color(0xFFFFF176),
-                                                                fontWeight = FontWeight.Bold,
-                                                                style = MaterialTheme.typography.bodyMedium
-                                                            )
-                                                        else
-                                                            Text(
-                                                                text = line,
-                                                                color = MaterialTheme.colorScheme.onSurface,
-                                                                fontWeight = FontWeight.Normal,
-                                                                style = MaterialTheme.typography.bodySmall
-                                                            )
+                                                    }) { (highlight, error) ->
+                                                        Text(
+                                                            text = line,
+                                                            color = when {
+                                                                error -> MaterialTheme.colorScheme.error
+                                                                highlight -> if (MaterialTheme.colorScheme.isLight()) 
+                                                                    Color(0xFFE65100)
+                                                                else 
+                                                                    Color(0xFFFFF176)
+                                                                else -> MaterialTheme.colorScheme.onSurface
+                                                            },
+                                                            fontWeight = if (highlight || error) FontWeight.Bold else FontWeight.Normal,
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                                        )
                                                     }
                                                 }
                                             }
@@ -654,219 +695,210 @@ class AutoPatchTab : Tab("auto_patch") {
                             }
                         }
                         Phase.AwaitingLogin -> {
-                            Spacer(Modifier.height(16.dp))
-                            Text(
-                                "Next Steps (Please follow carefully)",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleLarge,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(Modifier.height(8.dp))
                             Card(
-                                shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
-                            ) {
-                                Column(Modifier.padding(18.dp)) {
-                                    Text("1. Open Snapchat and log in.", fontWeight = FontWeight.Medium)
-                                    Text("2. If you see 'temporarily disabled', go to Snapchat App Info, Force Stop, and retry login.", fontWeight = FontWeight.Medium)
-                                    Text("3. After successful login, come back here and press 'Login Done'.", fontWeight = FontWeight.Medium)
-                                }
-                            }
-                            if (specialNotice.isNotBlank()) {
-                                Spacer(Modifier.height(12.dp))
-                                Text(
-                                    specialNotice,
-                                    color = Color(0xFFFFEE58),
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                            Spacer(Modifier.height(26.dp))
-                            Button(
-                                onClick = { logsExpanded = !logsExpanded },
-                                shape = RoundedCornerShape(21.dp),
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            ) {
-                                if (logsExpanded) {
-                                    Icon(Icons.Filled.ExpandLess, contentDescription = null)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Hide Logs")
-                                } else {
-                                    Icon(Icons.Filled.ExpandMore, contentDescription = null)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Show Logs")
-                                }
-                            }
-                            AnimatedVisibility(
-                                visible = logsExpanded,
-                                enter = expandVertically() + fadeIn(),
-                                exit = shrinkVertically() + fadeOut()
+                                Modifier.padding(16.dp),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
                             ) {
                                 Column(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 12.dp)
+                                    Modifier.padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    Surface(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .height(150.dp)
-                                            .border(
-                                                width = 2.8.dp,
-                                                brush = borderBrush,
-                                                shape = RoundedCornerShape(24.dp)
-                                            )
-                                            .clip(RoundedCornerShape(24.dp)),
-                                        color = MaterialTheme.colorScheme.surface,
-                                        tonalElevation = 4.dp
+                                    Text(
+                                        "Login Instructions",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(Modifier.height(20.dp))
+                                    Card(
+                                        Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surfaceVariant)
                                     ) {
-                                        LaunchedEffect(status, logsExpanded) {
-                                            delay(150)
-                                            logsScrollState.scrollTo(logsScrollState.maxValue)
+                                        Column(Modifier.padding(16.dp)) {
+                                            Text("1. Open Snapchat and login", fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyLarge)
+                                            Spacer(Modifier.height(8.dp))
+                                            Text("2. You'll face 'temporarily disabled' error", fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyLarge)
+                                            Spacer(Modifier.height(8.dp))
+                                            Text("3. Go to App Info of Snapchat and select Force Stop", fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyLarge)
+                                            Spacer(Modifier.height(8.dp))
+                                            Text("4. Reopen Snapchat and login", fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyLarge)
+                                            Spacer(Modifier.height(8.dp))
+                                            Text("5. Once logged in, go to the chat tab", fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyLarge)
+                                            Spacer(Modifier.height(8.dp))
+                                            Text("6. Pull down to refresh your friends list", fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyLarge)
+                                            Spacer(Modifier.height(8.dp))
+                                            Text("7. Come back here and click 'Login Done'", fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyLarge)
                                         }
-                                        val logLines = status.lines()
-                                        Column(
-                                            Modifier
-                                                .padding(12.dp)
-                                                .verticalScroll(logsScrollState)
-                                        ) {
-                                            logLines.forEach { line ->
-                                                Text(
-                                                    text = line,
-                                                    color = MaterialTheme.colorScheme.onSurface,
-                                                    fontWeight = FontWeight.Normal,
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
-                                        }
+                                    }
+                                    Spacer(Modifier.height(24.dp))
+                                    Button(
+                                        onClick = {
+                                            loginContinuation?.complete(Unit)
+                                        },
+                                        Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.primary)
+                                    ) {
+                                        Text("Login Done", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
                         }
                         Phase.Finished -> {
-                            Icon(
-                                Icons.Filled.CheckCircle,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(62.dp)
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                "Done! Snapchat is patched!",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.headlineSmall,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                "Open SnapEnhance and let it regenerate mappings, then open Snapchat and enjoy!",
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(vertical = 10.dp),
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(Modifier.height(20.dp))
-                            Button(
-                                onClick = {
-                                    setPhase(Phase.Idle)
-                                    status = ""
-                                    persistState(newStatus = "")
-                                },
-                                Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(18.dp)
+                            Card(
+                                Modifier.padding(16.dp),
+                                shape = RoundedCornerShape(20.dp)
                             ) {
-                                Text("Back to Home")
+                                Column(
+                                    Modifier.padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Icon(
+                                        Icons.Filled.CheckCircle,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(62.dp)
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Text(
+                                        "Done! Snapchat is patched!",
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Spacer(Modifier.height(16.dp))
+                                    Card(
+                                        Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primaryContainer)
+                                    ) {
+                                        Column(Modifier.padding(16.dp)) {
+                                            Text(
+                                                "Final Steps:",
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.titleMedium
+                                            )
+                                            Spacer(Modifier.height(8.dp))
+                                            Text(
+                                                "1. Open SnapEnhance first and set it up",
+                                                style = MaterialTheme.typography.bodyLarge
+                                            )
+                                            Text(
+                                                "2. Then open Snapchat and enjoy!",
+                                                style = MaterialTheme.typography.bodyLarge
+                                            )
+                                        }
+                                    }
+                                    Spacer(Modifier.height(24.dp))
+                                    Button(
+                                        onClick = {
+                                            setPhase(Phase.Idle)
+                                            status = ""
+                                            persistState(newStatus = "")
+                                        },
+                                        Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(18.dp)
+                                    ) {
+                                        Text("Back to Home")
+                                    }
+                                }
                             }
                         }
                         Phase.Error -> {
-                            Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(40.dp))
-                            Text(
-                                "An error occurred",
-                                color = MaterialTheme.colorScheme.error,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                "Please review the log below for details.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(Modifier.height(24.dp))
-                            Button(
-                                onClick = {
-                                    setPhase(Phase.Idle)
-                                    status = ""
-                                    persistState(newStatus = "")
-                                },
-                                Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                            Column(
+                                Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text("Retry", color = MaterialTheme.colorScheme.onError)
-                            }
-                            Spacer(Modifier.height(12.dp))
-                            Button(
-                                onClick = { logsExpanded = !logsExpanded },
-                                shape = RoundedCornerShape(21.dp),
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            ) {
-                                if (logsExpanded) {
-                                    Icon(Icons.Filled.ExpandLess, contentDescription = null)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Hide Logs")
-                                } else {
-                                    Icon(Icons.Filled.ExpandMore, contentDescription = null)
-                                    Spacer(Modifier.width(8.dp))
-                                    Text("Show Logs")
-                                }
-                            }
-                            AnimatedVisibility(
-                                visible = logsExpanded,
-                                enter = expandVertically() + fadeIn(),
-                                exit = shrinkVertically() + fadeOut()
-                            ) {
-                                Column(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 20.dp)
+                                Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(40.dp))
+                                Text(
+                                    "An error occurred",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    "Please review the log below for details.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(Modifier.height(24.dp))
+                                Button(
+                                    onClick = {
+                                        setPhase(Phase.Idle)
+                                        status = ""
+                                        persistState(newStatus = "")
+                                    },
+                                    Modifier.fillMaxWidth(0.7f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                                 ) {
-                                    Surface(
+                                    Text("Retry", color = MaterialTheme.colorScheme.onError)
+                                }
+                                Spacer(Modifier.height(12.dp))
+                                Button(
+                                    onClick = { logsExpanded = !logsExpanded },
+                                    shape = RoundedCornerShape(21.dp)
+                                ) {
+                                    if (logsExpanded) {
+                                        Icon(Icons.Filled.ExpandLess, contentDescription = null)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Hide Logs")
+                                    } else {
+                                        Icon(Icons.Filled.ExpandMore, contentDescription = null)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text("Show Logs")
+                                    }
+                                }
+                                AnimatedVisibility(
+                                    visible = logsExpanded,
+                                    enter = expandVertically() + fadeIn(),
+                                    exit = shrinkVertically() + fadeOut()
+                                ) {
+                                    Column(
                                         Modifier
                                             .fillMaxWidth()
-                                            .border(
-                                                width = 2.8.dp,
-                                                brush = borderBrush,
-                                                shape = RoundedCornerShape(24.dp)
-                                            )
-                                            .clip(RoundedCornerShape(24.dp)),
-                                        color = MaterialTheme.colorScheme.surface,
-                                        tonalElevation = 4.dp
+                                            .padding(top = 20.dp)
                                     ) {
-                                        LaunchedEffect(status, logsExpanded) {
-                                            delay(150)
-                                            logsScrollState.scrollTo(logsScrollState.maxValue)
-                                        }
-                                        val logLines = status.lines()
-                                        Column(
+                                        Surface(
                                             Modifier
-                                                .padding(12.dp)
-                                                .verticalScroll(logsScrollState)
+                                                .fillMaxWidth()
+                                                .height(300.dp)
+                                                .border(
+                                                    width = 2.8.dp,
+                                                    brush = borderBrush,
+                                                    shape = RoundedCornerShape(24.dp)
+                                                )
+                                                .clip(RoundedCornerShape(24.dp)),
+                                            color = MaterialTheme.colorScheme.surface,
+                                            tonalElevation = 4.dp
                                         ) {
-                                            logLines.forEachIndexed { idx, line ->
-                                                val isCurrent = idx == currentLogLine
-                                                AnimatedContent(targetState = isCurrent, label = "") { highlight ->
-                                                    if (highlight)
+                                            val logLines = status.lines()
+                                            Column(
+                                                Modifier
+                                                    .padding(12.dp)
+                                                    .verticalScroll(logsScrollState)
+                                            ) {
+                                                logLines.forEachIndexed { idx, line ->
+                                                    val isCurrent = idx == currentLogLine
+                                                    val isError = line.contains("[ERROR]")
+                                                    AnimatedContent(targetState = isCurrent to isError, label = "") { (highlight, error) ->
                                                         Text(
                                                             text = line,
-                                                            color = Color(0xFFFFF176),
-                                                            fontWeight = FontWeight.Bold,
-                                                            style = MaterialTheme.typography.bodyMedium
+                                                            color = when {
+                                                                error -> MaterialTheme.colorScheme.error
+                                                                highlight -> if (MaterialTheme.colorScheme.isLight()) 
+                                                                    Color(0xFFE65100)
+                                                                else 
+                                                                    Color(0xFFFFF176)
+                                                                else -> MaterialTheme.colorScheme.onSurface
+                                                            },
+                                                            fontWeight = if (highlight || error) FontWeight.Bold else FontWeight.Normal,
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                                                         )
-                                                    else
-                                                        Text(
-                                                            text = line,
-                                                            color = MaterialTheme.colorScheme.onSurface,
-                                                            fontWeight = FontWeight.Normal,
-                                                            style = MaterialTheme.typography.bodySmall
-                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -875,69 +907,19 @@ class AutoPatchTab : Tab("auto_patch") {
                             }
                         }
                     }
-                    if (showLoginConfirmDialog) {
-                        AlertDialog(
-                            onDismissRequest = { },
-                            title = {
-                                Text(
-                                    "Login Successful?",
-                                    textAlign = TextAlign.Center
-                                )
-                            },
-                            text = {
-                                Text(
-                                    "Have you successfully logged into Snapchat?",
-                                    textAlign = TextAlign.Center
-                                )
-                            },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    showLoginConfirmDialog = false
-                                    logInfo("User confirmed successful login")
-                                }) { Text("Yes, I'm logged in") }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = {
-                                    showLoginConfirmDialog = false
-                                    showLoginFailedDialog = true
-                                    logInfo("User indicated login not complete")
-                                }) { Text("No") }
-                            }
-                        )
-                    }
-                    if (showLoginFailedDialog) {
-                        AlertDialog(
-                            onDismissRequest = { showLoginFailedDialog = false },
-                            title = {
-                                Text(
-                                    "Please complete login",
-                                    textAlign = TextAlign.Center
-                                )
-                            },
-                            text = {
-                                Text(
-                                    "Please complete the login process in Snapchat before continuing. If you see 'temporarily disabled', force stop Snapchat from App Info and try again.",
-                                    textAlign = TextAlign.Center
-                                )
-                            },
-                            confirmButton = {
-                                TextButton(onClick = {
-                                    showLoginFailedDialog = false
-                                    showLoginConfirmDialog = true
-                                }) { Text("OK, I'll try again") }
-                            }
-                        )
-                    }
                 }
             }
             BackHandler(enabled = (
                 phase == Phase.Downloading12 ||
                 phase == Phase.Installing12 ||
-                phase == Phase.Downloading13 ||
-                phase == Phase.Installing13 ||
+                phase == Phase.DownloadingRecommended ||
+                phase == Phase.InstallingRecommended ||
                 phase == Phase.DownloadingSnapEnhance ||
                 phase == Phase.InstallingSnapEnhance
             )) { }
         }
     }
 }
+
+// Extension to check if the color scheme is light
+fun ColorScheme.isLight(): Boolean = this.background.luminance() > 0.5f
