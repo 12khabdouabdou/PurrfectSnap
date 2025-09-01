@@ -12,7 +12,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.AutoFixHigh
+import androidx.compose.material.icons.filled.Handyman
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -102,7 +105,6 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         }
                     }
                     Spacer(Modifier.height(28.dp))
-                    // Modern, scaling text
                     Text(
                         "Welcome to Snapenhance Manager!",
                         fontSize = 25.sp, fontWeight = FontWeight.Black,
@@ -122,7 +124,6 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     }
 
                     Spacer(Modifier.height(30.dp))
-                    // Social Buttons
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
                         modifier = Modifier.fillMaxWidth(0.7f)
@@ -131,24 +132,23 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                             painterResource(R.drawable.ic_telegram),
                             bgColor = Color(0xFF299EFF),
                             glow = Color(0x66299EFF),
-                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/snapenhance_chat"))) }
+                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/YOUR_TELEGRAM_LINK"))) }
                         )
                         CoolSocialButton(
                             painterResource(R.drawable.ic_github),
                             bgColor = Color(0xFFA088FA),
                             glow = Color(0x88A088FA),
-                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance"))) }
+                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/particle-box/SnapEnhance"))) }
                         )
                         CoolSocialButton(
                             icon = Icons.Outlined.FavoriteBorder,
                             bgColor = Color(0xFFF83759),
                             glow = Color(0x66F83759),
-                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance?tab=readme-ov-file#donate"))) }
+                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://your.donate.url"))) }
                         )
                     }
 
                     Spacer(Modifier.height(38.dp))
-                    // Toggle root/non-root
                     Surface(
                         modifier = Modifier.clip(RoundedCornerShape(26.dp)),
                         color = Color.White.copy(alpha = 0.10f),
@@ -176,7 +176,6 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         }
                     }
                     Spacer(Modifier.height(42.dp))
-                    // Main action buttons
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
@@ -202,7 +201,6 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                 }
             }
 
-            // Bottom Floating Nav (modern glass)
             Box(
                 Modifier
                     .fillMaxSize()
@@ -303,8 +301,9 @@ fun GlowyRoundButton(
                 .width(155.dp)
                 .height(122.dp)
                 .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
+                    onClick = onClick
                 )
         ) {
             Column(
@@ -375,7 +374,12 @@ private fun CoolSocialButtonBase(
         Surface(
             shape = CircleShape,
             color = bgColor,
-            modifier = Modifier.size(56.dp).shadow(8.dp, CircleShape).clickable(onClick = onClick),
+            modifier = Modifier.size(56.dp).shadow(8.dp, CircleShape)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick
+                ),
             shadowElevation = 2.dp,
         ) { Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) { icon() } }
     }
