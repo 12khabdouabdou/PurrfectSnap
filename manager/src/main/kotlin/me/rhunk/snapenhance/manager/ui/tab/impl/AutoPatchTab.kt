@@ -35,7 +35,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.core.content.FileProvider
-import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import me.rhunk.snapenhance.manager.ui.tab.Tab
@@ -49,8 +48,6 @@ import java.util.concurrent.TimeUnit
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 private val Context.dataStore by preferencesDataStore(name = "auto_patch_state")
 
@@ -66,6 +63,17 @@ class AutoPatchTab : Tab("auto_patch") {
     enum class Phase {
         Idle, Downloading12, Installing12, AwaitingLogin, DownloadingRecommended, InstallingRecommended, DownloadingSnapEnhance, InstallingSnapEnhance, Finished, Error
     }
+
+    data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
+    data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
+    data class ReleaseAssets(
+        val snapchat12Url: String, 
+        val snapchat12Name: String,
+        val snapchatRecommendedUrl: String, 
+        val snapchatRecommendedName: String,
+        val recommendedVersion: String,
+        val releaseName: String
+    )
 
     override fun init(activity: ComponentActivity) {
         super.init(activity)
@@ -190,28 +198,8 @@ class AutoPatchTab : Tab("auto_patch") {
         
         suspend fun installPackage(file: File, packageName: String): Boolean {
             logDebug("Starting installation of ${file.name} (${file.length() / 1024 / 1024} MB)")
-            if (sharedConfig.useRootInstaller) {
-                logDebug("Using root installer method")
-                val res = Shell.cmd(
-                    "cp \"${file.absolutePath}\" /data/local/tmp/",
-                    "pm install -r \"/data/local/tmp/${file.name}\"",
-                    "rm \"/data/local/tmp/${file.name}\""
-                ).exec()
-                if (res.isSuccess) {
-                    logDebug("Root installation successful")
-                    return true
-                }
-                logDebug("Root installation failed, checking if package installed anyway...")
-                repeat(10) { 
-                    if (isPackageInstalled(packageName)) {
-                        logDebug("Package found installed after ${it + 1} attempts")
-                        return true
-                    }
-                    Thread.sleep(1000)
-                }
-                return false
-            }
-            logDebug("Using standard installer method")
+            logDebug("Using standard installer method for non-rooted devices")
+            
             val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
             val intent = Intent(Intent.ACTION_INSTALL_PACKAGE).apply {
                 data = uri
@@ -238,17 +226,6 @@ class AutoPatchTab : Tab("auto_patch") {
             logError("Installation failed after all attempts")
             return false
         }
-
-        data class AssetResult(val snapEnhanceName: String, val snapEnhanceUrl: String, val coreName: String, val coreUrl: String)
-        data class AbiChoice(val assetLabel: String, val desiredLibDir: String)
-        data class ReleaseAssets(
-            val snapchat12Url: String, 
-            val snapchat12Name: String,
-            val snapchatRecommendedUrl: String, 
-            val snapchatRecommendedName: String,
-            val recommendedVersion: String,
-            val releaseName: String
-        )
         
         fun detectAbiChoice(): AbiChoice {
             val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
