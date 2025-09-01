@@ -1,6 +1,5 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl
 
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +29,6 @@ import me.rhunk.snapenhance.manager.ui.tab.Tab
 import kotlin.random.Random
 
 class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Settings) {
-
     @Composable
     override fun Content() {
         Box(
@@ -62,7 +60,6 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(12.dp))
-
                 BeautifulConfigEditRow(
                     getValue = { sharedConfig.snapEnhancePackageName },
                     setValue = { sharedConfig.snapEnhancePackageName = it },
@@ -72,26 +69,22 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
                         (0..Random.nextInt(7, 16)).map { ('a'..'z').random() }.joinToString("").chunked(4).joinToString(".")
                     }
                 )
-
                 BeautifulConfigBooleanRow(
                     getValue = { sharedConfig.enableRepackage },
                     setValue = { sharedConfig.enableRepackage = it },
                     label = "Repackage SnapEnhance (experimental)"
                 )
-
                 BeautifulConfigBooleanRow(
                     getValue = { sharedConfig.useRootInstaller },
                     setValue = { sharedConfig.useRootInstaller = it },
                     label = "Use root installer"
                 )
-
                 BeautifulConfigBooleanRow(
                     getValue = { sharedConfig.obfuscateLSPatch },
                     setValue = { sharedConfig.obfuscateLSPatch = it },
                     label = "Obfuscate LSPatch (experimental)"
                 )
             }
-
             SnapEnhanceFloatingNav(this@SettingsTab)
         }
     }
@@ -126,8 +119,9 @@ private fun BeautifulConfigEditRow(
                         modifier = Modifier
                             .focusRequester(focusRequester)
                             .onGloballyPositioned { focusRequester.requestFocus() },
-                        colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color(0xFF191A2D),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFF191A2D),
+                            unfocusedContainerColor = Color(0xFF191A2D),
                             focusedIndicatorColor = Color(0xFF8B9AE0),
                             unfocusedIndicatorColor = Color(0xFF444563)
                         )
