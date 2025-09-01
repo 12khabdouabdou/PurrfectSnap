@@ -43,6 +43,22 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
         var isRoot by remember { mutableStateOf(false) }
         val glowAlpha = 0.8f
 
+        // State for button presses
+        var pressedIdx by remember { mutableStateOf<Int?>(null) }
+
+        // --- Handle button navigation with animation (ONLY here!!) ---
+        LaunchedEffect(pressedIdx) {
+            if (pressedIdx == 0) {
+                delay(135)
+                navigation?.navigateTo(ManualPatchTab::class)
+                pressedIdx = null
+            } else if (pressedIdx == 1) {
+                delay(135)
+                navigation?.navigateTo(AutoPatchTab::class)
+                pressedIdx = null
+            }
+        }
+
         Box(
             Modifier
                 .fillMaxSize()
@@ -169,8 +185,9 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
 
             // The action buttons fill the bottom of the screen (no spacing)
             ActionButtonsFilledBottom(
-                onManualPatch = { navigation?.navigateTo(ManualPatchTab::class) },
-                onAutoPatch = { navigation?.navigateTo(AutoPatchTab::class) }
+                pressedIdx = pressedIdx,
+                onManualPatch = { pressedIdx = 0 },
+                onAutoPatch = { pressedIdx = 1 }
             )
 
             SnapEnhanceFloatingNav(this@HomeTab)
@@ -180,11 +197,10 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
 
 @Composable
 fun ActionButtonsFilledBottom(
+    pressedIdx: Int?,
     onManualPatch: () -> Unit,
     onAutoPatch: () -> Unit
 ) {
-    // Press states and scaling animation
-    var pressedIdx by remember { mutableStateOf<Int?>(null) }
     Box(
         Modifier
             .fillMaxSize()
@@ -202,14 +218,7 @@ fun ActionButtonsFilledBottom(
                 glowColor = Color(0xAAFFD95B),
                 leftRounded = true,
                 scalePressed = pressedIdx == 0,
-                onClick = {
-                    pressedIdx = 0
-                    LaunchedEffect(Unit) {
-                        delay(120)
-                        pressedIdx = null
-                        onManualPatch()
-                    }
-                },
+                onClick = onManualPatch,
                 modifier = Modifier.weight(1f)
             )
             ModernAnimatedButton(
@@ -219,14 +228,7 @@ fun ActionButtonsFilledBottom(
                 glowColor = Color(0x99DEDEB5),
                 leftRounded = false,
                 scalePressed = pressedIdx == 1,
-                onClick = {
-                    pressedIdx = 1
-                    LaunchedEffect(Unit) {
-                        delay(120)
-                        pressedIdx = null
-                        onAutoPatch()
-                    }
-                },
+                onClick = onAutoPatch,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -369,6 +371,7 @@ fun CoolSocialButton(
     icon = { Icon(painter = icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.White) },
     bgColor = bgColor, glow = glow, onClick = onClick
 )
+
 @Composable
 fun CoolSocialButton(
     icon: ImageVector,
