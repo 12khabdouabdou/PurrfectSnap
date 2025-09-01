@@ -60,11 +60,11 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 0.dp)
                     .align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(Modifier.height(25.dp))
+                Spacer(Modifier.height(28.dp))
                 Box(contentAlignment = Alignment.Center) {
                     GlowEffect(
                         color = Color(0xFFF5DC5C).copy(alpha = 0.7f),
@@ -85,7 +85,8 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         )
                     }
                 }
-                Spacer(Modifier.height(16.dp))
+
+                Spacer(Modifier.height(22.dp))
                 Text(
                     "Welcome to Snapenhance Manager!",
                     fontSize = 22.sp,
@@ -93,28 +94,40 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     color = Color(0xFFF4F3EC),
                     letterSpacing = 0.3.sp,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp)
                 )
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(9.dp))
                 Text(
                     "This app lets you setup Snapenhance easily!",
                     fontSize = 15.sp,
                     color = Color(0xFF98A2CF),
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp)
                 )
-                Spacer(Modifier.height(3.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                Spacer(Modifier.height(13.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     Text("Made with ", fontSize = 13.sp, color = Color(0xFFFFE066))
-                    Text("\uD83D\uDC96", fontSize = 14.sp, color = Color.Magenta)
+                    Text("❤️", fontSize = 15.sp, color = Color.Red)
                     Text(" by ΞTΞRNAL & rhunk", fontSize = 13.sp, color = Color(0xFFDDAAFF))
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(19.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 22.dp)
                 ) {
                     CoolSocialButton(
                         painterResource(R.drawable.ic_telegram),
@@ -135,7 +148,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://your.donate.url"))) }
                     )
                 }
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(19.dp))
                 Surface(
                     modifier = Modifier
                         .clip(RoundedCornerShape(22.dp))
@@ -171,29 +184,33 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         )
                     }
                 }
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(22.dp))
+                // The two buttons fill the full width with no space at sides
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .height(84.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        .height(98.dp)
+                        .padding(horizontal = 0.dp), // no left/right padding
+                    horizontalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    GlowyRoundButton(
+                    GlowyFullWidthButton(
                         text = "Manual Patch",
                         icon = Icons.Default.Handyman,
                         color = Color(0xFFFFEB66),
                         onClick = { navigation?.navigateTo(ManualPatchTab::class) },
                         glowColor = Color(0xAAFFD95B),
                         shadowColor = Color(0x55C9A73A),
+                        leftCorners = true,
                         modifier = Modifier.weight(1f)
                     )
-                    GlowyRoundButton(
+                    GlowyFullWidthButton(
                         text = "Auto Patch",
                         icon = Icons.Default.AutoFixHigh,
                         color = Color(0xFFDEDEB5),
                         onClick = { navigation?.navigateTo(AutoPatchTab::class) },
                         glowColor = Color(0x99DEDEB5),
                         shadowColor = Color(0x557C8C53),
+                        leftCorners = false,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -249,8 +266,6 @@ fun SnapEnhanceFloatingNav(tab: Tab) {
     }
 }
 
-// --- Supporting composables from previous examples ---
-
 @Composable
 fun GlowEffect(color: Color, alpha: Float, radius: Float) {
     Spacer(
@@ -271,23 +286,26 @@ fun GlowEffect(color: Color, alpha: Float, radius: Float) {
 }
 
 @Composable
-fun GlowyRoundButton(
+fun GlowyFullWidthButton(
     text: String,
     icon: ImageVector,
     color: Color,
     onClick: () -> Unit,
     glowColor: Color,
     shadowColor: Color,
+    leftCorners: Boolean,
     modifier: Modifier = Modifier
 ) {
-    Box(contentAlignment = Alignment.Center, modifier = modifier) {
-        GlowEffect(glowColor, alpha = 1f, radius = 48f)
+    Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxHeight()) {
+        GlowEffect(glowColor, alpha = 0.8f, radius = 45f)
         Surface(
-            shape = RoundedCornerShape(16.dp),
+            shape = if (leftCorners)
+                RoundedCornerShape(topStart = 22.dp, bottomStart = 22.dp)
+            else
+                RoundedCornerShape(topEnd = 22.dp, bottomEnd = 22.dp),
             color = color,
             shadowElevation = 10.dp,
-            tonalElevation = 2.dp,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.13f)),
+            border = BorderStroke(0.7.dp, Color.White.copy(alpha = 0.13f)),
             modifier = Modifier
                 .fillMaxSize()
                 .clickable(
@@ -313,8 +331,7 @@ fun GlowyRoundButton(
                     text,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
-                    fontSize = 16.sp,
-                    letterSpacing = 0.0.sp
+                    fontSize = 16.sp
                 )
             }
         }
