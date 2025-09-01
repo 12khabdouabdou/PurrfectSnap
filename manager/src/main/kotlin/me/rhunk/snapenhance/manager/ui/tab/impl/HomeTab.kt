@@ -42,18 +42,16 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
         val context = LocalContext.current
         var isRoot by remember { mutableStateOf(false) }
         val glowAlpha = 0.8f
-
-        // State for button presses
         var pressedIdx by remember { mutableStateOf<Int?>(null) }
 
-        // --- Handle button navigation with animation (ONLY here!!) ---
+        // --- Handle button navigation with animation
         LaunchedEffect(pressedIdx) {
             if (pressedIdx == 0) {
-                delay(135)
+                delay(130)
                 navigation?.navigateTo(ManualPatchTab::class)
                 pressedIdx = null
             } else if (pressedIdx == 1) {
-                delay(135)
+                delay(130)
                 navigation?.navigateTo(AutoPatchTab::class)
                 pressedIdx = null
             }
@@ -69,7 +67,6 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     )
                 )
         ) {
-            // Main content
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -97,7 +94,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     }
                 }
 
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.height(20.dp))
                 Text(
                     "Welcome to Snapenhance Manager!",
                     fontSize = 22.sp, fontWeight = FontWeight.ExtraBold,
@@ -111,9 +108,9 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     color = Color(0xFF98A2CF),
                     fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp)
                 )
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(18.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -123,10 +120,10 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     Text("❤️", fontSize = 15.sp, color = Color.Red)
                     Text(" by ΞTΞRNAL & rhunk", fontSize = 13.sp, color = Color(0xFFDDAAFF))
                 }
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(25.dp))
                 Row(
                     horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
                 ) {
                     CoolSocialButton(
                         painterResource(R.drawable.ic_telegram),
@@ -144,7 +141,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://your.donate.url"))) }
                     )
                 }
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(26.dp))
                 Surface(
                     modifier = Modifier
                         .clip(RoundedCornerShape(22.dp))
@@ -180,68 +177,53 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         )
                     }
                 }
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(42.dp))
+                // Visually centered & modern buttons, not edge-to-edge
+                Column(
+                    Modifier
+                        .padding(horizontal = 30.dp)
+                        .fillMaxWidth()
+                ) {
+                    ModernAnimatedButton(
+                        text = "Manual Patch",
+                        icon = Icons.Default.Handyman,
+                        color = Color(0xFFFFEB66),
+                        glowColor = Color(0xAAFFD95B),
+                        rounded = true,
+                        scalePressed = pressedIdx == 0,
+                        onClick = { pressedIdx = 0 },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                    )
+                    Spacer(Modifier.height(18.dp))
+                    ModernAnimatedButton(
+                        text = "Auto Patch",
+                        icon = Icons.Default.AutoFixHigh,
+                        color = Color(0xFFDEDEB5),
+                        glowColor = Color(0x99DEDEB5),
+                        rounded = true,
+                        scalePressed = pressedIdx == 1,
+                        onClick = { pressedIdx = 1 },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                    )
+                }
             }
-
-            // The action buttons fill the bottom of the screen (no spacing)
-            ActionButtonsFilledBottom(
-                pressedIdx = pressedIdx,
-                onManualPatch = { pressedIdx = 0 },
-                onAutoPatch = { pressedIdx = 1 }
-            )
-
             SnapEnhanceFloatingNav(this@HomeTab)
         }
     }
 }
 
-@Composable
-fun ActionButtonsFilledBottom(
-    pressedIdx: Int?,
-    onManualPatch: () -> Unit,
-    onAutoPatch: () -> Unit
-) {
-    Box(
-        Modifier
-            .fillMaxSize()
-    ) {
-        Row(
-            Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .height(108.dp)
-        ) {
-            ModernAnimatedButton(
-                text = "Manual Patch",
-                icon = Icons.Default.Handyman,
-                color = Color(0xFFFFEB66),
-                glowColor = Color(0xAAFFD95B),
-                leftRounded = true,
-                scalePressed = pressedIdx == 0,
-                onClick = onManualPatch,
-                modifier = Modifier.weight(1f)
-            )
-            ModernAnimatedButton(
-                text = "Auto Patch",
-                icon = Icons.Default.AutoFixHigh,
-                color = Color(0xFFDEDEB5),
-                glowColor = Color(0x99DEDEB5),
-                leftRounded = false,
-                scalePressed = pressedIdx == 1,
-                onClick = onAutoPatch,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
+// -- Modern pill animated button with click feedback --
 @Composable
 fun ModernAnimatedButton(
     text: String,
     icon: ImageVector,
     color: Color,
     glowColor: Color,
-    leftRounded: Boolean,
+    rounded: Boolean,
     scalePressed: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -249,21 +231,17 @@ fun ModernAnimatedButton(
     val scale by animateFloatAsState(if (scalePressed) 0.96f else 1f, label = "scale")
     Box(
         modifier = modifier
-            .fillMaxHeight()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
     ) {
-        GlowEffect(glowColor, alpha = 0.7f, radius = 70f)
+        GlowEffect(glowColor, alpha = 0.5f, radius = 42f)
         Surface(
-            shape = if (leftRounded)
-                RoundedCornerShape(topStart = 30.dp, bottomStart = 30.dp)
-            else
-                RoundedCornerShape(topEnd = 30.dp, bottomEnd = 30.dp),
+            shape = if (rounded) RoundedCornerShape(32.dp) else RoundedCornerShape(0.dp),
             color = color,
-            shadowElevation = 23.dp,
-            border = BorderStroke(1.3.dp, Color.White.copy(alpha = 0.10f)),
+            shadowElevation = 16.dp,
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f)),
             modifier = Modifier
                 .fillMaxSize()
                 .clickable(
@@ -272,19 +250,17 @@ fun ModernAnimatedButton(
                     onClick = onClick
                 )
         ) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(top = 16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+            Row(
+                Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     icon,
                     contentDescription = text,
-                    tint = Color.White, modifier = Modifier.size(34.dp)
+                    tint = Color.White, modifier = Modifier.size(26.dp)
                 )
-                Spacer(Modifier.height(7.dp))
+                Spacer(Modifier.width(13.dp))
                 Text(
                     text,
                     fontWeight = FontWeight.Bold,
