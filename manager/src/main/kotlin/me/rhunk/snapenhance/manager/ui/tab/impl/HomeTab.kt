@@ -2,7 +2,6 @@ package me.rhunk.snapenhance.manager.ui.tab.impl
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.border
@@ -17,18 +16,20 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.draw.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.delay
 import me.rhunk.snapenhance.manager.R
@@ -40,7 +41,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
     override fun Content() {
         val context = LocalContext.current
         var isRoot by remember { mutableStateOf(false) }
-        val density = LocalDensity.current
+        val glowAlpha = 0.8f
 
         Box(
             Modifier
@@ -52,19 +53,18 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     )
                 )
         ) {
-            // Main content (everything but floating bar + actions)
+            // Main content
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .align(Alignment.TopCenter)
-                    .imePadding(),
+                    .align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(Modifier.height(28.dp))
                 Box(contentAlignment = Alignment.Center) {
                     GlowEffect(
                         color = Color(0xFFF5DC5C).copy(alpha = 0.7f),
-                        alpha = 0.8f, radius = 66f
+                        alpha = glowAlpha, radius = 66f
                     )
                     Surface(
                         shape = RoundedCornerShape(18.dp),
@@ -166,74 +166,73 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                 }
                 Spacer(Modifier.height(20.dp))
             }
-            // The action buttons fill bottom and both sides
-            EdgeToEdgeButtonsRow(
-                manualPatchOnClick = { animateNavigateTo { navigation?.navigateTo(ManualPatchTab::class) } },
-                autoPatchOnClick = { animateNavigateTo { navigation?.navigateTo(AutoPatchTab::class) } }
+
+            // The action buttons fill the bottom of the screen (no spacing)
+            ActionButtonsFilledBottom(
+                onManualPatch = { navigation?.navigateTo(ManualPatchTab::class) },
+                onAutoPatch = { navigation?.navigateTo(AutoPatchTab::class) }
             )
+
             SnapEnhanceFloatingNav(this@HomeTab)
-        }
-    }
-
-    // Edge-to-edge row, bottom anchored!
-    @Composable
-    fun EdgeToEdgeButtonsRow(
-        manualPatchOnClick: () -> Unit,
-        autoPatchOnClick: () -> Unit
-    ) {
-        var pressedIndex by remember { mutableStateOf<Int?>(null) }
-        val density = LocalDensity.current
-
-        Box(Modifier
-            .fillMaxSize()
-            .padding(bottom = 85.dp)
-        ) {
-            Row(
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .height(100.dp)
-            ) {
-                ModernAnimatedButton(
-                    text = "Manual Patch",
-                    icon = Icons.Default.Handyman,
-                    color = Color(0xFFFFEB66),
-                    glowColor = Color(0xAAFFD95B),
-                    modifier = Modifier.weight(1f),
-                    leftRounded = true,
-                    scalePressed = pressedIndex == 0,
-                    onClick = {
-                        pressedIndex = 0
-                        manualPatchOnClick()
-                        LaunchedEffect(Unit) {
-                            delay(150)
-                            pressedIndex = null
-                        }
-                    }
-                )
-                ModernAnimatedButton(
-                    text = "Auto Patch",
-                    icon = Icons.Default.AutoFixHigh,
-                    color = Color(0xFFDEDEB5),
-                    glowColor = Color(0x99DEDEB5),
-                    modifier = Modifier.weight(1f),
-                    leftRounded = false,
-                    scalePressed = pressedIndex == 1,
-                    onClick = {
-                        pressedIndex = 1
-                        autoPatchOnClick()
-                        LaunchedEffect(Unit) {
-                            delay(150)
-                            pressedIndex = null
-                        }
-                    }
-                )
-            }
         }
     }
 }
 
-// -- Cool, modern button with press animation and glow --
+@Composable
+fun ActionButtonsFilledBottom(
+    onManualPatch: () -> Unit,
+    onAutoPatch: () -> Unit
+) {
+    // Press states and scaling animation
+    var pressedIdx by remember { mutableStateOf<Int?>(null) }
+    Box(
+        Modifier
+            .fillMaxSize()
+    ) {
+        Row(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(108.dp)
+        ) {
+            ModernAnimatedButton(
+                text = "Manual Patch",
+                icon = Icons.Default.Handyman,
+                color = Color(0xFFFFEB66),
+                glowColor = Color(0xAAFFD95B),
+                leftRounded = true,
+                scalePressed = pressedIdx == 0,
+                onClick = {
+                    pressedIdx = 0
+                    LaunchedEffect(Unit) {
+                        delay(120)
+                        pressedIdx = null
+                        onManualPatch()
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
+            ModernAnimatedButton(
+                text = "Auto Patch",
+                icon = Icons.Default.AutoFixHigh,
+                color = Color(0xFFDEDEB5),
+                glowColor = Color(0x99DEDEB5),
+                leftRounded = false,
+                scalePressed = pressedIdx == 1,
+                onClick = {
+                    pressedIdx = 1
+                    LaunchedEffect(Unit) {
+                        delay(120)
+                        pressedIdx = null
+                        onAutoPatch()
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
 @Composable
 fun ModernAnimatedButton(
     text: String,
@@ -245,7 +244,7 @@ fun ModernAnimatedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val scale by animateFloatAsState(if (scalePressed) 0.97f else 1f, label = "scale")
+    val scale by animateFloatAsState(if (scalePressed) 0.96f else 1f, label = "scale")
     Box(
         modifier = modifier
             .fillMaxHeight()
@@ -274,7 +273,7 @@ fun ModernAnimatedButton(
             Column(
                 Modifier
                     .fillMaxSize()
-                    .padding(top = 12.dp, start = 8.dp, end = 8.dp),
+                    .padding(top = 16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -408,24 +407,5 @@ private fun CoolSocialButtonBase(
                 ),
             shadowElevation = 2.dp,
         ) { Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) { icon() } }
-    }
-}
-
-// Animate content switch (very basic for now, can be replaced with MaterialMotion or Accompanist Navigation if you want true page transitions)
-@Composable
-inline fun animateNavigateTo(crossinline action: () -> Unit) {
-    // Simple: show a quick shimmer/scale effect for coolness, then navigate
-    val shimmer = remember { Animatable(1f) }
-    LaunchedEffect(Unit) {
-        shimmer.animateTo(
-            1.2f,
-            animationSpec = tween(120, easing = FastOutSlowInEasing)
-        )
-        shimmer.animateTo(
-            1f,
-            animationSpec = tween(80, easing = LinearEasing)
-        )
-        delay(50)
-        action()
     }
 }
