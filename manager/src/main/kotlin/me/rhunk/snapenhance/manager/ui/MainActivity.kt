@@ -92,7 +92,6 @@ class MainActivity : ComponentActivity() {
                 }
                 Scaffold(
                     bottomBar = { navigation.BottomBar() }, // << Unified bar for all tabs.
-                    topBar = { navigation.TopBar() },       // << Global top bar, if needed.
                     floatingActionButton = { navigation.FloatingActionButtons() },
                     floatingActionButtonPosition = FabPosition.End,
                 ) { innerPadding ->
