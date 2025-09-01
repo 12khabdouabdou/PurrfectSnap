@@ -1,12 +1,10 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -93,7 +91,7 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
                 )
             }
 
-            SnapEnhanceFloatingNav(navigation) // ← bottom nav included on Settings as well!
+            SnapEnhanceFloatingNav(this@SettingsTab)
         }
     }
 }
