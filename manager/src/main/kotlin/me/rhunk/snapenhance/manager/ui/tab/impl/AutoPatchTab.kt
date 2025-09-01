@@ -16,13 +16,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.core.content.FileProvider
@@ -55,7 +59,7 @@ class AutoPatchTab : Tab("auto_patch") {
     }
 
     enum class Phase {
-        Idle, Patching12, Uploading12, AwaitingLogin, Patching13, Uploading13, Finished, Error
+        Idle, Patching12, AwaitingLogin, Patching13, Finished, Error
     }
 
     private val SNAP12_URL = "https://github.com/particle-box/auto-patch-server/releases/download/v1.0.0/snapchat-12.33.1.19.apk"
@@ -79,21 +83,26 @@ class AutoPatchTab : Tab("auto_patch") {
         var status by remember { mutableStateOf("") }
         var progress by remember { mutableFloatStateOf(0f) }
         var isDownloading by remember { mutableStateOf(false) }
-        var logsExpanded by remember { mutableStateOf(false) }
         val logsScrollState = rememberScrollState()
         var specialNotice by remember { mutableStateOf("") }
         var onLoginContinue by remember { mutableStateOf<(() -> Unit)?>(null) }
 
-        val neonColors = listOf(
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-            MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
-            Color(0xFFFFF176).copy(alpha = 0.65f),
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+        // BEAUTIFUL AESTHETIC UI: Neon gradients, glowing border, animated accent!
+        val infiniteTransition = rememberInfiniteTransition(label = "neon")
+        val sweep = infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
+                animation = tween(3500, easing = LinearEasing)
+            ), label = "spin"
         )
-
         val borderBrush = Brush.sweepGradient(
-            neonColors,
-            center = androidx.compose.ui.geometry.Offset.Zero
+            colors = listOf(
+                Color(0xFF69F0AE),
+                Color(0xFF00B8D4),
+                Color(0xFFD500F9),
+                Color(0xFFE040FB),
+                Color(0xFF69F0AE)
+            ),
+            center = Offset.Zero
         )
 
         val longClient = remember {
@@ -119,14 +128,11 @@ class AutoPatchTab : Tab("auto_patch") {
             persistState(newStatus = status)
         }
 
-        fun logStep(step: String, msg: String, special: String? = null) {
-            log("[$step] $msg")
+        fun logStep(msg: String, special: String? = null) {
+            log(msg)
             if (special != null) specialNotice = special else specialNotice = ""
         }
-
-        fun logError(msg: String) {
-            log("❌ $msg")
-        }
+        fun logError(msg: String) = log("❌ $msg")
 
         fun isPackageInstalled(pkg: String): Boolean {
             return try {
@@ -276,17 +282,17 @@ class AutoPatchTab : Tab("auto_patch") {
             scope.launch {
                 try {
                     clearApkCache()
-                    status = ""; progress = 0f; specialNotice = ""; logsExpanded = true
+                    status = ""; progress = 0f; specialNotice = ""
                     persistState(newStatus = status)
                     phase = Phase.Patching12
 
                     val cacheDir = activity?.externalCacheDir ?: activity?.cacheDir ?: File(context.cacheDir, "web-cache")
-                    logStep("1", "Downloading Snapchat 12.33.1.19...")
+                    logStep("🌙 Downloading Snapchat 12.33.1.19...")
 
                     val snapchat12Apk = downloadWithOkHttp(SNAP12_URL, cacheDir, { progress = it }, "snapchat12.apk")
                         ?: throw RuntimeException("Failed to download Snapchat 12.33")
 
-                    logStep("2", "Uploading Snapchat 12.33 to patch server (no modules)...")
+                    logStep("📤 Uploading Snapchat 12.33 to patch server (no modules)...")
                     warmUpServer("$PATCH_SERVER_BASE/health")
                     val reqBody12 = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("apk", "snapchat12.apk", snapchat12Apk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -301,17 +307,16 @@ class AutoPatchTab : Tab("auto_patch") {
                         response.body?.byteStream()?.use { input ->
                             patchedFile12.outputStream().use { output -> input.copyTo(output) }
                         }
-                        logStep("3", "Patched Snapchat 12.33 APK received. Installing...")
+                        logStep("✅ Patched Snapchat 12.33 APK received. Installing...")
                         if (!installPackage(patchedFile12, sharedConfig.snapchatPackageName))
                             throw RuntimeException("Patched Snapchat 12.33 install failed (no modules patch)")
                     }
 
                     phase = Phase.AwaitingLogin
-                    status += "\n=== LOGIN INSTRUCTIONS ===\n"
+                    status += "\n🌈 Login Instructions 🌈\n"
                     status += "1. Open Snapchat and login.\n"
-                    status += "2. If you see the 'temporarily disabled' error, force stop Snapchat from App Info and relogin.\n"
-                    status += "3. After login, return here to continue patching for modules.\n"
-                    status += "\nTap 'Continue' below after you've logged in.\n"
+                    status += "2. If you see 'temporarily disabled', force stop from App Info and relogin.\n"
+                    status += "3. Return here and tap Continue.\n"
                     persistState(newStatus = status)
 
                     kotlinx.coroutines.suspendCancellableCoroutine<Unit> { cont ->
@@ -321,18 +326,18 @@ class AutoPatchTab : Tab("auto_patch") {
                     phase = Phase.Patching13
 
                     val abi = detectAbiChoice()
-                    logStep("4", "Downloading core.apk for 13.51...")
+                    logStep("⬇️ Downloading core.apk for 13.51...")
                     val assets13 = fetchSnapEnhanceAndCoreAssets(abi.assetLabel)
                         ?: throw RuntimeException("No SnapEnhance/core.apk pair found in prereleases for ABI: ${abi.assetLabel}")
 
                     val coreApk = downloadWithOkHttp(assets13.coreUrl, cacheDir, { progress = it }, "core.apk")
                         ?: throw RuntimeException("Failed to download core.apk")
 
-                    logStep("5", "Downloading Snapchat 13.51.0.56...")
+                    logStep("⬇️ Downloading Snapchat 13.51.0.56...")
                     val snapchat13Apk = downloadWithOkHttp(SNAP13_URL, cacheDir, { progress = it }, "snapchat13.apk")
                         ?: throw RuntimeException("Failed to download Snapchat 13.51")
 
-                    logStep("6", "Uploading core.apk & Snapchat 13.51 to server for patching modules...")
+                    logStep("📤 Uploading core.apk & Snapchat 13.51 to server for patching modules...")
                     warmUpServer("$PATCH_SERVER_BASE/health")
                     val reqBody13 = MultipartBody.Builder().setType(MultipartBody.FORM)
                         .addFormDataPart("core", "core.apk", coreApk.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull()))
@@ -348,23 +353,24 @@ class AutoPatchTab : Tab("auto_patch") {
                         response.body?.byteStream()?.use { input ->
                             patchedFile13.outputStream().use { output -> input.copyTo(output) }
                         }
-                        logStep("7", "Patched Snapchat 13.51 APK received. Installing...")
+                        logStep("✅ Patched Snapchat 13.51 APK received. Installing...")
                         if (!installPackage(patchedFile13, sharedConfig.snapchatPackageName))
                             throw RuntimeException("Patched Snapchat 13.51 install failed")
                     }
 
-                    logStep("8", "Downloading SnapEnhance...")
+                    logStep("⬇️ Downloading SnapEnhance...")
                     val seApk = downloadWithOkHttp(assets13.snapEnhanceUrl, cacheDir, { progress = it }, "snapenhance.apk")
                         ?: throw RuntimeException("Failed to download SnapEnhance")
-                    logStep("9", "Installing SnapEnhance...")
+                    logStep("✅ Installing SnapEnhance...")
 
                     if (!installPackage(seApk, sharedConfig.snapEnhancePackageName))
                         throw RuntimeException("SnapEnhance install failed")
 
                     phase = Phase.Finished
-                    status += "\n\nAll done!\n\nFirst, open SnapEnhance and set it up.\nThen, open Snapchat and enjoy!"
+                    status += "\n\n✨ All done!\n\nFirst, open SnapEnhance and set it up.\nThen, open Snapchat and enjoy!"
                     persistState(newStatus = status)
                     clearApkCache()
+
                 } catch (t: Throwable) {
                     logError("Error: ${t.message}\n${t.stackTraceToString()}")
                     phase = Phase.Error
@@ -372,51 +378,104 @@ class AutoPatchTab : Tab("auto_patch") {
             }
         }
 
-        Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceVariant) {
-            Box(Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 24.dp, bottom = 10.dp, start = 6.dp, end = 6.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("Auto Patch", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(12.dp))
+        // === BEAUTIFUL RESTORED UI ===
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            Card(
+                modifier = Modifier
+                    .padding(18.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .border(
+                        width = 3.dp,
+                        brush = borderBrush,
+                        shape = RoundedCornerShape(22.dp)
+                    )
+                    .clip(RoundedCornerShape(22.dp)),
+                elevation = CardDefaults.cardElevation(14.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF101022))
+            ) {
+                Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Filled.AutoFixHigh, "Patch", modifier = Modifier.size(40.dp), tint = Color(0xFF76FFBC))
+                    Spacer(Modifier.height(8.dp))
+                    Text("Auto Patch", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF00E676))
+                    Spacer(Modifier.height(20.dp))
                     if (phase == Phase.Idle || phase == Phase.Error || phase == Phase.Finished) {
-                        Button(onClick = { startPatchFlow() }) { Text("Start Auto Patch") }
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { startPatchFlow() },
+                            modifier = Modifier.fillMaxWidth(0.85f).height(52.dp),
+                            shape = RoundedCornerShape(15.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00BFA5))
+                        ) {
+                            Icon(Icons.Filled.FlashOn, "Go")
+                            Spacer(Modifier.width(12.dp))
+                            Text("Start Auto Patch", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                     if (specialNotice.isNotEmpty()) {
-                        Text(specialNotice,
-                             color = Color.Red,
-                             fontWeight = FontWeight.SemiBold,
-                             modifier = Modifier.padding(vertical = 4.dp))
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            specialNotice,
+                            color = Color(0xFFF44336),
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(6.dp),
+                            fontSize = 16.sp
+                        )
                     }
                     if (phase == Phase.AwaitingLogin) {
-                        Spacer(Modifier.height(20.dp))
-                        Text("Login Steps:", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                         Spacer(Modifier.height(16.dp))
-                        Text("1. Open Snapchat and login.")
-                        Text("2. If you see the 'temporarily disabled' error, force stop Snapchat from App Info and relogin.")
-                        Text("3. After login, return here to continue patching for modules.")
-                        Spacer(Modifier.height(24.dp))
-                        Button(onClick = { onLoginContinue?.invoke() }) { Text("Continue") }
-                        Spacer(Modifier.height(10.dp))
+                        Icon(Icons.Filled.Info, "", modifier = Modifier.size(32.dp), tint = Color(0xFFB39DDB))
+                        Text(
+                            "Login Steps:",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color(0xFFCE93D8),
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Column(Modifier.padding(10.dp)) {
+                            Text("1. Open Snapchat and login.")
+                            Text("2. If you see 'temporarily disabled', force stop from App Info and relogin.")
+                            Text("3. Return here and tap Continue.")
+                        }
+                        Spacer(Modifier.height(18.dp))
+                        Button(
+                            onClick = { onLoginContinue?.invoke() },
+                            modifier = Modifier.fillMaxWidth(0.65f).height(46.dp),
+                            shape = RoundedCornerShape(15.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C4DFF))
+                        ) {
+                            Text("Continue", fontSize = 17.sp)
+                        }
                     }
-                    Column(
-                        modifier = Modifier
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .height(170.dp)
                             .verticalScroll(logsScrollState)
-                            .background(Color(0x11000000))
-                            .padding(8.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(1.dp, borderBrush, RoundedCornerShape(8.dp))
+                            .background(Color(0x20202840), RoundedCornerShape(14.dp))
+                            .border(1.4.dp, borderBrush, RoundedCornerShape(14.dp))
+                            .padding(12.dp)
                     ) {
-                        Text(status, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            status,
+                            fontSize = 13.5.sp,
+                            color = Color(0xFFEEEEFF)
+                        )
                     }
                     if (isDownloading || (progress > 0f && progress < 1f)) {
-                        LinearProgressIndicator(progress)
+                        LinearProgressIndicator(
+                            progress = progress,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp)
+                                .clip(RoundedCornerShape(14.dp)),
+                            color = Color(0xFF3DF0C4),
+                            trackColor = Color(0x203DF0C4)
+                        )
                     }
                 }
             }
