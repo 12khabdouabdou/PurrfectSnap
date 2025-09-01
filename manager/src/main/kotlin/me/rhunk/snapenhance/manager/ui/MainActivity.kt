@@ -10,8 +10,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
-import me.rhunk.snapenhance.manager.ui.tab.Navigation
-import me.rhunk.snapenhance.manager.ui.tab.SharedConfig
+import me.rhunk.snapenhance.manager.data.SharedConfig
+import me.rhunk.snapenhance.manager.ui.Navigation
 import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.AutoPatchTab
@@ -29,7 +29,6 @@ class MainActivity : ComponentActivity() {
                     else dynamicLightColorScheme(LocalContext.current)
                 } else darkColorScheme()
             ) {
-                // Build your navigation controller and shared config
                 val navHostController = rememberNavController()
                 val sharedConfig = remember { SharedConfig(this) }
                 val tabs = listOf(
@@ -38,7 +37,6 @@ class MainActivity : ComponentActivity() {
                     AutoPatchTab(),
                     SettingsTab()
                 )
-                // Instantiate your repo's Navigation system
                 val navigation = remember {
                     Navigation(
                         navHostController = navHostController,
@@ -53,7 +51,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Scaffold(
                     floatingActionButton = { navigation.FloatingActionButtons() },
-                    floatingActionButtonPosition = FabPosition.End,
+                    floatingActionButtonPosition = FabPosition.End
                 ) { paddingValues ->
                     navigation.NavigationHost(paddingValues)
                 }
