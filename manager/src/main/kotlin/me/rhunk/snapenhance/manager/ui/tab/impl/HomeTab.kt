@@ -85,7 +85,6 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         )
                     }
                 }
-
                 Spacer(Modifier.height(16.dp))
                 Text(
                     "Welcome to Snapenhance Manager!",
@@ -96,22 +95,17 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 Spacer(Modifier.height(4.dp))
                 Text(
                     "This app lets you setup Snapenhance easily!",
                     fontSize = 15.sp,
                     color = Color(0xFF98A2CF),
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(3.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                     Text("Made with ", fontSize = 13.sp, color = Color(0xFFFFE066))
                     Text("\uD83D\uDC96", fontSize = 14.sp, color = Color.Magenta)
                     Text(" by ΞTΞRNAL & rhunk", fontSize = 13.sp, color = Color(0xFFDDAAFF))
@@ -178,8 +172,6 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     }
                 }
                 Spacer(Modifier.height(14.dp))
-
-                // Fills two buttons edge-to-edge, making them beautiful and proportional
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -190,7 +182,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         text = "Manual Patch",
                         icon = Icons.Default.Handyman,
                         color = Color(0xFFFFEB66),
-                        onClick = { navigation.navigateTo(ManualPatchTab::class) },
+                        onClick = { navigation?.navigateTo(ManualPatchTab::class) },
                         glowColor = Color(0xAAFFD95B),
                         shadowColor = Color(0x55C9A73A),
                         modifier = Modifier.weight(1f)
@@ -199,24 +191,20 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         text = "Auto Patch",
                         icon = Icons.Default.AutoFixHigh,
                         color = Color(0xFFDEDEB5),
-                        onClick = { navigation.navigateTo(AutoPatchTab::class) },
+                        onClick = { navigation?.navigateTo(AutoPatchTab::class) },
                         glowColor = Color(0x99DEDEB5),
                         shadowColor = Color(0x557C8C53),
                         modifier = Modifier.weight(1f)
                     )
                 }
             }
-
-            // Bottom floating bar
-            SnapEnhanceFloatingNav(navigation)
+            SnapEnhanceFloatingNav(this@HomeTab)
         }
     }
 }
 
-//--- SHARED NAV BAR FOR HOME/SETTINGS ---//
-
 @Composable
-fun SnapEnhanceFloatingNav(navigation: Tab.Navigation) {
+fun SnapEnhanceFloatingNav(tab: Tab) {
     Box(
         Modifier
             .fillMaxSize()
@@ -239,7 +227,7 @@ fun SnapEnhanceFloatingNav(navigation: Tab.Navigation) {
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 IconButton(
-                    onClick = { navigation.navigateTo(HomeTab::class) },
+                    onClick = { tab.navigation?.navigateTo(HomeTab::class) },
                     modifier = Modifier.weight(1f),
                 ) {
                     Icon(
@@ -248,7 +236,7 @@ fun SnapEnhanceFloatingNav(navigation: Tab.Navigation) {
                     )
                 }
                 IconButton(
-                    onClick = { navigation.navigateTo(SettingsTab::class) },
+                    onClick = { tab.navigation?.navigateTo(SettingsTab::class) },
                     modifier = Modifier.weight(1f),
                 ) {
                     Icon(
@@ -261,7 +249,7 @@ fun SnapEnhanceFloatingNav(navigation: Tab.Navigation) {
     }
 }
 
-//--- GLASS/NEUMORPHISM EXTRAS ---//
+// --- Supporting composables from previous examples ---
 
 @Composable
 fun GlowEffect(color: Color, alpha: Float, radius: Float) {
