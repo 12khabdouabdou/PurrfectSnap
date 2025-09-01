@@ -1,14 +1,16 @@
 package me.rhunk.snapenhance.manager.ui.tab.impl
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.ComponentActivity
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.Settings
@@ -18,15 +20,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import android.content.Intent
-import android.net.Uri
+import androidx.compose.ui.unit.*
 import me.rhunk.snapenhance.manager.R
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 
@@ -40,160 +42,174 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
 
     @Composable
     override fun Content() {
-        // -- State for root/non-root toggle --
         var isRoot by remember { mutableStateOf(false) }
         val context = LocalContext.current
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 36.dp, start = 18.dp, end = 18.dp, bottom = 90.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Logo with rounded corners, shadow
-            Surface(
-                shape = RoundedCornerShape(28.dp),
-                shadowElevation = 12.dp,
-                tonalElevation = 1.dp,
-                modifier = Modifier.size(100.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.logo), // Your logo.png
-                    contentDescription = "Logo",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-            Spacer(modifier = Modifier.height(18.dp))
-            Text("Welcome to Snapenhance Manager!", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(
-                "This lets you setup Snapenhance easily",
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f)
+        // Animate glow pulsation for logo & buttons
+        val infiniteTransition = rememberInfiniteTransition()
+        val glowAlpha by infiniteTransition.animateFloat(
+            initialValue = 0.25f,
+            targetValue = 0.7f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1600, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse
             )
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                "Made with ❤️ by ΞTΞRNAL & rhunk",
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(22.dp))
+        )
 
-            // Telegram / Donate / GitHub Buttons
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(18.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/snapenhance_chat"))
-                        context.startActivity(intent)
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_telegram),
-                        contentDescription = "Telegram",
-                        tint = Color(0xFF229ED9),
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance?tab=readme-ov-file#donate"))
-                        context.startActivity(intent)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.FavoriteBorder,
-                        contentDescription = "Donate",
-                        tint = Color(0xFFE53935),
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance"))
-                        context.startActivity(intent)
-                    }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_github),
-                        contentDescription = "GitHub",
-                        tint = Color(0xFF191A1A),
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(34.dp))
-
-            // Toggle
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Non-Root", fontWeight = if (!isRoot) FontWeight.Bold else null)
-                Spacer(Modifier.width(10.dp))
-                Switch(
-                    checked = isRoot,
-                    onCheckedChange = { isRoot = it },
-                    colors = SwitchDefaults.colors(checkedThumbColor = MaterialTheme.colorScheme.primary)
-                )
-                Spacer(Modifier.width(10.dp))
-                Text("Root", fontWeight = if (isRoot) FontWeight.Bold else null)
-            }
-
-            Spacer(modifier = Modifier.height(30.dp))
-
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                // Manual Patch
-                HomeButton(
-                    label = "Manual Patch",
-                    icon = Icons.Default.Handyman,
-                    color = MaterialTheme.colorScheme.primary,
-                    onClick = { navigation.navigateTo(ManualPatchTab::class) }
-                )
-                // Auto Patch
-                HomeButton(
-                    label = "Auto Patch",
-                    icon = Icons.Default.AutoFixHigh,
-                    color = MaterialTheme.colorScheme.secondary,
-                    onClick = { navigation.navigateTo(AutoPatchTab::class) }
-                )
-            }
-        }
-
-        // Floating iOS-like bottom nav
         Box(
             Modifier
                 .fillMaxSize()
-                .padding(bottom = 24.dp, start = 18.dp, end = 18.dp),
-            contentAlignment = Alignment.BottomCenter
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
         ) {
-            Surface(
-                shape = RoundedCornerShape(30.dp),
-                shadowElevation = 18.dp,
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f),
+            Column(
                 modifier = Modifier
-                    .height(62.dp)
-                    .fillMaxWidth(0.88f)
+                    .fillMaxHeight()
+                    .fillMaxWidth()
+                    .padding(bottom = 100.dp), // leave space for floating nav
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
+                // Glowy Logo
+                Box(contentAlignment = Alignment.Center) {
+                    GlowEffect(color = Color(0xFFF5DC5C), alpha = glowAlpha, radius = 80f)
+                    Surface(
+                        shape = RoundedCornerShape(24.dp),
+                        shadowElevation = 8.dp,
+                        modifier = Modifier.size(100.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.logo),
+                            contentDescription = "Logo",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    "Welcome to Snapenhance Manager!",
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                Text(
+                    "This lets you setup Snapenhance easily",
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(6.dp))
                 Row(
-                    Modifier.fillMaxSize(),
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text("Made with ", fontSize = 14.sp, color = Color(0xFFFFE066))
+                    Text("\u2764", fontSize = 14.sp, color = Color.Red)
+                    Text(" by ΞTΞRNAL & rhunk", fontSize = 14.sp, color = Color(0xFFFFE066), fontWeight = FontWeight.Medium)
+                }
+                Spacer(Modifier.height(25.dp))
+                // Social Row
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(28.dp),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    GlowyIconButton(
+                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/YOUR_TELEGRAM_LINK"))) },
+                        icon = painterResource(R.drawable.ic_telegram),
+                        glowColor = Color(0xFF229ED9),
+                        glowAlpha = glowAlpha
+                    )
+                    GlowyIconButton(
+                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://your.donate.url"))) },
+                        icon = Icons.Outlined.FavoriteBorder,
+                        glowColor = Color(0xFFF95B5B),
+                        glowAlpha = glowAlpha
+                    )
+                    GlowyIconButton(
+                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/particle-box/SnapEnhance"))) },
+                        icon = painterResource(R.drawable.ic_github),
+                        glowColor = Color(0xFFB18FF5),
+                        glowAlpha = glowAlpha
+                    )
+                }
+                Spacer(Modifier.height(32.dp))
+                // Toggle
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Text("Non-Root", fontWeight = if (!isRoot) FontWeight.Bold else null)
+                    Spacer(Modifier.width(10.dp))
+                    Switch(
+                        checked = isRoot,
+                        onCheckedChange = { isRoot = it },
+                        colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFFFE066))
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text("Root", fontWeight = if (isRoot) FontWeight.Bold else null)
+                }
+                Spacer(Modifier.height(30.dp))
+                // Main Buttons
+                Row(
+                    Modifier
+                        .fillMaxWidth(0.88f)
+                        .align(Alignment.CenterHorizontally),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    IconButton(
-                        onClick = { navigation.navigateTo(HomeTab::class) }
+                    GlowyButton(
+                        text = "Manual Patch",
+                        icon = Icons.Default.Handyman,
+                        color = Color(0xFFF5DC5C),
+                        onClick = { navigation.navigateTo(ManualPatchTab::class) },
+                        glowAlpha = glowAlpha
+                    )
+                    GlowyButton(
+                        text = "Auto Patch",
+                        icon = Icons.Default.AutoFixHigh,
+                        color = Color(0xFFD5D7B7),
+                        onClick = { navigation.navigateTo(AutoPatchTab::class) },
+                        glowAlpha = glowAlpha
+                    )
+                }
+            }
+            // Floating modern nav bar, single and centered
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 24.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(26.dp),
+                    shadowElevation = 25.dp,
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.91f),
+                    modifier = Modifier
+                        .height(62.dp)
+                        .widthIn(min = 220.dp, max = 300.dp)
+                ) {
+                    Row(
+                        Modifier.fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Icon(Icons.Filled.Home, contentDescription = "Home", tint = MaterialTheme.colorScheme.primary)
-                    }
-                    IconButton(
-                        onClick = { navigation.navigateTo(SettingsTab::class) }
-                    ) {
-                        Icon(Icons.Filled.Settings, contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
+                        IconButton(
+                            onClick = { navigation.navigateTo(HomeTab::class) },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(
+                                Icons.Default.Home, "Home",
+                                tint = Color(0xFFF5DC5C).copy(alpha = 0.92f), modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        IconButton(
+                            onClick = { navigation.navigateTo(SettingsTab::class) },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Icon(
+                                Icons.Default.Settings, "Settings",
+                                tint = Color(0xFFF5DC5C).copy(alpha = 0.85f), modifier = Modifier.size(30.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -201,37 +217,109 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
     }
 }
 
+// Glowing logo/button composable
 @Composable
-fun HomeButton(
-    label: String,
+fun GlowEffect(color: Color, alpha: Float, radius: Float) {
+    Spacer(
+        modifier = Modifier
+            .size((radius * 2).dp)
+            .drawBehind {
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(color.copy(alpha = alpha * 0.45f), Color.Transparent),
+                        center = Offset(size.width / 2, size.height / 2),
+                        radius = radius
+                    ),
+                    radius = radius,
+                    center = Offset(size.width / 2, size.height / 2),
+                )
+            }
+    )
+}
+
+@Composable
+fun GlowyButton(
+    text: String,
     icon: ImageVector,
     color: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    glowAlpha: Float
 ) {
-    Surface(
-        shape = RoundedCornerShape(30.dp),
-        color = color,
-        shadowElevation = 12.dp,
-        modifier = Modifier
-            .width(150.dp)
-            .height(120.dp)
-            .clickable { onClick() }
-    ) {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(vertical = 22.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+    Box(contentAlignment = Alignment.Center) {
+        GlowEffect(color, alpha = glowAlpha, radius = 82f)
+        Surface(
+            shape = RoundedCornerShape(26.dp),
+            color = color,
+            shadowElevation = 19.dp,
+            modifier = Modifier
+                .width(148.dp)
+                .height(110.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) { onClick() }
         ) {
-            Icon(
-                icon,
-                contentDescription = label,
-                tint = Color.White,
-                modifier = Modifier.size(34.dp)
-            )
-            Spacer(modifier = Modifier.height(14.dp))
-            Text(label, fontWeight = FontWeight.Bold, color = Color.White, fontSize = 18.sp)
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(icon, contentDescription = text, tint = Color.White, modifier = Modifier.size(38.dp))
+                Spacer(Modifier.height(11.dp))
+                Text(text, fontWeight = FontWeight.Bold, color = Color.White, fontSize = 17.sp)
+            }
+        }
+    }
+}
+
+@Composable
+fun GlowyIconButton(onClick: () -> Unit, icon: Painter, glowColor: Color, glowAlpha: Float) {
+    Box(contentAlignment = Alignment.Center) {
+        GlowEffect(glowColor, alpha = glowAlpha, radius = 38f)
+        Surface(
+            shape = CircleShape,
+            color = Color.Transparent,
+            shadowElevation = 0.dp,
+            modifier = Modifier.size(52.dp)
+        ) {
+            IconButton(
+                onClick = onClick,
+                modifier = Modifier.size(58.dp)
+            ) {
+                Icon(
+                    painter = icon,
+                    contentDescription = null,
+                    tint = glowColor,
+                    modifier = Modifier.size(34.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GlowyIconButton(onClick: () -> Unit, icon: ImageVector, glowColor: Color, glowAlpha: Float) {
+    Box(contentAlignment = Alignment.Center) {
+        GlowEffect(glowColor, alpha = glowAlpha, radius = 38f)
+        Surface(
+            shape = CircleShape,
+            color = Color.Transparent,
+            shadowElevation = 0.dp,
+            modifier = Modifier.size(52.dp)
+        ) {
+            IconButton(
+                onClick = onClick,
+                modifier = Modifier.size(58.dp)
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = glowColor,
+                    modifier = Modifier.size(34.dp)
+                )
+            }
         }
     }
 }
