@@ -2,12 +2,9 @@ package me.rhunk.snapenhance.manager.ui.tab.impl
 
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.ComponentActivity
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,178 +16,217 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
+import kotlinx.coroutines.delay
 import me.rhunk.snapenhance.manager.R
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 
 class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
-    override fun init(activity: ComponentActivity) {
-        super.init(activity)
-        registerNestedTab(ManualPatchTab::class)
-        registerNestedTab(AutoPatchTab::class)
-        registerNestedTab(SettingsTab::class)
-    }
 
     @Composable
     override fun Content() {
-        var isRoot by remember { mutableStateOf(false) }
         val context = LocalContext.current
+        var isRoot by remember { mutableStateOf(false) }
 
-        // Animate glow pulsation for logo & buttons
+        // Animated gradient
         val infiniteTransition = rememberInfiniteTransition()
-        val glowAlpha by infiniteTransition.animateFloat(
-            initialValue = 0.25f,
-            targetValue = 0.7f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(1600, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            )
+        val bgOffset by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(6000, easing = LinearEasing), RepeatMode.Reverse)
         )
+        val glowAlpha by infiniteTransition.animateFloat(
+            initialValue = 0.5f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(1800, easing = LinearEasing), RepeatMode.Reverse)
+        )
+
+        // Smooth content reveal
+        var visible by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            delay(120)
+            visible = true
+        }
 
         Box(
             Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color(0xFF17181C), Color(0xFF222437), Color(0xFF09090B)),
+                        startY = 0f,
+                        endY = Float.POSITIVE_INFINITY
+                    )
+                )
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth()
-                    .padding(bottom = 100.dp), // leave space for floating nav
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                // Glowy Logo
-                Box(contentAlignment = Alignment.Center) {
-                    GlowEffect(color = Color(0xFFF5DC5C), alpha = glowAlpha, radius = 80f)
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        shadowElevation = 8.dp,
-                        modifier = Modifier.size(100.dp)
+            AnimatedVisibility(visible) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 0.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(Modifier.height(36.dp))
+                    // Glowing "glass" logo
+                    Box(contentAlignment = Alignment.Center) {
+                        GlowEffect(
+                            color = Color(0xFFF5DC5C).copy(alpha = 0.8f),
+                            alpha = glowAlpha,
+                            radius = 92f + bgOffset * 10f
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(26.dp),
+                            tonalElevation = 6.dp,
+                            shadowElevation = 20.dp,
+                            color = Color.White.copy(alpha = 0.07f)
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.logo),
+                                contentDescription = "Logo",
+                                modifier = Modifier.size(110.dp).clip(RoundedCornerShape(26.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(28.dp))
+                    // Modern, scaling text
+                    Text(
+                        "Welcome to Snapenhance Manager!",
+                        fontSize = 25.sp, fontWeight = FontWeight.Black,
+                        color = Color(0xFFF4F3EC),
+                        letterSpacing = 0.5.sp,
+                        modifier = Modifier.padding(horizontal = 6.dp)
+                    )
+                    Text(
+                        "This lets you set up Snapenhance easily",
+                        fontSize = 17.sp, color = Color(0xFFB8BAE4), fontWeight = FontWeight.Medium
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                        Text("Made with ", fontSize = 15.sp, color = Color(0xFFF5E379))
+                        Text("\uD83D\uDC96", fontSize = 16.sp, color = Color.Red)
+                        Text(" by ΞTΞRNAL & rhunk", fontSize = 15.sp, color = Color(0xFFDDAAFF))
+                    }
+
+                    Spacer(Modifier.height(30.dp))
+                    // Social Buttons
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        modifier = Modifier.fillMaxWidth(0.7f)
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.logo),
-                            contentDescription = "Logo",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
+                        CoolSocialButton(
+                            painterResource(R.drawable.ic_telegram),
+                            bgColor = Color(0xFF299EFF),
+                            glow = Color(0x66299EFF),
+                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/snapenhance_chat"))) }
+                        )
+                        CoolSocialButton(
+                            painterResource(R.drawable.ic_github),
+                            bgColor = Color(0xFFA088FA),
+                            glow = Color(0x88A088FA),
+                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance"))) }
+                        )
+                        CoolSocialButton(
+                            icon = Icons.Outlined.FavoriteBorder,
+                            bgColor = Color(0xFFF83759),
+                            glow = Color(0x66F83759),
+                            onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance?tab=readme-ov-file#donate"))) }
                         )
                     }
-                }
-                Spacer(Modifier.height(14.dp))
-                Text(
-                    "Welcome to Snapenhance Manager!",
-                    fontSize = 23.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                Text(
-                    "This lets you setup Snapenhance easily",
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    Text("Made with ", fontSize = 14.sp, color = Color(0xFFFFE066))
-                    Text("\u2764", fontSize = 14.sp, color = Color.Red)
-                    Text(" by ΞTΞRNAL & rhunk", fontSize = 14.sp, color = Color(0xFFFFE066), fontWeight = FontWeight.Medium)
-                }
-                Spacer(Modifier.height(25.dp))
-                // Social Row
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(28.dp),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    GlowyIconButtonPainter(
-                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/YOUR_TELEGRAM_LINK"))) },
-                        icon = painterResource(R.drawable.ic_telegram),
-                        glowColor = Color(0xFF229ED9),
-                        glowAlpha = glowAlpha
-                    )
-                    GlowyIconButton(
-                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://your.donate.url"))) },
-                        icon = Icons.Outlined.FavoriteBorder,
-                        glowColor = Color(0xFFF95B5B),
-                        glowAlpha = glowAlpha
-                    )
-                    GlowyIconButtonPainter(
-                        onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/particle-box/SnapEnhance"))) },
-                        icon = painterResource(R.drawable.ic_github),
-                        glowColor = Color(0xFFB18FF5),
-                        glowAlpha = glowAlpha
-                    )
-                }
-                Spacer(Modifier.height(32.dp))
-                // Toggle
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Text("Non-Root", fontWeight = if (!isRoot) FontWeight.Bold else null)
-                    Spacer(Modifier.width(10.dp))
-                    Switch(
-                        checked = isRoot,
-                        onCheckedChange = { isRoot = it },
-                        colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFFFE066))
-                    )
-                    Spacer(Modifier.width(10.dp))
-                    Text("Root", fontWeight = if (isRoot) FontWeight.Bold else null)
-                }
-                Spacer(Modifier.height(30.dp))
-                // Main Buttons
-                Row(
-                    Modifier
-                        .fillMaxWidth(0.88f)
-                        .align(Alignment.CenterHorizontally),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    GlowyButton(
-                        text = "Manual Patch",
-                        icon = Icons.Default.Handyman,
-                        color = Color(0xFFF5DC5C),
-                        onClick = { navigation.navigateTo(ManualPatchTab::class) },
-                        glowAlpha = glowAlpha
-                    )
-                    GlowyButton(
-                        text = "Auto Patch",
-                        icon = Icons.Default.AutoFixHigh,
-                        color = Color(0xFFD5D7B7),
-                        onClick = { navigation.navigateTo(AutoPatchTab::class) },
-                        glowAlpha = glowAlpha
-                    )
+
+                    Spacer(Modifier.height(38.dp))
+                    // Toggle root/non-root
+                    Surface(
+                        modifier = Modifier.clip(RoundedCornerShape(26.dp)),
+                        color = Color.White.copy(alpha = 0.10f),
+                        tonalElevation = 2.dp
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 12.dp, horizontal = 20.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                "Non-Root", fontWeight = if (!isRoot) FontWeight.Bold else null,
+                                color = if (!isRoot) Color(0xFFFFE066) else Color.Gray, fontSize = 17.sp
+                            )
+                            Spacer(Modifier.width(16.dp))
+                            Switch(
+                                checked = isRoot,
+                                onCheckedChange = { isRoot = it },
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFFF5DC5C))
+                            )
+                            Spacer(Modifier.width(16.dp))
+                            Text(
+                                "Root", fontWeight = if (isRoot) FontWeight.Bold else null,
+                                color = if (isRoot) Color(0xFFFFE066) else Color.Gray, fontSize = 17.sp
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(42.dp))
+                    // Main action buttons
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        GlowyRoundButton(
+                            text = "Manual Patch",
+                            icon = Icons.Default.Handyman,
+                            color = Color(0xFFFFEB66),
+                            onClick = { navigation.navigateTo(ManualPatchTab::class) },
+                            glowColor = Color(0xAAFFD95B),
+                            shadowColor = Color(0x55C9A73A)
+                        )
+                        GlowyRoundButton(
+                            text = "Auto Patch",
+                            icon = Icons.Default.AutoFixHigh,
+                            color = Color(0xFFDEDEB5),
+                            onClick = { navigation.navigateTo(AutoPatchTab::class) },
+                            glowColor = Color(0x99DEDEB5),
+                            shadowColor = Color(0x557C8C53)
+                        )
+                    }
+                    Spacer(Modifier.height(80.dp)) // For bottom bar space
                 }
             }
-            // Floating modern nav bar, single and centered
+
+            // Bottom Floating Nav (modern glass)
             Box(
                 Modifier
                     .fillMaxSize()
-                    .padding(bottom = 24.dp),
+                    .padding(bottom = 30.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Surface(
-                    shape = RoundedCornerShape(26.dp),
-                    shadowElevation = 25.dp,
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.91f),
+                    shape = RoundedCornerShape(30.dp),
+                    shadowElevation = 31.dp,
+                    color = Color(0x22FFFFFF),
                     modifier = Modifier
-                        .height(62.dp)
-                        .widthIn(min = 220.dp, max = 300.dp)
+                        .height(68.dp)
+                        .widthIn(min = 220.dp, max = 350.dp)
+                        .clip(RoundedCornerShape(30.dp))
+                        .border(1.5.dp, Color.White.copy(alpha = 0.13f), RoundedCornerShape(30.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xAA202230),
+                                    Color(0x669290A6),
+                                    Color(0x33000000)
+                                ),
+                                start = Offset(0f, 0f),
+                                end = Offset(800f, 400f)
+                            )
+                        )
                 ) {
                     Row(
                         Modifier.fillMaxSize(),
@@ -203,7 +239,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         ) {
                             Icon(
                                 Icons.Default.Home, "Home",
-                                tint = Color(0xFFF5DC5C).copy(alpha = 0.92f), modifier = Modifier.size(32.dp)
+                                tint = Color(0xFFFFE169).copy(alpha = 0.92f), modifier = Modifier.size(32.dp)
                             )
                         }
                         IconButton(
@@ -212,7 +248,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         ) {
                             Icon(
                                 Icons.Default.Settings, "Settings",
-                                tint = Color(0xFFF5DC5C).copy(alpha = 0.85f), modifier = Modifier.size(30.dp)
+                                tint = Color(0xFFDDAAFF).copy(alpha = 0.85f), modifier = Modifier.size(30.dp)
                             )
                         }
                     }
@@ -222,7 +258,8 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
     }
 }
 
-// Glowing logo/button composable
+// --- Extra beautiful button and effect composables below --- //
+
 @Composable
 fun GlowEffect(color: Color, alpha: Float, radius: Float) {
     Spacer(
@@ -231,7 +268,7 @@ fun GlowEffect(color: Color, alpha: Float, radius: Float) {
             .drawBehind {
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(color.copy(alpha = alpha * 0.45f), Color.Transparent),
+                        colors = listOf(color.copy(alpha = alpha * 0.8f), Color.Transparent),
                         center = Offset(size.width / 2, size.height / 2),
                         radius = radius
                     ),
@@ -242,89 +279,102 @@ fun GlowEffect(color: Color, alpha: Float, radius: Float) {
     )
 }
 
+// Modern glass+glow button (main patch buttons)
 @Composable
-fun GlowyButton(
+fun GlowyRoundButton(
     text: String,
     icon: ImageVector,
     color: Color,
     onClick: () -> Unit,
-    glowAlpha: Float
+    glowColor: Color,
+    shadowColor: Color
 ) {
     Box(contentAlignment = Alignment.Center) {
-        GlowEffect(color, alpha = glowAlpha, radius = 82f)
+        GlowEffect(glowColor, alpha = 1f, radius = 82f)
         Surface(
-            shape = RoundedCornerShape(26.dp),
+            shape = RoundedCornerShape(24.dp),
             color = color,
-            shadowElevation = 19.dp,
+            shadowElevation = 16.dp,
+            tonalElevation = 3.dp,
+            border = BorderStroke(1.5.dp, Color.White.copy(alpha = 0.16f)),
             modifier = Modifier
-                .width(148.dp)
-                .height(110.dp)
+                .width(155.dp)
+                .height(122.dp)
                 .clickable(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
-                ) { onClick() }
+                )
         ) {
             Column(
                 Modifier
                     .fillMaxSize()
-                    .padding(vertical = 16.dp),
+                    .padding(top = 16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(icon, contentDescription = text, tint = Color.White, modifier = Modifier.size(38.dp))
-                Spacer(Modifier.height(11.dp))
-                Text(text, fontWeight = FontWeight.Bold, color = Color.White, fontSize = 17.sp)
-            }
-        }
-    }
-}
-
-@Composable
-fun GlowyIconButtonPainter(onClick: () -> Unit, icon: Painter, glowColor: Color, glowAlpha: Float) {
-    Box(contentAlignment = Alignment.Center) {
-        GlowEffect(glowColor, alpha = glowAlpha, radius = 38f)
-        Surface(
-            shape = CircleShape,
-            color = Color.Transparent,
-            shadowElevation = 0.dp,
-            modifier = Modifier.size(52.dp)
-        ) {
-            IconButton(
-                onClick = onClick,
-                modifier = Modifier.size(58.dp)
-            ) {
-                Icon(
-                    painter = icon,
-                    contentDescription = null,
-                    tint = glowColor,
-                    modifier = Modifier.size(34.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun GlowyIconButton(onClick: () -> Unit, icon: ImageVector, glowColor: Color, glowAlpha: Float) {
-    Box(contentAlignment = Alignment.Center) {
-        GlowEffect(glowColor, alpha = glowAlpha, radius = 38f)
-        Surface(
-            shape = CircleShape,
-            color = Color.Transparent,
-            shadowElevation = 0.dp,
-            modifier = Modifier.size(52.dp)
-        ) {
-            IconButton(
-                onClick = onClick,
-                modifier = Modifier.size(58.dp)
-            ) {
                 Icon(
                     icon,
-                    contentDescription = null,
-                    tint = glowColor,
-                    modifier = Modifier.size(34.dp)
+                    contentDescription = text,
+                    tint = Color.White, modifier = Modifier.size(39.dp)
+                )
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    letterSpacing = 0.0.sp
                 )
             }
         }
+    }
+}
+
+// Modern animated social icon button
+@Composable
+fun CoolSocialButton(
+    icon: Painter,
+    bgColor: Color,
+    glow: Color,
+    onClick: () -> Unit
+) = CoolSocialButtonBase(
+    icon = { Icon(painter = icon, contentDescription = null, modifier = Modifier.size(29.dp), tint = Color.White) },
+    bgColor = bgColor, glow = glow, onClick = onClick
+)
+
+@Composable
+fun CoolSocialButton(
+    icon: ImageVector,
+    bgColor: Color,
+    glow: Color,
+    onClick: () -> Unit
+) = CoolSocialButtonBase(
+    icon = { Icon(icon, contentDescription = null, modifier = Modifier.size(29.dp), tint = Color.White) },
+    bgColor = bgColor, glow = glow, onClick = onClick
+)
+
+@Composable
+private fun CoolSocialButtonBase(
+    icon: @Composable () -> Unit,
+    bgColor: Color,
+    glow: Color,
+    onClick: () -> Unit
+) {
+    val transition = rememberInfiniteTransition()
+    val pulse by transition.animateFloat(
+        initialValue = 0.45f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1300, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    Box(contentAlignment = Alignment.Center) {
+        GlowEffect(glow, alpha = pulse, radius = 39f + 9 * pulse)
+        Surface(
+            shape = CircleShape,
+            color = bgColor,
+            modifier = Modifier.size(56.dp).shadow(8.dp, CircleShape).clickable(onClick = onClick),
+            shadowElevation = 2.dp,
+        ) { Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) { icon() } }
     }
 }
