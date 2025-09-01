@@ -49,6 +49,8 @@ import java.util.concurrent.TimeUnit
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 private val Context.dataStore by preferencesDataStore(name = "auto_patch_state")
 
@@ -89,6 +91,7 @@ class AutoPatchTab : Tab("auto_patch") {
         var currentLogLine by remember { mutableIntStateOf(-1) }
         var stepShortMsg by remember { mutableStateOf("") }
         var specialNotice by remember { mutableStateOf("") }
+        var loginContinuation by remember { mutableStateOf<CompletableDeferred<Unit>?>(null) }
 
         val neonColors = listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
@@ -435,15 +438,11 @@ class AutoPatchTab : Tab("auto_patch") {
                     logStep(2, "Please login to Snapchat now", "Please complete the login process before continuing")
                     
                     // Wait for user to confirm login
-                    kotlinx.coroutines.suspendCancellableCoroutine<Unit> { cont ->
-                        showLoginConfirmDialog = true
-                        scope.launch {
-                            while (showLoginConfirmDialog) {
-                                delay(100)
-                            }
-                            cont.resume(Unit)
-                        }
-                    }
+                    val loginDeferred = CompletableDeferred<Unit>()
+                    loginContinuation = loginDeferred
+                    showLoginConfirmDialog = true
+                    loginDeferred.await()
+                    loginContinuation = null
                     
                     setPhase(Phase.Downloading13)
                     logStep(3, "Downloading pre-patched Snapchat 13.51 (with embed)...")
@@ -493,6 +492,13 @@ class AutoPatchTab : Tab("auto_patch") {
                     logDebug("Stack trace: ${t.stackTraceToString()}")
                     setPhase(Phase.Error)
                 }
+            }
+        }
+
+        // Handle login dialog result
+        LaunchedEffect(showLoginConfirmDialog) {
+            if (!showLoginConfirmDialog && loginContinuation != null) {
+                loginContinuation?.complete(Unit)
             }
         }
 
