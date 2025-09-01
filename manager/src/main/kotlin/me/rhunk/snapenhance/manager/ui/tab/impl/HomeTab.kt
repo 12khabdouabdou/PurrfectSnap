@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -22,13 +23,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import me.rhunk.snapenhance.manager.R
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 
@@ -116,7 +120,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     horizontalArrangement = Arrangement.spacedBy(28.dp),
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
-                    GlowyIconButton(
+                    GlowyIconButtonPainter(
                         onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/YOUR_TELEGRAM_LINK"))) },
                         icon = painterResource(R.drawable.ic_telegram),
                         glowColor = Color(0xFF229ED9),
@@ -128,7 +132,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         glowColor = Color(0xFFF95B5B),
                         glowAlpha = glowAlpha
                     )
-                    GlowyIconButton(
+                    GlowyIconButtonPainter(
                         onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/particle-box/SnapEnhance"))) },
                         icon = painterResource(R.drawable.ic_github),
                         glowColor = Color(0xFFB18FF5),
@@ -275,7 +279,7 @@ fun GlowyButton(
 }
 
 @Composable
-fun GlowyIconButton(onClick: () -> Unit, icon: Painter, glowColor: Color, glowAlpha: Float) {
+fun GlowyIconButtonPainter(onClick: () -> Unit, icon: Painter, glowColor: Color, glowAlpha: Float) {
     Box(contentAlignment = Alignment.Center) {
         GlowEffect(glowColor, alpha = glowAlpha, radius = 38f)
         Surface(
