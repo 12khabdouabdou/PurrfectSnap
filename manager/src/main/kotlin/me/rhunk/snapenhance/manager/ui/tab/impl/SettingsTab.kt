@@ -85,7 +85,6 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
                     label = "Obfuscate LSPatch (experimental)"
                 )
             }
-            SnapEnhanceFloatingNav(this@SettingsTab)
         }
     }
 }
