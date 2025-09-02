@@ -13,7 +13,7 @@
         android:label="SE Manager"
         tools:targetApi="34"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@android:drawable/ic_input_add">
+        android:icon="@mipmap/ic_launcher">
 
         <activity
             android:name=".ui.MainActivity"
