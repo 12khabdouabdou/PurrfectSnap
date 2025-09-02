@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import me.rhunk.snapenhance.manager.ui.tab.Tab
+
+// Import the ModernBottomBar composable from HomeTab.kt (make sure it's public)
+import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab.ModernBottomBar
 import kotlin.random.Random
 
 class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Settings) {
@@ -85,6 +88,11 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
                     label = "Obfuscate LSPatch (experimental)"
                 )
             }
+            // Bottom navigation bar (just like HomeTab)
+            ModernBottomBar(
+                currentTab = this@SettingsTab,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 }
