@@ -6,10 +6,14 @@ import android.os.Bundle
 import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.topjohnwu.superuser.Shell
 import me.rhunk.snapenhance.manager.BuildConfig
@@ -36,6 +40,10 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Make content edge-to-edge
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         // Permission check for Install Unknown Apps
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val pm = packageManager
@@ -87,11 +95,19 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                Scaffold(
-                    floatingActionButton = { navigation.FloatingActionButtons() },
-                    floatingActionButtonPosition = FabPosition.End,
-                ) { innerPadding ->
-                    navigation.NavigationHost(innerPadding)
+                // Use Box as the root to ensure full-screen UI
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                ) {
+                    Scaffold(
+                        floatingActionButton = { navigation.FloatingActionButtons() },
+                        floatingActionButtonPosition = FabPosition.End,
+                        containerColor = MaterialTheme.colorScheme.background
+                    ) { innerPadding ->
+                        navigation.NavigationHost(innerPadding)
+                    }
                 }
             }
         }
