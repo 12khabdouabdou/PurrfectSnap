@@ -20,6 +20,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -531,21 +533,21 @@ fun PremiumActionCard(
             
             // Shimmer effect
             if (isPressed) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.horizontalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    Color.White.copy(alpha = 0.1f),
-                                    Color.Transparent
-                                ),
-                                startX = size.width * shimmer,
-                                endX = size.width * (shimmer + 0.5f)
-                            )
+                Canvas(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    drawRect(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.White.copy(alpha = 0.1f),
+                                Color.Transparent
+                            ),
+                            startX = size.width * shimmer,
+                            endX = size.width * (shimmer + 0.5f)
                         )
-                )
+                    )
+                }
             }
             
             // Content
@@ -692,7 +694,7 @@ fun SocialLinksSection(context: android.content.Context) {
 
 @Composable
 fun SocialButton(
-    icon: androidx.compose.ui.graphics.painter.Painter? = null,
+    icon: Painter? = null,
     iconVector: ImageVector? = null,
     color: Color,
     onClick: () -> Unit
