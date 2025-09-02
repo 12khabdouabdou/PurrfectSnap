@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import me.rhunk.snapenhance.manager.ui.tab.Tab
-import me.rhunk.snapenhance.manager.ui.tab.impl.ModernBottomBar
+import me.rhunk.snapenhance.manager.ui.tab.impl.IOSStyleBottomBar
 
 import kotlin.random.Random
 
@@ -88,7 +88,7 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
                 )
             }
             // Bottom navigation bar (just like HomeTab)
-            ModernBottomBar(
+            IOSStyleBottomBar(
                 currentTab = this@SettingsTab,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
