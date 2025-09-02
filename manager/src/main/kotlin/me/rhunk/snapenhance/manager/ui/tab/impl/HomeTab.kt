@@ -131,7 +131,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                 ) {
                     PremiumActionCard(
                         title = "Manual Patch",
-                        description = "Full control over the patching process",
+                        description = "Requires manual setup",
                         icon = Icons.Default.Engineering,
                         gradientColors = listOf(
                             Color(0xFF667EEA),
@@ -143,7 +143,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     
                     PremiumActionCard(
                         title = "Auto Patch",
-                        description = "Automated patching with smart detection",
+                        description = "Hands-free patching",
                         icon = Icons.Default.AutoAwesome,
                         gradientColors = listOf(
                             Color(0xFFF093FB),
