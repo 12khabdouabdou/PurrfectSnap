@@ -443,7 +443,7 @@ fun LiquidModeSelector(
             Box(
                 modifier = Modifier
                     .offset(x = animatedOffset)
-                    .sizeWidth(120.dp)
+                    .size(120.dp, 56.dp)
                     .fillMaxHeight()
                     .padding(4.dp)
                     .background(
