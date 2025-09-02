@@ -766,7 +766,7 @@ fun CreditsSection() {
     }
 }
 
-// New iOS-style bottom navigation bar
+// New iOS-style bottom navigation bar with only Home and Settings
 @Composable
 fun IOSStyleBottomBar(
     currentTab: Tab,
@@ -775,46 +775,46 @@ fun IOSStyleBottomBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 40.dp)
             .padding(bottom = 24.dp)
     ) {
-        // Glassmorphic background with blur effect
+        // Glassmorphic background with better visibility
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp),
-            shape = RoundedCornerShape(36.dp),
-            color = Color(0xFF1A1A2E).copy(alpha = 0.6f),
+                .height(68.dp),
+            shape = RoundedCornerShape(34.dp),
+            color = Color(0xFF1A1A2E).copy(alpha = 0.95f), // Increased opacity for better readability
             border = BorderStroke(
-                width = 0.5.dp,
+                width = 1.dp,
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color.White.copy(alpha = 0.2f),
-                        Color.White.copy(alpha = 0.05f)
+                        Color.White.copy(alpha = 0.3f),
+                        Color.White.copy(alpha = 0.1f)
                     )
                 )
-            )
+            ),
+            shadowElevation = 12.dp
         ) {
-            // Blur overlay effect
+            // Subtle gradient overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .blur(50.dp)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.White.copy(alpha = 0.03f),
+                                Color(0xFF2A2B5A).copy(alpha = 0.3f),
                                 Color.Transparent
                             )
                         )
                     )
             )
             
-            // Navigation items
+            // Navigation items - Only Home and Settings
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 8.dp),
+                    .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -823,23 +823,8 @@ fun IOSStyleBottomBar(
                     selectedIcon = Icons.Filled.Home,
                     label = "Home",
                     isSelected = true,
+                    accentColor = Color(0xFF667EEA),
                     onClick = { currentTab.navigation?.navigateTo(HomeTab::class) }
-                )
-                
-                IOSNavItem(
-                    icon = Icons.Outlined.Explore,
-                    selectedIcon = Icons.Filled.Explore,
-                    label = "Explore",
-                    isSelected = false,
-                    onClick = { /* Add explore navigation */ }
-                )
-                
-                IOSNavItem(
-                    icon = Icons.Outlined.FavoriteBorder,
-                    selectedIcon = Icons.Filled.Favorite,
-                    label = "Activity",
-                    isSelected = false,
-                    onClick = { /* Add activity navigation */ }
                 )
                 
                 IOSNavItem(
@@ -847,6 +832,7 @@ fun IOSStyleBottomBar(
                     selectedIcon = Icons.Filled.Settings,
                     label = "Settings",
                     isSelected = false,
+                    accentColor = Color(0xFFF093FB),
                     onClick = { currentTab.navigation?.navigateTo(SettingsTab::class) }
                 )
             }
@@ -860,10 +846,11 @@ fun RowScope.IOSNavItem(
     selectedIcon: ImageVector,
     label: String,
     isSelected: Boolean,
+    accentColor: Color,
     onClick: () -> Unit
 ) {
     val animatedColor by animateColorAsState(
-        targetValue = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
+        targetValue = if (isSelected) accentColor else Color.White.copy(alpha = 0.6f),
         animationSpec = spring(
             stiffness = Spring.StiffnessLow,
             dampingRatio = Spring.DampingRatioMediumBouncy
@@ -871,29 +858,19 @@ fun RowScope.IOSNavItem(
     )
     
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1f else 0.9f,
+        targetValue = if (isSelected) 1f else 0.85f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         )
     )
     
-    val infiniteTransition = rememberInfiniteTransition()
-    val glowAlpha by infiniteTransition.animateFloat(
-        initialValue = if (isSelected) 0.4f else 0f,
-        targetValue = if (isSelected) 0.8f else 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    
     Box(
         modifier = Modifier
-            .weight(1f)  // Fixed: Added Modifier. prefix
+            .weight(1f)
             .fillMaxHeight()
             .scale(scale)
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(24.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -901,81 +878,77 @@ fun RowScope.IOSNavItem(
             ),
         contentAlignment = Alignment.Center
     ) {
+        // Background glow for selected item
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(48.dp)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                accentColor.copy(alpha = 0.15f),
+                                Color.Transparent
+                            )
+                        ),
+                        shape = RoundedCornerShape(24.dp)
+                    )
+            )
+        }
+        
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(36.dp)
             ) {
-                // Glow effect for selected item
-                if (isSelected) {
-                    Canvas(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .alpha(glowAlpha)
-                    ) {
-                        drawCircle(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFF667EEA),
-                                    Color.Transparent
-                                )
-                            ),
-                            radius = size.minDimension / 2
-                        )
-                    }
-                }
-                
-                // Animated icon transition
+                // Modern icon with animation
                 Crossfade(
                     targetState = isSelected,
-                    animationSpec = tween(300)
+                    animationSpec = tween(400)
                 ) { selected ->
                     Icon(
                         imageVector = if (selected) selectedIcon else icon,
                         contentDescription = label,
-                        modifier = Modifier.size(if (selected) 28.dp else 24.dp),
+                        modifier = Modifier.size(if (selected) 30.dp else 26.dp),
                         tint = animatedColor
                     )
                 }
             }
             
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(2.dp))
             
-            // Label with animated visibility
-            AnimatedVisibility(
-                visible = isSelected,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                Text(
-                    text = label,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = animatedColor,
-                    maxLines = 1
-                )
-            }
+            // Always show label but with different opacity
+            Text(
+                text = label,
+                fontSize = 11.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = animatedColor,
+                maxLines = 1
+            )
         }
         
-        // Active indicator dot
+        // Modern indicator line at the top
         if (isSelected) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 4.dp)
-            ) {
-                Canvas(
-                    modifier = Modifier.size(4.dp)
-                ) {
-                    drawCircle(
-                        color = Color(0xFF667EEA),
-                        radius = size.minDimension / 2
+                    .padding(top = 8.dp)
+                    .width(32.dp)
+                    .height(3.dp)
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                accentColor,
+                                Color.Transparent
+                            )
+                        ),
+                        shape = RoundedCornerShape(1.5.dp)
                     )
-                }
-            }
+            )
         }
     }
 }
