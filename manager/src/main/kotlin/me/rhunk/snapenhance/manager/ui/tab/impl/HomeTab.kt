@@ -94,7 +94,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     modifier = Modifier.padding(horizontal = 32.dp)
                 ) {
                     Text(
-                        text = "SNAPENHANCE",
+                        text = "SE MANAGER",
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Black,
                         color = Color.White,
@@ -105,7 +105,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     Spacer(Modifier.height(12.dp))
                     
                     Text(
-                        text = "This app allows you to setup Snapenhance easily",
+                        text = "This app allows you to setup Snapenhance easily!",
                         fontSize = 15.sp,
                         color = Color.White.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center,
