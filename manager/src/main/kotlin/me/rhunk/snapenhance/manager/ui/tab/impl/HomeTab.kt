@@ -19,14 +19,12 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.drawscope.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
@@ -35,154 +33,145 @@ import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.manager.R
 import me.rhunk.snapenhance.manager.ui.tab.Tab
 import kotlin.math.*
-import kotlin.random.Random
 
 class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
 
-    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     override fun Content() {
         val context = LocalContext.current
         var isRoot by remember { mutableStateOf(false) }
-        val coroutineScope = rememberCoroutineScope()
-        var selectedButtonIndex by remember { mutableStateOf<Int?>(null) }
-        
-        // Parallax scroll state
+        var selectedAction by remember { mutableStateOf<Int?>(null) }
         val scrollState = rememberScrollState()
-        val density = LocalDensity.current
         
-        // Animated particles
-        val particles = remember { List(15) { AnimatedParticle() } }
-        
-        // Navigation with animation
-        LaunchedEffect(selectedButtonIndex) {
-            when (selectedButtonIndex) {
+        // Navigation handling
+        LaunchedEffect(selectedAction) {
+            when (selectedAction) {
                 0 -> {
-                    delay(300)
+                    delay(400)
                     navigation?.navigateTo(ManualPatchTab::class)
-                    selectedButtonIndex = null
+                    selectedAction = null
                 }
                 1 -> {
-                    delay(300)
+                    delay(400)
                     navigation?.navigateTo(AutoPatchTab::class)
-                    selectedButtonIndex = null
+                    selectedAction = null
                 }
             }
         }
 
         Box(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF0D0E1C),
-                            Color(0xFF1A1B3A),
-                            Color(0xFF252654)
-                        )
-                    )
-                )
+                .background(Color(0xFF000000))
         ) {
-            // Animated background mesh
-            AnimatedMeshBackground()
+            // Premium gradient background
+            PremiumBackground()
             
-            // Floating particles
-            particles.forEach { particle ->
-                FloatingParticle(particle)
-            }
+            // Subtle animated orbs in background
+            AnimatedBackgroundOrbs()
             
+            // Main content
             Column(
-                Modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(horizontal = 20.dp),
+                    .statusBarsPadding()
+                    .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Spacer(Modifier.height(48.dp))
+                
+                // Logo section with elegant animation
+                ElegantLogoSection()
+                
                 Spacer(Modifier.height(40.dp))
                 
-                // Futuristic logo with hologram effect
-                HolographicLogo()
+                // Title and description
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                ) {
+                    Text(
+                        text = "SNAPENHANCE",
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                        letterSpacing = 4.sp,
+                        fontFamily = FontFamily.Default
+                    )
+                    
+                    Spacer(Modifier.height(12.dp))
+                    
+                    Text(
+                        text = "This app allows you to setup Snapenhance easily",
+                        fontSize = 15.sp,
+                        color = Color.White.copy(alpha = 0.7f),
+                        textAlign = TextAlign.Center,
+                        lineHeight = 22.sp,
+                        fontWeight = FontWeight.Light
+                    )
+                }
                 
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(48.dp))
                 
-                // Animated title with glitch effect
-                GlitchText(
-                    text = "SNAPENHANCE",
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Black
-                )
-                
-                Spacer(Modifier.height(8.dp))
-                
-                // Subtitle with typing animation
-                TypewriterText(
-                    text = "Welcome to the future of Snapchat",
-                    fontSize = 16.sp,
-                    color = Color(0xFF8B92FF)
-                )
-                
-                Spacer(Modifier.height(32.dp))
-                
-                // Interactive mode selector with liquid animation
-                LiquidModeSelector(
+                // Mode selector with smooth animation
+                ModernModeSelector(
                     isRoot = isRoot,
                     onModeChange = { isRoot = it }
                 )
                 
-                Spacer(Modifier.height(40.dp))
+                Spacer(Modifier.height(48.dp))
                 
-                // Main action cards with 3D effect
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
+                // Action cards
+                Column(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    FuturisticActionCard(
-                        modifier = Modifier.weight(1f),
-                        title = "MANUAL",
-                        subtitle = "PATCH",
-                        icon = Icons.Default.Build,
-                        gradient = listOf(
-                            Color(0xFF6B5FFF),
-                            Color(0xFF9C4FFF)
+                    PremiumActionCard(
+                        title = "Manual Patch",
+                        description = "Full control over the patching process",
+                        icon = Icons.Default.Engineering,
+                        gradientColors = listOf(
+                            Color(0xFF667EEA),
+                            Color(0xFF764BA2)
                         ),
-                        isSelected = selectedButtonIndex == 0,
-                        onClick = { selectedButtonIndex = 0 }
+                        isPressed = selectedAction == 0,
+                        onClick = { selectedAction = 0 }
                     )
                     
-                    FuturisticActionCard(
-                        modifier = Modifier.weight(1f),
-                        title = "AUTO",
-                        subtitle = "PATCH",
+                    PremiumActionCard(
+                        title = "Auto Patch",
+                        description = "Automated patching with smart detection",
                         icon = Icons.Default.AutoAwesome,
-                        gradient = listOf(
-                            Color(0xFFFF5F9E),
-                            Color(0xFFFF8F5F)
+                        gradientColors = listOf(
+                            Color(0xFFF093FB),
+                            Color(0xFFF5576C)
                         ),
-                        isSelected = selectedButtonIndex == 1,
-                        onClick = { selectedButtonIndex = 1 }
+                        isPressed = selectedAction == 1,
+                        onClick = { selectedAction = 1 }
                     )
                 }
                 
+                Spacer(Modifier.height(48.dp))
+                
+                // Stats section
+                StatsSection()
+                
+                Spacer(Modifier.height(48.dp))
+                
+                // Social links
+                SocialLinksSection(context)
+                
                 Spacer(Modifier.height(32.dp))
                 
-                // Stats dashboard with animated counters
-                GlassmorphicStatsCard()
+                // Credits
+                CreditsSection()
                 
-                Spacer(Modifier.height(32.dp))
-                
-                // Social links with orbital animation
-                OrbitalSocialLinks(context)
-                
-                Spacer(Modifier.height(24.dp))
-                
-                // Credits with pulse animation
-                PulsingCredits()
-                
-                Spacer(Modifier.height(100.dp))
+                Spacer(Modifier.height(120.dp))
             }
             
-            // Futuristic bottom navigation
-            FuturisticBottomNav(
+            // Modern bottom bar
+            ModernBottomBar(
                 currentTab = this@HomeTab,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
@@ -190,110 +179,189 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
     }
 }
 
-// Holographic logo with 3D rotation
 @Composable
-fun HolographicLogo() {
+fun PremiumBackground() {
+    Canvas(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Create a sophisticated gradient mesh
+        val width = size.width
+        val height = size.height
+        
+        // Dark gradient base
+        drawRect(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    Color(0xFF0F0F1E),
+                    Color(0xFF1A1A2E),
+                    Color(0xFF16213E)
+                ),
+                startY = 0f,
+                endY = height
+            )
+        )
+        
+        // Subtle purple accent gradient
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color(0xFF7B2CBF).copy(alpha = 0.1f),
+                    Color.Transparent
+                ),
+                center = Offset(width * 0.8f, height * 0.2f),
+                radius = width * 0.6f
+            )
+        )
+        
+        // Blue accent gradient
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color(0xFF2196F3).copy(alpha = 0.08f),
+                    Color.Transparent
+                ),
+                center = Offset(width * 0.2f, height * 0.7f),
+                radius = width * 0.5f
+            )
+        )
+    }
+}
+
+@Composable
+fun AnimatedBackgroundOrbs() {
     val infiniteTransition = rememberInfiniteTransition()
+    
+    val orb1Y by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(20000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    
+    val orb2Y by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(25000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    
+    Canvas(
+        modifier = Modifier
+            .fillMaxSize()
+            .alpha(0.3f)
+    ) {
+        // Floating orb 1
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color(0xFF667EEA).copy(alpha = 0.4f),
+                    Color.Transparent
+                )
+            ),
+            radius = 150f,
+            center = Offset(
+                x = size.width * 0.2f,
+                y = size.height * orb1Y
+            )
+        )
+        
+        // Floating orb 2
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color(0xFFF093FB).copy(alpha = 0.4f),
+                    Color.Transparent
+                )
+            ),
+            radius = 120f,
+            center = Offset(
+                x = size.width * 0.8f,
+                y = size.height * orb2Y
+            )
+        )
+    }
+}
+
+@Composable
+fun ElegantLogoSection() {
+    val infiniteTransition = rememberInfiniteTransition()
+    
+    val breathingScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(8000, easing = LinearEasing)
-        )
-    )
-    
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
+            animation = tween(30000, easing = LinearEasing)
         )
     )
     
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(120.dp)
+        modifier = Modifier.size(140.dp)
     ) {
-        // Holographic rings
-        repeat(3) { index ->
-            val delay = index * 400
-            val ringScale by infiniteTransition.animateFloat(
-                initialValue = 0.8f,
-                targetValue = 1.3f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(3000, delay, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Restart
-                )
-            )
-            val ringAlpha by infiniteTransition.animateFloat(
-                initialValue = 0.6f,
-                targetValue = 0f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(3000, delay, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Restart
-                )
-            )
-            
-            Box(
-                Modifier
-                    .size(100.dp)
-                    .scale(ringScale)
-                    .border(
-                        width = 2.dp,
-                        brush = Brush.sweepGradient(
-                            colors = listOf(
-                                Color(0xFF00D4FF),
-                                Color(0xFFFF00FF),
-                                Color(0xFF00FF88),
-                                Color(0xFF00D4FF)
-                            )
-                        ),
-                        shape = CircleShape
+        // Rotating gradient border
+        Canvas(
+            modifier = Modifier
+                .size(120.dp)
+                .scale(breathingScale)
+                .graphicsLayer { rotationZ = rotation }
+        ) {
+            val strokeWidth = 3.dp.toPx()
+            drawCircle(
+                brush = Brush.sweepGradient(
+                    colors = listOf(
+                        Color(0xFF667EEA),
+                        Color(0xFFF093FB),
+                        Color(0xFF667EEA)
                     )
-                    .alpha(ringAlpha)
+                ),
+                radius = size.minDimension / 2 - strokeWidth / 2,
+                style = Stroke(width = strokeWidth)
             )
         }
         
-        // Main logo with glow
+        // Logo container
         Surface(
             modifier = Modifier
-                .size(80.dp)
-                .scale(scale)
-                .graphicsLayer {
-                    rotationY = rotation
-                    cameraDistance = 12f * density
-                },
-            shape = RoundedCornerShape(20.dp),
-            color = Color.Transparent,
-            border = BorderStroke(
-                width = 2.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF00D4FF),
-                        Color(0xFFFF00FF)
-                    )
-                )
-            )
+                .size(100.dp)
+                .scale(breathingScale),
+            shape = CircleShape,
+            color = Color(0xFF1A1A2E),
+            shadowElevation = 12.dp
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
-                        Brush.radialGradient(
+                        Brush.linearGradient(
                             colors = listOf(
-                                Color(0xFF2A2B5A).copy(alpha = 0.9f),
-                                Color(0xFF1A1B3A).copy(alpha = 0.7f)
+                                Color(0xFF667EEA).copy(alpha = 0.1f),
+                                Color(0xFFF093FB).copy(alpha = 0.1f)
                             )
                         )
-                    )
+                    ),
+                contentAlignment = Alignment.Center
             ) {
                 Image(
                     painter = painterResource(R.drawable.logo),
                     contentDescription = "Logo",
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp),
+                        .size(60.dp)
+                        .graphicsLayer {
+                            shadowElevation = 8.dp.toPx()
+                        },
                     contentScale = ContentScale.Fit
                 )
             }
@@ -301,176 +369,71 @@ fun HolographicLogo() {
     }
 }
 
-// Glitch text effect
 @Composable
-fun GlitchText(
-    text: String,
-    fontSize: TextUnit,
-    fontWeight: FontWeight
-) {
-    val infiniteTransition = rememberInfiniteTransition()
-    var glitchActive by remember { mutableStateOf(false) }
-    
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(Random.nextLong(2000, 5000))
-            glitchActive = true
-            delay(200)
-            glitchActive = false
-        }
-    }
-    
-    Box {
-        // Shadow layers for glitch effect
-        if (glitchActive) {
-            Text(
-                text = text,
-                fontSize = fontSize,
-                fontWeight = fontWeight,
-                color = Color(0xFFFF00FF).copy(alpha = 0.8f),
-                modifier = Modifier.offset(x = 2.dp, y = 0.dp)
-            )
-            Text(
-                text = text,
-                fontSize = fontSize,
-                fontWeight = fontWeight,
-                color = Color(0xFF00FFFF).copy(alpha = 0.8f),
-                modifier = Modifier.offset(x = (-2).dp, y = 0.dp)
-            )
-        }
-        
-        // Main text with gradient
-        Text(
-            text = text,
-            fontSize = fontSize,
-            fontWeight = fontWeight,
-            color = Color.White,
-            modifier = Modifier.drawWithContent {
-                drawContent()
-                drawRect(
-                    brush = Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFFFFFFFF),
-                            Color(0xFF00D4FF),
-                            Color(0xFFFF00FF)
-                        ),
-                        start = Offset(0f, 0f),
-                        end = Offset(size.width, size.height)
-                    ),
-                    blendMode = BlendMode.SrcAtop
-                )
-            }
-        )
-    }
-}
-
-// Typewriter animation text
-@Composable
-fun TypewriterText(
-    text: String,
-    fontSize: TextUnit,
-    color: Color
-) {
-    var displayedText by remember { mutableStateOf("") }
-    
-    LaunchedEffect(text) {
-        displayedText = ""
-        text.forEachIndexed { index, _ ->
-            delay(50)
-            displayedText = text.substring(0, index + 1)
-        }
-    }
-    
-    Row {
-        Text(
-            text = displayedText,
-            fontSize = fontSize,
-            color = color,
-            fontWeight = FontWeight.Medium
-        )
-        
-        // Blinking cursor
-        val cursorAlpha by rememberInfiniteTransition().animateFloat(
-            initialValue = 1f,
-            targetValue = 0f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(500),
-                repeatMode = RepeatMode.Reverse
-            )
-        )
-        
-        Text(
-            text = "|",
-            fontSize = fontSize,
-            color = color.copy(alpha = cursorAlpha),
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-// Liquid mode selector with morphing animation
-@Composable
-fun LiquidModeSelector(
+fun ModernModeSelector(
     isRoot: Boolean,
     onModeChange: (Boolean) -> Unit
 ) {
-    val animatedOffset by animateDpAsState(
-        targetValue = if (isRoot) 110.dp else 0.dp,
+    val selectedOffset by animateDpAsState(
+        targetValue = if (isRoot) 122.dp else 0.dp,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMedium
         )
     )
     
     Surface(
         modifier = Modifier
-            .width(240.dp)
-            .height(56.dp),
-        shape = RoundedCornerShape(28.dp),
-        color = Color(0xFF1E1F3A).copy(alpha = 0.8f),
-        border = BorderStroke(
-            width = 1.dp,
-            brush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF8B92FF).copy(alpha = 0.5f),
-                    Color(0xFFFF5F9E).copy(alpha = 0.5f)
-                )
-            )
-        )
+            .width(260.dp)
+            .height(60.dp),
+        shape = RoundedCornerShape(30.dp),
+        color = Color(0xFF1A1A2E),
+        shadowElevation = 8.dp
     ) {
-        Box(Modifier.fillMaxSize()) {
-            // Liquid background
-            Box(
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Sliding selector background
+            Surface(
                 modifier = Modifier
-                    .offset(x = animatedOffset)
-                    .size(120.dp, 56.dp)
-                    .fillMaxHeight()
-                    .padding(4.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = if (isRoot) listOf(
-                                Color(0xFFFF5F9E),
-                                Color(0xFFFF8F5F)
-                            ) else listOf(
-                                Color(0xFF6B5FFF),
-                                Color(0xFF9C4FFF)
+                    .offset(x = selectedOffset + 4.dp)
+                    .size(124.dp, 52.dp)
+                    .align(Alignment.CenterStart),
+                shape = RoundedCornerShape(26.dp),
+                color = Color.Transparent
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = if (isRoot) listOf(
+                                    Color(0xFFF093FB),
+                                    Color(0xFFF5576C)
+                                ) else listOf(
+                                    Color(0xFF667EEA),
+                                    Color(0xFF764BA2)
+                                )
                             )
-                        ),
-                        shape = RoundedCornerShape(24.dp)
-                    )
-            )
+                        )
+                )
+            }
             
+            // Options
             Row(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 4.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ModeOption(
+                ModeButton(
                     text = "NON-ROOT",
                     isSelected = !isRoot,
                     onClick = { onModeChange(false) }
                 )
-                ModeOption(
+                
+                ModeButton(
                     text = "ROOT",
                     isSelected = isRoot,
                     onClick = { onModeChange(true) }
@@ -481,208 +444,201 @@ fun LiquidModeSelector(
 }
 
 @Composable
-fun ModeOption(
+fun ModeButton(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Text(
-        text = text,
-        color = if (isSelected) Color.White else Color(0xFF8B92FF),
-        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-        fontSize = 14.sp,
+    val textColor by animateColorAsState(
+        targetValue = if (isSelected) Color.White else Color.White.copy(alpha = 0.6f),
+        animationSpec = tween(300)
+    )
+    
+    Box(
         modifier = Modifier
+            .width(124.dp)
+            .fillMaxHeight()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
-            )
-            .padding(horizontal = 24.dp, vertical = 8.dp)
-    )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = 14.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            letterSpacing = 1.sp
+        )
+    }
 }
 
-// Futuristic action card with 3D tilt effect
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun FuturisticActionCard(
-    modifier: Modifier = Modifier,
+fun PremiumActionCard(
     title: String,
-    subtitle: String,
+    description: String,
     icon: ImageVector,
-    gradient: List<Color>,
-    isSelected: Boolean,
+    gradientColors: List<Color>,
+    isPressed: Boolean,
     onClick: () -> Unit
 ) {
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 0.95f else 1f,
+        targetValue = if (isPressed) 0.96f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         )
     )
     
-    val rotation by animateFloatAsState(
-        targetValue = if (isSelected) 5f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+    val infiniteTransition = rememberInfiniteTransition()
+    val shimmer by infiniteTransition.animateFloat(
+        initialValue = -1f,
+        targetValue = 2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing)
         )
     )
     
-    Box(
-        modifier = modifier
-            .height(180.dp)
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
             .scale(scale)
-            .graphicsLayer {
-                rotationZ = rotation
-            }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        shape = RoundedCornerShape(20.dp),
+        color = Color(0xFF1A1A2E),
+        shadowElevation = if (isPressed) 4.dp else 8.dp
     ) {
-        // Glow effect
-        if (isSelected) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Gradient background
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .blur(20.dp)
                     .background(
-                        brush = Brush.radialGradient(
-                            colors = gradient.map { it.copy(alpha = 0.6f) }
-                        ),
-                        shape = RoundedCornerShape(24.dp)
+                        Brush.horizontalGradient(
+                            colors = gradientColors.map { it.copy(alpha = 0.1f) }
+                        )
                     )
             )
-        }
-        
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick
-                ),
-            shape = RoundedCornerShape(24.dp),
-            color = Color(0xFF1E1F3A).copy(alpha = 0.9f),
-            border = BorderStroke(
-                width = 2.dp,
-                brush = Brush.linearGradient(colors = gradient)
-            )
-        ) {
-            Column(
+            
+            // Shimmer effect
+            if (isPressed) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.White.copy(alpha = 0.1f),
+                                    Color.Transparent
+                                ),
+                                startX = size.width * shimmer,
+                                endX = size.width * (shimmer + 0.5f)
+                            )
+                        )
+                )
+            }
+            
+            // Content
+            Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Animated icon
-                val iconRotation by rememberInfiniteTransition().animateFloat(
-                    initialValue = 0f,
-                    targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(10000, easing = LinearEasing)
-                    )
-                )
-                
+                // Icon with gradient
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
-                        .graphicsLayer { rotationY = iconRotation }
+                        .size(50.dp)
+                        .background(
+                            Brush.linearGradient(colors = gradientColors),
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .drawWithContent {
-                                drawContent()
-                                drawRect(
-                                    brush = Brush.linearGradient(colors = gradient),
-                                    blendMode = BlendMode.SrcAtop
-                                )
-                            },
+                        modifier = Modifier.size(28.dp),
                         tint = Color.White
                     )
                 }
                 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.width(20.dp))
                 
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                
-                Text(
-                    text = subtitle,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = gradient.first()
-                )
-            }
-        }
-    }
-}
-
-// Glassmorphic stats card
-@Composable
-fun GlassmorphicStatsCard() {
-    val stats = listOf(
-        Triple("Active Users", "10.2K", Color(0xFF00D4FF)),
-        Triple("Patches", "523", Color(0xFFFF00FF)),
-        Triple("Success Rate", "99.8%", Color(0xFF00FF88))
-    )
-    
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        color = Color(0xFF1E1F3A).copy(alpha = 0.4f),
-        border = BorderStroke(
-            width = 1.dp,
-            color = Color(0xFF8B92FF).copy(alpha = 0.3f)
-        )
-    ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF2A2B5A).copy(alpha = 0.2f),
-                            Color(0xFF1A1B3A).copy(alpha = 0.1f)
-                        )
+                Column(
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = description,
+                        fontSize = 13.sp,
+                        color = Color.White.copy(alpha = 0.7f),
+                        lineHeight = 18.sp
+                    )
+                }
+                
+                Spacer(Modifier.weight(1f))
+                
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.White.copy(alpha = 0.5f)
                 )
-                .blur(10.dp, BlurredEdgeTreatment.Unbounded)
-        )
-        
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            stats.forEach { (label, value, color) ->
-                AnimatedStatItem(label, value, color)
             }
         }
     }
 }
 
 @Composable
-fun AnimatedStatItem(label: String, value: String, color: Color) {
+fun StatsSection() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        StatCard("1.5M+", "Active Users", Color(0xFF667EEA))
+        StatCard("99.9%", "Positive Reviews", Color(0xFFF093FB))
+    }
+}
+
+@Composable
+fun StatCard(
+    value: String,
+    label: String,
+    color: Color
+) {
     var visible by remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
+        delay(300)
         visible = true
     }
     
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn() + slideInVertically()
+        enter = fadeIn() + slideInVertically(initialOffsetY = { 20 })
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
         ) {
             Text(
                 text = value,
@@ -690,349 +646,236 @@ fun AnimatedStatItem(label: String, value: String, color: Color) {
                 fontWeight = FontWeight.Bold,
                 color = color
             )
+            Spacer(Modifier.height(4.dp))
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = Color(0xFF8B92FF)
+                color = Color.White.copy(alpha = 0.6f)
             )
         }
     }
 }
 
-// Orbital social links
 @Composable
-fun OrbitalSocialLinks(context: android.content.Context) {
-    val infiniteTransition = rememberInfiniteTransition()
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing)
-        )
-    )
-    
-    Box(
+fun SocialLinksSection(context: android.content.Context) {
+    Row(
         modifier = Modifier
-            .size(200.dp)
-            .graphicsLayer { rotationZ = rotation },
-        contentAlignment = Alignment.Center
+            .fillMaxWidth()
+            .padding(horizontal = 48.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        // Center text
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "CONNECT",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF8B92FF)
-            )
-        }
-        
-        // Orbiting social buttons
-        val socialLinks = listOf(
-            Triple(painterResource(R.drawable.ic_telegram), Color(0xFF299EFF)) { 
+        SocialButton(
+            icon = painterResource(R.drawable.ic_telegram),
+            color = Color(0xFF26A5E4),
+            onClick = {
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/snapenhance_chat")))
-            },
-            Triple(painterResource(R.drawable.ic_github), Color(0xFFA088FA)) {
+            }
+        )
+        
+        SocialButton(
+            icon = painterResource(R.drawable.ic_github),
+            color = Color(0xFF6E5494),
+            onClick = {
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance")))
-            },
-            Triple(null as Painter?, Color(0xFFFF5F9E)) {
+            }
+        )
+        
+        SocialButton(
+            iconVector = Icons.Default.Favorite,
+            color = Color(0xFFE91E63),
+            onClick = {
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/rhunk/SnapEnhance?tab=readme-ov-file#donate")))
             }
         )
-        
-        socialLinks.forEachIndexed { index, (icon, color, action) ->
-            val angle = (index * 120f) - rotation
-            val radius = 80.dp
-            
-            Box(
-                modifier = Modifier
-                    .offset(
-                        x = (radius.value * cos(Math.toRadians(angle.toDouble()))).dp,
-                        y = (radius.value * sin(Math.toRadians(angle.toDouble()))).dp
-                    )
-            ) {
-                NeonSocialButton(
-                    icon = icon,
-                    iconVector = if (icon == null) Icons.Outlined.Favorite else null,
-                    color = color,
-                    onClick = action
-                )
-            }
-        }
     }
 }
 
 @Composable
-fun NeonSocialButton(
-    icon: Painter?,
-    iconVector: ImageVector?,
+fun SocialButton(
+    icon: androidx.compose.ui.graphics.painter.Painter? = null,
+    iconVector: ImageVector? = null,
     color: Color,
     onClick: () -> Unit
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
-    val pulse by infiniteTransition.animateFloat(
-        initialValue = 0.8f,
-        targetValue = 1.2f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1500, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.size(48.dp)
+    Surface(
+        modifier = Modifier
+            .size(56.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        shape = CircleShape,
+        color = color.copy(alpha = 0.1f),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
     ) {
-        // Neon glow
         Box(
-            modifier = Modifier
-                .size((40 * pulse).dp)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            color.copy(alpha = 0.4f),
-                            Color.Transparent
-                        )
-                    ),
-                    shape = CircleShape
-                )
-                .blur(10.dp)
-        )
-        
-        Surface(
-            modifier = Modifier
-                .size(40.dp)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick
-                ),
-            shape = CircleShape,
-            color = Color(0xFF1E1F3A),
-            border = BorderStroke(2.dp, color)
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                when {
-                    icon != null -> Icon(
-                        painter = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = color
-                    )
-                    iconVector != null -> Icon(
-                        imageVector = iconVector,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = color
-                    )
-                }
+            when {
+                icon != null -> Icon(
+                    painter = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = color
+                )
+                iconVector != null -> Icon(
+                    imageVector = iconVector,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = color
+                )
             }
         }
     }
 }
 
-// Pulsing credits
 @Composable
-fun PulsingCredits() {
-    val infiniteTransition = rememberInfiniteTransition()
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    
-    Row(
-        modifier = Modifier.scale(scale),
-        verticalAlignment = Alignment.CenterVertically
+fun CreditsSection() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 32.dp)
     ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Created with",
+                fontSize = 13.sp,
+                color = Color.White.copy(alpha = 0.5f)
+            )
+            Spacer(Modifier.width(6.dp))
+            Icon(
+                Icons.Default.Favorite,
+                contentDescription = null,
+                modifier = Modifier.size(14.dp),
+                tint = Color(0xFFE91E63)
+            )
+        }
+        Spacer(Modifier.height(4.dp))
         Text(
-            text = "Made with ",
-            fontSize = 12.sp,
-            color = Color(0xFF8B92FF)
-        )
-        Icon(
-            Icons.Default.Favorite,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp),
-            tint = Color(0xFFFF5F9E)
-        )
-        Text(
-            text = " by ΞTΞRNAL & rhunk",
-            fontSize = 12.sp,
-            color = Color(0xFF8B92FF)
+            text = "by ΞTΞRNAL & rhunk",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.White.copy(alpha = 0.7f),
+            letterSpacing = 0.5.sp
         )
     }
 }
 
-// Futuristic bottom navigation
 @Composable
-fun FuturisticBottomNav(
+fun ModernBottomBar(
     currentTab: Tab,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        shape = RoundedCornerShape(28.dp),
-        color = Color(0xFF1E1F3A).copy(alpha = 0.95f),
-        border = BorderStroke(
-            width = 1.dp,
-            brush = Brush.linearGradient(
-                colors = listOf(
-                    Color(0xFF8B92FF).copy(alpha = 0.5f),
-                    Color(0xFFFF5F9E).copy(alpha = 0.5f)
+            .height(80.dp),
+        color = Color(0xFF0F0F1E).copy(alpha = 0.98f)
+    ) {
+        Box {
+            // Top gradient line
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color(0xFF667EEA),
+                                Color(0xFFF093FB),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
+            
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 60.dp),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BottomNavItem(
+                    icon = Icons.Default.Home,
+                    label = "Home",
+                    isSelected = true,
+                    onClick = { currentTab.navigation?.navigateTo(HomeTab::class) }
                 )
-            )
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 40.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NavItem(
-                icon = Icons.Default.Home,
-                label = "Home",
-                isSelected = true,
-                onClick = { currentTab.navigation?.navigateTo(HomeTab::class) }
-            )
-            NavItem(
-                icon = Icons.Default.Settings,
-                label = "Settings",
-                isSelected = false,
-                onClick = { currentTab.navigation?.navigateTo(SettingsTab::class) }
-            )
-        }
-    }
-}
-
-@Composable
-fun NavItem(
-    icon: ImageVector,
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val color by animateColorAsState(
-        targetValue = if (isSelected) Color(0xFF00D4FF) else Color(0xFF8B92FF),
-        animationSpec = tween(300)
-    )
-    
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-            onClick = onClick
-        )
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            modifier = Modifier.size(24.dp),
-            tint = color
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = label,
-            fontSize = 10.sp,
-            color = color,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-        )
-    }
-}
-
-// Animated mesh background
-@Composable
-fun AnimatedMeshBackground() {
-    val infiniteTransition = rememberInfiniteTransition()
-    val animatedProgress by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing)
-        )
-    )
-    
-    Canvas(
-        modifier = Modifier
-            .fillMaxSize()
-            .alpha(0.1f)
-    ) {
-        val step = 50.dp.toPx()
-        val amplitude = 20f
-        
-        for (x in 0..size.width.toInt() step step.toInt()) {
-            for (y in 0..size.height.toInt() step step.toInt()) {
-                val offsetX = amplitude * sin(animatedProgress * 2 * PI + x / 100)
-                val offsetY = amplitude * cos(animatedProgress * 2 * PI + y / 100)
                 
-                drawCircle(
-                    color = Color(0xFF8B92FF),
-                    radius = 2f,
-                    center = Offset(x.toFloat() + offsetX.toFloat(), y.toFloat() + offsetY.toFloat())
+                BottomNavItem(
+                    icon = Icons.Default.Settings,
+                    label = "Settings",
+                    isSelected = false,
+                    onClick = { currentTab.navigation?.navigateTo(SettingsTab::class) }
                 )
             }
         }
     }
 }
 
-// Floating particle animation
-data class AnimatedParticle(
-    val x: Float = Random.nextFloat(),
-    val y: Float = Random.nextFloat(),
-    val size: Float = Random.nextFloat() * 4 + 2,
-    val speedX: Float = Random.nextFloat() * 0.002f - 0.001f,
-    val speedY: Float = Random.nextFloat() * 0.002f - 0.001f,
-    val color: Color = listOf(
-        Color(0xFF00D4FF),
-        Color(0xFFFF00FF),
-        Color(0xFF00FF88),
-        Color(0xFF8B92FF)
-    ).random()
-)
-
 @Composable
-fun FloatingParticle(particle: AnimatedParticle) {
-    var position by remember { mutableStateOf(Offset(particle.x, particle.y)) }
+fun BottomNavItem(
+    icon: ImageVector,
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val color by animateColorAsState(
+        targetValue = if (isSelected) Color(0xFF667EEA) else Color.White.copy(alpha = 0.5f),
+        animationSpec = tween(300)
+    )
     
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(16)
-            position = Offset(
-                (position.x + particle.speedX).coerceIn(0f, 1f),
-                (position.y + particle.speedY).coerceIn(0f, 1f)
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.1f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        )
+    )
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .scale(scale)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+            .padding(12.dp)
+    ) {
+        Box {
+            if (isSelected) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        )
+                        .align(Alignment.Center)
+                )
+            }
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier
+                    .size(26.dp)
+                    .align(Alignment.Center),
+                tint = color
             )
         }
-    }
-    
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .alpha(0.6f)
-        ) {
-            drawCircle(
-                color = particle.color,
-                radius = particle.size,
-                center = Offset(
-                    position.x * size.width,
-                    position.y * size.height
-                ),
-                blendMode = BlendMode.Plus
-            )
-        }
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            color = color,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }
