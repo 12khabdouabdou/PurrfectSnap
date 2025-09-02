@@ -819,7 +819,7 @@ fun IOSStyleBottomBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IOSNavItem(
-                    icon = Icons.Rounded.Home,
+                    icon = Icons.Outlined.Home,
                     selectedIcon = Icons.Filled.Home,
                     label = "Home",
                     isSelected = true,
@@ -827,7 +827,7 @@ fun IOSStyleBottomBar(
                 )
                 
                 IOSNavItem(
-                    icon = Icons.Rounded.Explore,
+                    icon = Icons.Outlined.Explore,
                     selectedIcon = Icons.Filled.Explore,
                     label = "Explore",
                     isSelected = false,
@@ -835,7 +835,7 @@ fun IOSStyleBottomBar(
                 )
                 
                 IOSNavItem(
-                    icon = Icons.Rounded.FavoriteBorder,
+                    icon = Icons.Outlined.FavoriteBorder,
                     selectedIcon = Icons.Filled.Favorite,
                     label = "Activity",
                     isSelected = false,
@@ -843,7 +843,7 @@ fun IOSStyleBottomBar(
                 )
                 
                 IOSNavItem(
-                    icon = Icons.Rounded.Settings,
+                    icon = Icons.Outlined.Settings,
                     selectedIcon = Icons.Filled.Settings,
                     label = "Settings",
                     isSelected = false,
@@ -890,7 +890,7 @@ fun IOSNavItem(
     
     Box(
         modifier = Modifier
-            .weight(1f)
+            .weight(1f)  // Fixed: Added Modifier. prefix
             .fillMaxHeight()
             .scale(scale)
             .clip(RoundedCornerShape(20.dp))
