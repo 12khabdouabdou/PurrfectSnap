@@ -855,7 +855,7 @@ fun IOSStyleBottomBar(
 }
 
 @Composable
-fun IOSNavItem(
+fun RowScope.IOSNavItem(
     icon: ImageVector,
     selectedIcon: ImageVector,
     label: String,
