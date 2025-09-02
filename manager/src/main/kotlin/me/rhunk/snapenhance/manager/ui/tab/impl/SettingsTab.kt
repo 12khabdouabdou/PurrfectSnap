@@ -26,9 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import me.rhunk.snapenhance.manager.ui.tab.Tab
+import me.rhunk.snapenhance.manager.ui.tab.impl.ModernBottomBar
 
-// Import the ModernBottomBar composable from HomeTab.kt (make sure it's public)
-import me.rhunk.snapenhance.manager.ui.tab.impl.HomeTab.ModernBottomBar
 import kotlin.random.Random
 
 class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Settings) {
