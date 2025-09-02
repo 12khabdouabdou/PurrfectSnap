@@ -92,4 +92,5 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.ui:ui-tooling")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
 }
