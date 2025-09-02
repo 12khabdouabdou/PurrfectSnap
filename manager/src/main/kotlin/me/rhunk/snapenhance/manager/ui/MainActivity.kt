@@ -26,6 +26,7 @@ import me.rhunk.snapenhance.manager.ui.tab.impl.download.InstallPackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.download.RepackageTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.ManualPatchTab
 import me.rhunk.snapenhance.manager.ui.tab.impl.AutoPatchTab
+import androidx.compose.foundation.isSystemInDarkTheme
 
 class MainActivity : ComponentActivity() {
     companion object {
