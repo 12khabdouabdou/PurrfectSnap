@@ -169,11 +169,11 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                 // Credits
                 CreditsSection()
                 
-                Spacer(Modifier.height(120.dp))
+                Spacer(Modifier.height(140.dp))
             }
             
-            // Modern bottom bar
-            ModernBottomBar(
+            // iOS-style bottom bar
+            IOSStyleBottomBar(
                 currentTab = this@HomeTab,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
@@ -766,51 +766,85 @@ fun CreditsSection() {
     }
 }
 
+// New iOS-style bottom navigation bar
 @Composable
-fun ModernBottomBar(
+fun IOSStyleBottomBar(
     currentTab: Tab,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(80.dp),
-        color = Color(0xFF0F0F1E).copy(alpha = 0.98f)
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 24.dp)
     ) {
-        Box {
-            // Top gradient line
+        // Glassmorphic background with blur effect
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
+            shape = RoundedCornerShape(36.dp),
+            color = Color(0xFF1A1A2E).copy(alpha = 0.6f),
+            border = BorderStroke(
+                width = 0.5.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.2f),
+                        Color.White.copy(alpha = 0.05f)
+                    )
+                )
+            )
+        ) {
+            // Blur overlay effect
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
+                    .fillMaxSize()
+                    .blur(50.dp)
                     .background(
-                        Brush.horizontalGradient(
+                        Brush.verticalGradient(
                             colors = listOf(
-                                Color.Transparent,
-                                Color(0xFF667EEA),
-                                Color(0xFFF093FB),
+                                Color.White.copy(alpha = 0.03f),
                                 Color.Transparent
                             )
                         )
                     )
             )
             
+            // Navigation items
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 60.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                BottomNavItem(
-                    icon = Icons.Default.Home,
+                IOSNavItem(
+                    icon = Icons.Rounded.Home,
+                    selectedIcon = Icons.Filled.Home,
                     label = "Home",
                     isSelected = true,
                     onClick = { currentTab.navigation?.navigateTo(HomeTab::class) }
                 )
                 
-                BottomNavItem(
-                    icon = Icons.Default.Settings,
+                IOSNavItem(
+                    icon = Icons.Rounded.Explore,
+                    selectedIcon = Icons.Filled.Explore,
+                    label = "Explore",
+                    isSelected = false,
+                    onClick = { /* Add explore navigation */ }
+                )
+                
+                IOSNavItem(
+                    icon = Icons.Rounded.FavoriteBorder,
+                    selectedIcon = Icons.Filled.Favorite,
+                    label = "Activity",
+                    isSelected = false,
+                    onClick = { /* Add activity navigation */ }
+                )
+                
+                IOSNavItem(
+                    icon = Icons.Rounded.Settings,
+                    selectedIcon = Icons.Filled.Settings,
                     label = "Settings",
                     isSelected = false,
                     onClick = { currentTab.navigation?.navigateTo(SettingsTab::class) }
@@ -821,63 +855,127 @@ fun ModernBottomBar(
 }
 
 @Composable
-fun BottomNavItem(
+fun IOSNavItem(
     icon: ImageVector,
+    selectedIcon: ImageVector,
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val color by animateColorAsState(
-        targetValue = if (isSelected) Color(0xFF667EEA) else Color.White.copy(alpha = 0.5f),
-        animationSpec = tween(300)
+    val animatedColor by animateColorAsState(
+        targetValue = if (isSelected) Color.White else Color.White.copy(alpha = 0.4f),
+        animationSpec = spring(
+            stiffness = Spring.StiffnessLow,
+            dampingRatio = Spring.DampingRatioMediumBouncy
+        )
     )
     
     val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.1f else 1f,
+        targetValue = if (isSelected) 1f else 0.9f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         )
     )
     
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    val infiniteTransition = rememberInfiniteTransition()
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = if (isSelected) 0.4f else 0f,
+        targetValue = if (isSelected) 0.8f else 0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    
+    Box(
         modifier = Modifier
+            .weight(1f)
+            .fillMaxHeight()
             .scale(scale)
+            .clip(RoundedCornerShape(20.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
-            )
-            .padding(12.dp)
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Box {
-            if (isSelected) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color.copy(alpha = 0.1f),
-                            shape = CircleShape
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(32.dp)
+            ) {
+                // Glow effect for selected item
+                if (isSelected) {
+                    Canvas(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .alpha(glowAlpha)
+                    ) {
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFF667EEA),
+                                    Color.Transparent
+                                )
+                            ),
+                            radius = size.minDimension / 2
                         )
-                        .align(Alignment.Center)
+                    }
+                }
+                
+                // Animated icon transition
+                Crossfade(
+                    targetState = isSelected,
+                    animationSpec = tween(300)
+                ) { selected ->
+                    Icon(
+                        imageVector = if (selected) selectedIcon else icon,
+                        contentDescription = label,
+                        modifier = Modifier.size(if (selected) 28.dp else 24.dp),
+                        tint = animatedColor
+                    )
+                }
+            }
+            
+            Spacer(Modifier.height(4.dp))
+            
+            // Label with animated visibility
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = animatedColor,
+                    maxLines = 1
                 )
             }
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                modifier = Modifier
-                    .size(26.dp)
-                    .align(Alignment.Center),
-                tint = color
-            )
         }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = label,
-            fontSize = 11.sp,
-            color = color,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-        )
+        
+        // Active indicator dot
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 4.dp)
+            ) {
+                Canvas(
+                    modifier = Modifier.size(4.dp)
+                ) {
+                    drawCircle(
+                        color = Color(0xFF667EEA),
+                        radius = size.minDimension / 2
+                    )
+                }
+            }
+        }
     }
 }
