@@ -58,7 +58,6 @@ class HomeRootSection : Routes.Route() {
     }
 
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-    private lateinit var alertDialogs: AlertDialogs
 
     private val cards by lazy {
         EnumQuickActions.entries.map {
@@ -118,7 +117,6 @@ class HomeRootSection : Routes.Route() {
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
-        alertDialogs = AlertDialogs(context.translation)
     }
 
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
@@ -330,7 +328,6 @@ class HomeRootSection : Routes.Route() {
                     }
                     if (showQuickActionsMenu) {
                         QuickActionsDialog(
-                            alertDialogs = alertDialogs,
                             quickActions = cards,
                             selectedQuickActions = selectedTiles,
                             onDismiss = { showQuickActionsMenu = false },
@@ -348,37 +345,40 @@ class HomeRootSection : Routes.Route() {
             }
 
             if (selectedTiles.isEmpty()) {
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                        .height(300.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Widgets,
-                        contentDescription = "Quick Actions",
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "No quick actions added yet",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { showQuickActionsMenu = true },
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Quick Action",
-                            modifier = Modifier.size(24.dp)
+                            imageVector = Icons.Outlined.Widgets,
+                            contentDescription = "Quick Actions",
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Add")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No quick actions added yet",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { showQuickActionsMenu = true },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Quick Action",
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = "Add")
+                        }
                     }
                 }
             } else {
