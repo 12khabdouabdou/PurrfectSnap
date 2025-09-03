@@ -52,7 +52,7 @@ class SocialRootSection : Routes.Route() {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(top = 10.dp, bottom = 110.dp, start = 8.dp, end = 8.dp),
+            contentPadding = PaddingValues(start = 8.dp, end = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             //check if scope list is empty
@@ -182,13 +182,7 @@ class SocialRootSection : Routes.Route() {
         }
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val titles = remember {
-            listOf(translation["friends_tab"], translation["groups_tab"])
-        }
-        val coroutineScope = rememberCoroutineScope()
-        val pagerState = rememberPagerState { titles.size }
+    override val floatingActionButton: @Composable () -> Unit = {
         var addFriendDialog by remember { mutableStateOf(null as AddFriendDialog?) }
 
         if (addFriendDialog != null) {
@@ -202,85 +196,96 @@ class SocialRootSection : Routes.Route() {
             }
         }
 
+        FloatingActionButton(
+            onClick = {
+                addFriendDialog = AddFriendDialog(
+                    context,
+                    AddFriendDialog.Actions(
+                        onFriendState = { friend, state ->
+                            if (state) {
+                                context.bridgeService?.triggerScopeSync(
+                                    SocialScope.FRIEND,
+                                    friend.userId
+                                )
+                            } else {
+                                context.database.deleteFriend(friend.userId)
+                            }
+                        },
+                        onGroupState = { group, state ->
+                            if (state) {
+                                context.bridgeService?.triggerScopeSync(
+                                    SocialScope.GROUP,
+                                    group.conversationId
+                                )
+                            } else {
+                                context.database.deleteGroup(group.conversationId)
+                            }
+                        },
+                        getFriendState = { friend -> context.database.getFriendInfo(friend.userId) != null },
+                        getGroupState = { group -> context.database.getGroupInfo(group.conversationId) != null }
+                    ),
+                    pinnedIds = (friendList.map { it.userId } + groupList.map { it.conversationId }).reversed(),
+                )
+            },
+            modifier = Modifier.padding(10.dp),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = null
+            )
+        }
+    }
+
+    @OptIn(ExperimentalFoundationApi::class)
+    override val content: @Composable (NavBackStackEntry) -> Unit = {
+        val titles = remember {
+            listOf(translation["friends_tab"], translation["groups_tab"])
+        }
+        val coroutineScope = rememberCoroutineScope()
+        val pagerState = rememberPagerState { titles.size }
+
         LaunchedEffect(Unit) {
             updateScopeLists()
         }
 
-        Scaffold(
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        addFriendDialog = AddFriendDialog(
-                            context,
-                            AddFriendDialog.Actions(
-                                onFriendState = { friend, state ->
-                                    if (state) {
-                                        context.bridgeService?.triggerScopeSync(SocialScope.FRIEND, friend.userId)
-                                    } else {
-                                        context.database.deleteFriend(friend.userId)
-                                    }
-                                },
-                                onGroupState = { group, state ->
-                                    if (state) {
-                                        context.bridgeService?.triggerScopeSync(SocialScope.GROUP, group.conversationId)
-                                    } else {
-                                        context.database.deleteGroup(group.conversationId)
-                                    }
-                                },
-                                getFriendState = { friend -> context.database.getFriendInfo(friend.userId) != null },
-                                getGroupState = { group -> context.database.getGroupInfo(group.conversationId) != null }
-                            ),
-                            pinnedIds = (friendList.map { it.userId } + groupList.map { it.conversationId }).reversed(),
-                        )
-                    },
-                    modifier = Modifier.padding(10.dp),
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = null
+        Column(modifier = Modifier.fillMaxSize()) {
+            TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.pagerTabIndicatorOffset(
+                        pagerState = pagerState,
+                        tabPositions = tabPositions
+                    )
+                )
+            }) {
+                titles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
+                        text = {
+                            Text(
+                                text = title,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     )
                 }
             }
-        ) { paddingValues ->
-            Column(modifier = Modifier.padding(paddingValues)) {
-                TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        Modifier.pagerTabIndicatorOffset(
-                            pagerState = pagerState,
-                            tabPositions = tabPositions
-                        )
-                    )
-                }) {
-                    titles.forEachIndexed { index, title ->
-                        Tab(
-                            selected = pagerState.currentPage == index,
-                            onClick = {
-                                coroutineScope.launch {
-                                    pagerState.animateScrollToPage(index)
-                                }
-                            },
-                            text = {
-                                Text(
-                                    text = title,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                        )
-                    }
-                }
 
-                HorizontalPager(
-                    modifier = Modifier.padding(paddingValues),
-                    state = pagerState
-                ) { page ->
-                    when (page) {
-                        0 -> ScopeList(SocialScope.FRIEND)
-                        1 -> ScopeList(SocialScope.GROUP)
-                    }
+            HorizontalPager(
+                modifier = Modifier.fillMaxSize(),
+                state = pagerState
+            ) { page ->
+                when (page) {
+                    0 -> ScopeList(SocialScope.FRIEND)
+                    1 -> ScopeList(SocialScope.GROUP)
                 }
             }
         }

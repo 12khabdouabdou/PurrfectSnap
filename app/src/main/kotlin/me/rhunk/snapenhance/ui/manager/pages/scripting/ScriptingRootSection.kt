@@ -484,6 +484,7 @@ class ScriptingRootSection : Routes.Route() {
                     Box(modifier = Modifier.fillMaxSize()) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().pullRefresh(pullRefreshState),
+                            contentPadding = PaddingValues(bottom = 120.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             item {
@@ -544,7 +545,6 @@ class ScriptingRootSection : Routes.Route() {
                             items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
                                 ModuleItem(scriptModules[index])
                             }
-                            item { Spacer(modifier = Modifier.height(200.dp)) }
                         }
                         PullRefreshIndicator(
                             refreshing = refreshing,
