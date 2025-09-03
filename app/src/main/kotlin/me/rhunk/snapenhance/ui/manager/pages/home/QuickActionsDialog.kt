@@ -22,7 +22,7 @@ import me.rhunk.snapenhance.ui.util.AlertDialogs
 @Composable
 fun QuickActionsDialog(
     alertDialogs: AlertDialogs,
-    quickActions: Map<Pair<String, ImageVector>, () -> Unit>,
+    quickActions: Map<Pair<String, ImageVector>, Any>,
     selectedQuickActions: List<String>,
     onDismiss: () -> Unit,
     onSave: (List<String>) -> Unit
