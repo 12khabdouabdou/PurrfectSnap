@@ -685,23 +685,14 @@ class FeaturesRootSection : Routes.Route() {
     private fun PropertiesView(
         properties: List<PropertyPair<*>>
     ) {
-        Scaffold(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            content = { innerPadding ->
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(innerPadding),
-                    //save button space
-                    contentPadding = PaddingValues(top = 10.dp, bottom = 110.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    items(properties, key = { it.key.propertyName() }) {
-                        PropertyCard(it)
-                    }
-                }
+            verticalArrangement = Arrangement.Top
+        ) {
+            items(properties, key = { it.key.propertyName() }) {
+                PropertyCard(it)
             }
-        )
+        }
     }
 
     override val floatingActionButton: @Composable () -> Unit = {
