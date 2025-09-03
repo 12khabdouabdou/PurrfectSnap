@@ -80,22 +80,14 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-                Box(Modifier.fillMaxSize()) {
-                    Scaffold(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        topBar = { navigation.TopBar() },
-                        floatingActionButton = { navigation.FloatingActionButton() }
-                    ) { innerPadding ->
-                        navigation.Content(innerPadding, startDestination)
-                    }
-                    // Use a Box with align to ensure correct floating
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                    ) {
-                        navigation.FloatingBottomBar()
-                    }
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.background,
+                    topBar = { navigation.TopBar() },
+                    bottomBar = { navigation.FloatingBottomBar() },
+                    floatingActionButton = { navigation.FloatingActionButton() }
+                ) { innerPadding ->
+                    navigation.Content(innerPadding, startDestination)
                 }
             }
         }
