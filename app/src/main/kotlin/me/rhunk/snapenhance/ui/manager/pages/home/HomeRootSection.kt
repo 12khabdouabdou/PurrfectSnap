@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
@@ -47,6 +48,7 @@ import me.rhunk.snapenhance.storage.setQuickTiles
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.data.Updater
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
+import me.rhunk.snapenhance.ui.util.AlertDialogs
 import java.text.DateFormat
 
 class HomeRootSection : Routes.Route() {
@@ -55,6 +57,7 @@ class HomeRootSection : Routes.Route() {
     }
 
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
+    private lateinit var alertDialogs: AlertDialogs
 
     private val cards by lazy {
         EnumQuickActions.entries.map {
@@ -114,6 +117,7 @@ class HomeRootSection : Routes.Route() {
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
+        alertDialogs = AlertDialogs(context.translation)
     }
 
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
@@ -323,84 +327,91 @@ class HomeRootSection : Routes.Route() {
                     ) {
                         Icon(Icons.Default.MoreVert, contentDescription = null)
                     }
-                    DropdownMenu(
-                        expanded = showQuickActionsMenu,
-                        onDismissRequest = { showQuickActionsMenu = false }
-                    ) {
-                        cards.forEach { (card, _) ->
-                            fun toggle(state: Boolean? = null) {
-                                if (state?.let { !it } ?: selectedTiles.contains(card.first)) {
-                                    selectedTiles.remove(card.first)
-                                } else {
-                                    selectedTiles.add(0, card.first)
-                                }
+                    if (showQuickActionsMenu) {
+                        QuickActionsDialog(
+                            alertDialogs = alertDialogs,
+                            quickActions = cards,
+                            selectedQuickActions = selectedTiles,
+                            onDismiss = { showQuickActionsMenu = false },
+                            onSave = {
+                                selectedTiles.clear()
+                                selectedTiles.addAll(it)
                                 context.coroutineScope.launch {
                                     context.database.setQuickTiles(selectedTiles)
                                 }
+                                showQuickActionsMenu = false
                             }
-
-                            DropdownMenuItem(onClick = { toggle() }, text = {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(all = 5.dp)
-                                ) {
-                                    Checkbox(
-                                        checked = selectedTiles.contains(card.first),
-                                        onCheckedChange = {
-                                            toggle(it)
-                                        }
-                                    )
-                                    Text(text = card.first)
-                                }
-                            })
-                        }
+                        )
                     }
                 }
             }
 
-            FlowRow(
-                modifier = Modifier
-                    .padding(all = cardMargin)
-                    .fillMaxWidth(),
-                maxItemsInEachRow = 3,
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                val tileHeight = LocalDensity.current.run {
-                    remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
-                }
-
-                remember(selectedTiles.size, context.translation.loadedLocale) {
-                    selectedTiles.mapNotNull {
-                        cards.entries.find { entry -> entry.key.first == it }
-                    }
-                }.forEach { (card, action) ->
-                    ElevatedCard(
-                        modifier = Modifier
-                            .height(tileHeight)
-                            .weight(1f)
-                            .padding(all = 6.dp),
-                        onClick = { action(routes) }
+            if (selectedTiles.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = { showQuickActionsMenu = true },
                     ) {
-                        Column(
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add Quick Action",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Add")
+                    }
+                }
+            } else {
+                FlowRow(
+                    modifier = Modifier
+                        .padding(all = cardMargin)
+                        .fillMaxWidth(),
+                    maxItemsInEachRow = 3,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    val tileHeight = LocalDensity.current.run {
+                        remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
+                    }
+
+                    remember(selectedTiles.size, context.translation.loadedLocale) {
+                        selectedTiles.mapNotNull {
+                            cards.entries.find { entry -> entry.key.first == it }
+                        }
+                    }.forEach { (card, action) ->
+                        ElevatedCard(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(all = 5.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.SpaceEvenly,
+                                .height(tileHeight)
+                                .weight(1f)
+                                .padding(all = 6.dp),
+                            onClick = { action(routes) }
                         ) {
-                            Icon(
-                                imageVector = card.second, contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(50.dp)
-                            )
-                            Text(
-                                text = card.first,
-                                lineHeight = 16.sp,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                overflow = TextOverflow.Ellipsis,
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(all = 5.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceEvenly,
+                            ) {
+                                Icon(
+                                    imageVector = card.second, contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(50.dp)
+                                )
+                                Text(
+                                    text = card.first,
+                                    lineHeight = 16.sp,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                     }
                 }
