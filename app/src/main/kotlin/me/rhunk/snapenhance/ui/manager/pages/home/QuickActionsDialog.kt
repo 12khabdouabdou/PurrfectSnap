@@ -1,5 +1,6 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,28 +36,46 @@ fun QuickActionsDialog(
         alertDialogs.DefaultDialogCard {
             Text(
                 text = "Edit Quick Actions",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 16.dp)
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Text(
+                text = "Select the actions you want to see on the home screen.",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
             )
 
             Column {
-                quickActions.keys.forEach { (name, _) ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Checkbox(
-                            checked = selected.contains(name),
-                            onCheckedChange = { isChecked ->
-                                if (isChecked) {
-                                    selected.add(name)
-                                } else {
-                                    selected.remove(name)
-                                }
+                quickActions.keys.forEach { (name, icon) ->
+                    val isSelected = selected.contains(name)
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            if (isSelected) {
+                                selected.remove(name)
+                            } else {
+                                selected.add(name)
                             }
-                        )
-                        Text(text = name, modifier = Modifier.padding(start = 8.dp))
-                    }
+                        },
+                        headlineContent = { Text(name) },
+                        leadingContent = {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = name,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        trailingContent = {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { isChecked ->
+                                    if (isChecked) {
+                                        selected.add(name)
+                                    } else {
+                                        selected.remove(name)
+                                    }
+                                }
+                            )
+                        }
+                    )
                 }
             }
 
@@ -62,7 +83,8 @@ fun QuickActionsDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(onClick = onDismiss) {
                     Text("Cancel")
