@@ -19,8 +19,7 @@ class CustomTheming : Feature("Custom Theming") {
     )
 
     override fun init() {
-        val amoledThemeConfig = context.config.userInterface.forceAmoledTheme
-        if (amoledThemeConfig.globalState != true) return
+        if (!context.config.userInterface.forceAmoledTheme.get()) return
 
         onNextActivityCreate {
             context.androidContext.theme.javaClass.getMethod("obtainStyledAttributes", IntArray::class.java).hook(
@@ -30,24 +29,14 @@ class CustomTheming : Feature("Custom Theming") {
                 val result = param.getResult() as TypedArray
                 val typedArrayData = result.getObjectField("mData") as IntArray
 
-                val attrId = array[0]
-                val attrName = try {
-                    context.androidContext.resources.getResourceEntryName(attrId)
-                } catch (e: Exception) {
-                    return@hook
-                }
-
-                val propertyKey = amoledThemeConfig.properties.keys.find { it.name == attrName }
-                if (propertyKey == null) return@hook
-                val propertyValue = amoledThemeConfig.properties[propertyKey]
-                if (propertyValue?.get() != true) return@hook
-
+                // Always patch first attribute if color type
                 val type = result.getType(0)
                 if (type in colorTypes) {
+                    val attrId = array[0]
                     val original = typedArrayData[1]
                     typedArrayData[1] = amoledBlack // Patch to true black
                     context.log.info(
-                        "CustomTheming: Patched attrId 0x${attrId.toString(16)} ($attrName) from original 0x${original.toString(16)} to AMOLED black (0x${amoledBlack.toString(16)})"
+                        "CustomTheming: Patched attrId 0x${attrId.toString(16)} from original 0x${original.toString(16)} to AMOLED black (0x${amoledBlack.toString(16)})"
                     )
                 } else if (type == TypedValue.TYPE_STRING) {
                     val stringValue = result.getString(0)
@@ -55,10 +44,16 @@ class CustomTheming : Feature("Custom Theming") {
                         typedArrayData[0] = TypedValue.TYPE_INT_COLOR_ARGB4 // STYLE_TYPE
                         typedArrayData[1] = amoledBlack // STYLE_DATA
                         typedArrayData[5] = 0 // STYLE_DENSITY
+                        val attrId = array[0]
                         context.log.info(
-                            "CustomTheming: Patched XML drawable attrId 0x${attrId.toString(16)} ($attrName) to AMOLED black (0x${amoledBlack.toString(16)})"
+                            "CustomTheming: Patched XML drawable attrId 0x${attrId.toString(16)} to AMOLED black (0x${amoledBlack.toString(16)})"
                         )
                     }
+                } else {
+                    val attrId = array[0]
+                    context.log.warn(
+                        "CustomTheming: Unknown attribute type: ${type.toString(16)} for attrId 0x${attrId.toString(16)}"
+                    )
                 }
             }
         }
