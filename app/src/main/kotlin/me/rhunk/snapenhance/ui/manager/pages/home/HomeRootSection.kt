@@ -140,7 +140,8 @@ class HomeRootSection : Routes.Route() {
         }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
-
+        var alreadyAnimated by rememberSaveable { mutableStateOf(false) }
+        val hasQuickActions = selectedTiles.isNotEmpty()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -285,14 +286,36 @@ class HomeRootSection : Routes.Route() {
                     )
                 }
             }
-            // Tighter Spaing! Just a small gap after cards or debug
             Spacer(modifier = Modifier.height(12.dp))
-            AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsTitleAnim") { hasActions ->
-                if (hasActions) {
+            if (!hasQuickActions) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(50),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        tonalElevation = 2.dp,
+                        shadowElevation = 4.dp,
+                        modifier = Modifier.align(Alignment.Center)
+                    ) {
+                        Text(
+                            translation["quick_actions_title"],
+                            fontSize = 18.sp, // slightly larger
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            } else if (!alreadyAnimated) {
+                AnimatedContent(targetState = hasQuickActions, label = "QuickActionsTitleAnim") { _ ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 4.dp), // Less vertical padding!
+                            .padding(horizontal = 20.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -314,28 +337,34 @@ class HomeRootSection : Routes.Route() {
                             )
                         }
                     }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp) // Less padding after the pill!
+                }
+                LaunchedEffect(Unit) {
+                    alreadyAnimated = true
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        translation["quick_actions_title"],
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Start,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = { showQuickActionsMenu = true },
+                        modifier = Modifier.align(Alignment.CenterVertically)
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(50),
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            tonalElevation = 2.dp,
-                            shadowElevation = 4.dp,
-                            modifier = Modifier.align(Alignment.Center)
-                        ) {
-                            Text(
-                                translation["quick_actions_title"],
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp) // Tighter padding!
-                            )
-                        }
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
+                            contentDescription = "Manage Quick Actions"
+                        )
                     }
                 }
             }
@@ -343,7 +372,7 @@ class HomeRootSection : Routes.Route() {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(260.dp), // Slightly less height to tighten up
+                        .height(260.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -356,13 +385,13 @@ class HomeRootSection : Routes.Route() {
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.height(10.dp)) // Less gap under icon
+                        Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = "No quick actions added yet",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(10.dp)) // Less gap before Add
+                        Spacer(modifier = Modifier.height(10.dp))
                         Button(
                             onClick = { showQuickActionsMenu = true },
                             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -433,6 +462,7 @@ class HomeRootSection : Routes.Route() {
                     onSave = {
                         selectedTiles.clear()
                         selectedTiles.addAll(it)
+                        alreadyAnimated = false // reset to allow the animation only on new add from empty!
                         context.coroutineScope.launch {
                             context.database.setQuickTiles(selectedTiles)
                         }
