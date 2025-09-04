@@ -34,20 +34,23 @@ kotlin {
 tasks.register("compileTypeScript") {
     doLast {
         if (Os.isFamily(Os.FAMILY_WINDOWS))  {
-            // Gradle 8.11+: use ProviderFactory.exec (available as 'providers') instead of project.exec
+            // npx tsc
             providers.exec {
                 commandLine("npx.cmd", "--yes", "tsc", "--project", "tsconfig.json")
-            }.get()
+            }.result.get()
+            // npx rollup
             providers.exec {
                 commandLine("npx.cmd", "--yes", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
-            }.get()
+            }.result.get()
         } else {
+            // npx tsc
             providers.exec {
                 commandLine("npx", "--yes", "tsc", "--project", "tsconfig.json")
-            }.get()
+            }.result.get()
+            // npx rollup
             providers.exec {
                 commandLine("npx", "--yes", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
-            }.get()
+            }.result.get()
         }
         project.copy {
             from("build/loader.js")
@@ -57,5 +60,5 @@ tasks.register("compileTypeScript") {
 }
 
 tasks.named("preBuild").configure {
-    dependsOn("compileTypeScript")
+    dependsOn(tasks.named("compileTypeScript"))
 }
