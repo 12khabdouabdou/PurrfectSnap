@@ -5,13 +5,14 @@ plugins {
 }
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
 
 val nativeName = rootProject.ext.get("buildHash")
 
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".nativelib"
     compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    // buildToolsVersion explicitly removed; AGP selects the required default version automatically.
 
     // Keep the dynamic NDK version fallback
     ndkVersion = System.getenv("ANDROID_NDK_HOME")?.trimEnd('/')?.substringAfterLast("/") ?: "27.1.12297006"
