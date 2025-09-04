@@ -4,11 +4,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.gradle.configurationcache.extensions.capitalized
 import java.io.ByteArrayOutputStream
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid)          // Version must be 2.2.0 in libs.versions.toml
-    alias(libs.plugins.compose.compiler)       // Version must match Kotlin (2.2.0)
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
 
@@ -47,7 +48,6 @@ android {
 
     flavorDimensions += "abi"
 
-    // Correct: keep productFlavors only for flavors
     productFlavors {
         create("core") {
             dimension = "abi"
@@ -72,7 +72,6 @@ android {
         }
     }
 
-    // Correct: packaging is an android-level block (not inside productFlavors)
     packaging {
         jniLibs {
             excludes += "**/*_neon.so"
@@ -87,7 +86,6 @@ android {
         }
     }
 
-    // Fix shadowed 'it' scoping: use a named variable for the property
     properties["debug_flavor"]?.let { debugFlavor ->
         android.productFlavors.find { pf -> pf.name == debugFlavor.toString() }?.setIsDefault(true)
     }
@@ -105,8 +103,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
+}
+
+// New Kotlin compilerOptions DSL replaces deprecated kotlinOptions { jvmTarget = "21" }
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
@@ -138,7 +140,7 @@ dependencies {
     implementation(libs.rhino)
     implementation(libs.androidx.activity.ktx)
 
-    // Compose
+    // Compose (via BOM + libs catalog)
     fullImplementation(platform(libs.androidx.compose.bom))
     fullImplementation(libs.bcprov.jdk18on)
     fullImplementation(libs.androidx.navigation.compose)
@@ -158,9 +160,6 @@ dependencies {
     // AppCompat / Material
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
-
-    // Use catalog Material3 (above) and avoid duplicate hardcoded version that could conflict
-    // Removed: implementation("androidx.compose.material3:material3:1.2.1")
 
     // Core + OkHttp
     implementation("androidx.core:core-ktx:1.13.1")
