@@ -13,7 +13,6 @@ import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 
 class CustomTheming : Feature("Custom Theming") {
-
     private val amoledBlack = 0xFF000000.toInt()
     private val colorTypes = setOf(
         TypedValue.TYPE_INT_COLOR_ARGB8,
@@ -30,7 +29,7 @@ class CustomTheming : Feature("Custom Theming") {
         0x7f0405a1, 0x7f040124, 0x7f040557, 0x7f04056e, 0x7f040110, 0x7f0405a5, 0x7f040134,
         0x7f04011c, 0x7f040311, 0x7f04030d, 0x7f040400, 0x7f040401, 0x7f0406fd, 0x7f0403e1,
         0x7f0403e2, 0x7f0404ce, 0x7f04055d
-        // If you find more, just append the hex IDs here.
+        // Add more as needed from future logs!
     )
 
     private var currentIndex = 0
@@ -40,14 +39,24 @@ class CustomTheming : Feature("Custom Theming") {
 
         // Broadcast receiver to live-cycle through attrIds using ADB
         val filter = IntentFilter("me.rhunk.snapenhance.CYCLE_AMOLED_ATTR")
-        context.androidContext.registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context?, intent: Intent?) {
-                currentIndex = (currentIndex + 1) % candidateAttrIds.size
-                val patchingNow = candidateAttrIds[currentIndex]
-                Toast.makeText(context.androidContext, "Now patching attrId: 0x${patchingNow.toString(16)}", Toast.LENGTH_SHORT).show()
-                context.log.info("AMOLED DEBUG: Now patching attrId: 0x${patchingNow.toString(16)} [${currentIndex + 1}/${candidateAttrIds.size}]")
-            }
-        }, filter)
+        context.androidContext.registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    currentIndex = (currentIndex + 1) % candidateAttrIds.size
+                    val patchingNow = candidateAttrIds[currentIndex]
+                    Toast.makeText(
+                        context.androidContext,
+                        "Now patching attrId: 0x${patchingNow.toString(16)}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    context.log.info(
+                        "AMOLED DEBUG: Now patching attrId: 0x${patchingNow.toString(16)} [${currentIndex + 1}/${candidateAttrIds.size}]"
+                    )
+                }
+            },
+            filter,
+            Context.RECEIVER_EXPORTED // <-- Fix for Android 13+ SecurityException
+        )
 
         onNextActivityCreate {
             context.androidContext.theme.javaClass.getMethod("obtainStyledAttributes", IntArray::class.java).hook(
@@ -61,11 +70,14 @@ class CustomTheming : Feature("Custom Theming") {
                 val patchingNow = candidateAttrIds[currentIndex]
                 if (type in colorTypes && attrId == patchingNow) {
                     typedArrayData[1] = amoledBlack
-                    Toast.makeText(context.androidContext,
+                    Toast.makeText(
+                        context.androidContext,
                         "Patched attrId: 0x${attrId.toString(16)} to BLACK (index ${currentIndex + 1}/${candidateAttrIds.size})",
                         Toast.LENGTH_SHORT
                     ).show()
-                    context.log.info("AMOLED DEBUG: Patched ONLY attrId 0x${attrId.toString(16)} at index $currentIndex to AMOLED black")
+                    context.log.info(
+                        "AMOLED DEBUG: Patched ONLY attrId 0x${attrId.toString(16)} at index $currentIndex to AMOLED black"
+                    )
                 }
             }
         }
