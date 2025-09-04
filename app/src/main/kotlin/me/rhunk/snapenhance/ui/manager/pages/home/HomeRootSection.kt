@@ -285,13 +285,14 @@ class HomeRootSection : Routes.Route() {
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            // Tighter Spaing! Just a small gap after cards or debug
+            Spacer(modifier = Modifier.height(12.dp))
             AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsTitleAnim") { hasActions ->
                 if (hasActions) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                            .padding(horizontal = 20.dp, vertical = 4.dp), // Less vertical padding!
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -314,23 +315,27 @@ class HomeRootSection : Routes.Route() {
                         }
                     }
                 } else {
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        tonalElevation = 2.dp,
-                        shadowElevation = 4.dp,
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 0.dp, vertical = 10.dp)
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp) // Less padding after the pill!
                     ) {
-                        Text(
-                            translation["quick_actions_title"],
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 6.dp)
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            tonalElevation = 2.dp,
+                            shadowElevation = 4.dp,
+                            modifier = Modifier.align(Alignment.Center)
+                        ) {
+                            Text(
+                                translation["quick_actions_title"],
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp) // Tighter padding!
+                            )
+                        }
                     }
                 }
             }
@@ -338,7 +343,7 @@ class HomeRootSection : Routes.Route() {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(300.dp),
+                        .height(260.dp), // Slightly less height to tighten up
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -351,13 +356,13 @@ class HomeRootSection : Routes.Route() {
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp)) // Less gap under icon
                         Text(
                             text = "No quick actions added yet",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(10.dp)) // Less gap before Add
                         Button(
                             onClick = { showQuickActionsMenu = true },
                             modifier = Modifier.align(Alignment.CenterHorizontally)
