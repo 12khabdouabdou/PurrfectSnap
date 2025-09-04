@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -302,7 +303,7 @@ class HomeRootSection : Routes.Route() {
                     ) {
                         Text(
                             translation["quick_actions_title"],
-                            fontSize = 18.sp, // slightly larger
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                             textAlign = TextAlign.Center,
@@ -462,7 +463,7 @@ class HomeRootSection : Routes.Route() {
                     onSave = {
                         selectedTiles.clear()
                         selectedTiles.addAll(it)
-                        alreadyAnimated = false // reset to allow the animation only on new add from empty!
+                        alreadyAnimated = false
                         context.coroutineScope.launch {
                             context.database.setQuickTiles(selectedTiles)
                         }
