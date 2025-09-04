@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = rootProject.ext["applicationId"].toString() + ".composer"
+    namespace = rootProject.ext["applicationId"].toString() + ".common"
     compileSdk = 34
 
     // Ship generated assets from the local build output
@@ -35,26 +35,25 @@ kotlin {
 // - typescript: exposes the 'tsc' binary
 // - rollup: exposes the 'rollup' binary
 tasks.register("compileTypeScript") {
+    // Run only if this module actually has a tsconfig.json
+    onlyIf { project.file("tsconfig.json").exists() }
+
     doLast {
-        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-            // TypeScript compile
-            providers.exec {
-                commandLine("npx.cmd", "-y", "-p", "typescript", "tsc", "--project", "tsconfig.json")
-            }.result.get()
-            // Rollup bundle
-            providers.exec {
-                commandLine("npx.cmd", "-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
-            }.result.get()
-        } else {
-            // TypeScript compile
-            providers.exec {
-                commandLine("npx", "-y", "-p", "typescript", "tsc", "--project", "tsconfig.json")
-            }.result.get()
-            // Rollup bundle
-            providers.exec {
-                commandLine("npx", "-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
-            }.result.get()
+        val npx = if (Os.isFamily(Os.FAMILY_WINDOWS)) "npx.cmd" else "npx"
+
+        fun run(vararg args: String) {
+            val exec = providers.exec { commandLine(npx, *args) }
+            // Surface command output for CI logs
+            val stdout = exec.standardOutput.asText.get()
+            val stderr = exec.standardError.asText.get()
+            if (stdout.isNotBlank()) logger.lifecycle(stdout)
+            if (stderr.isNotBlank()) logger.error(stderr)
+            exec.result.get() // fail the task on non-zero exit status
         }
+
+        // Always resolve tools from their packages to avoid the wrong 'tsc' shim
+        run("-y", "-p", "typescript", "tsc", "--project", "tsconfig.json") // npx -p typescript tsc ... [1]
+        run("-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs") // npx -p rollup rollup ... [1]
 
         // Copy loader output into packaged assets
         project.copy {
