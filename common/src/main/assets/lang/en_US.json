@@ -470,8 +470,8 @@
                         }
                     },
                     "force_amoled_theme": {
-                        "name": "Amoled Dark mode",
-                        "description": "Uses a true black background for the dark theme, which can save battery on AMOLED screens."
+                        "name": "Amoled Dark Mode",
+                        "description": "Uses a true black background for the dark theme"
                     },
                     "map_friend_nametags": {
                         "name": "Enhanced Friend Map Nametags",
