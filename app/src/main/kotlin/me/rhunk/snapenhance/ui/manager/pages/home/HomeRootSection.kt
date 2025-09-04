@@ -141,8 +141,17 @@ class HomeRootSection : Routes.Route() {
         }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
-        var alreadyAnimated by rememberSaveable { mutableStateOf(false) }
+        var animateRow by rememberSaveable { mutableStateOf(false) }
+        var prevHasQuickActions by rememberSaveable { mutableStateOf(false) }
         val hasQuickActions = selectedTiles.isNotEmpty()
+
+        LaunchedEffect(hasQuickActions) {
+            if (hasQuickActions != prevHasQuickActions) {
+                animateRow = true
+            }
+            prevHasQuickActions = hasQuickActions
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -288,31 +297,64 @@ class HomeRootSection : Routes.Route() {
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            if (!hasQuickActions) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        tonalElevation = 2.dp,
-                        shadowElevation = 4.dp,
-                        modifier = Modifier.align(Alignment.Center)
+            when {
+                !hasQuickActions -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp)
                     ) {
-                        Text(
-                            translation["quick_actions_title"],
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
-                        )
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            tonalElevation = 2.dp,
+                            shadowElevation = 4.dp,
+                            modifier = Modifier.align(Alignment.Center)
+                        ) {
+                            Text(
+                                translation["quick_actions_title"],
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
+                            )
+                        }
                     }
                 }
-            } else if (!alreadyAnimated) {
-                AnimatedContent(targetState = hasQuickActions, label = "QuickActionsTitleAnim") { _ ->
+                animateRow -> {
+                    AnimatedContent(targetState = hasQuickActions) { _ ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                translation["quick_actions_title"],
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = TextAlign.Start,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(
+                                onClick = { showQuickActionsMenu = true },
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            ) {
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
+                                    contentDescription = "Manage Quick Actions"
+                                )
+                            }
+                        }
+                    }
+                    LaunchedEffect(hasQuickActions) {
+                        animateRow = false
+                    }
+                }
+                else -> {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -337,35 +379,6 @@ class HomeRootSection : Routes.Route() {
                                 contentDescription = "Manage Quick Actions"
                             )
                         }
-                    }
-                }
-                LaunchedEffect(Unit) {
-                    alreadyAnimated = true
-                }
-            } else {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        translation["quick_actions_title"],
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Start,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(
-                        onClick = { showQuickActionsMenu = true },
-                        modifier = Modifier.align(Alignment.CenterVertically)
-                    ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
-                            contentDescription = "Manage Quick Actions"
-                        )
                     }
                 }
             }
@@ -463,7 +476,6 @@ class HomeRootSection : Routes.Route() {
                     onSave = {
                         selectedTiles.clear()
                         selectedTiles.addAll(it)
-                        alreadyAnimated = false
                         context.coroutineScope.launch {
                             context.database.setQuickTiles(selectedTiles)
                         }
