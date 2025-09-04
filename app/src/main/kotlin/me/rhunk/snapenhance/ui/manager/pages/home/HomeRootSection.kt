@@ -1,8 +1,8 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,7 +37,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.R
@@ -71,19 +69,6 @@ class HomeRootSection : Routes.Route() {
 
     companion object {
         val cardMargin = 10.dp
-
-        private fun getCards(context: RemoteSideContext): MutableMap<Pair<String, ImageVector>, (Routes) -> Unit> {
-            return EnumQuickActions.entries.map {
-                (context.translation["actions.${it.key}.name"] to it.icon) to it.action
-            }.associate { it.first to it.second }
-                .toMutableMap().apply {
-                    EnumAction.entries.forEach { action ->
-                        this[context.translation["actions.${action.key}.name"] to action.icon] = {
-                            context.launchActionIntent(action)
-                        }
-                    }
-                }
-        }
     }
 
     @Composable
@@ -164,7 +149,20 @@ class HomeRootSection : Routes.Route() {
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
-        val cards = remember { getCards(context) }
+
+        // Build cards from translation and actions—no regex/matchgroup!
+        val cards = remember {
+            val tmp = EnumQuickActions.entries.map {
+                (context.translation["actions.${it.key}.name"]!! to it.icon) to it.action
+            }.associate { it.first to it.second }
+                .toMutableMap()
+            EnumAction.entries.forEach { action ->
+                tmp[context.translation["actions.${action.key}.name"]!! to action.icon] = {
+                    context.launchActionIntent(action)
+                }
+            }
+            tmp
+        }
 
         Column(
             modifier = Modifier
