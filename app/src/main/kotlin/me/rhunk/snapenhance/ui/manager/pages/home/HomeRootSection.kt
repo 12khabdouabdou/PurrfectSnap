@@ -141,17 +141,6 @@ class HomeRootSection : Routes.Route() {
         }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
-        var animateRow by rememberSaveable { mutableStateOf(false) }
-        var prevHasQuickActions by rememberSaveable { mutableStateOf(false) }
-        val hasQuickActions = selectedTiles.isNotEmpty()
-
-        LaunchedEffect(hasQuickActions) {
-            if (hasQuickActions != prevHasQuickActions) {
-                animateRow = true
-            }
-            prevHasQuickActions = hasQuickActions
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -297,8 +286,8 @@ class HomeRootSection : Routes.Route() {
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            when {
-                !hasQuickActions -> {
+            AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsTitleAnim") { hasQuickActions ->
+                if (!hasQuickActions) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -321,40 +310,7 @@ class HomeRootSection : Routes.Route() {
                             )
                         }
                     }
-                }
-                animateRow -> {
-                    AnimatedContent(targetState = hasQuickActions) { _ ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                translation["quick_actions_title"],
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                textAlign = TextAlign.Start,
-                                color = MaterialTheme.colorScheme.onBackground,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = { showQuickActionsMenu = true },
-                                modifier = Modifier.align(Alignment.CenterVertically)
-                            ) {
-                                Icon(
-                                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
-                                    contentDescription = "Manage Quick Actions"
-                                )
-                            }
-                        }
-                    }
-                    LaunchedEffect(hasQuickActions) {
-                        animateRow = false
-                    }
-                }
-                else -> {
+                } else {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
