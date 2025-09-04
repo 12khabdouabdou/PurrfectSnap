@@ -32,26 +32,26 @@ kotlin {
 }
 
 tasks.register("compileTypeScript") {
+    // Run only if this module actually has a tsconfig.json
+    onlyIf { project.file("tsconfig.json").exists() }
+
     doLast {
-        if (Os.isFamily(Os.FAMILY_WINDOWS))  {
-            // npx tsc
-            providers.exec {
-                commandLine("npx.cmd", "--yes", "tsc", "--project", "tsconfig.json")
-            }.result.get()
-            // npx rollup
-            providers.exec {
-                commandLine("npx.cmd", "--yes", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
-            }.result.get()
-        } else {
-            // npx tsc
-            providers.exec {
-                commandLine("npx", "--yes", "tsc", "--project", "tsconfig.json")
-            }.result.get()
-            // npx rollup
-            providers.exec {
-                commandLine("npx", "--yes", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
-            }.result.get()
+        val npx = if (Os.isFamily(Os.FAMILY_WINDOWS)) "npx.cmd" else "npx"
+
+        fun run(vararg args: String) {
+            val exec = providers.exec { commandLine(npx, *args) }
+            // Capture and surface output for CI debuggability
+            val stdout = exec.standardOutput.asText.get()
+            val stderr = exec.standardError.asText.get()
+            if (stdout.isNotBlank()) logger.lifecycle(stdout)
+            if (stderr.isNotBlank()) logger.error(stderr)
+            exec.result.get() // fail task if exit code != 0
         }
+
+        // Always run the correct tsc and rollup via npx package selection
+        run("-y", "-p", "typescript", "tsc", "--project", "tsconfig.json") // runs the 'tsc' binary from the 'typescript' package [19]
+        run("-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs") // runs 'rollup' from the 'rollup' package [19]
+
         project.copy {
             from("build/loader.js")
             into("build/assets/composer")
