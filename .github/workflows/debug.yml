@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Set up Node.js
+      - name: Set up Node.js (no cache to avoid lockfile path issues)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -41,7 +41,7 @@ jobs:
             fi
           fi
 
-      - name: Verify toolchain via npx package selection
+      - name: Ensure tsc/rollup are available (robust npx fallback)
         run: |
           npx -y -p typescript tsc --version
           npx -y -p rollup rollup --version
@@ -103,10 +103,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '21'
-        distribution: 'temurin'
+          distribution: 'temurin'
           cache: gradle
 
-      - name: Set up Node.js
+      - name: Set up Node.js (no cache to avoid lockfile path issues)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -122,7 +122,7 @@ jobs:
             fi
           fi
 
-      - name: Verify toolchain via npx package selection
+      - name: Ensure tsc/rollup are available (robust npx fallback)
         run: |
           npx -y -p typescript tsc --version
           npx -y -p rollup rollup --version
