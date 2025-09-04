@@ -37,7 +37,10 @@ class CustomTheming : Feature("Custom Theming") {
                     return@hook
                 }
 
-                if (amoledThemeConfig.properties.find { it.key.name == attrName }?.value?.get() != true) return@hook
+                val propertyKey = amoledThemeConfig.properties.keys.find { it.name == attrName }
+                if (propertyKey == null) return@hook
+                val propertyValue = amoledThemeConfig.properties[propertyKey]
+                if (propertyValue?.get() != true) return@hook
 
                 val type = result.getType(0)
                 if (type in colorTypes) {
