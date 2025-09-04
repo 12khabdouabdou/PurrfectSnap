@@ -50,7 +50,6 @@ class FeaturesRootSection : Routes.Route() {
     companion object {
         const val FEATURE_CONTAINER_ROUTE = "feature_container/{name}"
         const val SEARCH_FEATURE_ROUTE = "search_feature/{keyword}"
-        const val AMOLED_THEME_SETTINGS_ROUTE = "amoled_theme_settings"
     }
 
     private var activityLauncherHelper: ActivityLauncherHelper? = null
@@ -107,32 +106,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     override val customComposables: NavGraphBuilder.() -> Unit = {
-        routeInfo.childIds.addAll(listOf(FEATURE_CONTAINER_ROUTE, SEARCH_FEATURE_ROUTE, AMOLED_THEME_SETTINGS_ROUTE))
-
-        composable(AMOLED_THEME_SETTINGS_ROUTE, enterTransition = {
-            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(100))
-        }, exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300))
-        }) {
-            val amoledThemeContainer = context.config.root.userInterface.forceAmoledTheme
-            Scaffold(
-                floatingActionButton = {
-                    FloatingActionButton(onClick = {
-                        context.coroutineScope.launch(Dispatchers.IO) {
-                            context.config.writeConfig()
-                            context.shortToast(context.translation["manager.sections.features.saved_config_snackbar"])
-                        }
-                    }) {
-                        Icon(Icons.Filled.Save, contentDescription = "Save")
-                    }
-                }
-            ) { padding ->
-                PropertiesView(
-                    properties = amoledThemeContainer.properties.map { PropertyPair(it.key, it.value) },
-                    modifier = Modifier.padding(padding)
-                )
-            }
-        }
+        routeInfo.childIds.addAll(listOf(FEATURE_CONTAINER_ROUTE, SEARCH_FEATURE_ROUTE))
 
         composable(FEATURE_CONTAINER_ROUTE, enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(100))
@@ -368,11 +342,7 @@ class FeaturesRootSection : Routes.Route() {
                 val container = propertyValue.get() as ConfigContainer
 
                 registerClickCallback {
-                    if (property.name == "force_amoled_theme") {
-                        routes.navController.navigate(AMOLED_THEME_SETTINGS_ROUTE)
-                    } else {
-                        routes.navController.navigate(FEATURE_CONTAINER_ROUTE.replace("{name}", property.name))
-                    }
+                    routes.navController.navigate(FEATURE_CONTAINER_ROUTE.replace("{name}", property.name))
                 }
 
                 if (!container.hasGlobalState) return
@@ -713,11 +683,10 @@ class FeaturesRootSection : Routes.Route() {
 
     @Composable
     private fun PropertiesView(
-        properties: List<PropertyPair<*>>,
-        modifier: Modifier = Modifier
+        properties: List<PropertyPair<*>>
     ) {
         LazyColumn(
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
             items(properties, key = { it.key.propertyName() }) {
