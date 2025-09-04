@@ -30,9 +30,8 @@ class CallbackBuilder(
 
     fun build(): Any {
         // get the first param of the first constructor to get the class of the invoker
-        val ctor = callbackClass.constructors.firstOrNull()
+        val ctor: Constructor<*> = callbackClass.constructors.firstOrNull()
             ?: error("No public constructors available for ${callbackClass.name}")
-
         val rxEmitter: Class<*> = ctor.parameterTypes.firstOrNull()
             ?: error("Callback constructor must have at least one parameter for emitter: ${callbackClass.name}")
 
@@ -45,20 +44,21 @@ class CallbackBuilder(
         if (!rxEmitterField.isAccessible) rxEmitterField.isAccessible = true
 
         // create empty callback instance and snapshot its identity
-        val callbackInstance = createEmptyObject(ctor)!!
+        val callbackInstance: Any = createEmptyObject(ctor)
+            ?: error("Failed to instantiate callback for ${callbackClass.name}")
         val callbackInstanceHashCode: Int = callbackInstance.hashCode()
-        val callbackInstanceClass = callbackInstance.javaClass
+        val callbackInstanceClass: Class<*> = callbackInstance.javaClass
 
-        val unhooks = mutableListOf<XC_MethodHook.Unhook>()
+        val unhooks: MutableList<XC_MethodHook.Unhook> = mutableListOf()
 
         callbackInstanceClass.methods.forEach { method ->
             if (method.declaringClass != callbackInstanceClass) return@forEach
             if (Modifier.isPrivate(method.modifiers)) return@forEach
 
             // default hook that unhooks the callback and returns null
-            val defaultHook: (HookAdapter) -> Boolean = defaultHook@{ adapter ->
+            val defaultHook: (HookAdapter) -> Boolean = defaultHook@{ adapter: HookAdapter ->
                 // ensure the callback was created by the CallbackBuilder
-                val owner = adapter.thisObject()
+                val owner: Any? = adapter.thisObject()
                 // If emitter field is present, it's not our synthetic instance; skip
                 if (owner != null && rxEmitterField.get(owner) != null) return@defaultHook false
                 if ((owner as Any).hashCode() != callbackInstanceHashCode) return@defaultHook false
@@ -67,18 +67,18 @@ class CallbackBuilder(
             }
 
             // start with default behavior
-            var effectiveHook: (HookAdapter) -> Unit = { adapter ->
+            var effectiveHook: (HookAdapter) -> Unit = { adapter: HookAdapter ->
                 defaultHook(adapter)
             }
 
             // override the default hook if method name matches
-            val overrideEntry = methodOverrides.firstOrNull { ov -> ov.methodName == method.name }
+            val overrideEntry: Override? = methodOverrides.firstOrNull { ov -> ov.methodName == method.name }
             if (overrideEntry != null) {
-                effectiveHook = { adapter ->
+                effectiveHook = { adapter: HookAdapter ->
                     if (defaultHook(adapter)) {
                         overrideEntry.callback(adapter)
                         if (overrideEntry.shouldUnhook) {
-                            unhooks.forEach { u -> u.unhook() }
+                            unhooks.forEach { u: XC_MethodHook.Unhook -> u.unhook() }
                         }
                     }
                 }
