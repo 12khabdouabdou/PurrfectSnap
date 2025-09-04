@@ -114,7 +114,7 @@ class FeaturesRootSection : Routes.Route() {
         }, exitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right, animationSpec = tween(300))
         }) {
-            val amoledThemeContainer = context.config.userInterface.forceAmoledTheme
+            val amoledThemeContainer = context.config.root.userInterface.forceAmoledTheme
             Scaffold(
                 floatingActionButton = {
                     FloatingActionButton(onClick = {
