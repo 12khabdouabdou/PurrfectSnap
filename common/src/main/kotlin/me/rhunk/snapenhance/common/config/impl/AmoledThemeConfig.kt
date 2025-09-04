@@ -2,7 +2,7 @@ package me.rhunk.snapenhance.common.config.impl
 
 import me.rhunk.snapenhance.common.config.ConfigContainer
 
-class AmoledThemeConfig : ConfigContainer() {
+class AmoledThemeConfig : ConfigContainer(hasGlobalState = true) {
     val sigColorTextPrimary = boolean("sigColorTextPrimary", true)
     val sigColorBackgroundSurface = boolean("sigColorBackgroundSurface", true)
     val sigColorBackgroundMain = boolean("sigColorBackgroundMain", true)
