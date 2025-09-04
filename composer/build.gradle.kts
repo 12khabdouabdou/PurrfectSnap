@@ -1,5 +1,6 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.tasks.Exec
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -31,34 +32,58 @@ kotlin {
     }
 }
 
+// Helper to pick the correct npx launcher on Windows/non-Windows
+val npxCmd = if (Os.isFamily(Os.FAMILY_WINDOWS)) "npx.cmd" else "npx"
+
+// Optional: allow skipping TS in CI via -PskipTs=true
+val skipTs = providers.gradleProperty("skipTs").map { it.equals("true", ignoreCase = true) }.orElse(false)
+
+// Compile TypeScript with npx, resolving the compiler from the 'typescript' package
+tasks.register<Exec>("tscCompile") {
+    onlyIf {
+        !skipTs.get() && project.file("tsconfig.json").exists()
+    }
+    workingDir = project.projectDir
+    environment("CI", "true")
+    commandLine(npxCmd, "-y", "-p", "typescript", "tsc", "--project", "tsconfig.json") // runs 'tsc' from the 'typescript' package
+}
+
+// Bundle with rollup via npx, resolving from the 'rollup' package
+tasks.register<Exec>("rollupBundle") {
+    onlyIf {
+        !skipTs.get() &&
+        project.file("tsconfig.json").exists() && // require TS config if rollup depends on compiled output
+        (project.file("rollup.config.js").exists() || project.file("rollup.config.mjs").exists())
+    }
+    dependsOn("tscCompile")
+    workingDir = project.projectDir
+    environment("CI", "true")
+    // Prefer rollup.config.js; if using .mjs, adjust the path here
+    commandLine(npxCmd, "-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
+}
+
+// Aggregate task: runs tsc then rollup and copies the output into assets
 tasks.register("compileTypeScript") {
-    // Run only if this module actually has a tsconfig.json
-    onlyIf { project.file("tsconfig.json").exists() }
-
+    // Skip entirely if skipTs=true or no tsconfig
+    onlyIf {
+        !skipTs.get() && project.file("tsconfig.json").exists()
+    }
+    dependsOn("tscCompile", "rollupBundle")
     doLast {
-        val npx = if (Os.isFamily(Os.FAMILY_WINDOWS)) "npx.cmd" else "npx"
-
-        fun run(vararg args: String) {
-            val exec = providers.exec { commandLine(npx, *args) }
-            // Capture and surface output for CI debuggability
-            val stdout = exec.standardOutput.asText.get()
-            val stderr = exec.standardError.asText.get()
-            if (stdout.isNotBlank()) logger.lifecycle(stdout)
-            if (stderr.isNotBlank()) logger.error(stderr)
-            exec.result.get() // fail task if exit code != 0
-        }
-
-        // Always run the correct tsc and rollup via npx package selection
-        run("-y", "-p", "typescript", "tsc", "--project", "tsconfig.json") // runs the 'tsc' binary from the 'typescript' package [19]
-        run("-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs") // runs 'rollup' from the 'rollup' package [19]
-
-        project.copy {
-            from("build/loader.js")
-            into("build/assets/composer")
+        // Copy built loader into packaged assets if present
+        val loaderFile = project.file("build/loader.js")
+        if (loaderFile.exists()) {
+            project.copy {
+                from(loaderFile)
+                into("build/assets/composer")
+            }
+        } else {
+            logger.warn("compose/loader.js not found at build/loader.js (rollup may have failed or output path differs)")
         }
     }
 }
 
+// Ensure TS step runs before Android build
 tasks.named("preBuild").configure {
-    dependsOn(tasks.named("compileTypeScript"))
+    dependsOn("compileTypeScript")
 }
