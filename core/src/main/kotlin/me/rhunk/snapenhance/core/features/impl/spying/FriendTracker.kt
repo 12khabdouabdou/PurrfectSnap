@@ -26,7 +26,6 @@ class FriendTracker : Feature("Friend Tracker") {
     private val conversationPresenceState =
         mutableMapOf<String, MutableMap<String, FriendPresenceState?>>() // conversationId -> (userId -> state)
     private val tracker by lazyBridge { context.bridgeClient.getTracker() }
-
     private val notificationManager by lazy {
         context.androidContext.getSystemService(NotificationManager::class.java).apply {
             createNotificationChannel(
@@ -91,16 +90,12 @@ class FriendTracker : Feature("Friend Tracker") {
         val conversationName = feedEntry?.feedDisplayName ?: "DMs"
         val authorName = context.database.getFriendInfo(userId)?.mutableUsername ?: "Unknown"
         context.log.verbose("$authorName $eventType in $conversationName")
-
         getTrackedEvents(eventType)?.takeIf { it.canTrackOn(conversationId, userId) }?.getActions()?.forEach { (action, params) ->
             if ((params.onlyWhenAppActive || action == TrackerRuleAction.IN_APP_NOTIFICATION) && context.isMainActivityPaused) return@forEach
             if (params.onlyWhenAppInactive && !context.isMainActivityPaused) return@forEach
             if (params.onlyInsideConversation && !isInConversation(conversationId)) return@forEach
             if (params.onlyOutsideConversation && isInConversation(conversationId)) return@forEach
-
             context.log.verbose("dispatching $action for $eventType in $conversationName")
-
-            // Exhaustive when on TrackerRuleAction; no else branch needed.
             when (action) {
                 TrackerRuleAction.PUSH_NOTIFICATION -> {
                     if (params.noPushNotificationWhenAppActive && !context.isMainActivityPaused) return@forEach
@@ -130,7 +125,6 @@ class FriendTracker : Feature("Friend Tracker") {
         currentState: FriendPresenceState?
     ) {
         context.log.verbose("presence state for $userId in conversation $conversationId\n$currentState")
-
         val eventType = when {
             (oldState == null || currentState?.bitmojiPresent == false) && currentState?.bitmojiPresent == true -> TrackerEventType.CONVERSATION_ENTER
             (currentState == null || oldState?.bitmojiPresent == false) && oldState?.bitmojiPresent == true -> TrackerEventType.CONVERSATION_EXIT
@@ -140,13 +134,11 @@ class FriendTracker : Feature("Friend Tracker") {
             oldState?.peeking == true && (currentState == null || !currentState.peeking) -> TrackerEventType.STOPPED_PEEKING
             else -> null
         } ?: return
-
         dispatchEvents(eventType, conversationId, userId)
     }
 
     private fun onConversationMessagingEvent(event: SessionEvent) {
         context.log.verbose("conversation messaging event\n${event.type} in ${event.conversationId} from ${event.authorUserId}")
-
         val eventType = when (event.type) {
             SessionEventType.MESSAGE_READ_RECEIPTS -> TrackerEventType.MESSAGE_READ
             SessionEventType.MESSAGE_DELETED -> TrackerEventType.MESSAGE_DELETED
@@ -160,15 +152,13 @@ class FriendTracker : Feature("Friend Tracker") {
             SessionEventType.SNAP_REPLAYED_TWICE -> TrackerEventType.SNAP_REPLAYED_TWICE
             SessionEventType.SNAP_SCREENSHOT -> TrackerEventType.SNAP_SCREENSHOT
             SessionEventType.SNAP_SCREEN_RECORD -> TrackerEventType.SNAP_SCREEN_RECORD
-            else -> return
+            SessionEventType.CUSTOM -> return
         }
-
         val conversationMessage by lazy {
             (event as? SessionMessageEvent)?.serverMessageId?.let {
                 context.database.getConversationServerMessage(event.conversationId, it)
             }
         }
-
         dispatchEvents(
             eventType,
             event.conversationId,
@@ -190,15 +180,12 @@ class FriendTracker : Feature("Friend Tracker") {
         val conversationId = protoReader.getString(6) ?: return
         val presenceMap = conversationPresenceState.getOrPut(conversationId) { mutableMapOf() }.toMutableMap()
         val userIds = mutableSetOf<String>()
-
         protoReader.eachBuffer(4) {
             val participantUserId = getString(1)?.takeIf { it.contains(":") }?.substringBefore(":") ?: return@eachBuffer
             userIds.add(participantUserId)
             if (participantUserId == context.database.myUserId) return@eachBuffer
-
             val stateMap = getVarInt(2, 1)?.toString(2)?.padStart(16, '0')?.reversed()?.map { it == '1' }
                 ?: return@eachBuffer
-
             presenceMap[participantUserId] = FriendPresenceState(
                 bitmojiPresent = stateMap.getOrNull(8) == true,
                 typing = stateMap.getOrNull(9) == true,
@@ -207,21 +194,17 @@ class FriendTracker : Feature("Friend Tracker") {
                 peeking = stateMap.getOrNull(12) == true
             )
         }
-
         presenceMap.keys.filterNot { it in userIds }.forEach { presenceMap[it] = null }
-
         presenceMap.forEach { (userId, state) ->
             val oldState = conversationPresenceState[conversationId]?.get(userId)
             if (oldState != state) {
                 onConversationPresenceUpdate(conversationId, userId, oldState, state)
             }
         }
-
         conversationPresenceState[conversationId] = presenceMap
     }
 
     private fun handleMessagingEvent(protoReader: ProtoReader) {
-        // read receipts
         protoReader.followPath(12) {
             val conversationId = getByteArray(1, 1)?.toSnapUUID()?.toString() ?: return@followPath
             followPath(7) readReceipts@{
@@ -237,7 +220,6 @@ class FriendTracker : Feature("Friend Tracker") {
                 )
             }
         }
-
         protoReader.followPath(13, 1, 4) {
             val serverMessageId = getVarInt(1) ?: return@followPath
             val senderId = getByteArray(2, 1) ?: return@followPath
@@ -251,12 +233,10 @@ class FriendTracker : Feature("Friend Tracker") {
                 )
             )
         }
-
         protoReader.followPath(6, 2) {
             val conversationId = getByteArray(3, 1)?.toSnapUUID()?.toString() ?: return@followPath
             val senderId = getByteArray(1, 1)?.toSnapUUID()?.toString() ?: return@followPath
             val serverMessageId = getVarInt(2) ?: return@followPath
-
             if (contains(4)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -267,7 +247,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
-
             if (contains(13)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -278,7 +257,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
-
             if (contains(6) || contains(7)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -289,7 +267,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
-
             if (contains(11) || contains(12)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -300,7 +277,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
-
             followPath(16) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -309,7 +285,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
-
             if (contains(17)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -317,7 +292,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
-
             followPath(8) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -332,30 +306,24 @@ class FriendTracker : Feature("Friend Tracker") {
     override fun init() {
         val sessionEventsConfig = context.config.friendTracker
         if (sessionEventsConfig.globalState != true) return
-
         if (sessionEventsConfig.allowRunningInBackground.get()) {
             findClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").apply {
-                // prevent disabling events when the app is inactive
                 hook("appStateChanged", HookStage.BEFORE) { param ->
                     if (param.arg<Any>(0).toString() == "INACTIVE") param.setResult(null)
                 }
-                // allow events when a notification is received
                 hookConstructor(HookStage.AFTER) { param ->
                     val m = methods.first { it.name == "appStateChanged" }
-                    // Safely obtain the enum parameter type and its ACTIVE value.
                     val enumParamClass = m.parameterTypes.firstOrNull { it.isEnum } ?: m.parameterTypes.first()
                     val activeValue = enumParamClass.enumConstants
                         ?.firstOrNull { it.toString() == "ACTIVE" }
                     if (activeValue != null) {
                         m.invoke(param.thisObject(), activeValue)
                     } else {
-                        // Fallback: do nothing if the enum constant cannot be found
                         context.log.warn("FriendTracker: ACTIVE state enum not found for appStateChanged()")
                     }
                 }
             }
         }
-
         if (sessionEventsConfig.recordMessagingEvents.get()) {
             val messageHandlerClass = findClass("com.snapchat.client.duplex.MessageHandler\$CppProxy").apply {
                 hook("onReceive", HookStage.BEFORE) { param ->
@@ -382,7 +350,6 @@ class FriendTracker : Feature("Friend Tracker") {
                 }
                 hook("nativeDestroy", HookStage.BEFORE) { it.setResult(null) }
             }
-
             findClass("com.snapchat.client.messaging.Session").hook("create", HookStage.BEFORE) { param ->
                 if (!NativeLib.initialized) {
                     context.log.warn("Can't register duplex message handler, native lib not initialized")
