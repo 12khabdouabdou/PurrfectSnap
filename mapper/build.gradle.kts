@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
 }
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".mapper"
     compileSdk = 34
@@ -12,12 +14,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    kotlinOptions {
-        jvmTarget = "21"
-    }
-
     defaultConfig {
         minSdk = 28
+    }
+}
+
+// Migrate to compilerOptions DSL for Kotlin 2.x
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
