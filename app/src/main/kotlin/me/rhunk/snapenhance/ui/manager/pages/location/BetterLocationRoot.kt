@@ -1,5 +1,7 @@
 package me.rhunk.snapenhance.ui.manager.pages.location
+
 import android.os.Parcel
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -7,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditLocation
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +43,7 @@ import org.osmdroid.views.overlay.Marker
 
 class BetterLocationRoot : Routes.Route() {
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
+
     @Composable
     private fun FriendLocationItem(
         friendLocation: FriendLocation,
@@ -84,6 +88,7 @@ class BetterLocationRoot : Routes.Route() {
             }
         }
     }
+
     @Composable
     private fun FriendLocationsDialogs(
         friendsLocation: List<FriendLocation>,
@@ -145,6 +150,21 @@ class BetterLocationRoot : Routes.Route() {
             }
         }
     }
+
+    @Composable
+    private fun ThemedEditLocationButton(onClick: () -> Unit) {
+        FilledIconButton(
+            modifier = Modifier.size(40.dp),
+            colors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = if (isSystemInDarkTheme()) Color.White else Color(0xFF151A1A),
+            ),
+            onClick = onClick
+        ) {
+            Icon(Icons.Default.EditLocation, contentDescription = null)
+        }
+    }
+
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coordinatesProperty = remember {
             context.config.root.global.betterLocation.getPropertyPair("coordinates")
@@ -427,23 +447,15 @@ class BetterLocationRoot : Routes.Route() {
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            FilledIconButton(
-                                onClick = { showEditDialog = true },
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    contentColor = if (MaterialTheme.colorScheme.isLight) Color(0xFF151A1A) else Color.White,
-                                ),
-                            ) {
+                            FilledIconButton(onClick = {
+                                showEditDialog = true
+                            }) {
                                 Icon(Icons.Default.Edit, contentDescription = "Edit")
                             }
                             Spacer(modifier = Modifier.width(4.dp))
-                            FilledIconButton(
-                                onClick = { showDeleteDialog = true },
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.surface,
-                                    contentColor = if (MaterialTheme.colorScheme.isLight) Color(0xFF151A1A) else Color.White,
-                                ),
-                            ) {
+                            FilledIconButton(onClick = {
+                                showDeleteDialog = true
+                            }) {
                                 Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
                             }
                         }
