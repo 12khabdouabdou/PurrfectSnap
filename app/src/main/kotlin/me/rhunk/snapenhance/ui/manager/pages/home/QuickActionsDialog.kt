@@ -81,7 +81,7 @@ fun QuickActionsDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onSave(selected) },
+                onClick = { onSave(selected.toList()) },
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text("Save")
