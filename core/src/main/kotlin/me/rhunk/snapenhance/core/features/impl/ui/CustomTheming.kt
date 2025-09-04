@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.content.res.TypedArray
 import android.util.TypedValue
 import android.widget.Toast
@@ -13,6 +14,7 @@ import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 
 class CustomTheming : Feature("Custom Theming") {
+
     private val amoledBlack = 0xFF000000.toInt()
     private val colorTypes = setOf(
         TypedValue.TYPE_INT_COLOR_ARGB8,
@@ -32,12 +34,23 @@ class CustomTheming : Feature("Custom Theming") {
         // Add more as needed from future logs!
     )
 
+    // Use a persistent store so attr cycling resumes after app restart
+    private val prefsKey = "snapenhance_amoled_attr"
+    private val prefsIndex = "current_index"
+    private lateinit var prefs: SharedPreferences
     private var currentIndex = 0
+        set(value) {
+            field = value
+            prefs.edit().putInt(prefsIndex, value).apply()
+        }
 
     override fun init() {
         if (!context.config.userInterface.forceAmoledTheme.get()) return
 
-        // Broadcast receiver to live-cycle through attrIds using ADB
+        // Initialize shared preferences
+        prefs = context.androidContext.getSharedPreferences(prefsKey, Context.MODE_PRIVATE)
+        currentIndex = prefs.getInt(prefsIndex, 0)
+
         val filter = IntentFilter("me.rhunk.snapenhance.CYCLE_AMOLED_ATTR")
         context.androidContext.registerReceiver(
             object : BroadcastReceiver() {
@@ -55,7 +68,7 @@ class CustomTheming : Feature("Custom Theming") {
                 }
             },
             filter,
-            Context.RECEIVER_EXPORTED // <-- Fix for Android 13+ SecurityException
+            Context.RECEIVER_EXPORTED
         )
 
         onNextActivityCreate {
