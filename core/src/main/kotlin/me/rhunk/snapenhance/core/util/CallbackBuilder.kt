@@ -11,7 +11,6 @@ import java.lang.reflect.Modifier
 class CallbackBuilder(
     private val callbackClass: Class<*>
 ) {
-
     internal class Override(
         val methodName: String,
         val shouldUnhook: Boolean = true,
@@ -33,6 +32,7 @@ class CallbackBuilder(
         // get the first param of the first constructor to get the class of the invoker
         val ctor = callbackClass.constructors.firstOrNull()
             ?: error("No public constructors available for ${callbackClass.name}")
+
         val rxEmitter: Class<*> = ctor.parameterTypes.firstOrNull()
             ?: error("Callback constructor must have at least one parameter for emitter: ${callbackClass.name}")
 
@@ -41,8 +41,8 @@ class CallbackBuilder(
             field.type.isAssignableFrom(rxEmitter)
         } ?: error("No suitable emitter field found on ${callbackClass.name}")
 
-        // ensure accessible for reflection reads
-        if (!rxEmitterField.canAccess(null)) rxEmitterField.isAccessible = true
+        // ensure accessible for reflection reads (Android-friendly)
+        if (!rxEmitterField.isAccessible) rxEmitterField.isAccessible = true
 
         // create empty callback instance and snapshot its identity
         val callbackInstance = createEmptyObject(ctor)!!
@@ -59,6 +59,7 @@ class CallbackBuilder(
             val defaultHook: (HookAdapter) -> Boolean = defaultHook@{ adapter ->
                 // ensure the callback was created by the CallbackBuilder
                 val owner = adapter.thisObject()
+                // If emitter field is present, it's not our synthetic instance; skip
                 if (owner != null && rxEmitterField.get(owner) != null) return@defaultHook false
                 if ((owner as Any).hashCode() != callbackInstanceHashCode) return@defaultHook false
                 adapter.setResult(null)
@@ -83,7 +84,7 @@ class CallbackBuilder(
                 }
             }
 
-            // Avoid any type inference ambiguity at call site; keep explicit functional type
+            // Keep explicit function type to avoid reified/intersection inference issues.
             unhooks.add(Hooker.hook(method, HookStage.BEFORE, effectiveHook))
         }
 
