@@ -1,74 +1,70 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
-    alias(libs.plugins.compose.compiler)
-    id("kotlin-parcelize")
 }
 
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 android {
-    namespace = rootProject.ext["applicationId"].toString() + ".common"
+    namespace = rootProject.ext["applicationId"].toString() + ".composer"
     compileSdk = 34
 
-    buildFeatures {
-        aidl = true
-        buildConfig = true
-        compose = true
+    // Ship generated assets from the local build output
+    sourceSets {
+        getByName("main") {
+            assets.srcDirs("build/assets")
+        }
     }
 
-    defaultConfig {
-        minSdk = 28
-        buildConfigField("String", "VERSION_NAME", "\"${rootProject.ext["appVersionName"]}\"")
-        buildConfigField("int", "VERSION_CODE", "${rootProject.ext["appVersionCode"]}")
-        buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
-        buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
-        buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
-
-        // Capture stdout from `git rev-parse HEAD` using ProviderFactory.exec output API (no stream config allowed)
-        val gitHashText = providers.exec {
-            commandLine("git", "rev-parse", "HEAD")
-        }.standardOutput.asText.get().trim()
-        buildConfigField("String", "GIT_HASH", "\"${gitHashText}\"")
-
-        buildConfigField(
-            "String",
-            "SIF_ENDPOINT",
-            "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\""
-        )
-    }
-
+    // Align Java toolchain with Kotlin
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
 }
 
-// New Kotlin compilerOptions DSL (replaces deprecated android.kotlinOptions { jvmTarget = "21" })
+// Kotlin 2.x compilerOptions DSL
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
-dependencies {
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
-    implementation(libs.coroutines)
-    implementation(libs.gson)
-    implementation(libs.okhttp)
-    implementation(libs.androidx.documentfile)
-    implementation(libs.rhino)
-    implementation(libs.rhino.android) {
-        exclude(group = "org.mozilla", module = "rhino-runtime")
+// Compile/bundle the TypeScript loader using npx with package selection
+// - typescript: exposes the 'tsc' binary
+// - rollup: exposes the 'rollup' binary
+tasks.register("compileTypeScript") {
+    doLast {
+        if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+            // TypeScript compile
+            providers.exec {
+                commandLine("npx.cmd", "-y", "-p", "typescript", "tsc", "--project", "tsconfig.json")
+            }.result.get()
+            // Rollup bundle
+            providers.exec {
+                commandLine("npx.cmd", "-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
+            }.result.get()
+        } else {
+            // TypeScript compile
+            providers.exec {
+                commandLine("npx", "-y", "-p", "typescript", "tsc", "--project", "tsconfig.json")
+            }.result.get()
+            // Rollup bundle
+            providers.exec {
+                commandLine("npx", "-y", "-p", "rollup", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
+            }.result.get()
+        }
+
+        // Copy loader output into packaged assets
+        project.copy {
+            from("build/loader.js")
+            into("build/assets/composer")
+        }
     }
+}
 
-    compileOnly(libs.androidx.activity.ktx)
-    compileOnly(platform(libs.androidx.compose.bom))
-    compileOnly(libs.androidx.navigation.compose)
-    compileOnly(libs.androidx.material.icons.core)
-    compileOnly(libs.androidx.material.ripple)
-    compileOnly(libs.androidx.material.icons.extended)
-    compileOnly(libs.androidx.material3)
-
-    implementation(project(":mapper"))
+// Ensure TS step runs before Android build
+tasks.named("preBuild").configure {
+    dependsOn("compileTypeScript")
 }
