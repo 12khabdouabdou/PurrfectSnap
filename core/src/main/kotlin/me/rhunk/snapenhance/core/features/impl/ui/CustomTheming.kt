@@ -20,15 +20,13 @@ class CustomTheming : Feature("Custom Theming") {
         TypedValue.TYPE_INT_COLOR_ARGB4,
         TypedValue.TYPE_INT_COLOR_RGB4
     )
-    // All unique attrIds found in your logs for extensive debugging/cycling
+    // Remaining attrIds after removing the first 27 already checked by you
     private val candidateAttrIds = arrayOf(
-        0x7f04054d, 0x1010433, 0x7f04013b, 0x7f0405b2, 0x1010036, 0x101009b, 0x7f040148,
-        0x7f040517, 0x7f04051a, 0x7f04051b, 0x7f040584, 0x7f040519, 0x7f0405b3, 0x7f0405b5,
-        0x7f040233, 0x7f040234, 0x7f040236, 0x7f04054c, 0x7f0404b8, 0x7f04054b, 0x7f0405a4,
-        0x7f0405a1, 0x7f040124, 0x7f040557, 0x7f04056e, 0x7f040110, 0x7f0405a5, 0x7f040134,
         0x7f04011c, 0x7f040311, 0x7f04030d, 0x7f040400, 0x7f040401, 0x7f0406fd, 0x7f0403e1,
         0x7f0403e2, 0x7f0404ce, 0x7f04055d
+        // Add more as needed from future logs!
     )
+
     private val prefsKey = "snapenhance_amoled_attr"
     private val prefsIndex = "current_index"
     private lateinit var prefs: SharedPreferences
