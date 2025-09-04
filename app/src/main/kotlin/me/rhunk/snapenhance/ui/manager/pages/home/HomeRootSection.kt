@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.*
@@ -58,7 +57,6 @@ class HomeRootSection : Routes.Route() {
     }
 
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-
     private val cards by lazy {
         EnumQuickActions.entries.map {
             (context.translation["actions.${it.key}.name"] to it.icon) to it.action
@@ -114,11 +112,9 @@ class HomeRootSection : Routes.Route() {
     }
 
     override val title: @Composable (() -> Unit)? = {}
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
         TopBarActionButton(
             onClick = {
@@ -144,7 +140,6 @@ class HomeRootSection : Routes.Route() {
                 Font(R.font.avenir_next_medium, FontWeight.Medium)
             )
         }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -158,7 +153,6 @@ class HomeRootSection : Routes.Route() {
                     .align(Alignment.CenterHorizontally),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-
             Text(
                 text = translation.format(
                     "version_title",
@@ -168,7 +162,6 @@ class HomeRootSection : Routes.Route() {
                 fontFamily = avenirNext,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
-
             Row(
                 horizontalArrangement = Arrangement.spacedBy(
                     15.dp, Alignment.CenterHorizontally
@@ -184,29 +177,24 @@ class HomeRootSection : Routes.Route() {
                     },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
                 )
-
                 ExternalLinkIcon(
                     modifier = Modifier.clickable {
                         context.androidContext.openLink("https://github.com/rhunk/SnapEnhance")
                     },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
                 )
-
                 ExternalLinkIcon(
                     modifier = Modifier.offset(x = (-3).dp).clickable {
                         context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/wiki")
                     },
                     size = 40.dp,
-                    imageVector = Icons.AutoMirrored.Default.Help,
+                    imageVector = Icons.AutoMirrored.Filled.Help,
                 )
             }
-
             val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
                 context.database.getQuickTiles()
             }
-
             val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
-
             if (latestUpdate != null) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -242,7 +230,6 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             }
-
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -308,8 +295,8 @@ class HomeRootSection : Routes.Route() {
                 }
             }
 
+            // MAIN CHANGE: Centered title and conditional "Manage" (ic_manage) button
             var showQuickActionsMenu by remember { mutableStateOf(false) }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -318,13 +305,19 @@ class HomeRootSection : Routes.Route() {
             ) {
                 Text(
                     translation["quick_actions_title"], fontSize = 20.sp,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .align(Alignment.CenterVertically),
+                    textAlign = TextAlign.Center
                 )
-                Box {
+                if (selectedTiles.isNotEmpty()) {
                     IconButton(
                         onClick = { showQuickActionsMenu = !showQuickActionsMenu },
                     ) {
-                        Icon(Icons.Default.MoreVert, contentDescription = null)
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
+                            contentDescription = "Manage Quick Actions"
+                        )
                     }
                     if (showQuickActionsMenu) {
                         QuickActionsDialog(
@@ -343,7 +336,6 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             }
-
             if (selectedTiles.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -392,7 +384,6 @@ class HomeRootSection : Routes.Route() {
                     val tileHeight = LocalDensity.current.run {
                         remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
                     }
-
                     remember(selectedTiles.size, context.translation.loadedLocale) {
                         selectedTiles.mapNotNull {
                             cards.entries.find { entry -> entry.key.first == it }
