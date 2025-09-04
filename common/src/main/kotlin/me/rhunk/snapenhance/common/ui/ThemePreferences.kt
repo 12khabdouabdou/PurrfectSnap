@@ -7,16 +7,13 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// Single DataStore instance for this Context (name must be unique per-process)
-private val Context.themeDataStore by preferencesDataStore(name = "theme_prefs")
-
-// App theme modes supported by the UI
-enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
+// Single DataStore instance for this Context (unique per process)
+val Context.themeDataStore by preferencesDataStore(name = "theme_prefs")
 
 object ThemePreferences {
     private val THEME_KEY = stringPreferencesKey("theme_mode")
 
-    // Observe theme mode as a Flow with a default of SYSTEM
+    // Observe theme mode with SYSTEM as default
     fun getThemeModeFlow(context: Context): Flow<ThemeMode> =
         context.themeDataStore.data.map { prefs ->
             when (prefs[THEME_KEY]) {
