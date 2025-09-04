@@ -7,6 +7,8 @@ plugins {
     id("kotlin-parcelize")
 }
 
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".common"
     compileSdk = 34
@@ -19,27 +21,37 @@ android {
 
     defaultConfig {
         minSdk = 28
+
         buildConfigField("String", "VERSION_NAME", "\"${rootProject.ext["appVersionName"]}\"")
         buildConfigField("int", "VERSION_CODE", "${rootProject.ext["appVersionCode"]}")
         buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
+
         val gitHash = ByteArrayOutputStream()
         exec {
             commandLine("git", "rev-parse", "HEAD")
             standardOutput = gitHash
         }
         buildConfigField("String", "GIT_HASH", "\"${gitHash.toString(Charsets.UTF_8).trim()}\"")
-        buildConfigField("String", "SIF_ENDPOINT", "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\"")
+
+        buildConfigField(
+            "String",
+            "SIF_ENDPOINT",
+            "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\""
+        )
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+}
 
-    kotlinOptions {
-        jvmTarget = "21"
+// New Kotlin compilerOptions DSL (replaces deprecated android.kotlinOptions { jvmTarget = "21" })
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
