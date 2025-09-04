@@ -152,7 +152,7 @@ class FriendTracker : Feature("Friend Tracker") {
             SessionEventType.SNAP_REPLAYED_TWICE -> TrackerEventType.SNAP_REPLAYED_TWICE
             SessionEventType.SNAP_SCREENSHOT -> TrackerEventType.SNAP_SCREENSHOT
             SessionEventType.SNAP_SCREEN_RECORD -> TrackerEventType.SNAP_SCREEN_RECORD
-            SessionEventType.CUSTOM -> return
+            else -> return
         }
         val conversationMessage by lazy {
             (event as? SessionMessageEvent)?.serverMessageId?.let {
