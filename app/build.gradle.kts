@@ -2,8 +2,8 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.gradle.configurationcache.extensions.capitalized
 import java.io.ByteArrayOutputStream
+import java.util.Locale
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -131,7 +131,6 @@ dependencies {
 
     implementation(project(":core"))
     implementation(project(":common"))
-
     implementation(libs.androidx.documentfile)
     implementation(libs.gson)
     implementation(libs.smart.exception.java)
@@ -167,26 +166,35 @@ dependencies {
 }
 
 afterEvaluate {
-    properties["debug_flavor"]?.toString()?.let { tasks.findByName("install${it.capitalized()}Debug") }?.doLast {
+    // Replace deprecated capitalized() with replaceFirstChar + Locale.ROOT
+    val installTask = properties["debug_flavor"]?.toString()?.let { flavor ->
+        val cap = flavor.replaceFirstChar { ch -> ch.titlecase(Locale.ROOT) } // replaces capitalized()
+        tasks.findByName("install${cap}Debug")
+    }
+
+    installTask?.doLast {
         runCatching {
-            val devices = ByteArrayOutputStream().also {
-                exec {
-                    commandLine("adb", "devices")
-                    standardOutput = it
-                }
-            }.toString().lines().drop(1).mapNotNull { line ->
+            // Replace deprecated project.exec with providers.exec
+            val devicesOut = ByteArrayOutputStream()
+            providers.exec {
+                commandLine("adb", "devices")
+                standardOutput = devicesOut
+            }.get()
+
+            val devices = devicesOut.toString().lines().drop(1).mapNotNull { line ->
                 line.split("\t").firstOrNull()?.takeIf { it.isNotEmpty() }
             }
+
             runBlocking {
                 devices.forEach { device ->
                     launch {
-                        exec {
-                            commandLine("adb", "-s", device, "shell", "am", "force-stop", properties["debug_package_name"])
-                        }
+                        providers.exec {
+                            commandLine("adb", "-s", device, "shell", "am", "force-stop", properties["debug_package_name"]!!)
+                        }.get()
                         delay(500)
-                        exec {
-                            commandLine("adb", "-s", device, "shell", "am", "start", properties["debug_package_name"])
-                        }
+                        providers.exec {
+                            commandLine("adb", "-s", device, "shell", "am", "start", properties["debug_package_name"]!!)
+                        }.get()
                     }
                 }
             }
