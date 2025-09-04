@@ -20,11 +20,9 @@ class CustomTheming : Feature("Custom Theming") {
         TypedValue.TYPE_INT_COLOR_ARGB4,
         TypedValue.TYPE_INT_COLOR_RGB4
     )
-    // Remaining attrIds after removing the first 27 already checked by you
     private val candidateAttrIds = arrayOf(
-        0x7f04011c, 0x7f040311, 0x7f04030d, 0x7f040400, 0x7f040401, 0x7f0406fd, 0x7f0403e1,
-        0x7f0403e2, 0x7f0404ce, 0x7f04055d
-        // Add more as needed from future logs!
+        0x7f04011c, 0x7f040311, 0x7f04030d, 0x7f040400, 0x7f040401,
+        0x7f0406fd, 0x7f0403e1, 0x7f0403e2, 0x7f0404ce, 0x7f04055d
     )
 
     private val prefsKey = "snapenhance_amoled_attr"
@@ -42,7 +40,8 @@ class CustomTheming : Feature("Custom Theming") {
         prefs = context.androidContext.getSharedPreferences(prefsKey, Context.MODE_PRIVATE)
         currentIndex = prefs.getInt(prefsIndex, 0)
 
-        val filter = IntentFilter("me.rhunk.snapenhance.CYCLE_AMOLED_ATTR")
+        // Cycle command
+        val cycleFilter = IntentFilter("me.rhunk.snapenhance.CYCLE_AMOLED_ATTR")
         context.androidContext.registerReceiver(
             object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context?, intent: Intent?) {
@@ -53,7 +52,23 @@ class CustomTheming : Feature("Custom Theming") {
                     )
                 }
             },
-            filter,
+            cycleFilter,
+            Context.RECEIVER_EXPORTED
+        )
+
+        // Reset command
+        val resetFilter = IntentFilter("me.rhunk.snapenhance.RESET_AMOLED_ATTR")
+        context.androidContext.registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    currentIndex = 0
+                    val patchingNow = candidateAttrIds[currentIndex]
+                    context.log.error(
+                        "[AMOLED DEBUG RESET] Reset attrId cycling to FIRST id: 0x${patchingNow.toString(16)} (index 1/${candidateAttrIds.size})"
+                    )
+                }
+            },
+            resetFilter,
             Context.RECEIVER_EXPORTED
         )
 
