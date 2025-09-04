@@ -1,85 +1,97 @@
-// common/build.gradle.kts
-
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
 
 android {
-    // Use the common namespace (not composer)
     namespace = rootProject.ext["applicationId"].toString() + ".common"
     compileSdk = 34
 
-    // Generated assets directory used at runtime
-    sourceSets {
-        getByName("main") {
-            assets.srcDirs("build/assets")
-        }
-    }
-
-    // Enable Compose and BuildConfig for AGP 8+
     buildFeatures {
-        compose = true
+        aidl = true
         buildConfig = true
+        compose = true
     }
 
-    // Compose compiler extension
-    composeOptions {
-        // Align this with the project-wide Compose Compiler version
-        kotlinCompilerExtensionVersion = "1.5.15"
+    defaultConfig {
+        minSdk = 28
+
+        buildConfigField("String", "VERSION_NAME", "\"${rootProject.ext["appVersionName"]}\"")
+        buildConfigField("int", "VERSION_CODE", "${rootProject.ext["appVersionCode"]}")
+        buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
+        buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
+        buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
+
+        val gitHash = ByteArrayOutputStream()
+        exec {
+            commandLine("git", "rev-parse", "HEAD")
+            standardOutput = gitHash
+        }
+        buildConfigField("String", "GIT_HASH", "\"${gitHash.toString(Charsets.UTF_8).trim()}\"")
+
+        buildConfigField(
+            "String",
+            "SIF_ENDPOINT",
+            "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\""
+        )
     }
 
-    // Toolchains
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+    kotlinOptions {
+        jvmTarget = "21"
     }
 }
 
 dependencies {
-    // Local modules used by 'common' (adjust names if different)
-    implementation(project(":bridge"))
-    implementation(project(":mapper"))
+    // Core libs already in catalog
+    implementation(libs.coroutines)
+    implementation(libs.gson)
+    implementation(libs.okhttp)
+    implementation(libs.androidx.documentfile)
 
-    // Jetpack Compose (use BOM to keep versions in sync)
+    // Rhino (Android helper + core), exclude duplicate runtime if catalog provides both
+    implementation(libs.rhino)
+    implementation(libs.rhino.android) {
+        exclude(group = "org.mozilla", module = "rhino-runtime")
+    }
+
+    // Local modules
+    implementation(project(":mapper"))
+    // IMPORTANT: add the module that provides AIDL/interfaces like FileHandleManager, LoggerInterface, etc.
+    // If this module exists in the repo, keep this line and include it in settings.gradle(.kts):
+    // include(":bridge")
+    // Otherwise, remove bridge imports/usages from the source.
+    implementation(project(":bridge"))
+
+    // Compose: use BOM and add required artifacts as implementation for compile-time visibility
     implementation(platform("androidx.compose:compose-bom:2024.12.00"))
     implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.runtime:runtime")
     implementation("androidx.compose.runtime:runtime-saveable")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material:material-icons-extended")
+    // Navigation compose if used by this module’s sources
+    implementation("androidx.navigation:navigation-compose:2.8.4")
+    // Tooling for debug
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    // Compose + Android integration and AndroidX basics
+    // Activity Compose for ComposeView and setContent integration
     implementation("androidx.activity:activity-compose:1.9.2")
-    implementation("androidx.core:core-ktx:1.13.1")
+
+    // AndroidX lifecycle + savedstate used by code (ViewModel, lifecycle runtime, SavedState APIs)
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
     implementation("androidx.savedstate:savedstate-ktx:1.2.1")
 
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-
-    // Gson JSON
-    implementation("com.google.code.gson:gson:2.11.0")
-
-    // OkHttp (includes Okio)
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
-    // DataStore Preferences
+    // DataStore Preferences for ThemePreferences.kt
     implementation("androidx.datastore:datastore-preferences:1.1.7")
-
-    // Rhino for Android (Context, ScriptableObject, RhinoAndroidHelper, etc.)
-    implementation("com.faendir.rhino:rhino-android:1.6.0")
 }
