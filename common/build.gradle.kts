@@ -1,5 +1,3 @@
-import java.io.ByteArrayOutputStream
-
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
@@ -21,19 +19,17 @@ android {
 
     defaultConfig {
         minSdk = 28
-
         buildConfigField("String", "VERSION_NAME", "\"${rootProject.ext["appVersionName"]}\"")
         buildConfigField("int", "VERSION_CODE", "${rootProject.ext["appVersionCode"]}")
         buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
 
-        val gitHash = ByteArrayOutputStream()
-        providers.exec {
+        // Capture stdout from `git rev-parse HEAD` using ProviderFactory.exec output API (no stream config allowed)
+        val gitHashText = providers.exec {
             commandLine("git", "rev-parse", "HEAD")
-            standardOutput = gitHash
-        }.result.get()
-        buildConfigField("String", "GIT_HASH", "\"${gitHash.toString(Charsets.UTF_8).trim()}\"")
+        }.standardOutput.asText.get().trim()
+        buildConfigField("String", "GIT_HASH", "\"${gitHashText}\"")
 
         buildConfigField(
             "String",
