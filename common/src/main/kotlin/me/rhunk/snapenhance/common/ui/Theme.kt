@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-// Light scheme
+// ---------- Light color palette ----------
 val md_theme_light_primary = Color(0xFF6750A4)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 val md_theme_light_primaryContainer = Color(0xFFE9DDFF)
@@ -38,7 +38,7 @@ val md_theme_light_surfaceTint = Color(0xFF6750A4)
 val md_theme_light_outlineVariant = Color(0xFFCAC4CF)
 val md_theme_light_scrim = Color(0xFF000000)
 
-// Dark scheme
+// ---------- Dark color palette ----------
 val md_theme_dark_primary = Color(0xFFCFBCFF)
 val md_theme_dark_onPrimary = Color(0xFF381E72)
 val md_theme_dark_primaryContainer = Color(0xFF4F378A)
@@ -69,13 +69,13 @@ val md_theme_dark_surfaceTint = Color(0xFFCFBCFF)
 val md_theme_dark_outlineVariant = Color(0xFF49454E)
 val md_theme_dark_scrim = Color(0xFF000000)
 
-// AMOLED (true black) scheme (background only)
+// ---------- AMOLED (true black dark) palette (only crucial overrides) ----------
 val md_theme_amoled_background = Color(0xFF000000)
 val md_theme_amoled_surface = Color(0xFF000000)
 val md_theme_amoled_onBackground = Color(0xFFE6E1E6)
 val md_theme_amoled_onSurface = Color(0xFFE6E1E6)
 
-// Light colorScheme object
+// Material3 ColorScheme for light theme
 private val LightThemeColors = lightColorScheme(
     primary = md_theme_light_primary,
     onPrimary = md_theme_light_onPrimary,
@@ -108,7 +108,7 @@ private val LightThemeColors = lightColorScheme(
     scrim = md_theme_light_scrim
 )
 
-// Dark colorScheme object
+// Material3 ColorScheme for dark theme
 private val DarkThemeColors = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
@@ -150,7 +150,6 @@ fun AppMaterialTheme(
     val context = LocalContext.current
     val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val effectiveThemeMode = themeMode ?: if (isDarkTheme) ThemeMode.DARK else ThemeMode.LIGHT
-
     val colorScheme = when (effectiveThemeMode) {
         ThemeMode.AMOLED -> {
             val baseScheme = if (dynamicColor) dynamicDarkColorScheme(context) else DarkThemeColors
@@ -170,7 +169,6 @@ fun AppMaterialTheme(
             else -> LightThemeColors
         }
     }
-
     MaterialTheme(
         colorScheme = colorScheme,
         content = content
