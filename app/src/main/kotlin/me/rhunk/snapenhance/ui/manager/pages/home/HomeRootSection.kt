@@ -58,7 +58,6 @@ class HomeRootSection : Routes.Route() {
     companion object {
         val cardMargin = 10.dp
     }
-
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val cards by lazy {
         EnumQuickActions.entries.map {
@@ -73,11 +72,8 @@ class HomeRootSection : Routes.Route() {
             }
         }
     }
-
     @Composable
-    private fun InfoCard(
-        content: @Composable ColumnScope.() -> Unit,
-    ) {
+    private fun InfoCard(content: @Composable ColumnScope.() -> Unit) {
         OutlinedCard(
             modifier = Modifier
                 .padding(start = cardMargin, end = cardMargin)
@@ -96,7 +92,6 @@ class HomeRootSection : Routes.Route() {
             }
         }
     }
-
     @Composable
     fun ExternalLinkIcon(
         modifier: Modifier = Modifier,
@@ -113,7 +108,6 @@ class HomeRootSection : Routes.Route() {
                 .then(modifier)
         )
     }
-
     override val title: @Composable (() -> Unit)? = {}
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -141,6 +135,12 @@ class HomeRootSection : Routes.Route() {
         val avenirNext = remember {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
         }
+        val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
+            context.database.getQuickTiles()
+        }
+        val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
+        var showQuickActionsMenu by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -190,12 +190,6 @@ class HomeRootSection : Routes.Route() {
                     imageVector = Icons.AutoMirrored.Filled.Help,
                 )
             }
-
-            val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
-                context.database.getQuickTiles()
-            }
-            val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
-
             if (latestUpdate != null) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -231,7 +225,6 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             }
-
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -292,12 +285,7 @@ class HomeRootSection : Routes.Route() {
                     )
                 }
             }
-
-            // Add vertical space below cards and before Quick Actions
             Spacer(modifier = Modifier.height(24.dp))
-
-            var showQuickActionsMenu by remember { mutableStateOf(false) }
-
             AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsTitleAnim") { hasActions ->
                 if (hasActions) {
                     Row(
@@ -316,7 +304,7 @@ class HomeRootSection : Routes.Route() {
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(
-                            onClick = { showQuickActionsMenu = !showQuickActionsMenu },
+                            onClick = { showQuickActionsMenu = true },
                             modifier = Modifier.align(Alignment.CenterVertically)
                         ) {
                             Icon(
@@ -324,45 +312,28 @@ class HomeRootSection : Routes.Route() {
                                 contentDescription = "Manage Quick Actions"
                             )
                         }
-                        if (showQuickActionsMenu) {
-                            QuickActionsDialog(
-                                quickActions = cards,
-                                selectedQuickActions = selectedTiles,
-                                onDismiss = { showQuickActionsMenu = false },
-                                onSave = {
-                                    selectedTiles.clear()
-                                    selectedTiles.addAll(it)
-                                    context.coroutineScope.launch {
-                                        context.database.setQuickTiles(selectedTiles)
-                                    }
-                                    showQuickActionsMenu = false
-                                }
-                            )
-                        }
                     }
                 } else {
-                    // PILL style modern header
                     Surface(
                         shape = RoundedCornerShape(50),
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         tonalElevation = 2.dp,
                         shadowElevation = 4.dp,
                         modifier = Modifier
-                            .padding(horizontal = 32.dp, vertical = 12.dp)
                             .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 0.dp, vertical = 10.dp)
                     ) {
                         Text(
                             translation["quick_actions_title"],
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 28.dp, vertical = 12.dp)
+                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 6.dp)
                         )
                     }
                 }
             }
-
             if (selectedTiles.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -388,20 +359,20 @@ class HomeRootSection : Routes.Route() {
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
-                            onClick = { showQuickActionsMenu = true }, // **ALWAYS opens dialog!**
+                            onClick = { showQuickActionsMenu = true },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add Quick Action",
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(22.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(text = "Add")
                         }
                     }
                 }
             } else {
-                // Animate tiles in using standard Compose animation
                 FlowRow(
                     modifier = Modifier
                         .padding(all = cardMargin)
@@ -448,6 +419,21 @@ class HomeRootSection : Routes.Route() {
                         }
                     }
                 }
+            }
+            if (showQuickActionsMenu) {
+                QuickActionsDialog(
+                    quickActions = cards,
+                    selectedQuickActions = selectedTiles,
+                    onDismiss = { showQuickActionsMenu = false },
+                    onSave = {
+                        selectedTiles.clear()
+                        selectedTiles.addAll(it)
+                        context.coroutineScope.launch {
+                            context.database.setQuickTiles(selectedTiles)
+                        }
+                        showQuickActionsMenu = false
+                    }
+                )
             }
         }
     }
