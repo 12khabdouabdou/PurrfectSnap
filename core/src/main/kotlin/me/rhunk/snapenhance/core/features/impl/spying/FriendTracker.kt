@@ -100,7 +100,7 @@ class FriendTracker : Feature("Friend Tracker") {
 
             context.log.verbose("dispatching $action for $eventType in $conversationName")
 
-            // Make the when exhaustive to avoid future enum additions breaking compilation.
+            // Exhaustive when on TrackerRuleAction; no else branch needed.
             when (action) {
                 TrackerRuleAction.PUSH_NOTIFICATION -> {
                     if (params.noPushNotificationWhenAppActive && !context.isMainActivityPaused) return@forEach
@@ -119,8 +119,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     eventType.key,
                     extras
                 )
-                // If the enum has additional items (e.g., CUSTOM/WEBHOOK), do nothing by default.
-                else -> Unit
             }
         }
     }
@@ -132,6 +130,7 @@ class FriendTracker : Feature("Friend Tracker") {
         currentState: FriendPresenceState?
     ) {
         context.log.verbose("presence state for $userId in conversation $conversationId\n$currentState")
+
         val eventType = when {
             (oldState == null || currentState?.bitmojiPresent == false) && currentState?.bitmojiPresent == true -> TrackerEventType.CONVERSATION_ENTER
             (currentState == null || oldState?.bitmojiPresent == false) && oldState?.bitmojiPresent == true -> TrackerEventType.CONVERSATION_EXIT
@@ -141,6 +140,7 @@ class FriendTracker : Feature("Friend Tracker") {
             oldState?.peeking == true && (currentState == null || !currentState.peeking) -> TrackerEventType.STOPPED_PEEKING
             else -> null
         } ?: return
+
         dispatchEvents(eventType, conversationId, userId)
     }
 
@@ -199,8 +199,6 @@ class FriendTracker : Feature("Friend Tracker") {
             val stateMap = getVarInt(2, 1)?.toString(2)?.padStart(16, '0')?.reversed()?.map { it == '1' }
                 ?: return@eachBuffer
 
-            // Fix: bitmojiPresent expects a Boolean, not List<Boolean>.
-            // Indices 9..12 are already used for typing/wasTyping/speaking/peeking; use index 8 for presence.
             presenceMap[participantUserId] = FriendPresenceState(
                 bitmojiPresent = stateMap.getOrNull(8) == true,
                 typing = stateMap.getOrNull(9) == true,
@@ -269,6 +267,7 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
+
             if (contains(13)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -279,6 +278,7 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
+
             if (contains(6) || contains(7)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -289,6 +289,7 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
+
             if (contains(11) || contains(12)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -299,6 +300,7 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
+
             followPath(16) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -307,6 +309,7 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
+
             if (contains(17)) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -314,6 +317,7 @@ class FriendTracker : Feature("Friend Tracker") {
                     )
                 )
             }
+
             followPath(8) {
                 onConversationMessagingEvent(
                     SessionMessageEvent(
@@ -338,12 +342,10 @@ class FriendTracker : Feature("Friend Tracker") {
                 // allow events when a notification is received
                 hookConstructor(HookStage.AFTER) { param ->
                     val m = methods.first { it.name == "appStateChanged" }
-
                     // Safely obtain the enum parameter type and its ACTIVE value.
                     val enumParamClass = m.parameterTypes.firstOrNull { it.isEnum } ?: m.parameterTypes.first()
                     val activeValue = enumParamClass.enumConstants
                         ?.firstOrNull { it.toString() == "ACTIVE" }
-
                     if (activeValue != null) {
                         m.invoke(param.thisObject(), activeValue)
                     } else {
