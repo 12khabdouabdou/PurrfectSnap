@@ -7,7 +7,7 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.kotlinAndroid)          // Ensure this points to 2.2.0 in your version catalog!
     alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
@@ -20,7 +20,6 @@ android {
         aidl = true
         compose = true
     }
-
     defaultConfig {
         applicationId = rootProject.ext["applicationId"].toString()
         versionCode = rootProject.ext["appVersionCode"].toString().toInt()
@@ -29,7 +28,6 @@ android {
         targetSdk = 34
         multiDexEnabled = true
     }
-
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -44,9 +42,7 @@ android {
             proguardFiles += file("proguard-rules.pro")
         }
     }
-
     flavorDimensions += "abi"
-
     productFlavors {
         packaging {
             jniLibs {
@@ -83,11 +79,9 @@ android {
             dimension = "abi"
         }
     }
-
     properties["debug_flavor"]?.let {
         android.productFlavors.find { it.name == it.toString()}?.setIsDefault(true)
     }
-
     applicationVariants.all {
         outputs.map { it as BaseVariantOutputImpl }.forEach { outputVariant ->
             outputVariant.outputFileName = when {
@@ -96,7 +90,6 @@ android {
             }
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -105,7 +98,6 @@ android {
         jvmTarget = "21"
     }
 }
-
 androidComponents {
     onVariants(selector().withFlavor("abi", "core")) {
         it.packaging.jniLibs.apply {
@@ -114,7 +106,6 @@ androidComponents {
         }
     }
 }
-
 dependencies {
     fun fullImplementation(dependencyNotation: Any) {
         compileOnly(dependencyNotation)
@@ -122,10 +113,8 @@ dependencies {
             dependencies.add("${flavorName}Implementation", dependencyNotation)
         }
     }
-
     implementation(project(":core"))
     implementation(project(":common"))
-
     implementation(libs.androidx.documentfile)
     implementation(libs.gson)
     implementation(libs.smart.exception.java)
@@ -133,7 +122,6 @@ dependencies {
     implementation(libs.osmdroid.android)
     implementation(libs.rhino)
     implementation(libs.androidx.activity.ktx)
-
     fullImplementation(platform(libs.androidx.compose.bom))
     fullImplementation(libs.bcprov.jdk18on)
     fullImplementation(libs.androidx.navigation.compose)
@@ -145,15 +133,12 @@ dependencies {
     fullImplementation(libs.coil.video)
     fullImplementation(libs.colorpicker.compose)
     fullImplementation(libs.androidx.ui.tooling.preview)
-
     properties["debug_flavor"]?.let {
         debugImplementation(libs.androidx.ui.tooling)
     }
-
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.compose.material3:material3:1.2.1")
-
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
 }
