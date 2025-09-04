@@ -70,19 +70,13 @@ class CoreLogger(
     }
 
     override fun debug(message: Any?, tag: String) = internalLog(tag, LogLevel.DEBUG, message)
-
     override fun error(message: Any?, tag: String) = internalLog(tag, LogLevel.ERROR, message)
-
     override fun error(message: Any?, throwable: Throwable, tag: String) {
         internalLog(tag, LogLevel.ERROR, message)
         internalLog(tag, LogLevel.ERROR, throwable.stackTraceToString())
     }
-
     override fun info(message: Any?, tag: String) = internalLog(tag, LogLevel.INFO, message)
-
     override fun verbose(message: Any?, tag: String) = internalLog(tag, LogLevel.VERBOSE, message)
-
     override fun warn(message: Any?, tag: String) = internalLog(tag, LogLevel.WARN, message)
-
     override fun assert(message: Any?, tag: String) = internalLog(tag, LogLevel.ASSERT, message)
 }
