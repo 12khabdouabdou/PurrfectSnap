@@ -29,20 +29,22 @@ fun QuickActionsDialog(
                 text = "Edit Quick Actions",
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
             )
         },
         text = {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
             ) {
                 Text(
                     text = "Select the actions you want to see on the home screen.",
                     style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .padding(bottom = 16.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center
+                        .fillMaxWidth()
                 )
                 quickActions.keys.forEach { (name, icon) ->
                     val isSelected = selected.contains(name)
@@ -52,7 +54,12 @@ fun QuickActionsDialog(
                                 if (isSelected) selected.remove(name) else selected.add(name)
                             }
                             .fillMaxWidth(),
-                        headlineContent = { Text(name, color = MaterialTheme.colorScheme.onSurface) },
+                        headlineContent = {
+                            Text(
+                                name,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
                         leadingContent = {
                             Icon(
                                 imageVector = icon,
@@ -73,10 +80,20 @@ fun QuickActionsDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onSave(selected) }) { Text("Save") }
+            Button(
+                onClick = { onSave(selected) },
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Save")
+            }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(
+                onClick = onDismiss,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text("Cancel")
+            }
         },
         containerColor = MaterialTheme.colorScheme.surface
     )
