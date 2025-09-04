@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.documentfile)
 
+    // Rhino
     implementation(libs.rhino)
     implementation(libs.rhino.android) {
         exclude(group = "org.mozilla", module = "rhino-runtime")
@@ -67,7 +68,7 @@ dependencies {
     // Make :bridge optional to avoid hard failure when it is not included
     findProject(":bridge")?.let { implementation(it) }
 
-    // Compose (implementation, not compileOnly, since common compiles against these APIs)
+    // Jetpack Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material.icons.core)
@@ -75,7 +76,8 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material3)
     implementation("androidx.activity:activity-compose:1.9.2")
-
-    // If you still want to restrict runtime inclusion, keep UI-tooling as debugOnly
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // DataStore Preferences for ThemePreferences.kt
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
 }
