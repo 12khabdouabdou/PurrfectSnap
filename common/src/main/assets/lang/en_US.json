@@ -469,6 +469,10 @@
                             }
                         }
                     },
+                    "force_amoled_theme": {
+                        "name": "Amoled Dark mode",
+                        "description": "Uses a true black background for the dark theme, which can save battery on AMOLED screens."
+                    },
                     "map_friend_nametags": {
                         "name": "Enhanced Friend Map Nametags",
                         "description": "Improves the Nametags of friends on the Snapmap"
