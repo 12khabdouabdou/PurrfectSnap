@@ -1,5 +1,8 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -133,12 +136,10 @@ class HomeRootSection : Routes.Route() {
         )
     }
 
-    @OptIn(ExperimentalLayoutApi::class)
+    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val avenirNext = remember {
-            FontFamily(
-                Font(R.font.avenir_next_medium, FontWeight.Medium)
-            )
+            FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
         }
         Column(
             modifier = Modifier
@@ -163,9 +164,7 @@ class HomeRootSection : Routes.Route() {
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
             Row(
-                horizontalArrangement = Arrangement.spacedBy(
-                    15.dp, Alignment.CenterHorizontally
-                ),
+                horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -191,10 +190,12 @@ class HomeRootSection : Routes.Route() {
                     imageVector = Icons.AutoMirrored.Filled.Help,
                 )
             }
+
             val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
                 context.database.getQuickTiles()
             }
             val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
+
             if (latestUpdate != null) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -230,6 +231,7 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             }
+
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -275,18 +277,14 @@ class HomeRootSection : Routes.Route() {
                             }
                         }
                     }
-                    Text(
-                        text = buildSummary
-                    )
+                    Text(text = buildSummary)
                     Text(
                         fontSize = 12.sp,
                         text = remember {
                             translation.format(
                                 "debug_build_summary_date",
-                                "date" to DateFormat.getDateTimeInstance()
-                                    .format(BuildConfig.BUILD_TIMESTAMP),
-                                "days" to ((System.currentTimeMillis() - BuildConfig.BUILD_TIMESTAMP) / 86400000).toInt()
-                                    .toString()
+                                "date" to DateFormat.getDateTimeInstance().format(BuildConfig.BUILD_TIMESTAMP),
+                                "days" to ((System.currentTimeMillis() - BuildConfig.BUILD_TIMESTAMP) / 86400000).toInt().toString()
                             )
                         },
                         lineHeight = 20.sp,
@@ -295,47 +293,76 @@ class HomeRootSection : Routes.Route() {
                 }
             }
 
-            // MAIN CHANGE: Centered title and conditional "Manage" (ic_manage) button
+            // Add vertical space below cards and before Quick Actions
+            Spacer(modifier = Modifier.height(24.dp))
+
             var showQuickActionsMenu by remember { mutableStateOf(false) }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 10.dp, top = 5.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    translation["quick_actions_title"], fontSize = 20.sp,
-                    modifier = Modifier
-                        .weight(1f)
-                        .align(Alignment.CenterVertically),
-                    textAlign = TextAlign.Center
-                )
-                if (selectedTiles.isNotEmpty()) {
-                    IconButton(
-                        onClick = { showQuickActionsMenu = !showQuickActionsMenu },
+
+            AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsTitleAnim") { hasActions ->
+                if (hasActions) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
-                            contentDescription = "Manage Quick Actions"
+                        Text(
+                            translation["quick_actions_title"],
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Start,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.weight(1f)
                         )
-                    }
-                    if (showQuickActionsMenu) {
-                        QuickActionsDialog(
-                            quickActions = cards,
-                            selectedQuickActions = selectedTiles,
-                            onDismiss = { showQuickActionsMenu = false },
-                            onSave = {
-                                selectedTiles.clear()
-                                selectedTiles.addAll(it)
-                                context.coroutineScope.launch {
-                                    context.database.setQuickTiles(selectedTiles)
+                        IconButton(
+                            onClick = { showQuickActionsMenu = !showQuickActionsMenu },
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        ) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
+                                contentDescription = "Manage Quick Actions"
+                            )
+                        }
+                        if (showQuickActionsMenu) {
+                            QuickActionsDialog(
+                                quickActions = cards,
+                                selectedQuickActions = selectedTiles,
+                                onDismiss = { showQuickActionsMenu = false },
+                                onSave = {
+                                    selectedTiles.clear()
+                                    selectedTiles.addAll(it)
+                                    context.coroutineScope.launch {
+                                        context.database.setQuickTiles(selectedTiles)
+                                    }
+                                    showQuickActionsMenu = false
                                 }
-                                showQuickActionsMenu = false
-                            }
+                            )
+                        }
+                    }
+                } else {
+                    // PILL style modern header
+                    Surface(
+                        shape = RoundedCornerShape(50),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        tonalElevation = 2.dp,
+                        shadowElevation = 4.dp,
+                        modifier = Modifier
+                            .padding(horizontal = 32.dp, vertical = 12.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        Text(
+                            translation["quick_actions_title"],
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 28.dp, vertical = 12.dp)
                         )
                     }
                 }
             }
+
             if (selectedTiles.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -361,7 +388,7 @@ class HomeRootSection : Routes.Route() {
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
-                            onClick = { showQuickActionsMenu = true },
+                            onClick = { showQuickActionsMenu = true }, // **ALWAYS opens dialog!**
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
@@ -374,6 +401,7 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             } else {
+                // Animate tiles in using standard Compose animation
                 FlowRow(
                     modifier = Modifier
                         .padding(all = cardMargin)
