@@ -1,12 +1,10 @@
 import java.io.ByteArrayOutputStream
-
 plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
-
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 android {
@@ -29,10 +27,10 @@ android {
         buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
 
         val gitHash = ByteArrayOutputStream()
-        exec {
+        providers.exec {
             commandLine("git", "rev-parse", "HEAD")
             standardOutput = gitHash
-        }
+        }.get()
         buildConfigField("String", "GIT_HASH", "\"${gitHash.toString(Charsets.UTF_8).trim()}\"")
 
         buildConfigField(
