@@ -10,22 +10,24 @@ import me.rhunk.snapenhance.core.bridge.BridgeClient
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 
-
 @SuppressLint("PrivateApi")
 class CoreLogger(
     private val bridgeClient: BridgeClient
-): AbstractLogger(LogChannel.CORE) {
+) : AbstractLogger(LogChannel.CORE) {
+
     companion object {
         private const val TAG = "SnapEnhanceCore"
 
         fun xposedLog(message: Any?, tag: String = TAG) {
-            Log.println(Log.INFO, tag, message.toString())
-            XposedBridge.log("$tag: $message")
+            val text = message?.toString() ?: "null"
+            Log.println(Log.INFO, tag, text)
+            XposedBridge.log("$tag: $text")
         }
 
         fun xposedLog(message: Any?, throwable: Throwable, tag: String = TAG) {
-            Log.println(Log.INFO, tag, message.toString())
-            XposedBridge.log("$tag: $message")
+            val text = message?.toString() ?: "null"
+            Log.println(Log.INFO, tag, text)
+            XposedBridge.log("$tag: $text")
             XposedBridge.log(throwable)
         }
     }
@@ -33,11 +35,18 @@ class CoreLogger(
     private var invokeOriginalPrintLog: (Int, String, String) -> Unit
 
     init {
-        val printLnMethod = Log::class.java.getDeclaredMethod("println", Int::class.java, String::class.java, String::class.java)
+        val printLnMethod = Log::class.java.getDeclaredMethod(
+            "println",
+            Int::class.java,
+            String::class.java,
+            String::class.java
+        )
+
+        // Use explicit type arguments to avoid reified intersection inference warnings
         printLnMethod.hook(HookStage.BEFORE) { param ->
-            val priority = param.arg(0) as Int
-            val tag = param.arg(1) as String
-            val message = param.arg(2) as String
+            val priority = param.arg<Int>(0)
+            val tag = param.arg<String>(1)
+            val message = param.arg<String>(2)
             internalLog(tag, LogLevel.fromPriority(priority) ?: LogLevel.INFO, message)
         }
 
@@ -50,11 +59,13 @@ class CoreLogger(
         }
     }
 
+    // Normalize to String early to avoid ambiguous T inference at call sites
     private fun internalLog(tag: String, logLevel: LogLevel, message: Any?) {
+        val text = message?.toString() ?: "null"
         runCatching {
-            bridgeClient.broadcastLog(tag, logLevel.shortName, message.toString())
+            bridgeClient.broadcastLog(tag, logLevel.shortName, text)
         }.onFailure {
-            invokeOriginalPrintLog(logLevel.priority, tag, message.toString())
+            invokeOriginalPrintLog(logLevel.priority, tag, text)
         }
     }
 
