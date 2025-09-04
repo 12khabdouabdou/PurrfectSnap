@@ -7,14 +7,12 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.res.TypedArray
 import android.util.TypedValue
-import android.widget.Toast
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 
 class CustomTheming : Feature("Custom Theming") {
-
     private val amoledBlack = 0xFF000000.toInt()
     private val colorTypes = setOf(
         TypedValue.TYPE_INT_COLOR_ARGB8,
@@ -22,7 +20,6 @@ class CustomTheming : Feature("Custom Theming") {
         TypedValue.TYPE_INT_COLOR_ARGB4,
         TypedValue.TYPE_INT_COLOR_RGB4
     )
-
     // All unique attrIds found in your logs for extensive debugging/cycling
     private val candidateAttrIds = arrayOf(
         0x7f04054d, 0x1010433, 0x7f04013b, 0x7f0405b2, 0x1010036, 0x101009b, 0x7f040148,
@@ -31,10 +28,7 @@ class CustomTheming : Feature("Custom Theming") {
         0x7f0405a1, 0x7f040124, 0x7f040557, 0x7f04056e, 0x7f040110, 0x7f0405a5, 0x7f040134,
         0x7f04011c, 0x7f040311, 0x7f04030d, 0x7f040400, 0x7f040401, 0x7f0406fd, 0x7f0403e1,
         0x7f0403e2, 0x7f0404ce, 0x7f04055d
-        // Add more as needed from future logs!
     )
-
-    // Use a persistent store so attr cycling resumes after app restart
     private val prefsKey = "snapenhance_amoled_attr"
     private val prefsIndex = "current_index"
     private lateinit var prefs: SharedPreferences
@@ -47,7 +41,6 @@ class CustomTheming : Feature("Custom Theming") {
     override fun init() {
         if (!context.config.userInterface.forceAmoledTheme.get()) return
 
-        // Initialize shared preferences
         prefs = context.androidContext.getSharedPreferences(prefsKey, Context.MODE_PRIVATE)
         currentIndex = prefs.getInt(prefsIndex, 0)
 
@@ -57,13 +50,8 @@ class CustomTheming : Feature("Custom Theming") {
                 override fun onReceive(ctx: Context?, intent: Intent?) {
                     currentIndex = (currentIndex + 1) % candidateAttrIds.size
                     val patchingNow = candidateAttrIds[currentIndex]
-                    Toast.makeText(
-                        context.androidContext,
-                        "Now patching attrId: 0x${patchingNow.toString(16)}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    context.log.info(
-                        "AMOLED DEBUG: Now patching attrId: 0x${patchingNow.toString(16)} [${currentIndex + 1}/${candidateAttrIds.size}]"
+                    context.log.error(
+                        "[AMOLED DEBUG CYCLE] Now patching attrId: 0x${patchingNow.toString(16)} (index ${currentIndex + 1}/${candidateAttrIds.size})"
                     )
                 }
             },
@@ -83,13 +71,8 @@ class CustomTheming : Feature("Custom Theming") {
                 val patchingNow = candidateAttrIds[currentIndex]
                 if (type in colorTypes && attrId == patchingNow) {
                     typedArrayData[1] = amoledBlack
-                    Toast.makeText(
-                        context.androidContext,
-                        "Patched attrId: 0x${attrId.toString(16)} to BLACK (index ${currentIndex + 1}/${candidateAttrIds.size})",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    context.log.info(
-                        "AMOLED DEBUG: Patched ONLY attrId 0x${attrId.toString(16)} at index $currentIndex to AMOLED black"
+                    context.log.error(
+                        "[AMOLED DEBUG PATCH] Patched ONLY attrId 0x${attrId.toString(16)} at index $currentIndex to AMOLED black"
                     )
                 }
             }
