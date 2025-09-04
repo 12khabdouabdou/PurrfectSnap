@@ -21,8 +21,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -55,14 +57,23 @@ import me.rhunk.snapenhance.ui.manager.data.Updater
 import me.rhunk.snapenhance.ui.manager.data.UpdaterDownloader
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import java.text.DateFormat
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
+sealed class UpdateState {
+    object Idle : UpdateState()
+    data class Downloading(val progress: Float) : UpdateState()
+    object Success : UpdateState()
+    data class Failed(val message: String) : UpdateState()
+}
 
 class HomeRootSection : Routes.Route() {
+
     companion object {
         val cardMargin = 10.dp
-        private lateinit var activityLauncherHelper: ActivityLauncherHelper
 
-        private val cards by lazy {
-            EnumQuickActions.entries.map {
+        private fun getCards(context: RemoteSideContext): MutableMap<Pair<String, ImageVector>, (Routes) -> Unit> {
+            return EnumQuickActions.entries.map {
                 (context.translation["actions.${it.key}.name"] to it.icon) to it.action
             }.associate { it.first to it.second }
                 .toMutableMap().apply {
@@ -111,9 +122,7 @@ class HomeRootSection : Routes.Route() {
 
     override val title: @Composable (() -> Unit)? = {}
 
-    override val init: () -> Unit = {
-        activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
-    }
+    override val init: () -> Unit = {}
 
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
         TopBarActionButton(
@@ -131,29 +140,31 @@ class HomeRootSection : Routes.Route() {
 
     @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
+        val context = this@HomeRootSection.context
+        val androidContext = LocalContext.current
+
         val activityLauncherHelper = remember { ActivityLauncherHelper(context.activity!!) }
         val scope = rememberCoroutineScope()
 
+        val installerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            UpdaterDownloader.completeInstall(result.resultCode)
+        }
+
         LaunchedEffect(Unit) {
-            UpdaterDownloader.register(activityLauncherHelper.register("apk_installer") {
-                UpdaterDownloader.completeInstall(it.resultCode)
-            })
+            UpdaterDownloader.register(installerLauncher)
         }
 
         val avenirNext = remember { FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium)) }
-        val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) { context.database.getQuickTiles() }
-        val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
 
-        // ----- Advanced update/auto-download section -----
-        sealed class UpdateState {
-            object Idle : UpdateState()
-            data class Downloading(val progress: Float) : UpdateState()
-            object Success : UpdateState()
-            data class Failed(val message: String) : UpdateState()
+        val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf<String>()) {
+            context.database.getQuickTiles()
         }
+        val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
-
         var showQuickActionsMenu by remember { mutableStateOf(false) }
+        val cards = remember { getCards(context) }
 
         Column(
             modifier = Modifier
@@ -161,7 +172,8 @@ class HomeRootSection : Routes.Route() {
                 .verticalScroll(rememberScrollState())
         ) {
             Icon(
-                imageVector = Snapenhance, contentDescription = null,
+                imageVector = Snapenhance,
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(all = 8.dp)
@@ -169,12 +181,11 @@ class HomeRootSection : Routes.Route() {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = translation.format("version_title", "versionName" to BuildConfig.VERSION_NAME),
+                text = context.translation.format("version_title", "versionName" to BuildConfig.VERSION_NAME),
                 fontSize = 14.sp,
                 fontFamily = avenirNext,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
             )
-
             Row(
                 horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
@@ -184,25 +195,24 @@ class HomeRootSection : Routes.Route() {
             ) {
                 ExternalLinkIcon(
                     modifier = Modifier.clickable {
-                        context.androidContext.openLink("https://t.me/snapenhance")
+                        androidContext.openLink("https://t.me/snapenhance")
                     },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
                 )
                 ExternalLinkIcon(
                     modifier = Modifier.clickable {
-                        context.androidContext.openLink("https://github.com/rhunk/SnapEnhance")
+                        androidContext.openLink("https://github.com/rhunk/SnapEnhance")
                     },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
                 )
                 ExternalLinkIcon(
                     modifier = Modifier.offset(x = (-3).dp).clickable {
-                        context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/wiki")
+                        androidContext.openLink("https://github.com/rhunk/SnapEnhance/wiki")
                     },
                     size = 40.dp,
                     imageVector = Icons.AutoMirrored.Filled.Help,
                 )
             }
-
             if (latestUpdate != null) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
@@ -214,13 +224,13 @@ class HomeRootSection : Routes.Route() {
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = translation["update_title"],
+                                    text = context.translation["update_title"],
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                 )
                                 Text(
                                     fontSize = 12.sp,
-                                    text = translation.format(
+                                    text = context.translation.format(
                                         "update_content",
                                         "version" to (latestUpdate?.versionName ?: "unknown")
                                     ),
@@ -235,21 +245,20 @@ class HomeRootSection : Routes.Route() {
                                     if (BuildConfig.DEBUG) {
                                         UpdaterDownloader.downloadAndInstall(
                                             scope = scope,
-                                            context = context.androidContext,
+                                            context = androidContext,
                                             onDownloadStart = { updateState = UpdateState.Downloading(0f) },
                                             onProgress = { progress -> updateState = UpdateState.Downloading(progress) },
                                             onSuccess = { updateState = UpdateState.Success },
                                             onFailure = { message -> updateState = UpdateState.Failed(message) }
                                         )
                                     } else {
-                                        latestUpdate?.releaseUrl?.let { context.androidContext.openLink(it) }
+                                        latestUpdate?.releaseUrl?.let { androidContext.openLink(it) }
                                     }
                                 }
                             ) {
-                                Text(text = translation["update_button"])
+                                Text(text = context.translation["update_button"])
                             }
                         }
-
                         when (val state = updateState) {
                             is UpdateState.Downloading -> {
                                 Spacer(modifier = Modifier.height(10.dp))
@@ -280,11 +289,11 @@ class HomeRootSection : Routes.Route() {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
                     Text(
-                        text = translation["debug_build_summary_title"],
+                        text = context.translation["debug_build_summary_title"],
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                     )
-                    val buildSummary = buildAnnotatedString {
+                    val buildSummary: AnnotatedString = buildAnnotatedString {
                         withStyle(
                             style = SpanStyle(
                                 fontSize = 13.sp,
@@ -293,20 +302,18 @@ class HomeRootSection : Routes.Route() {
                             )
                         ) {
                             append(
-                                remember {
-                                    translation.format(
-                                        "debug_build_summary_content",
-                                        "versionName" to BuildConfig.VERSION_NAME,
-                                        "versionCode" to BuildConfig.VERSION_CODE.toString(),
-                                    )
-                                }
+                                context.translation.format(
+                                    "debug_build_summary_content",
+                                    "versionName" to BuildConfig.VERSION_NAME,
+                                    "versionCode" to BuildConfig.VERSION_CODE.toString(),
+                                )
                             )
                             append(" - ")
                             withLink(
                                 LinkAnnotation.Clickable(
                                     "git_hash",
                                     linkInteractionListener = {
-                                        context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/commit/${BuildConfig.GIT_HASH}")
+                                        androidContext.openLink("https://github.com/rhunk/SnapEnhance/commit/${BuildConfig.GIT_HASH}")
                                     }
                                 )
                             ) {
@@ -324,20 +331,17 @@ class HomeRootSection : Routes.Route() {
                     Text(text = buildSummary)
                     Text(
                         fontSize = 12.sp,
-                        text = remember {
-                            translation.format(
-                                "debug_build_summary_date",
-                                "date" to DateFormat.getDateTimeInstance().format(BuildConfig.BUILD_TIMESTAMP),
-                                "days" to ((System.currentTimeMillis() - BuildConfig.BUILD_TIMESTAMP) / 86400000).toInt().toString()
-                            )
-                        },
+                        text = context.translation.format(
+                            "debug_build_summary_date",
+                            "date" to DateFormat.getDateTimeInstance().format(BuildConfig.BUILD_TIMESTAMP),
+                            "days" to ((System.currentTimeMillis() - BuildConfig.BUILD_TIMESTAMP) / 86400000).toInt().toString()
+                        ),
                         lineHeight = 20.sp,
                         fontWeight = FontWeight.Light
                     )
                 }
             }
 
-            // ----- Quick Actions Section -----
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -345,7 +349,7 @@ class HomeRootSection : Routes.Route() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    translation["quick_actions_title"],
+                    context.translation["quick_actions_title"],
                     fontSize = 20.sp,
                     modifier = Modifier.weight(1f)
                 )
@@ -370,7 +374,7 @@ class HomeRootSection : Routes.Route() {
                                     context.database.setQuickTiles(selectedTiles)
                                 }
                             }
-                            DropdownMenuItem(onClick = { toggle() }, text = {
+                            DropdownMenuItem(text = {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(all = 5.dp)
@@ -381,54 +385,93 @@ class HomeRootSection : Routes.Route() {
                                     )
                                     Text(text = card.first)
                                 }
-                            })
+                            }, onClick = { toggle() })
                         }
                     }
                 }
             }
 
-            FlowRow(
-                modifier = Modifier
-                    .padding(all = cardMargin)
-                    .fillMaxWidth(),
-                maxItemsInEachRow = 3,
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                val tileHeight = LocalDensity.current.run {
-                    remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
-                }
-                remember(selectedTiles.size, context.translation.loadedLocale) {
-                    selectedTiles.mapNotNull {
-                        cards.entries.find { entry -> entry.key.first == it }
-                    }
-                }.forEach { (card, action) ->
-                    ElevatedCard(
-                        modifier = Modifier
-                            .height(tileHeight)
-                            .weight(1f)
-                            .padding(all = 6.dp),
-                        onClick = { action(routes) }
+            // Quick Actions Tiles
+            if (selectedTiles.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(260.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(all = 5.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.SpaceEvenly,
+                        Icon(
+                            imageVector = Icons.Outlined.Widgets,
+                            contentDescription = "Quick Actions",
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = "No quick actions added yet",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Button(
+                            onClick = { showQuickActionsMenu = true },
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
                         ) {
                             Icon(
-                                imageVector = card.second, contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(50.dp)
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Quick Action",
+                                modifier = Modifier.size(22.dp)
                             )
-                            Text(
-                                text = card.first,
-                                lineHeight = 16.sp,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                overflow = TextOverflow.Ellipsis,
-                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(text = "Add")
+                        }
+                    }
+                }
+            } else {
+                androidx.compose.foundation.layout.FlowRow(
+                    modifier = Modifier
+                        .padding(all = cardMargin)
+                        .fillMaxWidth(),
+                    maxItemsInEachRow = 3,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    val tileHeight = LocalDensity.current.run {
+                        (androidContext.resources.displayMetrics.widthPixels / 3).dp - cardMargin / 2
+                    }
+                    selectedTiles.mapNotNull { tileName ->
+                        cards.entries.find { entry -> entry.key.first == tileName }
+                    }.forEach { (card, action) ->
+                        ElevatedCard(
+                            modifier = Modifier
+                                .height(tileHeight)
+                                .weight(1f)
+                                .padding(all = 6.dp),
+                            onClick = { action(routes) }
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(all = 5.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceEvenly,
+                            ) {
+                                Icon(
+                                    imageVector = card.second, contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(50.dp)
+                                )
+                                Text(
+                                    text = card.first,
+                                    lineHeight = 16.sp,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                     }
                 }
