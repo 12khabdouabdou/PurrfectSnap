@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -53,7 +54,6 @@ import me.rhunk.snapenhance.storage.setQuickTiles
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.data.Updater
 import me.rhunk.snapenhance.ui.manager.data.UpdaterDownloader
-import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import java.text.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -127,10 +127,9 @@ class HomeRootSection : Routes.Route() {
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val context = this@HomeRootSection.context
         val androidContext = LocalContext.current
-
-        val activityLauncherHelper = remember { ActivityLauncherHelper(context.activity!!) }
         val scope = rememberCoroutineScope()
 
+        // Compose activity result launcher for install intent
         val installerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -317,7 +316,8 @@ class HomeRootSection : Routes.Route() {
                             ) {
                                 withStyle(
                                     style = SpanStyle(
-                                        fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                 ) {
@@ -389,7 +389,6 @@ class HomeRootSection : Routes.Route() {
                 }
             }
 
-            // Quick Actions Tiles
             if (selectedTiles.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -429,7 +428,7 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             } else {
-                androidx.compose.foundation.layout.FlowRow(
+                FlowRow(
                     modifier = Modifier
                         .padding(all = cardMargin)
                         .fillMaxWidth(),
