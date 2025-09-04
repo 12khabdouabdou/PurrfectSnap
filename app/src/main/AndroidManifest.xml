@@ -11,14 +11,6 @@
     <!-- Optional for in-app APK install flows; ensure policy compliance if on Play -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
-    <!-- Clean up legacy storage permissions -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        tools:node="remove" tools:ignore="all" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"
-        tools:node="remove" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        tools:node="remove" tools:ignore="all" />
-
     <queries>
         <package android:name="com.snapchat.android" />
     </queries>
@@ -85,8 +77,7 @@
 
         <receiver android:name=".StreaksReminder" />
 
-        <!-- FileProvider for serving the downloaded APK via content:// URI.
-             Authority must match ${applicationId}.provider used by the install code. -->
+        <!-- FileProvider for serving the downloaded APK via content:// URI. -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
