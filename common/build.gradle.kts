@@ -1,4 +1,5 @@
 import java.io.ByteArrayOutputStream
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -26,37 +27,36 @@ android {
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
 
-        val gitHash = ByteArrayOutputStream()
-        exec {
+        // Use ProviderFactory.exec (lazy + Gradle 9 compatible)
+        val gitHashProvider = providers.exec {
             commandLine("git", "rev-parse", "HEAD")
-            standardOutput = gitHash
-        }
-        buildConfigField("String", "GIT_HASH", "\"${gitHash.toString(Charsets.UTF_8).trim()}\"")
+        }.standardOutput.asText.map { it.trim() }
+        buildConfigField("String", "GIT_HASH", "\"${gitHashProvider.get()}\"")
 
-        buildConfigField(
-            "String",
-            "SIF_ENDPOINT",
-            "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\""
-        )
+        val sif = properties["debug_sif_endpoint"]?.toString()
+            ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"
+        buildConfigField("String", "SIF_ENDPOINT", "\"$sif\"")
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
+}
+
+// Migrate to compilerOptions DSL (replaces deprecated kotlinOptions.jvmTarget)
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
 dependencies {
-    // Core libs already in catalog
     implementation(libs.coroutines)
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.androidx.documentfile)
 
-    // Rhino (Android helper + core), exclude duplicate runtime if catalog provides both
     implementation(libs.rhino)
     implementation(libs.rhino.android) {
         exclude(group = "org.mozilla", module = "rhino-runtime")
@@ -64,34 +64,18 @@ dependencies {
 
     // Local modules
     implementation(project(":mapper"))
-    // IMPORTANT: add the module that provides AIDL/interfaces like FileHandleManager, LoggerInterface, etc.
-    // If this module exists in the repo, keep this line and include it in settings.gradle(.kts):
-    // include(":bridge")
-    // Otherwise, remove bridge imports/usages from the source.
-    implementation(project(":bridge"))
+    // Make :bridge optional to avoid hard failure when it is not included
+    findProject(":bridge")?.let { implementation(it) }
 
-    // Compose: use BOM and add required artifacts as implementation for compile-time visibility
-    implementation(platform("androidx.compose:compose-bom:2024.12.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.runtime:runtime")
-    implementation("androidx.compose.runtime:runtime-saveable")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    // Navigation compose if used by this module’s sources
-    implementation("androidx.navigation:navigation-compose:2.8.4")
-    // Tooling for debug
-    debugImplementation("androidx.compose.ui:ui-tooling")
-
-    // Activity Compose for ComposeView and setContent integration
+    // Compose (implementation, not compileOnly, since common compiles against these APIs)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.ripple)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material3)
     implementation("androidx.activity:activity-compose:1.9.2")
 
-    // AndroidX lifecycle + savedstate used by code (ViewModel, lifecycle runtime, SavedState APIs)
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
-    implementation("androidx.savedstate:savedstate-ktx:1.2.1")
-
-    // DataStore Preferences for ThemePreferences.kt
-    implementation("androidx.datastore:datastore-preferences:1.1.7")
+    // If you still want to restrict runtime inclusion, keep UI-tooling as debugOnly
+    debugImplementation("androidx.compose.ui:ui-tooling")
 }
