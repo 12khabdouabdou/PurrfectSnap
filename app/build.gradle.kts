@@ -2,7 +2,6 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.io.ByteArrayOutputStream
 import java.util.Locale
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -131,6 +130,7 @@ dependencies {
 
     implementation(project(":core"))
     implementation(project(":common"))
+
     implementation(libs.androidx.documentfile)
     implementation(libs.gson)
     implementation(libs.smart.exception.java)
@@ -174,27 +174,33 @@ afterEvaluate {
 
     installTask?.doLast {
         runCatching {
-            // Replace deprecated project.exec with providers.exec
-            val devicesOut = ByteArrayOutputStream()
-            providers.exec {
-                commandLine("adb", "devices")
-                standardOutput = devicesOut
-            }.get()
+            // Use ProcessBuilder instead of deprecated project.exec or ProviderFactory.exec
+            val proc = ProcessBuilder("adb", "devices")
+                .redirectErrorStream(true)
+                .start()
+            val output = proc.inputStream.readBytes().toString(Charsets.UTF_8)
+            proc.waitFor()
 
-            val devices = devicesOut.toString().lines().drop(1).mapNotNull { line ->
-                line.split("\t").firstOrNull()?.takeIf { it.isNotEmpty() }
-            }
+            val devices = output.lines()
+                .drop(1)
+                .mapNotNull { line ->
+                    line.split("\t").firstOrNull()?.takeIf { it.isNotEmpty() }
+                }
 
             runBlocking {
                 devices.forEach { device ->
                     launch {
-                        providers.exec {
-                            commandLine("adb", "-s", device, "shell", "am", "force-stop", properties["debug_package_name"]!!)
-                        }.get()
+                        ProcessBuilder(
+                            "adb", "-s", device, "shell", "am", "force-stop",
+                            properties["debug_package_name"].toString()
+                        ).inheritIO().start().waitFor()
+
                         delay(500)
-                        providers.exec {
-                            commandLine("adb", "-s", device, "shell", "am", "start", properties["debug_package_name"]!!)
-                        }.get()
+
+                        ProcessBuilder(
+                            "adb", "-s", device, "shell", "am", "start",
+                            properties["debug_package_name"].toString()
+                        ).inheritIO().start().waitFor()
                     }
                 }
             }
