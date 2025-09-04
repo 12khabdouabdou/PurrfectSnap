@@ -248,7 +248,7 @@ class BetterLocation : Feature("Better Location") {
                             FilledIconButton(
                                 modifier = Modifier.size(40.dp),
                                 colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = if (darkTheme) Color(0xFF1D1D1D) else Color.White,
+                                    containerColor = MaterialTheme.colorScheme.surface,
                                     contentColor = if (darkTheme) Color.White else Color(0xFF151A1A),
                                 ),
                                 onClick = { openManagementOverlay() }
