@@ -333,7 +333,7 @@ class HomeRootSection : Routes.Route() {
                         ) {
                             Text(
                                 translation["quick_actions_title"],
-                                fontSize = 20.sp,
+                                fontSize = 18.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 textAlign = TextAlign.Start,
                                 color = MaterialTheme.colorScheme.onBackground,
