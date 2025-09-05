@@ -53,6 +53,7 @@ class MainActivity : ComponentActivity() {
             activity = this@MainActivity
             checkForRequirements()
         }
+        me.rhunk.snapenhance.task.UpdateScheduler.schedule(this, managerContext.config.global.updateManager)
         val routes = Routes(managerContext)
         routes.getRoutes().forEach { it.init() }
         setContent {
