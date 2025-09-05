@@ -114,6 +114,7 @@ class FriendTracker : Feature("Friend Tracker") {
                     eventType.key,
                     extras
                 )
+                TrackerRuleAction.CUSTOM -> {}
             }
         }
     }
