@@ -39,10 +39,12 @@ class HomeSettings : Routes.Route() {
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
+
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
+
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
@@ -68,6 +70,7 @@ class HomeSettings : Routes.Route() {
             }, modifier = Modifier.padding(end = 26.dp))
         }
     }
+
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
         var confirmationDialog by remember {
@@ -117,6 +120,7 @@ class HomeSettings : Routes.Route() {
             }
         }
     }
+
     @Composable
     private fun ShiftedRow(
         modifier: Modifier = Modifier,
@@ -137,7 +141,6 @@ class HomeSettings : Routes.Route() {
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -184,15 +187,16 @@ class HomeSettings : Routes.Route() {
                 )
             }
             Spacer(Modifier.height(20.dp))
-
             RowTitle(title = "Updates")
             ShiftedRow {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     val updateManager = context.config.root.global.updateManager
-                    val automaticUpdateCheck = remember { mutableStateOf(updateManager.automaticUpdateCheck.get()) }
-                    val updateCheckInterval = remember { mutableStateOf(updateManager.updateCheckInterval.get()) }
+
+                    // SAFE ACCESS: Default to false and "24" if not set (customize default to your existing config's defaults)
+                    val automaticUpdateCheck = remember { mutableStateOf(updateManager.automaticUpdateCheck.getOrNull() ?: false) }
+                    val updateCheckInterval = remember { mutableStateOf(updateManager.updateCheckInterval.getOrNull() ?: "24") }
 
                     Row(
                         modifier = Modifier
@@ -218,7 +222,6 @@ class HomeSettings : Routes.Route() {
                             modifier = Modifier.padding(end = 26.dp)
                         )
                     }
-
                     var expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
                         expanded = expanded,
@@ -251,7 +254,6 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
@@ -288,9 +290,9 @@ class HomeSettings : Routes.Route() {
                         ) {
                             Text(
                                 translation.format("message_logger_summary",
-                                "messageCount" to storedMessagesCount.toString(),
-                                "storyCount" to storedStoriesCount.toString()
-                            ), maxLines = 2)
+                                    "messageCount" to storedMessagesCount.toString(),
+                                    "storyCount" to storedStoriesCount.toString()
+                                ), maxLines = 2)
                         }
                         Button(onClick = {
                             runCatching {
