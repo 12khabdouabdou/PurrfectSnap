@@ -74,7 +74,7 @@ android {
     packaging {
         jniLibs {
             excludes += "**/*_neon.so"
-            doNotStrip.add("**/*.so")
+            keepDebugSymbols.add("**/*.so")
         }
         resources {
             excludes += "DebugProbesKt.bin"

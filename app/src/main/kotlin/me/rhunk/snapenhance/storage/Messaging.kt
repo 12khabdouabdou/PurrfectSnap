@@ -19,6 +19,7 @@ fun AppDatabase.getGroups(): List<MessagingGroupInfo> {
     }
 }
 
+@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
 fun AppDatabase.getFriends(descOrder: Boolean = false): List<MessagingFriendInfo> {
     return database.rawQuery(
         "SELECT * FROM friends LEFT OUTER JOIN streaks ON friends.userId = streaks.id ORDER BY id ${if (descOrder) "DESC" else "ASC"}",
@@ -37,6 +38,7 @@ fun AppDatabase.getFriends(descOrder: Boolean = false): List<MessagingFriendInfo
     }
 }
 
+@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
 fun AppDatabase.syncGroupInfo(conversationInfo: MessagingGroupInfo) {
     executeAsync {
         try {
@@ -176,6 +178,7 @@ fun AppDatabase.getGroupInfo(conversationId: String): MessagingGroupInfo? {
     }
 }
 
+@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
 fun AppDatabase.getFriendStreaks(userId: String): FriendStreaks? {
     return database.rawQuery(
         "SELECT * FROM streaks WHERE id = ?",
