@@ -41,6 +41,7 @@ kotlin {
 
 cargo {
     module = "rust"
+    libname = "snapenhance"  // FIXED: Added the missing libname property
     targetIncludes = arrayOf("libsnapenhance.so")
     profile = "release"
     targets = listOf("arm64", "arm")
