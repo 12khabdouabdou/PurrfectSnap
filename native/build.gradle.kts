@@ -41,7 +41,6 @@ kotlin {
 
 cargo {
     module = "rust"
-    libname = nativeName.toString()
     targetIncludes = arrayOf("libsnapenhance.so")
     profile = "release"
     targets = listOf("arm64", "arm")
@@ -61,6 +60,12 @@ val buildAndRename by tasks.registering {
                 file.renameTo(File(file.parent, "lib$nativeName.so"))
             }
         }
+    }
+}
+
+android.libraryVariants.all { variant ->
+    tasks.named("merge${variant.name.capitalize()}JniLibFolders").configure {
+        dependsOn(buildAndRename)
     }
 }
 
