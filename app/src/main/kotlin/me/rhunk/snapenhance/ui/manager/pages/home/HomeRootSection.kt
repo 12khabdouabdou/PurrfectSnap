@@ -236,12 +236,9 @@ class HomeRootSection : Routes.Route() {
                                 context.coroutineScope.launch(Dispatchers.Main) {
                                     try {
                                         Toast.makeText(context.androidContext, "Download started", Toast.LENGTH_SHORT).show()
-                                        val abis = (Build.SUPPORTED_ABIS ?: emptyArray()).joinToString(",").lowercase(Locale.ROOT)
-                                        val abiLabel = when {
-                                            "arm64" in abis || "v8a" in abis || "aarch64" in abis || "armv8" in abis -> "arm64-v8a"
-                                            "armeabi-v7a" in abis || "armv7" in abis || "armeabi" in abis || "v7a" in abis -> "armeabi-v7a"
-                                            else -> "arm64-v8a"
-                                        }
+                                        val abisList = Build.SUPPORTED_ABIS?.map { it.lowercase() } ?: emptyList()
+                                        val isArmV8 = abisList.any { it.contains("arm64") || it.contains("v8a") || it.contains("aarch64") || it.contains("armv8") }
+                                        val isArmV7 = abisList.any { it.contains("armeabi-v7a") || it.contains("armv7") || it.contains("armeabi") || it.contains("v7a") }
                                         val client = OkHttpClient()
                                         val releasesReq = Request.Builder()
                                             .url("https://api.github.com/repos/particle-box/SnapEnhance/releases")
@@ -258,7 +255,8 @@ class HomeRootSection : Routes.Route() {
                                                 val asset = assetsArr.getJSONObject(j)
                                                 val name = asset.optString("name")
                                                 val url = asset.optString("browser_download_url")
-                                                if (name.endsWith("-debug.apk") && name.contains(abiLabel)) {
+                                                if ((isArmV8 && name.contains("-armv8-")) ||
+                                                    (isArmV7 && name.contains("-armv7-"))) {
                                                     downloadUrl = url
                                                     assetName = name
                                                     break
