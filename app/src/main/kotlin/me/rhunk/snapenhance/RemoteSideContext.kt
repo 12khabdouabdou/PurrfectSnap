@@ -49,19 +49,15 @@ import java.lang.ref.WeakReference
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 
-
 class RemoteSideContext(
     val androidContext: Context
 ) {
     val coroutineScope = CoroutineScope(Dispatchers.IO)
-
-    private var _activity: WeakReference<ComponentActivity>? = null
+    private var _activity: WeakReference<ComponentActivity?>? = null
     var bridgeService: BridgeService? = null
-
     var activity: ComponentActivity?
         get() = _activity?.get()
         set(value) { _activity?.clear(); _activity = WeakReference(value) }
-
     val sharedPreferences: SharedPreferences get() = androidContext.getSharedPreferences("prefs", 0)
     val fileHandleManager = RemoteFileHandleManager(this)
     val config = ModConfig(androidContext, constantLazyBridge { fileHandleManager })
@@ -79,7 +75,7 @@ class RemoteSideContext(
     val accountStorage = RemoteAccountStorage(this)
     val locationManager = RemoteLocationManager(this)
 
-    //used to load bitmoji selfies and download previews
+    // used to load bitmoji selfies and download previews
     val imageLoader by lazy {
         ImageLoader.Builder(androidContext)
             .dispatcher(Dispatchers.IO)
@@ -96,7 +92,6 @@ class RemoteSideContext(
             }
             .components { add(VideoFrameDecoder.Factory()) }.build()
     }
-
     val gson: Gson by lazy { GsonBuilder().setPrettyPrinting().create() }
 
     fun reload() {
@@ -124,7 +119,6 @@ class RemoteSideContext(
                     }?.autoPurge?.let { getPurgeTime(it.getNullable()) }?.let {
                         messageLogger.purgeAll(it)
                     }
-
                     config.root.friendTracker.takeIf {
                         it.globalState == true
                     }?.autoPurge?.let { getPurgeTime(it.getNullable()) }?.let {
@@ -136,7 +130,6 @@ class RemoteSideContext(
             log.error("Failed to load RemoteSideContext", it)
             androidContext.fatalCrash(it)
         }
-
         scriptManager.runtime.eachModule {
             callFunction("module.onSnapEnhanceLoad", androidContext)
         }
@@ -146,32 +139,34 @@ class RemoteSideContext(
         InstallationSummary(
             snapchatInfo = mappings.getSnapchatPackageInfo()?.let {
                 SnapchatAppInfo(
-                    packageName = it.packageName,
-                    version = it.versionName,
+                    packageName = it.packageName ?: "unknown",
+                    version = it.versionName ?: "unknown",
                     versionCode = it.longVersionCode,
                     isLSPatched = it.applicationInfo?.appComponentFactory != CoreComponentFactory::class.java.name,
                     isSplitApk = it.splitNames?.isNotEmpty() ?: false
                 )
             },
             modInfo = ModInfo(
-                loaderPackageName = MainActivity::class.java.`package`?.let { it.name } ?: "unknown",
+                loaderPackageName = MainActivity::class.java.`package`?.name ?: "unknown",
                 buildPackageName = androidContext.packageName,
                 buildVersion = BuildConfig.VERSION_NAME,
                 buildVersionCode = BuildConfig.VERSION_CODE.toLong(),
-                buildIssuer = androidContext.packageManager.getPackageInfo(androidContext.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
-                    ?.signingInfo?.apkContentsSigners?.firstOrNull()?.let {
-                        val certFactory = CertificateFactory.getInstance("X509")
-                        val cert = certFactory.generateCertificate(ByteArrayInputStream(it.toByteArray())) as X509Certificate
-                        cert.issuerDN.toString()
-                    } ?: throw Exception("Failed to get certificate info"),
+                buildIssuer = androidContext.packageManager.getPackageInfo(
+                    androidContext.packageName,
+                    PackageManager.GET_SIGNING_CERTIFICATES
+                )?.signingInfo?.apkContentsSigners?.firstOrNull()?.let {
+                    val certFactory = CertificateFactory.getInstance("X509")
+                    val cert = certFactory.generateCertificate(ByteArrayInputStream(it.toByteArray())) as X509Certificate
+                    cert.issuerDN.toString()
+                } ?: "unknown", // changed from "throw Exception..." to a default fallback
                 gitHash = BuildConfig.GIT_HASH,
                 isDebugBuild = BuildConfig.DEBUG,
                 mappingVersion = mappings.getGeneratedBuildNumber(),
                 mappingsOutdated = mappings.isMappingsOutdated()
             ),
             platformInfo = PlatformInfo(
-                device = Build.DEVICE,
-                androidVersion = Build.VERSION.RELEASE,
+                device = Build.DEVICE ?: "unknown",
+                androidVersion = Build.VERSION.RELEASE ?: "unknown",
                 systemAbi = Build.SUPPORTED_ABIS.firstOrNull() ?: "unknown"
             )
         )
@@ -191,14 +186,14 @@ class RemoteSideContext(
         log.debug(message.toString())
     }
 
-    fun hasMessagingBridge() = bridgeService != null && bridgeService?.messagingBridge != null && bridgeService?.messagingBridge?.asBinder()?.pingBinder() == true
+    fun hasMessagingBridge() = bridgeService != null && bridgeService?.messagingBridge != null &&
+            bridgeService?.messagingBridge?.asBinder()?.pingBinder() == true
 
     fun checkForRequirements(overrideRequirements: Int? = null): Boolean {
         var requirements = overrideRequirements ?: 0
         if (!config.wasPresent) {
             requirements = requirements or Requirements.FIRST_RUN
         }
-
         config.root.downloader.saveFolder.get().let {
             if (it.isEmpty() || run {
                     val documentFile = runCatching { DocumentFile.fromTreeUri(androidContext, Uri.parse(it)) }.getOrNull()
@@ -207,15 +202,14 @@ class RemoteSideContext(
                 requirements = requirements or Requirements.SAVE_FOLDER
             }
         }
-
-        if (!sharedPreferences.getBoolean("debug_disable_mapper", false) && mappings.getSnapchatPackageInfo() != null && mappings.isMappingsOutdated()) {
+        if (!sharedPreferences.getBoolean("debug_disable_mapper", false) &&
+            mappings.getSnapchatPackageInfo() != null &&
+            mappings.isMappingsOutdated()
+        ) {
             requirements = requirements or Requirements.MAPPINGS
         }
-
         if (requirements == 0) return false
-
         val currentContext = activity ?: androidContext
-
         Intent(currentContext, SetupActivity::class.java).apply {
             putExtra("requirements", requirements)
             if (currentContext !is Activity) {
