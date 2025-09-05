@@ -3,7 +3,9 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
 }
+
 val nativeName = rootProject.ext.get("buildHash")
+
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".nativelib"
     compileSdk = 34
@@ -24,6 +26,7 @@ android {
         jvmTarget = "21"
     }
 }
+
 cargo {
     module = "rust"
     libname = nativeName.toString()
@@ -31,9 +34,13 @@ cargo {
     profile = "release"
     targets = listOf("arm64", "arm")
 }
+
+// Helper to get all native files per ABI output
 fun getNativeFiles() = File(projectDir, "build/rustJniLibs/android").listFiles()?.flatMap { abiFolder ->
     abiFolder.takeIf { it.isDirectory }?.listFiles()?.toList() ?: emptyList()
 }
+
+// Task to build and rename native libs to canonical (hash-aligned) name.
 val buildAndRename by tasks.registering {
     dependsOn("cargoBuild")
     doLast {
@@ -45,6 +52,8 @@ val buildAndRename by tasks.registering {
         }
     }
 }
+
+// Clean-up and post-clean renaming of native artifacts
 val cleanNatives by tasks.registering {
     finalizedBy(buildAndRename)
     doFirst {
@@ -54,6 +63,8 @@ val cleanNatives by tasks.registering {
         }
     }
 }
+
+// Ensure that clean+rename tasks occur before module build
 tasks.named("preBuild").configure {
     dependsOn(cleanNatives)
 }
