@@ -191,7 +191,7 @@ class HomeSettings : Routes.Route() {
             ) {
                 Column(
                     Modifier
-                        .padding(vertical = 16.dp, horizontal = 16.dp)
+                        .padding(16.dp)
                 ) {
                     val updateManager = context.config.root.global.updateManager
                     val property = updateManager.getPropertyPair("update_check_interval")
@@ -224,7 +224,7 @@ class HomeSettings : Routes.Route() {
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.33f))
-                            .padding(10.dp, 9.dp)
+                            .padding(start = 10.dp, top = 9.dp, end = 10.dp, bottom = 9.dp)
                             .fillMaxWidth()
                             .heightIn(min = 48.dp)
                             .clickable { val newValue = !automaticUpdateCheck.value; enableAutoUpdate(newValue) },
@@ -251,7 +251,7 @@ class HomeSettings : Routes.Route() {
                         "Update interval",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(vertical = 4.dp, start = 3.dp),
+                        modifier = Modifier.padding(start = 3.dp), // vertical argument removed!
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.68f)
                     )
                     var dropdownExpanded by remember { mutableStateOf(false) }
