@@ -41,16 +41,13 @@ import androidx.compose.ui.draw.clip
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
-
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
@@ -77,11 +74,9 @@ class HomeSettings : Routes.Route() {
             )
         }
     }
-
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
         var confirmationDialog by remember { mutableStateOf(false) }
-
         fun takeAction() {
             if (requireConfirmation) {
                 confirmationDialog = true
@@ -89,20 +84,14 @@ class HomeSettings : Routes.Route() {
                 action()
             }
         }
-
         if (requireConfirmation && confirmationDialog) {
             Dialog(onDismissRequest = { confirmationDialog = false }) {
-                dialogs.ConfirmDialog(
-                    title = context.translation["manager.dialogs.action_confirm.title"],
-                    onConfirm = {
-                        action()
-                        confirmationDialog = false
-                    },
-                    onDismiss = { confirmationDialog = false }
-                )
+                dialogs.ConfirmDialog(title = context.translation["manager.dialogs.action_confirm.title"], onConfirm = {
+                    action()
+                    confirmationDialog = false
+                }, onDismiss = { confirmationDialog = false })
             }
         }
-
         ShiftedRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,8 +109,9 @@ class HomeSettings : Routes.Route() {
                     fontWeight = FontWeight.Bold,
                     lineHeight = 20.sp
                 )
-                context.translation.getOrNull("actions.$key.description")
-                    ?.let { Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp) }
+                context.translation.getOrNull("actions.$key.description")?.let {
+                    Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp)
+                }
             }
             IconButton(onClick = { takeAction() }, modifier = Modifier.padding(end = 2.dp)) {
                 Icon(
@@ -132,7 +122,6 @@ class HomeSettings : Routes.Route() {
             }
         }
     }
-
     @Composable
     private fun ShiftedRow(
         modifier: Modifier = Modifier,
@@ -146,9 +135,9 @@ class HomeSettings : Routes.Route() {
             verticalAlignment = verticalAlignment
         ) { content(this) }
     }
-
-    // Resolve interval labels from existing en_US.json without requiring changes to its structure.
+    @Composable
     private fun resolveIntervalLabel(rawKey: String): String {
+        // Try all likely locations as per your JSON!
         val paths = listOf(
             "update_intervals.$rawKey",
             "sections.update_intervals.$rawKey",
@@ -158,6 +147,7 @@ class HomeSettings : Routes.Route() {
         for (p in paths) {
             context.translation.getOrNull(p)?.let { return it }
         }
+        // Fallback
         return rawKey
     }
 
@@ -167,7 +157,6 @@ class HomeSettings : Routes.Route() {
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -202,7 +191,6 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-
             if (showThemeDialog) {
                 ThemeChooserDialog(
                     selected = themeMode,
@@ -210,38 +198,47 @@ class HomeSettings : Routes.Route() {
                     onDismiss = { showThemeDialog = false }
                 )
             }
-
             Spacer(Modifier.height(20.dp))
 
-            // ------ UPDATES (no card/border; matches other toggles) ------
+            // ------ UPDATES ------
             RowTitle(title = "Updates")
+            // --- NO CARD, MATCHING SIMPLE TOGGLE ROW APPEARANCE ---
+            val updateManager = context.config.root.global.updateManager
+            val property = updateManager.getPropertyPair("update_check_interval")
+            val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("daily")
+            val safeDefaultInterval = intervalOptions.firstOrNull() ?: "daily"
 
-            // Single row styled like other toggles
+            var automaticUpdateEnabled by remember {
+                mutableStateOf(
+                    try { updateManager.automaticUpdateCheck.get() } catch (_: IllegalStateException) { false }
+                )
+            }
+            var currentInterval by remember {
+                mutableStateOf(
+                    try { updateManager.updateCheckInterval.get() } catch (_: IllegalStateException) { safeDefaultInterval }
+                )
+            }
+            var expanded by remember { mutableStateOf(false) }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 55.dp)
-                    .padding(end = 10.dp) // small right padding to align with switches
+                    .padding(end = 10.dp)
+                    .background(Color.Transparent)
                     .clickable {
-                        val updateManager = context.config.root.global.updateManager
-                        // Toggle value
-                        val newValue = !(try { updateManager.automaticUpdateCheck.get() } catch (_: IllegalStateException) { false })
+                        val newValue = !automaticUpdateEnabled
+                        automaticUpdateEnabled = newValue
                         updateManager.automaticUpdateCheck.set(newValue)
-                        // Ensure an interval exists when enabling
                         if (newValue) {
                             val intervalSet = try { updateManager.updateCheckInterval.get(); true } catch (_: IllegalStateException) { false }
-                            if (!intervalSet) {
-                                val property = updateManager.getPropertyPair("update_check_interval")
-                                val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("daily")
-                                updateManager.updateCheckInterval.set(intervalOptions.firstOrNull() ?: "daily")
-                            }
+                            if (!intervalSet) updateManager.updateCheckInterval.set(currentInterval)
                         }
                         me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
                     },
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Left: label (bold)
                 Text(
                     text = "Automatic update check",
                     modifier = Modifier.padding(end = 16.dp),
@@ -249,62 +246,41 @@ class HomeSettings : Routes.Route() {
                     fontWeight = FontWeight.Bold
                 )
 
-                // Right: interval dropdown icon + switch
-                val updateManager = context.config.root.global.updateManager
-                val property = updateManager.getPropertyPair("update_check_interval")
-                val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("daily")
-                val safeDefaultInterval = intervalOptions.firstOrNull() ?: "daily"
-
-                var automaticUpdateEnabled by remember {
-                    mutableStateOf(
-                        try { updateManager.automaticUpdateCheck.get() } catch (_: IllegalStateException) { false }
-                    )
-                }
-                var currentInterval by remember {
-                    mutableStateOf(
-                        try { updateManager.updateCheckInterval.get() } catch (_: IllegalStateException) { safeDefaultInterval }
-                    )
-                }
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Dropdown icon (no text), disabled when toggle off
-                    var expanded by remember { mutableStateOf(false) }
-                    Box {
-                        IconButton(
-                            onClick = { if (automaticUpdateEnabled) expanded = true },
-                            enabled = automaticUpdateEnabled
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowDropDown,
-                                contentDescription = "Change update interval",
-                                tint = if (automaticUpdateEnabled)
-                                    MaterialTheme.colorScheme.onSurface
-                                else
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    IconButton(
+                        onClick = { if (automaticUpdateEnabled) expanded = true },
+                        enabled = automaticUpdateEnabled
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = "Change update interval",
+                            tint = if (automaticUpdateEnabled)
+                                MaterialTheme.colorScheme.onSurface
+                            else
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        intervalOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(resolveIntervalLabel(option)) },
+                                onClick = {
+                                    currentInterval = option
+                                    updateManager.updateCheckInterval.set(option)
+                                    if (automaticUpdateEnabled) {
+                                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(
+                                            context.androidContext,
+                                            updateManager
+                                        )
+                                    }
+                                    expanded = false
+                                }
                             )
                         }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            intervalOptions.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(resolveIntervalLabel(option)) },
-                                    onClick = {
-                                        currentInterval = option
-                                        updateManager.updateCheckInterval.set(option)
-                                        if (automaticUpdateEnabled) {
-                                            me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
-                                        }
-                                        expanded = false
-                                    }
-                                )
-                            }
-                        }
                     }
-
-                    Spacer(Modifier.width(6.dp))
-
                     Switch(
                         checked = automaticUpdateEnabled,
                         onCheckedChange = { newValue ->
@@ -320,20 +296,13 @@ class HomeSettings : Routes.Route() {
                     )
                 }
             }
-            // ----------------------------------------------------------------
 
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
-                RowAction(key = enumAction.key) {
-                    context.launchActionIntent(enumAction)
-                }
+                RowAction(key = enumAction.key) { context.launchActionIntent(enumAction) }
             }
-            RowAction(key = "regen_mappings") {
-                context.checkForRequirements(Requirements.MAPPINGS)
-            }
-            RowAction(key = "change_language") {
-                context.checkForRequirements(Requirements.LANGUAGE)
-            }
+            RowAction(key = "regen_mappings") { context.checkForRequirements(Requirements.MAPPINGS) }
+            RowAction(key = "change_language") { context.checkForRequirements(Requirements.LANGUAGE) }
 
             RowTitle(title = translation["message_logger_title"])
             ShiftedRow {
@@ -407,7 +376,6 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-
             RowTitle(title = translation["debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -459,7 +427,6 @@ class HomeSettings : Routes.Route() {
                     Text(translation["clear_button"])
                 }
             }
-
             ShiftedRow {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -469,7 +436,6 @@ class HomeSettings : Routes.Route() {
                     PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
                 }
             }
-
             Spacer(modifier = Modifier.height(50.dp))
         }
     }
