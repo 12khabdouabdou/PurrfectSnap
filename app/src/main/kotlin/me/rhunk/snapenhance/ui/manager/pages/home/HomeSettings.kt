@@ -42,12 +42,10 @@ class HomeSettings : Routes.Route() {
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
-
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
@@ -73,7 +71,6 @@ class HomeSettings : Routes.Route() {
             }, modifier = Modifier.padding(end = 26.dp))
         }
     }
-
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
         var confirmationDialog by remember {
@@ -123,7 +120,6 @@ class HomeSettings : Routes.Route() {
             }
         }
     }
-
     @Composable
     private fun ShiftedRow(
         modifier: Modifier = Modifier,
@@ -137,7 +133,6 @@ class HomeSettings : Routes.Route() {
             verticalAlignment = verticalAlignment
         ) { content(this) }
     }
-
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val contextC = LocalContext.current
@@ -190,7 +185,6 @@ class HomeSettings : Routes.Route() {
                 )
             }
             Spacer(Modifier.height(20.dp))
-
             // ------ BEAUTIFIED UPDATES CARD ------
             RowTitle(title = "Updates")
             Card(
@@ -209,7 +203,8 @@ class HomeSettings : Routes.Route() {
                     val intervalOptions = property.value.defaultValues?.map { it.toString() }
                         ?: listOf("24")
                     val safeDefaultInterval = intervalOptions.firstOrNull() ?: "24"
-
+                    // Get the update_intervals translation map, fallback to showing keys if not found
+                    val updateIntervals = (context.translation["update_intervals"] as? Map<String, String>).orEmpty()
                     val automaticUpdateCheck = remember {
                         mutableStateOf(
                             try { updateManager.automaticUpdateCheck.get() } catch (e: IllegalStateException) { false }
@@ -220,7 +215,6 @@ class HomeSettings : Routes.Route() {
                             try { updateManager.updateCheckInterval.get() } catch (e: IllegalStateException) { safeDefaultInterval }
                         )
                     }
-
                     fun enableAutoUpdate(newValue: Boolean) {
                         automaticUpdateCheck.value = newValue
                         updateManager.automaticUpdateCheck.set(newValue)
@@ -232,7 +226,6 @@ class HomeSettings : Routes.Route() {
                         }
                         me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
                     }
-
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
@@ -259,7 +252,6 @@ class HomeSettings : Routes.Route() {
                             modifier = Modifier.padding(end = 2.dp)
                         )
                     }
-
                     Spacer(Modifier.height(9.dp))
                     Text(
                         "Update interval",
@@ -275,7 +267,7 @@ class HomeSettings : Routes.Route() {
                         modifier = Modifier.clip(RoundedCornerShape(9.dp))
                     ) {
                         TextField(
-                            value = updateCheckInterval.value,
+                            value = updateIntervals[updateCheckInterval.value] ?: updateCheckInterval.value,
                             onValueChange = {},
                             readOnly = true,
                             enabled = automaticUpdateCheck.value,
@@ -298,7 +290,7 @@ class HomeSettings : Routes.Route() {
                         ) {
                             intervalOptions.forEach { interval ->
                                 DropdownMenuItem(
-                                    text = { Text(text = interval, fontSize = 15.sp) },
+                                    text = { Text(text = updateIntervals[interval] ?: interval, fontSize = 15.sp) },
                                     onClick = {
                                         updateCheckInterval.value = interval
                                         updateManager.updateCheckInterval.set(interval)
@@ -314,7 +306,6 @@ class HomeSettings : Routes.Route() {
                 }
             }
             // ------------------------------------------------------------
-
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
