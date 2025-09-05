@@ -74,15 +74,9 @@ class HomeSettings : Routes.Route() {
     }
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
-        var confirmationDialog by remember {
-            mutableStateOf(false)
-        }
+        var confirmationDialog by remember { mutableStateOf(false) }
         fun takeAction() {
-            if (requireConfirmation) {
-                confirmationDialog = true
-            } else {
-                action()
-            }
+            if (requireConfirmation) confirmationDialog = true else action()
         }
         if (requireConfirmation && confirmationDialog) {
             Dialog(onDismissRequest = { confirmationDialog = false }) {
@@ -204,7 +198,6 @@ class HomeSettings : Routes.Route() {
                     val intervalOptions = property.value.defaultValues?.map { it.toString() }
                         ?: listOf("24")
                     val safeDefaultInterval = intervalOptions.firstOrNull() ?: "24"
-                    // Get the update_intervals translation map, fallback to showing keys if not found
                     val updateIntervals = (context.translation["update_intervals"] as? Map<String, String>).orEmpty()
                     val automaticUpdateCheck = remember {
                         mutableStateOf(
