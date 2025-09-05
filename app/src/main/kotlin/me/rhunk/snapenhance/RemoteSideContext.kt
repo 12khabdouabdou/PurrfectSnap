@@ -154,7 +154,7 @@ class RemoteSideContext(
                 )
             },
             modInfo = ModInfo(
-                loaderPackageName = MainActivity::class.java.`package`?.name ?: "unknown",
+                loaderPackageName = MainActivity::class.java.`package`?.let { it.name } ?: "unknown",
                 buildPackageName = androidContext.packageName,
                 buildVersion = BuildConfig.VERSION_NAME,
                 buildVersionCode = BuildConfig.VERSION_CODE.toLong(),
