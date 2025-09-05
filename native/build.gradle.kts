@@ -3,10 +3,8 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
 }
-
 // Set native library name statically to 'snapenhance_native'
 val nativeName = "snapenhance_native"
-
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".nativelib"
     compileSdk = 34
@@ -31,24 +29,11 @@ android {
         jvmTarget = "21"
     }
     
-    // Prevent AGP from stripping/renaming native libraries
-    packagingOptions {
-        doNotStrip "**/libsnapenhance_native.so"
+    // Modern AGP 8 packaging configuration
+    packaging {
         jniLibs {
+            keepDebugSymbols += "**/libsnapenhance_native.so"
             useLegacyPackaging = true
         }
     }
-}
-
-cargo {
-    module = "rust"
-    libname = nativeName
-    targetIncludes = arrayOf("libsnapenhance_native.so")
-    profile = "release"
-    targets = listOf("arm64", "arm")
-}
-
-// Remove all dynamic hash/renaming logic - use static name only
-tasks.named("preBuild").configure {
-    // Remove dependency on cleanNatives task
 }
