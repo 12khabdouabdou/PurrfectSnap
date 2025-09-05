@@ -11,16 +11,13 @@ plugins {
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".manager"
     compileSdk = 34
-
     androidResources {
         noCompress += ".so"
     }
-
     buildFeatures {
         compose = true
         buildConfig = true
     }
-
     defaultConfig {
         buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
         applicationId = rootProject.ext["applicationId"].toString() + ".manager"
@@ -30,7 +27,6 @@ android {
         targetSdk = 34
         multiDexEnabled = true
     }
-
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -45,13 +41,11 @@ android {
             proguardFiles += file("proguard-rules.pro")
         }
     }
-
     applicationVariants.all {
         outputs.map { it as BaseVariantOutputImpl }.forEach { outputVariant ->
             outputVariant.outputFileName = "manager.apk"
         }
     }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -65,13 +59,13 @@ kotlin {
     }
 }
 
+// === PACKAGING THE NATIVE LIBRARY (.so) INTO THE ASSETS FOLDER ===
 val copyNativeBinary by tasks.registering(Copy::class) {
     dependsOn(project(":native").tasks.named("cargoBuild"))
     from(project(":native").buildDir.resolve("rustJniLibs/android"))
     into(project.layout.projectDirectory.dir("src/main/assets/snapenhance/so"))
     include("**/*.so")
 }
-
 tasks.named("preBuild").configure {
     dependsOn(copyNativeBinary)
 }
@@ -94,7 +88,6 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.jsoup)
     implementation(libs.okhttp)
-
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.material3)
     implementation(libs.androidx.activity.ktx)
