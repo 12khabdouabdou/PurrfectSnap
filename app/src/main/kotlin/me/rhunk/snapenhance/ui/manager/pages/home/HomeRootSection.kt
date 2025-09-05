@@ -8,7 +8,9 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,9 +57,6 @@ import me.rhunk.snapenhance.common.ui.TopBarActionButton
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
 import me.rhunk.snapenhance.common.util.ktx.openLink
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import me.rhunk.snapenhance.core.ui.Snapenhance
 import me.rhunk.snapenhance.storage.getQuickTiles
 import me.rhunk.snapenhance.storage.setQuickTiles
@@ -153,7 +152,11 @@ class HomeRootSection : Routes.Route() {
             text = context.translation["manager.routes.home_settings"]
         )
     }
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
+    @OptIn(
+        ExperimentalLayoutApi::class,
+        ExperimentalAnimationApi::class,
+        ExperimentalFoundationApi::class
+    )
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val avenirNext = remember {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
@@ -223,7 +226,9 @@ class HomeRootSection : Routes.Route() {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Text(
                                 text = translation["update_title"],
                                 fontSize = 14.sp,
@@ -239,18 +244,18 @@ class HomeRootSection : Routes.Route() {
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
+                        Spacer(Modifier.width(8.dp))
                         AnimatedContent(
                             targetState = isDownloading,
-                            transitionSpec = {
-                                fadeIn(tween(400)) togetherWith fadeOut(tween(300))
-                            },
+                            transitionSpec = { fadeIn() togetherWith fadeOut() },
                             label = "DownloadProgressButton"
                         ) { downloading ->
                             if (!downloading) {
                                 Button(
                                     modifier = Modifier
                                         .height(40.dp)
-                                        .width(140.dp),
+                                        .defaultMinSize(minWidth = 80.dp)
+                                        .padding(end = 2.dp),
                                     onClick = {
                                         context.coroutineScope.launch(Dispatchers.Main) {
                                             isDownloading = true
@@ -384,39 +389,38 @@ class HomeRootSection : Routes.Route() {
                                     Text(text = translation["update_button"])
                                 }
                             } else {
-                                Box(
-                                    Modifier
+                                Row(
+                                    modifier = Modifier
                                         .height(40.dp)
-                                        .width(140.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.secondaryContainer,
+                                            RoundedCornerShape(50)
+                                        )
                                         .clip(RoundedCornerShape(50))
-                                        .background(MaterialTheme.colorScheme.secondaryContainer),
-                                    contentAlignment = Alignment.Center
+                                        .padding(horizontal = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
                                 ) {
                                     CircularProgressIndicator(
                                         progress = downloadProgress.coerceIn(0f, 1f),
-                                        modifier = Modifier.size(32.dp),
+                                        modifier = Modifier.size(22.dp),
                                         color = MaterialTheme.colorScheme.primary,
                                         trackColor = MaterialTheme.colorScheme.secondary,
-                                        strokeWidth = 4.dp,
+                                        strokeWidth = 3.dp,
                                     )
-                                    if (downloadProgress > 0f && downloadProgress < 1f) {
-                                        Text(
-                                            text = "${(downloadProgress * 100).toInt()}%",
-                                            modifier = Modifier
-                                                .align(Alignment.Center)
-                                                .padding(start = 56.dp),
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                    }
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(
+                                        text = "${(downloadProgress * 100).toInt()}%",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
                                 }
                             }
                         }
                     }
                 }
             }
-            // ...the rest of your content body (Quick actions, debug, etc) remains unchanged...
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
