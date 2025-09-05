@@ -190,8 +190,9 @@ class HomeSettings : Routes.Route() {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    val automaticUpdateCheck = remember { mutableStateOf(context.config.root.global.updateManager.automaticUpdateCheck.get()) }
-                    val updateCheckInterval = remember { mutableStateOf(context.config.root.global.updateManager.updateCheckInterval.get()) }
+                    val updateManager = context.config.root.global.updateManager
+                    val automaticUpdateCheck = remember { mutableStateOf(updateManager.automaticUpdateCheck.get()) }
+                    val updateCheckInterval = remember { mutableStateOf(updateManager.updateCheckInterval.get()) }
 
                     Row(
                         modifier = Modifier
@@ -200,8 +201,8 @@ class HomeSettings : Routes.Route() {
                             .clickable {
                                 val newValue = !automaticUpdateCheck.value
                                 automaticUpdateCheck.value = newValue
-                                context.config.root.global.updateManager.automaticUpdateCheck.set(newValue)
-                                me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, context.config.root.global.updateManager)
+                                updateManager.automaticUpdateCheck.set(newValue)
+                                me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -211,8 +212,8 @@ class HomeSettings : Routes.Route() {
                             checked = automaticUpdateCheck.value,
                             onCheckedChange = {
                                 automaticUpdateCheck.value = it
-                                context.config.root.global.updateManager.automaticUpdateCheck.set(it)
-                                me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, context.config.root.global.updateManager)
+                                updateManager.automaticUpdateCheck.set(it)
+                                me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
                             },
                             modifier = Modifier.padding(end = 26.dp)
                         )
@@ -234,13 +235,14 @@ class HomeSettings : Routes.Route() {
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            context.config.root.global.updateManager.updateCheckInterval.values.forEach { interval ->
+                            val property = updateManager.getPropertyPair("update_check_interval")
+                            property.value.defaultValues?.forEach { interval ->
                                 DropdownMenuItem(
-                                    text = { Text(text = interval) },
+                                    text = { Text(text = interval.toString()) },
                                     onClick = {
-                                        updateCheckInterval.value = interval
-                                        context.config.root.global.updateManager.updateCheckInterval.set(interval)
-                                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, context.config.root.global.updateManager)
+                                        updateCheckInterval.value = interval.toString()
+                                        updateManager.updateCheckInterval.set(interval.toString())
+                                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
                                         expanded = false
                                     }
                                 )
