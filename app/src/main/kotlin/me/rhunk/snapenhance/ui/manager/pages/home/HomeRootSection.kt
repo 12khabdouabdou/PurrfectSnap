@@ -8,8 +8,9 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
@@ -236,24 +238,26 @@ class HomeRootSection : Routes.Route() {
                         }
                         AnimatedContent(
                             targetState = isDownloading,
-                            label = "DownloadBtnToProgressAnim",
-                            transitionSpec = { fadeIn() togetherWith fadeOut() }
+                            transitionSpec = {
+                                fadeIn(tween(400)) togetherWith fadeOut(tween(300))
+                            },
+                            label = "DownloadProgressButton"
                         ) { downloading ->
                             if (!downloading) {
                                 Button(
-                                    modifier = Modifier.height(40.dp).animateContentSize(),
+                                    modifier = Modifier
+                                        .height(40.dp)
+                                        .width(140.dp),
                                     onClick = {
                                         context.coroutineScope.launch(Dispatchers.Main) {
                                             isDownloading = true
                                             downloadProgress = 0f
                                             try {
-                                                Toast.makeText(context.androidContext, "Download started", Toast.LENGTH_SHORT).show()
                                                 val abisList = Build.SUPPORTED_ABIS?.map { it.lowercase() } ?: emptyList()
-                                                // ARM64 preferred. If device supports both (common on arm64), only use armv7 if NOT arm64 capable.
                                                 val abiMatchList = buildList {
                                                     if (abisList.any { it.contains("arm64") || it.contains("v8a") || it.contains("aarch64") || it.contains("armv8") })
                                                         add("-armv8-")
-                                                    if (abisList.any { it.contains("armeabi-v7a") || it.contains("armv7") || it.contains("armeabi") || it.contains("v7a") })
+                                                    else if (abisList.any { it.contains("armeabi-v7a") || it.contains("armv7") || it.contains("armeabi") || it.contains("v7a") })
                                                         add("-armv7-")
                                                 }
                                                 val client = OkHttpClient()
@@ -282,7 +286,7 @@ class HomeRootSection : Routes.Route() {
                                                     }
                                                 }
                                                 if (downloadUrl == null) {
-                                                    Toast.makeText(context.androidContext, "No CI debug APK found for your ABI", Toast.LENGTH_LONG).show()
+                                                    Toast.makeText(context.androidContext, "No debug APK found for your device.", Toast.LENGTH_LONG).show()
                                                     isDownloading = false
                                                     return@launch
                                                 }
@@ -347,7 +351,7 @@ class HomeRootSection : Routes.Route() {
                                                             .setOngoing(false)
                                                             .build()
                                                     )
-                                                    Toast.makeText(context.androidContext, "Download complete", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context.androidContext, "Update ready, tap to install.", Toast.LENGTH_SHORT).show()
                                                     val uri = FileProvider.getUriForFile(
                                                         context.androidContext,
                                                         "${context.androidContext.packageName}.provider",
@@ -377,12 +381,10 @@ class HomeRootSection : Routes.Route() {
                                     Text(text = translation["update_button"])
                                 }
                             } else {
-                                // Modern, large, visually appealing animated circular progress with percentage
                                 Box(
                                     Modifier
                                         .height(40.dp)
                                         .width(140.dp)
-                                        .animateContentSize()
                                         .clip(RoundedCornerShape(50))
                                         .background(MaterialTheme.colorScheme.secondaryContainer),
                                     contentAlignment = Alignment.Center
@@ -399,7 +401,7 @@ class HomeRootSection : Routes.Route() {
                                             text = "${(downloadProgress * 100).toInt()}%",
                                             modifier = Modifier
                                                 .align(Alignment.Center)
-                                                .padding(start = 48.dp),
+                                                .padding(start = 56.dp),
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.primary,
@@ -411,9 +413,7 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             }
-            // Rest unchanged...
-            // ...everything else in content remains the same as your last working code
-            // (QuickActions, debug info, etc)
+            // ...the rest of your content body (Quick actions, debug, etc) remains unchanged...
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
