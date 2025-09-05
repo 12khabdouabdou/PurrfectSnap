@@ -41,7 +41,7 @@ fun AppDatabase.syncGroupInfo(conversationInfo: MessagingGroupInfo) {
     executeAsync {
         database.execSQL(
             "INSERT OR REPLACE INTO groups (conversationId, name, participantsCount) VALUES (?, ?, ?)",
-            arrayOf(
+            arrayOf<Any>(
                 conversationInfo.conversationId,
                 conversationInfo.name,
                 conversationInfo.participantsCount
@@ -68,7 +68,7 @@ fun AppDatabase.syncFriend(friend: MessagingFriendInfo) {
             val streaks = getFriendStreaks(friend.userId)
             database.execSQL(
                 "INSERT OR REPLACE INTO streaks (id, notify, expirationTimestamp, length) VALUES (?, ?, ?, ?)",
-                arrayOf(
+                arrayOf<Any>(
                     friend.userId,
                     streaks?.notify != false,
                     it.expirationTimestamp,
@@ -187,7 +187,7 @@ fun AppDatabase.setFriendStreaksNotify(userId: String, notify: Boolean) {
     executeAsync {
         database.execSQL(
             "UPDATE streaks SET notify = ? WHERE id = ?",
-            arrayOf(
+            arrayOf<Any>(
                 if (notify) 1 else 0,
                 userId
             )
