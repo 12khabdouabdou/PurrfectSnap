@@ -188,11 +188,16 @@ class HomeSettings : Routes.Route() {
             }
             Spacer(Modifier.height(20.dp))
             RowTitle(title = "Updates")
+            // --- DROPDOWN ONLY, FULLY SAFE AUTO UPDATE ---
             ShiftedRow {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     val updateManager = context.config.root.global.updateManager
+
+                    val property = updateManager.getPropertyPair("update_check_interval")
+                    val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("24")
+                    val safeDefaultInterval = intervalOptions.firstOrNull() ?: "24"
 
                     val automaticUpdateCheck = remember {
                         mutableStateOf(
@@ -201,8 +206,20 @@ class HomeSettings : Routes.Route() {
                     }
                     val updateCheckInterval = remember {
                         mutableStateOf(
-                            try { updateManager.updateCheckInterval.get() } catch (e: IllegalStateException) { "24" }
+                            try { updateManager.updateCheckInterval.get() } catch (e: IllegalStateException) { safeDefaultInterval }
                         )
+                    }
+
+                    fun enableAutoUpdate(newValue: Boolean) {
+                        automaticUpdateCheck.value = newValue
+                        updateManager.automaticUpdateCheck.set(newValue)
+                        if (newValue) {
+                            val wasNotSet = try { updateManager.updateCheckInterval.get(); false } catch (_: IllegalStateException) { true }
+                            if (wasNotSet) {
+                                updateManager.updateCheckInterval.set(updateCheckInterval.value)
+                            }
+                        }
+                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
                     }
 
                     Row(
@@ -211,9 +228,7 @@ class HomeSettings : Routes.Route() {
                             .heightIn(min = 55.dp)
                             .clickable {
                                 val newValue = !automaticUpdateCheck.value
-                                automaticUpdateCheck.value = newValue
-                                updateManager.automaticUpdateCheck.set(newValue)
-                                me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
+                                enableAutoUpdate(newValue)
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -221,14 +236,13 @@ class HomeSettings : Routes.Route() {
                         Text(text = "Automatic update check", modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
                         Switch(
                             checked = automaticUpdateCheck.value,
-                            onCheckedChange = {
-                                automaticUpdateCheck.value = it
-                                updateManager.automaticUpdateCheck.set(it)
-                                me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
+                            onCheckedChange = { newValue ->
+                                enableAutoUpdate(newValue)
                             },
                             modifier = Modifier.padding(end = 26.dp)
                         )
                     }
+
                     var expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
                         expanded = expanded,
@@ -245,14 +259,15 @@ class HomeSettings : Routes.Route() {
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            val property = updateManager.getPropertyPair("update_check_interval")
-                            property.value.defaultValues?.forEach { interval ->
+                            intervalOptions.forEach { interval ->
                                 DropdownMenuItem(
-                                    text = { Text(text = interval.toString()) },
+                                    text = { Text(text = interval) },
                                     onClick = {
-                                        updateCheckInterval.value = interval.toString()
-                                        updateManager.updateCheckInterval.set(interval.toString())
-                                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
+                                        updateCheckInterval.value = interval
+                                        updateManager.updateCheckInterval.set(interval)
+                                        if (automaticUpdateCheck.value) {
+                                            me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
+                                        }
                                         expanded = false
                                     }
                                 )
@@ -261,6 +276,7 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
+
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
