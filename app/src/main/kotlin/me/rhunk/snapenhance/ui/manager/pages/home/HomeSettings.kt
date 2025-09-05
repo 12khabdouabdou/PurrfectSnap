@@ -194,9 +194,16 @@ class HomeSettings : Routes.Route() {
                 ) {
                     val updateManager = context.config.root.global.updateManager
 
-                    // SAFE ACCESS: Default to false and "24" if not set (customize default to your existing config's defaults)
-                    val automaticUpdateCheck = remember { mutableStateOf(updateManager.automaticUpdateCheck.getOrNull() ?: false) }
-                    val updateCheckInterval = remember { mutableStateOf(updateManager.updateCheckInterval.getOrNull() ?: "24") }
+                    val automaticUpdateCheck = remember {
+                        mutableStateOf(
+                            try { updateManager.automaticUpdateCheck.get() } catch (e: IllegalStateException) { false }
+                        )
+                    }
+                    val updateCheckInterval = remember {
+                        mutableStateOf(
+                            try { updateManager.updateCheckInterval.get() } catch (e: IllegalStateException) { "24" }
+                        )
+                    }
 
                     Row(
                         modifier = Modifier
