@@ -19,7 +19,6 @@ fun AppDatabase.getGroups(): List<MessagingGroupInfo> {
     }
 }
 
-@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
 fun AppDatabase.getFriends(descOrder: Boolean = false): List<MessagingFriendInfo> {
     return database.rawQuery(
         "SELECT * FROM friends LEFT OUTER JOIN streaks ON friends.userId = streaks.id ORDER BY id ${if (descOrder) "DESC" else "ASC"}",
@@ -38,54 +37,45 @@ fun AppDatabase.getFriends(descOrder: Boolean = false): List<MessagingFriendInfo
     }
 }
 
-@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
 fun AppDatabase.syncGroupInfo(conversationInfo: MessagingGroupInfo) {
     executeAsync {
-        try {
-            database.execSQL(
-                "INSERT OR REPLACE INTO groups (conversationId, name, participantsCount) VALUES (?, ?, ?)",
-                arrayOf(
-                    conversationInfo.conversationId,
-                    conversationInfo.name,
-                    conversationInfo.participantsCount
-                )
+        database.execSQL(
+            "INSERT OR REPLACE INTO groups (conversationId, name, participantsCount) VALUES (?, ?, ?)",
+            arrayOf(
+                conversationInfo.conversationId,
+                conversationInfo.name,
+                conversationInfo.participantsCount
             )
-        } catch (e: Exception) {
-            throw e
-        }
+        )
     }
 }
 
 fun AppDatabase.syncFriend(friend: MessagingFriendInfo) {
     executeAsync {
-        try {
+        database.execSQL(
+            "INSERT OR REPLACE INTO friends (userId, dmConversationId, displayName, mutableUsername, bitmojiId, selfieId) VALUES (?, ?, ?, ?, ?, ?)",
+            arrayOf(
+                friend.userId,
+                friend.dmConversationId,
+                friend.displayName,
+                friend.mutableUsername,
+                friend.bitmojiId,
+                friend.selfieId
+            )
+        )
+        // sync streaks
+        friend.streaks?.takeIf { it.length > 0 }?.also {
+            val streaks = getFriendStreaks(friend.userId)
             database.execSQL(
-                "INSERT OR REPLACE INTO friends (userId, dmConversationId, displayName, mutableUsername, bitmojiId, selfieId) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT OR REPLACE INTO streaks (id, notify, expirationTimestamp, length) VALUES (?, ?, ?, ?)",
                 arrayOf(
                     friend.userId,
-                    friend.dmConversationId,
-                    friend.displayName,
-                    friend.mutableUsername,
-                    friend.bitmojiId,
-                    friend.selfieId
+                    streaks?.notify != false,
+                    it.expirationTimestamp,
+                    it.length
                 )
             )
-            // sync streaks
-            friend.streaks?.takeIf { it.length > 0 }?.also {
-                val streaks = getFriendStreaks(friend.userId)
-                database.execSQL(
-                    "INSERT OR REPLACE INTO streaks (id, notify, expirationTimestamp, length) VALUES (?, ?, ?, ?)",
-                    arrayOf(
-                        friend.userId,
-                        streaks?.notify != false,
-                        it.expirationTimestamp,
-                        it.length
-                    )
-                )
-            } ?: database.execSQL("DELETE FROM streaks WHERE id = ?", arrayOf(friend.userId))
-        } catch (e: Exception) {
-            throw e
-        }
+        } ?: database.execSQL("DELETE FROM streaks WHERE id = ?", arrayOf(friend.userId))
     }
 }
 
@@ -178,17 +168,17 @@ fun AppDatabase.getGroupInfo(conversationId: String): MessagingGroupInfo? {
     }
 }
 
-@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
 fun AppDatabase.getFriendStreaks(userId: String): FriendStreaks? {
-    return database.rawQuery(
+    val cursor: android.database.Cursor = database.rawQuery(
         "SELECT * FROM streaks WHERE id = ?",
         arrayOf(userId)
-    ).use { cursor ->
-        if (!cursor.moveToFirst()) return@use null
+    )
+    return cursor.use {
+        if (!it.moveToFirst()) return@use null
         FriendStreaks(
-            notify = cursor.getInteger("notify") == 1,
-            expirationTimestamp = cursor.getLongOrNull("expirationTimestamp") ?: 0L,
-            length = cursor.getInteger("length")
+            notify = it.getInteger("notify") == 1,
+            expirationTimestamp = it.getLongOrNull("expirationTimestamp") ?: 0L,
+            length = it.getInteger("length")
         )
     }
 }

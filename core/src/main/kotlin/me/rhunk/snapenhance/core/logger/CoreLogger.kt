@@ -43,11 +43,10 @@ class CoreLogger(
         )
 
         // Use explicit type arguments to avoid reified intersection inference warnings
-        @Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
         printLnMethod.hook(HookStage.BEFORE) { param ->
-            val priority = param.arg<Int>(0)
-            val tag = param.arg<String>(1)
-            val message = param.arg<String>(2)
+            val priority = param.args()[0] as Int
+            val tag = param.args()[1] as String
+            val message = param.args()[2] as String
             internalLog(tag, LogLevel.fromPriority(priority) ?: LogLevel.INFO, message)
         }
 

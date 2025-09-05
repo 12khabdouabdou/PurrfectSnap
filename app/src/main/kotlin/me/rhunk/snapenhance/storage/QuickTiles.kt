@@ -16,10 +16,9 @@ fun AppDatabase.getQuickTiles(): List<String> {
     }
 }
 
-@Suppress("REIFIED_TYPE_PARAMETER_NO_INLINE")
 fun AppDatabase.setQuickTiles(keys: List<String>) {
     executeAsync {
-        database.execSQL("DELETE FROM quick_tiles")
+        database.execSQL("DELETE FROM quick_tiles", null)
         keys.forEachIndexed { index, key ->
             database.execSQL(
                 "INSERT INTO quick_tiles (`key`, position) VALUES (?, ?)",
