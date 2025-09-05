@@ -8,6 +8,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -157,6 +158,9 @@ class HomeRootSection : Routes.Route() {
         }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
+        var isDownloading by remember { mutableStateOf(false) }
+        var downloadProgress by remember { mutableStateOf(0f) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -230,129 +234,186 @@ class HomeRootSection : Routes.Route() {
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
-                        Button(
-                            modifier = Modifier.height(40.dp),
-                            onClick = {
-                                context.coroutineScope.launch(Dispatchers.Main) {
-                                    try {
-                                        Toast.makeText(context.androidContext, "Download started", Toast.LENGTH_SHORT).show()
-                                        val abisList = Build.SUPPORTED_ABIS?.map { it.lowercase() } ?: emptyList()
-                                        val isArmV8 = abisList.any { it.contains("arm64") || it.contains("v8a") || it.contains("aarch64") || it.contains("armv8") }
-                                        val isArmV7 = abisList.any { it.contains("armeabi-v7a") || it.contains("armv7") || it.contains("armeabi") || it.contains("v7a") }
-                                        val client = OkHttpClient()
-                                        val releasesReq = Request.Builder()
-                                            .url("https://api.github.com/repos/particle-box/SnapEnhance/releases")
-                                            .build()
-                                        val releasesResp = withContext(Dispatchers.IO) { client.newCall(releasesReq).execute() }
-                                        val releasesJson = JSONArray(releasesResp.body?.string() ?: "[]")
-                                        var downloadUrl: String? = null
-                                        var assetName: String? = null
-                                        for (i in 0 until releasesJson.length()) {
-                                            val rel = releasesJson.getJSONObject(i)
-                                            if (!rel.optBoolean("prerelease", false)) continue
-                                            val assetsArr = rel.optJSONArray("assets") ?: continue
-                                            for (j in 0 until assetsArr.length()) {
-                                                val asset = assetsArr.getJSONObject(j)
-                                                val name = asset.optString("name")
-                                                val url = asset.optString("browser_download_url")
-                                                if ((isArmV8 && name.contains("-armv8-")) ||
-                                                    (isArmV7 && name.contains("-armv7-"))) {
-                                                    downloadUrl = url
-                                                    assetName = name
-                                                    break
+                        AnimatedContent(
+                            targetState = isDownloading,
+                            label = "DownloadBtnToProgressAnim",
+                            transitionSpec = { fadeIn() togetherWith fadeOut() }
+                        ) { downloading ->
+                            if (!downloading) {
+                                Button(
+                                    modifier = Modifier.height(40.dp).animateContentSize(),
+                                    onClick = {
+                                        context.coroutineScope.launch(Dispatchers.Main) {
+                                            isDownloading = true
+                                            downloadProgress = 0f
+                                            try {
+                                                Toast.makeText(context.androidContext, "Download started", Toast.LENGTH_SHORT).show()
+                                                val abisList = Build.SUPPORTED_ABIS?.map { it.lowercase() } ?: emptyList()
+                                                // ARM64 preferred. If device supports both (common on arm64), only use armv7 if NOT arm64 capable.
+                                                val abiMatchList = buildList {
+                                                    if (abisList.any { it.contains("arm64") || it.contains("v8a") || it.contains("aarch64") || it.contains("armv8") })
+                                                        add("-armv8-")
+                                                    if (abisList.any { it.contains("armeabi-v7a") || it.contains("armv7") || it.contains("armeabi") || it.contains("v7a") })
+                                                        add("-armv7-")
                                                 }
-                                            }
-                                            if (downloadUrl != null) break
-                                        }
-                                        if (downloadUrl == null) {
-                                            Toast.makeText(context.androidContext, "No CI debug APK found for your ABI", Toast.LENGTH_LONG).show()
-                                            return@launch
-                                        }
-                                        val notifMgr = context.androidContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                                        val channelId = "update_download"
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                            val channel = NotificationChannel(channelId, "Update Download", NotificationManager.IMPORTANCE_LOW)
-                                            notifMgr.createNotificationChannel(channel)
-                                        }
-                                        val notifBuilder = NotificationCompat.Builder(context.androidContext, channelId)
-                                        val filename = assetName ?: "snapenhance-update.apk"
-                                        val destFile = File(context.androidContext.getExternalFilesDir(null), filename)
-                                        var out: OutputStream? = null
-                                        try {
-                                            withContext(Dispatchers.IO) {
-                                                val req = Request.Builder().url(downloadUrl!!).build()
-                                                client.newCall(req).execute().use { resp ->
-                                                    if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-                                                    val body = resp.body ?: throw Exception("Null body")
-                                                    val len = body.contentLength()
-                                                    out = FileOutputStream(destFile)
-                                                    val buf = ByteArray(8 * 1024)
-                                                    var downloaded = 0L
-                                                    var lastNotified = 0
-                                                    body.byteStream().use { input ->
-                                                        while (true) {
-                                                            val read = input.read(buf)
-                                                            if (read == -1) break
-                                                            out!!.write(buf, 0, read)
-                                                            downloaded += read
-                                                            val percent = if (len > 0) ((downloaded * 100) / len).toInt() else -1
-                                                            if (percent >= lastNotified + 2 || percent == 100) {
-                                                                notifMgr.notify(
-                                                                    991,
-                                                                    notifBuilder
-                                                                        .setContentTitle("Updating SnapEnhance")
-                                                                        .setContentText("Downloading update… $percent%")
-                                                                        .setSmallIcon(android.R.drawable.stat_sys_download)
-                                                                        .setProgress(100, percent, len <= 0)
-                                                                        .setOngoing(true)
-                                                                        .build()
-                                                                )
-                                                                lastNotified = percent
+                                                val client = OkHttpClient()
+                                                val releasesReq = Request.Builder()
+                                                    .url("https://api.github.com/repos/particle-box/SnapEnhance/releases")
+                                                    .build()
+                                                val releasesResp = withContext(Dispatchers.IO) { client.newCall(releasesReq).execute() }
+                                                val releasesJson = JSONArray(releasesResp.body?.string() ?: "[]")
+                                                var downloadUrl: String? = null
+                                                var assetName: String? = null
+                                                loop@for (abiHint in abiMatchList) {
+                                                    for (i in 0 until releasesJson.length()) {
+                                                        val rel = releasesJson.getJSONObject(i)
+                                                        if (!rel.optBoolean("prerelease", false)) continue
+                                                        val assetsArr = rel.optJSONArray("assets") ?: continue
+                                                        for (j in 0 until assetsArr.length()) {
+                                                            val asset = assetsArr.getJSONObject(j)
+                                                            val name = asset.optString("name")
+                                                            val url = asset.optString("browser_download_url")
+                                                            if (name.contains(abiHint)) {
+                                                                downloadUrl = url
+                                                                assetName = name
+                                                                break@loop
                                                             }
                                                         }
                                                     }
-                                                    out!!.flush()
-                                                    out!!.close()
                                                 }
+                                                if (downloadUrl == null) {
+                                                    Toast.makeText(context.androidContext, "No CI debug APK found for your ABI", Toast.LENGTH_LONG).show()
+                                                    isDownloading = false
+                                                    return@launch
+                                                }
+                                                val notifMgr = context.androidContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                                                val channelId = "update_download"
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                                    val channel = NotificationChannel(channelId, "Update Download", NotificationManager.IMPORTANCE_LOW)
+                                                    notifMgr.createNotificationChannel(channel)
+                                                }
+                                                val notifBuilder = NotificationCompat.Builder(context.androidContext, channelId)
+                                                val filename = assetName ?: "snapenhance-update.apk"
+                                                val destFile = File(context.androidContext.getExternalFilesDir(null), filename)
+                                                var out: OutputStream? = null
+                                                try {
+                                                    withContext(Dispatchers.IO) {
+                                                        val req = Request.Builder().url(downloadUrl!!).build()
+                                                        client.newCall(req).execute().use { resp ->
+                                                            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+                                                            val body = resp.body ?: throw Exception("Null body")
+                                                            val len = body.contentLength()
+                                                            out = FileOutputStream(destFile)
+                                                            val buf = ByteArray(8 * 1024)
+                                                            var downloaded = 0L
+                                                            var lastNotified = 0
+                                                            body.byteStream().use { input ->
+                                                                while (true) {
+                                                                    val read = input.read(buf)
+                                                                    if (read == -1) break
+                                                                    out!!.write(buf, 0, read)
+                                                                    downloaded += read
+                                                                    if (len > 0) {
+                                                                        val percent = downloaded.toFloat() / len.toFloat()
+                                                                        downloadProgress = percent
+                                                                    }
+                                                                    val percentInt = if (len > 0) ((downloaded * 100) / len).toInt() else -1
+                                                                    if (percentInt >= lastNotified + 2 || percentInt == 100) {
+                                                                        notifMgr.notify(
+                                                                            991,
+                                                                            notifBuilder
+                                                                                .setContentTitle("Updating SnapEnhance")
+                                                                                .setContentText("Downloading update… $percentInt%")
+                                                                                .setSmallIcon(android.R.drawable.stat_sys_download)
+                                                                                .setProgress(100, percentInt, len <= 0)
+                                                                                .setOngoing(true)
+                                                                                .build()
+                                                                        )
+                                                                        lastNotified = percentInt
+                                                                    }
+                                                                }
+                                                            }
+                                                            out!!.flush()
+                                                            out!!.close()
+                                                        }
+                                                    }
+                                                    notifMgr.notify(
+                                                        991,
+                                                        notifBuilder
+                                                            .setContentTitle("Download complete")
+                                                            .setContentText("Tap to install")
+                                                            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                                                            .setProgress(0, 0, false)
+                                                            .setOngoing(false)
+                                                            .build()
+                                                    )
+                                                    Toast.makeText(context.androidContext, "Download complete", Toast.LENGTH_SHORT).show()
+                                                    val uri = FileProvider.getUriForFile(
+                                                        context.androidContext,
+                                                        "${context.androidContext.packageName}.provider",
+                                                        destFile
+                                                    )
+                                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                        setDataAndType(uri, "application/vnd.android.package-archive")
+                                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                    }
+                                                    context.androidContext.startActivity(intent)
+                                                } catch (e: Exception) {
+                                                    (context.androidContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancel(991)
+                                                    Toast.makeText(context.androidContext, "Update failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                                } finally {
+                                                    out?.close()
+                                                    isDownloading = false
+                                                    downloadProgress = 0f
+                                                }
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context.androidContext, "Update failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                                isDownloading = false
+                                                downloadProgress = 0f
                                             }
-                                            notifMgr.notify(
-                                                991,
-                                                notifBuilder
-                                                    .setContentTitle("Download complete")
-                                                    .setContentText("Tap to install")
-                                                    .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                                                    .setProgress(0, 0, false)
-                                                    .setOngoing(false)
-                                                    .build()
-                                            )
-                                            Toast.makeText(context.androidContext, "Download complete", Toast.LENGTH_SHORT).show()
-                                            val uri = FileProvider.getUriForFile(
-                                                context.androidContext,
-                                                "${context.androidContext.packageName}.provider",
-                                                destFile
-                                            )
-                                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                setDataAndType(uri, "application/vnd.android.package-archive")
-                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                            }
-                                            context.androidContext.startActivity(intent)
-                                        } catch (e: Exception) {
-                                            (context.androidContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).cancel(991)
-                                            Toast.makeText(context.androidContext, "Update failed: ${e.message}", Toast.LENGTH_LONG).show()
-                                        } finally {
-                                            out?.close()
                                         }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context.androidContext, "Update failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                    }
+                                ) {
+                                    Text(text = translation["update_button"])
+                                }
+                            } else {
+                                // Modern, large, visually appealing animated circular progress with percentage
+                                Box(
+                                    Modifier
+                                        .height(40.dp)
+                                        .width(140.dp)
+                                        .animateContentSize()
+                                        .clip(RoundedCornerShape(50))
+                                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        progress = downloadProgress.coerceIn(0f, 1f),
+                                        modifier = Modifier.size(32.dp),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        trackColor = MaterialTheme.colorScheme.secondary,
+                                        strokeWidth = 4.dp,
+                                    )
+                                    if (downloadProgress > 0f && downloadProgress < 1f) {
+                                        Text(
+                                            text = "${(downloadProgress * 100).toInt()}%",
+                                            modifier = Modifier
+                                                .align(Alignment.Center)
+                                                .padding(start = 48.dp),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
                                     }
                                 }
                             }
-                        ) {
-                            Text(text = translation["update_button"])
                         }
                     }
                 }
             }
+            // Rest unchanged...
+            // ...everything else in content remains the same as your last working code
+            // (QuickActions, debug info, etc)
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(10.dp))
                 InfoCard {
