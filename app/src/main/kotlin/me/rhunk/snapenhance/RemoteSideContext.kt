@@ -149,12 +149,12 @@ class RemoteSideContext(
                     packageName = it.packageName,
                     version = it.versionName,
                     versionCode = it.longVersionCode,
-                    isLSPatched = it.applicationInfo.appComponentFactory != CoreComponentFactory::class.java.name,
+                    isLSPatched = it.applicationInfo?.appComponentFactory != CoreComponentFactory::class.java.name,
                     isSplitApk = it.splitNames?.isNotEmpty() ?: false
                 )
             },
             modInfo = ModInfo(
-                loaderPackageName = MainActivity::class.java.`package`?.name,
+                loaderPackageName = MainActivity::class.java.`package`?.name ?: "unknown",
                 buildPackageName = androidContext.packageName,
                 buildVersion = BuildConfig.VERSION_NAME,
                 buildVersionCode = BuildConfig.VERSION_CODE.toLong(),
