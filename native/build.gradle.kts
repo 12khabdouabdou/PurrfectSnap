@@ -42,6 +42,7 @@ kotlin {
 cargo {
     module = "rust"
     libname = nativeName.toString()
+    targetIncludes = arrayOf("libsnapenhance.so")
     profile = "release"
     targets = listOf("arm64", "arm")
 }
