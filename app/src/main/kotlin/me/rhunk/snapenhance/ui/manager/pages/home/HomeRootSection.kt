@@ -402,7 +402,7 @@ class HomeRootSection : Routes.Route() {
                                     horizontalArrangement = Arrangement.Center
                                 ) {
                                     CircularProgressIndicator(
-                                        progress = downloadProgress.coerceIn(0f, 1f),
+                                        progress = { downloadProgress.coerceIn(0f, 1f) },
                                         modifier = Modifier.size(22.dp),
                                         color = MaterialTheme.colorScheme.primary,
                                         trackColor = MaterialTheme.colorScheme.secondary,

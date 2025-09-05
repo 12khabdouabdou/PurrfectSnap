@@ -114,9 +114,6 @@ class FriendTracker : Feature("Friend Tracker") {
                     eventType.key,
                     extras
                 )
-                else -> {
-                    // No-op for unrecognized future actions to keep the when exhaustive
-                }
             }
         }
     }
