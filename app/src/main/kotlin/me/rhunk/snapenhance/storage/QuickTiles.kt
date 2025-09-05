@@ -18,7 +18,7 @@ fun AppDatabase.getQuickTiles(): List<String> {
 
 fun AppDatabase.setQuickTiles(keys: List<String>) {
     executeAsync {
-        database.execSQL("DELETE FROM quick_tiles", null)
+        database.execSQL("DELETE FROM quick_tiles")
         keys.forEachIndexed { index, key ->
             database.execSQL(
                 "INSERT INTO quick_tiles (`key`, position) VALUES (?, ?)",
