@@ -9,6 +9,7 @@ import me.rhunk.snapenhance.common.logger.LogLevel
 import me.rhunk.snapenhance.core.bridge.BridgeClient
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
+import java.lang.reflect.Method
 
 @SuppressLint("PrivateApi")
 class CoreLogger(
@@ -42,8 +43,8 @@ class CoreLogger(
             String::class.java
         )
 
-        // Use explicit type arguments to avoid reified intersection inference warnings
-        printLnMethod.hook(HookStage.BEFORE) { param ->
+        // Use explicit type argument to avoid reified intersection inference warning
+        printLnMethod.hook<Method>(HookStage.BEFORE) { param ->
             val priority = param.args()[0] as Int
             val tag = param.args()[1] as String
             val message = param.args()[2] as String
