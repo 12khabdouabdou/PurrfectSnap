@@ -140,8 +140,18 @@ class LSPatch(
 
         //add natives
         printLog("Adding natives")
-        context.assets.list("lspatch/so")?.forEach { native ->
-            dstZFile.add("assets/${dexObfuscationConfig?.libNativeFilePath?.get(native) ?: "lspatch/so/$native/liblspatch.so"}", context.assets.open("lspatch/so/$native/liblspatch.so"), false)
+        val nativeAssetPath = "snapenhance/so"
+        context.assets.list(nativeAssetPath)?.forEach { abi ->
+            val libPath = "$nativeAssetPath/$abi"
+            // The library name is now fixed, let's find it.
+            val libName = context.assets.list(libPath)?.find { it.startsWith("lib") && it.endsWith(".so") } ?: return@forEach
+            val fullAssetPath = "$libPath/$libName"
+
+            // The destination path inside the APK must be in the `lib` folder.
+            val finalApkPath = "lib/$abi/$libName"
+
+            printLog("Adding native library from $fullAssetPath to $finalApkPath")
+            dstZFile.add(finalApkPath, context.assets.open(fullAssetPath), false)
         }
 
         //embed modules
