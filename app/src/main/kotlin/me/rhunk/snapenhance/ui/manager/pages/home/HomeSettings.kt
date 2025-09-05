@@ -35,6 +35,7 @@ import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.saveFile
+import androidx.compose.ui.draw.clip
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -230,7 +231,7 @@ class HomeSettings : Routes.Route() {
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.33f))
-                            .padding(horizontal = 10.dp, vertical = 9.dp)
+                            .padding(10.dp, 9.dp)
                             .fillMaxWidth()
                             .heightIn(min = 48.dp)
                             .clickable { val newValue = !automaticUpdateCheck.value; enableAutoUpdate(newValue) },
