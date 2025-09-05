@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -54,14 +53,15 @@ class HomeSettings : Routes.Route() {
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = 1.sp,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.primary
             )
-            Divider(Modifier
-                .fillMaxWidth(0.13f)
-                .padding(top = 3.dp)
-                .height(2.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp))
+            Divider(
+                Modifier
+                    .fillMaxWidth(0.13f)
+                    .padding(top = 3.dp)
+                    .height(2.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
     }
@@ -86,7 +86,8 @@ class HomeSettings : Routes.Route() {
     ) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, false)) }
-        val toggleBg = if (highlight) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface
+        val toggleBg =
+            if (highlight) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,9 +104,12 @@ class HomeSettings : Routes.Route() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = text, fontSize = 15.sp, modifier = Modifier.padding(start = 12.dp, end = 16.dp))
+            Text(
+                text = text, fontSize = 15.sp, modifier = Modifier.padding(start = 12.dp, end = 16.dp)
+            )
             Switch(
-                checked = value, onCheckedChange = {
+                checked = value,
+                onCheckedChange = {
                     value = it
                     sharedPreferences.edit().putBoolean(realKey, it).apply()
                 },
@@ -117,8 +121,8 @@ class HomeSettings : Routes.Route() {
     @Composable
     private fun RowAction(
         key: String,
-        requireConfirmation: Boolean = false,
         action: () -> Unit,
+        requireConfirmation: Boolean = false,
         accent: Boolean = false
     ) {
         var confirmationDialog by remember { mutableStateOf(false) }
@@ -189,9 +193,9 @@ class HomeSettings : Routes.Route() {
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
-        val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
+        val themeMode by ThemePreferences.getThemeModeFlow(contextC)
+            .collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -240,7 +244,6 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-
             if (showThemeDialog) {
                 ThemeChooserDialog(
                     selected = themeMode,
@@ -262,17 +265,26 @@ class HomeSettings : Routes.Route() {
                 Column(Modifier.padding(vertical = 18.dp, horizontal = 14.dp)) {
                     val updateManager = context.config.root.global.updateManager
                     val property = updateManager.getPropertyPair("update_check_interval")
-                    val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("24")
+                    val intervalOptions = property.value.defaultValues?.map { it.toString() }
+                        ?: listOf("24")
                     val safeDefaultInterval = intervalOptions.firstOrNull() ?: "24"
 
                     val automaticUpdateCheck = remember {
                         mutableStateOf(
-                            try { updateManager.automaticUpdateCheck.get() } catch (e: IllegalStateException) { false }
+                            try {
+                                updateManager.automaticUpdateCheck.get()
+                            } catch (e: IllegalStateException) {
+                                false
+                            }
                         )
                     }
                     val updateCheckInterval = remember {
                         mutableStateOf(
-                            try { updateManager.updateCheckInterval.get() } catch (e: IllegalStateException) { safeDefaultInterval }
+                            try {
+                                updateManager.updateCheckInterval.get()
+                            } catch (e: IllegalStateException) {
+                                safeDefaultInterval
+                            }
                         )
                     }
 
@@ -280,7 +292,11 @@ class HomeSettings : Routes.Route() {
                         automaticUpdateCheck.value = newValue
                         updateManager.automaticUpdateCheck.set(newValue)
                         if (newValue) {
-                            val wasNotSet = try { updateManager.updateCheckInterval.get(); false } catch (_: IllegalStateException) { true }
+                            val wasNotSet = try {
+                                updateManager.updateCheckInterval.get(); false
+                            } catch (_: IllegalStateException) {
+                                true
+                            }
                             if (wasNotSet) {
                                 updateManager.updateCheckInterval.set(updateCheckInterval.value)
                             }
@@ -295,7 +311,9 @@ class HomeSettings : Routes.Route() {
                             .padding(horizontal = 8.dp, vertical = 7.dp)
                             .fillMaxWidth()
                             .heightIn(min = 55.dp)
-                            .clickable { val newValue = !automaticUpdateCheck.value; enableAutoUpdate(newValue) },
+                            .clickable {
+                                val newValue = !automaticUpdateCheck.value; enableAutoUpdate(newValue)
+                            },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -357,15 +375,20 @@ class HomeSettings : Routes.Route() {
                                 .clip(RoundedCornerShape(12.dp))
                                 .menuAnchor()
                                 .background(Color.Transparent),
-                            colors = TextFieldDefaults.textFieldColors(
-                                containerColor = Color.Transparent,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                errorContainerColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent
                             ),
                             singleLine = true,
                             textStyle = LocalTextStyle.current.copy(
-                                color = if (automaticUpdateCheck.value) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f),
+                                color = if (automaticUpdateCheck.value) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(
+                                    alpha = 0.55f
+                                ),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 17.sp
                             )
@@ -392,21 +415,37 @@ class HomeSettings : Routes.Route() {
                 }
             }
 
-            // ACTIONS
             SectionHeader(translation["actions_title"])
-            Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp), elevation = CardDefaults.cardElevation(5.dp), shape = RoundedCornerShape(16.dp)) {
+            Card(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                elevation = CardDefaults.cardElevation(5.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
                 Column(Modifier.padding(vertical = 18.dp)) {
                     EnumAction.entries.forEach { enumAction ->
-                        RowAction(key = enumAction.key, accent = true) { context.launchActionIntent(enumAction) }
+                        RowAction(
+                            key = enumAction.key,
+                            action = { context.launchActionIntent(enumAction) },
+                            accent = true
+                        )
                     }
-                    RowAction(key = "regen_mappings") { context.checkForRequirements(Requirements.MAPPINGS) }
-                    RowAction(key = "change_language") { context.checkForRequirements(Requirements.LANGUAGE) }
+                    RowAction(
+                        key = "regen_mappings",
+                        action = { context.checkForRequirements(Requirements.MAPPINGS) }
+                    )
+                    RowAction(
+                        key = "change_language",
+                        action = { context.checkForRequirements(Requirements.LANGUAGE) }
+                    )
                 }
             }
 
-            // MESSAGE LOGGER
             SectionHeader(translation["message_logger_title"])
-            Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp), elevation = CardDefaults.cardElevation(5.dp), shape = RoundedCornerShape(14.dp)) {
+            Card(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                elevation = CardDefaults.cardElevation(5.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
                 ShiftedRow {
                     Column(
                         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -421,9 +460,7 @@ class HomeSettings : Routes.Route() {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(5.dp)
+                            modifier = Modifier.fillMaxWidth().padding(5.dp)
                         ) {
                             Column(
                                 modifier = Modifier.weight(1f),
@@ -451,9 +488,7 @@ class HomeSettings : Routes.Route() {
                                     context.log.error("Failed to export database", it)
                                     context.longToast("Failed to export database! ${it.localizedMessage}")
                                 }
-                            }) {
-                                Text(text = translation["export_button"])
-                            }
+                            }) { Text(text = translation["export_button"]) }
                             Button(onClick = {
                                 runCatching {
                                     context.messageLogger.purgeAll()
@@ -465,23 +500,22 @@ class HomeSettings : Routes.Route() {
                                 }.onSuccess {
                                     context.shortToast(translation["success_toast"])
                                 }
-                            }) {
-                                Text(text = translation["clear_button"])
-                            }
+                            }) { Text(text = translation["clear_button"]) }
                         }
                         OutlinedButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(5.dp),
+                            modifier = Modifier.fillMaxWidth().padding(5.dp),
                             onClick = { routes.loggerHistory.navigate() }
                         ) { Text(translation["view_logger_history_button"]) }
                     }
                 }
             }
 
-            // ADVANCED
             SectionHeader(translation["debug_title"])
-            Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp), elevation = CardDefaults.cardElevation(4.dp), shape = RoundedCornerShape(12.dp)) {
+            Card(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                elevation = CardDefaults.cardElevation(4.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
                 Column(Modifier.padding(vertical = 13.dp)) {
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -490,8 +524,7 @@ class HomeSettings : Routes.Route() {
                     ) {
                         var selectedFileType by remember { mutableStateOf(InternalFileHandleType.entries.first()) }
                         Box(
-                            modifier = Modifier
-                                .weight(1f)
+                            modifier = Modifier.weight(1f)
                         ) {
                             var expanded by remember { mutableStateOf(false) }
                             ExposedDropdownMenuBox(
@@ -517,20 +550,21 @@ class HomeSettings : Routes.Route() {
                                 }
                             }
                         }
-                        Button(onClick = {
-                            runCatching {
-                                context.coroutineScope.launch {
-                                    selectedFileType.resolve(context.androidContext).delete()
+                        Button(
+                            onClick = {
+                                runCatching {
+                                    context.coroutineScope.launch {
+                                        selectedFileType.resolve(context.androidContext).delete()
+                                    }
+                                }.onFailure {
+                                    context.log.error("Failed to clear file", it)
+                                    context.longToast("Failed to clear file! ${it.localizedMessage}")
+                                }.onSuccess {
+                                    context.shortToast(translation["success_toast"])
                                 }
-                            }.onFailure {
-                                context.log.error("Failed to clear file", it)
-                                context.longToast("Failed to clear file! ${it.localizedMessage}")
-                            }.onSuccess {
-                                context.shortToast(translation["success_toast"])
-                            }
-                        }, modifier = Modifier.padding(start = 10.dp)) {
-                            Text(translation["clear_button"])
-                        }
+                            },
+                            modifier = Modifier.padding(start = 10.dp)
+                        ) { Text(translation["clear_button"]) }
                     }
                     PreferenceToggle(context.sharedPreferences, key = "test_mode", text = "Test Mode (FOR DEBUGGING ONLY)", highlight = true)
                     Spacer(Modifier.height(6.dp))
