@@ -63,8 +63,8 @@ val buildAndRename by tasks.registering {
     }
 }
 
-android.libraryVariants.all { variant ->
-    tasks.named("merge${variant.name.capitalize()}JniLibFolders").configure {
+android.libraryVariants.forEach { variant ->
+    tasks.named("merge${variant.name.replaceFirstChar { it.uppercase() }}JniLibFolders").configure {
         dependsOn(buildAndRename)
     }
 }
