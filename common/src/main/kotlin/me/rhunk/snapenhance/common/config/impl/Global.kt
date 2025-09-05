@@ -59,7 +59,7 @@ class Global : ConfigContainer() {
 
     inner class UpdateManagerConfig : ConfigContainer() {
         val automaticUpdateCheck = boolean("automatic_update_check")
-        val updateCheckInterval = unique("update_check_interval", "every_6_hours", "every_12_hours", "daily", "weekly")
+        val updateCheckInterval = unique("update_check_interval", "6", "12", "24", "48", "168")
     }
 
     val updateManager = container("update_manager", UpdateManagerConfig())
