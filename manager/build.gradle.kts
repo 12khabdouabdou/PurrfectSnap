@@ -65,6 +65,17 @@ kotlin {
     }
 }
 
+val copyNativeBinary by tasks.registering(Copy::class) {
+    dependsOn(project(":native").tasks.named("cargoBuild"))
+    from(project(":native").buildDir.resolve("rustJniLibs/android"))
+    into(project.layout.projectDirectory.dir("src/main/assets/snapenhance/so"))
+    include("**/*.so")
+}
+
+tasks.named("preBuild").configure {
+    dependsOn(copyNativeBinary)
+}
+
 configurations {
     all {
         resolutionStrategy {
@@ -74,6 +85,7 @@ configurations {
 }
 
 dependencies {
+    implementation(project(":native"))
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(libs.libsu)
     implementation(libs.guava)

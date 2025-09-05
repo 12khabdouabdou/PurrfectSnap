@@ -13,7 +13,7 @@ var versionCode = 210
 rootProject.ext.set("appVersionName", versionName)
 rootProject.ext.set("appVersionCode", versionCode)
 rootProject.ext.set("applicationId", "me.rhunk.snapenhance")
-rootProject.ext.set("buildHash", properties["debug_build_hash"] ?: java.security.SecureRandom().nextLong(Long.MAX_VALUE / 1000L, Long.MAX_VALUE).toString(16))
+rootProject.ext.set("buildHash", "snapenhance_native")
 
 tasks.register("getVersion") {
     doLast {

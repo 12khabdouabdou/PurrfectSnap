@@ -41,45 +41,8 @@ kotlin {
 
 cargo {
     module = "rust"
-    libname = "snapenhance"  // FIXED: Added the missing libname property
+    libname = nativeName.toString()
     targetIncludes = arrayOf("libsnapenhance.so")
     profile = "release"
     targets = listOf("arm64", "arm")
-}
-
-fun getNativeFiles() =
-    File(projectDir, "build/rustJniLibs/android").listFiles()?.flatMap { abiFolder ->
-        abiFolder.takeIf { it.isDirectory }?.listFiles()?.toList() ?: emptyList()
-    }
-
-val buildAndRename by tasks.registering {
-    dependsOn("cargoBuild")
-    doLast {
-        getNativeFiles()?.forEach { file ->
-            if (file.name.endsWith(".so")) {
-                println("Renaming ${file.absolutePath}")
-                file.renameTo(File(file.parent, "lib$nativeName.so"))
-            }
-        }
-    }
-}
-
-android.libraryVariants.forEach { variant ->
-    tasks.named("merge${variant.name.replaceFirstChar { it.uppercase() }}JniLibFolders").configure {
-        dependsOn(buildAndRename)
-    }
-}
-
-val cleanNatives by tasks.registering {
-    finalizedBy(buildAndRename)
-    doFirst {
-        println("Cleaning native files")
-        getNativeFiles()?.forEach { file ->
-            file.deleteRecursively()
-        }
-    }
-}
-
-tasks.named("preBuild").configure {
-    dependsOn(cleanNatives)
 }
