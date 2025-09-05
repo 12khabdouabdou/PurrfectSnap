@@ -163,7 +163,7 @@ dependencies {
     // Core + OkHttp
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
-    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.work)
 }
 
 afterEvaluate {
