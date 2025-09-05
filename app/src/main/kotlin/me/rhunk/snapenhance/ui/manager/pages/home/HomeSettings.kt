@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -146,9 +147,8 @@ class HomeSettings : Routes.Route() {
         ) { content(this) }
     }
 
-    // Helper to resolve interval label from multiple possible JSON locations without changing en_US.json
+    // Resolve interval labels from existing en_US.json without requiring changes to its structure.
     private fun resolveIntervalLabel(rawKey: String): String {
-        // Try several likely paths, return first hit
         val paths = listOf(
             "update_intervals.$rawKey",
             "sections.update_intervals.$rawKey",
@@ -158,7 +158,6 @@ class HomeSettings : Routes.Route() {
         for (p in paths) {
             context.translation.getOrNull(p)?.let { return it }
         }
-        // Fallback to the raw key if no translation is found
         return rawKey
     }
 
@@ -214,111 +213,114 @@ class HomeSettings : Routes.Route() {
 
             Spacer(Modifier.height(20.dp))
 
-            // ------ UPDATES (blend with other toggles; interval hidden behind a dropdown button next to the switch) ------
+            // ------ UPDATES (no card/border; matches other toggles) ------
             RowTitle(title = "Updates")
-            Card(
+
+            // Single row styled like other toggles
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    val updateManager = context.config.root.global.updateManager
-
-                    // The property holds raw keys like "every_6_hours", "daily", etc.
-                    val property = updateManager.getPropertyPair("update_check_interval")
-                    val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("daily")
-                    val safeDefaultInterval = intervalOptions.firstOrNull() ?: "daily"
-
-                    val automaticUpdateCheck = remember {
-                        mutableStateOf(
-                            try { updateManager.automaticUpdateCheck.get() } catch (e: IllegalStateException) { false }
-                        )
-                    }
-                    val updateCheckInterval = remember {
-                        mutableStateOf(
-                            try { updateManager.updateCheckInterval.get() } catch (e: IllegalStateException) { safeDefaultInterval }
-                        )
-                    }
-
-                    // Row styled like the existing PreferenceToggle (Test Mode etc.)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 55.dp)
-                            .clickable {
-                                val newValue = !automaticUpdateCheck.value
-                                automaticUpdateCheck.value = newValue
-                                updateManager.automaticUpdateCheck.set(newValue)
-                                if (newValue) {
-                                    val wasNotSet = try { updateManager.updateCheckInterval.get(); false } catch (_: IllegalStateException) { true }
-                                    if (wasNotSet) updateManager.updateCheckInterval.set(updateCheckInterval.value)
-                                }
-                                me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
-                            },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Left label
-                        Text(
-                            text = "Automatic update check",
-                            modifier = Modifier.padding(end = 16.dp),
-                            fontSize = 14.sp
-                        )
-
-                        // Right controls: small dropdown button + switch
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            // Dropdown anchored to this small text button (shows current interval label)
-                            var expanded by remember { mutableStateOf(false) }
-                            val currentLabel = resolveIntervalLabel(updateCheckInterval.value)
-
-                            Box {
-                                TextButton(
-                                    onClick = { if (automaticUpdateCheck.value) expanded = true },
-                                    enabled = automaticUpdateCheck.value,
-                                ) { Text(text = currentLabel, fontSize = 14.sp, fontWeight = FontWeight.SemiBold) }
-
-                                DropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false }
-                                ) {
-                                    intervalOptions.forEach { option ->
-                                        DropdownMenuItem(
-                                            text = { Text(resolveIntervalLabel(option)) },
-                                            onClick = {
-                                                updateCheckInterval.value = option
-                                                updateManager.updateCheckInterval.set(option)
-                                                if (automaticUpdateCheck.value) {
-                                                    me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
-                                                }
-                                                expanded = false
-                                            }
-                                        )
-                                    }
-                                }
+                    .heightIn(min = 55.dp)
+                    .padding(end = 10.dp) // small right padding to align with switches
+                    .clickable {
+                        val updateManager = context.config.root.global.updateManager
+                        // Toggle value
+                        val newValue = !(try { updateManager.automaticUpdateCheck.get() } catch (_: IllegalStateException) { false })
+                        updateManager.automaticUpdateCheck.set(newValue)
+                        // Ensure an interval exists when enabling
+                        if (newValue) {
+                            val intervalSet = try { updateManager.updateCheckInterval.get(); true } catch (_: IllegalStateException) { false }
+                            if (!intervalSet) {
+                                val property = updateManager.getPropertyPair("update_check_interval")
+                                val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("daily")
+                                updateManager.updateCheckInterval.set(intervalOptions.firstOrNull() ?: "daily")
                             }
+                        }
+                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
+                    },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left: label (bold)
+                Text(
+                    text = "Automatic update check",
+                    modifier = Modifier.padding(end = 16.dp),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
-                            Spacer(Modifier.width(8.dp))
+                // Right: interval dropdown icon + switch
+                val updateManager = context.config.root.global.updateManager
+                val property = updateManager.getPropertyPair("update_check_interval")
+                val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("daily")
+                val safeDefaultInterval = intervalOptions.firstOrNull() ?: "daily"
 
-                            Switch(
-                                checked = automaticUpdateCheck.value,
-                                onCheckedChange = { newValue ->
-                                    automaticUpdateCheck.value = newValue
-                                    updateManager.automaticUpdateCheck.set(newValue)
-                                    if (newValue) {
-                                        val wasNotSet = try { updateManager.updateCheckInterval.get(); false } catch (_: IllegalStateException) { true }
-                                        if (wasNotSet) updateManager.updateCheckInterval.set(updateCheckInterval.value)
-                                    }
-                                    me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
-                                },
-                                modifier = Modifier.padding(end = 2.dp)
+                var automaticUpdateEnabled by remember {
+                    mutableStateOf(
+                        try { updateManager.automaticUpdateCheck.get() } catch (_: IllegalStateException) { false }
+                    )
+                }
+                var currentInterval by remember {
+                    mutableStateOf(
+                        try { updateManager.updateCheckInterval.get() } catch (_: IllegalStateException) { safeDefaultInterval }
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Dropdown icon (no text), disabled when toggle off
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(
+                            onClick = { if (automaticUpdateEnabled) expanded = true },
+                            enabled = automaticUpdateEnabled
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowDropDown,
+                                contentDescription = "Change update interval",
+                                tint = if (automaticUpdateEnabled)
+                                    MaterialTheme.colorScheme.onSurface
+                                else
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                             )
                         }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            intervalOptions.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(resolveIntervalLabel(option)) },
+                                    onClick = {
+                                        currentInterval = option
+                                        updateManager.updateCheckInterval.set(option)
+                                        if (automaticUpdateEnabled) {
+                                            me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
+                                        }
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
                     }
+
+                    Spacer(Modifier.width(6.dp))
+
+                    Switch(
+                        checked = automaticUpdateEnabled,
+                        onCheckedChange = { newValue ->
+                            automaticUpdateEnabled = newValue
+                            updateManager.automaticUpdateCheck.set(newValue)
+                            if (newValue) {
+                                val wasNotSet = try { updateManager.updateCheckInterval.get(); false } catch (_: IllegalStateException) { true }
+                                if (wasNotSet) updateManager.updateCheckInterval.set(currentInterval)
+                            }
+                            me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
+                        },
+                        modifier = Modifier.padding(end = 2.dp)
+                    )
                 }
             }
-            // ------------------------------------------------------------------------------------------------------------
+            // ----------------------------------------------------------------
 
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
