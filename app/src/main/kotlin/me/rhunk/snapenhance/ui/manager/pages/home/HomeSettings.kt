@@ -240,61 +240,69 @@ class HomeSettings : Routes.Route() {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
+                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
+                    var frequencyMenuExpanded by remember { mutableStateOf(false) }
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = 55.dp)
-                            .clickable {
-                                autoUpdateCheck = !autoUpdateCheck
-                                context.config.root.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
-                                if (autoUpdateCheck && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                            .heightIn(min = 55.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = translation["auto_update_check"])
+                            if (autoUpdateCheck) {
+                                Text(
+                                    text = translation["update_check_frequency_" + selectedFrequency],
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Light
+                                )
+                            }
+                        }
+
+                        Switch(
+                            checked = autoUpdateCheck,
+                            onCheckedChange = {
+                                autoUpdateCheck = it
+                                context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                                if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
                                     context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
                                 }
                                 context.config.writeConfig()
                                 scheduleUpdateCheck()
-                            },
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = translation["auto_update_check"], modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
-                        Switch(checked = autoUpdateCheck, onCheckedChange = {
-                            autoUpdateCheck = it
-                            context.config.root.global.updateSettings.autoUpdateCheck.set(it)
-                            if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
-                                context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
                             }
-                            context.config.writeConfig()
-                            scheduleUpdateCheck()
-                        }, modifier = Modifier.padding(end = 26.dp))
-                    }
-
-                    var expanded by remember { mutableStateOf(false) }
-                    val frequencies = remember { listOf("daily", "weekly", "monthly") }
-                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
-
-                    Text(text = translation["update_check_frequency"], modifier = Modifier.padding(top = 8.dp, bottom = 4.dp), fontSize = 14.sp)
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = it },
-                        modifier = Modifier.fillMaxWidth(0.7f)
-                    ) {
-                        TextField(
-                            value = translation["update_check_frequency_" + selectedFrequency],
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
                         )
-                        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                            frequencies.forEach { frequency ->
-                                DropdownMenuItem(onClick = {
-                                    expanded = false
-                                    selectedFrequency = frequency
-                                    context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
-                                    context.config.writeConfig()
-                                    scheduleUpdateCheck()
-                                }, text = {
-                                    Text(text = translation["update_check_frequency_" + frequency])
-                                })
+
+                        // Spacer to add some distance between switch and icon
+                        if (autoUpdateCheck) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box {
+                                IconButton(onClick = { frequencyMenuExpanded = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = translation["update_check_frequency"]
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = frequencyMenuExpanded,
+                                    onDismissRequest = { frequencyMenuExpanded = false }
+                                ) {
+                                    val frequencies = remember { listOf("daily", "weekly", "monthly") }
+                                    frequencies.forEach { frequency ->
+                                        DropdownMenuItem(
+                                            text = { Text(text = translation["update_check_frequency_" + frequency]) },
+                                            onClick = {
+                                                selectedFrequency = frequency
+                                                context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                                context.config.writeConfig()
+                                                scheduleUpdateCheck()
+                                                frequencyMenuExpanded = false
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
