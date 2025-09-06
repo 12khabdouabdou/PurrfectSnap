@@ -19,84 +19,61 @@ class CallbackBuilder(
 
     private val methodOverrides = mutableListOf<Override>()
 
-    fun override(
-        methodName: String,
-        shouldUnhook: Boolean = true,
-        callback: (HookAdapter) -> Unit = {}
-    ): CallbackBuilder {
+    fun override(methodName: String, shouldUnhook: Boolean = true, callback: (HookAdapter) -> Unit = {}): CallbackBuilder {
         methodOverrides.add(Override(methodName, shouldUnhook, callback))
         return this
     }
 
     fun build(): Any {
-        // get the first param of the first constructor to get the class of the invoker
-        val ctor: Constructor<*> = callbackClass.constructors.firstOrNull()
-            ?: error("No public constructors available for ${callbackClass.name}")
-        val rxEmitter: Class<*> = ctor.parameterTypes.firstOrNull()
-            ?: error("Callback constructor must have at least one parameter for emitter: ${callbackClass.name}")
-
-        // get the emitter field based on the class
-        val rxEmitterField: Field = callbackClass.fields.firstOrNull { field: Field ->
+        //get the first param of the first constructor to get the class of the invoker
+        val rxEmitter: Class<*> = callbackClass.constructors[0].parameterTypes[0]
+        //get the emitter field based on the class
+        val rxEmitterField = callbackClass.fields.first { field: Field ->
             field.type.isAssignableFrom(rxEmitter)
-        } ?: error("No suitable emitter field found on ${callbackClass.name}")
-
-        // ensure accessible for reflection reads (Android-friendly)
-        if (!rxEmitterField.isAccessible) rxEmitterField.isAccessible = true
-
-        // create empty callback instance and snapshot its identity
-        val callbackInstance: Any = createEmptyObject(ctor)
-            ?: error("Failed to instantiate callback for ${callbackClass.name}")
+        }
+        //get the callback field based on the callback class
+        val callbackInstance = createEmptyObject(callbackClass.constructors[0])!!
         val callbackInstanceHashCode: Int = callbackInstance.hashCode()
-        val callbackInstanceClass: Class<*> = callbackInstance.javaClass
+        val callbackInstanceClass = callbackInstance.javaClass
 
-        val unhooks: MutableList<XC_MethodHook.Unhook> = mutableListOf()
+        val unhooks = mutableListOf<XC_MethodHook.Unhook>()
 
         callbackInstanceClass.methods.forEach { method ->
             if (method.declaringClass != callbackInstanceClass) return@forEach
             if (Modifier.isPrivate(method.modifiers)) return@forEach
 
-            // default hook that unhooks the callback and returns null
-            val defaultHook: (HookAdapter) -> Boolean = defaultHook@{ adapter: HookAdapter ->
-                // ensure the callback was created by the CallbackBuilder
-                val owner: Any? = adapter.thisObject()
-                // If emitter field is present, it's not our synthetic instance; skip
-                if (owner != null && rxEmitterField.get(owner) != null) return@defaultHook false
-                if ((owner as Any).hashCode() != callbackInstanceHashCode) return@defaultHook false
-                adapter.setResult(null)
+            //default hook that unhooks the callback and returns null
+            val defaultHook: (HookAdapter) -> Boolean = defaultHook@{
+                //ensure that's the callback was created by the CallbackBuilder
+                if (rxEmitterField.get(it.thisObject()) != null) return@defaultHook false
+                if ((it.thisObject() as Any).hashCode() != callbackInstanceHashCode) return@defaultHook false
+                it.setResult(null)
                 true
             }
 
-            // start with default behavior
-            var effectiveHook: (HookAdapter) -> Unit = { adapter: HookAdapter ->
-                defaultHook(adapter)
-            }
+            var hook: (HookAdapter) -> Unit = { defaultHook(it) }
 
-            // override the default hook if method name matches
-            val overrideEntry: Override? = methodOverrides.firstOrNull { ov -> ov.methodName == method.name }
-            if (overrideEntry != null) {
-                effectiveHook = { adapter: HookAdapter ->
-                    if (defaultHook(adapter)) {
-                        overrideEntry.callback(adapter)
-                        if (overrideEntry.shouldUnhook) {
-                            unhooks.forEach { u: XC_MethodHook.Unhook -> u.unhook() }
-                        }
+            //override the default hook if the method is in the override list
+            methodOverrides.find { it.methodName == method.name }?.run {
+                hook = {
+                    if (defaultHook(it)) {
+                        callback(it)
+                        if (shouldUnhook) unhooks.forEach { unhook -> unhook.unhook() }
                     }
                 }
             }
 
-            // Keep explicit function type to avoid reified/intersection inference issues.
-            unhooks.add(Hooker.hook(method, HookStage.BEFORE, effectiveHook))
+            unhooks.add(Hooker.hook(method, HookStage.BEFORE, hook))
         }
-
         return callbackInstance
     }
 
     companion object {
         fun createEmptyObject(constructor: Constructor<*>): Any? {
-            // compute the args for the constructor with null or default primitive values
-            val args: Array<Any?> = constructor.parameterTypes.map { type: Class<*> ->
+            //compute the args for the constructor with null or default primitive values
+            val args = constructor.parameterTypes.map { type: Class<*> ->
                 if (type.isPrimitive) {
-                    when (type.name) {
+                    return@map when (type.name) {
                         "boolean" -> false
                         "byte" -> 0.toByte()
                         "char" -> 0.toChar()
@@ -107,11 +84,11 @@ class CallbackBuilder(
                         "double" -> 0.0
                         else -> null
                     }
-                } else {
-                    null
                 }
+                null
             }.toTypedArray()
             return constructor.newInstance(*args)
         }
+
     }
 }
