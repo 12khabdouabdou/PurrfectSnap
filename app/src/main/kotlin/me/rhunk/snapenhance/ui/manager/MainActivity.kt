@@ -53,7 +53,6 @@ class MainActivity : ComponentActivity() {
             activity = this@MainActivity
             checkForRequirements()
         }
-        me.rhunk.snapenhance.task.UpdateScheduler.schedule(this, managerContext.config.root.global.updateManager)
         val routes = Routes(managerContext)
         routes.getRoutes().forEach { it.init() }
         setContent {
@@ -74,6 +73,8 @@ class MainActivity : ComponentActivity() {
                 val view = LocalView.current
                 SideEffect {
                     val window = (view.context as Activity).window
+                    window.statusBarColor = Color.Transparent.toArgb()
+                    window.navigationBarColor = Color.Transparent.toArgb()
                     WindowCompat.setDecorFitsSystemWindows(window, false)
                     val insetsController = WindowInsetsControllerCompat(window, window.decorView)
                     insetsController.isAppearanceLightStatusBars = isLight
