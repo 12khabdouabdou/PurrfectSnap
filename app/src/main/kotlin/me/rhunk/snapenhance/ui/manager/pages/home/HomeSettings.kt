@@ -221,7 +221,7 @@ class HomeSettings : Routes.Route() {
             }
             Spacer(Modifier.height(20.dp))
 
-            RowTitle(title = translation["actions_title"])
+            RowTitle(title = translation["manager.sections.home_settings.actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
                     context.launchActionIntent(enumAction)
@@ -247,6 +247,9 @@ class HomeSettings : Routes.Route() {
                             .clickable {
                                 autoUpdateCheck = !autoUpdateCheck
                                 context.config.root.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
+                                if (autoUpdateCheck && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                                    context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                                }
                                 context.config.writeConfig()
                                 scheduleUpdateCheck()
                             },
@@ -257,6 +260,9 @@ class HomeSettings : Routes.Route() {
                         Switch(checked = autoUpdateCheck, onCheckedChange = {
                             autoUpdateCheck = it
                             context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                            if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                                context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                            }
                             context.config.writeConfig()
                             scheduleUpdateCheck()
                         }, modifier = Modifier.padding(end = 26.dp))
@@ -266,6 +272,7 @@ class HomeSettings : Routes.Route() {
                     val frequencies = remember { listOf("daily", "weekly", "monthly") }
                     var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
 
+                    Text(text = translation["manager.sections.home_settings.update_check_frequency"], modifier = Modifier.padding(top = 8.dp, bottom = 4.dp), fontSize = 14.sp)
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
@@ -294,7 +301,7 @@ class HomeSettings : Routes.Route() {
                 }
             }
 
-            RowTitle(title = translation["message_logger_title"])
+            RowTitle(title = translation["manager.sections.home_settings.message_logger_title"])
             ShiftedRow {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -365,7 +372,7 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-            RowTitle(title = translation["debug_title"])
+            RowTitle(title = translation["manager.sections.home_settings.debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
