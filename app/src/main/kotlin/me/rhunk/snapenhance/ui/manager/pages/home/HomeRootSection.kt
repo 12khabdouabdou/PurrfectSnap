@@ -223,21 +223,27 @@ class HomeRootSection : Routes.Route() {
                                     return@Button
                                 }
                                 val supportedAbis = android.os.Build.SUPPORTED_ABIS
-                                var artifactName = "app-universal-debug"
-                                if (supportedAbis.isNotEmpty()) {
-                                    if (supportedAbis.contains("arm64-v8a")) {
-                                        artifactName = "app-arm64-v8a-debug"
-                                    } else if (supportedAbis.contains("armeabi-v7a")) {
-                                        artifactName = "app-armeabi-v7a-debug"
-                                    } else if (supportedAbis.contains("x86_64")) {
-                                        artifactName = "app-x86_64-debug"
-                                    } else if (supportedAbis.contains("x86")) {
-                                        artifactName = "app-x86-debug"
+                                var abiName: String? = null
+                                for (abi in supportedAbis) {
+                                    when (abi) {
+                                        "arm64-v8a" -> {
+                                            abiName = "armv8"
+                                            break
+                                        }
+                                        "armeabi-v7a" -> {
+                                            abiName = "armv7"
+                                            break
+                                        }
                                     }
                                 }
 
-                                val downloadUrl = "https://nightly.link/rhunk/SnapEnhance/actions/runs/${latest.workflowId}/$artifactName.zip"
-                                me.rhunk.snapenhance.ui.manager.data.UpdateDownloader.downloadAndInstall(context.androidContext, downloadUrl, "$artifactName.zip")
+                                if (abiName != null) {
+                                    val artifactName = "snapenhance-${abiName}-debug"
+                                    val downloadUrl = "https://nightly.link/rhunk/SnapEnhance/actions/runs/${latest.workflowId}/$artifactName.zip"
+                                    me.rhunk.snapenhance.ui.manager.data.UpdateDownloader.downloadAndInstall(context.androidContext, downloadUrl, "$artifactName.zip")
+                                } else {
+                                    android.widget.Toast.makeText(context.androidContext, "Your device architecture is not supported for automatic updates.", android.widget.Toast.LENGTH_LONG).show()
+                                }
                             }
                         ) {
                             Text(text = translation["update_button"])

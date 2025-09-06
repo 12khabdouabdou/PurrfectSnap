@@ -35,7 +35,7 @@ object UpdateDownloader {
         val request = DownloadManager.Request(android.net.Uri.parse(downloadUrl))
         request.setTitle(fileName)
         request.setDescription("Downloading SnapEnhance Update")
-        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
         val destination = File(context.externalCacheDir, fileName)
         request.setDestinationUri(android.net.Uri.fromFile(destination))
 
