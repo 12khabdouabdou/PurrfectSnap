@@ -94,7 +94,7 @@ class HomeSettings : Routes.Route() {
                 .heightIn(min = 55.dp)
                 .clickable {
                     if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                     value = !value
                     sharedPreferences
@@ -108,7 +108,7 @@ class HomeSettings : Routes.Route() {
             Text(text = text, modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
             Switch(checked = value, onCheckedChange = {
                 if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
                 value = it
                 sharedPreferences.edit().putBoolean(realKey, it).apply()
@@ -261,7 +261,7 @@ class HomeSettings : Routes.Route() {
                         checked = hapticFeedbackEnabled,
                         onCheckedChange = {
                             if (it) {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
                             hapticFeedbackEnabled = it
                             context.config.root.global.uiSettings.hapticFeedback.set(it)
@@ -338,7 +338,7 @@ class HomeSettings : Routes.Route() {
                                 checked = autoUpdateCheck,
                                 onCheckedChange = {
                                     if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                     }
                                     autoUpdateCheck = it
                                     context.config.root.global.updateSettings.autoUpdateCheck.set(it)

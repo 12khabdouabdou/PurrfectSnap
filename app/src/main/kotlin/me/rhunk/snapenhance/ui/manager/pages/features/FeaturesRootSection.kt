@@ -258,7 +258,7 @@ class FeaturesRootSection : Routes.Route() {
                     checked = state,
                     onCheckedChange = registerClickCallback {
                         if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
                         state = state.not()
                         propertyValue.setAny(state)
@@ -374,7 +374,7 @@ class FeaturesRootSection : Routes.Route() {
                     checked = state,
                     onCheckedChange = {
                         if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
                         state = state.not()
                         container.globalState = state
