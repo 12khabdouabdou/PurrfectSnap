@@ -39,7 +39,6 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import me.rhunk.snapenhance.task.UpdateCheckWorker
 import java.util.concurrent.TimeUnit
-import kotlin.text.MatchGroup
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -47,20 +46,23 @@ class HomeSettings : Routes.Route() {
 
     private fun scheduleUpdateCheck() {
         val workManager = WorkManager.getInstance(context.androidContext)
-        if (context.config.global.updateSettings.autoUpdateCheck.get()) {
-            val frequency = context.config.global.updateSettings.updateCheckFrequency.get()
+        if (context.config.root.global.updateSettings.autoUpdateCheck.get()) {
+            val frequency = context.config.root.global.updateSettings.updateCheckFrequency.get()
             val repeatInterval = when (frequency) {
                 "daily" -> 1L
                 "weekly" -> 7L
                 "monthly" -> 30L
                 else -> 1L
             }
+
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
+
             val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
                 .setConstraints(constraints)
                 .build()
+
             workManager.enqueueUniquePeriodicWork(
                 "snapenhance_update_check",
                 ExistingPeriodicWorkPolicy.REPLACE,
@@ -70,16 +72,13 @@ class HomeSettings : Routes.Route() {
             workManager.cancelUniqueWork("snapenhance_update_check")
         }
     }
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
-
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
@@ -105,7 +104,6 @@ class HomeSettings : Routes.Route() {
             }, modifier = Modifier.padding(end = 26.dp))
         }
     }
-
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
         var confirmationDialog by remember {
@@ -120,16 +118,12 @@ class HomeSettings : Routes.Route() {
         }
         if (requireConfirmation && confirmationDialog) {
             Dialog(onDismissRequest = { confirmationDialog = false }) {
-                dialogs.ConfirmDialog(
-                    title = context.translation["manager.dialogs.action_confirm.title"],
-                    onConfirm = {
-                        action()
-                        confirmationDialog = false
-                    },
-                    onDismiss = {
-                        confirmationDialog = false
-                    }
-                )
+                dialogs.ConfirmDialog(title = context.translation["manager.dialogs.action_confirm.title"], onConfirm = {
+                    action()
+                    confirmationDialog = false
+                }, onDismiss = {
+                    confirmationDialog = false
+                })
             }
         }
         ShiftedRow(
@@ -145,24 +139,10 @@ class HomeSettings : Routes.Route() {
             Column(
                 modifier = Modifier.weight(1f),
             ) {
-                Text(
-                    text = context.translation["actions.$key.name"],
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 20.sp
-                )
-                context.translation.getOrNull("actions.$key.description")
-                    ?.let {
-                        Text(
-                            text = it,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Light,
-                            lineHeight = 15.sp
-                        )
-                    }
+                Text(text = context.translation["actions.$key.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                context.translation.getOrNull("actions.$key.description")?.let { Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp) }
             }
-            IconButton(
-                onClick = { takeAction() },
+            IconButton(onClick = { takeAction() },
                 modifier = Modifier.padding(end = 2.dp)
             ) {
                 Icon(
@@ -173,7 +153,6 @@ class HomeSettings : Routes.Route() {
             }
         }
     }
-
     @Composable
     private fun ShiftedRow(
         modifier: Modifier = Modifier,
@@ -188,18 +167,13 @@ class HomeSettings : Routes.Route() {
         ) { content(this) }
     }
 
-    // --- Example: Fix MatchGroup type usage if present in your file ---
-    private fun matchGroupBooleanContext(group: MatchGroup?): Boolean = group != null
-    private fun matchGroupStringContext(group: MatchGroup?): String = group?.value ?: ""
-
-    // ------------------------------------------------------------------
-
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -246,6 +220,7 @@ class HomeSettings : Routes.Route() {
                 )
             }
             Spacer(Modifier.height(20.dp))
+
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
@@ -258,40 +233,39 @@ class HomeSettings : Routes.Route() {
             RowAction(key = "change_language") {
                 context.checkForRequirements(Requirements.LANGUAGE)
             }
+
             RowTitle(title = translation["manager.sections.home_settings.updates_title"])
             ShiftedRow {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    var autoUpdateCheck by remember { mutableStateOf(context.config.global.updateSettings.autoUpdateCheck.get()) }
+                    var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.get()) }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 55.dp)
                             .clickable {
                                 autoUpdateCheck = !autoUpdateCheck
-                                context.config.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
-                                context._config?.writeConfig()
+                                context.config.root.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
+                                context.config.writeConfig()
                                 scheduleUpdateCheck()
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = translation["manager.sections.home_settings.auto_update_check"],
-                            modifier = Modifier.padding(end = 16.dp),
-                            fontSize = 14.sp
-                        )
+                        Text(text = translation["manager.sections.home_settings.auto_update_check"], modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
                         Switch(checked = autoUpdateCheck, onCheckedChange = {
                             autoUpdateCheck = it
-                            context.config.global.updateSettings.autoUpdateCheck.set(it)
-                            context._config?.writeConfig()
+                            context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                            context.config.writeConfig()
                             scheduleUpdateCheck()
                         }, modifier = Modifier.padding(end = 26.dp))
                     }
+
                     var expanded by remember { mutableStateOf(false) }
                     val frequencies = remember { listOf("daily", "weekly", "monthly") }
-                    var selectedFrequency by remember { mutableStateOf(context.config.global.updateSettings.updateCheckFrequency.get()) }
+                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.get()) }
+
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
@@ -308,8 +282,8 @@ class HomeSettings : Routes.Route() {
                                 DropdownMenuItem(onClick = {
                                     expanded = false
                                     selectedFrequency = frequency
-                                    context.config.global.updateSettings.updateCheckFrequency.set(frequency)
-                                    context._config?.writeConfig()
+                                    context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                    context.config.writeConfig()
                                     scheduleUpdateCheck()
                                 }, text = {
                                     Text(text = translation["manager.sections.home_settings.update_check_frequency_" + frequency])
@@ -319,6 +293,7 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
+
             RowTitle(title = translation["message_logger_title"])
             ShiftedRow {
                 Column(
@@ -342,12 +317,10 @@ class HomeSettings : Routes.Route() {
                             verticalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
                             Text(
-                                translation.format(
-                                    "message_logger_summary",
-                                    "messageCount" to storedMessagesCount.toString(),
-                                    "storyCount" to storedStoriesCount.toString()
-                                ), maxLines = 2
-                            )
+                                translation.format("message_logger_summary",
+                                "messageCount" to storedMessagesCount.toString(),
+                                "storyCount" to storedStoriesCount.toString()
+                            ), maxLines = 2)
                         }
                         Button(onClick = {
                             runCatching {
