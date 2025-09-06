@@ -30,7 +30,15 @@ object UpdateDownloader {
 
     private fun getInstance(context: Context): Fetch {
         if (fetch == null) {
-            fetch = (context.applicationContext as RemoteSideContext).fetch
+            val appContext = context.applicationContext
+            fetch = if (appContext is RemoteSideContext) {
+                appContext.fetch
+            } else {
+                val fetchConfiguration = FetchConfiguration.Builder(appContext)
+                    .setDownloadConcurrentLimit(3)
+                    .build()
+                Fetch.getInstance(fetchConfiguration)
+            }
         }
         return fetch!!
     }
