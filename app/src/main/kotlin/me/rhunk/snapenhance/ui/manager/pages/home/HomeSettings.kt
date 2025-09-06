@@ -46,8 +46,8 @@ class HomeSettings : Routes.Route() {
 
     private fun scheduleUpdateCheck() {
         val workManager = WorkManager.getInstance(context.androidContext)
-        if (context.modConfig.root.global.updateSettings.autoUpdateCheck.get()) {
-            val frequency = context.modConfig.root.global.updateSettings.updateCheckFrequency.get()
+        if (context.config.root.global.updateSettings.autoUpdateCheck.get()) {
+            val frequency = context.config.root.global.updateSettings.updateCheckFrequency.get()
             val repeatInterval = when (frequency) {
                 "daily" -> 1L
                 "weekly" -> 7L
@@ -239,15 +239,15 @@ class HomeSettings : Routes.Route() {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    var autoUpdateCheck by remember { mutableStateOf(context.modConfig.root.global.updateSettings.autoUpdateCheck.get()) }
+                    var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.get()) }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 55.dp)
                             .clickable {
                                 autoUpdateCheck = !autoUpdateCheck
-                                context.modConfig.root.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
-                                context.modConfig.writeConfig()
+                                context.config.root.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
+                                context.config.writeConfig()
                                 scheduleUpdateCheck()
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -256,15 +256,15 @@ class HomeSettings : Routes.Route() {
                         Text(text = translation["manager.sections.home_settings.auto_update_check"], modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
                         Switch(checked = autoUpdateCheck, onCheckedChange = {
                             autoUpdateCheck = it
-                            context.modConfig.root.global.updateSettings.autoUpdateCheck.set(it)
-                            context.modConfig.writeConfig()
+                            context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                            context.config.writeConfig()
                             scheduleUpdateCheck()
                         }, modifier = Modifier.padding(end = 26.dp))
                     }
 
                     var expanded by remember { mutableStateOf(false) }
                     val frequencies = remember { listOf("daily", "weekly", "monthly") }
-                    var selectedFrequency by remember { mutableStateOf(context.modConfig.root.global.updateSettings.updateCheckFrequency.get()) }
+                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.get()) }
 
                     ExposedDropdownMenuBox(
                         expanded = expanded,
@@ -282,8 +282,8 @@ class HomeSettings : Routes.Route() {
                                 DropdownMenuItem(onClick = {
                                     expanded = false
                                     selectedFrequency = frequency
-                                    context.modConfig.root.global.updateSettings.updateCheckFrequency.set(frequency)
-                                    context.modConfig.writeConfig()
+                                    context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                    context.config.writeConfig()
                                     scheduleUpdateCheck()
                                 }, text = {
                                     Text(text = translation["manager.sections.home_settings.update_check_frequency_" + frequency])

@@ -9,6 +9,9 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
+import android.Manifest
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
 import androidx.work.WorkerParameters
 import me.rhunk.snapenhance.R
 import me.rhunk.snapenhance.ui.manager.MainActivity
@@ -58,8 +61,13 @@ class UpdateCheckWorker(
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(appContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // Cannot request permission from a worker. The user must grant it from the app's settings.
+                return
+            }
+        }
         with(NotificationManagerCompat.from(appContext)) {
-            // Permission check for POST_NOTIFICATIONS will be needed
             notify(1, builder.build())
         }
     }
