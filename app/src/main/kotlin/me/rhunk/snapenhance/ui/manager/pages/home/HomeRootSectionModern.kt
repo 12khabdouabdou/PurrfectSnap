@@ -1,10 +1,11 @@
+@file:OptIn(
+    androidx.compose.animation.ExperimentalAnimationApi::class,
+    androidx.compose.foundation.layout.ExperimentalLayoutApi::class
+)
+
 package me.rhunk.snapenhance.ui.manager.pages.home
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -66,9 +67,7 @@ class HomeRootSectionModern : Routes.Route() {
             listOf(Color(0x80FFFFFF), Color(0x40B0D4FF), Color(0x30A44FF9))
         )
     }
-
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-
     private val cards by lazy {
         EnumQuickActions.entries.map {
             (context.translation["actions.${it.key}.name"] to it.icon) to it.action
@@ -82,13 +81,10 @@ class HomeRootSectionModern : Routes.Route() {
                 }
             }
     }
-
     override val title: @Composable (() -> Unit)? = {}
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
         TopBarActionButton(
             onClick = { routes.homeLogs.navigate() },
@@ -102,8 +98,6 @@ class HomeRootSectionModern : Routes.Route() {
             text = context.translation["manager.routes.home_settings"]
         )
     }
-
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val avenirNext = remember {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
@@ -117,7 +111,6 @@ class HomeRootSectionModern : Routes.Route() {
             .background(glassColor, RoundedCornerShape(32.dp))
             .blur(24.dp)
             .clip(RoundedCornerShape(32.dp))
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -163,7 +156,6 @@ class HomeRootSectionModern : Routes.Route() {
                         }
                     }
                 }
-
                 Text(
                     text = translation.format(
                         "version_title",
@@ -176,7 +168,6 @@ class HomeRootSectionModern : Routes.Route() {
                         .padding(top = 4.dp, bottom = 10.dp),
                     color = Color.White.copy(0.7f)
                 )
-
                 // Social and help icons
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
@@ -208,7 +199,6 @@ class HomeRootSectionModern : Routes.Route() {
                         imageVector = Icons.AutoMirrored.Filled.Help
                     )
                 }
-
                 // Glassy update card
                 if (latestUpdate != null) {
                     Spacer(modifier = Modifier.height(10.dp))
@@ -306,7 +296,6 @@ class HomeRootSectionModern : Routes.Route() {
                         }
                     }
                 }
-
                 // Glassy debug card
                 if (BuildConfig.DEBUG) {
                     Spacer(modifier = Modifier.height(10.dp))
@@ -340,9 +329,7 @@ class HomeRootSectionModern : Routes.Route() {
                         )
                     }
                 }
-
                 Spacer(modifier = Modifier.height(22.dp))
-
                 AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsTitleModern") { hasQuickActions ->
                     Box(
                         modifier = Modifier
@@ -366,7 +353,6 @@ class HomeRootSectionModern : Routes.Route() {
                         }
                     }
                 }
-
                 // Quick Actions grid
                 if (selectedTiles.isEmpty()) {
                     Box(
@@ -459,7 +445,6 @@ class HomeRootSectionModern : Routes.Route() {
                         }
                     }
                 }
-
                 // QuickActionsDialog
                 if (showQuickActionsMenu) {
                     QuickActionsDialog(
@@ -476,12 +461,10 @@ class HomeRootSectionModern : Routes.Route() {
                         }
                     )
                 }
-
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
-
     @Composable
     fun GlassInfoCardModern(content: @Composable ColumnScope.() -> Unit) {
         Surface(
@@ -499,7 +482,6 @@ class HomeRootSectionModern : Routes.Route() {
             }
         }
     }
-
     @Composable
     fun ExternalLinkIconModern(
         modifier: Modifier = Modifier,
