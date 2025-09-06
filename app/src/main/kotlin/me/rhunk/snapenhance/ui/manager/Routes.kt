@@ -22,6 +22,7 @@ import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSection
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSectionModern
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettings
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettingsModern
+import me.rhunk.snapenhance.ui.manager.pages.home.PREFS_KEY_MODERN_UI
 import me.rhunk.snapenhance.ui.manager.pages.location.BetterLocationRoot
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ScriptingRootSection
 import me.rhunk.snapenhance.ui.manager.pages.social.LoggedStories
@@ -31,7 +32,6 @@ import me.rhunk.snapenhance.ui.manager.pages.social.SocialRootSection
 import me.rhunk.snapenhance.ui.manager.pages.tracker.EditRule
 import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerManagerRoot
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageScriptReposSection
-import me.rhunk.snapenhance.ui.manager.pages.home.PREFS_KEY_MODERN_UI
 
 data class RouteInfo(
     val id: String,
@@ -43,6 +43,7 @@ data class RouteInfo(
     var translatedKey: Lazy<String?>? = null
     val childIds = mutableListOf<String>()
 }
+
 @Suppress("unused", "MemberVisibilityCanBePrivate")
 class Routes(
     private val context: RemoteSideContext,
@@ -50,24 +51,11 @@ class Routes(
     lateinit var navController: NavController
     private val routes = mutableListOf<Route>()
 
-    // Helper to check Modern UI toggle state
-    private fun useModernUI(): Boolean =
-        context.androidContext.getSharedPreferences("snapenhance", 0)
-            .getBoolean(PREFS_KEY_MODERN_UI, true)
-
-    // Main UI routes, dynamically dispatching modern or classic UI
     val tasks = route(RouteInfo("tasks", icon = Icons.Default.TaskAlt, primary = true), TasksRootSection())
     val features = route(RouteInfo("features", icon = Icons.Default.Stars, primary = true), FeaturesRootSection())
     val manageRuleFeature = route(RouteInfo("manage_rule_feature/?rule_type={rule_type}"), ManageRuleFeature()).parent(features)
-
-    val home = route(
-        RouteInfo("home", icon = Icons.Default.Home, primary = true),
-        if (useModernUI()) HomeRootSectionModern() else HomeRootSection()
-    )
-    val settings = route(
-        RouteInfo("home_settings"),
-        if (useModernUI()) HomeSettingsModern() else HomeSettings()
-    ).parent(home)
+    val home = route(RouteInfo("home", icon = Icons.Default.Home, primary = true), HomeRootSection())
+    val settings = route(RouteInfo("home_settings"), HomeSettings()).parent(home)
     val homeLogs = route(RouteInfo("home_logs"), HomeLogs()).parent(home)
     val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker"), FriendTrackerManagerRoot()).parent(home)
@@ -94,7 +82,7 @@ class Routes(
         lateinit var context: RemoteSideContext
         lateinit var routeInfo: RouteInfo
         lateinit var routes: Routes
-        val translation by lazy { context.translation.getCategory("manager.sections.${routeInfo.key.substringBefore("/")}")}
+        val translation by lazy { context.translation.getCategory("manager.sections.${routeInfo.key.substringBefore("/")}") }
         private fun replaceArguments(id: String, args: Map<String, String>) = args.takeIf { it.isNotEmpty() }?.let {
             args.entries.fold(id) { acc, (key, value) ->
                 acc.replace("{$key}", value)
@@ -143,7 +131,7 @@ class Routes(
             this.routeInfo = routeInfo
             routes = this@Routes
             context = this@Routes.context
-            this.routeInfo.translatedKey = lazy { context.translation.getOrNull("manager.routes.${route.routeInfo.key.substringBefore("/"}") }
+            this.routeInfo.translatedKey = lazy { context.translation.getOrNull("manager.routes.${route.routeInfo.key.substringBefore("/" )}") }
         }
         routes.add(route)
         return route
