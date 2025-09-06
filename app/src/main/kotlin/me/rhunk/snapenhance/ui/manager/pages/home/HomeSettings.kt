@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -14,8 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,11 +52,11 @@ class HomeSettings : Routes.Route() {
         if (context.config.root.global.updateSettings.autoUpdateCheck.get()) {
             val frequency = context.config.root.global.updateSettings.updateCheckFrequency.get()
             val repeatInterval = when (frequency) {
-                "daily" -> 1L; "weekly" -> 7L; "monthly" -> 30L
-                else -> 1L
+                "daily" -> 1L; "weekly" -> 7L; "monthly" -> 30L; else -> 1L
             }
             val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED).build()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
             val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
                 .setConstraints(constraints).build()
             workManager.enqueueUniquePeriodicWork(
@@ -69,29 +68,20 @@ class HomeSettings : Routes.Route() {
             workManager.cancelUniqueWork("snapenhance_update_check")
         }
     }
-
-    override val init: () -> Unit = {
-        activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
-    }
-
+    override val init: () -> Unit = { activityLauncherHelper = ActivityLauncherHelper(context.activity!!) }
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
-
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, false)) }
-        val hapticFeedback = LocalHapticFeedback.current
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 55.dp)
                 .clickable {
-                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                        hapticFeedback.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                    }
                     value = !value
                     sharedPreferences.edit { putBoolean(realKey, value) }
                 },
@@ -100,9 +90,6 @@ class HomeSettings : Routes.Route() {
         ) {
             Text(text = text, modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
             Switch(checked = value, onCheckedChange = {
-                if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                    hapticFeedback.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                }
                 value = it
                 sharedPreferences.edit { putBoolean(realKey, it) }
             }, modifier = Modifier.padding(end = 26.dp))
@@ -111,31 +98,40 @@ class HomeSettings : Routes.Route() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val contextC = LocalContext.current
-        val scope = rememberCoroutineScope()
-        val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
-        var showThemeDialog by remember { mutableStateOf(false) }
+        val contextC = androidx.compose.ui.platform.LocalContext.current
         val prefs = context.sharedPreferences
-        var modernUiEnabled by remember {
-            mutableStateOf(prefs.getBoolean(PREFS_KEY_MODERN_UI, true))
-        }
-
+        var modernUiEnabled by remember { mutableStateOf(prefs.getBoolean(PREFS_KEY_MODERN_UI, true)) }
         fun setModernUi(enabled: Boolean) {
             modernUiEnabled = enabled
             prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, enabled) }
         }
+        val scope = rememberCoroutineScope()
+        val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
+        var showThemeDialog by remember { mutableStateOf(false) }
+        var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+        var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
+        var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
+        var frequencyMenuExpanded by remember { mutableStateOf(false) }
+        val translation = context.translation
+        val messageLogger = context.messageLogger
+
+        var storedMessagesCount by rememberAsyncMutableState(defaultValue = 0) { messageLogger.getStoredMessageCount() }
+        var storedStoriesCount by rememberAsyncMutableState(defaultValue = 0) { messageLogger.getStoredStoriesCount() }
+        var selectedFileType by remember { mutableStateOf(InternalFileHandleType.entries.first()) }
+        var expanded by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // Modern UI toggle
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 16.dp)
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
                     .clickable { setModernUi(!modernUiEnabled) },
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                shape = RoundedCornerShape(26.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
                 Row(
@@ -152,13 +148,14 @@ class HomeSettings : Routes.Route() {
                     )
                 }
             }
+            // Theme card
             Spacer(Modifier.height(6.dp))
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .clickable { showThemeDialog = true },
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(18.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Row(
@@ -178,14 +175,13 @@ class HomeSettings : Routes.Route() {
             if (showThemeDialog) {
                 ThemeChooserDialog(
                     selected = themeMode,
-                    onSelect = { mode ->
-                        scope.launch { ThemePreferences.setThemeMode(contextC, mode) }
-                    },
+                    onSelect = { mode -> scope.launch { ThemePreferences.setThemeMode(contextC, mode) } },
                     onDismiss = { showThemeDialog = false }
                 )
             }
-            Spacer(Modifier.height(20.dp))
-            RowTitle(title = context.translation["actions_title"])
+            Spacer(Modifier.height(6.dp))
+            // Actions
+            RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 Row(
                     modifier = Modifier
@@ -196,8 +192,8 @@ class HomeSettings : Routes.Route() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = context.translation["actions.${enumAction.key}.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
-                        context.translation.getOrNull("actions.${enumAction.key}.description")?.let {
+                        Text(text = translation["actions.${enumAction.key}.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                        translation.getOrNull("actions.${enumAction.key}.description")?.let {
                             Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp)
                         }
                     }
@@ -206,6 +202,7 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
+            // UI Settings
             RowTitle(title = "UI Settings")
             Row(
                 modifier = Modifier
@@ -215,14 +212,9 @@ class HomeSettings : Routes.Route() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = "Haptic Feedback")
-                var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
-                val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = hapticFeedbackEnabled,
                     onCheckedChange = {
-                        if (it) {
-                            hapticFeedback.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        }
                         hapticFeedbackEnabled = it
                         context.config.root.global.uiSettings.hapticFeedback.set(it)
                         context.config.writeConfig()
@@ -230,10 +222,8 @@ class HomeSettings : Routes.Route() {
                     modifier = Modifier.padding(end = 26.dp)
                 )
             }
-            RowTitle(title = context.translation["updates_title"])
-            var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
-            var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
-            var frequencyMenuExpanded by remember { mutableStateOf(false) }
+            // Updates section
+            RowTitle(title = translation["updates_title"])
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -242,10 +232,10 @@ class HomeSettings : Routes.Route() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text(text = context.translation["auto_update_check"])
+                    Text(text = translation["auto_update_check"])
                     if (autoUpdateCheck) {
                         Text(
-                            text = context.translation["update_check_frequency_" + selectedFrequency],
+                            text = translation["update_check_frequency_" + selectedFrequency],
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Light
                         )
@@ -260,7 +250,7 @@ class HomeSettings : Routes.Route() {
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.MoreVert,
-                                contentDescription = context.translation["update_check_frequency"]
+                                contentDescription = translation["update_check_frequency"]
                             )
                         }
                         if (autoUpdateCheck) {
@@ -268,10 +258,9 @@ class HomeSettings : Routes.Route() {
                                 expanded = frequencyMenuExpanded,
                                 onDismissRequest = { frequencyMenuExpanded = false }
                             ) {
-                                val frequencies = remember { listOf("daily", "weekly", "monthly") }
-                                frequencies.forEach { frequency ->
+                                listOf("daily", "weekly", "monthly").forEach { frequency ->
                                     DropdownMenuItem(
-                                        text = { Text(text = context.translation["update_check_frequency_" + frequency]) },
+                                        text = { Text(text = translation["update_check_frequency_$frequency"]) },
                                         onClick = {
                                             selectedFrequency = frequency
                                             context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
@@ -284,13 +273,9 @@ class HomeSettings : Routes.Route() {
                             }
                         }
                     }
-                    val hapticFeedback = LocalHapticFeedback.current
                     Switch(
                         checked = autoUpdateCheck,
                         onCheckedChange = {
-                            if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                                hapticFeedback.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                            }
                             autoUpdateCheck = it
                             context.config.root.global.updateSettings.autoUpdateCheck.set(it)
                             if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
@@ -303,16 +288,11 @@ class HomeSettings : Routes.Route() {
                     )
                 }
             }
-            RowTitle(title = context.translation["message_logger_title"])
+            // Message logger section
+            RowTitle(title = translation["message_logger_title"])
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                var storedMessagesCount by rememberAsyncMutableState(defaultValue = 0) {
-                    context.messageLogger.getStoredMessageCount()
-                }
-                var storedStoriesCount by rememberAsyncMutableState(defaultValue = 0) {
-                    context.messageLogger.getStoredStoriesCount()
-                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -325,16 +305,18 @@ class HomeSettings : Routes.Route() {
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         Text(
-                            context.translation.format("message_logger_summary",
+                            translation.format(
+                                "message_logger_summary",
                                 "messageCount" to storedMessagesCount.toString(),
                                 "storyCount" to storedStoriesCount.toString()
-                            ), maxLines = 2)
+                            ), maxLines = 2
+                        )
                     }
                     Button(onClick = {
                         runCatching {
                             activityLauncherHelper.saveFile("message_logger.db", "application/octet-stream") { uri ->
                                 context.androidContext.contentResolver.openOutputStream(uri.toUri())?.use { outputStream ->
-                                    context.messageLogger.databaseFile.inputStream().use { inputStream ->
+                                    messageLogger.databaseFile.inputStream().use { inputStream ->
                                         inputStream.copyTo(outputStream)
                                     }
                                 }
@@ -344,40 +326,38 @@ class HomeSettings : Routes.Route() {
                             context.longToast("Failed to export database! ${it.localizedMessage}")
                         }
                     }) {
-                        Text(text = context.translation["export_button"])
+                        Text(text = translation["export_button"])
                     }
                     Button(onClick = {
                         runCatching {
-                            context.messageLogger.purgeAll()
+                            messageLogger.purgeAll()
                             storedMessagesCount = 0
                             storedStoriesCount = 0
                         }.onFailure {
                             context.log.error("Failed to clear messages", it)
                             context.longToast("Failed to clear messages! ${it.localizedMessage}")
                         }.onSuccess {
-                            context.shortToast(context.translation["success_toast"])
+                            context.shortToast(translation["success_toast"])
                         }
                     }) {
-                        Text(text = context.translation["clear_button"])
+                        Text(text = translation["clear_button"])
                     }
                 }
                 OutlinedButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(5.dp),
-                    onClick = {
-                        routes.loggerHistory.navigate()
-                    }
+                    onClick = { routes.loggerHistory.navigate() }
                 ) {
-                    Text(context.translation["view_logger_history_button"])
+                    Text(translation["view_logger_history_button"])
                 }
             }
-            RowTitle(title = context.translation["debug_title"])
+            // Debug section
+            RowTitle(title = translation["debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                var selectedFileType by remember { mutableStateOf(InternalFileHandleType.entries.first()) }
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -409,17 +389,17 @@ class HomeSettings : Routes.Route() {
                 }
                 Button(onClick = {
                     runCatching {
-                        context.coroutineScope.launch {
+                        scope.launch {
                             selectedFileType.resolve(context.androidContext).delete()
                         }
                     }.onFailure {
                         context.log.error("Failed to clear file", it)
                         context.longToast("Failed to clear file! ${it.localizedMessage}")
                     }.onSuccess {
-                        context.shortToast(context.translation["success_toast"])
+                        context.shortToast(translation["success_toast"])
                     }
                 }) {
-                    Text(context.translation["clear_button"])
+                    Text(translation["clear_button"])
                 }
             }
             Column(
