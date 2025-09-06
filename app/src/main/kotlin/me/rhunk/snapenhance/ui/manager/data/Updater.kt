@@ -10,7 +10,8 @@ import okhttp3.Request
 object Updater {
     data class LatestRelease(
         val versionName: String,
-        val releaseUrl: String
+        val releaseUrl: String,
+        val workflowId: Long?,
     )
 
     private fun fetchLatestRelease() = runCatching {
@@ -29,7 +30,8 @@ object Updater {
 
         LatestRelease(
             versionName = latestVersion,
-            releaseUrl = endpoint.url.toString().replace("api.", "").replace("repos/", "")
+            releaseUrl = endpoint.url.toString().replace("api.", "").replace("repos/", ""),
+            workflowId = null
         )
     }.onFailure {
         AbstractLogger.directError("Failed to fetch latest release", it)
@@ -51,7 +53,8 @@ object Updater {
 
         LatestRelease(
             versionName = headSha.substring(0, headSha.length.coerceAtMost(7)) + "-debug",
-            releaseUrl = latestRun.getAsJsonPrimitive("html_url")?.asString?.replace("github.com", "nightly.link") ?: return@runCatching null
+            releaseUrl = latestRun.getAsJsonPrimitive("html_url")?.asString ?: return@runCatching null,
+            workflowId = latestRun.getAsJsonPrimitive("id")?.asLong,
         )
     }.onFailure {
         AbstractLogger.directError("Failed to fetch latest debug CI", it)
