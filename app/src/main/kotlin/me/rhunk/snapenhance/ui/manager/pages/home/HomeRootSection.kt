@@ -217,7 +217,33 @@ class HomeRootSection : Routes.Route() {
                         Button(
                             modifier = Modifier.height(40.dp),
                             onClick = {
-                                latestUpdate?.releaseUrl?.let { context.androidContext.openLink(it) }
+                                val latest = latestUpdate ?: return@Button
+                                if (latest.workflowId == null) {
+                                    context.androidContext.openLink(latest.releaseUrl)
+                                    return@Button
+                                }
+                                val supportedAbis = android.os.Build.SUPPORTED_ABIS
+                                var abiName: String? = null
+                                for (abi in supportedAbis) {
+                                    when (abi) {
+                                        "arm64-v8a" -> {
+                                            abiName = "armv8"
+                                            break
+                                        }
+                                        "armeabi-v7a" -> {
+                                            abiName = "armv7"
+                                            break
+                                        }
+                                    }
+                                }
+
+                                if (abiName != null) {
+                                    val artifactName = "snapenhance-${abiName}-debug"
+                                    val downloadUrl = "https://nightly.link/rhunk/SnapEnhance/actions/runs/${latest.workflowId}/$artifactName.zip"
+                                    me.rhunk.snapenhance.ui.manager.data.UpdateDownloader.downloadAndInstall(context.androidContext, downloadUrl, "$artifactName.zip")
+                                } else {
+                                    android.widget.Toast.makeText(context.androidContext, "Your device architecture is not supported for automatic updates.", android.widget.Toast.LENGTH_LONG).show()
+                                }
                             }
                         ) {
                             Text(text = translation["update_button"])
