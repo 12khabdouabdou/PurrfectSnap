@@ -63,9 +63,7 @@ class Global : ConfigContainer() {
     }
 
     inner class UISettings : ConfigContainer() {
-        val hapticFeedback = boolean("haptic_feedback") {
-            defaultValue = true
-        }
+        val hapticFeedback = boolean("haptic_feedback", true)
     }
 
     val updateSettings = container("update_settings", UpdateSettings())
