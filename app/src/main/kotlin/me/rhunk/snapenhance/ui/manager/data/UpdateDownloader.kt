@@ -5,7 +5,6 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.tonyodev.fetch2.*
-import com.tonyodev.fetch2core.DownloadBlock
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,12 +60,15 @@ object UpdateDownloader {
             networkType = NetworkType.ALL
         }
 
-        if (listener != null) {
-            fetch.removeListener(listener!!)
-        }
+        listener?.let { fetch.removeListener(it) }
 
         listener = object : AbstractFetchListener() {
-            override fun onStarted(download: Download) {
+            override fun onAdded(download: Download) {
+                // Optional: mark as preparing; will switch to DOWNLOADING on onQueued
+                downloadState.value = DownloadState.DOWNLOADING
+            }
+
+            override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
                 downloadState.value = DownloadState.DOWNLOADING
                 Toast.makeText(context, "Download started", Toast.LENGTH_SHORT).show()
             }
