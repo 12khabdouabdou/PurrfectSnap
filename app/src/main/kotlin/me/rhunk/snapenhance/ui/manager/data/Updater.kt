@@ -13,10 +13,6 @@ object Updater {
         val releaseUrl: String
     )
 
-    fun fetchLatestReleaseInfo(): LatestRelease? {
-        return if (BuildConfig.DEBUG) fetchLatestDebugCI() else fetchLatestRelease()
-    }
-
     private fun fetchLatestRelease() = runCatching {
         val endpoint = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/releases").build()
         val response = OkHttpClient().newCall(endpoint).execute()
@@ -29,9 +25,10 @@ object Updater {
 
         val latestRelease = releases.get(0).asJsonObject
         val latestVersion = latestRelease.getAsJsonPrimitive("tag_name").asString
+        if (latestVersion.removePrefix("v") == BuildConfig.VERSION_NAME) return@runCatching null
 
         LatestRelease(
-            versionName = latestVersion.removePrefix("v"),
+            versionName = latestVersion,
             releaseUrl = endpoint.url.toString().replace("api.", "").replace("repos/", "")
         )
     }.onFailure {
@@ -61,6 +58,6 @@ object Updater {
     }.getOrNull()
 
     val latestRelease by lazy {
-        fetchLatestReleaseInfo()
+        if (BuildConfig.DEBUG) fetchLatestDebugCI() else fetchLatestRelease()
     }
 }
