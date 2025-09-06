@@ -11,13 +11,15 @@ import me.rhunk.snapenhance.common.util.ktx.toParcelFileDescriptor
 import java.io.File
 import java.io.OutputStream
 
+
 class ByteArrayFileHandle(
     private val context: RemoteSideContext,
     private val data: ByteArray
-) : FileHandle.Stub() {
+): FileHandle.Stub() {
     override fun exists() = true
     override fun create() = false
     override fun delete() = false
+
     override fun open(mode: Int): ParcelFileDescriptor? {
         return runCatching {
             data.inputStream().toParcelFileDescriptor(context.coroutineScope)
@@ -29,10 +31,11 @@ class ByteArrayFileHandle(
 
 class LocalFileHandle(
     private val file: File
-) : FileHandle.Stub() {
+): FileHandle.Stub() {
     override fun exists() = file.exists()
     override fun create() = file.createNewFile()
     override fun delete() = file.delete()
+
     override fun open(mode: Int): ParcelFileDescriptor? {
         return runCatching {
             ParcelFileDescriptor.open(file, mode)
@@ -45,10 +48,11 @@ class LocalFileHandle(
 class AssetFileHandle(
     private val context: RemoteSideContext,
     private val assetPath: String
-) : FileHandle.Stub() {
+): FileHandle.Stub() {
     override fun exists() = true
     override fun create() = false
     override fun delete() = false
+
     override fun open(mode: Int): ParcelFileDescriptor? {
         return runCatching {
             context.androidContext.assets.open(assetPath).toParcelFileDescriptor(context.coroutineScope)
@@ -58,10 +62,10 @@ class AssetFileHandle(
     }
 }
 
+
 class RemoteFileHandleManager(
     private val context: RemoteSideContext
-) : FileHandleManager.Stub() {
-
+): FileHandleManager.Stub() {
     private val userImportFolder = File(context.androidContext.filesDir, "user_imports").apply {
         mkdirs()
     }
@@ -71,18 +75,17 @@ class RemoteFileHandleManager(
             context.log.error("invalid file handle scope: $scope", "FileHandleManager")
             return null
         }
-
         when (fileHandleScope) {
             FileHandleScope.INTERNAL -> {
                 val fileHandleType = InternalFileHandleType.fromValue(name) ?: run {
                     context.log.error("invalid file handle name: $name", "FileHandleManager")
                     return null
                 }
+
                 return LocalFileHandle(
                     fileHandleType.resolve(context.androidContext)
                 )
             }
-
             FileHandleScope.LOCALE -> {
                 val foundLocale = context.androidContext.resources.assets.list("lang")?.firstOrNull {
                     it.startsWith(name)
@@ -94,24 +97,24 @@ class RemoteFileHandleManager(
                         "lang/${LocaleWrapper.DEFAULT_LOCALE}.json"
                     )
                 }
+
                 return AssetFileHandle(
                     context,
                     "lang/$foundLocale.json"
                 )
             }
-
             FileHandleScope.USER_IMPORT -> {
                 return LocalFileHandle(
                     File(userImportFolder, name.substringAfterLast("/"))
                 )
             }
-
             FileHandleScope.COMPOSER -> {
                 return AssetFileHandle(
                     context,
                     "composer/${name.substringAfterLast("/")}"
                 )
             }
+            else -> return null
         }
     }
 
