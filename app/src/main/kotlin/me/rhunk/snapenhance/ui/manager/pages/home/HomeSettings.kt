@@ -14,7 +14,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -85,11 +87,15 @@ class HomeSettings : Routes.Route() {
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, false)) }
+        val hapticFeedback = LocalHapticFeedback.current
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 55.dp)
                 .clickable {
+                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                    }
                     value = !value
                     sharedPreferences
                         .edit() {
@@ -101,6 +107,9 @@ class HomeSettings : Routes.Route() {
         ) {
             Text(text = text, modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
             Switch(checked = value, onCheckedChange = {
+                if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                }
                 value = it
                 sharedPreferences.edit().putBoolean(realKey, it).apply()
             }, modifier = Modifier.padding(end = 26.dp))
@@ -236,6 +245,33 @@ class HomeSettings : Routes.Route() {
                 context.checkForRequirements(Requirements.LANGUAGE)
             }
 
+            RowTitle(title = "UI Settings")
+            ShiftedRow {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 55.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Haptic Feedback")
+                    var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+                    val hapticFeedback = LocalHapticFeedback.current
+                    Switch(
+                        checked = hapticFeedbackEnabled,
+                        onCheckedChange = {
+                            if (it) {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                            }
+                            hapticFeedbackEnabled = it
+                            context.config.root.global.uiSettings.hapticFeedback.set(it)
+                            context.config.writeConfig()
+                        },
+                        modifier = Modifier.padding(end = 26.dp)
+                    )
+                }
+            }
+
             RowTitle(title = translation["updates_title"])
             ShiftedRow {
                 Column(
@@ -297,9 +333,13 @@ class HomeSettings : Routes.Route() {
                                 }
                             }
 
+                            val hapticFeedback = LocalHapticFeedback.current
                             Switch(
                                 checked = autoUpdateCheck,
                                 onCheckedChange = {
+                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                    }
                                     autoUpdateCheck = it
                                     context.config.root.global.updateSettings.autoUpdateCheck.set(it)
                                     if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
