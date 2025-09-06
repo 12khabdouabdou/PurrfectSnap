@@ -109,12 +109,23 @@ androidComponents {
 }
 
 dependencies {
+    // Pin Core and Core-KTX to 1.13.1 to avoid API 35 requirement from 1.15.0+
+    constraints {
+        implementation("androidx.core:core:1.13.1")
+        implementation("androidx.core:core-ktx:1.13.1")
+    }
+
+    // Optional: also declare explicit direct deps (keeps code completion happy and overrides transitive pulls)
+    implementation("androidx.core:core:1.13.1")
+    implementation("androidx.core:core-ktx:1.13.1")
+
     fun fullImplementation(dependencyNotation: Any) {
         compileOnly(dependencyNotation)
         for (flavorName in listOf("armv8", "armv7", "all")) {
             dependencies.add("${flavorName}Implementation", dependencyNotation)
         }
     }
+
     implementation(project(":core"))
     implementation(project(":common"))
     implementation(libs.androidx.documentfile)
@@ -124,6 +135,7 @@ dependencies {
     implementation(libs.osmdroid.android)
     implementation(libs.rhino)
     implementation(libs.androidx.activity.ktx)
+
     fullImplementation(platform(libs.androidx.compose.bom))
     fullImplementation(libs.bcprov.jdk18on)
     fullImplementation(libs.androidx.navigation.compose)
@@ -135,13 +147,16 @@ dependencies {
     fullImplementation(libs.coil.video)
     fullImplementation(libs.colorpicker.compose)
     fullImplementation(libs.androidx.ui.tooling.preview)
+
     properties["debug_flavor"]?.let {
         debugImplementation(libs.androidx.ui.tooling)
     }
-    // *** Add for DayNight/Material Components support ***
+
+    // DayNight/Material Components support
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.compose.material3:material3:1.2.1")
+
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.fetch)
 }
