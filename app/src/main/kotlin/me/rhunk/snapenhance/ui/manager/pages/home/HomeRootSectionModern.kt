@@ -1,7 +1,11 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,12 +14,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.DrawLayerModifier
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
@@ -23,9 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -98,7 +103,7 @@ class HomeRootSectionModern : Routes.Route() {
         )
     }
 
-    @OptIn(ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val avenirNext = remember {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
@@ -126,10 +131,10 @@ class HomeRootSectionModern : Routes.Route() {
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
             ) {
-                // Modern logo splash with glass + iOS style bounce (floating effect)
+                // Logo
                 AnimatedVisibility(
                     visible = true,
-                    enter = fadeIn(tween(1280)) + slideInVertically(init = { -60 }, animationSpec = spring()),
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { -60 }, animationSpec = spring()),
                     exit = ExitTransition.None,
                 ) {
                     Box(
@@ -144,7 +149,10 @@ class HomeRootSectionModern : Routes.Route() {
                             shadowElevation = 12.dp,
                             modifier = Modifier.size(82.dp)
                         ) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Icon(
                                     imageVector = Snapenhance,
                                     contentDescription = null,
@@ -169,7 +177,7 @@ class HomeRootSectionModern : Routes.Route() {
                     color = Color.White.copy(0.7f)
                 )
 
-                // Social and help icons with subtle background
+                // Social and help icons
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(18.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically,
@@ -201,20 +209,135 @@ class HomeRootSectionModern : Routes.Route() {
                     )
                 }
 
-                // Update Card - Glassmorphism
+                // Glassy update card
                 if (latestUpdate != null) {
                     Spacer(modifier = Modifier.height(10.dp))
                     GlassInfoCardModern {
-                        // Use logic from original InfoCard
-                        ... // copy/paste logic as-is, align with new glassy look, keep animated update button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = translation["update_title"],
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                Text(
+                                    fontSize = 12.sp,
+                                    text = translation.format(
+                                        "update_content",
+                                        "version" to (latestUpdate?.versionName ?: "unknown")
+                                    ),
+                                    lineHeight = 20.sp,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            val downloadState by UpdateDownloader.downloadState.collectAsState()
+                            val downloadProgress by UpdateDownloader.downloadProgress.collectAsState()
+                            val coroutineScope = rememberCoroutineScope()
+                            AnimatedContent(
+                                targetState = downloadState,
+                                modifier = Modifier.height(40.dp)
+                            ) { state ->
+                                when (state) {
+                                    UpdateDownloader.DownloadState.IDLE -> {
+                                        Button(
+                                            onClick = {
+                                                val latest = latestUpdate ?: return@Button
+                                                if (latest.workflowId == null) {
+                                                    context.androidContext.openLink(latest.releaseUrl)
+                                                    return@Button
+                                                }
+                                                val supportedAbis = android.os.Build.SUPPORTED_ABIS
+                                                var abiName: String? = null
+                                                for (abi in supportedAbis) {
+                                                    when (abi) {
+                                                        "arm64-v8a" -> {
+                                                            abiName = "armv8"
+                                                            break
+                                                        }
+                                                        "armeabi-v7a" -> {
+                                                            abiName = "armv7"
+                                                            break
+                                                        }
+                                                    }
+                                                }
+                                                if (abiName != null) {
+                                                    val artifactName = "snapenhance-${abiName}-debug"
+                                                    val downloadUrl =
+                                                        "https://nightly.link/rhunk/SnapEnhance/actions/runs/${latest.workflowId}/$artifactName.zip"
+                                                    UpdateDownloader.downloadAndInstall(
+                                                        context.androidContext,
+                                                        downloadUrl,
+                                                        "$artifactName.zip",
+                                                        coroutineScope
+                                                    )
+                                                } else {
+                                                    android.widget.Toast.makeText(
+                                                        context.androidContext,
+                                                        "Your device architecture is not supported for automatic updates.",
+                                                        android.widget.Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
+                                            }
+                                        ) {
+                                            Text(text = translation["update_button"])
+                                        }
+                                    }
+                                    UpdateDownloader.DownloadState.DOWNLOADING -> {
+                                        CircularProgressIndicator(progress = downloadProgress)
+                                    }
+                                    UpdateDownloader.DownloadState.COMPLETED -> {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = "Completed"
+                                        )
+                                    }
+                                    UpdateDownloader.DownloadState.FAILED -> {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Failed"
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
-                // Debug Card - translucent glass, only in debug build
+                // Glassy debug card
                 if (BuildConfig.DEBUG) {
                     Spacer(modifier = Modifier.height(10.dp))
                     GlassInfoCardModern {
-                        ... // copy/paste debug summary with new text colors
+                        Text(
+                            text = translation["debug_build_summary_title"],
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        val buildSummary = buildAnnotatedString {
+                            append(
+                                translation.format(
+                                    "debug_build_summary_content",
+                                    "versionName" to BuildConfig.VERSION_NAME,
+                                    "versionCode" to BuildConfig.VERSION_CODE.toString(),
+                                )
+                            )
+                            append(" - ")
+                            append(BuildConfig.GIT_HASH.substring(0, 7))
+                        }
+                        Text(text = buildSummary)
+                        Text(
+                            fontSize = 12.sp,
+                            text = translation.format(
+                                "debug_build_summary_date",
+                                "date" to DateFormat.getDateTimeInstance().format(BuildConfig.BUILD_TIMESTAMP),
+                                "days" to ((System.currentTimeMillis() - BuildConfig.BUILD_TIMESTAMP) / 86400000).toInt().toString()
+                            ),
+                            lineHeight = 20.sp,
+                            fontWeight = FontWeight.Light
+                        )
                     }
                 }
 
@@ -244,7 +367,7 @@ class HomeRootSectionModern : Routes.Route() {
                     }
                 }
 
-                // Quick Actions modern glassy grid
+                // Quick Actions grid
                 if (selectedTiles.isEmpty()) {
                     Box(
                         modifier = Modifier
@@ -337,7 +460,7 @@ class HomeRootSectionModern : Routes.Route() {
                     }
                 }
 
-                // QuickActionsDialog composed as per original logic
+                // QuickActionsDialog
                 if (showQuickActionsMenu) {
                     QuickActionsDialog(
                         quickActions = cards,
