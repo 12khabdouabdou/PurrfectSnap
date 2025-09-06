@@ -1,9 +1,5 @@
 package me.rhunk.snapenhance.task
 
-import android.content.Context
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
-
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
