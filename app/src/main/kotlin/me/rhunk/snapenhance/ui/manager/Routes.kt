@@ -19,9 +19,7 @@ import me.rhunk.snapenhance.ui.manager.pages.features.FeaturesRootSection
 import me.rhunk.snapenhance.ui.manager.pages.features.ManageRuleFeature
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeLogs
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSection
-import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSectionModern
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettings
-import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettingsModern
 import me.rhunk.snapenhance.ui.manager.pages.location.BetterLocationRoot
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ScriptingRootSection
 import me.rhunk.snapenhance.ui.manager.pages.social.LoggedStories
