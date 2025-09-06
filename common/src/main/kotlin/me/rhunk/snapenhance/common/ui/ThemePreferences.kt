@@ -7,13 +7,11 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-// Single DataStore instance for this Context (unique per process)
-val Context.themeDataStore by preferencesDataStore(name = "theme_prefs")
+val Context.themeDataStore by preferencesDataStore("theme_prefs")
 
 object ThemePreferences {
     private val THEME_KEY = stringPreferencesKey("theme_mode")
 
-    // Observe theme mode with SYSTEM as default
     fun getThemeModeFlow(context: Context): Flow<ThemeMode> =
         context.themeDataStore.data.map { prefs ->
             when (prefs[THEME_KEY]) {
@@ -24,7 +22,6 @@ object ThemePreferences {
             }
         }
 
-    // Persist theme mode
     suspend fun setThemeMode(context: Context, mode: ThemeMode) {
         context.themeDataStore.edit { it[THEME_KEY] = mode.name }
     }
