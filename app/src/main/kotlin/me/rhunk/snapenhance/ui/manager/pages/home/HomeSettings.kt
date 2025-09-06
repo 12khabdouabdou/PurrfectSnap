@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -250,9 +251,7 @@ class HomeSettings : Routes.Route() {
                             .heightIn(min = 55.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
+                        Column {
                             Text(text = translation["auto_update_check"])
                             if (autoUpdateCheck) {
                                 Text(
@@ -263,29 +262,18 @@ class HomeSettings : Routes.Route() {
                             }
                         }
 
-                        Switch(
-                            checked = autoUpdateCheck,
-                            onCheckedChange = {
-                                autoUpdateCheck = it
-                                context.config.root.global.updateSettings.autoUpdateCheck.set(it)
-                                if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
-                                    context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
-                                }
-                                context.config.writeConfig()
-                                scheduleUpdateCheck()
+                        Box {
+                            IconButton(
+                                onClick = { frequencyMenuExpanded = true },
+                                enabled = autoUpdateCheck,
+                                modifier = Modifier.alpha(if (autoUpdateCheck) 1f else 0f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = translation["update_check_frequency"]
+                                )
                             }
-                        )
-
-                        // Spacer to add some distance between switch and icon
-                        if (autoUpdateCheck) {
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Box {
-                                IconButton(onClick = { frequencyMenuExpanded = true }) {
-                                    Icon(
-                                        imageVector = Icons.Default.MoreVert,
-                                        contentDescription = translation["update_check_frequency"]
-                                    )
-                                }
+                            if (autoUpdateCheck) {
                                 DropdownMenu(
                                     expanded = frequencyMenuExpanded,
                                     onDismissRequest = { frequencyMenuExpanded = false }
@@ -306,6 +294,21 @@ class HomeSettings : Routes.Route() {
                                 }
                             }
                         }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Switch(
+                            checked = autoUpdateCheck,
+                            onCheckedChange = {
+                                autoUpdateCheck = it
+                                context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                                if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                                    context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                                }
+                                context.config.writeConfig()
+                                scheduleUpdateCheck()
+                            }
+                        )
                     }
                 }
             }
