@@ -39,6 +39,7 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import me.rhunk.snapenhance.task.UpdateCheckWorker
 import java.util.concurrent.TimeUnit
+import kotlin.text.MatchGroup
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -186,6 +187,12 @@ class HomeSettings : Routes.Route() {
             verticalAlignment = verticalAlignment
         ) { content(this) }
     }
+
+    // --- Example: Fix MatchGroup type usage if present in your file ---
+    private fun matchGroupBooleanContext(group: MatchGroup?): Boolean = group != null
+    private fun matchGroupStringContext(group: MatchGroup?): String = group?.value ?: ""
+
+    // ------------------------------------------------------------------
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
