@@ -58,8 +58,12 @@ class Global : ConfigContainer() {
     val disableSnapSplitting = boolean("disable_snap_splitting") { addNotices(FeatureNotice.UNSTABLE) }
 
     inner class UpdateSettings : ConfigContainer() {
-        val autoUpdateCheck = boolean("auto_update_check")
-        val updateCheckFrequency = unique("update_check_frequency", "daily", "weekly", "monthly")
+        val autoUpdateCheck = boolean("auto_update_check", defaultValue = true)
+        val updateCheckFrequency = registerProperty(
+            "update_check_frequency",
+            DataProcessors.STRING_UNIQUE_SELECTION,
+            PropertyValue("weekly", defaultValues = listOf("daily", "weekly", "monthly"))
+        )
     }
     val updateSettings = container("update_settings", UpdateSettings())
 }

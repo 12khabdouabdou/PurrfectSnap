@@ -48,11 +48,19 @@ import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import com.tonyodev.fetch2.Fetch
+import com.tonyodev.fetch2.FetchConfiguration
 
 
 class RemoteSideContext(
     val androidContext: Context
 ) {
+    val fetch: Fetch by lazy {
+        val fetchConfiguration = FetchConfiguration.Builder(androidContext)
+            .setDownloadConcurrentLimit(3)
+            .build()
+        Fetch.getInstance(fetchConfiguration)
+    }
     val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     private var _activity: WeakReference<ComponentActivity>? = null
