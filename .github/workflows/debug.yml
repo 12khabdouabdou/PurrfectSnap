@@ -1,4 +1,5 @@
 name: Debug CI
+
 on:
   workflow_dispatch:
     inputs:
@@ -25,29 +26,11 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Set up Node.js (no cache to avoid lockfile path issues)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Node dependencies in composer
-        run: |
-          if [ -f composer/package.json ]; then
-            cd composer
-            if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
-              npm ci
-            else
-              npm install
-            fi
-          fi
-
-      - name: Ensure tsc/rollup are available (robust npx fallback)
-        run: |
-          npx -y -p typescript tsc --version
-          npx -y -p rollup rollup --version
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Setup NPM Dependencies
+        run: npm install typescript -g
 
       - name: Add Android targets for Rust
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
@@ -106,29 +89,11 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Set up Node.js (no cache to avoid lockfile path issues)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Node dependencies in composer
-        run: |
-          if [ -f composer/package.json ]; then
-            cd composer
-            if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
-              npm ci
-            else
-              npm install
-            fi
-          fi
-
-      - name: Ensure tsc/rollup are available (robust npx fallback)
-        run: |
-          npx -y -p typescript tsc --version
-          npx -y -p rollup rollup --version
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Setup NPM Dependencies
+        run: npm install typescript -g
 
       - name: Add Android targets for Rust
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
@@ -233,6 +198,7 @@ jobs:
           name: core
           path: app/build/outputs/apk/core/debug/*.apk
 
+  # Download all artifacts and create a unique prerelease
   make_prerelease:
     needs: [job_armv7, job_armv8, job_manager, job_core]
     runs-on: ubuntu-latest
@@ -241,14 +207,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./all-apks
-
       - name: Display all files for debug
         run: find ./all-apks
-
       - name: Set up GitHub CLI
         run: |
           sudo apt-get install -y gh
-
       - name: Create Debug Prerelease with all APKs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -256,6 +219,7 @@ jobs:
           VERSION="debug-${{ github.run_id }}-${{ github.sha }}"
           TITLE="Debug CI $VERSION"
           NOTE="Auto-generated debug prerelease including all APKs from jobs."
+          # Find every APK inside ./all-apks, space joined
           APKLIST=$(find ./all-apks -type f -name '*.apk' | tr '\n' ' ')
           echo "APKS: $APKLIST"
           gh release create "$VERSION" $APKLIST --repo ${{ github.repository }} --title "$TITLE" --notes "$NOTE" --prerelease
