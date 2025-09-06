@@ -52,47 +52,47 @@ class HomeLogs : Routes.Route() {
 
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
         var showDropDown by remember { mutableStateOf(false) }
-        IconButton(onClick = { showDropDown = true }) {
+
+        IconButton(onClick = {
+            showDropDown = true
+        }) {
             Icon(Icons.Filled.MoreVert, contentDescription = null)
         }
+
         DropdownMenu(
             expanded = showDropDown,
             onDismissRequest = { showDropDown = false },
             modifier = Modifier.align(Alignment.CenterVertically)
         ) {
-            DropdownMenuItem(
-                onClick = {
-                    context.coroutineScope.launch { context.log.clearLogs() }
-                    navigateReload()
-                    showDropDown = false
-                },
-                text = { Text(translation["clear_logs_button"]) }
-            )
-            DropdownMenuItem(
-                onClick = {
-                    activityLauncherHelper.saveFile(
-                        "snapenhance-logs-${System.currentTimeMillis()}.zip",
-                        "application/zip"
-                    ) { uri ->
-                        context.coroutineScope.launch {
-                            context.shortToast(translation["saving_logs_toast"])
-                            context.androidContext.contentResolver
-                                .openOutputStream(Uri.parse(uri))
-                                ?.use {
-                                    runCatching {
-                                        context.log.exportLogsToZip(it)
-                                        context.longToast(translation["saved_logs_success_toast"])
-                                    }.onFailure { ex ->
-                                        context.longToast(translation["saved_logs_failure_toast"])
-                                        context.log.error("Failed to save logs to $uri!", ex)
-                                    }
-                                }
+            DropdownMenuItem(onClick = {
+                context.coroutineScope.launch {
+                    context.log.clearLogs()
+                }
+                navigateReload()
+                showDropDown = false
+            }, text = {
+                Text(translation["clear_logs_button"])
+            })
+
+            DropdownMenuItem(onClick = {
+                activityLauncherHelper.saveFile("snapenhance-logs-${System.currentTimeMillis()}.zip", "application/zip") { uri ->
+                    context.coroutineScope.launch {
+                        context.shortToast(translation["saving_logs_toast"])
+                        context.androidContext.contentResolver.openOutputStream(Uri.parse(uri))?.use {
+                            runCatching {
+                                context.log.exportLogsToZip(it)
+                                context.longToast(translation["saved_logs_success_toast"])
+                            }.onFailure {
+                                context.longToast(translation["saved_logs_failure_toast"])
+                                context.log.error("Failed to save logs to $uri!", it)
+                            }
                         }
                     }
-                    showDropDown = false
-                },
-                text = { Text(translation["export_logs_button"]) }
-            )
+                }
+                showDropDown = false
+            }, text = {
+                Text(translation["export_logs_button"])
+            })
         }
     }
 
@@ -106,7 +106,9 @@ class HomeLogs : Routes.Route() {
         fun refreshLogs() {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
-                    logReader = context.log.newReader { lineCount++ }
+                    logReader = context.log.newReader {
+                        lineCount++
+                    }
                     lineCount = logReader!!.lineCount
                 }.onFailure {
                     context.longToast("Failed to read logs!")
@@ -114,22 +116,24 @@ class HomeLogs : Routes.Route() {
                 delay(300)
                 isRefreshing = false
                 withContext(Dispatchers.Main) {
-                    logListState.scrollToItem(
-                        (logListState.layoutInfo.totalItemsCount - 1)
-                            .takeIf { it >= 0 } ?: return@withContext
-                    )
+                    logListState.scrollToItem((logListState.layoutInfo.totalItemsCount - 1).takeIf { it >= 0 } ?: return@withContext)
                 }
             }
         }
 
-        val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = { refreshLogs() })
+        val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = {
+            refreshLogs()
+        })
 
         LaunchedEffect(Unit) {
             isRefreshing = true
             refreshLogs()
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
             LazyColumn(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surface)
@@ -148,53 +152,61 @@ class HomeLogs : Routes.Route() {
                 }
                 items(lineCount) { index ->
                     val logLine by remember(index) {
-                        mutableStateOf(runBlocking(Dispatchers.IO) { logReader?.getLogLine(index) })
+                        mutableStateOf(runBlocking(Dispatchers.IO) {
+                            logReader?.getLogLine(index)
+                        })
                     }
                     logLine?.let { line ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .pointerInput(Unit) {
-                                    detectTapGestures(
-                                        onLongPress = {
-                                            coroutineScope.launch {
-                                                clipboardManager.setText(
-                                                    AnnotatedString(line.message)
+                        Box(modifier = Modifier
+                            .fillMaxWidth()
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onLongPress = {
+                                        coroutineScope.launch {
+                                            clipboardManager.setText(
+                                                AnnotatedString(
+                                                    line.message
                                                 )
-                                            }
+                                            )
                                         }
-                                    )
-                                }
-                        ) {
+                                    }
+                                )
+                            }) {
                             Column(
                                 modifier = Modifier
                                     .padding(4.dp)
                                     .fillMaxWidth()
                                     .defaultMinSize(minHeight = 30.dp),
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
                                     Icon(
                                         imageVector = when (line.logLevel) {
                                             LogLevel.DEBUG -> Icons.Outlined.BugReport
                                             LogLevel.ERROR, LogLevel.ASSERT -> Icons.Outlined.Report
                                             LogLevel.INFO, LogLevel.VERBOSE -> Icons.Outlined.Info
                                             LogLevel.WARN -> Icons.Outlined.Warning
+                                            else -> Icons.Outlined.Info
                                         },
                                         modifier = Modifier.size(16.dp),
                                         contentDescription = null,
                                     )
+
                                     Text(
                                         text = LogChannel.fromChannel(line.tag)?.shortName ?: line.tag,
                                         modifier = Modifier.padding(start = 4.dp),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 12.sp,
                                     )
+
                                     Text(
                                         text = line.dateTime,
                                         modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                                         fontSize = 10.sp
                                     )
                                 }
+
                                 Text(
                                     text = line.message.trimIndent(),
                                     lineHeight = 10.sp,
@@ -206,6 +218,7 @@ class HomeLogs : Routes.Route() {
                     }
                 }
             }
+
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
@@ -216,27 +229,29 @@ class HomeLogs : Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
             val firstVisibleItem by remember { derivedStateOf { logListState.firstVisibleItemIndex } }
             val layoutInfo by remember { derivedStateOf { logListState.layoutInfo } }
-
             FilledIconButton(
-                onClick = { coroutineScope.launch { logListState.scrollToItem(0) } },
+                onClick = {
+                    coroutineScope.launch {
+                        logListState.scrollToItem(0)
+                    }
+                },
                 enabled = firstVisibleItem != 0
             ) {
                 Icon(Icons.Filled.KeyboardDoubleArrowUp, contentDescription = null)
             }
+
             FilledIconButton(
                 onClick = {
                     coroutineScope.launch {
-                        logListState.scrollToItem(
-                            (logListState.layoutInfo.totalItemsCount - 1)
-                                .takeIf { it >= 0 } ?: return@launch
-                        )
+                        logListState.scrollToItem((logListState.layoutInfo.totalItemsCount - 1).takeIf { it >= 0 } ?: return@launch)
                     }
                 },
-                enabled = layoutInfo.visibleItemsInfo.lastOrNull()?.index !=
-                    layoutInfo.totalItemsCount - 1
+                enabled = layoutInfo.visibleItemsInfo.lastOrNull()?.index != layoutInfo.totalItemsCount - 1
             ) {
                 Icon(Icons.Filled.KeyboardDoubleArrowDown, contentDescription = null)
             }
