@@ -1,4 +1,5 @@
 package me.rhunk.snapenhance.bridge
+
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
@@ -59,12 +60,14 @@ class BridgeService : Service() {
                     if (updateOnly && modDatabase.getGroupInfo(id) == null) return
                     syncCallback.syncGroup(id)
                 }
-                // Removed redundant else, now when is exhaustive
+                else -> null
             }
+
             if (syncedObject == null) {
                 remoteSideContext.log.warn("Failed to sync $scope $id")
                 return
             }
+
             when (scope) {
                 SocialScope.FRIEND -> {
                     toParcelable<MessagingFriendInfo>(syncedObject)?.let {
@@ -76,7 +79,6 @@ class BridgeService : Service() {
                         modDatabase.syncGroupInfo(it)
                     }
                 }
-                // Removed redundant else, now when is exhaustive
             }
         }.onFailure {
             remoteSideContext.log.error("Failed to sync $scope $id", it)
@@ -85,6 +87,7 @@ class BridgeService : Service() {
 
     inner class BridgeBinder : BridgeInterface.Stub() {
         override fun getApplicationApkPath(): String = applicationInfo.publicSourceDir
+
         override fun broadcastLog(tag: String, level: String, message: String) {
             remoteSideContext.log.internalLog(tag, LogLevel.fromShortName(level) ?: LogLevel.INFO, message)
         }
@@ -94,6 +97,7 @@ class BridgeService : Service() {
                 callback = callback
             ).onReceive(intent)
         }
+
         override fun convertMedia(
             input: ParcelFileDescriptor?,
             inputExtension: String,
@@ -104,6 +108,7 @@ class BridgeService : Service() {
             return runBlocking {
                 val taskId = UUID.randomUUID().toString()
                 val inputFile = File.createTempFile(taskId, ".$inputExtension", remoteSideContext.androidContext.cacheDir)
+
                 runCatching {
                     ParcelFileDescriptor.AutoCloseInputStream(input).use { inputStream ->
                         inputFile.outputStream().use { outputStream ->
@@ -116,6 +121,7 @@ class BridgeService : Service() {
                     return@runBlocking null
                 }
                 val cachedFile = File.createTempFile(taskId, ".$outputExtension", remoteSideContext.androidContext.cacheDir)
+
                 val pendingTask = remoteSideContext.taskManager.createPendingTask(
                     Task(
                         type = TaskType.DOWNLOAD,
@@ -140,20 +146,25 @@ class BridgeService : Service() {
                     pendingTask.fail(it.message ?: "Failed to convert video")
                     remoteSideContext.log.error("Failed to convert video", it)
                 }
+
                 inputFile.delete()
                 cachedFile.delete()
                 null
             }
         }
+
         override fun getRules(uuid: String): List<String> {
             return remoteSideContext.database.getRules(uuid).map { it.key }
         }
+
         override fun getRuleIds(type: String): MutableList<String> {
             return remoteSideContext.database.getRuleIds(type)
         }
+
         override fun setRule(uuid: String, rule: String, state: Boolean) {
             remoteSideContext.database.setRule(uuid, rule, state)
         }
+
         override fun sync(callback: SyncCallback) {
             syncCallback = callback
             measureTimeMillis {
@@ -167,10 +178,12 @@ class BridgeService : Service() {
                 remoteSideContext.log.verbose("Syncing remote took $it ms")
             }
         }
+
         override fun triggerSync(scope: String, id: String) {
             remoteSideContext.log.verbose("trigger sync for $scope $id")
             triggerScopeSync(SocialScope.getByName(scope), id, true)
         }
+
         override fun passGroupsAndFriends(
             groups: List<String>,
             friends: List<String>
@@ -181,22 +194,28 @@ class BridgeService : Service() {
                 groups.mapNotNull { toParcelable<MessagingGroupInfo>(it) }
             )
         }
+
         override fun getScopeNotes(id: String): String? {
             return remoteSideContext.database.getScopeNotes(id)
         }
+
         override fun setScopeNotes(id: String, content: String?) {
             remoteSideContext.database.setScopeNotes(id, content)
         }
+
         override fun getScriptingInterface() = remoteSideContext.scriptManager
+
         override fun getE2eeInterface() = remoteSideContext.e2eeImplementation
         override fun getLogger() = remoteSideContext.messageLogger
         override fun getTracker() = remoteSideContext.tracker
         override fun getAccountStorage() = remoteSideContext.accountStorage
         override fun getFileHandleManager() = remoteSideContext.fileHandleManager
         override fun getLocationManager() = remoteSideContext.locationManager
+
         override fun registerMessagingBridge(bridge: MessagingBridge) {
             messagingBridge = bridge
         }
+
         override fun openOverlay(type: String) {
             runCatching {
                 val overlayType = OverlayType.fromKey(type) ?: throw IllegalArgumentException("Unknown overlay type: $type")
@@ -204,13 +223,13 @@ class BridgeService : Service() {
                     when (overlayType) {
                         OverlayType.SETTINGS -> routes.features
                         OverlayType.BETTER_LOCATION -> routes.betterLocation
-                        // No else needed, OverlayType is exhaustive
                     }
                 }
             }.onFailure {
                 remoteSideContext.log.error("Failed to open $type overlay", it)
             }
         }
+
         override fun closeOverlay() {
             runCatching {
                 remoteSideContext.remoteOverlay.close()
@@ -218,9 +237,11 @@ class BridgeService : Service() {
                 remoteSideContext.log.error("Failed to close overlay", it)
             }
         }
+
         override fun registerConfigStateListener(listener: ConfigStateListener) {
             remoteSideContext.config.configStateListener = listener
         }
+
         override fun getDebugProp(key: String, defaultValue: String?): String? {
             return remoteSideContext.sharedPreferences.all["debug_$key"]?.toString() ?: defaultValue
         }
