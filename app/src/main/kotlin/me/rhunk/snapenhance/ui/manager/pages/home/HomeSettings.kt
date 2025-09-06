@@ -249,7 +249,8 @@ class HomeSettings : Routes.Route() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 55.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
                             Text(text = translation["auto_update_check"])
@@ -262,53 +263,54 @@ class HomeSettings : Routes.Route() {
                             }
                         }
 
-                        Box {
-                            IconButton(
-                                onClick = { frequencyMenuExpanded = true },
-                                enabled = autoUpdateCheck,
-                                modifier = Modifier.alpha(if (autoUpdateCheck) 1f else 0f)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = translation["update_check_frequency"]
-                                )
-                            }
-                            if (autoUpdateCheck) {
-                                DropdownMenu(
-                                    expanded = frequencyMenuExpanded,
-                                    onDismissRequest = { frequencyMenuExpanded = false }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box {
+                                IconButton(
+                                    onClick = { frequencyMenuExpanded = true },
+                                    enabled = autoUpdateCheck,
+                                    modifier = Modifier.alpha(if (autoUpdateCheck) 1f else 0f)
                                 ) {
-                                    val frequencies = remember { listOf("daily", "weekly", "monthly") }
-                                    frequencies.forEach { frequency ->
-                                        DropdownMenuItem(
-                                            text = { Text(text = translation["update_check_frequency_" + frequency]) },
-                                            onClick = {
-                                                selectedFrequency = frequency
-                                                context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
-                                                context.config.writeConfig()
-                                                scheduleUpdateCheck()
-                                                frequencyMenuExpanded = false
-                                            }
-                                        )
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = translation["update_check_frequency"]
+                                    )
+                                }
+                                if (autoUpdateCheck) {
+                                    DropdownMenu(
+                                        expanded = frequencyMenuExpanded,
+                                        onDismissRequest = { frequencyMenuExpanded = false }
+                                    ) {
+                                        val frequencies = remember { listOf("daily", "weekly", "monthly") }
+                                        frequencies.forEach { frequency ->
+                                            DropdownMenuItem(
+                                                text = { Text(text = translation["update_check_frequency_" + frequency]) },
+                                                onClick = {
+                                                    selectedFrequency = frequency
+                                                    context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                                    context.config.writeConfig()
+                                                    scheduleUpdateCheck()
+                                                    frequencyMenuExpanded = false
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
+
+                            Switch(
+                                checked = autoUpdateCheck,
+                                onCheckedChange = {
+                                    autoUpdateCheck = it
+                                    context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                                    if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                                        context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                                    }
+                                    context.config.writeConfig()
+                                    scheduleUpdateCheck()
+                                },
+                                modifier = Modifier.padding(end = 26.dp)
+                            )
                         }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        Switch(
-                            checked = autoUpdateCheck,
-                            onCheckedChange = {
-                                autoUpdateCheck = it
-                                context.config.root.global.updateSettings.autoUpdateCheck.set(it)
-                                if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
-                                    context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
-                                }
-                                context.config.writeConfig()
-                                scheduleUpdateCheck()
-                            }
-                        )
                     }
                 }
             }
