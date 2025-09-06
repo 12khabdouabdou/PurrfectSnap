@@ -239,7 +239,7 @@ class HomeSettings : Routes.Route() {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.get()) }
+                    var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -264,7 +264,7 @@ class HomeSettings : Routes.Route() {
 
                     var expanded by remember { mutableStateOf(false) }
                     val frequencies = remember { listOf("daily", "weekly", "monthly") }
-                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.get()) }
+                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
 
                     ExposedDropdownMenuBox(
                         expanded = expanded,
