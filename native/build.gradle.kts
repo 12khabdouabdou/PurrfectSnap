@@ -1,50 +1,72 @@
 plugins {
-  id("org.mozilla.rust-android-gradle.rust-android") version "0.9.6"
-  alias(libs.plugins.androidLibrary)
-  alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.rust.android)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinAndroid)
 }
 
-val nativeName = "snapenhance_native"
+val nativeName = rootProject.ext.get("buildHash")
 
 android {
-  namespace = rootProject.ext["applicationId"].toString() + ".nativelib"
-  compileSdk = 34
-  buildToolsVersion = "34.0.0"
-  ndkVersion = System.getenv("ANDROID_NDK_HOME")?.trimEnd('/')?.substringAfterLast("/") ?: "27.1.12297006"
+    namespace = rootProject.ext["applicationId"].toString() + ".nativelib"
+    compileSdk = 34
 
-  buildFeatures { buildConfig = true }
+    buildToolsVersion = "34.0.0"
+    ndkVersion = System.getenv("ANDROID_NDK_HOME")?.trimEnd('/')?.substringAfterLast("/") ?: "27.1.12297006"
 
-  defaultConfig {
-    buildConfigField("String", "NATIVE_NAME", "\"$nativeName\"")
-    minSdk = 28
-  }
-
-  // Modern AGP 8 DSL
-  packaging {
-    jniLibs {
-      keepDebugSymbols += "**/libsnapenhance_native.so"
-      useLegacyPackaging = true
+    buildFeatures {
+        buildConfig = true
     }
-  }
 
-  compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
-  }
+    defaultConfig {
+        buildConfigField("String", "NATIVE_NAME", "\"$nativeName\".toString()")
+        minSdk = 28
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    kotlinOptions {
+        jvmTarget = "21"
+    }
 }
 
-// Kotlin 2.x compiler DSL (alternative to deprecated kotlinOptions)
-kotlin {
-  compilerOptions {
-    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
-  }
-}
-
-// rust-android-gradle configuration
 cargo {
-  module = "rust"                  // the crate folder under native/
-  libname = nativeName             // produces libsnapenhance_native.so
-  targetIncludes = arrayOf("libsnapenhance_native.so")
-  profile = "release"
-  targets = listOf("arm64", "arm")
+    module = "rust"
+    libname = nativeName.toString()
+    targetIncludes = arrayOf("libsnapenhance.so")
+    profile = "release"
+    targets = listOf("arm64", "arm")
+}
+
+fun getNativeFiles() = File(projectDir, "build/rustJniLibs/android").listFiles()?.flatMap { abiFolder ->
+    abiFolder.takeIf { it.isDirectory }?.listFiles()?.toList() ?: emptyList()
+}
+
+
+val buildAndRename by tasks.registering {
+    dependsOn("cargoBuild")
+    doLast {
+        getNativeFiles()?.forEach { file ->
+            if (file.name.endsWith(".so")) {
+                println("Renaming ${file.absolutePath}")
+                file.renameTo(File(file.parent, "lib$nativeName.so"))
+            }
+        }
+    }
+}
+
+val cleanNatives by tasks.registering {
+    finalizedBy(buildAndRename)
+    doFirst {
+        println("Cleaning native files")
+        getNativeFiles()?.forEach { file ->
+            file.deleteRecursively()
+        }
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn(cleanNatives)
 }
