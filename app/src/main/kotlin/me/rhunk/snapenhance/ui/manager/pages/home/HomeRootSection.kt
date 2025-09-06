@@ -1,494 +1,415 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.ExperimentalFoundationApi
+import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Help
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Widgets
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.launch
-import me.rhunk.snapenhance.R
-import me.rhunk.snapenhance.action.EnumQuickActions
-import me.rhunk.snapenhance.common.BuildConfig
 import me.rhunk.snapenhance.common.action.EnumAction
-import me.rhunk.snapenhance.common.ui.TopBarActionButton
+import me.rhunk.snapenhance.common.bridge.InternalFileHandleType
+import me.rhunk.snapenhance.common.ui.ThemeChooserDialog
+import me.rhunk.snapenhance.common.ui.ThemeMode
+import me.rhunk.snapenhance.common.ui.ThemePreferences
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
-import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
-import me.rhunk.snapenhance.common.util.ktx.openLink
-import me.rhunk.snapenhance.core.ui.Snapenhance
-import me.rhunk.snapenhance.storage.getQuickTiles
-import me.rhunk.snapenhance.storage.setQuickTiles
 import me.rhunk.snapenhance.ui.manager.Routes
-import me.rhunk.snapenhance.ui.manager.data.UpdateDownloader
-import me.rhunk.snapenhance.ui.manager.data.Updater
+import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
-import java.text.DateFormat
+import me.rhunk.snapenhance.ui.util.saveFile
+import androidx.work.WorkManager
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import me.rhunk.snapenhance.task.UpdateCheckWorker
+import java.util.concurrent.TimeUnit
 
-class HomeRootSection : Routes.Route() {
-    companion object {
-        val cardMargin = 10.dp
-    }
+const val PREFS_KEY_MODERN_UI = "snapenhance_pref_modern_ui"
+
+class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-    private val cards by lazy {
-        EnumQuickActions.entries.map {
-            (context.translation["actions.${it.key}.name"] to it.icon) to it.action
-        }.associate {
-            it.first to it.second
-        }.toMutableMap().apply {
-            EnumAction.entries.forEach { action ->
-                this[context.translation["actions.${action.key}.name"] to action.icon] = {
-                    context.launchActionIntent(action)
-                }
+    private val dialogs by lazy { AlertDialogs(context.translation) }
+    private fun scheduleUpdateCheck() {
+        val workManager = WorkManager.getInstance(context.androidContext)
+        if (context.config.root.global.updateSettings.autoUpdateCheck.get()) {
+            val frequency = context.config.root.global.updateSettings.updateCheckFrequency.get()
+            val repeatInterval = when (frequency) {
+                "daily" -> 1L; "weekly" -> 7L; "monthly" -> 30L; else -> 1L
             }
-        }
-    }
-    @Composable
-    private fun InfoCard(content: @Composable ColumnScope.() -> Unit) {
-        OutlinedCard(
-            modifier = Modifier
-                .padding(start = cardMargin, end = cardMargin)
-                .fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+            val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
+                .setConstraints(constraints).build()
+            workManager.enqueueUniquePeriodicWork(
+                "snapenhance_update_check",
+                ExistingPeriodicWorkPolicy.REPLACE,
+                workRequest
             )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 10.dp)
-            ) {
-                content()
-            }
+        } else {
+            workManager.cancelUniqueWork("snapenhance_update_check")
         }
     }
+    override val init: () -> Unit = { activityLauncherHelper = ActivityLauncherHelper(context.activity!!) }
     @Composable
-    fun ExternalLinkIcon(
-        modifier: Modifier = Modifier,
-        size: Dp = 32.dp,
-        imageVector: ImageVector,
-    ) {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+    private fun RowTitle(title: String) {
+        Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    }
+    @Composable
+    private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
+        val realKey = "debug_$key"
+        var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, false)) }
+        Row(
             modifier = Modifier
-                .size(size)
-                .clip(RoundedCornerShape(50))
-                .then(modifier)
-        )
-    }
-    override val title: @Composable (() -> Unit)? = {}
-    override val init: () -> Unit = {
-        activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
-    }
-    override val topBarActions: @Composable (RowScope.() -> Unit) = {
-        TopBarActionButton(
-            onClick = {
-                routes.homeLogs.navigate()
-            },
-            icon = Icons.Filled.BugReport,
-            text = context.translation["manager.routes.home_logs"]
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        TopBarActionButton(
-            onClick = {
-                routes.settings.navigate()
-            },
-            icon = Icons.Filled.Settings,
-            text = context.translation["manager.routes.home_settings"]
-        )
+                .fillMaxWidth()
+                .heightIn(min = 55.dp)
+                .clickable {
+                    value = !value
+                    sharedPreferences.edit { putBoolean(realKey, value) }
+                },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = text, modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
+            Switch(checked = value, onCheckedChange = {
+                value = it
+                sharedPreferences.edit { putBoolean(realKey, it) }
+            }, modifier = Modifier.padding(end = 26.dp))
+        }
     }
 
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val avenirNext = remember {
-            FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
+        val contextC = androidx.compose.ui.platform.LocalContext.current
+        val prefs = context.sharedPreferences
+        var modernUiEnabled by remember { mutableStateOf(prefs.getBoolean(PREFS_KEY_MODERN_UI, true)) }
+        fun setModernUi(enabled: Boolean) {
+            modernUiEnabled = enabled
+            prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, enabled) }
         }
-        val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
-            context.database.getQuickTiles()
-        }
-        val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
-        var showQuickActionsMenu by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
+        var showThemeDialog by remember { mutableStateOf(false) }
+        var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+        var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
+        var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
+        var frequencyMenuExpanded by remember { mutableStateOf(false) }
+        val translation = context.translation
+        val messageLogger = context.messageLogger
+
+        var storedMessagesCount by rememberAsyncMutableState(defaultValue = 0) { messageLogger.getStoredMessageCount() }
+        var storedStoriesCount by rememberAsyncMutableState(defaultValue = 0) { messageLogger.getStoredStoriesCount() }
+        var selectedFileType by remember { mutableStateOf(InternalFileHandleType.entries.first()) }
+        var expanded by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            Icon(
-                imageVector = Snapenhance, contentDescription = null,
+            // Modern UI toggle
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(all = 8.dp)
-                    .align(Alignment.CenterHorizontally),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(
-                text = translation.format(
-                    "version_title",
-                    "versionName" to BuildConfig.VERSION_NAME
-                ),
-                fontSize = 14.sp,
-                fontFamily = avenirNext,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(15.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 5.dp)
+                    .padding(horizontal = 14.dp, vertical = 12.dp)
+                    .clickable { setModernUi(!modernUiEnabled) },
+                shape = RoundedCornerShape(26.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
-                ExternalLinkIcon(
-                    modifier = Modifier.clickable {
-                        context.androidContext.openLink("https://t.me/snapenhance")
-                    },
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
-                )
-                ExternalLinkIcon(
-                    modifier = Modifier.clickable {
-                        context.androidContext.openLink("https://github.com/rhunk/SnapEnhance")
-                    },
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
-                )
-                ExternalLinkIcon(
-                    modifier = Modifier.offset(x = (-3).dp).clickable {
-                        context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/wiki")
-                    },
-                    size = 40.dp,
-                    imageVector = Icons.AutoMirrored.Filled.Help,
-                )
-            }
-            if (latestUpdate != null) {
-                Spacer(modifier = Modifier.height(10.dp))
-                InfoCard {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = translation["update_title"],
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            Text(
-                                fontSize = 12.sp,
-                                text = translation.format(
-                                    "update_content",
-                                    "version" to (latestUpdate?.versionName ?: "unknown")
-                                ),
-                                lineHeight = 20.sp,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                        val downloadState by UpdateDownloader.downloadState.collectAsState()
-                        val downloadProgress by UpdateDownloader.downloadProgress.collectAsState()
-                        val coroutineScope = rememberCoroutineScope()
-
-                        AnimatedContent(
-                            targetState = downloadState,
-                            modifier = Modifier.height(40.dp)
-                        ) { state ->
-                            when (state) {
-                                UpdateDownloader.DownloadState.IDLE -> {
-                                    Button(
-                                        onClick = {
-                                            val latest = latestUpdate ?: return@Button
-                                            if (latest.workflowId == null) {
-                                                context.androidContext.openLink(latest.releaseUrl)
-                                                return@Button
-                                            }
-                                            val supportedAbis = android.os.Build.SUPPORTED_ABIS
-                                            var abiName: String? = null
-                                            for (abi in supportedAbis) {
-                                                when (abi) {
-                                                    "arm64-v8a" -> {
-                                                        abiName = "armv8"
-                                                        break
-                                                    }
-                                                    "armeabi-v7a" -> {
-                                                        abiName = "armv7"
-                                                        break
-                                                    }
-                                                }
-                                            }
-
-                                            if (abiName != null) {
-                                                val artifactName = "snapenhance-${abiName}-debug"
-                                                val downloadUrl = "https://nightly.link/rhunk/SnapEnhance/actions/runs/${latest.workflowId}/$artifactName.zip"
-                                                UpdateDownloader.downloadAndInstall(context.androidContext, downloadUrl, "$artifactName.zip", coroutineScope)
-                                            } else {
-                                                android.widget.Toast.makeText(context.androidContext, "Your device architecture is not supported for automatic updates.", android.widget.Toast.LENGTH_LONG).show()
-                                            }
-                                        }
-                                    ) {
-                                        Text(text = translation["update_button"])
-                                    }
-                                }
-                                UpdateDownloader.DownloadState.DOWNLOADING -> {
-                                    CircularProgressIndicator(progress = downloadProgress)
-                                }
-                                UpdateDownloader.DownloadState.COMPLETED -> {
-                                    Icon(imageVector = Icons.Default.Check, contentDescription = "Completed")
-                                }
-                                UpdateDownloader.DownloadState.FAILED -> {
-                                    Icon(imageVector = Icons.Default.Close, contentDescription = "Failed")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (BuildConfig.DEBUG) {
-                Spacer(modifier = Modifier.height(10.dp))
-                InfoCard {
-                    Text(
-                        text = translation["debug_build_summary_title"],
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    val buildSummary = buildAnnotatedString {
-                        withStyle(
-                            style = SpanStyle(
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Light
-                            )
-                        ) {
-                            append(
-                                remember {
-                                    translation.format(
-                                        "debug_build_summary_content",
-                                        "versionName" to BuildConfig.VERSION_NAME,
-                                        "versionCode" to BuildConfig.VERSION_CODE.toString(),
-                                    )
-                                }
-                            )
-                            append(" - ")
-                        }
-                        withLink(
-                            LinkAnnotation.Clickable(
-                                "git_hash",
-                                linkInteractionListener = {
-                                    context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/commit/${BuildConfig.GIT_HASH}")
-                                }
-                            )
-                        ) {
-                            withStyle(
-                                style = SpanStyle(
-                                    fontSize = 13.sp, fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            ) {
-                                append(BuildConfig.GIT_HASH.substring(0, 7))
-                            }
-                        }
-                    }
-                    Text(text = buildSummary)
-                    Text(
-                        fontSize = 12.sp,
-                        text = remember {
-                            translation.format(
-                                "debug_build_summary_date",
-                                "date" to DateFormat.getDateTimeInstance().format(BuildConfig.BUILD_TIMESTAMP),
-                                "days" to ((System.currentTimeMillis() - BuildConfig.BUILD_TIMESTAMP) / 86400000).toInt().toString()
-                            )
-                        },
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight.Light
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Modern UI", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Spacer(modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = modernUiEnabled,
+                        onCheckedChange = { setModernUi(it) }
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsTitleAnim") { hasQuickActions ->
-                if (!hasQuickActions) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(50),
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            tonalElevation = 2.dp,
-                            shadowElevation = 4.dp,
-                            modifier = Modifier.align(Alignment.Center)
-                        ) {
-                            Text(
-                                translation["quick_actions_title"],
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                } else {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            translation["quick_actions_title"],
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            textAlign = TextAlign.Start,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(
-                            onClick = { showQuickActionsMenu = true },
-                            modifier = Modifier.align(Alignment.CenterVertically)
-                        ) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
-                                contentDescription = "Manage Quick Actions"
-                            )
-                        }
+            // Theme card
+            Spacer(Modifier.height(6.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clickable { showThemeDialog = true },
+                shape = RoundedCornerShape(18.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Filled.Brightness4, contentDescription = "Theme", modifier = Modifier.size(26.dp))
+                    Spacer(modifier = Modifier.width(18.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("App Theme", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                        Text(themeMode.displayName, color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
                     }
                 }
             }
-            if (selectedTiles.isEmpty()) {
-                Box(
+            if (showThemeDialog) {
+                ThemeChooserDialog(
+                    selected = themeMode,
+                    onSelect = { mode -> scope.launch { ThemePreferences.setThemeMode(contextC, mode) } },
+                    onDismiss = { showThemeDialog = false }
+                )
+            }
+            Spacer(Modifier.height(6.dp))
+            // Actions
+            RowTitle(title = translation["actions_title"])
+            EnumAction.entries.forEach { enumAction ->
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(260.dp),
-                    contentAlignment = Alignment.Center
+                        .heightIn(min = 55.dp)
+                        .clickable { context.launchActionIntent(enumAction) },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Widgets,
-                            contentDescription = "Quick Actions",
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "No quick actions added yet",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Button(
-                            onClick = { showQuickActionsMenu = true },
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Add Quick Action",
-                                modifier = Modifier.size(22.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Add")
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = translation["actions.${enumAction.key}.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                        translation.getOrNull("actions.${enumAction.key}.description")?.let {
+                            Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp)
                         }
+                    }
+                    IconButton(onClick = { context.launchActionIntent(enumAction) }, modifier = Modifier.padding(end = 2.dp)) {
+                        Icon(imageVector = Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(24.dp))
                     }
                 }
-            } else {
-                FlowRow(
-                    modifier = Modifier
-                        .padding(all = cardMargin)
-                        .fillMaxWidth(),
-                    maxItemsInEachRow = 3,
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    val tileHeight = LocalDensity.current.run {
-                        remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
+            }
+            // UI Settings
+            RowTitle(title = "UI Settings")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 55.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Haptic Feedback")
+                Switch(
+                    checked = hapticFeedbackEnabled,
+                    onCheckedChange = {
+                        hapticFeedbackEnabled = it
+                        context.config.root.global.uiSettings.hapticFeedback.set(it)
+                        context.config.writeConfig()
+                    },
+                    modifier = Modifier.padding(end = 26.dp)
+                )
+            }
+            // Updates section
+            RowTitle(title = translation["updates_title"])
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 55.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(text = translation["auto_update_check"])
+                    if (autoUpdateCheck) {
+                        Text(
+                            text = translation["update_check_frequency_" + selectedFrequency],
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Light
+                        )
                     }
-                    remember(selectedTiles.size, context.translation.loadedLocale) {
-                        selectedTiles.mapNotNull {
-                            cards.entries.find { entry -> entry.key.first == it }
-                        }
-                    }.forEach { (card, action) ->
-                        ElevatedCard(
-                            modifier = Modifier
-                                .height(tileHeight)
-                                .weight(1f)
-                                .padding(all = 6.dp),
-                            onClick = { action(routes) }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box {
+                        IconButton(
+                            onClick = { frequencyMenuExpanded = true },
+                            enabled = autoUpdateCheck,
+                            modifier = Modifier.alpha(if (autoUpdateCheck) 1f else 0f)
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(all = 5.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.SpaceEvenly,
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = translation["update_check_frequency"]
+                            )
+                        }
+                        if (autoUpdateCheck) {
+                            DropdownMenu(
+                                expanded = frequencyMenuExpanded,
+                                onDismissRequest = { frequencyMenuExpanded = false }
                             ) {
-                                Icon(
-                                    imageVector = card.second, contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(50.dp)
-                                )
-                                Text(
-                                    text = card.first,
-                                    lineHeight = 16.sp,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
+                                listOf("daily", "weekly", "monthly").forEach { frequency ->
+                                    DropdownMenuItem(
+                                        text = { Text(text = translation["update_check_frequency_$frequency"]) },
+                                        onClick = {
+                                            selectedFrequency = frequency
+                                            context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                            context.config.writeConfig()
+                                            scheduleUpdateCheck()
+                                            frequencyMenuExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Switch(
+                        checked = autoUpdateCheck,
+                        onCheckedChange = {
+                            autoUpdateCheck = it
+                            context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                            if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                                context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                            }
+                            context.config.writeConfig()
+                            scheduleUpdateCheck()
+                        },
+                        modifier = Modifier.padding(end = 26.dp)
+                    )
+                }
+            }
+            // Message logger section
+            RowTitle(title = translation["message_logger_title"])
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Text(
+                            translation.format(
+                                "message_logger_summary",
+                                "messageCount" to storedMessagesCount.toString(),
+                                "storyCount" to storedStoriesCount.toString()
+                            ), maxLines = 2
+                        )
+                    }
+                    Button(onClick = {
+                        runCatching {
+                            activityLauncherHelper.saveFile("message_logger.db", "application/octet-stream") { uri ->
+                                context.androidContext.contentResolver.openOutputStream(uri.toUri())?.use { outputStream ->
+                                    messageLogger.databaseFile.inputStream().use { inputStream ->
+                                        inputStream.copyTo(outputStream)
+                                    }
+                                }
+                            }
+                        }.onFailure {
+                            context.log.error("Failed to export database", it)
+                            context.longToast("Failed to export database! ${it.localizedMessage}")
+                        }
+                    }) {
+                        Text(text = translation["export_button"])
+                    }
+                    Button(onClick = {
+                        runCatching {
+                            messageLogger.purgeAll()
+                            storedMessagesCount = 0
+                            storedStoriesCount = 0
+                        }.onFailure {
+                            context.log.error("Failed to clear messages", it)
+                            context.longToast("Failed to clear messages! ${it.localizedMessage}")
+                        }.onSuccess {
+                            context.shortToast(translation["success_toast"])
+                        }
+                    }) {
+                        Text(text = translation["clear_button"])
+                    }
+                }
+                OutlinedButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    onClick = { routes.loggerHistory.navigate() }
+                ) {
+                    Text(translation["view_logger_history_button"])
+                }
+            }
+            // Debug section
+            RowTitle(title = translation["debug_title"])
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 26.dp)
+                ) {
+                    var expanded by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                        modifier = Modifier.fillMaxWidth(0.7f)
+                    ) {
+                        TextField(
+                            value = selectedFileType.fileName,
+                            onValueChange = {},
+                            readOnly = true,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        )
+                        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            InternalFileHandleType.entries.forEach { fileType ->
+                                DropdownMenuItem(onClick = {
+                                    expanded = false
+                                    selectedFileType = fileType
+                                }, text = {
+                                    Text(text = fileType.fileName)
+                                })
                             }
                         }
                     }
                 }
-            }
-            if (showQuickActionsMenu) {
-                QuickActionsDialog(
-                    quickActions = cards,
-                    selectedQuickActions = selectedTiles,
-                    onDismiss = { showQuickActionsMenu = false },
-                    onSave = {
-                        selectedTiles.clear()
-                        selectedTiles.addAll(it)
-                        context.coroutineScope.launch {
-                            context.database.setQuickTiles(selectedTiles)
+                Button(onClick = {
+                    runCatching {
+                        scope.launch {
+                            selectedFileType.resolve(context.androidContext).delete()
                         }
-                        showQuickActionsMenu = false
+                    }.onFailure {
+                        context.log.error("Failed to clear file", it)
+                        context.longToast("Failed to clear file! ${it.localizedMessage}")
+                    }.onSuccess {
+                        context.shortToast(translation["success_toast"])
                     }
-                )
+                }) {
+                    Text(translation["clear_button"])
+                }
             }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                PreferenceToggle(context.sharedPreferences, key = "test_mode", text = "Test Mode (FOR DEBUGGING ONLY)")
+                PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = "Disable Feature Loading")
+                PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
+            }
+            Spacer(modifier = Modifier.height(50.dp))
         }
     }
 }
