@@ -221,7 +221,7 @@ class HomeSettings : Routes.Route() {
             }
             Spacer(Modifier.height(20.dp))
 
-            RowTitle(title = translation["manager.sections.home_settings.actions_title"])
+            RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
                     context.launchActionIntent(enumAction)
@@ -234,7 +234,7 @@ class HomeSettings : Routes.Route() {
                 context.checkForRequirements(Requirements.LANGUAGE)
             }
 
-            RowTitle(title = translation["manager.sections.home_settings.updates_title"])
+            RowTitle(title = translation["updates_title"])
             ShiftedRow {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -256,7 +256,7 @@ class HomeSettings : Routes.Route() {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = translation["manager.sections.home_settings.auto_update_check"], modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
+                        Text(text = translation["auto_update_check"], modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
                         Switch(checked = autoUpdateCheck, onCheckedChange = {
                             autoUpdateCheck = it
                             context.config.root.global.updateSettings.autoUpdateCheck.set(it)
@@ -272,14 +272,14 @@ class HomeSettings : Routes.Route() {
                     val frequencies = remember { listOf("daily", "weekly", "monthly") }
                     var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
 
-                    Text(text = translation["manager.sections.home_settings.update_check_frequency"], modifier = Modifier.padding(top = 8.dp, bottom = 4.dp), fontSize = 14.sp)
+                    Text(text = translation["update_check_frequency"], modifier = Modifier.padding(top = 8.dp, bottom = 4.dp), fontSize = 14.sp)
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
                         modifier = Modifier.fillMaxWidth(0.7f)
                     ) {
                         TextField(
-                            value = translation["manager.sections.home_settings.update_check_frequency_" + selectedFrequency],
+                            value = translation["update_check_frequency_" + selectedFrequency],
                             onValueChange = {},
                             readOnly = true,
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -293,7 +293,7 @@ class HomeSettings : Routes.Route() {
                                     context.config.writeConfig()
                                     scheduleUpdateCheck()
                                 }, text = {
-                                    Text(text = translation["manager.sections.home_settings.update_check_frequency_" + frequency])
+                                    Text(text = translation["update_check_frequency_" + frequency])
                                 })
                             }
                         }
@@ -301,7 +301,7 @@ class HomeSettings : Routes.Route() {
                 }
             }
 
-            RowTitle(title = translation["manager.sections.home_settings.message_logger_title"])
+            RowTitle(title = translation["message_logger_title"])
             ShiftedRow {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -372,7 +372,7 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-            RowTitle(title = translation["manager.sections.home_settings.debug_title"])
+            RowTitle(title = translation["debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
