@@ -22,7 +22,6 @@ import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSection
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSectionModern
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettings
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettingsModern
-import me.rhunk.snapenhance.ui.manager.pages.home.PREFS_KEY_MODERN_UI
 import me.rhunk.snapenhance.ui.manager.pages.location.BetterLocationRoot
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ScriptingRootSection
 import me.rhunk.snapenhance.ui.manager.pages.social.LoggedStories
@@ -84,9 +83,7 @@ class Routes(
         lateinit var routes: Routes
         val translation by lazy { context.translation.getCategory("manager.sections.${routeInfo.key.substringBefore("/")}") }
         private fun replaceArguments(id: String, args: Map<String, String>) = args.takeIf { it.isNotEmpty() }?.let {
-            args.entries.fold(id) { acc, (key, value) ->
-                acc.replace("{$key}", value)
-            }
+            args.entries.fold(id) { acc, (key, value) -> acc.replace("{$key}", value) }
         } ?: id
         fun navigate(args: MutableMap<String, String>.() -> Unit = {}) {
             routes.navController.navigate(replaceArguments(routeInfo.id, HashMap<String, String>().apply { args() }))
@@ -98,9 +95,7 @@ class Routes(
         }
         fun navigateReset(args: MutableMap<String, String>.() -> Unit = {}) {
             routes.navController.navigate(replaceArguments(routeInfo.id, HashMap<String, String>().apply { args() })) {
-                popUpTo(routes.navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
+                popUpTo(routes.navController.graph.findStartDestination().id) { saveState = true }
                 launchSingleTop = true
                 restoreState = true
             }
@@ -131,7 +126,7 @@ class Routes(
             this.routeInfo = routeInfo
             routes = this@Routes
             context = this@Routes.context
-            this.routeInfo.translatedKey = lazy { context.translation.getOrNull("manager.routes.${route.routeInfo.key.substringBefore("/" )}") }
+            this.routeInfo.translatedKey = lazy { context.translation.getOrNull("manager.routes.${route.routeInfo.key.substringBefore("/")}") }
         }
         routes.add(route)
         return route
