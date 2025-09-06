@@ -264,7 +264,7 @@ class HomeSettings : Routes.Route() {
                             .clickable {
                                 autoUpdateCheck = !autoUpdateCheck
                                 context.config.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
-                                context._config.writeConfig()
+                                context._config?.writeConfig()
                                 scheduleUpdateCheck()
                             },
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -278,7 +278,7 @@ class HomeSettings : Routes.Route() {
                         Switch(checked = autoUpdateCheck, onCheckedChange = {
                             autoUpdateCheck = it
                             context.config.global.updateSettings.autoUpdateCheck.set(it)
-                            context._config.writeConfig()
+                            context._config?.writeConfig()
                             scheduleUpdateCheck()
                         }, modifier = Modifier.padding(end = 26.dp))
                     }
@@ -302,7 +302,7 @@ class HomeSettings : Routes.Route() {
                                     expanded = false
                                     selectedFrequency = frequency
                                     context.config.global.updateSettings.updateCheckFrequency.set(frequency)
-                                    context._config.writeConfig()
+                                    context._config?.writeConfig()
                                     scheduleUpdateCheck()
                                 }, text = {
                                     Text(text = translation["manager.sections.home_settings.update_check_frequency_" + frequency])
