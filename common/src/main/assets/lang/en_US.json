@@ -71,7 +71,13 @@
                 "message_logger_summary": "{messageCount} messages\n{storyCount} stories",
                 "export_button": "Export",
                 "clear_button": "Clear",
-                "view_logger_history_button": "View Logger History"
+                "view_logger_history_button": "View Logger History",
+                "updates_title": "Updates",
+                "auto_update_check": "Auto check for updates",
+                "update_check_frequency": "Update check frequency",
+                "update_check_frequency_daily": "Daily",
+                "update_check_frequency_weekly": "Weekly",
+                "update_check_frequency_monthly": "Monthly"
             },
             "tasks": {
                 "no_tasks": "No tasks",

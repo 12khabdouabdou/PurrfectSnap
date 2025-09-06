@@ -32,10 +32,46 @@ import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.saveFile
+import androidx.work.WorkManager
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import me.rhunk.snapenhance.task.UpdateCheckWorker
+import java.util.concurrent.TimeUnit
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
+
+    private fun scheduleUpdateCheck() {
+        val workManager = WorkManager.getInstance(context.androidContext)
+        if (context.modConfig.root.global.updateSettings.autoUpdateCheck.get()) {
+            val frequency = context.modConfig.root.global.updateSettings.updateCheckFrequency.get()
+            val repeatInterval = when (frequency) {
+                "daily" -> 1L
+                "weekly" -> 7L
+                "monthly" -> 30L
+                else -> 1L
+            }
+
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
+                .setConstraints(constraints)
+                .build()
+
+            workManager.enqueueUniquePeriodicWork(
+                "snapenhance_update_check",
+                ExistingPeriodicWorkPolicy.REPLACE,
+                workRequest
+            )
+        } else {
+            workManager.cancelUniqueWork("snapenhance_update_check")
+        }
+    }
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
@@ -197,6 +233,67 @@ class HomeSettings : Routes.Route() {
             RowAction(key = "change_language") {
                 context.checkForRequirements(Requirements.LANGUAGE)
             }
+
+            RowTitle(title = translation["manager.sections.home_settings.updates_title"])
+            ShiftedRow {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    var autoUpdateCheck by remember { mutableStateOf(context.modConfig.root.global.updateSettings.autoUpdateCheck.get()) }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 55.dp)
+                            .clickable {
+                                autoUpdateCheck = !autoUpdateCheck
+                                context.modConfig.root.global.updateSettings.autoUpdateCheck.set(autoUpdateCheck)
+                                context.modConfig.writeConfig()
+                                scheduleUpdateCheck()
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = translation["manager.sections.home_settings.auto_update_check"], modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
+                        Switch(checked = autoUpdateCheck, onCheckedChange = {
+                            autoUpdateCheck = it
+                            context.modConfig.root.global.updateSettings.autoUpdateCheck.set(it)
+                            context.modConfig.writeConfig()
+                            scheduleUpdateCheck()
+                        }, modifier = Modifier.padding(end = 26.dp))
+                    }
+
+                    var expanded by remember { mutableStateOf(false) }
+                    val frequencies = remember { listOf("daily", "weekly", "monthly") }
+                    var selectedFrequency by remember { mutableStateOf(context.modConfig.root.global.updateSettings.updateCheckFrequency.get()) }
+
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it },
+                        modifier = Modifier.fillMaxWidth(0.7f)
+                    ) {
+                        TextField(
+                            value = translation["manager.sections.home_settings.update_check_frequency_" + selectedFrequency],
+                            onValueChange = {},
+                            readOnly = true,
+                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        )
+                        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            frequencies.forEach { frequency ->
+                                DropdownMenuItem(onClick = {
+                                    expanded = false
+                                    selectedFrequency = frequency
+                                    context.modConfig.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                    context.modConfig.writeConfig()
+                                    scheduleUpdateCheck()
+                                }, text = {
+                                    Text(text = translation["manager.sections.home_settings.update_check_frequency_" + frequency])
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+
             RowTitle(title = translation["message_logger_title"])
             ShiftedRow {
                 Column(

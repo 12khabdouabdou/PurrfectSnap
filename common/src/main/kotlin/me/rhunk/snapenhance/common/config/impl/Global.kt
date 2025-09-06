@@ -56,4 +56,10 @@ class Global : ConfigContainer() {
     val disableTelecomFramework = boolean("disable_telecom_framework") { requireRestart() }
     val hideActiveMusic = boolean("hide_active_music") { requireRestart() }
     val disableSnapSplitting = boolean("disable_snap_splitting") { addNotices(FeatureNotice.UNSTABLE) }
+
+    inner class UpdateSettings : ConfigContainer() {
+        val autoUpdateCheck = boolean("auto_update_check")
+        val updateCheckFrequency = unique("update_check_frequency", "daily", "weekly", "monthly")
+    }
+    val updateSettings = container("update_settings", UpdateSettings())
 }

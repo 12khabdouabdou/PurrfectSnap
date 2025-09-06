@@ -50,6 +50,7 @@ import me.rhunk.snapenhance.core.ui.Snapenhance
 import me.rhunk.snapenhance.storage.getQuickTiles
 import me.rhunk.snapenhance.storage.setQuickTiles
 import me.rhunk.snapenhance.ui.manager.Routes
+import me.rhunk.snapenhance.ui.manager.data.UpdateDownloader
 import me.rhunk.snapenhance.ui.manager.data.Updater
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
@@ -214,39 +215,60 @@ class HomeRootSection : Routes.Route() {
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
-                        Button(
-                            modifier = Modifier.height(40.dp),
-                            onClick = {
-                                val latest = latestUpdate ?: return@Button
-                                if (latest.workflowId == null) {
-                                    context.androidContext.openLink(latest.releaseUrl)
-                                    return@Button
-                                }
-                                val supportedAbis = android.os.Build.SUPPORTED_ABIS
-                                var abiName: String? = null
-                                for (abi in supportedAbis) {
-                                    when (abi) {
-                                        "arm64-v8a" -> {
-                                            abiName = "armv8"
-                                            break
+                        val downloadState by UpdateDownloader.downloadState.collectAsState()
+                        val downloadProgress by UpdateDownloader.downloadProgress.collectAsState()
+                        val coroutineScope = rememberCoroutineScope()
+
+                        AnimatedContent(
+                            targetState = downloadState,
+                            modifier = Modifier.height(40.dp)
+                        ) { state ->
+                            when (state) {
+                                UpdateDownloader.DownloadState.IDLE -> {
+                                    Button(
+                                        onClick = {
+                                            val latest = latestUpdate ?: return@Button
+                                            if (latest.workflowId == null) {
+                                                context.androidContext.openLink(latest.releaseUrl)
+                                                return@Button
+                                            }
+                                            val supportedAbis = android.os.Build.SUPPORTED_ABIS
+                                            var abiName: String? = null
+                                            for (abi in supportedAbis) {
+                                                when (abi) {
+                                                    "arm64-v8a" -> {
+                                                        abiName = "armv8"
+                                                        break
+                                                    }
+                                                    "armeabi-v7a" -> {
+                                                        abiName = "armv7"
+                                                        break
+                                                    }
+                                                }
+                                            }
+
+                                            if (abiName != null) {
+                                                val artifactName = "snapenhance-${abiName}-debug"
+                                                val downloadUrl = "https://nightly.link/rhunk/SnapEnhance/actions/runs/${latest.workflowId}/$artifactName.zip"
+                                                UpdateDownloader.downloadAndInstall(context.androidContext, downloadUrl, "$artifactName.zip", coroutineScope)
+                                            } else {
+                                                android.widget.Toast.makeText(context.androidContext, "Your device architecture is not supported for automatic updates.", android.widget.Toast.LENGTH_LONG).show()
+                                            }
                                         }
-                                        "armeabi-v7a" -> {
-                                            abiName = "armv7"
-                                            break
-                                        }
+                                    ) {
+                                        Text(text = translation["update_button"])
                                     }
                                 }
-
-                                if (abiName != null) {
-                                    val artifactName = "snapenhance-${abiName}-debug"
-                                    val downloadUrl = "https://nightly.link/rhunk/SnapEnhance/actions/runs/${latest.workflowId}/$artifactName.zip"
-                                    me.rhunk.snapenhance.ui.manager.data.UpdateDownloader.downloadAndInstall(context.androidContext, downloadUrl, "$artifactName.zip")
-                                } else {
-                                    android.widget.Toast.makeText(context.androidContext, "Your device architecture is not supported for automatic updates.", android.widget.Toast.LENGTH_LONG).show()
+                                UpdateDownloader.DownloadState.DOWNLOADING -> {
+                                    CircularProgressIndicator(progress = downloadProgress)
+                                }
+                                UpdateDownloader.DownloadState.COMPLETED -> {
+                                    Icon(imageVector = Icons.Default.Check, contentDescription = "Completed")
+                                }
+                                UpdateDownloader.DownloadState.FAILED -> {
+                                    Icon(imageVector = Icons.Default.Close, contentDescription = "Failed")
                                 }
                             }
-                        ) {
-                            Text(text = translation["update_button"])
                         }
                     }
                 }

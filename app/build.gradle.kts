@@ -142,6 +142,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.compose.material3:material3:1.2.1")
+    implementation(libs.androidx.work.runtime.ktx)
 }
 
 afterEvaluate {
