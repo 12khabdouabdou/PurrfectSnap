@@ -61,5 +61,13 @@ class Global : ConfigContainer() {
         val autoUpdateCheck = boolean("auto_update_check")
         val updateCheckFrequency = unique("update_check_frequency", "daily", "weekly", "monthly")
     }
+
+    inner class UISettings : ConfigContainer() {
+        val hapticFeedback = boolean("haptic_feedback") {
+            defaultValue = true
+        }
+    }
+
     val updateSettings = container("update_settings", UpdateSettings())
+    val uiSettings = container("ui_settings", UISettings())
 }

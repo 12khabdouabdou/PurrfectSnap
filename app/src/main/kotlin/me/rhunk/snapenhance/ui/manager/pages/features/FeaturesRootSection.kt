@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -251,9 +253,13 @@ class FeaturesRootSection : Routes.Route() {
         when (val dataType = remember { property.key.dataType.type }) {
             DataProcessors.Type.BOOLEAN -> {
                 var state by remember { mutableStateOf(propertyValue.get() as Boolean) }
+                val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
                     onCheckedChange = registerClickCallback {
+                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
                         state = state.not()
                         propertyValue.setAny(state)
                     }
@@ -363,9 +369,13 @@ class FeaturesRootSection : Routes.Route() {
                         ))
                 }
 
+                val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
                     onCheckedChange = {
+                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
                         state = state.not()
                         container.globalState = state
                     }
