@@ -13,6 +13,7 @@ import me.rhunk.snapenhance.common.util.ktx.getLongOrNull
 import me.rhunk.snapenhance.common.util.ktx.getStringOrNull
 import kotlin.coroutines.suspendCoroutine
 
+
 fun AppDatabase.clearTrackerRules() {
     runBlocking {
         suspendCoroutine { continuation ->
@@ -56,14 +57,11 @@ fun AppDatabase.addOrUpdateTrackerRuleEvent(
         suspendCoroutine { continuation ->
             executeAsync {
                 val id = if (ruleEventId != null) {
-                    database.execSQL(
-                        "UPDATE tracker_rules_events SET params = ?, actions = ? WHERE id = ?",
-                        arrayOf<Any>(
-                            context.gson.toJson(params),
-                            context.gson.toJson(actions.map { it.key }),
-                            ruleEventId
-                        )
-                    )
+                    database.execSQL("UPDATE tracker_rules_events SET params = ?, actions = ? WHERE id = ?", arrayOf(
+                        context.gson.toJson(params),
+                        context.gson.toJson(actions.map { it.key }),
+                        ruleEventId
+                    ))
                     ruleEventId
                 } else {
                     database.insert("tracker_rules_events", null, ContentValues().apply {
@@ -87,6 +85,7 @@ fun AppDatabase.deleteTrackerRuleEvent(eventId: Int) {
 
 fun AppDatabase.getTrackerRulesDesc(): List<TrackerRule> {
     val rules = mutableListOf<TrackerRule>()
+
     database.rawQuery("SELECT * FROM tracker_rules ORDER BY id DESC", null).use { cursor ->
         while (cursor.moveToNext()) {
             rules.add(
@@ -98,6 +97,7 @@ fun AppDatabase.getTrackerRulesDesc(): List<TrackerRule> {
             )
         }
     }
+
     return rules
 }
 
@@ -114,44 +114,29 @@ fun AppDatabase.getTrackerRule(ruleId: Int): TrackerRule? {
 
 fun AppDatabase.setTrackerRuleName(ruleId: Int, name: String) {
     executeAsync {
-        database.execSQL(
-            "UPDATE tracker_rules SET name = ? WHERE id = ?",
-            arrayOf<Any>(name, ruleId)
-        )
+        database.execSQL("UPDATE tracker_rules SET name = ? WHERE id = ?", arrayOf(name, ruleId))
     }
 }
 
 fun AppDatabase.setTrackerRuleState(ruleId: Int, enabled: Boolean) {
     executeAsync {
-        database.execSQL(
-            "UPDATE tracker_rules SET enabled = ? WHERE id = ?",
-            arrayOf(if (enabled) 1 else 0, ruleId)
-        )
+        database.execSQL("UPDATE tracker_rules SET enabled = ? WHERE id = ?", arrayOf(if (enabled) 1 else 0, ruleId))
     }
 }
 
 fun AppDatabase.getTrackerEvents(ruleId: Int): List<TrackerRuleEvent> {
     val events = mutableListOf<TrackerRuleEvent>()
-    database.rawQuery(
-        "SELECT * FROM tracker_rules_events WHERE rule_id = ?",
-        arrayOf(ruleId.toString())
-    ).use { cursor ->
+    database.rawQuery("SELECT * FROM tracker_rules_events WHERE rule_id = ?", arrayOf(ruleId.toString())).use { cursor ->
         while (cursor.moveToNext()) {
-            val id = cursor.getInteger("id")
-            val eventType = cursor.getStringOrNull("event_type") ?: continue
-            val enabled = cursor.getInteger("flags") == 1
-            val paramsJson = cursor.getStringOrNull("params") ?: "{}"
-            val params = context.gson.fromJson(paramsJson, TrackerRuleActionParams::class.java)
-            val actionsJson = cursor.getStringOrNull("actions") ?: "[]"
-            val actionsArray = context.gson.fromJson(actionsJson, JsonArray::class.java)
-            val actions = actionsArray.mapNotNull { TrackerRuleAction.fromString(it.asString) }
             events.add(
                 TrackerRuleEvent(
-                    id = id,
-                    eventType = eventType,
-                    enabled = enabled,
-                    params = params,
-                    actions = actions
+                    id = cursor.getInteger("id"),
+                    eventType = cursor.getStringOrNull("event_type") ?: continue,
+                    enabled = cursor.getInteger("flags") == 1,
+                    params = context.gson.fromJson(cursor.getStringOrNull("params") ?: "{}", TrackerRuleActionParams::class.java),
+                    actions = context.gson.fromJson(cursor.getStringOrNull("actions") ?: "[]", JsonArray::class.java).mapNotNull {
+                        TrackerRuleAction.fromString(it.asString)
+                    }
                 )
             )
         }
@@ -161,43 +146,27 @@ fun AppDatabase.getTrackerEvents(ruleId: Int): List<TrackerRuleEvent> {
 
 fun AppDatabase.getTrackerEvents(eventType: String): Map<TrackerRuleEvent, TrackerRule> {
     val events = mutableMapOf<TrackerRuleEvent, TrackerRule>()
-    database.rawQuery(
-        "SELECT " +
-            "tracker_rules_events.id as event_id, " +
-            "tracker_rules_events.params as event_params, " +
-            "tracker_rules_events.actions, " +
-            "tracker_rules_events.flags, " +
-            "tracker_rules_events.event_type, " +
-            "tracker_rules.name, " +
-            "tracker_rules.id as rule_id " +
+    database.rawQuery("SELECT tracker_rules_events.id as event_id, tracker_rules_events.params as event_params," +
+            "tracker_rules_events.actions, tracker_rules_events.flags, tracker_rules_events.event_type, tracker_rules.name, tracker_rules.id as rule_id " +
             "FROM tracker_rules_events " +
             "INNER JOIN tracker_rules " +
             "ON tracker_rules_events.rule_id = tracker_rules.id " +
-            "WHERE event_type = ? AND tracker_rules.enabled = 1",
-        arrayOf(eventType)
+            "WHERE event_type = ? AND tracker_rules.enabled = 1", arrayOf(eventType)
     ).use { cursor ->
         while (cursor.moveToNext()) {
-            val ruleId = cursor.getInteger("rule_id")
-            val ruleName = cursor.getStringOrNull("name") ?: ""
-            val eventId = cursor.getInteger("event_id")
-            val evtType = cursor.getStringOrNull("event_type") ?: continue
-            val enabled = cursor.getInteger("flags") == 1
-            val paramsJson = cursor.getStringOrNull("event_params") ?: "{}"
-            val params = context.gson.fromJson(paramsJson, TrackerRuleActionParams::class.java)
-            val actionsJson = cursor.getStringOrNull("actions") ?: "[]"
-            val actionsArray = context.gson.fromJson(actionsJson, JsonArray::class.java)
-            val actions = actionsArray.mapNotNull { TrackerRuleAction.fromString(it.asString) }
             val trackerRule = TrackerRule(
-                id = ruleId,
+                id = cursor.getInteger("rule_id"),
                 enabled = true,
-                name = ruleName,
+                name = cursor.getStringOrNull("name") ?: "",
             )
             val trackerRuleEvent = TrackerRuleEvent(
-                id = eventId,
-                eventType = evtType,
-                enabled = enabled,
-                params = params,
-                actions = actions
+                id = cursor.getInteger("event_id"),
+                eventType = cursor.getStringOrNull("event_type") ?: continue,
+                enabled = cursor.getInteger("flags") == 1,
+                params = context.gson.fromJson(cursor.getStringOrNull("event_params") ?: "{}", TrackerRuleActionParams::class.java),
+                actions = context.gson.fromJson(cursor.getStringOrNull("actions") ?: "[]", JsonArray::class.java).mapNotNull {
+                    TrackerRuleAction.fromString(it.asString)
+                }
             )
             events[trackerRuleEvent] = trackerRule
         }
@@ -209,25 +178,20 @@ fun AppDatabase.setRuleTrackerScopes(ruleId: Int, type: TrackerScopeType, scopes
     executeAsync {
         database.execSQL("DELETE FROM tracker_scopes WHERE rule_id = ?", arrayOf(ruleId))
         scopes.forEach { scopeId ->
-            database.execSQL(
-                "INSERT INTO tracker_scopes (rule_id, scope_type, scope_id) VALUES (?, ?, ?)",
-                arrayOf<Any>(ruleId, type.key, scopeId)
-            )
+            database.execSQL("INSERT INTO tracker_scopes (rule_id, scope_type, scope_id) VALUES (?, ?, ?)", arrayOf(
+                ruleId,
+                type.key,
+                scopeId
+            ))
         }
     }
 }
 
 fun AppDatabase.getRuleTrackerScopes(ruleId: Int, limit: Int = Int.MAX_VALUE): Map<String, TrackerScopeType> {
     val scopes = mutableMapOf<String, TrackerScopeType>()
-    database.rawQuery(
-        "SELECT * FROM tracker_scopes WHERE rule_id = ? LIMIT ?",
-        arrayOf(ruleId.toString(), limit.toString())
-    ).use { cursor ->
+    database.rawQuery("SELECT * FROM tracker_scopes WHERE rule_id = ? LIMIT ?", arrayOf(ruleId.toString(), limit.toString())).use { cursor ->
         while (cursor.moveToNext()) {
-            val scopeId = cursor.getStringOrNull("scope_id") ?: continue
-            val scopeTypeKey = cursor.getStringOrNull("scope_type") ?: continue
-            val scopeType = TrackerScopeType.entries.find { it.key == scopeTypeKey } ?: continue
-            scopes[scopeId] = scopeType
+            scopes[cursor.getStringOrNull("scope_id") ?: continue] = TrackerScopeType.entries.find { it.key == cursor.getStringOrNull("scope_type") } ?: continue
         }
     }
     return scopes
@@ -237,24 +201,17 @@ fun AppDatabase.updateFriendScore(userId: String, score: Long): Long {
     return runBlocking {
         suspendCoroutine { continuation ->
             executeAsync {
-                val currentScore = database.rawQuery(
-                    "SELECT score FROM friend_scores WHERE userId = ?",
-                    arrayOf(userId)
-                ).use { cursor ->
+                val currentScore = database.rawQuery("SELECT score FROM friend_scores WHERE userId = ?", arrayOf(userId)).use { cursor ->
                     if (!cursor.moveToFirst()) return@use null
                     cursor.getLongOrNull("score")
                 }
+
                 if (currentScore != null) {
-                    database.execSQL(
-                        "UPDATE friend_scores SET score = ? WHERE userId = ?",
-                        arrayOf<Any>(score, userId)
-                    )
+                    database.execSQL("UPDATE friend_scores SET score = ? WHERE userId = ?", arrayOf(score, userId))
                 } else {
-                    database.execSQL(
-                        "INSERT INTO friend_scores (userId, score) VALUES (?, ?)",
-                        arrayOf<Any>(userId, score)
-                    )
+                    database.execSQL("INSERT INTO friend_scores (userId, score) VALUES (?, ?)", arrayOf(userId, score))
                 }
+
                 continuation.resumeWith(Result.success(currentScore ?: -1))
             }
         }
