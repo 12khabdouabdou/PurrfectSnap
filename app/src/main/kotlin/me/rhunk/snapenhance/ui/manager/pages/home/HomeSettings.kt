@@ -1,10 +1,10 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -15,6 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,18 +50,23 @@ const val PREFS_KEY_MODERN_UI = "snapenhance_pref_modern_ui"
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
+
     private fun scheduleUpdateCheck() {
         val workManager = WorkManager.getInstance(context.androidContext)
         if (context.config.root.global.updateSettings.autoUpdateCheck.get()) {
             val frequency = context.config.root.global.updateSettings.updateCheckFrequency.get()
             val repeatInterval = when (frequency) {
-                "daily" -> 1L; "weekly" -> 7L; "monthly" -> 30L; else -> 1L
+                "daily" -> 1L
+                "weekly" -> 7L
+                "monthly" -> 30L
+                else -> 1L
             }
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
             val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
-                .setConstraints(constraints).build()
+                .setConstraints(constraints)
+                .build()
             workManager.enqueueUniquePeriodicWork(
                 "snapenhance_update_check",
                 ExistingPeriodicWorkPolicy.REPLACE,
@@ -68,70 +76,130 @@ class HomeSettings : Routes.Route() {
             workManager.cancelUniqueWork("snapenhance_update_check")
         }
     }
-    override val init: () -> Unit = { activityLauncherHelper = ActivityLauncherHelper(context.activity!!) }
+
+    override val init: () -> Unit = {
+        activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
+    }
+
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
+
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, false)) }
+        val hapticFeedback = LocalHapticFeedback.current
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 55.dp)
                 .clickable {
+                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
                     value = !value
-                    sharedPreferences.edit { putBoolean(realKey, value) }
+                    sharedPreferences
+                        .edit() { putBoolean(realKey, value) }
                 },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = text, modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
             Switch(checked = value, onCheckedChange = {
+                if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
                 value = it
-                sharedPreferences.edit { putBoolean(realKey, it) }
+                sharedPreferences.edit().putBoolean(realKey, it).apply()
             }, modifier = Modifier.padding(end = 26.dp))
         }
     }
 
+    @Composable
+    private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
+        var confirmationDialog by remember { mutableStateOf(false) }
+        fun takeAction() {
+            if (requireConfirmation) {
+                confirmationDialog = true
+            } else {
+                action()
+            }
+        }
+        if (requireConfirmation && confirmationDialog) {
+            Dialog(onDismissRequest = { confirmationDialog = false }) {
+                dialogs.ConfirmDialog(title = context.translation["manager.dialogs.action_confirm.title"], onConfirm = {
+                    action()
+                    confirmationDialog = false
+                }, onDismiss = {
+                    confirmationDialog = false
+                })
+            }
+        }
+        ShiftedRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 55.dp)
+                .clickable { takeAction() },
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(text = context.translation["actions.$key.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                context.translation.getOrNull("actions.$key.description")?.let { Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp) }
+            }
+            IconButton(onClick = { takeAction() }, modifier = Modifier.padding(end = 2.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun ShiftedRow(
+        modifier: Modifier = Modifier,
+        horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+        verticalAlignment: Alignment.Vertical = Alignment.Top,
+        content: @Composable RowScope.() -> Unit
+    ) {
+        Row(
+            modifier = modifier.padding(start = 26.dp),
+            horizontalArrangement = horizontalArrangement,
+            verticalAlignment = verticalAlignment
+        ) { content(this) }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val contextC = androidx.compose.ui.platform.LocalContext.current
-        val prefs = context.sharedPreferences
+        val contextC = LocalContext.current
+        val prefs = remember { contextC.getSharedPreferences("snapenhance", Context.MODE_PRIVATE) }
         var modernUiEnabled by remember { mutableStateOf(prefs.getBoolean(PREFS_KEY_MODERN_UI, true)) }
-        fun setModernUi(enabled: Boolean) {
-            modernUiEnabled = enabled
-            prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, enabled) }
-        }
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
-        var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
-        var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
-        var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
-        var frequencyMenuExpanded by remember { mutableStateOf(false) }
-        val translation = context.translation
-        val messageLogger = context.messageLogger
-
-        var storedMessagesCount by rememberAsyncMutableState(defaultValue = 0) { messageLogger.getStoredMessageCount() }
-        var storedStoriesCount by rememberAsyncMutableState(defaultValue = 0) { messageLogger.getStoredStoriesCount() }
-        var selectedFileType by remember { mutableStateOf(InternalFileHandleType.entries.first()) }
-        var expanded by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Modern UI toggle
+            // --- Modern UI Toggle (very top)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 12.dp)
-                    .clickable { setModernUi(!modernUiEnabled) },
-                shape = RoundedCornerShape(26.dp),
+                    .padding(horizontal = 14.dp, vertical = 16.dp)
+                    .clickable {
+                        modernUiEnabled = !modernUiEnabled
+                        prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, modernUiEnabled) }
+                    },
+                shape = MaterialTheme.shapes.medium,
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
                 Row(
@@ -144,18 +212,22 @@ class HomeSettings : Routes.Route() {
                     Spacer(modifier = Modifier.weight(1f))
                     Switch(
                         checked = modernUiEnabled,
-                        onCheckedChange = { setModernUi(it) }
+                        onCheckedChange = { enabled ->
+                            modernUiEnabled = enabled
+                            prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, enabled) }
+                        }
                     )
                 }
             }
-            // Theme card
-            Spacer(Modifier.height(6.dp))
+
+            // --- THEME ---
+            Spacer(Modifier.height(20.dp))
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .clickable { showThemeDialog = true },
-                shape = RoundedCornerShape(18.dp),
+                shape = MaterialTheme.shapes.medium,
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Row(
@@ -164,7 +236,12 @@ class HomeSettings : Routes.Route() {
                         .padding(22.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(imageVector = Icons.Filled.Brightness4, contentDescription = "Theme", modifier = Modifier.size(26.dp))
+                    Icon(
+                        imageVector = Icons.Filled.Brightness4,
+                        contentDescription = "Theme",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(26.dp)
+                    )
                     Spacer(modifier = Modifier.width(18.dp))
                     Column(Modifier.weight(1f)) {
                         Text("App Theme", fontWeight = FontWeight.Medium, fontSize = 16.sp)
@@ -175,189 +252,204 @@ class HomeSettings : Routes.Route() {
             if (showThemeDialog) {
                 ThemeChooserDialog(
                     selected = themeMode,
-                    onSelect = { mode -> scope.launch { ThemePreferences.setThemeMode(contextC, mode) } },
+                    onSelect = { mode ->
+                        scope.launch { ThemePreferences.setThemeMode(contextC, mode) }
+                    },
                     onDismiss = { showThemeDialog = false }
                 )
             }
-            Spacer(Modifier.height(6.dp))
-            // Actions
+            Spacer(Modifier.height(20.dp))
+
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
+                RowAction(key = enumAction.key) { context.launchActionIntent(enumAction) }
+            }
+            RowAction(key = "regen_mappings") { context.checkForRequirements(Requirements.MAPPINGS) }
+            RowAction(key = "change_language") { context.checkForRequirements(Requirements.LANGUAGE) }
+
+            RowTitle(title = "UI Settings")
+            ShiftedRow {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 55.dp)
-                        .clickable { context.launchActionIntent(enumAction) },
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .heightIn(min = 55.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(text = translation["actions.${enumAction.key}.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
-                        translation.getOrNull("actions.${enumAction.key}.description")?.let {
-                            Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp)
-                        }
-                    }
-                    IconButton(onClick = { context.launchActionIntent(enumAction) }, modifier = Modifier.padding(end = 2.dp)) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(24.dp))
-                    }
-                }
-            }
-            // UI Settings
-            RowTitle(title = "UI Settings")
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 55.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "Haptic Feedback")
-                Switch(
-                    checked = hapticFeedbackEnabled,
-                    onCheckedChange = {
-                        hapticFeedbackEnabled = it
-                        context.config.root.global.uiSettings.hapticFeedback.set(it)
-                        context.config.writeConfig()
-                    },
-                    modifier = Modifier.padding(end = 26.dp)
-                )
-            }
-            // Updates section
-            RowTitle(title = translation["updates_title"])
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 55.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(text = translation["auto_update_check"])
-                    if (autoUpdateCheck) {
-                        Text(
-                            text = translation["update_check_frequency_" + selectedFrequency],
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Light
-                        )
-                    }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box {
-                        IconButton(
-                            onClick = { frequencyMenuExpanded = true },
-                            enabled = autoUpdateCheck,
-                            modifier = Modifier.alpha(if (autoUpdateCheck) 1f else 0f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = translation["update_check_frequency"]
-                            )
-                        }
-                        if (autoUpdateCheck) {
-                            DropdownMenu(
-                                expanded = frequencyMenuExpanded,
-                                onDismissRequest = { frequencyMenuExpanded = false }
-                            ) {
-                                listOf("daily", "weekly", "monthly").forEach { frequency ->
-                                    DropdownMenuItem(
-                                        text = { Text(text = translation["update_check_frequency_$frequency"]) },
-                                        onClick = {
-                                            selectedFrequency = frequency
-                                            context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
-                                            context.config.writeConfig()
-                                            scheduleUpdateCheck()
-                                            frequencyMenuExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    Text(text = "Haptic Feedback")
+                    var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+                    val hapticFeedback = LocalHapticFeedback.current
                     Switch(
-                        checked = autoUpdateCheck,
+                        checked = hapticFeedbackEnabled,
                         onCheckedChange = {
-                            autoUpdateCheck = it
-                            context.config.root.global.updateSettings.autoUpdateCheck.set(it)
-                            if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
-                                context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                            if (it) {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             }
+                            hapticFeedbackEnabled = it
+                            context.config.root.global.uiSettings.hapticFeedback.set(it)
                             context.config.writeConfig()
-                            scheduleUpdateCheck()
                         },
                         modifier = Modifier.padding(end = 26.dp)
                     )
                 }
             }
-            // Message logger section
-            RowTitle(title = translation["message_logger_title"])
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp)
+
+            RowTitle(title = translation["updates_title"])
+            ShiftedRow {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
+                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
+                    var frequencyMenuExpanded by remember { mutableStateOf(false) }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 55.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            translation.format(
-                                "message_logger_summary",
-                                "messageCount" to storedMessagesCount.toString(),
-                                "storyCount" to storedStoriesCount.toString()
-                            ), maxLines = 2
-                        )
-                    }
-                    Button(onClick = {
-                        runCatching {
-                            activityLauncherHelper.saveFile("message_logger.db", "application/octet-stream") { uri ->
-                                context.androidContext.contentResolver.openOutputStream(uri.toUri())?.use { outputStream ->
-                                    messageLogger.databaseFile.inputStream().use { inputStream ->
-                                        inputStream.copyTo(outputStream)
+                        Column {
+                            Text(text = translation["auto_update_check"])
+                            if (autoUpdateCheck) {
+                                Text(
+                                    text = translation["update_check_frequency_${selectedFrequency}"],
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Light
+                                )
+                            }
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box {
+                                IconButton(
+                                    onClick = { frequencyMenuExpanded = true },
+                                    enabled = autoUpdateCheck,
+                                    modifier = Modifier.alpha(if (autoUpdateCheck) 1f else 0f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = translation["update_check_frequency"]
+                                    )
+                                }
+                                if (autoUpdateCheck) {
+                                    DropdownMenu(
+                                        expanded = frequencyMenuExpanded,
+                                        onDismissRequest = { frequencyMenuExpanded = false }
+                                    ) {
+                                        val frequencies = remember { listOf("daily", "weekly", "monthly") }
+                                        frequencies.forEach { frequency ->
+                                            DropdownMenuItem(
+                                                text = { Text(text = translation["update_check_frequency_$frequency"]) },
+                                                onClick = {
+                                                    selectedFrequency = frequency
+                                                    context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                                    context.config.writeConfig()
+                                                    scheduleUpdateCheck()
+                                                    frequencyMenuExpanded = false
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }.onFailure {
-                            context.log.error("Failed to export database", it)
-                            context.longToast("Failed to export database! ${it.localizedMessage}")
+                            val hapticFeedback = LocalHapticFeedback.current
+                            Switch(
+                                checked = autoUpdateCheck,
+                                onCheckedChange = {
+                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    autoUpdateCheck = it
+                                    context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                                    if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                                        context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                                    }
+                                    context.config.writeConfig()
+                                    scheduleUpdateCheck()
+                                },
+                                modifier = Modifier.padding(end = 26.dp)
+                            )
                         }
-                    }) {
-                        Text(text = translation["export_button"])
                     }
-                    Button(onClick = {
-                        runCatching {
-                            messageLogger.purgeAll()
-                            storedMessagesCount = 0
-                            storedStoriesCount = 0
-                        }.onFailure {
-                            context.log.error("Failed to clear messages", it)
-                            context.longToast("Failed to clear messages! ${it.localizedMessage}")
-                        }.onSuccess {
-                            context.shortToast(translation["success_toast"])
-                        }
-                    }) {
-                        Text(text = translation["clear_button"])
-                    }
-                }
-                OutlinedButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp),
-                    onClick = { routes.loggerHistory.navigate() }
-                ) {
-                    Text(translation["view_logger_history_button"])
                 }
             }
-            // Debug section
+
+            RowTitle(title = translation["message_logger_title"])
+            ShiftedRow {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    var storedMessagesCount by rememberAsyncMutableState(defaultValue = 0) {
+                        context.messageLogger.getStoredMessageCount()
+                    }
+                    var storedStoriesCount by rememberAsyncMutableState(defaultValue = 0) {
+                        context.messageLogger.getStoredStoriesCount()
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            Text(
+                                translation.format("message_logger_summary",
+                                    "messageCount" to storedMessagesCount.toString(),
+                                    "storyCount" to storedStoriesCount.toString()
+                                ), maxLines = 2)
+                        }
+                        Button(onClick = {
+                            runCatching {
+                                activityLauncherHelper.saveFile("message_logger.db", "application/octet-stream") { uri ->
+                                    context.androidContext.contentResolver.openOutputStream(uri.toUri())?.use { outputStream ->
+                                        context.messageLogger.databaseFile.inputStream().use { inputStream ->
+                                            inputStream.copyTo(outputStream)
+                                        }
+                                    }
+                                }
+                            }.onFailure {
+                                context.log.error("Failed to export database", it)
+                                context.longToast("Failed to export database! ${it.localizedMessage}")
+                            }
+                        }) {
+                            Text(text = translation["export_button"])
+                        }
+                        Button(onClick = {
+                            runCatching {
+                                context.messageLogger.purgeAll()
+                                storedMessagesCount = 0
+                                storedStoriesCount = 0
+                            }.onFailure {
+                                context.log.error("Failed to clear messages", it)
+                                context.longToast("Failed to clear messages! ${it.localizedMessage}")
+                            }.onSuccess {
+                                context.shortToast(translation["success_toast"])
+                            }
+                        }) {
+                            Text(text = translation["clear_button"])
+                        }
+                    }
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp),
+                        onClick = { routes.loggerHistory.navigate() }
+                    ) {
+                        Text(translation["view_logger_history_button"])
+                    }
+                }
+            }
+
             RowTitle(title = translation["debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                var selectedFileType by remember { mutableStateOf(InternalFileHandleType.entries.first()) }
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -389,7 +481,7 @@ class HomeSettings : Routes.Route() {
                 }
                 Button(onClick = {
                     runCatching {
-                        scope.launch {
+                        context.coroutineScope.launch {
                             selectedFileType.resolve(context.androidContext).delete()
                         }
                     }.onFailure {
@@ -402,12 +494,14 @@ class HomeSettings : Routes.Route() {
                     Text(translation["clear_button"])
                 }
             }
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                PreferenceToggle(context.sharedPreferences, key = "test_mode", text = "Test Mode (FOR DEBUGGING ONLY)")
-                PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = "Disable Feature Loading")
-                PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
+            ShiftedRow {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    PreferenceToggle(context.sharedPreferences, key = "test_mode", text = "Test Mode (FOR DEBUGGING ONLY)")
+                    PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = "Disable Feature Loading")
+                    PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
+                }
             }
             Spacer(modifier = Modifier.height(50.dp))
         }
