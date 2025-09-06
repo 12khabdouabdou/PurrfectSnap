@@ -1,5 +1,4 @@
 import java.io.ByteArrayOutputStream
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidLibrary)
@@ -20,64 +19,48 @@ android {
 
     defaultConfig {
         minSdk = 28
-
         buildConfigField("String", "VERSION_NAME", "\"${rootProject.ext["appVersionName"]}\"")
         buildConfigField("int", "VERSION_CODE", "${rootProject.ext["appVersionCode"]}")
         buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
-
-        // Use ProviderFactory.exec (lazy + Gradle 9 compatible)
-        val gitHashProvider = providers.exec {
+        val gitHash = ByteArrayOutputStream()
+        exec {
             commandLine("git", "rev-parse", "HEAD")
-        }.standardOutput.asText.map { it.trim() }
-        buildConfigField("String", "GIT_HASH", "\"${gitHashProvider.get()}\"")
-
-        val sif = properties["debug_sif_endpoint"]?.toString()
-            ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"
-        buildConfigField("String", "SIF_ENDPOINT", "\"$sif\"")
+            standardOutput = gitHash
+        }
+        buildConfigField("String", "GIT_HASH", "\"${gitHash.toString(Charsets.UTF_8).trim()}\"")
+        buildConfigField("String", "SIF_ENDPOINT", "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\"")
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-}
 
-// Migrate to compilerOptions DSL (replaces deprecated kotlinOptions.jvmTarget)
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+    kotlinOptions {
+        jvmTarget = "21"
     }
 }
 
 dependencies {
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation(libs.coroutines)
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.androidx.documentfile)
-
-    // Rhino
     implementation(libs.rhino)
     implementation(libs.rhino.android) {
         exclude(group = "org.mozilla", module = "rhino-runtime")
     }
 
-    // Local modules
+    compileOnly(libs.androidx.activity.ktx)
+    compileOnly(platform(libs.androidx.compose.bom))
+    compileOnly(libs.androidx.navigation.compose)
+    compileOnly(libs.androidx.material.icons.core)
+    compileOnly(libs.androidx.material.ripple)
+    compileOnly(libs.androidx.material.icons.extended)
+    compileOnly(libs.androidx.material3)
+
     implementation(project(":mapper"))
-    // Make :bridge optional to avoid hard failure when it is not included
-    findProject(":bridge")?.let { implementation(it) }
-
-    // Jetpack Compose
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.material.icons.core)
-    implementation(libs.androidx.material.ripple)
-    implementation(libs.androidx.material.icons.extended)
-    implementation(libs.androidx.material3)
-    implementation("androidx.activity:activity-compose:1.9.2")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-
-    // DataStore Preferences for ThemePreferences.kt
-    implementation("androidx.datastore:datastore-preferences:1.1.7")
 }
