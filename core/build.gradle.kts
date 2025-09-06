@@ -4,8 +4,6 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".core"
     compileSdk = 34
@@ -22,12 +20,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-}
 
-// New Kotlin compilerOptions DSL (replaces deprecated android.kotlinOptions { jvmTarget = "21" })
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
+    kotlinOptions {
+        jvmTarget = "21"
     }
 }
 
@@ -39,10 +34,12 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.documentfile)
     implementation(libs.rhino)
+
     implementation(project(":common"))
     implementation(project(":mapper"))
     implementation(project(":native"))
     implementation(project(":composer"))
+
     implementation(libs.androidx.activity.ktx)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.navigation.compose)
