@@ -1,21 +1,17 @@
 package me.rhunk.snapenhance.ui.manager.pages.home
 
 import android.content.SharedPreferences
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Brightness4
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -36,7 +32,6 @@ import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.saveFile
-import androidx.compose.ui.draw.clip
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
@@ -58,25 +53,26 @@ class HomeSettings : Routes.Route() {
                 .heightIn(min = 55.dp)
                 .clickable {
                     value = !value
-                    sharedPreferences.edit { putBoolean(realKey, value) }
+                    sharedPreferences
+                        .edit() {
+                            putBoolean(realKey, value)
+                        }
                 },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = text, modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
-            Switch(
-                checked = value,
-                onCheckedChange = {
-                    value = it
-                    sharedPreferences.edit().putBoolean(realKey, it).apply()
-                },
-                modifier = Modifier.padding(end = 26.dp)
-            )
+            Switch(checked = value, onCheckedChange = {
+                value = it
+                sharedPreferences.edit().putBoolean(realKey, it).apply()
+            }, modifier = Modifier.padding(end = 26.dp))
         }
     }
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
-        var confirmationDialog by remember { mutableStateOf(false) }
+        var confirmationDialog by remember {
+            mutableStateOf(false)
+        }
         fun takeAction() {
             if (requireConfirmation) {
                 confirmationDialog = true
@@ -89,31 +85,30 @@ class HomeSettings : Routes.Route() {
                 dialogs.ConfirmDialog(title = context.translation["manager.dialogs.action_confirm.title"], onConfirm = {
                     action()
                     confirmationDialog = false
-                }, onDismiss = { confirmationDialog = false })
+                }, onDismiss = {
+                    confirmationDialog = false
+                })
             }
         }
         ShiftedRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 55.dp)
-                .clickable { takeAction() },
+                .clickable {
+                    takeAction()
+                },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
                 modifier = Modifier.weight(1f),
             ) {
-                Text(
-                    text = context.translation["actions.$key.name"],
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 20.sp
-                )
-                context.translation.getOrNull("actions.$key.description")?.let {
-                    Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp)
-                }
+                Text(text = context.translation["actions.$key.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
+                context.translation.getOrNull("actions.$key.description")?.let { Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp) }
             }
-            IconButton(onClick = { takeAction() }, modifier = Modifier.padding(end = 2.dp)) {
+            IconButton(onClick = { takeAction() },
+                modifier = Modifier.padding(end = 2.dp)
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                     contentDescription = null,
@@ -135,21 +130,6 @@ class HomeSettings : Routes.Route() {
             verticalAlignment = verticalAlignment
         ) { content(this) }
     }
-    @Composable
-    private fun resolveIntervalLabel(rawKey: String): String {
-        // Try all likely locations as per your JSON!
-        val paths = listOf(
-            "update_intervals.$rawKey",
-            "sections.update_intervals.$rawKey",
-            "manager.sections.update_intervals.$rawKey",
-            "manager.sections.home_settings.update_intervals.$rawKey"
-        )
-        for (p in paths) {
-            context.translation.getOrNull(p)?.let { return it }
-        }
-        // Fallback
-        return rawKey
-    }
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
@@ -157,6 +137,7 @@ class HomeSettings : Routes.Route() {
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -194,116 +175,28 @@ class HomeSettings : Routes.Route() {
             if (showThemeDialog) {
                 ThemeChooserDialog(
                     selected = themeMode,
-                    onSelect = { mode -> scope.launch { ThemePreferences.setThemeMode(contextC, mode) } },
+                    onSelect = { mode ->
+                        scope.launch {
+                            ThemePreferences.setThemeMode(contextC, mode)
+                        }
+                    },
                     onDismiss = { showThemeDialog = false }
                 )
             }
             Spacer(Modifier.height(20.dp))
 
-            // ------ UPDATES ------
-            RowTitle(title = "Updates")
-            // --- NO CARD, MATCHING SIMPLE TOGGLE ROW APPEARANCE ---
-            val updateManager = context.config.root.global.updateManager
-            val property = updateManager.getPropertyPair("update_check_interval")
-            val intervalOptions = property.value.defaultValues?.map { it.toString() } ?: listOf("daily")
-            val safeDefaultInterval = intervalOptions.firstOrNull() ?: "daily"
-
-            var automaticUpdateEnabled by remember {
-                mutableStateOf(
-                    try { updateManager.automaticUpdateCheck.get() } catch (_: IllegalStateException) { false }
-                )
-            }
-            var currentInterval by remember {
-                mutableStateOf(
-                    try { updateManager.updateCheckInterval.get() } catch (_: IllegalStateException) { safeDefaultInterval }
-                )
-            }
-            var expanded by remember { mutableStateOf(false) }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 55.dp)
-                    .padding(end = 10.dp)
-                    .background(Color.Transparent)
-                    .clickable {
-                        val newValue = !automaticUpdateEnabled
-                        automaticUpdateEnabled = newValue
-                        updateManager.automaticUpdateCheck.set(newValue)
-                        if (newValue) {
-                            val intervalSet = try { updateManager.updateCheckInterval.get(); true } catch (_: IllegalStateException) { false }
-                            if (!intervalSet) updateManager.updateCheckInterval.set(currentInterval)
-                        }
-                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
-                    },
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Automatic update check",
-                    modifier = Modifier.padding(end = 16.dp),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = { if (automaticUpdateEnabled) expanded = true },
-                        enabled = automaticUpdateEnabled
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowDropDown,
-                            contentDescription = "Change update interval",
-                            tint = if (automaticUpdateEnabled)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        intervalOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(resolveIntervalLabel(option)) },
-                                onClick = {
-                                    currentInterval = option
-                                    updateManager.updateCheckInterval.set(option)
-                                    if (automaticUpdateEnabled) {
-                                        me.rhunk.snapenhance.task.UpdateScheduler.schedule(
-                                            context.androidContext,
-                                            updateManager
-                                        )
-                                    }
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                    Switch(
-                        checked = automaticUpdateEnabled,
-                        onCheckedChange = { newValue ->
-                            automaticUpdateEnabled = newValue
-                            updateManager.automaticUpdateCheck.set(newValue)
-                            if (newValue) {
-                                val wasNotSet = try { updateManager.updateCheckInterval.get(); false } catch (_: IllegalStateException) { true }
-                                if (wasNotSet) updateManager.updateCheckInterval.set(currentInterval)
-                            }
-                            me.rhunk.snapenhance.task.UpdateScheduler.schedule(context.androidContext, updateManager)
-                        },
-                        modifier = Modifier.padding(end = 2.dp)
-                    )
-                }
-            }
-
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
-                RowAction(key = enumAction.key) { context.launchActionIntent(enumAction) }
+                RowAction(key = enumAction.key) {
+                    context.launchActionIntent(enumAction)
+                }
             }
-            RowAction(key = "regen_mappings") { context.checkForRequirements(Requirements.MAPPINGS) }
-            RowAction(key = "change_language") { context.checkForRequirements(Requirements.LANGUAGE) }
-
+            RowAction(key = "regen_mappings") {
+                context.checkForRequirements(Requirements.MAPPINGS)
+            }
+            RowAction(key = "change_language") {
+                context.checkForRequirements(Requirements.LANGUAGE)
+            }
             RowTitle(title = translation["message_logger_title"])
             ShiftedRow {
                 Column(
@@ -327,13 +220,10 @@ class HomeSettings : Routes.Route() {
                             verticalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
                             Text(
-                                translation.format(
-                                    "message_logger_summary",
-                                    "messageCount" to storedMessagesCount.toString(),
-                                    "storyCount" to storedStoriesCount.toString()
-                                ),
-                                maxLines = 2
-                            )
+                                translation.format("message_logger_summary",
+                                "messageCount" to storedMessagesCount.toString(),
+                                "storyCount" to storedStoriesCount.toString()
+                            ), maxLines = 2)
                         }
                         Button(onClick = {
                             runCatching {
@@ -370,7 +260,9 @@ class HomeSettings : Routes.Route() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(5.dp),
-                        onClick = { routes.loggerHistory.navigate() }
+                        onClick = {
+                            routes.loggerHistory.navigate()
+                        }
                     ) {
                         Text(translation["view_logger_history_button"])
                     }
@@ -401,13 +293,12 @@ class HomeSettings : Routes.Route() {
                         )
                         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             InternalFileHandleType.entries.forEach { fileType ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        expanded = false
-                                        selectedFileType = fileType
-                                    },
-                                    text = { Text(text = fileType.fileName) }
-                                )
+                                DropdownMenuItem(onClick = {
+                                    expanded = false
+                                    selectedFileType = fileType
+                                }, text = {
+                                    Text(text = fileType.fileName)
+                                })
                             }
                         }
                     }
