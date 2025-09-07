@@ -64,8 +64,8 @@ class InAppOverlay(
             Hooker.ephemeralHook(Activity::class.java, "onPostCreate", HookStage.AFTER) { param ->
                 val contentView = param.thisObject<Activity>().findViewById<FrameLayout>(android.R.id.content)
                 contentView.children().forEach { it.visibility = View.GONE }
-                val screenView = createComposeView(param.thisObject()) {
-                    AppMaterialTheme(isDarkTheme = true) {
+                val screenView = createComposeView(param.thisObject(), legacyUi = false) {
+                    AppMaterialTheme(isDarkTheme = true, legacyUi = false) {
                         Surface(
                             color = MaterialTheme.colorScheme.surface
                         ) {
@@ -207,8 +207,9 @@ class InAppOverlay(
         val root = activity.findViewById<FrameLayout>(android.R.id.content)
         activity.runOnUiThread {
             if (root.findViewWithTag<View>(overlayTag) != null) return@runOnUiThread
-            root.addView(createComposeView(activity) {
-                AppMaterialTheme(isDarkTheme = remember { activity.isDarkTheme() }) {
+            val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
+            root.addView(createComposeView(activity, legacyUi = legacyUi) {
+                AppMaterialTheme(isDarkTheme = remember { activity.isDarkTheme() }, legacyUi = legacyUi) {
                     OverlayContent()
                 }
             }.apply {

@@ -73,7 +73,8 @@ class NewChatActionMenu : AbstractMenu() {
     fun showChatEditHistory(
         edits: List<LoggedChatEdit>,
     ) {
-        createComposeAlertDialog(context.mainActivity!!) {
+        val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
+        createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) {
             LazyColumn(
                 modifier = Modifier.padding(16.dp),
             ) {
@@ -104,7 +105,8 @@ class NewChatActionMenu : AbstractMenu() {
         val messageLogger = this@NewChatActionMenu.context.feature(MessageLogger::class)
         val messaging = this@NewChatActionMenu.context.feature(Messaging::class)
 
-        return createComposeView(context) {
+        val legacyUi = this@NewChatActionMenu.context.config.root.global.uiSettings.legacyUI.get()
+        return createComposeView(context, legacyUi = legacyUi) {
             Card(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 0.dp)
             ) {
@@ -226,7 +228,8 @@ class NewChatActionMenu : AbstractMenu() {
         val messageLogger = context.feature(MessageLogger::class)
         val messaging = context.feature(Messaging::class)
 
-        val composeView = createComposeView(event.view.context) {
+        val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
+        val composeView = createComposeView(event.view.context, legacyUi = legacyUi) {
             val primaryColor = remember { if (event.view.context.isDarkTheme()) Color.White else Color.Black }
             val avenirNextMediumFont = remember {
                 FontFamily(

@@ -110,7 +110,8 @@ class ConversationToolbox : Feature("Conversation Toolbox") {
             return
         }
 
-        createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+        val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
+        createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) { alertDialog ->
             Column(
                 modifier = Modifier
                     .fillMaxWidth()

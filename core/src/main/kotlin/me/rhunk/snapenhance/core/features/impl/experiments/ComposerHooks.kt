@@ -37,7 +37,8 @@ class ComposerHooks: Feature("ComposerHooks") {
     private val getImportsFunctionName = Random.nextLong().absoluteValue.toString(16)
 
     private val composerConsole by lazy {
-        createComposeAlertDialog(context.mainActivity!!) {
+        val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
+        createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
