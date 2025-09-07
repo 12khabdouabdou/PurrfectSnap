@@ -273,7 +273,8 @@ class ExportChatMessages : AbstractAction() {
 
     override fun run() {
         context.coroutineScope.launch(Dispatchers.Main) {
-            createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+            val legacyUi = context.config.global.uiSettings.legacyUI.get()
+            createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) { alertDialog ->
                 ExporterDialog { alertDialog }
             }.apply {
                 setCanceledOnTouchOutside(false)

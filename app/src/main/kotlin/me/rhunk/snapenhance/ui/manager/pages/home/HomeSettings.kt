@@ -247,28 +247,55 @@ class HomeSettings : Routes.Route() {
 
             RowTitle(title = "UI Settings")
             ShiftedRow {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 55.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(text = "Haptic Feedback")
-                    var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
-                    val hapticFeedback = LocalHapticFeedback.current
-                    Switch(
-                        checked = hapticFeedbackEnabled,
-                        onCheckedChange = {
-                            if (it) {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            }
-                            hapticFeedbackEnabled = it
-                            context.config.root.global.uiSettings.hapticFeedback.set(it)
-                            context.config.writeConfig()
-                        },
-                        modifier = Modifier.padding(end = 26.dp)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 55.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Haptic Feedback")
+                        var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+                        val hapticFeedback = LocalHapticFeedback.current
+                        Switch(
+                            checked = hapticFeedbackEnabled,
+                            onCheckedChange = {
+                                if (it) {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                                hapticFeedbackEnabled = it
+                                context.config.root.global.uiSettings.hapticFeedback.set(it)
+                                context.config.writeConfig()
+                            },
+                            modifier = Modifier.padding(end = 26.dp)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 55.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Use Legacy UI")
+                        var legacyUIEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.legacyUI.getNullable() ?: false) }
+                        val hapticFeedback = LocalHapticFeedback.current
+                        Switch(
+                            checked = legacyUIEnabled,
+                            onCheckedChange = {
+                                if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                                legacyUIEnabled = it
+                                context.config.root.global.uiSettings.legacyUI.set(it)
+                                context.config.writeConfig()
+                            },
+                            modifier = Modifier.padding(end = 26.dp)
+                        )
+                    }
                 }
             }
 
