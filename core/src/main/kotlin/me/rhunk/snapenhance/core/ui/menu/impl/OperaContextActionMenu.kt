@@ -136,8 +136,7 @@ class OperaContextActionMenu : AbstractMenu() {
         if (context.config.global.videoPlaybackRateSlider.get()) {
             val operaViewerParamsOverride = context.feature(OperaViewerParamsOverride::class)
 
-            val legacyUi = context.config.global.uiSettings.legacyUI.get()
-            linearLayout.addView(createComposeView(view.context, legacyUi = legacyUi) {
+            linearLayout.addView(createComposeView(view.context) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

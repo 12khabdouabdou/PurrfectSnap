@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
@@ -15,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -68,8 +66,8 @@ class MainActivity : ComponentActivity() {
                 })
             }
             val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
-            val useLegacyUi = remember { managerContext.config.root.global.uiSettings.legacyUI.get() }
-            AppMaterialTheme(themeMode = themeMode, legacyUi = useLegacyUi) {
+
+            AppMaterialTheme(themeMode = themeMode) {
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
                 val view = LocalView.current
@@ -82,14 +80,9 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
-                val backgroundModifier = if (useLegacyUi) Modifier.background(MaterialTheme.colorScheme.background) else Modifier.background(
-                    Brush.verticalGradient(
-                        listOf(Color(0xFF00D4FF), Color(0xFF8B5CF6))
-                    )
-                )
                 Scaffold(
-                    modifier = Modifier.fillMaxSize().then(backgroundModifier),
-                    containerColor = Color.Transparent,
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.background,
                     topBar = { navigation.TopBar() },
                     bottomBar = { navigation.FloatingBottomBar() },
                     floatingActionButton = { navigation.FloatingActionButton() }
