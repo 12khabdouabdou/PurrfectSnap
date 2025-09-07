@@ -2,7 +2,10 @@ package me.rhunk.snapenhance.ui.manager.pages.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,6 +25,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
@@ -144,17 +149,30 @@ class HomeRootSection : Routes.Route() {
         }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
+        val useLegacyUI = context.config.root.global.uiSettings.legacyUI.get()
+        val scrollState = rememberScrollState()
+        val backgroundModifier = if (useLegacyUI) Modifier else Modifier.background(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    MaterialTheme.colorScheme.background
+                )
+            )
+        )
+        val logoScale by animateFloatAsState(targetValue = if (useLegacyUI) 1f else 1.1f, animationSpec = spring())
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .then(backgroundModifier)
+                .verticalScroll(scrollState)
         ) {
             Icon(
                 imageVector = Snapenhance, contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(all = 8.dp)
-                    .align(Alignment.CenterHorizontally),
+                    .align(Alignment.CenterHorizontally)
+                    .scale(logoScale),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(

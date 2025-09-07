@@ -269,7 +269,8 @@ class EndToEndEncryption : MessagingRuleFeature(
                     val publicKey = pkRequests[messageId.toLong()]
 
                     if (publicKey != null || secret != null) {
-                        viewGroup.addView(createComposeView(context.mainActivity!!) {
+                        val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
+                        viewGroup.addView(createComposeView(context.mainActivity!!, legacyUi = legacyUi) {
                             Card(
                                 modifier = Modifier.fillMaxWidth().padding(8.dp),
                                 onClick = {

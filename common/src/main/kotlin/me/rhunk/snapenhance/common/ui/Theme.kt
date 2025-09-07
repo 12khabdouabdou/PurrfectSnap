@@ -2,10 +2,12 @@ package me.rhunk.snapenhance.common.ui
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 // ---------- Light color palette ----------
 val md_theme_light_primary = Color(0xFF6750A4)
@@ -145,12 +147,13 @@ private val DarkThemeColors = darkColorScheme(
 fun AppMaterialTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     themeMode: ThemeMode? = null,
+    legacyUi: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val effectiveThemeMode = themeMode ?: if (isDarkTheme) ThemeMode.DARK else ThemeMode.LIGHT
-    val colorScheme = when (effectiveThemeMode) {
+    val baseScheme = when (effectiveThemeMode) {
         ThemeMode.AMOLED -> {
             val baseScheme = if (dynamicColor) dynamicDarkColorScheme(context) else DarkThemeColors
             baseScheme.copy(
@@ -169,8 +172,21 @@ fun AppMaterialTheme(
             else -> LightThemeColors
         }
     }
+    val modernScheme = baseScheme.copy(
+        primary = Color(0xFF00D4FF),
+        secondary = Color(0xFF8B5CF6),
+        tertiary = Color(0xFFFF8A00)
+    )
+    val shapes = if (legacyUi) Shapes() else Shapes(
+        extraSmall = RoundedCornerShape(8.dp),
+        small = RoundedCornerShape(12.dp),
+        medium = RoundedCornerShape(16.dp),
+        large = RoundedCornerShape(24.dp),
+        extraLarge = RoundedCornerShape(32.dp)
+    )
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = if (legacyUi) baseScheme else modernScheme,
+        shapes = shapes,
         content = content
     )
 }
