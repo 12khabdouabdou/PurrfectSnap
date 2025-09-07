@@ -64,8 +64,9 @@ class AppLock : Feature("AppLock") {
         isUnlockRequested = true
         hideRootView()
 
-        val lockedView = rootContentView.findViewWithTag<View>("locked_view") ?: createComposeView(rootContentView.context) {
-            AppMaterialTheme(isDarkTheme = true) {
+        val legacyUi = context.config.global.uiSettings.legacyUI.get()
+        val lockedView = rootContentView.findViewWithTag<View>("locked_view") ?: createComposeView(rootContentView.context, legacyUi = legacyUi) {
+            AppMaterialTheme(isDarkTheme = true, legacyUi = legacyUi) {
                 Surface(
                     color = MaterialTheme.colorScheme.surface,
                 ) {

@@ -22,6 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -85,6 +87,7 @@ class SetupActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             var canGoNext by remember { mutableStateOf(false) }
+            val useLegacyUi = remember { setupContext.config.root.global.uiSettings.legacyUI.get() }
 
             fun nextScreen() {
                 if (!canGoNext) return
@@ -98,9 +101,15 @@ class SetupActivity : ComponentActivity() {
                 }
             }
 
-            AppMaterialTheme {
+            AppMaterialTheme(legacyUi = useLegacyUi) {
+                val backgroundModifier = if (useLegacyUi) Modifier.background(MaterialTheme.colorScheme.background) else Modifier.background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF00D4FF), Color(0xFF8B5CF6))
+                    )
+                )
                 Scaffold(
-                    containerColor = MaterialTheme.colorScheme.background,
+                    modifier = Modifier.fillMaxSize().then(backgroundModifier),
+                    containerColor = Color.Transparent,
                     bottomBar = {
                         Column(
                             modifier = Modifier

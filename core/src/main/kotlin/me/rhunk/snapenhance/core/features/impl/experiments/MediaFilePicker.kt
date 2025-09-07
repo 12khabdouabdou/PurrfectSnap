@@ -199,8 +199,9 @@ class MediaFilePicker : Feature("Media File Picker") {
                                 visibility = View.VISIBLE
                                 bringToFront()
                             } != null) return
+                        val legacyUi = context.config.global.uiSettings.legacyUI.get()
                         event.parent.addView(
-                            createComposeView(context.mainActivity!!) {
+                            createComposeView(context.mainActivity!!, legacyUi = legacyUi) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.End
