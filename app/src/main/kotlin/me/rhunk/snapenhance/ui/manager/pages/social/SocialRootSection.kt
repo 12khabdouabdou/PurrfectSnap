@@ -251,7 +251,7 @@ class SocialRootSection : Routes.Route() {
             updateScopeLists()
         }
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
             TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
                 TabRowDefaults.SecondaryIndicator(
                     Modifier.pagerTabIndicatorOffset(

@@ -696,7 +696,7 @@ class FeaturesRootSection : Routes.Route() {
         properties: List<PropertyPair<*>>
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().systemBarsPadding(),
             verticalArrangement = Arrangement.Top
         ) {
             items(properties, key = { it.key.propertyName() }) {

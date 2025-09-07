@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = { navigation.TopBar() },
                     bottomBar = { navigation.FloatingBottomBar() },

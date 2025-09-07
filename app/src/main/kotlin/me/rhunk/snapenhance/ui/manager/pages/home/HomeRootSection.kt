@@ -148,6 +148,7 @@ class HomeRootSection : Routes.Route() {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .systemBarsPadding()
         ) {
             Icon(
                 imageVector = Snapenhance, contentDescription = null,

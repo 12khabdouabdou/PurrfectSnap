@@ -441,7 +441,7 @@ class ScriptingRootSection : Routes.Route() {
         val tab = selectedTab
         val tabTitles = listOf("Installed Scripts", "Catalog")
 
-        Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().systemBarsPadding()) {
             TabRow(selectedTabIndex = tab) {
                 tabTitles.forEachIndexed { i, text ->
                     Tab(
