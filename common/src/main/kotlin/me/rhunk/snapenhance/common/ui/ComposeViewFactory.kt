@@ -34,7 +34,6 @@ import kotlinx.coroutines.launch
 fun createComposeView(
     context: Context,
     viewCompositionStrategy: ViewCompositionStrategy = ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed,
-    legacyUi: Boolean = false,
     content: @Composable () -> Unit
 ) = ComposeView(context).apply {
     setViewCompositionStrategy(viewCompositionStrategy)
@@ -68,18 +67,18 @@ fun createComposeView(
     }
 
     setContent {
-        AppMaterialTheme(legacyUi = legacyUi) {
+        AppMaterialTheme {
             content()
         }
     }
 }
 
-fun createComposeAlertDialog(context: Context, builder: AlertDialog.Builder.() -> Unit = {}, legacyUi: Boolean = false, content: @Composable (alertDialog: AlertDialog) -> Unit): AlertDialog {
+fun createComposeAlertDialog(context: Context, builder: AlertDialog.Builder.() -> Unit = {}, content: @Composable (alertDialog: AlertDialog) -> Unit): AlertDialog {
     lateinit var alertDialog: AlertDialog
 
     return AlertDialog.Builder(context)
         .apply(builder)
-        .setView(createComposeView(context, legacyUi = legacyUi) {
+        .setView(createComposeView(context) {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()

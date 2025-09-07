@@ -375,8 +375,7 @@ class ExportMemories : AbstractAction() {
                 return@launch
             }
 
-            val legacyUi = context.config.global.uiSettings.legacyUI.get()
-            createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) { alertDialog ->
+            createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
                 ExporterDialog(database) { alertDialog.dismiss() }
             }.apply {
                 setOnDismissListener { database.close() }

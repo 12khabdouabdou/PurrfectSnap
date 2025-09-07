@@ -157,10 +157,8 @@ class FriendFeedInfoMenu : AbstractMenu() {
         }
 
         withContext(Dispatchers.Main) {
-            val legacyUi = context.config.global.uiSettings.legacyUI.get()
             createComposeAlertDialog(
                 context.mainActivity!!,
-                legacyUi = legacyUi,
             ) {
                 var pageIndex by remember { mutableIntStateOf(0) }
                 val messages = remember { mutableStateListOf<@Composable () -> Unit>() }
@@ -546,9 +544,8 @@ class FriendFeedInfoMenu : AbstractMenu() {
             }
         }
 
-        val legacyUi = context.config.global.uiSettings.legacyUI.get()
         viewConsumer(
-            createComposeView(actionSheetItemsContainer.context, legacyUi = legacyUi) {
+            createComposeView(actionSheetItemsContainer.context) {
                 CompositionLocalProvider(
                     LocalTextStyle provides LocalTextStyle.current.merge(TextStyle(fontFamily = FontFamily(
                         Font(context.userInterface.avenirNextFontId, FontWeight.Medium)
@@ -578,7 +575,7 @@ class FriendFeedInfoMenu : AbstractMenu() {
                     )
 
                     orientation = LinearLayout.VERTICAL
-                    addView(createComposeView(actionSheetItemsContainer.context, legacyUi = legacyUi) {
+                    addView(createComposeView(actionSheetItemsContainer.context) {
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             color = MaterialTheme.colorScheme.surface
