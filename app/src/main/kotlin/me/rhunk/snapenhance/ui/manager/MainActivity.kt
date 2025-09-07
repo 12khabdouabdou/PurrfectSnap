@@ -16,8 +16,12 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -80,14 +84,39 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightStatusBars = isLight
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
+                // Account for the floating bottom bar height (80.dp) and its
+                // vertical spacing so floating action buttons and scrolling content
+                // remain readable.
+                val bottomPadding = 80.dp + 16.dp +
+                    WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = { navigation.TopBar() },
-                    bottomBar = { navigation.FloatingBottomBar() },
-                    floatingActionButton = { navigation.FloatingActionButton() }
+                    floatingActionButton = {
+                        Box(Modifier.padding(bottom = bottomPadding)) {
+                            navigation.FloatingActionButton()
+                        }
+                    },
+                    // Disable automatic padding so content can draw behind the bottom bar
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPadding ->
-                    navigation.Content(innerPadding, startDestination)
+                    Box(Modifier.fillMaxSize()) {
+                        val contentPadding = PaddingValues(
+                            top = innerPadding.calculateTopPadding(),
+                            start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                            end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                            bottom = bottomPadding
+                        )
+                        navigation.Content(contentPadding, startDestination)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                        ) {
+                            navigation.FloatingBottomBar()
+                        }
+                    }
                 }
             }
         }
