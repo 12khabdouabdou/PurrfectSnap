@@ -17,9 +17,13 @@ import me.rhunk.snapenhance.ui.manager.pages.ManageReposSection
 import me.rhunk.snapenhance.ui.manager.pages.TasksRootSection
 import me.rhunk.snapenhance.ui.manager.pages.features.FeaturesRootSection
 import me.rhunk.snapenhance.ui.manager.pages.features.ManageRuleFeature
+import android.content.Context
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeLogs
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSection
+import me.rhunk.snapenhance.ui.manager.pages.home.HomeRootSectionModern
 import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettings
+import me.rhunk.snapenhance.ui.manager.pages.home.HomeSettingsModern
+import me.rhunk.snapenhance.ui.manager.pages.home.PREFS_KEY_MODERN_UI
 import me.rhunk.snapenhance.ui.manager.pages.location.BetterLocationRoot
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ScriptingRootSection
 import me.rhunk.snapenhance.ui.manager.pages.social.LoggedStories
@@ -48,11 +52,15 @@ class Routes(
     lateinit var navController: NavController
     private val routes = mutableListOf<Route>()
 
+    private val modernUiEnabled by lazy {
+        context.androidContext.getSharedPreferences("snapenhance", Context.MODE_PRIVATE).getBoolean(PREFS_KEY_MODERN_UI, true)
+    }
+
     val tasks = route(RouteInfo("tasks", icon = Icons.Default.TaskAlt, primary = true), TasksRootSection())
     val features = route(RouteInfo("features", icon = Icons.Default.Stars, primary = true), FeaturesRootSection())
     val manageRuleFeature = route(RouteInfo("manage_rule_feature/?rule_type={rule_type}"), ManageRuleFeature()).parent(features)
-    val home = route(RouteInfo("home", icon = Icons.Default.Home, primary = true), HomeRootSection())
-    val settings = route(RouteInfo("home_settings"), HomeSettings()).parent(home)
+    val home = route(RouteInfo("home", icon = Icons.Default.Home, primary = true), if (modernUiEnabled) HomeRootSectionModern() else HomeRootSection())
+    val settings = route(RouteInfo("home_settings"), if (modernUiEnabled) HomeSettingsModern() else HomeSettings()).parent(home)
     val homeLogs = route(RouteInfo("home_logs"), HomeLogs()).parent(home)
     val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker"), FriendTrackerManagerRoot()).parent(home)

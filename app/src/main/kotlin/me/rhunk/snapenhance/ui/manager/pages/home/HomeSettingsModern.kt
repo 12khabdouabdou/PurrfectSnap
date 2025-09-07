@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
@@ -221,10 +222,11 @@ class HomeSettingsModern : Routes.Route() {
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val contextC = LocalContext.current
+        val prefs = remember { contextC.getSharedPreferences("snapenhance", Context.MODE_PRIVATE) }
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
-        var modernUiEnabled by remember { mutableStateOf(true) } // UI Toggle
+        var modernUiEnabled by remember { mutableStateOf(prefs.getBoolean(PREFS_KEY_MODERN_UI, true)) }
 
         Column(
             modifier = Modifier
@@ -238,6 +240,11 @@ class HomeSettingsModern : Routes.Route() {
                     .fillMaxWidth()
                     .padding(22.dp, 16.dp, 22.dp, 10.dp)
                     .background(Color(0x26FFFFFF), RoundedCornerShape(20.dp))
+                    .clickable {
+                        modernUiEnabled = !modernUiEnabled
+                        prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, modernUiEnabled) }
+                        context.activity?.recreate()
+                    }
                     .blur(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -245,7 +252,11 @@ class HomeSettingsModern : Routes.Route() {
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
                     checked = modernUiEnabled,
-                    onCheckedChange = { modernUiEnabled = it },
+                    onCheckedChange = { enabled ->
+                        modernUiEnabled = enabled
+                        prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, enabled) }
+                        context.activity?.recreate()
+                    },
                     colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF51F3E4))
                 )
             }

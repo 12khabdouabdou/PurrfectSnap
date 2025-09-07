@@ -198,6 +198,7 @@ class HomeSettings : Routes.Route() {
                     .clickable {
                         modernUiEnabled = !modernUiEnabled
                         prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, modernUiEnabled) }
+                        context.activity?.recreate()
                     },
                 shape = MaterialTheme.shapes.medium,
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -215,6 +216,7 @@ class HomeSettings : Routes.Route() {
                         onCheckedChange = { enabled ->
                             modernUiEnabled = enabled
                             prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, enabled) }
+                            context.activity?.recreate()
                         }
                     )
                 }
