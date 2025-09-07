@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
 }
 
+//test
+
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".mapper"
     compileSdk = 34
