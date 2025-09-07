@@ -573,8 +573,7 @@ class BulkMessagingAction : AbstractAction() {
 
     override fun run() {
         context.coroutineScope.launch(Dispatchers.Main) {
-            val legacyUi = context.config.global.uiSettings.legacyUI.get()
-            createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) {
+            createComposeAlertDialog(context.mainActivity!!) {
                 BulkMessagingDialog()
             }.apply {
                 setCanceledOnTouchOutside(false)
