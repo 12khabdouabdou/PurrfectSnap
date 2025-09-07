@@ -7,6 +7,7 @@ package me.rhunk.snapenhance.ui.manager.pages.home
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -391,9 +392,9 @@ class HomeRootSectionModern : Routes.Route() {
                                     .weight(1f)
                                     .padding(all = 6.dp)
                                     .clickable { action(routes) },
-                                shadowElevation = 8.dp,
                                 shape = RoundedCornerShape(24.dp),
-                                color = Color(0x1AFFFFFF)
+                                color = Color(0x1AFFFFFF),
+                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -444,9 +445,9 @@ class HomeRootSectionModern : Routes.Route() {
     @Composable
     fun GlassInfoCardModern(content: @Composable ColumnScope.() -> Unit) {
         Surface(
-            shadowElevation = 12.dp,
             shape = RoundedCornerShape(28.dp),
             color = Color(0x1AFFFFFF),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f)),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp, vertical = 6.dp)
