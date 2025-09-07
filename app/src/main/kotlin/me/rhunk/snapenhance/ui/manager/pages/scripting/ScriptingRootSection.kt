@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -442,9 +443,18 @@ class ScriptingRootSection : Routes.Route() {
         val tabTitles = listOf("Installed Scripts", "Catalog")
 
         Column(Modifier.fillMaxSize()) {
-            TabRow(selectedTabIndex = tab) {
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            ) {
                 tabTitles.forEachIndexed { i, text ->
-                    Tab(
+                    val shape = when (i) {
+                        0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
+                        tabTitles.lastIndex -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+                        else -> RoundedCornerShape(0.dp)
+                    }
+                    SegmentedButton(
                         selected = tab == i,
                         onClick = {
                             if (i == 1 && scriptingFolder == null) {
@@ -453,7 +463,10 @@ class ScriptingRootSection : Routes.Route() {
                                 selectedTab = i
                             }
                         },
-                        text = { Text(text) }
+                        shape = shape,
+                        modifier = Modifier.weight(1f),
+                        icon = {},
+                        label = { Text(text) }
                     )
                 }
             }
