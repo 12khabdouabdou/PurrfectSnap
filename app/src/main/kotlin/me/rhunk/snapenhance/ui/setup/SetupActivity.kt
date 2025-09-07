@@ -1,6 +1,6 @@
 package me.rhunk.snapenhance.ui.setup
 
-import android.annotation.SuppressLint
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,7 +22,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -36,7 +45,6 @@ import me.rhunk.snapenhance.ui.setup.screens.impl.SaveFolderScreen
 
 
 class SetupActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -99,41 +107,30 @@ class SetupActivity : ComponentActivity() {
             }
 
             AppMaterialTheme {
-                Scaffold(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    bottomBar = {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            val alpha: Float by animateFloatAsState(if (canGoNext) 1f else 0f,
-                                label = "NextButton"
-                            )
+                val background = MaterialTheme.colorScheme.background
+                val isLight = background.luminance() > 0.5f
+                val view = LocalView.current
+                SideEffect {
+                    val window = (view.context as Activity).window
+                    window.statusBarColor = Color.Transparent.toArgb()
+                    window.navigationBarColor = Color.Transparent.toArgb()
+                    WindowCompat.setDecorFitsSystemWindows(window, false)
+                    val insetsController = WindowInsetsControllerCompat(window, window.decorView)
+                    insetsController.isAppearanceLightStatusBars = isLight
+                    insetsController.isAppearanceLightNavigationBars = isLight
+                }
 
-                            FilledIconButton(
-                                onClick = { nextScreen() },
-                                modifier = Modifier.padding(50.dp)
-                                    .width(60.dp)
-                                    .height(60.dp)
-                                    .alpha(alpha)
-                            ) {
-                                Icon(
-                                    imageVector = if (requiredScreens.size <= 1 && canGoNext) {
-                                        Icons.Default.Check
-                                    } else {
-                                        Icons.AutoMirrored.Default.ArrowForwardIos
-                                    },
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    },
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(background)
                 ) {
+                    val bottomPadding = 110.dp +
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                     Column(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.background)
                             .fillMaxSize()
+                            .padding(bottom = bottomPadding)
                     ) {
                         NavHost(
                             navController = navController,
@@ -157,6 +154,29 @@ class SetupActivity : ComponentActivity() {
                                 }
                             }
                         }
+                    }
+
+                    val alpha: Float by animateFloatAsState(if (canGoNext) 1f else 0f,
+                        label = "NextButton"
+                    )
+
+                    FilledIconButton(
+                        onClick = { nextScreen() },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(bottom = 50.dp)
+                            .size(60.dp)
+                            .alpha(alpha)
+                    ) {
+                        Icon(
+                            imageVector = if (requiredScreens.size <= 1 && canGoNext) {
+                                Icons.Default.Check
+                            } else {
+                                Icons.AutoMirrored.Default.ArrowForwardIos
+                            },
+                            contentDescription = null
+                        )
                     }
                 }
             }
