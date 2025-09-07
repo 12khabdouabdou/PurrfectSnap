@@ -442,9 +442,9 @@ class ScriptingRootSection : Routes.Route() {
         val tabTitles = listOf("Installed Scripts", "Catalog")
 
         Column(Modifier.fillMaxSize()) {
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.padding(8.dp)) {
+            TabRow(selectedTabIndex = tab) {
                 tabTitles.forEachIndexed { i, text ->
-                    SegmentedButton(
+                    Tab(
                         selected = tab == i,
                         onClick = {
                             if (i == 1 && scriptingFolder == null) {
@@ -453,8 +453,7 @@ class ScriptingRootSection : Routes.Route() {
                                 selectedTab = i
                             }
                         },
-                        shape = SegmentedButtonDefaults.itemShape(i, tabTitles.size),
-                        label = { Text(text) }
+                        text = { Text(text) }
                     )
                 }
             }

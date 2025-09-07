@@ -32,6 +32,7 @@ import me.rhunk.snapenhance.common.util.snap.BitmojiSelfie
 import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.coil.BitmojiImage
+import me.rhunk.snapenhance.ui.util.pagerTabIndicatorOffset
 
 class SocialRootSection : Routes.Route() {
     private var friendList: List<MessagingFriendInfo> by mutableStateOf(emptyList())
@@ -251,17 +252,23 @@ class SocialRootSection : Routes.Route() {
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.padding(8.dp)) {
+            TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.pagerTabIndicatorOffset(
+                        pagerState = pagerState,
+                        tabPositions = tabPositions
+                    )
+                )
+            }) {
                 titles.forEachIndexed { index, title ->
-                    SegmentedButton(
+                    Tab(
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(index)
                             }
                         },
-                        shape = SegmentedButtonDefaults.itemShape(index, titles.size),
-                        label = {
+                        text = {
                             Text(
                                 text = title,
                                 maxLines = 2,
