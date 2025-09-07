@@ -182,7 +182,8 @@ class SecurityFeatures(
                 visibility = ViewGroup.INVISIBLE
 
                 post {
-                    addView(createComposeView(activity) {
+                    val legacyUi = context.config.global.uiSettings.legacyUI.get()
+                    addView(createComposeView(activity, legacyUi = legacyUi) {
                         Surface(
                             modifier = Modifier.fillMaxSize()
                         ) {
