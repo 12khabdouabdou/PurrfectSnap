@@ -104,9 +104,8 @@ class RemoteOverlay(
                 setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
             }
 
-            val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
             dialog.setContentView(
-                createComposeView(context.androidContext, legacyUi = legacyUi) {
+                createComposeView(context.androidContext) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
