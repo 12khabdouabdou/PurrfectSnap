@@ -106,7 +106,6 @@ class HomeSettingsModern : Routes.Route() {
             color = Color(0x22E0F7FA),
             modifier = Modifier
                 .padding(horizontal = 12.dp, vertical = 6.dp)
-                .blur(6.dp)
                 .fillMaxWidth()
                 .background(Color(0x16FFFFFF))
                 .clickable {
@@ -170,7 +169,6 @@ class HomeSettingsModern : Routes.Route() {
                 .fillMaxWidth()
                 .padding(horizontal = 10.dp, vertical = 4.dp)
                 .clickable { takeAction() }
-                .blur(4.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -244,8 +242,7 @@ class HomeSettingsModern : Routes.Route() {
                         modernUiEnabled = !modernUiEnabled
                         prefs.edit { putBoolean(PREFS_KEY_MODERN_UI, modernUiEnabled) }
                         context.activity?.recreate()
-                    }
-                    .blur(4.dp),
+                    },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Modern UI", fontSize = 18.sp, color = Color.White)

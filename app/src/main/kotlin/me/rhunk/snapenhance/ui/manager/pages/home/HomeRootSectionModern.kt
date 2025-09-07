@@ -383,13 +383,15 @@ class HomeRootSectionModern : Routes.Route() {
                                 cards.entries.find { entry -> entry.key.first == it }
                             }
                         }.forEach { (card, action) ->
-                            ElevatedCard(
+                            Surface(
                                 modifier = Modifier
                                     .height(tileHeight)
                                     .weight(1f)
                                     .padding(all = 6.dp)
-                                    .background(Color.White.copy(alpha = 0.09f)),
-                                onClick = { action(routes) }
+                                    .clickable { action(routes) },
+                                shadowElevation = 8.dp,
+                                shape = RoundedCornerShape(24.dp),
+                                color = Color(0x1AFFFFFF)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -442,7 +444,7 @@ class HomeRootSectionModern : Routes.Route() {
         Surface(
             shadowElevation = 12.dp,
             shape = RoundedCornerShape(28.dp),
-            color = Color(0x3FFFFFFF).copy(alpha = 0.23f),
+            color = Color(0x1AFFFFFF),
             tonalElevation = 2.dp,
             modifier = Modifier
                 .fillMaxWidth()
