@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,13 +16,8 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.navigationBars
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -90,27 +84,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = { navigation.TopBar() },
-                    floatingActionButton = { navigation.FloatingActionButton() },
-                    contentWindowInsets = WindowInsets(0.dp)
+                    bottomBar = { navigation.FloatingBottomBar() },
+                    floatingActionButton = { navigation.FloatingActionButton() }
                 ) { innerPadding ->
-                    Box(Modifier.fillMaxSize()) {
-                        val bottomPadding = NavigationBarDefaults.ContainerHeight + 16.dp +
-                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                        val contentPadding = PaddingValues(
-                            top = innerPadding.calculateTopPadding(),
-                            start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                            end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                            bottom = bottomPadding
-                        )
-                        navigation.Content(contentPadding, startDestination)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.BottomCenter)
-                        ) {
-                            navigation.FloatingBottomBar()
-                        }
-                    }
+                    navigation.Content(innerPadding, startDestination)
                 }
             }
         }
