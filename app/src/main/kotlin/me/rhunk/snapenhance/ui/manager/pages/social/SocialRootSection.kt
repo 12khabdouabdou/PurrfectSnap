@@ -32,6 +32,7 @@ import me.rhunk.snapenhance.common.util.snap.BitmojiSelfie
 import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.coil.BitmojiImage
+import me.rhunk.snapenhance.ui.util.pagerTabIndicatorOffset
 
 class SocialRootSection : Routes.Route() {
     private var friendList: List<MessagingFriendInfo> by mutableStateOf(emptyList())
@@ -251,28 +252,23 @@ class SocialRootSection : Routes.Route() {
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            ) {
+            TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    Modifier.pagerTabIndicatorOffset(
+                        pagerState = pagerState,
+                        tabPositions = tabPositions
+                    )
+                )
+            }) {
                 titles.forEachIndexed { index, title ->
-                    val shape = when (index) {
-                        0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
-                        titles.lastIndex -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
-                        else -> RoundedCornerShape(0.dp)
-                    }
-                    SegmentedButton(
+                    Tab(
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(index)
                             }
                         },
-                        shape = shape,
-                        modifier = Modifier.weight(1f),
-                        icon = {},
-                        label = {
+                        text = {
                             Text(
                                 text = title,
                                 maxLines = 2,
