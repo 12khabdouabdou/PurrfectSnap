@@ -2,10 +2,12 @@ package me.rhunk.snapenhance.common.ui
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 // ---------- Light color palette ----------
 val md_theme_light_primary = Color(0xFF6750A4)
@@ -169,8 +171,16 @@ fun AppMaterialTheme(
             else -> LightThemeColors
         }
     }
+    val shapes = Shapes(
+        extraSmall = RoundedCornerShape(24.dp),
+        small = RoundedCornerShape(24.dp),
+        medium = RoundedCornerShape(24.dp),
+        large = RoundedCornerShape(24.dp),
+        extraLarge = RoundedCornerShape(24.dp)
+    )
     MaterialTheme(
         colorScheme = colorScheme,
+        shapes = shapes,
         content = content
     )
 }
