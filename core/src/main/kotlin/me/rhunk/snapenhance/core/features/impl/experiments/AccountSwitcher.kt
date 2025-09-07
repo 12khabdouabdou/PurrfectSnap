@@ -238,9 +238,8 @@ class AccountSwitcher: Feature("Account Switcher") {
 
     private fun showManagementPopup() {
         context.runOnUiThread {
-            val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
-            createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) {
-                AppMaterialTheme(isDarkTheme = true, legacyUi = legacyUi) {
+            createComposeAlertDialog(context.mainActivity!!) {
+                AppMaterialTheme(isDarkTheme = true) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = MaterialTheme.colorScheme.surface

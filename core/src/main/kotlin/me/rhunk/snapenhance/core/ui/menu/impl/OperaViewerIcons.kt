@@ -71,8 +71,7 @@ class OperaViewerIcons : AbstractMenu() {
                     override fun onViewDetachedFromWindow(v: View) {}
                 })
 
-                val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
-                addView(createComposeView(parent.context, legacyUi = legacyUi) {
+                addView(createComposeView(parent.context) {
                     Icon(
                         imageVector = Icons.Outlined.Download,
                         tint = Color.White,
@@ -106,8 +105,7 @@ class OperaViewerIcons : AbstractMenu() {
                     ?.let { return it[0] to it[2] }
             }
 
-            val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
-            parent.addView(createComposeView(parent.context, legacyUi = legacyUi)  {
+            parent.addView(createComposeView(parent.context)  {
                 Icon(
                     imageVector = Icons.Default.RemoveRedEye,
                     tint = Color.White,

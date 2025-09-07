@@ -239,8 +239,7 @@ class SendOverride : Feature("Send Override") {
             }
 
             context.runOnUiThread {
-                val legacyUi = context.config.root.global.uiSettings.legacyUI.get()
-                createComposeAlertDialog(context.mainActivity!!, legacyUi = legacyUi) { alertDialog ->
+                createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
                     val mainTranslation = remember {
                         context.translation.getCategory("send_override_dialog")
                     }
