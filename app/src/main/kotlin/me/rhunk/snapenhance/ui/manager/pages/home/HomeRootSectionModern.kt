@@ -10,6 +10,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -119,6 +120,7 @@ class HomeRootSectionModern : Routes.Route() {
             Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
+                    .systemBarsPadding()
             ) {
                 // Logo
                 Icon(
@@ -445,7 +447,6 @@ class HomeRootSectionModern : Routes.Route() {
             shadowElevation = 12.dp,
             shape = RoundedCornerShape(28.dp),
             color = Color(0x1AFFFFFF),
-            tonalElevation = 2.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp, vertical = 6.dp)
