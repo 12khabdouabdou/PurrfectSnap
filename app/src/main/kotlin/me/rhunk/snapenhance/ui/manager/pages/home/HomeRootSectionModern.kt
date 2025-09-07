@@ -107,10 +107,6 @@ class HomeRootSectionModern : Routes.Route() {
         }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
-        val glassModifier = Modifier
-            .background(glassColor, RoundedCornerShape(32.dp))
-            .blur(24.dp)
-            .clip(RoundedCornerShape(32.dp))
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -125,37 +121,14 @@ class HomeRootSectionModern : Routes.Route() {
                     .verticalScroll(rememberScrollState())
             ) {
                 // Logo
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn() + slideInVertically(initialOffsetY = { -60 }, animationSpec = spring()),
-                    exit = ExitTransition.None,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(top = 38.dp)
-                            .align(Alignment.CenterHorizontally)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(36.dp),
-                            color = Color.White.copy(alpha = 0.07f),
-                            tonalElevation = 3.dp,
-                            shadowElevation = 12.dp,
-                            modifier = Modifier.size(82.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Snapenhance,
-                                    contentDescription = null,
-                                    tint = Color(0xFF3DB3FA),
-                                    modifier = Modifier.size(64.dp)
-                                )
-                            }
-                        }
-                    }
-                }
+                Icon(
+                    imageVector = Snapenhance, contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(all = 8.dp)
+                        .align(Alignment.CenterHorizontally),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Text(
                     text = translation.format(
                         "version_title",
@@ -415,7 +388,6 @@ class HomeRootSectionModern : Routes.Route() {
                                     .height(tileHeight)
                                     .weight(1f)
                                     .padding(all = 6.dp)
-                                    .blur(12.dp)
                                     .background(Color.White.copy(alpha = 0.09f)),
                                 onClick = { action(routes) }
                             ) {
@@ -475,7 +447,6 @@ class HomeRootSectionModern : Routes.Route() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp, vertical = 6.dp)
-                .blur(10.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
                 content()
@@ -496,7 +467,6 @@ class HomeRootSectionModern : Routes.Route() {
                     Color(0x40FFFFFF),
                     RoundedCornerShape(50)
                 )
-                .blur(6.dp)
                 .clip(RoundedCornerShape(50))
                 .then(modifier),
             contentAlignment = Alignment.Center
