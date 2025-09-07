@@ -38,8 +38,7 @@ class FriendNotes: Feature("Friend Notes") {
 
                 viewGroup.removeView(composerRootView)
 
-                  val legacyUi = context.config.global.uiSettings.legacyUI.get()
-                val manageNotesView = createComposeView(viewGroup.context, ViewCompositionStrategy.DisposeOnDetachedFromWindow, legacyUi = legacyUi) {
+                val manageNotesView = createComposeView(viewGroup.context, ViewCompositionStrategy.DisposeOnDetachedFromWindow) {
                     val primaryColor = remember { Color(this@FriendNotes.context.userInterface.colorPrimary) }
                     var isFetched by remember { mutableStateOf(false) }
                     var scopeNotes by rememberAsyncMutableState(null) {

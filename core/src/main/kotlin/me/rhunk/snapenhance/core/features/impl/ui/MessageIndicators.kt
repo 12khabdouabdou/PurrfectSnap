@@ -43,8 +43,7 @@ class MessageIndicators : Feature("Message Indicators") {
                     if (message.contentType != ContentType.SNAP.id && message.contentType != ContentType.EXTERNAL_MEDIA.id) return@chatMessage
                     val reader = ProtoReader(message.messageContent ?: return@chatMessage)
 
-                    val legacyUi = context.config.global.uiSettings.legacyUI.get()
-                    createComposeView(event.view.context, legacyUi = legacyUi) {
+                    createComposeView(event.view.context) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
