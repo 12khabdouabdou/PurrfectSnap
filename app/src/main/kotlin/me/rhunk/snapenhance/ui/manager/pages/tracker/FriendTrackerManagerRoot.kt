@@ -63,7 +63,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
             IconButton(onClick = {
                 routes.activityLauncher.openFile("application/json") { uri ->
                     runCatching {
-                        val content = context.androidContext.contentResolver.openInputStream(uri)?.use {
+                        val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
                             it.readBytes().toString(Charsets.UTF_8)
                         } ?: return@runCatching
                         routes.friendTrackerConfigImport.navigate {
