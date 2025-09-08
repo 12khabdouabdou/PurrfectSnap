@@ -64,12 +64,10 @@ class ConfigExportSummaryScreen : Routes.Route() {
             val json = JSONObject(configJson)
 
             if (json.has("friend_tracker_data")) {
-                val friendTrackerData = json.getJSONObject("friend_tracker_data")
-                if (friendTrackerData.has("rules")) {
-                    val rules = friendTrackerData.getJSONArray("rules")
-                    for (i in 0 until rules.length()) {
-                        val rule = rules.getJSONObject(i)
-                        featureList.add(ImportedFeature("Friend Tracker Rules", rule.getString("name"), rule.getInt("id").toString(), rule.getBoolean("enabled"), 0))
+                runCatching {
+                    val friendTrackerData = context.gson.fromJson(json.getJSONObject("friend_tracker_data").toString(), me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
+                    friendTrackerData.rules.forEach { rule ->
+                        featureList.add(ImportedFeature("Friend Tracker Rules", rule.name, rule.id.toString(), rule.enabled, 0))
                     }
                 }
             }
