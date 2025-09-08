@@ -95,7 +95,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
             return featureList.groupBy { it.category }
         }
 
-        fun parseValue(featureKey: String, value: Any): String {
+        fun parseValue(featureKey: String, value: Any): Any {
             fun innerParse(v: Any): String {
                 if (v is String) {
                     val translationKey = "features.options.$featureKey.$v"
@@ -104,15 +104,20 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                         return translated
                     }
                 }
-                return when (v) {
-                    is Boolean -> if (v) "Enabled" else "Disabled"
-                    is JSONArray -> (0 until v.length()).joinToString(", ") {
-                        innerParse(v.get(it))
-                    }
-                    else -> v.toString()
-                }
+                return v.toString()
             }
-            return innerParse(value)
+
+            return when (value) {
+                is Boolean -> if (value) "Enabled" else "Disabled"
+                is JSONArray -> {
+                    val list = mutableListOf<String>()
+                    for (i in 0 until value.length()) {
+                        list.add(innerParse(value.get(i)))
+                    }
+                    list
+                }
+                else -> innerParse(value)
+            }
         }
     }
 
@@ -187,24 +192,52 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                                 Column {
                                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                                     features.forEachIndexed { index, feature ->
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 4.dp)
-                                                .padding(start = (feature.indentation * 16).dp),
-                                            verticalAlignment = Alignment.Top
-                                        ) {
-                                            Text(
-                                                text = feature.name,
-                                                modifier = Modifier.weight(1f),
-                                                fontWeight = FontWeight.SemiBold,
-                                            )
-                                            Spacer(modifier = Modifier.width(16.dp))
-                                            Text(
-                                                text = parser.parseValue(feature.key, feature.value),
-                                                color = MaterialTheme.colorScheme.primary,
-                                                textAlign = TextAlign.End,
-                                            )
+                                        when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
+                                            is List<*> -> {
+                                                Column(modifier = Modifier.padding(start = (feature.indentation * 16).dp, top = 4.dp, bottom = 4.dp)) {
+                                                    Text(
+                                                        text = feature.name,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                    )
+                                                    Spacer(modifier = Modifier.height(4.dp))
+                                                    Column(modifier = Modifier.padding(start = 16.dp)) {
+                                                        parsedValue.forEach { item ->
+                                                            Row {
+                                                                Text(
+                                                                    text = "•",
+                                                                    color = MaterialTheme.colorScheme.primary,
+                                                                    modifier = Modifier.padding(end = 8.dp)
+                                                                )
+                                                                Text(
+                                                                    text = item.toString(),
+                                                                    color = MaterialTheme.colorScheme.primary,
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            is String -> {
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 4.dp)
+                                                        .padding(start = (feature.indentation * 16).dp),
+                                                    verticalAlignment = Alignment.Top
+                                                ) {
+                                                    Text(
+                                                        text = feature.name,
+                                                        modifier = Modifier.weight(1f),
+                                                        fontWeight = FontWeight.SemiBold,
+                                                    )
+                                                    Spacer(modifier = Modifier.width(16.dp))
+                                                    Text(
+                                                        text = parsedValue,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        textAlign = TextAlign.End,
+                                                    )
+                                                }
+                                            }
                                         }
                                         if (index < features.size - 1) {
                                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
