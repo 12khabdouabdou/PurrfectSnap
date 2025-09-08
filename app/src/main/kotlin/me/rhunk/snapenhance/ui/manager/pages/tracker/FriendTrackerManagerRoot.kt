@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.coil.BitmojiImage
+import me.rhunk.snapenhance.ui.util.openFile
 import me.rhunk.snapenhance.ui.util.pagerTabIndicatorOffset
 
 
@@ -54,6 +56,31 @@ class FriendTrackerManagerRoot : Routes.Route() {
     private var currentPage by mutableIntStateOf(0)
     private lateinit var logDeleteAction : () -> Unit
     private lateinit var exportAction : () -> Unit
+
+    override val topBarActions: @Composable RowScope.() -> Unit = {
+        if (currentPage == 0) {
+            IconButton(onClick = {
+                routes.activityLauncher.openFile("application/json") { uri ->
+                    runCatching {
+                        val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
+                            it.readBytes().toString(Charsets.UTF_8)
+                        } ?: return@runCatching
+                        routes.friendTrackerConfigJsonForImport = content
+                        routes.friendTrackerConfigImport.navigate()
+                    }.onFailure {
+                        context.longToast("Failed to read file: ${it.message}")
+                    }
+                }
+            }) {
+                Icon(Icons.Default.FolderOpen, contentDescription = "Import")
+            }
+            IconButton(onClick = {
+                routes.friendTrackerConfigExport.navigate()
+            }) {
+                Icon(Icons.Default.SaveAlt, contentDescription = "Export")
+            }
+        }
+    }
 
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
 
