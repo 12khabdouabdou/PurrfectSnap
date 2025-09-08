@@ -33,6 +33,7 @@ import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
+import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
