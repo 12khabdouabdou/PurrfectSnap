@@ -94,17 +94,11 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     override val init: () -> Unit = {
-        activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
+        routes.activityLauncher = ActivityLauncherHelper(context.activity!!)
     }
 
     private fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
-        activityLauncherHelper?.let(block) ?: run {
-            //open manager if activity launcher is null
-            val intent = Intent(context.androidContext, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.putExtra("route", routeInfo.id)
-            context.androidContext.startActivity(intent)
-        }
+        routes.activityLauncher.let(block)
     }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
@@ -573,7 +567,6 @@ class FeaturesRootSection : Routes.Route() {
 
         var showExportDropdownMenu by remember { mutableStateOf(false) }
         var showResetConfirmationDialog by remember { mutableStateOf(false) }
-        var showExportDialog by remember { mutableStateOf(false) }
 
         if (showResetConfirmationDialog) {
             AlertDialog(
@@ -603,50 +596,9 @@ class FeaturesRootSection : Routes.Route() {
             )
         }
 
-        if (showExportDialog) {
-            fun exportConfig(
-                exportSensitiveData: Boolean
-            ) {
-                showExportDialog = false
-                activityLauncher {
-                    saveFile("config.json", "application/json") { uri ->
-                        runCatching {
-                            context.androidContext.contentResolver.openOutputStream(Uri.parse(uri))?.use {
-                                context.config.writeConfig()
-                                context.config.exportToString(exportSensitiveData).byteInputStream().copyTo(it)
-                                context.shortToast(translation["config_export_success_toast"])
-                            }
-                        }.onFailure {
-                            context.longToast(translation.format("config_export_failure_toast", "error" to it.message.toString()))
-                        }
-                    }
-                }
-            }
-
-            AlertDialog(
-                title = { Text(text = context.translation["manager.dialogs.export_config.title"]) },
-                text = { Text(text = context.translation["manager.dialogs.export_config.content"]) },
-                onDismissRequest = { showExportDialog = false },
-                confirmButton = {
-                    Button(
-                        onClick = { exportConfig(true) }
-                    ) {
-                        Text(text = context.translation["button.positive"])
-                    }
-                },
-                dismissButton = {
-                    Button(
-                        onClick = { exportConfig(false) }
-                    ) {
-                        Text(text = context.translation["button.negative"])
-                    }
-                }
-            )
-        }
-
         val actions = remember {
             mapOf(
-                translation["export_option"] to { showExportDialog = true },
+                translation["export_option"] to { routes.navController.navigate(Routes.CONFIG_EXPORT_SUMMARY_ROUTE) },
                 translation["import_option"] to {
                     activityLauncher {
                         openFile("application/json") { uri ->
