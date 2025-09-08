@@ -16,7 +16,8 @@ import kotlin.properties.Delegates
 
 class ModConfig(
     private val context: Context,
-    fileHandleManager: LazyBridgeValue<FileHandleManager>
+    fileHandleManager: LazyBridgeValue<FileHandleManager>,
+    private val database: me.rhunk.snapenhance.storage.AppDatabase? = null
 ) {
     private val fileWrapper = InternalFileWrapper(fileHandleManager, InternalFileHandleType.CONFIG, "{}")
     var locale: String = LocaleWrapper.DEFAULT_LOCALE
@@ -59,8 +60,19 @@ class ModConfig(
         exportSensitiveData: Boolean = true,
         config: RootConfig = root,
     ): String {
+        config.friendTrackerData = database?.let {
+            me.rhunk.snapenhance.common.data.ExportedTrackerData(
+                rules = it.getTrackerRulesDesc().map { rule ->
+                    rule.copy(
+                        events = it.getTrackerEvents(rule.id),
+                        scopes = it.getRuleTrackerScopes(rule.id)
+                    )
+                }
+            )
+        }
         return gson.toJson(config.toJson(exportSensitiveData).apply {
             addProperty("_locale", locale)
+            add("friend_tracker_data", gson.toJsonTree(config.friendTrackerData))
         })
     }
 
@@ -134,6 +146,24 @@ class ModConfig(
         val configObject = gson.fromJson(string, JsonObject::class.java)
         locale = configObject.get("_locale")?.asString ?: LocaleWrapper.DEFAULT_LOCALE
         root.fromJson(configObject)
+        configObject.get("friend_tracker_data")?.asJsonObject?.let {
+            database?.clearTrackerRules()
+            gson.fromJson(it, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java).rules.forEach { rule ->
+                val ruleId = database?.newTrackerRule(rule.name) ?: return@forEach
+                database.setTrackerRuleState(ruleId, rule.enabled)
+                rule.events?.forEach { event ->
+                    database.addOrUpdateTrackerRuleEvent(
+                        ruleId = ruleId,
+                        eventType = event.eventType,
+                        params = event.params,
+                        actions = event.actions
+                    )
+                }
+                rule.scopes?.forEach { (scopeId, scopeType) ->
+                    database.setRuleTrackerScopes(ruleId, scopeType, listOf(scopeId))
+                }
+            }
+        }
         writeConfig()
     }
 }

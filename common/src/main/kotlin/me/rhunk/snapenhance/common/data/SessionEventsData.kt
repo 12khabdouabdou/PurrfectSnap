@@ -150,6 +150,8 @@ data class TrackerRule(
     val id: Int,
     val enabled: Boolean,
     val name: String,
+    val events: List<TrackerRuleEvent>? = null,
+    val scopes: Map<String, TrackerScopeType>? = null
 ): Parcelable
 
 @Parcelize

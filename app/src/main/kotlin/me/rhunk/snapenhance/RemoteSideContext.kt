@@ -72,11 +72,11 @@ class RemoteSideContext(
 
     val sharedPreferences: SharedPreferences get() = androidContext.getSharedPreferences("prefs", 0)
     val fileHandleManager = RemoteFileHandleManager(this)
-    val config = ModConfig(androidContext, constantLazyBridge { fileHandleManager })
+    val database = AppDatabase(this)
+    val config = ModConfig(androidContext, constantLazyBridge { fileHandleManager }, database)
     val translation = LocaleWrapper(constantLazyBridge { fileHandleManager })
     val mappings = MappingsWrapper(constantLazyBridge { fileHandleManager })
     val taskManager = TaskManager(this)
-    val database = AppDatabase(this)
     val streaksReminder = StreaksReminder(this)
     val log = LogManager(this)
     val scriptManager = RemoteScriptManager(this)
