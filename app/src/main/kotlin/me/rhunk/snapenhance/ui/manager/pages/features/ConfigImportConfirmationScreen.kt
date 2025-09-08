@@ -42,7 +42,6 @@ import org.json.JSONObject
 class ConfigImportConfirmationScreen : Routes.Route() {
     private data class ImportedFeature(
         val category: String,
-        val categoryKey: String,
         val name: String,
         val key: String,
         val value: Any,
@@ -62,7 +61,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                     if (value is JSONObject && value.has("state") && value.has("properties")) {
                         val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
                         val featureName = context.translation[featureNameKey] ?: key
-                        featureList.add(ImportedFeature(niceCategoryName, categoryKey, featureName, key, value.getBoolean("state"), indent))
+                        featureList.add(ImportedFeature(niceCategoryName, featureName, key, value.getBoolean("state"), indent))
                         parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent + 1)
                     } else if (value is JSONObject && value.has("properties")) {
                         parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent)
@@ -70,7 +69,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                     else {
                         val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
                         val featureName = context.translation[featureNameKey] ?: key
-                        featureList.add(ImportedFeature(niceCategoryName, categoryKey, featureName, key, value, indent))
+                        featureList.add(ImportedFeature(niceCategoryName, featureName, key, value, indent))
                     }
                 }
             }
@@ -80,7 +79,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                 if (value is JSONObject) {
                     val niceCategoryName = context.translation["features.properties.$categoryKey.name"] ?: categoryKey.replaceFirstChar { it.uppercase() }
                     if (value.has("state") && !value.has("properties")) {
-                        featureList.add(ImportedFeature(niceCategoryName, categoryKey, "Enable Feature", categoryKey, value.getBoolean("state"), 0))
+                        featureList.add(ImportedFeature(niceCategoryName, "Enable Feature", categoryKey, value.getBoolean("state"), 0))
                     } else if (value.has("properties")) {
                         parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), "", 0)
                     }
@@ -89,10 +88,10 @@ class ConfigImportConfirmationScreen : Routes.Route() {
             return featureList.groupBy { it.category }
         }
 
-        fun parseValue(categoryKey: String, featureKey: String, value: Any): String {
+        fun parseValue(featureKey: String, value: Any): String {
             fun innerParse(v: Any): String {
                 if (v is String) {
-                    val translationKey = "features.options.$categoryKey.$featureKey.$v"
+                    val translationKey = "features.options.$featureKey.$v"
                     val translated = context.translation[translationKey]
                     if (translated != null && translated != translationKey) {
                         return translated
@@ -166,16 +165,22 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                             )
                             features.forEachIndexed { index, feature ->
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).padding(start = (feature.indentation * 16).dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .padding(start = (feature.indentation * 16).dp),
+                                    verticalAlignment = Alignment.Top
                                 ) {
-                                    Text(text = feature.name, modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
+                                    Text(
+                                        text = feature.name,
+                                        modifier = Modifier.weight(1f),
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
                                     Spacer(modifier = Modifier.width(16.dp))
                                     Text(
-                                        text = parser.parseValue(feature.categoryKey, feature.key, feature.value),
+                                        text = parser.parseValue(feature.key, feature.value),
                                         color = MaterialTheme.colorScheme.primary,
-                                        textAlign = TextAlign.End
+                                        textAlign = TextAlign.End,
                                     )
                                 }
                                 if (index < features.size - 1) {

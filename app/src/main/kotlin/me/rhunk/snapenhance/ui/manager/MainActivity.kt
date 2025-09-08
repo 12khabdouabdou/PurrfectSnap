@@ -89,32 +89,47 @@ class MainActivity : ComponentActivity() {
                 // remain readable.
                 val bottomPadding = 80.dp + 16.dp +
                     WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
-                    topBar = { navigation.TopBar() },
+                    topBar = {
+                        if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                            navigation.TopBar()
+                        }
+                    },
                     floatingActionButton = {
-                        Box(Modifier.padding(bottom = bottomPadding)) {
-                            navigation.FloatingActionButton()
+                        if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                            Box(Modifier.padding(bottom = bottomPadding)) {
+                                navigation.FloatingActionButton()
+                            }
                         }
                     },
                     // Disable automatic padding so content can draw behind the bottom bar
                     contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPadding ->
                     Box(Modifier.fillMaxSize()) {
-                        val contentPadding = PaddingValues(
-                            top = innerPadding.calculateTopPadding(),
-                            start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                            end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                            bottom = bottomPadding
-                        )
+                        val contentPadding = if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                            PaddingValues(
+                                top = innerPadding.calculateTopPadding(),
+                                start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                                end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                                bottom = bottomPadding
+                            )
+                        } else {
+                            PaddingValues(0.dp)
+                        }
                         navigation.Content(contentPadding, startDestination)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.BottomCenter)
-                        ) {
-                            navigation.FloatingBottomBar()
+                        if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                            ) {
+                                navigation.FloatingBottomBar()
+                            }
                         }
                     }
                 }
