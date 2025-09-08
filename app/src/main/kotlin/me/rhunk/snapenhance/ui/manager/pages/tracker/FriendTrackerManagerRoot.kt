@@ -55,6 +55,32 @@ class FriendTrackerManagerRoot : Routes.Route() {
     private lateinit var logDeleteAction : () -> Unit
     private lateinit var exportAction : () -> Unit
 
+    override val topBarActions: @Composable RowScope.() -> Unit = {
+        if (currentPage == 1) {
+            IconButton(onClick = {
+                routes.activityLauncher.openFile("application/json") { uri ->
+                    runCatching {
+                        val content = context.androidContext.contentResolver.openInputStream(uri)?.use {
+                            it.readBytes().toString(Charsets.UTF_8)
+                        } ?: return@runCatching
+                        routes.friendTrackerConfigImport.navigate {
+                            this["configJson"] = content
+                        }
+                    }.onFailure {
+                        context.longToast("Failed to read file: ${it.message}")
+                    }
+                }
+            }) {
+                Icon(Icons.Default.Upload, contentDescription = "Import")
+            }
+            IconButton(onClick = {
+                routes.friendTrackerConfigExport.navigate()
+            }) {
+                Icon(Icons.Default.Download, contentDescription = "Export")
+            }
+        }
+    }
+
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
 
     override val init: () -> Unit = {

@@ -1,4 +1,4 @@
-package me.rhunk.snapenhance.ui.manager.pages.features
+package me.rhunk.snapenhance.ui.manager.pages.tracker
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -38,18 +38,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.window.Dialog
+import me.rhunk.snapenhance.common.data.ExportedTrackerData
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.saveFile
 import org.json.JSONArray
-import org.json.JSONObject
 
-class ConfigExportSummaryScreen : Routes.Route() {
+class FriendTrackerConfigExportScreen : Routes.Route() {
     private data class ImportedFeature(
         val category: String,
         val name: String,
@@ -61,84 +57,41 @@ class ConfigExportSummaryScreen : Routes.Route() {
     private inner class ConfigParser {
         fun parse(configJson: String): Map<String, List<ImportedFeature>> {
             val featureList = mutableListOf<ImportedFeature>()
-            val json = JSONObject(configJson)
-            fun parseProperties(categoryKey: String, niceCategoryName: String, properties: JSONObject, prefix: String, indent: Int) {
-                for (key in properties.keys()) {
-                    val value = properties.get(key)
-                    val currentPrefix = if (prefix.isEmpty()) key else "$prefix.$key"
-
-                    if (value is JSONObject && value.has("state") && value.has("properties")) {
-                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
-                        val featureName = context.translation[featureNameKey] ?: key
-                        featureList.add(ImportedFeature(niceCategoryName, featureName, key, value.getBoolean("state"), indent))
-                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent + 1)
-                    } else if (value is JSONObject && value.has("properties")) {
-                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent)
-                    }
-                    else {
-                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
-                        var featureName = context.translation[featureNameKey] ?: key
-                        if (key == "save_folder") {
-                            featureName = "Save Folder"
-                        }
-                        featureList.add(ImportedFeature(niceCategoryName, featureName, key, value, indent))
-                    }
-                }
-            }
-
-            for (categoryKey in json.keys()) {
-                val value = json.get(categoryKey)
-                if (value is JSONObject) {
-                    val niceCategoryName = context.translation["features.properties.$categoryKey.name"] ?: categoryKey.replaceFirstChar { it.uppercase() }
-                    if (value.has("state") && !value.has("properties")) {
-                        featureList.add(ImportedFeature(niceCategoryName, "Enable Feature", categoryKey, value.getBoolean("state"), 0))
-                    } else if (value.has("properties")) {
-                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), "", 0)
-                    }
-                }
+            val exportedData = context.gson.fromJson(configJson, ExportedTrackerData::class.java)
+            exportedData.rules.forEach { rule ->
+                featureList.add(ImportedFeature("Friend Tracker Rules", rule.name, rule.id.toString(), rule.enabled, 0))
             }
             return featureList.groupBy { it.category }
         }
 
         fun parseValue(featureKey: String, value: Any): Any {
-            fun innerParse(v: Any): String {
-                if (v is String) {
-                    val translationKey = "features.options.$featureKey.$v"
-                    val translated = context.translation[translationKey]
-                    if (translated != null && translated != translationKey) {
-                        return translated
-                    }
-                }
-                return v.toString()
-            }
-
             return when (value) {
                 is Boolean -> if (value) "Enabled" else "Disabled"
                 is JSONArray -> {
                     val list = mutableListOf<String>()
                     for (i in 0 until value.length()) {
-                        list.add(innerParse(value.get(i)))
+                        list.add(value.get(i).toString())
                     }
                     list
                 }
-                else -> innerParse(value)
+                else -> value.toString()
             }
         }
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
-        val exportSensitiveData = it.arguments?.getBoolean("exportSensitiveData") ?: false
         val parser = remember { ConfigParser() }
+        val trackerData = remember { context.trackerDataManager.getExportedTrackerData() }
         val featuresByCategory = remember {
-            parser.parse(context.config.exportToString(exportSensitiveData))
+            trackerData?.let { parser.parse(context.gson.toJson(it)) } ?: emptyMap()
         }
         val expandedState = remember { mutableStateMapOf<String, Boolean>() }
 
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Export Summary") },
+                    title = { Text("Export Friend Tracker Rules") },
                     navigationIcon = {
                         IconButton(onClick = { routes.navController.popBackStack() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -146,15 +99,16 @@ class ConfigExportSummaryScreen : Routes.Route() {
                     },
                     actions = {
                         TextButton(onClick = {
-                            routes.activityLauncher.saveFile("config.json", "application/json") { uri ->
+                            routes.activityLauncher.saveFile("friend_tracker_config.json", "application/json") { uri ->
                                 runCatching {
                                     context.androidContext.contentResolver.openOutputStream(android.net.Uri.parse(uri))?.use {
-                                        context.config.writeConfig()
-                                        context.config.exportToString(exportSensitiveData).byteInputStream().copyTo(it)
-                                        context.shortToast(context.translation["manager.sections.features.config_export_success_toast"])
+                                        trackerData?.let { data ->
+                                            context.gson.toJson(data).byteInputStream().copyTo(it)
+                                            context.shortToast("Friend Tracker Rules Exported!")
+                                        }
                                     }
                                 }.onFailure {
-                                    context.longToast(context.translation.format("manager.sections.features.config_export_failure_toast", "error" to it.message.toString()))
+                                    context.longToast("Failed to export rules: ${it.message}")
                                 }
                             }
                         }) {

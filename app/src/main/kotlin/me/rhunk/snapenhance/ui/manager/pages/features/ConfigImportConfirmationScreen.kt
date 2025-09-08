@@ -61,15 +61,6 @@ class ConfigImportConfirmationScreen : Routes.Route() {
             val featureList = mutableListOf<ImportedFeature>()
             val json = JSONObject(configJson)
 
-            if (json.has("friend_tracker_data")) {
-                runCatching {
-                    val friendTrackerData = context.gson.fromJson(json.getJSONObject("friend_tracker_data").toString(), me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
-                    friendTrackerData.rules.forEach { rule ->
-                        featureList.add(ImportedFeature("Friend Tracker Rules", rule.name, rule.id.toString(), rule.enabled, 0))
-                    }
-                }
-            }
-
             fun parseProperties(categoryKey: String, niceCategoryName: String, properties: JSONObject, prefix: String, indent: Int) {
                 for (key in properties.keys()) {
                     val value = properties.get(key)

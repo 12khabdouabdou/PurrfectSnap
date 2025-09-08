@@ -70,6 +70,8 @@ class Routes(
     val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker"), FriendTrackerManagerRoot()).parent(home)
     val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}"), EditRule())
+    val friendTrackerConfigExport = route(RouteInfo("friend_tracker_config_export"), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen()).parent(friendTracker)
+    val friendTrackerConfigImport = route(RouteInfo("friend_tracker_config_import/?configJson={configJson}"), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigImportScreen()).parent(friendTracker)
 
     val fileImports = route(RouteInfo("file_imports"), FileImportsRoot()).parent(home)
     val manageRepos = route(RouteInfo("manage_repos"), ManageReposSection())
