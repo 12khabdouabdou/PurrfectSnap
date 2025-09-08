@@ -46,8 +46,18 @@ data class RouteInfo(
 class Routes(
     private val context: RemoteSideContext,
 ) {
+    companion object {
+        const val CONFIG_IMPORT_CONFIRMATION_ROUTE = "config_import_confirmation"
+        const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary/?exportSensitiveData={exportSensitiveData}"
+    }
+
     lateinit var navController: NavController
+    lateinit var activityLauncher: me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
     private val routes = mutableListOf<Route>()
+    var configJsonForImport: String? = null
+
+    val configImportConfirmation = route(RouteInfo(CONFIG_IMPORT_CONFIRMATION_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigImportConfirmationScreen())
+    val configExportSummary = route(RouteInfo(CONFIG_EXPORT_SUMMARY_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigExportSummaryScreen())
 
     val tasks = route(RouteInfo("tasks", icon = Icons.Default.TaskAlt, primary = true), TasksRootSection())
 

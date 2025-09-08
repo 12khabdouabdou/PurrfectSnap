@@ -26,12 +26,14 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import me.rhunk.snapenhance.RemoteSideContext
 import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
+import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 
 class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
@@ -58,6 +60,7 @@ class MainActivity : ComponentActivity() {
             checkForRequirements()
         }
         val routes = Routes(managerContext)
+        routes.activityLauncher = ActivityLauncherHelper(this)
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
@@ -89,32 +92,55 @@ class MainActivity : ComponentActivity() {
                 // remain readable.
                 val bottomPadding = 80.dp + 16.dp +
                     WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                val fullscreenRoutes = remember {
+                    listOf(
+                        Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE,
+                        Routes.CONFIG_EXPORT_SUMMARY_ROUTE
+                    )
+                }
+                val isFullscreen = currentRoute in fullscreenRoutes
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
-                    topBar = { navigation.TopBar() },
+                    topBar = {
+                        if (!isFullscreen) {
+                            navigation.TopBar()
+                        }
+                    },
                     floatingActionButton = {
-                        Box(Modifier.padding(bottom = bottomPadding)) {
-                            navigation.FloatingActionButton()
+                        if (!isFullscreen) {
+                            Box(Modifier.padding(bottom = bottomPadding)) {
+                                navigation.FloatingActionButton()
+                            }
                         }
                     },
                     // Disable automatic padding so content can draw behind the bottom bar
                     contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPadding ->
                     Box(Modifier.fillMaxSize()) {
-                        val contentPadding = PaddingValues(
-                            top = innerPadding.calculateTopPadding(),
-                            start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                            end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                            bottom = bottomPadding
-                        )
+                        val contentPadding = if (!isFullscreen) {
+                            PaddingValues(
+                                top = innerPadding.calculateTopPadding(),
+                                start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                                end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                                bottom = bottomPadding
+                            )
+                        } else {
+                            PaddingValues(0.dp)
+                        }
                         navigation.Content(contentPadding, startDestination)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.BottomCenter)
-                        ) {
-                            navigation.FloatingBottomBar()
+                        if (!isFullscreen) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.BottomCenter)
+                            ) {
+                                navigation.FloatingBottomBar()
+                            }
                         }
                     }
                 }
