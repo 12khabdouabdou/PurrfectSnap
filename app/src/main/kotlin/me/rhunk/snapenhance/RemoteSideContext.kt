@@ -74,7 +74,7 @@ class RemoteSideContext(
     val fileHandleManager = RemoteFileHandleManager(this)
     val database = AppDatabase(this)
     val trackerDataManager = me.rhunk.snapenhance.storage.TrackerDataManagerImpl(database)
-    val config = ModConfig(androidContext, constantLazyBridge { fileHandleManager }, trackerDataManager)
+    val config = ModConfig(androidContext, constantLazyBridge { fileHandleManager })
     val translation = LocaleWrapper(constantLazyBridge { fileHandleManager })
     val mappings = MappingsWrapper(constantLazyBridge { fileHandleManager })
     val taskManager = TaskManager(this)

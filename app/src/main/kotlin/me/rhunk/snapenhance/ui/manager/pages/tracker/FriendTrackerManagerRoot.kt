@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -41,6 +43,7 @@ import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.coil.BitmojiImage
+import me.rhunk.snapenhance.ui.util.openFile
 import me.rhunk.snapenhance.ui.util.pagerTabIndicatorOffset
 
 
@@ -71,12 +74,12 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     }
                 }
             }) {
-                Icon(Icons.Default.Upload, contentDescription = "Import")
+                Icon(Icons.Default.FolderOpen, contentDescription = "Import")
             }
             IconButton(onClick = {
                 routes.friendTrackerConfigExport.navigate()
             }) {
-                Icon(Icons.Default.Download, contentDescription = "Export")
+                Icon(Icons.Default.SaveAlt, contentDescription = "Export")
             }
         }
     }
