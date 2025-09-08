@@ -82,7 +82,7 @@ class FriendTrackerConfigImportScreen : Routes.Route() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
-        val configJson = it.arguments?.getString("configJson") ?: ""
+        val configJson = routes.friendTrackerConfigJsonForImport ?: ""
         val parser = remember { ConfigParser() }
         val featuresByCategory = remember {
             parser.parse(configJson)

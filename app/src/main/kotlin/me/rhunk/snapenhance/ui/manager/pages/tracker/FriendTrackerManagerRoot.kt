@@ -66,9 +66,8 @@ class FriendTrackerManagerRoot : Routes.Route() {
                         val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
                             it.readBytes().toString(Charsets.UTF_8)
                         } ?: return@runCatching
-                        routes.friendTrackerConfigImport.navigate {
-                            this["configJson"] = content
-                        }
+                        routes.friendTrackerConfigJsonForImport = content
+                        routes.friendTrackerConfigImport.navigate()
                     }.onFailure {
                         context.longToast("Failed to read file: ${it.message}")
                     }

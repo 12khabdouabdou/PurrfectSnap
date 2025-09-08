@@ -49,12 +49,15 @@ class Routes(
     companion object {
         const val CONFIG_IMPORT_CONFIRMATION_ROUTE = "config_import_confirmation"
         const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary/?exportSensitiveData={exportSensitiveData}"
+        const val FRIEND_TRACKER_CONFIG_EXPORT_ROUTE = "friend_tracker_config_export"
+        const val FRIEND_TRACKER_CONFIG_IMPORT_ROUTE = "friend_tracker_config_import"
     }
 
     lateinit var navController: NavController
     lateinit var activityLauncher: me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
     private val routes = mutableListOf<Route>()
     var configJsonForImport: String? = null
+    var friendTrackerConfigJsonForImport: String? = null
 
     val configImportConfirmation = route(RouteInfo(CONFIG_IMPORT_CONFIRMATION_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigImportConfirmationScreen())
     val configExportSummary = route(RouteInfo(CONFIG_EXPORT_SUMMARY_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigExportSummaryScreen())
@@ -70,8 +73,8 @@ class Routes(
     val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker"), FriendTrackerManagerRoot()).parent(home)
     val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}"), EditRule())
-    val friendTrackerConfigExport = route(RouteInfo("friend_tracker_config_export"), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen())
-    val friendTrackerConfigImport = route(RouteInfo("friend_tracker_config_import/?configJson={configJson}"), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigImportScreen())
+    val friendTrackerConfigExport = route(RouteInfo(FRIEND_TRACKER_CONFIG_EXPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen())
+    val friendTrackerConfigImport = route(RouteInfo(FRIEND_TRACKER_CONFIG_IMPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigImportScreen())
 
     val fileImports = route(RouteInfo("file_imports"), FileImportsRoot()).parent(home)
     val manageRepos = route(RouteInfo("manage_repos"), ManageReposSection())

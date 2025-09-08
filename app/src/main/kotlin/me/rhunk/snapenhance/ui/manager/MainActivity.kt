@@ -98,7 +98,9 @@ class MainActivity : ComponentActivity() {
                 val fullscreenRoutes = remember {
                     listOf(
                         Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE,
-                        Routes.CONFIG_EXPORT_SUMMARY_ROUTE
+                        Routes.CONFIG_EXPORT_SUMMARY_ROUTE,
+                        Routes.FRIEND_TRACKER_CONFIG_EXPORT_ROUTE,
+                        Routes.FRIEND_TRACKER_CONFIG_IMPORT_ROUTE
                     )
                 }
                 val isFullscreen = currentRoute in fullscreenRoutes
