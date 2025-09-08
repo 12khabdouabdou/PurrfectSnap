@@ -36,7 +36,7 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
-        run: ./gradlew assembleArmv8Debug
+        run: ./gradlew assembleArmv8Debug --info
 
       - name: Determine the latest Build Tools version installed
         shell: bash
@@ -99,7 +99,7 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
-        run: ./gradlew assembleArmv7Debug
+        run: ./gradlew assembleArmv7Debug --info
 
       - name: Determine the latest Build Tools version installed
         shell: bash
@@ -156,7 +156,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew manager:assembleDebug
+        run: ./gradlew manager:assembleDebug --info
 
       - name: Upload artifact
         id: upload_apk
@@ -189,7 +189,7 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
-        run: ./gradlew assembleCoreDebug
+        run: ./gradlew assembleCoreDebug --info
 
       - name: Upload artifact
         id: upload_apk
