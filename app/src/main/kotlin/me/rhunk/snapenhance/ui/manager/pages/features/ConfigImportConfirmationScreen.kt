@@ -12,8 +12,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -115,6 +119,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
         val featuresByCategory = remember {
             routes.configJsonForImport?.let { parser.parse(it) } ?: emptyMap()
         }
+        val expandedState = remember { mutableStateMapOf<String, Boolean>() }
 
         Scaffold(
             topBar = {
@@ -152,39 +157,56 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(featuresByCategory.toList()) { (category, features) ->
+                    val isExpanded = expandedState[category] ?: false
+                    val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
+
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().clickable { expandedState[category] = !isExpanded },
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = category,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                            features.forEachIndexed { index, feature ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp)
-                                        .padding(start = (feature.indentation * 16).dp),
-                                    verticalAlignment = Alignment.Top
-                                ) {
-                                    Text(
-                                        text = feature.name,
-                                        modifier = Modifier.weight(1f),
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Text(
-                                        text = parser.parseValue(feature.key, feature.value),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        textAlign = TextAlign.End,
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = category,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(onClick = { expandedState[category] = !isExpanded }) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Expand",
+                                        modifier = Modifier.graphicsLayer(rotationZ = rotationState)
                                     )
                                 }
-                                if (index < features.size - 1) {
-                                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                            }
+                            AnimatedVisibility(visible = isExpanded) {
+                                Column {
+                                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                                    features.forEachIndexed { index, feature ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp)
+                                                .padding(start = (feature.indentation * 16).dp),
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            Text(
+                                                text = feature.name,
+                                                modifier = Modifier.weight(1f),
+                                                fontWeight = FontWeight.SemiBold,
+                                            )
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                            Text(
+                                                text = parser.parseValue(feature.key, feature.value),
+                                                color = MaterialTheme.colorScheme.primary,
+                                                textAlign = TextAlign.End,
+                                            )
+                                        }
+                                        if (index < features.size - 1) {
+                                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                        }
+                                    }
                                 }
                             }
                         }
