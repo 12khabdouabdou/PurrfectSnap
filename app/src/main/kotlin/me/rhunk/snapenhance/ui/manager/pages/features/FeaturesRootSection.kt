@@ -45,6 +45,8 @@ import me.rhunk.snapenhance.common.ui.transparentTextFieldColors
 import me.rhunk.snapenhance.ui.manager.MainActivity
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.*
+import org.json.JSONArray
+import org.json.JSONObject
 
 class FeaturesRootSection : Routes.Route() {
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
@@ -570,6 +572,30 @@ class FeaturesRootSection : Routes.Route() {
         var showExportDropdownMenu by remember { mutableStateOf(false) }
         var showResetConfirmationDialog by remember { mutableStateOf(false) }
         var showExportDialog by remember { mutableStateOf(false) }
+        var showImportDialog by remember { mutableStateOf(false) }
+        var configJson by remember { mutableStateOf("") }
+
+        if (showImportDialog) {
+            ConfigImportConfirmationDialog(
+                configJson = configJson,
+                onConfirm = {
+                    runCatching {
+                        context.config.loadFromString(configJson)
+                    }.onFailure {
+                        context.longToast(translation.format("config_import_failure_toast", "error" to it.message.toString()))
+                        return@ConfigImportConfirmationDialog
+                    }
+                    context.shortToast(translation["config_import_success_toast"])
+                    context.coroutineScope.launch(Dispatchers.Main) {
+                        navigateReload()
+                    }
+                    showImportDialog = false
+                },
+                onDismiss = {
+                    showImportDialog = false
+                }
+            )
+        }
 
         if (showResetConfirmationDialog) {
             AlertDialog(
@@ -647,16 +673,8 @@ class FeaturesRootSection : Routes.Route() {
                     activityLauncher {
                         openFile("application/json") { uri ->
                             context.androidContext.contentResolver.openInputStream(Uri.parse(uri))?.use {
-                                runCatching {
-                                    context.config.loadFromString(it.readBytes().toString(Charsets.UTF_8))
-                                }.onFailure {
-                                    context.longToast(translation.format("config_import_failure_toast", "error" to it.message.toString()))
-                                    return@use
-                                }
-                                context.shortToast(translation["config_import_success_toast"])
-                                context.coroutineScope.launch(Dispatchers.Main) {
-                                    navigateReload()
-                                }
+                                configJson = it.readBytes().toString(Charsets.UTF_8)
+                                showImportDialog = true
                             }
                         }
                     }
@@ -726,6 +744,134 @@ class FeaturesRootSection : Routes.Route() {
         }
     }
 
+
+    private data class ImportedFeature(
+        val category: String,
+        val name: String,
+        val value: Any
+    )
+
+    private inner class ConfigParser {
+        fun parse(configJson: String): Map<String, List<ImportedFeature>> {
+            val featureList = mutableListOf<ImportedFeature>()
+            val json = JSONObject(configJson)
+
+            fun parseProperties(categoryKey: String, niceCategoryName: String, properties: JSONObject, prefix: String) {
+                for (key in properties.keys()) {
+                    val value = properties.get(key)
+                    val currentPrefix = if (prefix.isEmpty()) key else "$prefix.$key"
+
+                    if (value is JSONObject && value.has("properties")) {
+                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix)
+                    } else if (value is JSONObject && value.has("state")) {
+                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.replace(".",".properties.")}.name"
+                        val featureName = context.translation[featureNameKey] ?: key
+                        featureList.add(ImportedFeature(niceCategoryName, featureName, value.getBoolean("state")))
+                        if (value.has("properties")) {
+                            parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix)
+                        }
+                    } else {
+                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.replace(".",".properties.")}.name"
+                        val featureName = context.translation[featureNameKey] ?: key
+                        featureList.add(ImportedFeature(niceCategoryName, featureName, value))
+                    }
+                }
+            }
+
+            for (categoryKey in json.keys()) {
+                val value = json.get(categoryKey)
+                if (value is JSONObject) {
+                    val niceCategoryName = context.translation["features.properties.$categoryKey.name"] ?: categoryKey.replaceFirstChar { it.uppercase() }
+                    if (value.has("state")) {
+                        featureList.add(ImportedFeature(niceCategoryName, "Enable Feature", value.getBoolean("state")))
+                    }
+                    if (value.has("properties")) {
+                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), "")
+                    }
+                }
+            }
+            return featureList.groupBy { it.category }
+        }
+
+        fun parseValue(value: Any): String {
+            return when (value) {
+                is Boolean -> if (value) "Enabled" else "Disabled"
+                is JSONArray -> (0 until value.length()).joinToString(", ") {
+                    parseValue(value.get(it))
+                }
+                else -> value.toString()
+            }
+        }
+    }
+
+
+    @Composable
+    private fun ConfigImportConfirmationDialog(
+        configJson: String,
+        onConfirm: () -> Unit,
+        onDismiss: () -> Unit
+    ) {
+        val parser = remember { ConfigParser() }
+        val featuresByCategory = remember { parser.parse(configJson) }
+
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(text = "Confirm Import", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
+            text = {
+                Column {
+                    Text("Are you sure you want to import this config?", modifier = Modifier.padding(bottom = 16.dp))
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(featuresByCategory.toList()) { (category, features) ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = category,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        modifier = Modifier.padding(bottom = 8.dp)
+                                    )
+                                    features.forEachIndexed { index, feature ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(text = feature.name, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                            Text(
+                                                text = parser.parseValue(feature.value),
+                                                color = MaterialTheme.colorScheme.primary,
+                                                textAlign = TextAlign.End
+                                            )
+                                        }
+                                        if (index < features.size - 1) {
+                                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = onConfirm) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                Button(onClick = onDismiss) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     @Composable
     private fun Container(
