@@ -159,7 +159,7 @@ class Navigation(
             routes.getRoutes().filter { it.parentRoute == null }.forEach { route ->
                 val children = routes.getRoutes().filter { it.parentRoute == route }
                 if (children.isEmpty()) {
-                    val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE
+                    val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE || route.routeInfo.id == "friend_tracker_config_export" || route.routeInfo.id == "friend_tracker_config_import/?configJson={configJson}"
                     composable(
                         route.routeInfo.id,
                         enterTransition = { if (isSummaryScreen) slideInHorizontally { it } else fadeIn(tween(100)) },
