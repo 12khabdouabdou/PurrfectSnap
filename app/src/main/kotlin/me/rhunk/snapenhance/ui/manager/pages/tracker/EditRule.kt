@@ -181,27 +181,32 @@ class EditRule : Routes.Route() {
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             item {
-                TextField(
-                    value = ruleName.value,
-                    onValueChange = {
-                        ruleName.value = it
-                    },
-                    singleLine = true,
-                    placeholder = {
-                        Text(
-                            "Rule Name",
-                            fontSize = 18.sp,
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent
-                    ),
-                    textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
-                )
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text("Rule Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    TextField(
+                        value = ruleName.value,
+                        onValueChange = {
+                            ruleName.value = it
+                        },
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                "Enter Rule Name",
+                                fontSize = 18.sp,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        ),
+                        textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                    )
+                }
             }
 
 

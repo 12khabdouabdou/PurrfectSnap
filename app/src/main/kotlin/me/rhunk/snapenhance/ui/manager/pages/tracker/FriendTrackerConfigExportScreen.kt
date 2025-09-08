@@ -135,88 +135,39 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(featuresByCategory.toList()) { (category, features) ->
-                    val isExpanded = expandedState[category] ?: false
-                    val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth().clickable { expandedState[category] = !isExpanded },
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = category,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = { expandedState[category] = !isExpanded }) {
-                                    Icon(
-                                        imageVector = Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Expand",
-                                        modifier = Modifier.graphicsLayer(rotationZ = rotationState)
+                featuresByCategory.forEach { (category, features) ->
+                    item {
+                        Text(
+                            text = category,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                    items(features) { feature ->
+                        when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
+                            is String -> {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Text(
+                                        text = feature.name,
+                                        modifier = Modifier.weight(1f),
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = parsedValue,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        textAlign = TextAlign.End,
                                     )
                                 }
                             }
-                            AnimatedVisibility(visible = isExpanded) {
-                                Column {
-                                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                                    features.forEachIndexed { index, feature ->
-                                        when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
-                                            is List<*> -> {
-                                                Column(modifier = Modifier.padding(start = (feature.indentation * 16).dp, top = 4.dp, bottom = 4.dp)) {
-                                                    Text(
-                                                        text = feature.name,
-                                                        fontWeight = FontWeight.SemiBold,
-                                                    )
-                                                    Spacer(modifier = Modifier.height(4.dp))
-                                                    Column(modifier = Modifier.padding(start = 16.dp)) {
-                                                        parsedValue.forEach { item ->
-                                                            Row {
-                                                                Text(
-                                                                    text = "•",
-                                                                    color = MaterialTheme.colorScheme.primary,
-                                                                    modifier = Modifier.padding(end = 8.dp)
-                                                                )
-                                                                Text(
-                                                                    text = item.toString(),
-                                                                    color = MaterialTheme.colorScheme.primary,
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            is String -> {
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(vertical = 4.dp)
-                                                        .padding(start = (feature.indentation * 16).dp),
-                                                    verticalAlignment = Alignment.Top
-                                                ) {
-                                                    Text(
-                                                        text = feature.name,
-                                                        modifier = Modifier.weight(1f),
-                                                        fontWeight = FontWeight.SemiBold,
-                                                    )
-                                                    Spacer(modifier = Modifier.width(16.dp))
-                                                    Text(
-                                                        text = parsedValue,
-                                                        color = MaterialTheme.colorScheme.primary,
-                                                        textAlign = TextAlign.End,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                        if (index < features.size - 1) {
-                                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                                        }
-                                    }
-                                }
-                            }
                         }
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     }
                 }
             }
