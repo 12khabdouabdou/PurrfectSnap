@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -26,11 +25,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -48,8 +45,6 @@ import me.rhunk.snapenhance.common.ui.transparentTextFieldColors
 import me.rhunk.snapenhance.ui.manager.MainActivity
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.*
-import org.json.JSONArray
-import org.json.JSONObject
 
 class FeaturesRootSection : Routes.Route() {
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
@@ -94,8 +89,18 @@ class FeaturesRootSection : Routes.Route() {
         )
     }
 
+    override val init: () -> Unit = {
+        activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
+    }
+
     private fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
-        routes.activityLauncher.let(block)
+        activityLauncherHelper?.let(block) ?: run {
+            //open manager if activity launcher is null
+            val intent = Intent(context.androidContext, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.putExtra("route", routeInfo.id)
+            context.androidContext.startActivity(intent)
+        }
     }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
@@ -131,7 +136,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun PropertyAction(property: PropertyPair<*>, registerClickCallback: RegisterClickCallback) {
+    private fun PropertyAction(property: PropertyPair<*>, registerClickCallback: (ClickCallback) -> Unit) {
         var showDialog by remember { mutableStateOf(false) }
         var dialogComposable by remember { mutableStateOf<@Composable () -> Unit>({}) }
 
@@ -233,13 +238,13 @@ class FeaturesRootSection : Routes.Route() {
         }
 
         if (property.key.params.flags.contains(ConfigFlag.FOLDER)) {
-            IconButton(onClick = registerClickCallback {
+            IconButton(onClick = {
                 activityLauncher {
                     chooseFolder { uri ->
                         propertyValue.setAny(uri)
                     }
                 }
-            }.let { { it.invoke(true) } }) {
+            }) {
                 Icon(Icons.Filled.FolderOpen, contentDescription = null)
             }
             return
@@ -251,11 +256,11 @@ class FeaturesRootSection : Routes.Route() {
                 val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
-                    onCheckedChange = registerClickCallback {
+                    onCheckedChange = {
                         if (context.config.root.global.uiSettings.hapticFeedback.get()) {
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
-                        state = state.not()
+                        state = !state
                         propertyValue.setAny(state)
                     }
                 )
@@ -309,10 +314,10 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 }
 
-                registerDialogOnClickCallback().let { { it.invoke(true) } }.also {
+                registerDialogOnClickCallback().let { { it(true) } }.also {
                     if (dataType == DataProcessors.Type.INTEGER ||
                         dataType == DataProcessors.Type.FLOAT) {
-                        FilledIconButton(onClick = it) {
+                        FilledIconButton(onClick = { it() }) {
                             Text(
                                 text = propertyValue.get().toString(),
                                 modifier = Modifier.wrapContentWidth(),
@@ -320,7 +325,7 @@ class FeaturesRootSection : Routes.Route() {
                             )
                         }
                     } else {
-                        IconButton(onClick = it) {
+                        IconButton(onClick = { it() }) {
                             Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
                         }
                     }
@@ -334,7 +339,7 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 }
 
-                registerDialogOnClickCallback().let { { it.invoke(true) } }.also {
+                registerDialogOnClickCallback().let { { it(true) } }.also {
                     CircularAlphaTile(selectedColor = (propertyValue.getNullable() as? Int)?.let { Color(it) })
                 }
             }
@@ -371,7 +376,7 @@ class FeaturesRootSection : Routes.Route() {
                         if (context.config.root.global.uiSettings.hapticFeedback.get()) {
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
-                        state = state.not()
+                        state = !state
                         container.globalState = state
                     }
                 )
@@ -476,10 +481,9 @@ class FeaturesRootSection : Routes.Route() {
                                     put("rule_type", property.key.name)
                                 }
                             }
-                            return@PropertyAction clickCallback!!
+                            return@PropertyAction
                         }
                         clickCallback = callback
-                        callback
                     })
                 }
             }
@@ -523,41 +527,6 @@ class FeaturesRootSection : Routes.Route() {
                 singleLine = true,
                 colors = transparentTextFieldColors()
             )
-        }
-    }
-
-    @Composable
-    private fun SensitiveDataDialog(
-        onDismiss: () -> Unit,
-        onConfirm: (exportSensitiveData: Boolean) -> Unit
-    ) {
-        Dialog(onDismissRequest = onDismiss) {
-            Card(shape = RoundedCornerShape(16.dp)) {
-                Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Export Sensitive Data?",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    Text(
-                        text = "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
-                    ) {
-                        TextButton(onClick = { onConfirm(false) }) {
-                            Text("No")
-                        }
-                        TextButton(onClick = { onConfirm(true) }) {
-                            Text("Yes")
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -630,7 +599,7 @@ class FeaturesRootSection : Routes.Route() {
         }
 
         if (showExportDialog) {
-            SensitiveDataDialog(
+            routes.SensitiveDataDialog(
                 onDismiss = { showExportDialog = false },
                 onConfirm = { exportSensitiveData ->
                     showExportDialog = false
@@ -718,7 +687,6 @@ class FeaturesRootSection : Routes.Route() {
             }
         }
     }
-
 
 
     @Composable

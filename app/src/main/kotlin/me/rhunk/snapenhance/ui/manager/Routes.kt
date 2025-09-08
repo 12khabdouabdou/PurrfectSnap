@@ -29,6 +29,22 @@ import me.rhunk.snapenhance.ui.manager.pages.social.SocialRootSection
 import me.rhunk.snapenhance.ui.manager.pages.tracker.EditRule
 import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerManagerRoot
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageScriptReposSection
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import me.rhunk.snapenhance.ui.manager.pages.features.DefaultDialogCard
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 
 
 data class RouteInfo(
@@ -163,5 +179,43 @@ class Routes(
         }
         routes.add(route)
         return route
+    }
+
+    @Composable
+    fun SensitiveDataDialog(
+        onDismiss: () -> Unit,
+        onConfirm: (exportSensitiveData: Boolean) -> Unit
+    ) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(shape = RoundedCornerShape(16.dp)) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Export Sensitive Data?",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Text(
+                        text = "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    ) {
+                        TextButton(onClick = { onConfirm(false) }) {
+                            Text("No")
+                        }
+                        TextButton(onClick = { onConfirm(true) }) {
+                            Text("Yes")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
