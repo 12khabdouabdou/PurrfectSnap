@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
             checkForRequirements()
         }
         val routes = Routes(managerContext)
+        routes.activityLauncher = ActivityLauncherHelper(this)
         routes.getRoutes().forEach { it.init() }
         setContent {
             val context = LocalContext.current
@@ -93,16 +94,24 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
+                val fullscreenRoutes = remember {
+                    listOf(
+                        Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE,
+                        Routes.CONFIG_EXPORT_SUMMARY_ROUTE
+                    )
+                }
+                val isFullscreen = currentRoute in fullscreenRoutes
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = {
-                        if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                        if (!isFullscreen) {
                             navigation.TopBar()
                         }
                     },
                     floatingActionButton = {
-                        if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                        if (!isFullscreen) {
                             Box(Modifier.padding(bottom = bottomPadding)) {
                                 navigation.FloatingActionButton()
                             }
@@ -112,7 +121,7 @@ class MainActivity : ComponentActivity() {
                     contentWindowInsets = WindowInsets(0, 0, 0, 0)
                 ) { innerPadding ->
                     Box(Modifier.fillMaxSize()) {
-                        val contentPadding = if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                        val contentPadding = if (!isFullscreen) {
                             PaddingValues(
                                 top = innerPadding.calculateTopPadding(),
                                 start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -123,7 +132,7 @@ class MainActivity : ComponentActivity() {
                             PaddingValues(0.dp)
                         }
                         navigation.Content(contentPadding, startDestination)
-                        if (currentRoute != Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+                        if (!isFullscreen) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

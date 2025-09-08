@@ -45,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Dialog
 import me.rhunk.snapenhance.ui.manager.Routes
+import me.rhunk.snapenhance.ui.util.saveFile
 import org.json.JSONArray
 import org.json.JSONObject
 

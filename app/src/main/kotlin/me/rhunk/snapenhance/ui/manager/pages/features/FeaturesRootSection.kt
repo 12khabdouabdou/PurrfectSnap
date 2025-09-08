@@ -93,10 +93,6 @@ class FeaturesRootSection : Routes.Route() {
         )
     }
 
-    override val init: () -> Unit = {
-        routes.activityLauncher = ActivityLauncherHelper(context.activity!!)
-    }
-
     private fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
         routes.activityLauncher.let(block)
     }
