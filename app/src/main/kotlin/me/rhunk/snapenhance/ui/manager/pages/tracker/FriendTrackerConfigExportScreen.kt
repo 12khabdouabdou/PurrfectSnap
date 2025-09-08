@@ -145,25 +145,47 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
                         )
                     }
                     items(features) { feature ->
-                        when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
-                            is String -> {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    verticalAlignment = Alignment.Top
+                        var expanded by remember { mutableStateOf(false) }
+                        Column(
+                            modifier = Modifier.clickable { expanded = !expanded }
+                        ) {
+                            when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
+                                is String -> {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp),
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Text(
+                                            text = feature.name,
+                                            modifier = Modifier.weight(1f),
+                                            fontWeight = FontWeight.SemiBold,
+                                        )
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Text(
+                                            text = parsedValue,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            textAlign = TextAlign.End,
+                                        )
+                                    }
+                                }
+                            }
+                            AnimatedVisibility(visible = expanded) {
+                                val rule = trackerData?.rules?.find { it.id.toString() == feature.key }
+                                Column(
+                                    modifier = Modifier.padding(start = 16.dp, top = 8.dp)
                                 ) {
-                                    Text(
-                                        text = feature.name,
-                                        modifier = Modifier.weight(1f),
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Text(
-                                        text = parsedValue,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        textAlign = TextAlign.End,
-                                    )
+                                    rule?.events?.forEach { event ->
+                                        Text(context.translation["tracker_events.${event.eventType}"], fontWeight = FontWeight.Bold)
+                                        Text("Actions: ${event.actions.joinToString(", ") { context.translation["tracker_actions.${it.key}"] }}")
+                                        if (event.params.onlyInsideConversation) Text("Condition: Only inside conversation")
+                                        if (event.params.onlyOutsideConversation) Text("Condition: Only outside conversation")
+                                        if (event.params.onlyWhenAppActive) Text("Condition: Only when Snapchat is active")
+                                        if (event.params.onlyWhenAppInactive) Text("Condition: Only when Snapchat is inactive")
+                                        if (event.params.noPushNotificationWhenAppActive) Text("Condition: No notification when Snapchat is active")
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
                                 }
                             }
                         }

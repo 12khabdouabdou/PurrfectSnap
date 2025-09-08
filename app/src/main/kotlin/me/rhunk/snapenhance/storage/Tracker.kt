@@ -33,12 +33,13 @@ fun AppDatabase.deleteTrackerRule(ruleId: Int) {
     }
 }
 
-fun AppDatabase.newTrackerRule(name: String = "Custom Rule"): Int {
+fun AppDatabase.newTrackerRule(name: String = "Custom Rule", author: String? = null): Int {
     return runBlocking {
         suspendCoroutine { continuation ->
             executeAsync {
                 val id = database.insert("tracker_rules", null, ContentValues().apply {
                     put("name", name)
+                    put("author", author)
                 })
                 continuation.resumeWith(Result.success(id.toInt()))
             }
@@ -93,6 +94,7 @@ fun AppDatabase.getTrackerRulesDesc(): List<TrackerRule> {
                     id = cursor.getInteger("id"),
                     enabled = cursor.getInteger("enabled") == 1,
                     name = cursor.getStringOrNull("name") ?: "",
+                    author = cursor.getStringOrNull("author")
                 )
             )
         }
@@ -108,6 +110,7 @@ fun AppDatabase.getTrackerRule(ruleId: Int): TrackerRule? {
             id = cursor.getInteger("id"),
             enabled = cursor.getInteger("enabled") == 1,
             name = cursor.getStringOrNull("name") ?: "",
+            author = cursor.getStringOrNull("author")
         )
     }
 }
@@ -115,6 +118,12 @@ fun AppDatabase.getTrackerRule(ruleId: Int): TrackerRule? {
 fun AppDatabase.setTrackerRuleName(ruleId: Int, name: String) {
     executeAsync {
         database.execSQL("UPDATE tracker_rules SET name = ? WHERE id = ?", arrayOf(name, ruleId))
+    }
+}
+
+fun AppDatabase.setTrackerRuleAuthor(ruleId: Int, author: String) {
+    executeAsync {
+        database.execSQL("UPDATE tracker_rules SET author = ? WHERE id = ?", arrayOf(author, ruleId))
     }
 }
 

@@ -104,6 +104,11 @@ class EditRule : Routes.Route() {
                 context.database.getTrackerRule(ruleId)?.name ?: "Custom Rule"
             } ?: "Custom Rule"
         }
+        val authorName = rememberAsyncMutableState(defaultValue = "", keys = arrayOf(currentRuleId)) {
+            currentRuleId?.let { ruleId ->
+                context.database.getTrackerRule(ruleId)?.author ?: ""
+            } ?: ""
+        }
 
         LaunchedEffect(Unit) {
             fab.value = {
@@ -154,6 +159,7 @@ class EditRule : Routes.Route() {
                                 )
                             }
                             context.database.setTrackerRuleName(ruleId, ruleName.value.trim())
+                            context.database.setTrackerRuleAuthor(ruleId, authorName.value.trim())
                             context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
                             routes.navController.popBackStack()
                         },
@@ -184,7 +190,13 @@ class EditRule : Routes.Route() {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    Text("Rule Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text("Rule Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
+                    }
                     TextField(
                         value = ruleName.value,
                         onValueChange = {
@@ -194,6 +206,38 @@ class EditRule : Routes.Route() {
                         placeholder = {
                             Text(
                                 "Enter Rule Name",
+                                fontSize = 18.sp,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
+                        ),
+                        textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                    )
+                }
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text("Author Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
+                    }
+                    TextField(
+                        value = authorName.value,
+                        onValueChange = {
+                            authorName.value = it
+                        },
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                "Enter Author Name",
                                 fontSize = 18.sp,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Center

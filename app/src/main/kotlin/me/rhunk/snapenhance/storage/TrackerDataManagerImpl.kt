@@ -19,7 +19,7 @@ class TrackerDataManagerImpl(private val db: AppDatabase) : TrackerDataManager {
     override fun importTrackerData(data: ExportedTrackerData) {
         db.clearTrackerRules()
         data.rules.forEach { rule ->
-            val ruleId = db.newTrackerRule(rule.name)
+            val ruleId = db.newTrackerRule(rule.name, rule.author)
             db.setTrackerRuleState(ruleId, rule.enabled)
             rule.events?.forEach { event ->
                 db.addOrUpdateTrackerRuleEvent(
