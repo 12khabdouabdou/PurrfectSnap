@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -525,6 +526,41 @@ class FeaturesRootSection : Routes.Route() {
         }
     }
 
+    @Composable
+    private fun SensitiveDataDialog(
+        onDismiss: () -> Unit,
+        onConfirm: (exportSensitiveData: Boolean) -> Unit
+    ) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(shape = RoundedCornerShape(16.dp)) {
+                Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Export Sensitive Data?",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Text(
+                        text = "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    ) {
+                        TextButton(onClick = { onConfirm(false) }) {
+                            Text("No")
+                        }
+                        TextButton(onClick = { onConfirm(true) }) {
+                            Text("Yes")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override val topBarActions: @Composable (RowScope.() -> Unit) = topBarActions@{
         var showSearchBar by remember { mutableStateOf(false) }
         val focusRequester = remember { FocusRequester() }
@@ -563,6 +599,7 @@ class FeaturesRootSection : Routes.Route() {
 
         var showExportDropdownMenu by remember { mutableStateOf(false) }
         var showResetConfirmationDialog by remember { mutableStateOf(false) }
+        var showExportDialog by remember { mutableStateOf(false) }
 
         if (showResetConfirmationDialog) {
             AlertDialog(
@@ -592,9 +629,21 @@ class FeaturesRootSection : Routes.Route() {
             )
         }
 
+        if (showExportDialog) {
+            SensitiveDataDialog(
+                onDismiss = { showExportDialog = false },
+                onConfirm = { exportSensitiveData ->
+                    showExportDialog = false
+                    routes.configExportSummary.navigate {
+                        put("exportSensitiveData", exportSensitiveData.toString())
+                    }
+                }
+            )
+        }
+
         val actions = remember {
             mapOf(
-                translation["export_option"] to { routes.navController.navigate(Routes.CONFIG_EXPORT_SUMMARY_ROUTE) },
+                translation["export_option"] to { showExportDialog = true },
                 translation["import_option"] to {
                     activityLauncher {
                         openFile("application/json") { uri ->

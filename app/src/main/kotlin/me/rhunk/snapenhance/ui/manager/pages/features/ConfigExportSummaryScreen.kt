@@ -78,7 +78,10 @@ class ConfigExportSummaryScreen : Routes.Route() {
                     }
                     else {
                         val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
-                        val featureName = context.translation[featureNameKey] ?: key
+                        var featureName = context.translation[featureNameKey] ?: key
+                        if (key == "save_folder") {
+                            featureName = "Save Folder"
+                        }
                         featureList.add(ImportedFeature(niceCategoryName, featureName, key, value, indent))
                     }
                 }
@@ -124,69 +127,14 @@ class ConfigExportSummaryScreen : Routes.Route() {
         }
     }
 
-    @Composable
-    private fun SensitiveDataDialog(
-        onDismiss: () -> Unit,
-        onConfirm: (exportSensitiveData: Boolean) -> Unit
-    ) {
-        Dialog(onDismissRequest = onDismiss) {
-            Card(shape = RoundedCornerShape(16.dp)) {
-                Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = "Export Sensitive Data?",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    Text(
-                        text = "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
-                    ) {
-                        TextButton(onClick = { onConfirm(false) }) {
-                            Text("No")
-                        }
-                        TextButton(onClick = { onConfirm(true) }) {
-                            Text("Yes")
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
+        val exportSensitiveData = it.arguments?.getBoolean("exportSensitiveData") ?: false
         val parser = remember { ConfigParser() }
         val featuresByCategory = remember {
-            parser.parse(context.config.exportToString(true))
+            parser.parse(context.config.exportToString(exportSensitiveData))
         }
         val expandedState = remember { mutableStateMapOf<String, Boolean>() }
-        var showSensitiveDataDialog by remember { mutableStateOf(false) }
-
-        if (showSensitiveDataDialog) {
-            SensitiveDataDialog(
-                onDismiss = { showSensitiveDataDialog = false },
-                onConfirm = { exportSensitiveData ->
-                    showSensitiveDataDialog = false
-                    routes.activityLauncher.saveFile("config.json", "application/json") { uri ->
-                        runCatching {
-                            context.androidContext.contentResolver.openOutputStream(android.net.Uri.parse(uri))?.use {
-                                context.config.writeConfig()
-                                context.config.exportToString(exportSensitiveData).byteInputStream().copyTo(it)
-                                context.shortToast(context.translation["manager.sections.features.config_export_success_toast"])
-                            }
-                        }.onFailure {
-                            context.longToast(context.translation.format("manager.sections.features.config_export_failure_toast", "error" to it.message.toString()))
-                        }
-                    }
-                }
-            )
-        }
 
         Scaffold(
             topBar = {
@@ -198,7 +146,19 @@ class ConfigExportSummaryScreen : Routes.Route() {
                         }
                     },
                     actions = {
-                        TextButton(onClick = { showSensitiveDataDialog = true }) {
+                        TextButton(onClick = {
+                            routes.activityLauncher.saveFile("config.json", "application/json") { uri ->
+                                runCatching {
+                                    context.androidContext.contentResolver.openOutputStream(android.net.Uri.parse(uri))?.use {
+                                        context.config.writeConfig()
+                                        context.config.exportToString(exportSensitiveData).byteInputStream().copyTo(it)
+                                        context.shortToast(context.translation["manager.sections.features.config_export_success_toast"])
+                                    }
+                                }.onFailure {
+                                    context.longToast(context.translation.format("manager.sections.features.config_export_failure_toast", "error" to it.message.toString()))
+                                }
+                            }
+                        }) {
                             Text("Save")
                         }
                     }

@@ -4,6 +4,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -157,7 +159,14 @@ class Navigation(
             routes.getRoutes().filter { it.parentRoute == null }.forEach { route ->
                 val children = routes.getRoutes().filter { it.parentRoute == route }
                 if (children.isEmpty()) {
-                    composable(route.routeInfo.id) {
+                    val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE
+                    composable(
+                        route.routeInfo.id,
+                        enterTransition = { if (isSummaryScreen) slideInHorizontally { it } else fadeIn(tween(100)) },
+                        exitTransition = { if (isSummaryScreen) slideOutHorizontally { -it } else fadeOut(tween(100)) },
+                        popEnterTransition = { if (isSummaryScreen) slideInHorizontally { -it } else fadeIn(tween(100)) },
+                        popExitTransition = { if (isSummaryScreen) slideOutHorizontally { it } else fadeOut(tween(100)) }
+                    ) {
                         route.content.invoke(it)
                     }
                     route.customComposables.invoke(this)

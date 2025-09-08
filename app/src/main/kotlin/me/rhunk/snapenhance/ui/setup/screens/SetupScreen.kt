@@ -1,6 +1,7 @@
 package me.rhunk.snapenhance.ui.setup.screens
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ abstract class SetupScreen {
             text = text,
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(16.dp).then(modifier)
         )
     }

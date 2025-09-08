@@ -148,7 +148,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                                     context.longToast(context.translation.format("config_import_failure_toast", "error" to it.message.toString()))
                                     return@TextButton
                                 }
-                                context.shortToast(context.translation["config_import_success_toast"])
+                                context.shortToast("Config Imported!")
                                 context.coroutineScope.launch(Dispatchers.Main) {
                                     routes.features.navigateReload()
                                 }

@@ -48,7 +48,7 @@ class Routes(
 ) {
     companion object {
         const val CONFIG_IMPORT_CONFIRMATION_ROUTE = "config_import_confirmation"
-        const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary"
+        const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary/?exportSensitiveData={exportSensitiveData}"
     }
 
     lateinit var navController: NavController
