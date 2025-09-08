@@ -55,9 +55,11 @@ class FeaturesRootSection : Routes.Route() {
     companion object {
         const val FEATURE_CONTAINER_ROUTE = "feature_container/{name}"
         const val SEARCH_FEATURE_ROUTE = "search_feature/{keyword}"
+        const val CONFIG_IMPORT_CONFIRMATION_ROUTE = "config_import_confirmation"
     }
 
     private var activityLauncherHelper: ActivityLauncherHelper? = null
+    private var configJsonForImport: String? = null
 
     private val allContainers by lazy {
         val containers = mutableMapOf<String, PropertyPair<*>>()
@@ -111,7 +113,11 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     override val customComposables: NavGraphBuilder.() -> Unit = {
-        routeInfo.childIds.addAll(listOf(FEATURE_CONTAINER_ROUTE, SEARCH_FEATURE_ROUTE))
+        routeInfo.childIds.addAll(listOf(FEATURE_CONTAINER_ROUTE, SEARCH_FEATURE_ROUTE, CONFIG_IMPORT_CONFIRMATION_ROUTE))
+
+        composable(CONFIG_IMPORT_CONFIRMATION_ROUTE) {
+            ConfigImportConfirmationScreen()
+        }
 
         composable(FEATURE_CONTAINER_ROUTE, enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left, animationSpec = tween(100))
@@ -573,30 +579,6 @@ class FeaturesRootSection : Routes.Route() {
         var showExportDropdownMenu by remember { mutableStateOf(false) }
         var showResetConfirmationDialog by remember { mutableStateOf(false) }
         var showExportDialog by remember { mutableStateOf(false) }
-        var showImportDialog by remember { mutableStateOf(false) }
-        var configJson by remember { mutableStateOf("") }
-
-        if (showImportDialog) {
-            ConfigImportConfirmationDialog(
-                configJson = configJson,
-                onConfirm = {
-                    runCatching {
-                        context.config.loadFromString(configJson)
-                    }.onFailure {
-                        context.longToast(translation.format("config_import_failure_toast", "error" to it.message.toString()))
-                        return@ConfigImportConfirmationDialog
-                    }
-                    context.shortToast(translation["config_import_success_toast"])
-                    context.coroutineScope.launch(Dispatchers.Main) {
-                        navigateReload()
-                    }
-                    showImportDialog = false
-                },
-                onDismiss = {
-                    showImportDialog = false
-                }
-            )
-        }
 
         if (showResetConfirmationDialog) {
             AlertDialog(
@@ -674,8 +656,8 @@ class FeaturesRootSection : Routes.Route() {
                     activityLauncher {
                         openFile("application/json") { uri ->
                             context.androidContext.contentResolver.openInputStream(Uri.parse(uri))?.use {
-                                configJson = it.readBytes().toString(Charsets.UTF_8)
-                                showImportDialog = true
+                                configJsonForImport = it.readBytes().toString(Charsets.UTF_8)
+                                routes.navController.navigate(CONFIG_IMPORT_CONFIRMATION_ROUTE)
                             }
                         }
                     }
@@ -749,7 +731,9 @@ class FeaturesRootSection : Routes.Route() {
     private data class ImportedFeature(
         val category: String,
         val name: String,
-        val value: Any
+        val key: String,
+        val value: Any,
+        val indentation: Int
     )
 
     private inner class ConfigParser {
@@ -757,24 +741,23 @@ class FeaturesRootSection : Routes.Route() {
             val featureList = mutableListOf<ImportedFeature>()
             val json = JSONObject(configJson)
 
-            fun parseProperties(categoryKey: String, niceCategoryName: String, properties: JSONObject, prefix: String) {
+            fun parseProperties(categoryKey: String, niceCategoryName: String, properties: JSONObject, prefix: String, indent: Int) {
                 for (key in properties.keys()) {
                     val value = properties.get(key)
                     val currentPrefix = if (prefix.isEmpty()) key else "$prefix.$key"
 
-                    if (value is JSONObject && value.has("properties")) {
-                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix)
-                    } else if (value is JSONObject && value.has("state")) {
-                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.replace(".",".properties.")}.name"
+                    if (value is JSONObject && value.has("state") && value.has("properties")) {
+                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
                         val featureName = context.translation[featureNameKey] ?: key
-                        featureList.add(ImportedFeature(niceCategoryName, featureName, value.getBoolean("state")))
-                        if (value.has("properties")) {
-                            parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix)
-                        }
-                    } else {
-                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.replace(".",".properties.")}.name"
+                        featureList.add(ImportedFeature(niceCategoryName, featureName, key, value.getBoolean("state"), indent))
+                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent + 1)
+                    } else if (value is JSONObject && value.has("properties")) {
+                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent)
+                    }
+                    else {
+                        val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
                         val featureName = context.translation[featureNameKey] ?: key
-                        featureList.add(ImportedFeature(niceCategoryName, featureName, value))
+                        featureList.add(ImportedFeature(niceCategoryName, featureName, key, value, indent))
                     }
                 }
             }
@@ -783,95 +766,116 @@ class FeaturesRootSection : Routes.Route() {
                 val value = json.get(categoryKey)
                 if (value is JSONObject) {
                     val niceCategoryName = context.translation["features.properties.$categoryKey.name"] ?: categoryKey.replaceFirstChar { it.uppercase() }
-                    if (value.has("state")) {
-                        featureList.add(ImportedFeature(niceCategoryName, "Enable Feature", value.getBoolean("state")))
-                    }
-                    if (value.has("properties")) {
-                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), "")
+                    if (value.has("state") && !value.has("properties")) {
+                        featureList.add(ImportedFeature(niceCategoryName, "Enable Feature", categoryKey, value.getBoolean("state"), 0))
+                    } else if (value.has("properties")) {
+                        parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), "", 0)
                     }
                 }
             }
             return featureList.groupBy { it.category }
         }
 
-        fun parseValue(value: Any): String {
-            return when (value) {
-                is Boolean -> if (value) "Enabled" else "Disabled"
-                is JSONArray -> (0 until value.length()).joinToString(", ") {
-                    parseValue(value.get(it))
+        fun parseValue(featureKey: String, value: Any): String {
+            fun innerParse(v: Any): String {
+                if (v is String) {
+                    val translationKey = "features.options.$featureKey.$v"
+                    val translated = context.translation[translationKey]
+                    if (translated != null && translated != translationKey) {
+                        return translated
+                    }
                 }
-                else -> value.toString()
+                return when (v) {
+                    is Boolean -> if (v) "Enabled" else "Disabled"
+                    is JSONArray -> (0 until v.length()).joinToString(", ") {
+                        innerParse(v.get(it))
+                    }
+                    else -> v.toString()
+                }
             }
+            return innerParse(value)
         }
     }
 
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun ConfigImportConfirmationDialog(
-        configJson: String,
-        onConfirm: () -> Unit,
-        onDismiss: () -> Unit
-    ) {
+    private fun ConfigImportConfirmationScreen() {
         val parser = remember { ConfigParser() }
-        val featuresByCategory = remember { parser.parse(configJson) }
+        val featuresByCategory = remember {
+            configJsonForImport?.let { parser.parse(it) } ?: emptyMap()
+        }
 
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(text = "Confirm Import", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
-            text = {
-                Column {
-                    Text("Are you sure you want to import this config?", modifier = Modifier.padding(bottom = 16.dp))
-                    LazyColumn(
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Confirm Import") },
+                    navigationIcon = {
+                        IconButton(onClick = { routes.navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        TextButton(onClick = {
+                            configJsonForImport?.let {
+                                runCatching {
+                                    context.config.loadFromString(it)
+                                }.onFailure {
+                                    context.longToast(translation.format("config_import_failure_toast", "error" to it.message.toString()))
+                                    return@TextButton
+                                }
+                                context.shortToast(translation["config_import_success_toast"])
+                                context.coroutineScope.launch(Dispatchers.Main) {
+                                    navigateReload()
+                                }
+                            }
+                        }) {
+                            Text("Confirm")
+                        }
+                    }
+                )
+            }
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier.padding(padding).fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(featuresByCategory.toList()) { (category, features) ->
+                    Card(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        shape = RoundedCornerShape(16.dp)
                     ) {
-                        items(featuresByCategory.toList()) { (category, features) ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = category,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            features.forEachIndexed { index, feature ->
+                                Row(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).padding(start = (feature.indentation * 16).dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = feature.name, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Spacer(modifier = Modifier.width(16.dp))
                                     Text(
-                                        text = category,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 18.sp,
-                                        modifier = Modifier.padding(bottom = 8.dp)
+                                        text = parser.parseValue(feature.key, feature.value),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        textAlign = TextAlign.End
                                     )
-                                    features.forEachIndexed { index, feature ->
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(text = feature.name, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                            Spacer(modifier = Modifier.width(16.dp))
-                                            Text(
-                                                text = parser.parseValue(feature.value),
-                                                color = MaterialTheme.colorScheme.primary,
-                                                textAlign = TextAlign.End
-                                            )
-                                        }
-                                        if (index < features.size - 1) {
-                                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                                        }
-                                    }
+                                }
+                                if (index < features.size - 1) {
+                                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                                 }
                             }
                         }
                     }
                 }
-            },
-            confirmButton = {
-                Button(onClick = onConfirm) {
-                    Text("Confirm")
-                }
-            },
-            dismissButton = {
-                Button(onClick = onDismiss) {
-                    Text("Cancel")
-                }
             }
-        )
+        }
     }
 
     @Composable
