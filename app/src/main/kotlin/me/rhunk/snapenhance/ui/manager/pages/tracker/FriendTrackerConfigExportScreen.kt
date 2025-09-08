@@ -30,9 +30,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -40,6 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.data.ExportedTrackerData
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.saveFile
@@ -82,10 +87,17 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val parser = remember { ConfigParser() }
-        val trackerData = remember { context.trackerDataManager.getExportedTrackerData() }
-        val featuresByCategory = remember {
-            trackerData?.let { parser.parse(context.gson.toJson(it)) } ?: emptyMap()
+        var trackerData by remember { mutableStateOf<ExportedTrackerData?>(null) }
+        var featuresByCategory by remember { mutableStateOf<Map<String, List<ImportedFeature>>>(emptyMap()) }
+
+        LaunchedEffect(Unit) {
+            launch(Dispatchers.IO) {
+                val data = context.trackerDataManager.getExportedTrackerData()
+                trackerData = data
+                featuresByCategory = data?.let { parser.parse(context.gson.toJson(it)) } ?: emptyMap()
+            }
         }
+
         val expandedState = remember { mutableStateMapOf<String, Boolean>() }
 
         Scaffold(
