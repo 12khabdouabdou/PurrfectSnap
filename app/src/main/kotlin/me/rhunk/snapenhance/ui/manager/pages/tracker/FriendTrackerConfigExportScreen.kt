@@ -91,14 +91,21 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
-    override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
+    override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = { navBackStackEntry ->
+        val ruleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
         val parser = remember { ConfigParser() }
         var trackerData by remember { mutableStateOf<ExportedTrackerData?>(null) }
         var featuresByCategory by remember { mutableStateOf<Map<String, List<ImportedFeature>>>(emptyMap()) }
 
         LaunchedEffect(Unit) {
             launch(Dispatchers.IO) {
-                val data = context.trackerDataManager.getExportedTrackerData()
+                val data = if (ruleId != null) {
+                    context.database.getTrackerRule(ruleId)?.let {
+                        ExportedTrackerData(ExportType.SINGLE, listOf(it))
+                    }
+                } else {
+                    ExportedTrackerData(ExportType.BULK, context.database.getTrackerRulesDesc())
+                }
                 trackerData = data
                 featuresByCategory = data?.let { parser.parse(context.gson.toJson(it)) } ?: emptyMap()
             }

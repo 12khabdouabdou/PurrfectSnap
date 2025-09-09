@@ -59,24 +59,131 @@ class FriendTrackerManagerRoot : Routes.Route() {
     private lateinit var exportAction : () -> Unit
 
     override val topBarActions: @Composable RowScope.() -> Unit = {
-        if (currentPage == 0) {
-            IconButton(onClick = {
-                routes.activityLauncher.openFile("application/json") { uri ->
-                    runCatching {
-                        val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
-                            it.readBytes().toString(Charsets.UTF_8)
-                        } ?: return@runCatching
-                        routes.friendTrackerConfigJsonForImport = content
-                        routes.friendTrackerConfigImport.navigate()
-                    }.onFailure {
-                        context.longToast("Failed to read file: ${it.message}")
+        var showExportDialog by remember { mutableStateOf(false) }
+        var showSingleExportDialog by remember { mutableStateOf(false) }
+        var showImportDialog by remember { mutableStateOf(false) }
+
+        if (showExportDialog) {
+            AlertDialog(
+                onDismissRequest = { showExportDialog = false },
+                title = { Text("Export") },
+                text = { Text("Choose export type") },
+                confirmButton = {
+                    Button(onClick = {
+                        showExportDialog = false
+                        routes.friendTrackerConfigExport.navigate()
+                    }) {
+                        Text("Bulk Export")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = {
+                        showExportDialog = false
+                        showSingleExportDialog = true
+                    }) {
+                        Text("Individual Export")
                     }
                 }
+            )
+        }
+
+        if (showSingleExportDialog) {
+            val rules = rememberAsyncMutableStateList(defaultValue = emptyList()) {
+                context.database.getTrackerRulesDesc()
+            }
+            AlertDialog(
+                onDismissRequest = { showSingleExportDialog = false },
+                title = { Text("Select Rule to Export") },
+                text = {
+                    LazyColumn {
+                        items(rules) { rule ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        showSingleExportDialog = false
+                                        routes.friendTrackerConfigExport.navigate {
+                                            this["rule_id"] = rule.id.toString()
+                                        }
+                                    }
+                                    .padding(8.dp)
+                            ) {
+                                Text(rule.name)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {
+                    Button(onClick = { showSingleExportDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        if (showImportDialog) {
+            AlertDialog(
+                onDismissRequest = { showImportDialog = false },
+                title = { Text("Import") },
+                text = { Text("Choose import type") },
+                confirmButton = {
+                    Button(onClick = {
+                        showImportDialog = false
+                        routes.activityLauncher.openFile("application/json") { uri ->
+                            runCatching {
+                                val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
+                                    it.readBytes().toString(Charsets.UTF_8)
+                                } ?: return@runCatching
+                                val exportedData = context.gson.fromJson(content, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
+                                if (exportedData.type != me.rhunk.snapenhance.common.data.ExportType.BULK) {
+                                    context.longToast("Invalid import type")
+                                    return@runCatching
+                                }
+                                routes.friendTrackerConfigJsonForImport = content
+                                routes.friendTrackerConfigImport.navigate()
+                            }.onFailure {
+                                context.longToast("Failed to read file: ${it.message}")
+                            }
+                        }
+                    }) {
+                        Text("Bulk Import")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = {
+                        showImportDialog = false
+                        routes.activityLauncher.openFile("application/json") { uri ->
+                            runCatching {
+                                val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
+                                    it.readBytes().toString(Charsets.UTF_8)
+                                } ?: return@runCatching
+                                val exportedData = context.gson.fromJson(content, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
+                                if (exportedData.type != me.rhunk.snapenhance.common.data.ExportType.SINGLE) {
+                                    context.longToast("Invalid import type")
+                                    return@runCatching
+                                }
+                                routes.friendTrackerConfigJsonForImport = content
+                                routes.friendTrackerConfigImport.navigate()
+                            }.onFailure {
+                                context.longToast("Failed to read file: ${it.message}")
+                            }
+                        }
+                    }) {
+                        Text("Individual Import")
+                    }
+                }
+            )
+        }
+
+        if (currentPage == 0) {
+            IconButton(onClick = {
+                showImportDialog = true
             }) {
                 Icon(Icons.Default.FolderOpen, contentDescription = "Import")
             }
             IconButton(onClick = {
-                routes.friendTrackerConfigExport.navigate()
+                showExportDialog = true
             }) {
                 Icon(Icons.Default.SaveAlt, contentDescription = "Export")
             }
