@@ -16,10 +16,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.AnimatedVisibility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
-import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
+import kotlinx.coroutines.runBlocking
 import me.rhunk.snapenhance.common.util.ktx.getUrlFromClipboard
 import me.rhunk.snapenhance.storage.addRepo
 import me.rhunk.snapenhance.storage.getRepositories
@@ -119,9 +119,8 @@ class ManageScriptReposSection : Routes.Route() {
     }
 
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
-        val coroutineScope = rememberCoroutineScope()
         val repositories by remember(refreshTrigger.value) {
-            mutableStateOf(runBlocking { context.database.getRepositories("script") })
+            mutableStateOf<List<String>>(runBlocking { context.database.getRepositories("script") })
         }
 
         if (repositories.isEmpty()) {
