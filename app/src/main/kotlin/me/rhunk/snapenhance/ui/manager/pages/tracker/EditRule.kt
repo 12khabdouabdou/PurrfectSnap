@@ -107,12 +107,19 @@ class EditRule : Routes.Route() {
 
         Dialog(
             onDismissRequest = onDismissRequest,
-            properties = DialogProperties(dismissOnClickOutside = true)
+            properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            Card(
+            Box(
                 Modifier
-                    .fillMaxWidth(0.95f)
+                    .fillMaxSize()
+                    .systemBarsPadding()
+                    .navigationBarsPadding()
             ) {
+                Card(
+                    Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth(0.95f)
+                ) {
                     Column(Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
@@ -121,32 +128,33 @@ class EditRule : Routes.Route() {
                             }
                         }
                         Spacer(Modifier.height(16.dp))
-                        ExposedDropdownMenuBox(
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded.value = true },
+                            value = context.translation["tracker_events.${currentEventType.value}"],
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Event type") },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = if (expanded.value) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                        DropdownMenu(
                             expanded = expanded.value,
-                            onExpandedChange = { expanded.value = !expanded.value },
-                            modifier = Modifier.fillMaxWidth()
+                            onDismissRequest = { expanded.value = false }
                         ) {
-                            OutlinedTextField(
-                                modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                value = context.translation["tracker_events.${currentEventType.value}"],
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text("Event type") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
-                            )
-                            ExposedDropdownMenu(
-                                expanded = expanded.value,
-                                onDismissRequest = { expanded.value = false }
-                            ) {
-                                TrackerEventType.entries.forEach { eventType ->
-                                    DropdownMenuItem(
-                                        onClick = {
-                                            currentEventType.value = eventType.key
-                                            expanded.value = false
-                                        },
-                                        text = { Text(context.translation["tracker_events.${eventType.key}"]) }
-                                    )
-                                }
+                            TrackerEventType.entries.forEach { eventType ->
+                                DropdownMenuItem(
+                                    onClick = {
+                                        currentEventType.value = eventType.key
+                                        expanded.value = false
+                                    },
+                                    text = { Text(context.translation["tracker_events.${eventType.key}"]) }
+                                )
                             }
                         }
                         Spacer(Modifier.height(12.dp))
@@ -185,6 +193,7 @@ class EditRule : Routes.Route() {
                     }
                 }
             }
+        }
     }
 
     override val title: @Composable () -> Unit = {}

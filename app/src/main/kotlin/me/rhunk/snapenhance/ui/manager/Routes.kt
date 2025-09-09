@@ -39,7 +39,6 @@ data class RouteInfo(
     val icon: ImageVector = Icons.Default.Home,
     val primary: Boolean = false,
     val showInNavBar: Boolean = primary,
-    val hasOwnTopBar: Boolean = false,
 ) {
     var translatedKey: Lazy<String?>? = null
     val childIds = mutableListOf<String>()
@@ -76,7 +75,7 @@ class Routes(
     val homeLogs = route(RouteInfo("home_logs"), HomeLogs()).parent(home)
     val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker"), FriendTrackerManagerRoot()).parent(home)
-    val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}", hasOwnTopBar = true), EditRule())
+    val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}"), EditRule())
     val friendTrackerConfigExport = route(RouteInfo(FRIEND_TRACKER_CONFIG_EXPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen())
     val friendTrackerConfigImport = route(RouteInfo(FRIEND_TRACKER_CONFIG_IMPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigImportScreen())
     val friendTrackerCatalog = route(RouteInfo("friend_tracker_catalog"), FriendTrackerCatalog())

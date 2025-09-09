@@ -17,17 +17,15 @@ object SQLiteDatabaseHelper {
             }
             cursor.close()
 
-            val schemaColumns = columns.filter { !it.startsWith("PRIMARY KEY") }
-            val newColumns = schemaColumns.filter { column ->
-                existingColumns.none { existingColumn -> column.split(" ")[0] == existingColumn.split(" ")[0] }
+            val newColumns = columns.filter {
+                existingColumns.none { existingColumn -> it.startsWith(existingColumn) }
             }
 
             if (newColumns.isEmpty()) return@forEach
 
-            AbstractLogger.directDebug("Schema for table $tableName has changed, adding new columns: ${newColumns.joinToString(", ")}")
-            newColumns.forEach {
-                sqLiteDatabase.execSQL("ALTER TABLE $tableName ADD COLUMN $it")
-            }
+            AbstractLogger.directDebug("Schema for table $tableName has changed")
+            sqLiteDatabase.execSQL("DROP TABLE $tableName")
+            sqLiteDatabase.execSQL("CREATE TABLE IF NOT EXISTS $tableName (${columns.joinToString(", ")})")
         }
     }
 }

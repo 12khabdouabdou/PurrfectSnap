@@ -28,7 +28,7 @@ import me.rhunk.snapenhance.ui.manager.Routes
 import okhttp3.OkHttpClient
 
 class ManageScriptReposSection : Routes.Route() {
-    private val updateDispatcher = AsyncUpdateDispatcher()
+    private val refreshTrigger = mutableStateOf(0)
     private val okHttpClient by lazy { OkHttpClient() }
 
     private fun extractRepoInfo(url: String): Pair<String, String> {
@@ -98,7 +98,7 @@ class ManageScriptReposSection : Routes.Route() {
                                 }.onSuccess {
                                     context.shortToast("Repository added successfully!")
                                     showAddDialog = false
-                                    updateDispatcher.dispatch()
+                                    refreshTrigger.value++
                                 }.onFailure {
                                     context.log.error("Failed to add repository", it)
                                     context.shortToast("Failed to add repository: ${it.message}")
@@ -120,8 +120,8 @@ class ManageScriptReposSection : Routes.Route() {
 
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        val repositories = rememberAsyncMutableStateList(defaultValue = listOf<String>(), updateDispatcher = updateDispatcher) {
-            context.database.getRepositories("script")
+        val repositories by remember(refreshTrigger.value) {
+            mutableStateOf(runBlocking { context.database.getRepositories("script") })
         }
 
         if (repositories.isEmpty()) {
@@ -176,13 +176,36 @@ class ManageScriptReposSection : Routes.Route() {
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            var showRemoveDialog by remember { mutableStateOf(false) }
+
                             Button(
-                                onClick = {
-                                    context.database.removeRepo("script", url)
-                                    coroutineScope.launch { updateDispatcher.dispatch() }
-                                }
+                                onClick = { showRemoveDialog = true }
                             ) {
                                 Text("Remove")
+                            }
+
+                            AnimatedVisibility(visible = showRemoveDialog) {
+                                AlertDialog(
+                                    onDismissRequest = { showRemoveDialog = false },
+                                    title = { Text("Remove Repository") },
+                                    text = { Text("Are you sure you want to remove this repository?") },
+                                    confirmButton = {
+                                        Button(
+                                            onClick = {
+                                                context.database.removeRepo("script", url)
+                                                showRemoveDialog = false
+                                                refreshTrigger.value++
+                                            }
+                                        ) {
+                                            Text("Remove")
+                                        }
+                                    },
+                                    dismissButton = {
+                                        Button(onClick = { showRemoveDialog = false }) {
+                                            Text("Cancel")
+                                        }
+                                    }
+                                )
                             }
                         }
                     }
