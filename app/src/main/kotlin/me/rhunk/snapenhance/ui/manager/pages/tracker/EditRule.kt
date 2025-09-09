@@ -1,5 +1,6 @@
 package me.rhunk.snapenhance.ui.manager.pages.tracker
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,18 +16,25 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Dialog
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExposedDropdownMenuBoxScope
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuAnchorType as AnchorType
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PaddingValues
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -38,13 +46,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.menuAnchor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ExperimentalComposeApi
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +59,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.data.TrackerEventType
@@ -70,8 +77,8 @@ import me.rhunk.snapenhance.storage.getTrackerEvents
 import me.rhunk.snapenhance.storage.getTrackerRule
 import me.rhunk.snapenhance.storage.getTrackerRuleByName
 import me.rhunk.snapenhance.storage.newTrackerRule
+import me.rhunk.snapenhance.storage.setRuleTrackerAuthor
 import me.rhunk.snapenhance.storage.setRuleTrackerScopes
-import me.rhunk.snapenhance.storage.setTrackerRuleAuthor
 import me.rhunk.snapenhance.storage.setTrackerRuleName
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.pages.social.AddFriendDialog
@@ -113,7 +120,7 @@ class EditRule : Routes.Route() {
         addEventActions: MutableState<Set<TrackerRuleAction>>,
         addEventActionParams: TrackerRuleActionParams
     ) {
-        val showDropdown = remember { mutableStateOf(false) }
+        val expanded = remember { mutableStateOf(false) }
         Dialog(onDismissRequest = onDismissRequest) {
             Scaffold(
                 topBar = {
@@ -157,28 +164,37 @@ class EditRule : Routes.Route() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text("Type", style = androidx.compose.material3.MaterialTheme.typography.titleLarge)
-                        ExposedDropdownMenuBox(expanded = showDropdown.value, onExpandedChange = { showDropdown.value = it }) {
-                            androidx.compose.material3.ElevatedButton(
-                                onClick = { showDropdown.value = true },
-                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                            ) {
-                                Text(
-                                    context.translation["tracker_events.${currentEventType.value}"],
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1
-                                )
-                            }
-                            androidx.compose.material3.DropdownMenu(
-                                expanded = showDropdown.value,
-                                onDismissRequest = { showDropdown.value = false }
+                        ExposedDropdownMenuBox(
+                            expanded = expanded.value,
+                            onExpandedChange = { expanded.value = !expanded.value }
+                        ) {
+                            OutlinedTextField(
+                                modifier = Modifier
+                                    .menuAnchor(AnchorType.PrimaryNotEditable)
+                                    .widthIn(min = 160.dp),
+                                value = context.translation["tracker_events.${currentEventType.value}"],
+                                onValueChange = {},
+                                readOnly = true,
+                                singleLine = true,
+                                label = { Text("Event type") },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value)
+                                }
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded.value,
+                                onDismissRequest = { expanded.value = false }
                             ) {
                                 TrackerEventType.entries.forEach { eventType ->
-                                    androidx.compose.material3.DropdownMenuItem(
+                                    DropdownMenuItem(
                                         onClick = {
                                             currentEventType.value = eventType.key
-                                            showDropdown.value = false
+                                            expanded.value = false
                                         },
-                                        text = { Text(context.translation["tracker_events.${eventType.key}"]) }
+                                        text = {
+                                            Text(context.translation["tracker_events.${eventType.key}"])
+                                        },
+                                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                                     )
                                 }
                             }
@@ -308,9 +324,7 @@ class EditRule : Routes.Route() {
                             }
                             routes.navController.popBackStack()
                         }
-                    ) {
-                        Text("Delete")
-                    }
+                    ) { Text("Delete") }
                 },
                 dismissButton = {
                     Button(onClick = { deleteConfirmation = false }) { Text("Cancel") }
@@ -352,7 +366,7 @@ class EditRule : Routes.Route() {
                             context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
                             routes.navController.popBackStack()
                         }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save")
+                            Icon(Icons.Filled.Save, contentDescription = "Save")
                         }
                         if (currentRuleId != null) {
                             IconButton(onClick = { deleteConfirmation = true }) {
@@ -368,9 +382,7 @@ class EditRule : Routes.Route() {
                     tabs.forEachIndexed { index, title ->
                         Tab(
                             selected = pagerState.currentPage == index,
-                            onClick = {
-                                coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                            },
+                            onClick = { coroutineScope.launch { pagerState.animateScrollToPage(index) } },
                             text = { Text(title) }
                         )
                     }
@@ -430,25 +442,13 @@ class EditRule : Routes.Route() {
                                             val friendDialogActions = remember {
                                                 AddFriendDialog.Actions(
                                                     onFriendState = { friend, state ->
-                                                        if (state) {
-                                                            scopes.add(friend.userId)
-                                                        } else {
-                                                            scopes.remove(friend.userId)
-                                                        }
+                                                        if (state) scopes.add(friend.userId) else scopes.remove(friend.userId)
                                                     },
                                                     onGroupState = { group, state ->
-                                                        if (state) {
-                                                            scopes.add(group.conversationId)
-                                                        } else {
-                                                            scopes.remove(group.conversationId)
-                                                        }
+                                                        if (state) scopes.add(group.conversationId) else scopes.remove(group.conversationId)
                                                     },
-                                                    getFriendState = { friend ->
-                                                        friend.userId in scopes
-                                                    },
-                                                    getGroupState = { group ->
-                                                        group.conversationId in scopes
-                                                    }
+                                                    getFriendState = { friend -> friend.userId in scopes },
+                                                    getGroupState = { group -> group.conversationId in scopes }
                                                 )
                                             }
 
@@ -472,9 +472,7 @@ class EditRule : Routes.Route() {
                                                         ),
                                                         onClick = {
                                                             when (index) {
-                                                                0 -> {
-                                                                    scopes.clear()
-                                                                }
+                                                                0 -> scopes.clear()
                                                                 1 -> {
                                                                     currentScopeType = TrackerScopeType.WHITELIST
                                                                     if (scopes.isEmpty()) {
@@ -498,9 +496,7 @@ class EditRule : Routes.Route() {
                                                             }
                                                         },
                                                         selected = index == selectedScopeIndex
-                                                    ) {
-                                                        Text(label)
-                                                    }
+                                                    ) { Text(label) }
                                                 }
                                             }
 
@@ -516,14 +512,10 @@ class EditRule : Routes.Route() {
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .padding(16.dp)
-                                                ) {
-                                                    Text("Select Friends/Groups (${scopes.size})")
-                                                }
+                                                ) { Text("Select Friends/Groups (${scopes.size})") }
                                             }
 
-                                            addFriendDialog?.Content {
-                                                addFriendDialog = null
-                                            }
+                                            addFriendDialog?.Content { addFriendDialog = null }
                                         }
                                     }
                                 }
@@ -598,6 +590,7 @@ class EditRule : Routes.Route() {
                                     ElevatedCard(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .animateContentSize()
                                             .padding(4.dp),
                                         onClick = { expanded = !expanded }
                                     ) {
@@ -613,10 +606,7 @@ class EditRule : Routes.Route() {
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Icon(
-                                                        if (expanded)
-                                                            androidx.compose.material.icons.Icons.Default.ExpandLess
-                                                        else
-                                                            androidx.compose.material.icons.Icons.Default.ExpandMore,
+                                                        if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
                                                         contentDescription = null,
                                                         modifier = Modifier.size(24.dp)
                                                     )
@@ -659,9 +649,7 @@ class EditRule : Routes.Route() {
                                     }
                                 }
 
-                                item {
-                                    Spacer(modifier = Modifier.height(140.dp))
-                                }
+                                item { Spacer(modifier = Modifier.height(140.dp)) }
                             }
                         }
                     }
