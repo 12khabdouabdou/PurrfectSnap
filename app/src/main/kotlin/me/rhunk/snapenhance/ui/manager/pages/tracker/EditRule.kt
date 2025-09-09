@@ -22,9 +22,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalWindowInsets
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -100,31 +99,27 @@ class EditRule : Routes.Route() {
     @Composable
     fun AddEventDialog(
         onDismissRequest: () -> Unit,
-        onEventAdd: (TrackerRuleEvent) -> Unit,
-        preselectedEventType: String
+        onEventAdd: (TrackerRuleEvent) -> Unit
     ) {
-        // KEY CHANGE: all state is *inside* AddEventDialog, makes Dropdown always work
+        // State moved INSIDE so every dialog instance is truly new!
         val expanded = remember { mutableStateOf(false) }
-        val currentEventType = remember { mutableStateOf(preselectedEventType) }
+        val currentEventType = remember { mutableStateOf(TrackerEventType.CONVERSATION_ENTER.key) }
         val addEventActions = remember { mutableStateOf(emptySet<TrackerRuleAction>()) }
         val addEventActionParams = remember { TrackerRuleActionParams() }
 
         Dialog(
             onDismissRequest = onDismissRequest,
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false // Makes dialog fill max screen size if wanted
-            )
+            properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets(0))
-                    .wrapContentSize(Alignment.Center)
+                    .systemBarsPadding()  // Remove this if you don't want insets at all!
             ) {
                 Card(
                     Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
+                        .align(Alignment.Center)
+                        .fillMaxWidth(0.95f)
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -232,8 +227,6 @@ class EditRule : Routes.Route() {
         var showDuplicateNameDialog by remember { mutableStateOf(false) }
         var addFriendDialog by remember { mutableStateOf<AddFriendDialog?>(null) }
         var addEventDialogVisible by remember { mutableStateOf(false) }
-        // for event dialog, pass initial trackerEventType key to ensure change when dialog is re-shown
-        val initialEventType = TrackerEventType.CONVERSATION_ENTER.key
 
         if (showDuplicateNameDialog) {
             AlertDialog(
@@ -266,11 +259,13 @@ class EditRule : Routes.Route() {
             )
         }
 
-        // This is now a truly full-screen layout, occupies entire root
+        // Forces TRUE fullscreen, removes unwanted insets/padding so there is NO dead space above!
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets(0)),
+                .systemBarsPadding()
+                .imePadding()
+                .navigationBarsPadding(),
             topBar = {
                 TopAppBar(
                     title = { Text(if (currentRuleId == null) "New Rule" else "Edit Rule") },
@@ -413,8 +408,7 @@ class EditRule : Routes.Route() {
                                 onEventAdd = { event ->
                                     events.add(0, event)
                                     addEventDialogVisible = false
-                                },
-                                preselectedEventType = initialEventType
+                                }
                             )
                         }
                         if (events.isEmpty()) {
