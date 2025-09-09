@@ -1,4 +1,7 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.foundation.layout.ExperimentalLayoutApi::class
+)
 
 package me.rhunk.snapenhance.ui.manager.pages.tracker
 
@@ -8,8 +11,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -29,11 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.launch
-import me.rhunk.snapenhance.common.data.TrackerEventType
-import me.rhunk.snapenhance.common.data.TrackerRuleAction
-import me.rhunk.snapenhance.common.data.TrackerRuleActionParams
-import me.rhunk.snapenhance.common.data.TrackerRuleEvent
-import me.rhunk.snapenhance.common.data.TrackerScopeType
+import me.rhunk.snapenhance.common.data.*
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
 import me.rhunk.snapenhance.storage.*
@@ -246,7 +245,6 @@ class EditRule : Routes.Route() {
                 }
             )
         }
-        // Top-level Scaffold, fills full screen, with its own TopAppBar
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
@@ -294,7 +292,6 @@ class EditRule : Routes.Route() {
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // --- GENERAL SECTION ---
                 Card(Modifier.fillMaxWidth().padding(12.dp)) {
                     Column(Modifier.padding(16.dp)) {
                         Text("General", style = MaterialTheme.typography.titleMedium)
@@ -315,7 +312,6 @@ class EditRule : Routes.Route() {
                         )
                     }
                 }
-                // --- SCOPE SECTION ---
                 Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
                     Column(Modifier.padding(16.dp)) {
                         Text("Scope", style = MaterialTheme.typography.titleMedium)
@@ -375,7 +371,6 @@ class EditRule : Routes.Route() {
                         addFriendDialog?.Content { addFriendDialog = null }
                     }
                 }
-                // --- EVENTS SECTION ---
                 Card(Modifier.fillMaxWidth().padding(12.dp)) {
                     Column(Modifier.padding(16.dp)) {
                         Row(
