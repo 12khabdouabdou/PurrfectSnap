@@ -28,6 +28,7 @@ import me.rhunk.snapenhance.ui.manager.pages.social.MessagingPreview
 import me.rhunk.snapenhance.ui.manager.pages.social.SocialRootSection
 import me.rhunk.snapenhance.ui.manager.pages.tracker.EditRule
 import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerManagerRoot
+import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerCatalog
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageScriptReposSection
 
 
@@ -75,6 +76,7 @@ class Routes(
     val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}"), EditRule())
     val friendTrackerConfigExport = route(RouteInfo(FRIEND_TRACKER_CONFIG_EXPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen())
     val friendTrackerConfigImport = route(RouteInfo(FRIEND_TRACKER_CONFIG_IMPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigImportScreen())
+    val friendTrackerCatalog = route(RouteInfo("friend_tracker_catalog"), FriendTrackerCatalog())
 
     val fileImports = route(RouteInfo("file_imports"), FileImportsRoot()).parent(home)
     val manageRepos = route(RouteInfo("manage_repos"), ManageReposSection())

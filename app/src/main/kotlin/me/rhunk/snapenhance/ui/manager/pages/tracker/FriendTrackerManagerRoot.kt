@@ -18,6 +18,12 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.SaveAlt
+import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -64,26 +70,21 @@ class FriendTrackerManagerRoot : Routes.Route() {
         var showExportDialog by remember { mutableStateOf(false) }
         var showSingleExportDialog by remember { mutableStateOf(false) }
         var showImportDialog by remember { mutableStateOf(false) }
+        var showInvalidImportTypeDialog by remember { mutableStateOf(false) }
 
         if (showExportDialog) {
-            AlertDialog(
+            ChoiceDialog(
                 onDismissRequest = { showExportDialog = false },
-                title = { Text("Export") },
-                text = { Text("Choose export type") },
-                confirmButton = {
-                    Button(onClick = {
-                        showExportDialog = false
-                        routes.friendTrackerConfigExport.navigate()
-                    }) {
-                        Text("Bulk Export")
-                    }
-                },
-                dismissButton = {
-                    Button(onClick = {
-                        showExportDialog = false
-                        showSingleExportDialog = true
-                    }) {
-                        Text("Individual Export")
+                title = "Export",
+                choices = listOf(
+                    "Bulk Export" to { Icon(Icons.Default.UploadFile, null) },
+                    "Individual Export" to { Icon(Icons.Default.FileOpen, null) }
+                ),
+                onChoiceSelected = { index ->
+                    showExportDialog = false
+                    when (index) {
+                        0 -> routes.friendTrackerConfigExport.navigate()
+                        1 -> showSingleExportDialog = true
                     }
                 }
             )
@@ -132,7 +133,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     } ?: return@runCatching
                     val exportedData = context.gson.fromJson(content, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
                     if (exportedData.type != type) {
-                        context.longToast("Invalid import type")
+                        showInvalidImportTypeDialog = true
                         return@runCatching
                     }
                     routes.friendTrackerConfigJsonForImport = content
@@ -143,31 +144,43 @@ class FriendTrackerManagerRoot : Routes.Route() {
             }
         }
 
-        if (showImportDialog) {
+        if (showInvalidImportTypeDialog) {
             AlertDialog(
-                onDismissRequest = { showImportDialog = false },
-                title = { Text("Import") },
-                text = { Text("Choose import type") },
+                onDismissRequest = { showInvalidImportTypeDialog = false },
+                title = { Text("Invalid Import Type") },
+                text = { Text("The selected file is not compatible with this import type. Please select the correct import type.") },
                 confirmButton = {
-                    Button(onClick = {
-                        showImportDialog = false
-                        handleImport(me.rhunk.snapenhance.common.data.ExportType.BULK)
-                    }) {
-                        Text("Bulk Import")
+                    Button(onClick = { showInvalidImportTypeDialog = false }) {
+                        Text("OK")
                     }
-                },
-                dismissButton = {
-                    Button(onClick = {
-                        showImportDialog = false
-                        handleImport(me.rhunk.snapenhance.common.data.ExportType.SINGLE)
-                    }) {
-                        Text("Individual Import")
+                }
+            )
+        }
+
+        if (showImportDialog) {
+            ChoiceDialog(
+                onDismissRequest = { showImportDialog = false },
+                title = "Import",
+                choices = listOf(
+                    "Bulk Import" to { Icon(Icons.Default.UploadFile, null) },
+                    "Individual Import" to { Icon(Icons.Default.FileOpen, null) }
+                ),
+                onChoiceSelected = { index ->
+                    showImportDialog = false
+                    when (index) {
+                        0 -> handleImport(me.rhunk.snapenhance.common.data.ExportType.BULK)
+                        1 -> handleImport(me.rhunk.snapenhance.common.data.ExportType.SINGLE)
                     }
                 }
             )
         }
 
         if (currentPage == 0) {
+            IconButton(onClick = {
+                routes.friendTrackerCatalog.navigate()
+            }) {
+                Icon(Icons.Default.Store, contentDescription = "Catalog")
+            }
             IconButton(onClick = {
                 showImportDialog = true
             }) {
@@ -397,6 +410,58 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     0 -> ConfigRulesTab()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ChoiceDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    choices: List<Pair<String, @Composable () -> Unit>>,
+    onChoiceSelected: (Int) -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(text = title, style = MaterialTheme.typography.headlineSmall)
+                choices.forEachIndexed { index, (text, icon) ->
+                    SelectButton(
+                        onClick = { onChoiceSelected(index) },
+                        text = text,
+                        leadingIcon = icon
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectButton(
+    onClick: () -> Unit,
+    text: String,
+    leadingIcon: @Composable (() -> Unit)? = null,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (leadingIcon != null) {
+                leadingIcon()
+            }
+            Text(text = text, modifier = Modifier.weight(1f))
         }
     }
 }

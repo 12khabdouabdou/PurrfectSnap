@@ -47,7 +47,7 @@ fun ScriptCatalog(root: ScriptingRootSection) {
     fun refreshIndexes() {
         coroutineScope.launch(Dispatchers.IO) {
             isLoading = true
-            val repos = context.database.getRepositories()
+            val repos = context.database.getRepositories("script")
             withContext(Dispatchers.Main) {
                 repositories = repos
             }

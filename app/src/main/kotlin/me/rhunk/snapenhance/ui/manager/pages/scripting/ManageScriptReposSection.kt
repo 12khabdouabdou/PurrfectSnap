@@ -67,7 +67,7 @@ class ManageScriptReposSection : Routes.Route() {
                         modifiedUrl = "https://raw.githubusercontent.com/$repoName/$defaultBranch/"
                     }
                 }
-                context.database.addRepo(modifiedUrl)
+                context.database.addRepo("script", modifiedUrl)
                 context.shortToast("Repository added successfully!")
                 showAddDialog = false
                 updateDispatcher.dispatch()
@@ -124,7 +124,7 @@ class ManageScriptReposSection : Routes.Route() {
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
         val repositories = rememberAsyncMutableStateList(defaultValue = listOf<String>(), updateDispatcher = updateDispatcher) {
-            context.database.getRepositories()
+            context.database.getRepositories("script")
         }
 
         if (repositories.isEmpty()) {
@@ -181,7 +181,7 @@ class ManageScriptReposSection : Routes.Route() {
                             }
                             Button(
                                 onClick = {
-                                    context.database.removeRepo(url)
+                                    context.database.removeRepo("script", url)
                                     coroutineScope.launch { updateDispatcher.dispatch() }
                                 }
                             ) {
