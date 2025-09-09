@@ -218,41 +218,15 @@ class FriendTrackerCatalog : Routes.Route() {
         }
     }
 
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
-        var selectedTabIndex by remember { mutableStateOf(0) }
-        val tabs = listOf("Available Rules", "Repositories")
+    override val title: @Composable () -> Unit = { Text("Friend Tracker Catalog") }
 
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Friend Tracker Catalog") },
-                    navigationIcon = {
-                        IconButton(onClick = { routes.navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-            ) {
-                TabRow(selectedTabIndex = selectedTabIndex) {
-                    tabs.forEachIndexed { index, title ->
-                        Tab(
-                            selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index },
-                            text = { Text(title) }
-                        )
-                    }
-                }
-                when (selectedTabIndex) {
-                    0 -> AvailableRulesTab()
-                    1 -> ManageFriendTrackerReposSection(context)
-                }
-            }
+    override val topBarActions: @Composable RowScope.() -> Unit = {
+        IconButton(onClick = { routes.manageFriendTrackerRepos.navigate() }) {
+            Icon(Icons.Default.Public, contentDescription = "Manage Repositories")
         }
+    }
+
+    override val content: @Composable (NavBackStackEntry) -> Unit = {
+        AvailableRulesTab()
     }
 }

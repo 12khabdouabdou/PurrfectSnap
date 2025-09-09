@@ -27,99 +27,99 @@ import me.rhunk.snapenhance.storage.removeRepo
 import me.rhunk.snapenhance.ui.manager.Routes
 import okhttp3.OkHttpClient
 
-@Composable
-fun ManageFriendTrackerReposSection(context: me.rhunk.snapenhance.RemoteSideContext) {
-    val updateDispatcher = remember { AsyncUpdateDispatcher() }
-    val okHttpClient by lazy { OkHttpClient() }
-    val coroutineScope = rememberCoroutineScope()
-    val repositories = rememberAsyncMutableStateList(defaultValue = listOf<String>(), updateDispatcher = updateDispatcher) {
-        context.database.getRepositories("friend_tracker")
-    }
-    var showAddDialog by remember { mutableStateOf(false) }
+class ManageFriendTrackerReposSection: Routes.Route() {
+    private val updateDispatcher = AsyncUpdateDispatcher()
+    private val okHttpClient by lazy { OkHttpClient() }
 
-    if (showAddDialog) {
-        val addRepoScope = rememberCoroutineScope { Dispatchers.IO }
-
-        suspend fun addRepo(url: String) {
-            var modifiedUrl = url
-            if (url.startsWith("https://github.com/")) {
-                val splitUrl = modifiedUrl.removePrefix("https://github.com/").split("/")
-                val repoName = splitUrl[0] + "/" + splitUrl[1]
-                okHttpClient.newCall(
-                    okhttp3.Request.Builder().url("https://api.github.com/repos/$repoName").build()
-                ).execute().use { response ->
-                    if (!response.isSuccessful) {
-                        throw Exception("Failed to fetch default branch: ${response.code}")
-                    }
-                    val json = response.body?.string() ?: throw Exception("Empty response")
-                    val defaultBranch = Regex("\"default_branch\":\"([^\"]+)\"").find(json)?.groupValues?.get(1)
-                        ?: throw Exception("No default_branch field")
-                    modifiedUrl = "https://raw.githubusercontent.com/$repoName/$defaultBranch/"
-                }
-            }
-            context.database.addRepo("friend_tracker", modifiedUrl)
-            context.shortToast("Repository added successfully!")
-            showAddDialog = false
-            updateDispatcher.dispatch()
+    override val floatingActionButton: @Composable () -> Unit = {
+        var showAddDialog by remember { mutableStateOf(false) }
+        ExtendedFloatingActionButton(onClick = { showAddDialog = true }) {
+            Text("Add Repository")
         }
 
-        var url by remember { mutableStateOf("") }
-        var loading by remember { mutableStateOf(false) }
+        if (showAddDialog) {
+            val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
 
-        AlertDialog(
-            onDismissRequest = { showAddDialog = false },
-            title = { Text("Add Repository URL") },
-            text = {
-                val focusRequester = remember { FocusRequester() }
-                OutlinedTextField(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester)
-                        .onGloballyPositioned { focusRequester.requestFocus() },
-                    value = url,
-                    onValueChange = { url = it },
-                    label = { Text("Repository URL") }
-                )
-                LaunchedEffect(Unit) {
-                    context.androidContext.getUrlFromClipboard()?.let { url = it }
+            suspend fun addRepo(url: String) {
+                var modifiedUrl = url
+                if (url.startsWith("https://github.com/")) {
+                    val splitUrl = modifiedUrl.removePrefix("https://github.com/").split("/")
+                    val repoName = splitUrl[0] + "/" + splitUrl[1]
+                    okHttpClient.newCall(
+                        okhttp3.Request.Builder().url("https://api.github.com/repos/$repoName").build()
+                    ).execute().use { response ->
+                        if (!response.isSuccessful) {
+                            throw Exception("Failed to fetch default branch: ${response.code}")
+                        }
+                        val json = response.body?.string() ?: throw Exception("Empty response")
+                        val defaultBranch = Regex("\"default_branch\":\"([^\"]+)\"").find(json)?.groupValues?.get(1)
+                            ?: throw Exception("No default_branch field")
+                        modifiedUrl = "https://raw.githubusercontent.com/$repoName/$defaultBranch/"
+                    }
                 }
-            },
-            confirmButton = {
-                Button(
-                    enabled = !loading && url.isNotBlank(),
-                    onClick = {
-                        loading = true
-                        addRepoScope.launch {
-                            runCatching {
-                                addRepo(url)
-                            }.onFailure {
-                                context.log.error("Failed to add repository", it)
-                                context.shortToast("Failed to add repository: ${it.message}")
+                context.database.addRepo("friend_tracker", modifiedUrl)
+                context.shortToast("Repository added successfully!")
+                showAddDialog = false
+                updateDispatcher.dispatch()
+            }
+
+            var url by remember { mutableStateOf("") }
+            var loading by remember { mutableStateOf(false) }
+
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                title = { Text("Add Repository URL") },
+                text = {
+                    val focusRequester = remember { FocusRequester() }
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester)
+                            .onGloballyPositioned { focusRequester.requestFocus() },
+                        value = url,
+                        onValueChange = { url = it },
+                        label = { Text("Repository URL") }
+                    )
+                    LaunchedEffect(Unit) {
+                        context.androidContext.getUrlFromClipboard()?.let { url = it }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        enabled = !loading && url.isNotBlank(),
+                        onClick = {
+                            loading = true
+                            coroutineScope.launch {
+                                runCatching {
+                                    addRepo(url)
+                                }.onFailure {
+                                    context.log.error("Failed to add repository", it)
+                                    context.shortToast("Failed to add repository: ${it.message}")
+                                }
+                                loading = false
                             }
-                            loading = false
+                        }
+                    ) {
+                        if (loading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        } else {
+                            Text("Add")
                         }
                     }
-                ) {
-                    if (loading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    } else {
-                        Text("Add")
-                    }
                 }
-            }
-        )
+            )
+        }
     }
 
-    Scaffold(
-        floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { showAddDialog = true }) {
-                Text("Add Repository")
-            }
+    override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
+        val coroutineScope = rememberCoroutineScope()
+        val repositories = rememberAsyncMutableStateList(defaultValue = listOf<String>(), updateDispatcher = updateDispatcher) {
+            context.database.getRepositories("friend_tracker")
         }
-    ) { padding ->
+
         if (repositories.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -132,11 +132,11 @@ fun ManageFriendTrackerReposSection(context: me.rhunk.snapenhance.RemoteSideCont
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(8.dp),
             ) {
                 items(repositories) { url ->
-                     val (repoName, author) = remember(url) {
+                    val (repoName, author) = remember(url) {
                         url.removePrefix("https://raw.githubusercontent.com/").split("/").let { it[1] to it[0] }
                     }
 
