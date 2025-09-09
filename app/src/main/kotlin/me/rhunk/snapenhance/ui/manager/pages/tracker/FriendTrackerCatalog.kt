@@ -30,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.storage.getRepositories
+import me.rhunk.snapenhance.storage.getTrackerRuleByName
 import me.rhunk.snapenhance.ui.manager.Routes
 import okhttp3.OkHttpClient
 import okhttp3.Request
