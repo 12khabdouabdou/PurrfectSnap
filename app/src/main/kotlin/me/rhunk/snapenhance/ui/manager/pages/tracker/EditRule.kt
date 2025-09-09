@@ -115,7 +115,7 @@ class EditRule : Routes.Route() {
 
         Dialog(
             onDismissRequest = onDismissRequest,
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+            properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = true)
         ) {
             Box(
                 Modifier

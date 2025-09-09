@@ -160,12 +160,29 @@ class Navigation(
                 val children = routes.getRoutes().filter { it.parentRoute == route }
                 if (children.isEmpty()) {
                     val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_EXPORT_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_IMPORT_ROUTE
+                    val isCoolScreen = route.routeInfo.id.startsWith("edit_rule") || route.routeInfo.id == "friend_tracker_catalog" || route.routeInfo.id == "manage_script_repos"
                     composable(
                         route.routeInfo.id,
-                        enterTransition = { if (isSummaryScreen) slideInHorizontally { it } else fadeIn(tween(100)) },
-                        exitTransition = { if (isSummaryScreen) slideOutHorizontally { -it } else fadeOut(tween(100)) },
-                        popEnterTransition = { if (isSummaryScreen) slideInHorizontally { -it } else fadeIn(tween(100)) },
-                        popExitTransition = { if (isSummaryScreen) slideOutHorizontally { it } else fadeOut(tween(100)) }
+                        enterTransition = {
+                            if (isSummaryScreen) slideInHorizontally { it }
+                            else if (isCoolScreen) slideInHorizontally(animationSpec = tween(300)) { it / 2 } + fadeIn(animationSpec = tween(300))
+                            else fadeIn(tween(100))
+                        },
+                        exitTransition = {
+                            if (isSummaryScreen) slideOutHorizontally { -it }
+                            else if (isCoolScreen) slideOutHorizontally(animationSpec = tween(300)) { -it / 2 } + fadeOut(animationSpec = tween(300))
+                            else fadeOut(tween(100))
+                        },
+                        popEnterTransition = {
+                            if (isSummaryScreen) slideInHorizontally { -it }
+                            else if (isCoolScreen) slideInHorizontally(animationSpec = tween(300)) { -it / 2 } + fadeIn(animationSpec = tween(300))
+                            else fadeIn(tween(100))
+                        },
+                        popExitTransition = {
+                            if (isSummaryScreen) slideOutHorizontally { it }
+                            else if (isCoolScreen) slideOutHorizontally(animationSpec = tween(300)) { it / 2 } + fadeOut(animationSpec = tween(300))
+                            else fadeOut(tween(100))
+                        }
                     ) {
                         route.content.invoke(it)
                     }
