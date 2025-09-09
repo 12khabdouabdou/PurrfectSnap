@@ -162,7 +162,7 @@ class EditRule : Routes.Route() {
                                 )
                             }
                             context.database.setTrackerRuleName(ruleId, ruleName.value.trim())
-                            context.database.setTrackerRuleScopes(ruleId, currentScopeType, scopes)
+                            context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
                             routes.navController.popBackStack()
                         },
                         text = { Text("Save Rule") },
