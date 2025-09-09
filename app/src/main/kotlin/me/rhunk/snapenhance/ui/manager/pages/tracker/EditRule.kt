@@ -107,43 +107,34 @@ class EditRule : Routes.Route() {
 
         Dialog(
             onDismissRequest = onDismissRequest,
-            properties = DialogProperties(usePlatformDefaultWidth = false)
+            properties = DialogProperties(dismissOnClickOutside = true)
         ) {
-            Box(
+            Card(
                 Modifier
-                    .fillMaxSize()
-                    .systemBarsPadding()
-                    .navigationBarsPadding()
+                    .fillMaxWidth(0.95f)
             ) {
-                Card(
-                    Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth(0.95f)
-                ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                            IconButton(onClick = onDismissRequest) {
-                                Icon(Icons.Default.DeleteOutline, contentDescription = "Close")
-                            }
+                Column(Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                        IconButton(onClick = onDismissRequest) {
+                            Icon(Icons.Default.DeleteOutline, contentDescription = "Close")
                         }
-                        Spacer(Modifier.height(16.dp))
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    ExposedDropdownMenuBox(
+                        expanded = expanded.value,
+                        onExpandedChange = { expanded.value = !expanded.value },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { expanded.value = true },
+                            modifier = Modifier.fillMaxWidth().menuAnchor(),
                             value = context.translation["tracker_events.${currentEventType.value}"],
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Event type") },
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = if (expanded.value) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                                    contentDescription = null
-                                )
-                            }
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
                         )
-                        DropdownMenu(
+                        ExposedDropdownMenu(
                             expanded = expanded.value,
                             onDismissRequest = { expanded.value = false }
                         ) {
@@ -157,6 +148,7 @@ class EditRule : Routes.Route() {
                                 )
                             }
                         }
+                    }
                         Spacer(Modifier.height(12.dp))
                         Text("Triggers", style = MaterialTheme.typography.titleMedium)
                         FlowRow(
@@ -193,7 +185,6 @@ class EditRule : Routes.Route() {
                     }
                 }
             }
-        }
     }
 
     override val title: @Composable () -> Unit = {}

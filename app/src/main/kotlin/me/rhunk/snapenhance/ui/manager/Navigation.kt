@@ -43,6 +43,7 @@ class Navigation(
     fun TopBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
+        if (currentRoute?.routeInfo?.hasOwnTopBar == true) return
         val canGoBack = remember(navBackStackEntry) {
             currentRoute?.let {
                 !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination)
