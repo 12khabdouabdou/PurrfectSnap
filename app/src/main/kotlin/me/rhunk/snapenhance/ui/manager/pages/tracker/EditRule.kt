@@ -266,178 +266,183 @@ class EditRule : Routes.Route() {
 
                         var addFriendDialog by remember { mutableStateOf(null as AddFriendDialog?) }
 
-                    val friendDialogActions = remember {
-                        AddFriendDialog.Actions(
-                            onFriendState = { friend, state ->
-                                if (state) {
-                                    scopes.add(friend.userId)
-                                } else {
-                                    scopes.remove(friend.userId)
+                        val friendDialogActions = remember {
+                            AddFriendDialog.Actions(
+                                onFriendState = { friend, state ->
+                                    if (state) {
+                                        scopes.add(friend.userId)
+                                    } else {
+                                        scopes.remove(friend.userId)
+                                    }
+                                },
+                                onGroupState = { group, state ->
+                                    if (state) {
+                                        scopes.add(group.conversationId)
+                                    } else {
+                                        scopes.remove(group.conversationId)
+                                    }
+                                },
+                                getFriendState = { friend ->
+                                    friend.userId in scopes
+                                },
+                                getGroupState = { group ->
+                                    group.conversationId in scopes
                                 }
-                            },
-                            onGroupState = { group, state ->
-                                if (state) {
-                                    scopes.add(group.conversationId)
-                                } else {
-                                    scopes.remove(group.conversationId)
-                                }
-                            },
-                            getFriendState = { friend ->
-                                friend.userId in scopes
-                            },
-                            getGroupState = { group ->
-                                group.conversationId in scopes
+                            )
+                        }
+
+                        Box(modifier = Modifier.clickable { scopes.clear() }) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RadioButton(selected = scopes.isEmpty(), onClick = null)
+                                Text("All Friends/Groups")
                             }
-                        )
-                    }
-
-                    Box(modifier = Modifier.clickable { scopes.clear() }) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(selected = scopes.isEmpty(), onClick = null)
-                            Text("All Friends/Groups")
                         }
-                    }
 
-                    Box(modifier = Modifier.clickable {
-                        currentScopeType = TrackerScopeType.WHITELIST
-                        addFriendDialog = AddFriendDialog(
-                            context,
-                            friendDialogActions,
-                            pinnedIds = scopes,
-                        )
-                    }) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(selected = scopes.isNotEmpty() && currentScopeType == TrackerScopeType.WHITELIST, onClick = null)
-                            Text("No one except " + if (currentScopeType == TrackerScopeType.WHITELIST && scopes.isNotEmpty()) scopes.size.toString() + " friends/groups" else "...")
+                        Box(modifier = Modifier.clickable {
+                            currentScopeType = TrackerScopeType.WHITELIST
+                            addFriendDialog = AddFriendDialog(
+                                context,
+                                friendDialogActions,
+                                pinnedIds = scopes,
+                            )
+                        }) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RadioButton(selected = scopes.isNotEmpty() && currentScopeType == TrackerScopeType.WHITELIST, onClick = null)
+                                Text("No one except " + if (currentScopeType == TrackerScopeType.WHITELIST && scopes.isNotEmpty()) scopes.size.toString() + " friends/groups" else "...")
+                            }
                         }
-                    }
 
-                    Box(modifier = Modifier.clickable {
-                        currentScopeType = TrackerScopeType.BLACKLIST
-                        addFriendDialog = AddFriendDialog(
-                            context,
-                            friendDialogActions,
-                            pinnedIds = scopes,
-                        )
-                    }) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(selected = scopes.isNotEmpty() && currentScopeType == TrackerScopeType.BLACKLIST, onClick = null)
-                            Text("Everyone except " + if (currentScopeType == TrackerScopeType.BLACKLIST && scopes.isNotEmpty()) scopes.size.toString() + " friends/groups" else "...")
+                        Box(modifier = Modifier.clickable {
+                            currentScopeType = TrackerScopeType.BLACKLIST
+                            addFriendDialog = AddFriendDialog(
+                                context,
+                                friendDialogActions,
+                                pinnedIds = scopes,
+                            )
+                        }) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RadioButton(selected = scopes.isNotEmpty() && currentScopeType == TrackerScopeType.BLACKLIST, onClick = null)
+                                Text("Everyone except " + if (currentScopeType == TrackerScopeType.BLACKLIST && scopes.isNotEmpty()) scopes.size.toString() + " friends/groups" else "...")
+                            }
                         }
-                    }
 
-                    addFriendDialog?.Content {
-                        addFriendDialog = null
+                        addFriendDialog?.Content {
+                            addFriendDialog = null
+                        }
                     }
                 }
-
+            }
+            item {
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    var addEventDialog by remember { mutableStateOf(false) }
-                    val showDropdown = remember { mutableStateOf(false) }
+                    Column {
+                        var addEventDialog by remember { mutableStateOf(false) }
+                        val showDropdown = remember { mutableStateOf(false) }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Events", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
-                        IconButton(onClick = { addEventDialog = true }, modifier = Modifier.padding(8.dp)) {
-                            Icon(Icons.Default.Add, contentDescription = "Add Event", modifier = Modifier.size(32.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Events", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
+                            IconButton(onClick = { addEventDialog = true }, modifier = Modifier.padding(8.dp)) {
+                                Icon(Icons.Default.Add, contentDescription = "Add Event", modifier = Modifier.size(32.dp))
+                            }
+                        }
+
+                        if (addEventDialog) {
+                            AlertDialog(
+                                onDismissRequest = { addEventDialog = false },
+                                title = { Text("Add Event", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+                                text = {
+                                    Column(
+                                        modifier = Modifier
+                                            .verticalScroll(rememberScrollState())
+                                            .padding(16.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(2.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text("Type", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                            ExposedDropdownMenuBox(expanded = showDropdown.value, onExpandedChange = { showDropdown.value = it }) {
+                                                ElevatedButton(
+                                                    onClick = { showDropdown.value = true },
+                                                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                                ) {
+                                                    Text(context.translation["tracker_events.$currentEventType"], overflow = TextOverflow.Ellipsis, maxLines = 1)
+                                                }
+                                                DropdownMenu(expanded = showDropdown.value, onDismissRequest = { showDropdown.value = false }) {
+                                                    TrackerEventType.entries.forEach { eventType ->
+                                                        DropdownMenuItem(onClick = {
+                                                            currentEventType = eventType.key
+                                                            showDropdown.value = false
+                                                        }, text = {
+                                                            Text(context.translation["tracker_events.${eventType.key}"])
+                                                        })
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        Text("Triggers", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(2.dp))
+
+                                        FlowRow(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(2.dp),
+                                        ) {
+                                            TrackerRuleAction.entries.forEach { action ->
+                                                ActionCheckbox(context.translation["tracker_actions.${action.key}"], checked = remember { mutableStateOf(addEventActions.contains(action)) }) {
+                                                    if (it) {
+                                                        addEventActions += action
+                                                    } else {
+                                                        addEventActions -= action
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        Text("Conditions", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(2.dp))
+                                        ConditionCheckboxes(addEventActionParams)
+                                    }
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            events.add(0, TrackerRuleEvent(-1, true, currentEventType, addEventActionParams.copy(), addEventActions.toList()))
+                                            addEventDialog = false
+                                        }
+                                    ) {
+                                        Text("Add")
+                                    }
+                                }
+                            )
                         }
                     }
-
-                    if (addEventDialog) {
-                    AlertDialog(
-                        onDismissRequest = { addEventDialog = false },
-                        title = { Text("Add Event", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-                        text = {
-                            Column(
-                                modifier = Modifier
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(2.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("Type", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                                    ExposedDropdownMenuBox(expanded = showDropdown.value, onExpandedChange = { showDropdown.value = it }) {
-                                        ElevatedButton(
-                                            onClick = { showDropdown.value = true },
-                                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                                        ) {
-                                            Text(context.translation["tracker_events.$currentEventType"], overflow = TextOverflow.Ellipsis, maxLines = 1)
-                                        }
-                                        DropdownMenu(expanded = showDropdown.value, onDismissRequest = { showDropdown.value = false }) {
-                                            TrackerEventType.entries.forEach { eventType ->
-                                                DropdownMenuItem(onClick = {
-                                                    currentEventType = eventType.key
-                                                    showDropdown.value = false
-                                                }, text = {
-                                                    Text(context.translation["tracker_events.${eventType.key}"])
-                                                })
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Text("Triggers", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(2.dp))
-
-                                FlowRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(2.dp),
-                                ) {
-                                    TrackerRuleAction.entries.forEach { action ->
-                                        ActionCheckbox(context.translation["tracker_actions.${action.key}"], checked = remember { mutableStateOf(addEventActions.contains(action)) }) {
-                                            if (it) {
-                                                addEventActions += action
-                                            } else {
-                                                addEventActions -= action
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Text("Conditions", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(2.dp))
-                                ConditionCheckboxes(addEventActionParams)
-                            }
-                        },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    events.add(0, TrackerRuleEvent(-1, true, currentEventType, addEventActionParams.copy(), addEventActions.toList()))
-                                    addEventDialog = false
-                                }
-                            ) {
-                                Text("Add")
-                            }
-                        }
-                    )
                 }
             }
 
