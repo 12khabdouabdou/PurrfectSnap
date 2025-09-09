@@ -15,9 +15,11 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -35,151 +37,153 @@ import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.pages.social.AddFriendDialog
 
-@Composable
-fun ActionCheckbox(
-    text: String,
-    checked: MutableState<Boolean>,
-    onChanged: (Boolean) -> Unit = {}
-) {
-    Row(
-        modifier = Modifier.clickable {
-            checked.value = !checked.value
-            onChanged(checked.value)
-        },
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        verticalAlignment = Alignment.CenterVertically
+class EditRule : Routes.Route() {
+    @Composable
+    fun ActionCheckbox(
+        text: String,
+        checked: MutableState<Boolean>,
+        onChanged: (Boolean) -> Unit = {}
     ) {
-        Checkbox(
-            modifier = Modifier.size(30.dp),
-            checked = checked.value,
-            onCheckedChange = {
-                checked.value = it
-                onChanged(it)
-            }
-        )
-        Text(text, fontSize = 12.sp)
+        Row(
+            modifier = Modifier.clickable {
+                checked.value = !checked.value
+                onChanged(checked.value)
+            },
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                modifier = Modifier.size(30.dp),
+                checked = checked.value,
+                onCheckedChange = {
+                    checked.value = it
+                    onChanged(it)
+                }
+            )
+            Text(text, fontSize = 12.sp)
+        }
     }
-}
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
-@Composable
-private fun EditRule.AddEventDialog(
-    onDismissRequest: () -> Unit,
-    onEventAdd: (TrackerRuleEvent) -> Unit
-) {
-    val showDropdown = remember { mutableStateOf(false) }
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+    @Composable
+    fun AddEventDialog(
+        onDismissRequest: () -> Unit,
+        onEventAdd: (TrackerRuleEvent) -> Unit,
+        currentEventType: MutableState<String>,
+        addEventActions: MutableState<Set<TrackerRuleAction>>,
+        addEventActionParams: TrackerRuleActionParams
+    ) {
+        val showDropdown = remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismissRequest) {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text("Add Event") },
-                    navigationIcon = {
-                        IconButton(onClick = onDismissRequest) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
-                        }
-                    },
-                    actions = {
-                        TextButton(
-                            onClick = {
-                                onEventAdd(
-                                    TrackerRuleEvent(
-                                        id = -1,
-                                        enabled = true,
-                                        eventType = currentEventType,
-                                        params = addEventActionParams.copy(),
-                                        actions = addEventActions.toList()
+        Dialog(onDismissRequest = onDismissRequest) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("Add Event") },
+                        navigationIcon = {
+                            IconButton(onClick = onDismissRequest) {
+                                Icon(Icons.Default.Close, contentDescription = "Close")
+                            }
+                        },
+                        actions = {
+                            TextButton(
+                                onClick = {
+                                    onEventAdd(
+                                        TrackerRuleEvent(
+                                            id = -1,
+                                            enabled = true,
+                                            eventType = currentEventType.value,
+                                            params = addEventActionParams.copy(),
+                                            actions = addEventActions.value.toList()
+                                        )
                                     )
-                                )
-                            }
-                        ) {
-                            Text("Add")
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Type", style = MaterialTheme.typography.titleLarge)
-                    ExposedDropdownMenuBox(expanded = showDropdown.value, onExpandedChange = { showDropdown.value = it }) {
-                        ElevatedButton(
-                            onClick = { showDropdown.value = true },
-                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                        ) {
-                            Text(context.translation["tracker_events.$currentEventType"], overflow = TextOverflow.Ellipsis, maxLines = 1)
-                        }
-                        DropdownMenu(expanded = showDropdown.value, onDismissRequest = { showDropdown.value = false }) {
-                            TrackerEventType.entries.forEach { eventType ->
-                                DropdownMenuItem(onClick = {
-                                    currentEventType = eventType.key
-                                    showDropdown.value = false
-                                }, text = {
-                                    Text(context.translation["tracker_events.${eventType.key}"])
-                                })
+                                }
+                            ) {
+                                Text("Add")
                             }
                         }
-                    }
+                    )
                 }
-
-                Text("Triggers", style = MaterialTheme.typography.titleLarge)
-                FlowRow(
+            ) { padding ->
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(padding)
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    TrackerRuleAction.entries.forEach { action ->
-                        ActionCheckbox(context.translation["tracker_actions.${action.key}"], checked = remember { mutableStateOf(addEventActions.contains(action)) }) {
-                            if (it) {
-                                addEventActions += action
-                            } else {
-                                addEventActions -= action
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Type", style = MaterialTheme.typography.titleLarge)
+                        ExposedDropdownMenuBox(expanded = showDropdown.value, onExpandedChange = { showDropdown.value = it }) {
+                            ElevatedButton(
+                                onClick = { showDropdown.value = true },
+                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                            ) {
+                                Text(context.translation["tracker_events.${currentEventType.value}"], overflow = TextOverflow.Ellipsis, maxLines = 1)
+                            }
+                            DropdownMenu(expanded = showDropdown.value, onDismissRequest = { showDropdown.value = false }) {
+                                TrackerEventType.entries.forEach { eventType ->
+                                    DropdownMenuItem(onClick = {
+                                        currentEventType.value = eventType.key
+                                        showDropdown.value = false
+                                    }, text = {
+                                        Text(context.translation["tracker_events.${eventType.key}"])
+                                    })
+                                }
                             }
                         }
                     }
-                }
 
-                Text("Conditions", style = MaterialTheme.typography.titleLarge)
-                ConditionCheckboxes(addEventActionParams)
+                    Text("Triggers", style = MaterialTheme.typography.titleLarge)
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        TrackerRuleAction.entries.forEach { action ->
+                            ActionCheckbox(context.translation["tracker_actions.${action.key}"], checked = remember { mutableStateOf(addEventActions.value.contains(action)) }) {
+                                if (it) {
+                                    addEventActions.value += action
+                                } else {
+                                    addEventActions.value -= action
+                                }
+                            }
+                        }
+                    }
+
+                    Text("Conditions", style = MaterialTheme.typography.titleLarge)
+                    ConditionCheckboxes(addEventActionParams)
+                }
             }
         }
     }
-}
 
 
-@Composable
-fun ConditionCheckboxes(
-    params: TrackerRuleActionParams
-) {
-    ActionCheckbox(text = "Only when I'm inside conversation", checked = remember { mutableStateOf(params.onlyInsideConversation) }, onChanged = { params.onlyInsideConversation = it })
-    ActionCheckbox(text = "Only when I'm outside conversation", checked = remember { mutableStateOf(params.onlyOutsideConversation) }, onChanged = { params.onlyOutsideConversation = it })
-    ActionCheckbox(text = "Only when Snapchat is active", checked = remember { mutableStateOf(params.onlyWhenAppActive) }, onChanged = { params.onlyWhenAppActive = it })
-    ActionCheckbox(text = "Only when Snapchat is inactive", checked = remember { mutableStateOf(params.onlyWhenAppInactive) }, onChanged = { params.onlyWhenAppInactive = it })
-    ActionCheckbox(text = "No notification when Snapchat is active", checked = remember { mutableStateOf(params.noPushNotificationWhenAppActive) }, onChanged = { params.noPushNotificationWhenAppActive = it })
-}
-
-class EditRule : Routes.Route() {
-    // persistent add event state
-    private var currentEventType by mutableStateOf(TrackerEventType.CONVERSATION_ENTER.key)
-    private var addEventActions by mutableStateOf(emptySet<TrackerRuleAction>())
-    private val addEventActionParams by mutableStateOf(TrackerRuleActionParams())
+    @Composable
+    fun ConditionCheckboxes(
+        params: TrackerRuleActionParams
+    ) {
+        ActionCheckbox(text = "Only when I'm inside conversation", checked = remember { mutableStateOf(params.onlyInsideConversation) }, onChanged = { params.onlyInsideConversation = it })
+        ActionCheckbox(text = "Only when I'm outside conversation", checked = remember { mutableStateOf(params.onlyOutsideConversation) }, onChanged = { params.onlyOutsideConversation = it })
+        ActionCheckbox(text = "Only when Snapchat is active", checked = remember { mutableStateOf(params.onlyWhenAppActive) }, onChanged = { params.onlyWhenAppActive = it })
+        ActionCheckbox(text = "Only when Snapchat is inactive", checked = remember { mutableStateOf(params.onlyWhenAppInactive) }, onChanged = { params.onlyWhenAppInactive = it })
+        ActionCheckbox(text = "No notification when Snapchat is active", checked = remember { mutableStateOf(params.noPushNotificationWhenAppActive) }, onChanged = { params.noPushNotificationWhenAppActive = it })
+    }
 
     override val title: @Composable () -> Unit = { Text("Edit Rule") }
 
     @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = { navBackStackEntry ->
         val currentRuleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
+
+        val currentEventType = remember { mutableStateOf(TrackerEventType.CONVERSATION_ENTER.key) }
+        val addEventActions = remember { mutableStateOf(emptySet<TrackerRuleAction>()) }
+        val addEventActionParams = remember { TrackerRuleActionParams() }
 
         val events = rememberAsyncMutableStateList(defaultValue = emptyList()) {
             currentRuleId?.let { ruleId ->
@@ -348,8 +352,8 @@ class EditRule : Routes.Route() {
                                         }
                                     }
                                 }
+                            }
                         }
-                    }
                         1 -> {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
@@ -479,7 +483,10 @@ class EditRule : Routes.Route() {
                                                     onEventAdd = { event ->
                                                         events.add(0, event)
                                                         addEventDialog = false
-                                                }
+                                                    },
+                                                    currentEventType = currentEventType,
+                                                    addEventActions = addEventActions,
+                                                    addEventActionParams = addEventActionParams
                                                 )
                                         }
                                         }
