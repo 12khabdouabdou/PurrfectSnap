@@ -16,10 +16,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.animation.AnimatedVisibility
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
+import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
 import me.rhunk.snapenhance.common.util.ktx.getUrlFromClipboard
 import me.rhunk.snapenhance.storage.addRepo
 import me.rhunk.snapenhance.storage.getRepositories
@@ -109,8 +109,9 @@ class ManageFriendTrackerReposSection: Routes.Route() {
     }
 
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
+        val coroutineScope = rememberCoroutineScope()
         val repositories by remember(refreshTrigger.value) {
-            mutableStateOf<List<String>>(runBlocking { context.database.getRepositories("friend_tracker") })
+            mutableStateOf(runBlocking { context.database.getRepositories("friend_tracker") })
         }
 
         if (repositories.isEmpty()) {
