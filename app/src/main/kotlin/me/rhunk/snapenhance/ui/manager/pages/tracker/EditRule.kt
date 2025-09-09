@@ -105,21 +105,8 @@ class EditRule : Routes.Route() {
         val addEventActions = remember { mutableStateOf(emptySet<TrackerRuleAction>()) }
         val addEventActionParams = remember { TrackerRuleActionParams() }
 
-        Dialog(
-            onDismissRequest = onDismissRequest,
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .systemBarsPadding()
-                    .navigationBarsPadding()
-            ) {
-                Card(
-                    Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth(0.95f)
-                ) {
+        Dialog(onDismissRequest = onDismissRequest) {
+            Card {
                     Column(Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
@@ -128,33 +115,32 @@ class EditRule : Routes.Route() {
                             }
                         }
                         Spacer(Modifier.height(16.dp))
-                        OutlinedTextField(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { expanded.value = true },
-                            value = context.translation["tracker_events.${currentEventType.value}"],
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Event type") },
-                            trailingIcon = {
-                                Icon(
-                                    imageVector = if (expanded.value) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                                    contentDescription = null
-                                )
-                            }
-                        )
-                        DropdownMenu(
+                        ExposedDropdownMenuBox(
                             expanded = expanded.value,
-                            onDismissRequest = { expanded.value = false }
+                            onExpandedChange = { expanded.value = !expanded.value },
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            TrackerEventType.entries.forEach { eventType ->
-                                DropdownMenuItem(
-                                    onClick = {
-                                        currentEventType.value = eventType.key
-                                        expanded.value = false
-                                    },
-                                    text = { Text(context.translation["tracker_events.${eventType.key}"]) }
-                                )
+                            OutlinedTextField(
+                                modifier = Modifier.fillMaxWidth().menuAnchor(),
+                                value = context.translation["tracker_events.${currentEventType.value}"],
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text("Event type") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
+                            )
+                            ExposedDropdownMenu(
+                                expanded = expanded.value,
+                                onDismissRequest = { expanded.value = false }
+                            ) {
+                                TrackerEventType.entries.forEach { eventType ->
+                                    DropdownMenuItem(
+                                        onClick = {
+                                            currentEventType.value = eventType.key
+                                            expanded.value = false
+                                        },
+                                        text = { Text(context.translation["tracker_events.${eventType.key}"]) }
+                                    )
+                                }
                             }
                         }
                         Spacer(Modifier.height(12.dp))
