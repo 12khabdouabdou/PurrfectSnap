@@ -40,29 +40,6 @@ class ManageFriendTrackerReposSection: Routes.Route() {
         if (showAddDialog) {
             val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
 
-            suspend fun addRepo(url: String) {
-                var modifiedUrl = url
-                if (url.startsWith("https://github.com/")) {
-                    val splitUrl = modifiedUrl.removePrefix("https://github.com/").split("/")
-                    val repoName = splitUrl[0] + "/" + splitUrl[1]
-                    okHttpClient.newCall(
-                        okhttp3.Request.Builder().url("https://api.github.com/repos/$repoName").build()
-                    ).execute().use { response ->
-                        if (!response.isSuccessful) {
-                            throw Exception("Failed to fetch default branch: ${response.code}")
-                        }
-                        val json = response.body?.string() ?: throw Exception("Empty response")
-                        val defaultBranch = Regex("\"default_branch\":\"([^\"]+)\"").find(json)?.groupValues?.get(1)
-                            ?: throw Exception("No default_branch field")
-                        modifiedUrl = "https://raw.githubusercontent.com/$repoName/$defaultBranch/"
-                    }
-                }
-                context.database.addRepo("friend_tracker", modifiedUrl)
-                context.shortToast("Repository added successfully!")
-                showAddDialog = false
-                updateDispatcher.dispatch()
-            }
-
             var url by remember { mutableStateOf("") }
             var loading by remember { mutableStateOf(false) }
 
@@ -91,7 +68,27 @@ class ManageFriendTrackerReposSection: Routes.Route() {
                             loading = true
                             coroutineScope.launch {
                                 runCatching {
-                                    addRepo(url)
+                                    var modifiedUrl = url
+                                    if (url.startsWith("https://github.com/")) {
+                                        val splitUrl = modifiedUrl.removePrefix("https://github.com/").split("/")
+                                        val repoName = splitUrl[0] + "/" + splitUrl[1]
+                                        okHttpClient.newCall(
+                                            okhttp3.Request.Builder().url("https://api.github.com/repos/$repoName").build()
+                                        ).execute().use { response ->
+                                            if (!response.isSuccessful) {
+                                                throw Exception("Failed to fetch default branch: ${response.code}")
+                                            }
+                                            val json = response.body?.string() ?: throw Exception("Empty response")
+                                            val defaultBranch = Regex("\"default_branch\":\"([^\"]+)\"").find(json)?.groupValues?.get(1)
+                                                ?: throw Exception("No default_branch field")
+                                            modifiedUrl = "https://raw.githubusercontent.com/$repoName/$defaultBranch/"
+                                        }
+                                    }
+                                    context.database.addRepo("friend_tracker", modifiedUrl)
+                                }.onSuccess {
+                                    context.shortToast("Repository added successfully!")
+                                    showAddDialog = false
+                                    updateDispatcher.dispatch()
                                 }.onFailure {
                                     context.log.error("Failed to add repository", it)
                                     context.shortToast("Failed to add repository: ${it.message}")

@@ -39,14 +39,6 @@ import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.pages.social.AddFriendDialog
 
 class EditRule : Routes.Route() {
-    private var currentRuleId by mutableStateOf<Int?>(null)
-    private val events = mutableStateListOf<TrackerRuleEvent>()
-    private var ruleName by mutableStateOf("")
-    private var authorName by mutableStateOf("")
-    private val scopes = mutableStateListOf<String>()
-    private var currentScopeType by mutableStateOf(TrackerScopeType.BLACKLIST)
-    private var showDuplicateNameDialog by mutableStateOf(false)
-    private var deleteConfirmation by mutableStateOf(false)
 
     @Composable
     fun ActionCheckbox(
@@ -115,19 +107,12 @@ class EditRule : Routes.Route() {
 
         Dialog(
             onDismissRequest = onDismissRequest,
-            properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = true)
+            properties = DialogProperties(dismissOnClickOutside = true)
         ) {
-            Box(
+            Card(
                 Modifier
-                    .fillMaxSize()
-                    .systemBarsPadding()
-                    .navigationBarsPadding()
+                    .fillMaxWidth(0.95f)
             ) {
-                Card(
-                    Modifier
-                        .align(Alignment.Center)
-                        .fillMaxWidth(0.95f)
-                ) {
                     Column(Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
@@ -200,77 +185,36 @@ class EditRule : Routes.Route() {
                     }
                 }
             }
-        }
     }
 
-    override val title: @Composable () -> Unit = {
-        Text(if (currentRuleId == null) "New Rule" else "Edit Rule")
-    }
-
-    override val topBarActions: @Composable RowScope.() -> Unit = {
-        IconButton(onClick = {
-            if (currentRuleId == null && context.database.getTrackerRuleByName(ruleName.trim()) != null) {
-                showDuplicateNameDialog = true
-                return@IconButton
-            }
-            val ruleId = currentRuleId ?: context.database.newTrackerRule()
-            events.forEach { event ->
-                context.database.addOrUpdateTrackerRuleEvent(
-                    event.id.takeIf { it > -1 },
-                    ruleId,
-                    event.eventType,
-                    event.params,
-                    event.actions
-                )
-            }
-            context.database.setTrackerRuleName(ruleId, ruleName.trim())
-            context.database.setTrackerRuleAuthor(ruleId, authorName.trim())
-            context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
-            routes.navController.popBackStack()
-        }) { Icon(Icons.Filled.Save, contentDescription = "Save") }
-        if (currentRuleId != null) {
-            IconButton(onClick = { deleteConfirmation = true }) {
-                Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
-            }
-        }
-    }
+    override val title: @Composable () -> Unit = {}
 
     @OptIn(ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = { navBackStackEntry ->
-        currentRuleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
-
-        val asyncEvents = rememberAsyncMutableStateList<TrackerRuleEvent>(defaultValue = emptyList()) {
+        val coroutineScope = rememberCoroutineScope()
+        val currentRuleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
+        val events = rememberAsyncMutableStateList<TrackerRuleEvent>(defaultValue = emptyList()) {
             currentRuleId?.let { ruleId -> context.database.getTrackerEvents(ruleId) } ?: emptyList()
         }
-        val asyncScopes = rememberAsyncMutableStateList<String>(defaultValue = emptyList()) {
+
+        var currentScopeType by remember { mutableStateOf(TrackerScopeType.BLACKLIST) }
+        val scopes = rememberAsyncMutableStateList<String>(defaultValue = emptyList()) {
             currentRuleId?.let { ruleId ->
                 context.database.getRuleTrackerScopes(ruleId).also { map ->
                     currentScopeType = if (map.isEmpty()) TrackerScopeType.WHITELIST else map.values.first()
                 }.map { entry -> entry.key }
             } ?: emptyList()
         }
-        val asyncRuleName = rememberAsyncMutableState<String>(defaultValue = "", keys = arrayOf(currentRuleId)) {
+
+        val ruleName = rememberAsyncMutableState<String>(defaultValue = "", keys = arrayOf(currentRuleId)) {
             currentRuleId?.let { ruleId -> context.database.getTrackerRule(ruleId)?.name ?: "Custom Rule" } ?: "Custom Rule"
         }
-        val asyncAuthorName = rememberAsyncMutableState<String>(defaultValue = "", keys = arrayOf(currentRuleId)) {
+        val authorName = rememberAsyncMutableState<String>(defaultValue = "", keys = arrayOf(currentRuleId)) {
             currentRuleId?.let { ruleId -> context.database.getTrackerRule(ruleId)?.author ?: "" } ?: ""
         }
 
-        LaunchedEffect(asyncEvents) {
-            events.clear()
-            events.addAll(asyncEvents)
-        }
-        LaunchedEffect(asyncScopes) {
-            scopes.clear()
-            scopes.addAll(asyncScopes)
-        }
-        LaunchedEffect(asyncRuleName) {
-            ruleName = asyncRuleName.value
-        }
-        LaunchedEffect(asyncAuthorName) {
-            authorName = asyncAuthorName.value
-        }
-
+        var deleteConfirmation by remember { mutableStateOf(false) }
+        var showDuplicateNameDialog by remember { mutableStateOf(false) }
         var addFriendDialog by remember { mutableStateOf<AddFriendDialog?>(null) }
         var addEventDialogVisible by remember { mutableStateOf(false) }
 
@@ -294,7 +238,7 @@ class EditRule : Routes.Route() {
                 confirmButton = {
                     Button(
                         onClick = {
-                            if (currentRuleId != null) context.database.deleteTrackerRule(currentRuleId!!)
+                            if (currentRuleId != null) context.database.deleteTrackerRule(currentRuleId)
                             routes.navController.popBackStack()
                         }
                     ) { Text("Delete") }
@@ -305,184 +249,229 @@ class EditRule : Routes.Route() {
             )
         }
 
-        Column(
+        Scaffold(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Card(Modifier.fillMaxWidth().padding(12.dp)) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("General", style = MaterialTheme.typography.titleMedium)
-                    OutlinedTextField(
-                        value = ruleName,
-                        onValueChange = { ruleName = it },
-                        label = { Text("Rule Name") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = authorName,
-                        onValueChange = { authorName = it },
-                        label = { Text("Author Name") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                }
-            }
-            Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Scope", style = MaterialTheme.typography.titleMedium)
-                    val friendDialogActions = remember {
-                        AddFriendDialog.Actions(
-                            onFriendState = { friend, state ->
-                                if (state) scopes.add(friend.userId) else scopes.remove(friend.userId)
-                            },
-                            onGroupState = { group, state ->
-                                if (state) scopes.add(group.conversationId) else scopes.remove(group.conversationId)
-                            },
-                            getFriendState = { friend -> friend.userId in scopes },
-                            getGroupState = { group -> group.conversationId in scopes }
-                        )
-                    }
-                    val scopeOptions = listOf("All", "Whitelist", "Blacklist")
-                    val selectedScopeIndex = when {
-                        scopes.isEmpty() -> 0
-                        currentScopeType == TrackerScopeType.WHITELIST -> 1
-                        else -> 2
-                    }
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 12.dp)
-                    ) {
-                        scopeOptions.forEachIndexed { index, label ->
-                            SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(index, scopeOptions.size),
-                                onClick = {
-                                    when (index) {
-                                        0 -> scopes.clear()
-                                        1 -> {
-                                            currentScopeType = TrackerScopeType.WHITELIST
-                                            if (scopes.isEmpty()) {
-                                                addFriendDialog = AddFriendDialog(context, friendDialogActions, pinnedIds = scopes)
-                                            }
-                                        }
-                                        2 -> {
-                                            currentScopeType = TrackerScopeType.BLACKLIST
-                                            if (scopes.isEmpty()) {
-                                                addFriendDialog = AddFriendDialog(context, friendDialogActions, pinnedIds = scopes)
-                                            }
-                                        }
-                                    }
-                                },
-                                selected = index == selectedScopeIndex
-                            ) { Text(label) }
+                .systemBarsPadding()
+                .navigationBarsPadding(),
+            topBar = {
+                TopAppBar(
+                    title = { Text(if (currentRuleId == null) "New Rule" else "Edit Rule") },
+                    navigationIcon = {
+                        IconButton(onClick = { routes.navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
-                    }
-                    if (scopes.isNotEmpty()) {
-                        Button(
-                            onClick = {
-                                addFriendDialog = AddFriendDialog(context, friendDialogActions, pinnedIds = scopes)
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                        ) { Text("Select Friends/Groups (${scopes.size})") }
-                    }
-                    addFriendDialog?.Content { addFriendDialog = null }
-                }
-            }
-            Card(Modifier.fillMaxWidth().padding(12.dp)) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Events", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        IconButton(onClick = { addEventDialogVisible = true }) {
-                            Icon(Icons.Default.Add, contentDescription = "Add Event", modifier = Modifier.size(28.dp))
-                        }
-                    }
-                    if (addEventDialogVisible) {
-                        AddEventDialog(
-                            onDismissRequest = { addEventDialogVisible = false },
-                            onEventAdd = { event ->
-                                events.add(0, event)
-                                addEventDialogVisible = false
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            if (currentRuleId == null && context.database.getTrackerRuleByName(ruleName.value.trim()) != null) {
+                                showDuplicateNameDialog = true
+                                return@IconButton
                             }
+                            val ruleId = currentRuleId ?: context.database.newTrackerRule()
+                            events.forEach { event ->
+                                context.database.addOrUpdateTrackerRuleEvent(
+                                    event.id.takeIf { it > -1 },
+                                    ruleId,
+                                    event.eventType,
+                                    event.params,
+                                    event.actions
+                                )
+                            }
+                            context.database.setTrackerRuleName(ruleId, ruleName.value.trim())
+                            context.database.setTrackerRuleAuthor(ruleId, authorName.value.trim())
+                            context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
+                            routes.navController.popBackStack()
+                        }) { Icon(Icons.Filled.Save, contentDescription = "Save") }
+                        if (currentRuleId != null) {
+                            IconButton(onClick = { deleteConfirmation = true }) {
+                                Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
+                            }
+                        }
+                    }
+                )
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Card(Modifier.fillMaxWidth().padding(12.dp)) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("General", style = MaterialTheme.typography.titleMedium)
+                        OutlinedTextField(
+                            value = ruleName.value,
+                            onValueChange = { ruleName.value = it },
+                            label = { Text("Rule Name") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = authorName.value,
+                            onValueChange = { authorName.value = it },
+                            label = { Text("Author Name") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
                         )
                     }
-                    if (events.isEmpty()) {
-                        Text(
-                            "No events",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Light,
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    events.forEach { event ->
-                        var expanded by remember { mutableStateOf(false) }
-                        ElevatedCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateContentSize()
-                                .padding(vertical = 4.dp)
-                                .clickable { expanded = !expanded }
+                }
+                Card(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("Scope", style = MaterialTheme.typography.titleMedium)
+                        val friendDialogActions = remember {
+                            AddFriendDialog.Actions(
+                                onFriendState = { friend, state ->
+                                    if (state) scopes.add(friend.userId) else scopes.remove(friend.userId)
+                                },
+                                onGroupState = { group, state ->
+                                    if (state) scopes.add(group.conversationId) else scopes.remove(group.conversationId)
+                                },
+                                getFriendState = { friend -> friend.userId in scopes },
+                                getGroupState = { group -> group.conversationId in scopes }
+                            )
+                        }
+                        val scopeOptions = listOf("All", "Whitelist", "Blacklist")
+                        val selectedScopeIndex = when {
+                            scopes.isEmpty() -> 0
+                            currentScopeType == TrackerScopeType.WHITELIST -> 1
+                            else -> 2
+                        }
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 12.dp)
                         ) {
-                            Column(Modifier.padding(8.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                            scopeOptions.forEachIndexed { index, label ->
+                                SegmentedButton(
+                                    shape = SegmentedButtonDefaults.itemShape(index, scopeOptions.size),
+                                    onClick = {
+                                        when (index) {
+                                            0 -> scopes.clear()
+                                            1 -> {
+                                                currentScopeType = TrackerScopeType.WHITELIST
+                                                if (scopes.isEmpty()) {
+                                                    addFriendDialog = AddFriendDialog(context, friendDialogActions, pinnedIds = scopes)
+                                                }
+                                            }
+                                            2 -> {
+                                                currentScopeType = TrackerScopeType.BLACKLIST
+                                                if (scopes.isEmpty()) {
+                                                    addFriendDialog = AddFriendDialog(context, friendDialogActions, pinnedIds = scopes)
+                                                }
+                                            }
+                                        }
+                                    },
+                                    selected = index == selectedScopeIndex
+                                ) { Text(label) }
+                            }
+                        }
+                        if (scopes.isNotEmpty()) {
+                            Button(
+                                onClick = {
+                                    addFriendDialog = AddFriendDialog(context, friendDialogActions, pinnedIds = scopes)
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                            ) { Text("Select Friends/Groups (${scopes.size})") }
+                        }
+                        addFriendDialog?.Content { addFriendDialog = null }
+                    }
+                }
+                Card(Modifier.fillMaxWidth().padding(12.dp)) {
+                    Column(Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Events", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            IconButton(onClick = { addEventDialogVisible = true }) {
+                                Icon(Icons.Default.Add, contentDescription = "Add Event", modifier = Modifier.size(28.dp))
+                            }
+                        }
+                        if (addEventDialogVisible) {
+                            AddEventDialog(
+                                onDismissRequest = { addEventDialogVisible = false },
+                                onEventAdd = { event ->
+                                    events.add(0, event)
+                                    addEventDialogVisible = false
+                                }
+                            )
+                        }
+                        if (events.isEmpty()) {
+                            Text(
+                                "No events",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Light,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        events.forEach { event ->
+                            var expanded by remember { mutableStateOf(false) }
+                            ElevatedCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateContentSize()
+                                    .padding(vertical = 4.dp)
+                                    .clickable { expanded = !expanded }
+                            ) {
+                                Column(Modifier.padding(8.dp)) {
                                     Row(
-                                        modifier = Modifier.weight(1f, fill = false),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Icon(
-                                            if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                                            contentDescription = null
-                                        )
-                                        Column {
-                                            Text(
-                                                context.translation["tracker_events.${event.eventType}"],
-                                                lineHeight = 20.sp,
-                                                fontSize = 18.sp,
-                                                fontWeight = FontWeight.Bold
+                                        Row(
+                                            modifier = Modifier.weight(1f, fill = false),
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                                                contentDescription = null
                                             )
-                                            Text(
-                                                text = event.actions.joinToString(", ") { context.translation["tracker_actions.${it.key}"] },
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Light,
-                                                overflow = TextOverflow.Ellipsis,
-                                                maxLines = 1,
-                                                lineHeight = 14.sp
-                                            )
+                                            Column {
+                                                Text(
+                                                    context.translation["tracker_events.${event.eventType}"],
+                                                    lineHeight = 20.sp,
+                                                    fontSize = 18.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = event.actions.joinToString(", ") { context.translation["tracker_actions.${it.key}"] },
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Light,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    maxLines = 1,
+                                                    lineHeight = 14.sp
+                                                )
+                                            }
+                                        }
+                                        OutlinedIconButton(
+                                            onClick = {
+                                                if (event.id > -1) context.database.deleteTrackerRuleEvent(event.id)
+                                                events.remove(event)
+                                            }
+                                        ) {
+                                            Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
                                         }
                                     }
-                                    OutlinedIconButton(
-                                        onClick = {
-                                            if (event.id > -1) context.database.deleteTrackerRuleEvent(event.id)
-                                            events.remove(event)
+                                    if (expanded) {
+                                        Column(modifier = Modifier.padding(top = 8.dp)) {
+                                            ConditionCheckboxes(event.params)
                                         }
-                                    ) {
-                                        Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
-                                    }
-                                }
-                                if (expanded) {
-                                    Column(modifier = Modifier.padding(top = 8.dp)) {
-                                        ConditionCheckboxes(event.params)
                                     }
                                 }
                             }
                         }
                     }
                 }
+                Spacer(Modifier.height(50.dp))
             }
-            Spacer(Modifier.height(50.dp))
         }
     }
 }

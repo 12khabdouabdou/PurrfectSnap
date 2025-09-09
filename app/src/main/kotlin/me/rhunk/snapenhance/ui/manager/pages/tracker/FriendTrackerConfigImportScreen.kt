@@ -85,59 +85,97 @@ class FriendTrackerConfigImportScreen : Routes.Route() {
                 )
             }
         ) { padding ->
+            val trackerData = remember { context.gson.fromJson(configJson, ExportedTrackerData::class.java) }
+            val isSingleRule = remember { trackerData.rules.size == 1 }
+
             LazyColumn(
                 modifier = Modifier.padding(padding).fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(featuresByCategory.toList()) { (category, features) ->
-                    var isExpanded by remember { mutableStateOf(false) }
-                    val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = category,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = { isExpanded = !isExpanded }) {
-                                    Icon(
-                                        imageVector = Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Expand",
-                                        modifier = Modifier.graphicsLayer(rotationZ = rotationState)
+                if (isSingleRule) {
+                    items(featuresByCategory.toList()) { (category, features) ->
+                        Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                            Text(
+                                text = category,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            features.forEach { feature ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .padding(start = (feature.indentation * 16).dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Text(
+                                        text = feature.name,
+                                        modifier = Modifier.weight(1f),
+                                        fontWeight = FontWeight.SemiBold,
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(
+                                        text = parser.parseValue(feature.key, feature.value).toString(),
+                                        color = MaterialTheme.colorScheme.primary,
+                                        textAlign = TextAlign.End,
                                     )
                                 }
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             }
-                            AnimatedVisibility(visible = isExpanded) {
-                                Column {
-                                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                                    features.forEach { feature ->
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 4.dp)
-                                                .padding(start = (feature.indentation * 16).dp),
-                                            verticalAlignment = Alignment.Top
-                                        ) {
-                                            Text(
-                                                text = feature.name,
-                                                modifier = Modifier.weight(1f),
-                                                fontWeight = FontWeight.SemiBold,
-                                            )
-                                            Spacer(modifier = Modifier.width(16.dp))
-                                            Text(
-                                                text = parser.parseValue(feature.key, feature.value).toString(),
-                                                color = MaterialTheme.colorScheme.primary,
-                                                textAlign = TextAlign.End,
-                                            )
+                        }
+                    }
+                } else {
+                    items(featuresByCategory.toList()) { (category, features) ->
+                        var isExpanded by remember { mutableStateOf(true) }
+                        val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
+                            shape = RoundedCornerShape(16.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = category,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(onClick = { isExpanded = !isExpanded }) {
+                                        Icon(
+                                            imageVector = Icons.Default.KeyboardArrowDown,
+                                            contentDescription = "Expand",
+                                            modifier = Modifier.graphicsLayer(rotationZ = rotationState)
+                                        )
+                                    }
+                                }
+                                AnimatedVisibility(visible = isExpanded) {
+                                    Column {
+                                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                                        features.forEach { feature ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 4.dp)
+                                                    .padding(start = (feature.indentation * 16).dp),
+                                                verticalAlignment = Alignment.Top
+                                            ) {
+                                                Text(
+                                                    text = feature.name,
+                                                    modifier = Modifier.weight(1f),
+                                                    fontWeight = FontWeight.SemiBold,
+                                                )
+                                                Spacer(modifier = Modifier.width(16.dp))
+                                                Text(
+                                                    text = parser.parseValue(feature.key, feature.value).toString(),
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    textAlign = TextAlign.End,
+                                                )
+                                            }
+                                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                                         }
-                                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                                     }
                                 }
                             }

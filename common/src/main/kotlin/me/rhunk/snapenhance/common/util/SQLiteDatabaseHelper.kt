@@ -11,22 +11,23 @@ object SQLiteDatabaseHelper {
             sqLiteDatabase.execSQL("CREATE TABLE IF NOT EXISTS $tableName (${columns.joinToString(", ")})")
 
             val cursor = sqLiteDatabase.rawQuery("PRAGMA table_info($tableName)", null)
-            val existingColumnNames = mutableListOf<String>()
+            val existingColumns = mutableListOf<String>()
             while (cursor.moveToNext()) {
-                existingColumnNames.add(cursor.getString(cursor.getColumnIndex("name")))
+                existingColumns.add(cursor.getString(cursor.getColumnIndex("name")) + " " + cursor.getString(cursor.getColumnIndex("type")))
             }
             cursor.close()
 
             val schemaColumns = columns.filter { !it.startsWith("PRIMARY KEY") }
-            val newColumns = schemaColumns.filter {
-                existingColumnNames.none { existingColumnName -> it.startsWith(existingColumnName) }
+            val newColumns = schemaColumns.filter { column ->
+                existingColumns.none { existingColumn -> column.split(" ")[0] == existingColumn.split(" ")[0] }
             }
 
             if (newColumns.isEmpty()) return@forEach
 
-            AbstractLogger.directDebug("Schema for table $tableName has changed, dropping and recreating")
-            sqLiteDatabase.execSQL("DROP TABLE $tableName")
-            sqLiteDatabase.execSQL("CREATE TABLE $tableName (${columns.joinToString(", ")})")
+            AbstractLogger.directDebug("Schema for table $tableName has changed, adding new columns: ${newColumns.joinToString(", ")}")
+            newColumns.forEach {
+                sqLiteDatabase.execSQL("ALTER TABLE $tableName ADD COLUMN $it")
+            }
         }
     }
 }
