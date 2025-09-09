@@ -22,8 +22,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalWindowInsets
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,7 +99,7 @@ class EditRule : Routes.Route() {
         onDismissRequest: () -> Unit,
         onEventAdd: (TrackerRuleEvent) -> Unit
     ) {
-        // State moved INSIDE so every dialog instance is truly new!
+        // Dialog state is local so dropdown always works
         val expanded = remember { mutableStateOf(false) }
         val currentEventType = remember { mutableStateOf(TrackerEventType.CONVERSATION_ENTER.key) }
         val addEventActions = remember { mutableStateOf(emptySet<TrackerRuleAction>()) }
@@ -114,7 +112,8 @@ class EditRule : Routes.Route() {
             Box(
                 Modifier
                     .fillMaxSize()
-                    .systemBarsPadding()  // Remove this if you don't want insets at all!
+                    .systemBarsPadding()
+                    .navigationBarsPadding()
             ) {
                 Card(
                     Modifier
@@ -259,12 +258,10 @@ class EditRule : Routes.Route() {
             )
         }
 
-        // Forces TRUE fullscreen, removes unwanted insets/padding so there is NO dead space above!
         Scaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .systemBarsPadding()
-                .imePadding()
                 .navigationBarsPadding(),
             topBar = {
                 TopAppBar(
