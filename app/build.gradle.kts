@@ -131,7 +131,6 @@ dependencies {
     fullImplementation(libs.androidx.material.ripple)
     fullImplementation(libs.androidx.material.icons.extended)
     fullImplementation(libs.androidx.material3)
-    fullImplementation(libs.androidx.compose.foundation.pager)
     fullImplementation(libs.coil.compose)
     fullImplementation(libs.coil.video)
     fullImplementation(libs.colorpicker.compose)
