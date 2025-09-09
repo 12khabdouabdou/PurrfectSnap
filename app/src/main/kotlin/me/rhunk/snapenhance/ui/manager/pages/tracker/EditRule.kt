@@ -449,9 +449,9 @@ class EditRule : Routes.Route() {
                                             }
                                         }
                                     }
+                                }
                             }
                         }
-                    }
                         2 -> {
                             LazyColumn(
                                 modifier = Modifier.fillMaxSize(),
