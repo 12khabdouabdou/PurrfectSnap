@@ -29,8 +29,6 @@ import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
-import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.storage.getRepositories
 import me.rhunk.snapenhance.storage.getTrackerRuleByName
 import me.rhunk.snapenhance.ui.manager.Routes
@@ -50,16 +48,19 @@ data class FriendTrackerRepoEntry(
 
 @OptIn(ExperimentalMaterial3Api::class)
 class FriendTrackerCatalog : Routes.Route() {
+
     @Composable
     private fun AvailableRulesTab() {
         val coroutineScope = rememberCoroutineScope()
         val okHttpClient = remember { OkHttpClient() }
         val gson = remember { context.gson }
-        val updateDispatcher = remember { AsyncUpdateDispatcher() }
 
         var repositories by remember { mutableStateOf<List<String>>(emptyList()) }
         var repoIndexes by remember { mutableStateOf<Map<String, FriendTrackerRepoManifest>>(emptyMap()) }
         var isLoading by remember { mutableStateOf(false) }
+
+        // Ticks whenever a rule import happens so isImported values recompute
+        var importTick by remember { mutableStateOf(0) }
 
         fun refreshIndexes() {
             coroutineScope.launch(Dispatchers.IO) {
@@ -68,7 +69,6 @@ class FriendTrackerCatalog : Routes.Route() {
                 withContext(Dispatchers.Main) {
                     repositories = repos
                 }
-
                 if (repos.isNotEmpty()) {
                     val newIndexes = mutableMapOf<String, FriendTrackerRepoManifest>()
                     repos.forEach { repoRoot ->
@@ -102,7 +102,7 @@ class FriendTrackerCatalog : Routes.Route() {
         LaunchedEffect(Unit) {
             refreshIndexes()
             routes.onRuleImported = {
-                updateDispatcher.dispatch()
+                importTick++
             }
         }
 
@@ -156,7 +156,12 @@ class FriendTrackerCatalog : Routes.Route() {
             ) {
                 item {
                     if (isLoading) {
-                        Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             CircularProgressIndicator()
                         }
                     } else if (allRules.isEmpty() && repositories.isNotEmpty()) {
@@ -173,12 +178,12 @@ class FriendTrackerCatalog : Routes.Route() {
                     }
                 }
                 items(allRules) { (repoUrl, entry) ->
-                    val isImported by rememberAsyncMutableState(
-                        defaultValue = false,
-                        keys = arrayOf(entry.name),
-                        updateDispatcher = updateDispatcher
-                    ) {
-                        context.database.getTrackerRuleByName(entry.name) != null
+                    // Compute isImported using produceState so the suspend db call runs in a coroutine
+                    val isImported by produceState(initialValue = false, key1 = entry.name, key2 = importTick) {
+                        val exists = withContext(Dispatchers.IO) {
+                            context.database.getTrackerRuleByName(entry.name) != null
+                        }
+                        value = exists
                     }
 
                     ElevatedCard(Modifier.padding(bottom = 8.dp)) {
@@ -240,13 +245,11 @@ class FriendTrackerCatalog : Routes.Route() {
     }
 
     override val title: @Composable () -> Unit = { Text("Friend Tracker Catalog") }
-
     override val topBarActions: @Composable RowScope.() -> Unit = {
         IconButton(onClick = { routes.manageFriendTrackerRepos.navigate() }) {
             Icon(Icons.Default.Public, contentDescription = "Manage Repositories")
         }
     }
-
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         AvailableRulesTab()
     }
