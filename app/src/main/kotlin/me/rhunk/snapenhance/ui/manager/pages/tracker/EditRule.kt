@@ -1,3 +1,9 @@
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.foundation.layout.ExperimentalLayoutApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class
+)
+
 package me.rhunk.snapenhance.ui.manager.pages.tracker
 
 import androidx.compose.foundation.clickable
@@ -28,7 +34,6 @@ import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.pages.social.AddFriendDialog
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ActionCheckbox(
     text: String,
@@ -98,7 +103,6 @@ class EditRule : Routes.Route() {
         fab.value?.invoke()
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = { navBackStackEntry ->
         val currentRuleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
         val events = rememberAsyncMutableStateList(defaultValue = emptyList<TrackerRuleEvent>()) {
@@ -158,7 +162,7 @@ class EditRule : Routes.Route() {
                                 )
                             }
                             context.database.setTrackerRuleName(ruleId, ruleName.value.trim())
-                            context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
+                            context.database.setTrackerRuleScopes(ruleId, currentScopeType, scopes)
                             routes.navController.popBackStack()
                         },
                         text = { Text("Save Rule") },
@@ -178,8 +182,7 @@ class EditRule : Routes.Route() {
         DisposableEffect(Unit) { onDispose { fab.value = null } }
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             item {
