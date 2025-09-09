@@ -105,8 +105,21 @@ class EditRule : Routes.Route() {
         val addEventActions = remember { mutableStateOf(emptySet<TrackerRuleAction>()) }
         val addEventActionParams = remember { TrackerRuleActionParams() }
 
-        Dialog(onDismissRequest = onDismissRequest) {
-            Card {
+        Dialog(
+            onDismissRequest = onDismissRequest,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()
+                    .navigationBarsPadding()
+            ) {
+                Card(
+                    Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth(0.95f)
+                ) {
                     Column(Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
@@ -182,7 +195,50 @@ class EditRule : Routes.Route() {
         }
     }
 
-    override val title: @Composable () -> Unit = {}
+    override val title: @Composable () -> Unit = {
+        val navBackStackEntry = routes.navController.currentBackStackEntryAsState().value
+        val currentRuleId = navBackStackEntry?.arguments?.getString("rule_id")?.toIntOrNull()
+        Text(if (currentRuleId == null) "New Rule" else "Edit Rule")
+    }
+
+    override val topBarActions: @Composable RowScope.() -> Unit = {
+        val navBackStackEntry = routes.navController.currentBackStackEntryAsState().value
+        val coroutineScope = rememberCoroutineScope()
+        val currentRuleId = navBackStackEntry?.arguments?.getString("rule_id")?.toIntOrNull()
+        val events = remember { mutableStateListOf<TrackerRuleEvent>() }
+        val ruleName = remember { mutableStateOf("") }
+        val authorName = remember { mutableStateOf("") }
+        val scopes = remember { mutableStateListOf<String>() }
+        var currentScopeType by remember { mutableStateOf(TrackerScopeType.BLACKLIST) }
+        var showDuplicateNameDialog by remember { mutableStateOf(false) }
+
+        IconButton(onClick = {
+            if (currentRuleId == null && context.database.getTrackerRuleByName(ruleName.value.trim()) != null) {
+                showDuplicateNameDialog = true
+                return@IconButton
+            }
+            val ruleId = currentRuleId ?: context.database.newTrackerRule()
+            events.forEach { event ->
+                context.database.addOrUpdateTrackerRuleEvent(
+                    event.id.takeIf { it > -1 },
+                    ruleId,
+                    event.eventType,
+                    event.params,
+                    event.actions
+                )
+            }
+            context.database.setTrackerRuleName(ruleId, ruleName.value.trim())
+            context.database.setTrackerRuleAuthor(ruleId, authorName.value.trim())
+            context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
+            routes.navController.popBackStack()
+        }) { Icon(Icons.Filled.Save, contentDescription = "Save") }
+        if (currentRuleId != null) {
+            var deleteConfirmation by remember { mutableStateOf(false) }
+            IconButton(onClick = { deleteConfirmation = true }) {
+                Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
+            }
+        }
+    }
 
     @OptIn(ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = { navBackStackEntry ->
@@ -244,56 +300,12 @@ class EditRule : Routes.Route() {
             )
         }
 
-        Scaffold(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
-                .navigationBarsPadding(),
-            topBar = {
-                TopAppBar(
-                    title = { Text(if (currentRuleId == null) "New Rule" else "Edit Rule") },
-                    navigationIcon = {
-                        IconButton(onClick = { routes.navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {
-                            if (currentRuleId == null && context.database.getTrackerRuleByName(ruleName.value.trim()) != null) {
-                                showDuplicateNameDialog = true
-                                return@IconButton
-                            }
-                            val ruleId = currentRuleId ?: context.database.newTrackerRule()
-                            events.forEach { event ->
-                                context.database.addOrUpdateTrackerRuleEvent(
-                                    event.id.takeIf { it > -1 },
-                                    ruleId,
-                                    event.eventType,
-                                    event.params,
-                                    event.actions
-                                )
-                            }
-                            context.database.setTrackerRuleName(ruleId, ruleName.value.trim())
-                            context.database.setTrackerRuleAuthor(ruleId, authorName.value.trim())
-                            context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
-                            routes.navController.popBackStack()
-                        }) { Icon(Icons.Filled.Save, contentDescription = "Save") }
-                        if (currentRuleId != null) {
-                            IconButton(onClick = { deleteConfirmation = true }) {
-                                Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
-                            }
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
                 Card(Modifier.fillMaxWidth().padding(12.dp)) {
                     Column(Modifier.padding(16.dp)) {
                         Text("General", style = MaterialTheme.typography.titleMedium)
