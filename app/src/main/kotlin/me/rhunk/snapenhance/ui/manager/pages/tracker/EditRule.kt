@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package me.rhunk.snapenhance.ui.manager.pages.tracker
 
 import androidx.compose.animation.animateContentSize
@@ -28,13 +30,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedIconButton
@@ -72,6 +74,7 @@ import me.rhunk.snapenhance.common.data.TrackerRuleEvent
 import me.rhunk.snapenhance.common.data.TrackerScopeType
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
+import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.pages.social.AddFriendDialog
 
@@ -249,38 +252,38 @@ class EditRule : Routes.Route() {
 
     override val title: @Composable () -> Unit = { Text("Edit Rule") }
 
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = { navBackStackEntry ->
         val currentRuleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
         val currentEventType = remember { mutableStateOf(TrackerEventType.CONVERSATION_ENTER.key) }
         val addEventActions = remember { mutableStateOf(emptySet<TrackerRuleAction>()) }
         val addEventActionParams = remember { TrackerRuleActionParams() }
 
-        val events = rememberAsyncMutableStateList(defaultValue = emptyList()) {
+        val events = rememberAsyncMutableStateList<TrackerRuleEvent>(defaultValue = emptyList()) {
             currentRuleId?.let { ruleId ->
                 context.database.getTrackerEvents(ruleId)
             } ?: emptyList()
         }
 
         var currentScopeType by remember { mutableStateOf(TrackerScopeType.BLACKLIST) }
-        val scopes = rememberAsyncMutableStateList(defaultValue = emptyList()) {
+        val scopes = rememberAsyncMutableStateList<String>(defaultValue = emptyList()) {
             currentRuleId?.let { ruleId ->
-                context.database.getRuleTrackerScopes(ruleId).also {
-                    currentScopeType = if (it.isEmpty()) {
+                context.database.getRuleTrackerScopes(ruleId).also { map ->
+                    currentScopeType = if (map.isEmpty()) {
                         TrackerScopeType.WHITELIST
                     } else {
-                        it.values.first()
+                        map.values.first()
                     }
-                }.map { it.key }
+                }.map { entry -> entry.key }
             } ?: emptyList()
         }
 
-        val ruleName = rememberAsyncMutableState(defaultValue = "", keys = arrayOf(currentRuleId)) {
+        val ruleName = rememberAsyncMutableState<String>(defaultValue = "", keys = arrayOf(currentRuleId)) {
             currentRuleId?.let { ruleId ->
                 context.database.getTrackerRule(ruleId)?.name ?: "Custom Rule"
             } ?: "Custom Rule"
         }
-        val authorName = rememberAsyncMutableState(defaultValue = "", keys = arrayOf(currentRuleId)) {
+        val authorName = rememberAsyncMutableState<String>(defaultValue = "", keys = arrayOf(currentRuleId)) {
             currentRuleId?.let { ruleId ->
                 context.database.getTrackerRule(ruleId)?.author ?: ""
             } ?: ""
@@ -359,7 +362,7 @@ class EditRule : Routes.Route() {
                             context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
                             routes.navController.popBackStack()
                         }) {
-                            Icon(Icons.Default.Add, contentDescription = "Save")
+                            Icon(Icons.Filled.Save, contentDescription = "Save")
                         }
                         if (currentRuleId != null) {
                             IconButton(onClick = { deleteConfirmation = true }) {
