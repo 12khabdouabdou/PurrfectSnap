@@ -115,6 +115,18 @@ fun AppDatabase.getTrackerRule(ruleId: Int): TrackerRule? {
     }
 }
 
+fun AppDatabase.getTrackerRuleByName(name: String): TrackerRule? {
+    return database.rawQuery("SELECT * FROM tracker_rules WHERE name = ?", arrayOf(name)).use { cursor ->
+        if (!cursor.moveToFirst()) return@use null
+        TrackerRule(
+            id = cursor.getInteger("id"),
+            enabled = cursor.getInteger("enabled") == 1,
+            name = cursor.getStringOrNull("name") ?: "",
+            author = cursor.getStringOrNull("author")
+        )
+    }
+}
+
 fun AppDatabase.setTrackerRuleName(ruleId: Int, name: String) {
     executeAsync {
         database.execSQL("UPDATE tracker_rules SET name = ? WHERE id = ?", arrayOf(name, ruleId))

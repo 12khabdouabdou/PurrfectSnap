@@ -113,6 +113,20 @@ class EditRule : Routes.Route() {
         LaunchedEffect(Unit) {
             fab.value = {
                 var deleteConfirmation by remember { mutableStateOf(false) }
+                var showDuplicateNameDialog by remember { mutableStateOf(false) }
+
+                if (showDuplicateNameDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDuplicateNameDialog = false },
+                        title = { Text("Duplicate Rule Name") },
+                        text = { Text("A rule with this name already exists. Please choose a different name.") },
+                        confirmButton = {
+                            Button(onClick = { showDuplicateNameDialog = false }) {
+                                Text("OK")
+                            }
+                        }
+                    )
+                }
 
                 if (deleteConfirmation) {
                     AlertDialog(
@@ -148,6 +162,10 @@ class EditRule : Routes.Route() {
                 ) {
                     ExtendedFloatingActionButton(
                         onClick = {
+                            if (currentRuleId == null && context.database.getTrackerRuleByName(ruleName.value.trim()) != null) {
+                                showDuplicateNameDialog = true
+                                return@ExtendedFloatingActionButton
+                            }
                             val ruleId = currentRuleId ?: context.database.newTrackerRule()
                             events.forEach { event ->
                                 context.database.addOrUpdateTrackerRuleEvent(

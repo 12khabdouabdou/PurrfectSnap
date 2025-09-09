@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Rule
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -161,6 +164,8 @@ class FriendTrackerCatalog : Routes.Route() {
                     }
                 }
                 items(allRules) { (repoUrl, entry) ->
+                    val isImported = remember(entry.name) { context.database.getTrackerRuleByName(entry.name) != null }
+
                     ElevatedCard(Modifier.padding(bottom = 8.dp)) {
                         Row(
                             modifier = Modifier
@@ -169,7 +174,7 @@ class FriendTrackerCatalog : Routes.Route() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Info, null, Modifier.padding(end = 12.dp)
+                                Icons.Default.Rule, null, Modifier.padding(end = 12.dp)
                             )
                             Column(
                                 Modifier.weight(1f),
@@ -207,9 +212,10 @@ class FriendTrackerCatalog : Routes.Route() {
                             Button(
                                 onClick = {
                                     importRule(repoUrl, entry)
-                                }
+                                },
+                                enabled = !isImported
                             ) {
-                                Text("Import")
+                                Text(if (isImported) "Imported" else "Import")
                             }
                         }
                     }

@@ -94,32 +94,13 @@ class FriendTrackerManagerRoot : Routes.Route() {
             val rules = rememberAsyncMutableStateList(defaultValue = emptyList()) {
                 context.database.getTrackerRulesDesc()
             }
-            AlertDialog(
+            SelectRuleDialog(
                 onDismissRequest = { showSingleExportDialog = false },
-                title = { Text("Select Rule to Export") },
-                text = {
-                    LazyColumn {
-                        items(rules) { rule ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        showSingleExportDialog = false
-                                        routes.friendTrackerConfigExport.navigate {
-                                            this["rule_id"] = rule.id.toString()
-                                        }
-                                    }
-                                    .padding(8.dp)
-                            ) {
-                                Text(rule.name)
-                            }
-                        }
-                    }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    Button(onClick = { showSingleExportDialog = false }) {
-                        Text("Cancel")
+                rules = rules,
+                onRuleSelected = { rule ->
+                    showSingleExportDialog = false
+                    routes.friendTrackerConfigExport.navigate {
+                        this["rule_id"] = rule.id.toString()
                     }
                 }
             )
@@ -408,6 +389,46 @@ class FriendTrackerManagerRoot : Routes.Route() {
                         exportAction = { exportAction = it }
                     )
                     0 -> ConfigRulesTab()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectRuleDialog(
+    onDismissRequest: () -> Unit,
+    rules: List<me.rhunk.snapenhance.common.data.TrackerRule>,
+    onRuleSelected: (me.rhunk.snapenhance.common.data.TrackerRule) -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text("Select Rule to Export", style = MaterialTheme.typography.headlineSmall)
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(rules) { rule ->
+                        ElevatedCard(
+                            onClick = { onRuleSelected(rule) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = rule.name,
+                                modifier = Modifier.padding(16.dp),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+                TextButton(onClick = onDismissRequest) {
+                    Text("Cancel")
                 }
             }
         }
