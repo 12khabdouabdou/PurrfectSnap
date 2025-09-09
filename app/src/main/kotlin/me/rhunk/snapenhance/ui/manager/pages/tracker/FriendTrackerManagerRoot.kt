@@ -13,6 +13,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FolderOpen
@@ -58,7 +59,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
     private lateinit var exportAction : () -> Unit
 
     override val topBarActions: @Composable RowScope.() -> Unit = {
-        if (currentPage == 0) {
+        if (currentPage == 1) {
             IconButton(onClick = {
                 routes.activityLauncher.openFile("application/json") { uri ->
                     runCatching {
@@ -254,33 +255,32 @@ class FriendTrackerManagerRoot : Routes.Route() {
     @OptIn(ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        val pagerState = rememberPagerState { titles.size }
+        val pagerState = rememberPagerState(initialPage = 1) { titles.size }
         currentPage = pagerState.currentPage
 
         Column {
-            TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
-                TabRowDefaults.SecondaryIndicator(
-                    Modifier.pagerTabIndicatorOffset(
-                        pagerState = pagerState,
-                        tabPositions = tabPositions
-                    )
-                )
-            }) {
-                titles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            ) {
+                titles.forEachIndexed { i, text ->
+                    val shape = when (i) {
+                        0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
+                        titles.lastIndex -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+                        else -> RoundedCornerShape(0.dp)
+                    }
+                    SegmentedButton(
+                        selected = pagerState.currentPage == i,
                         onClick = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
+                                pagerState.animateScrollToPage(i)
                             }
                         },
-                        text = {
-                            Text(
-                                text = title,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        shape = shape,
+                        modifier = Modifier.weight(1f),
+                        icon = {},
+                        label = { Text(text) }
                     )
                 }
             }

@@ -184,83 +184,87 @@ class EditRule : Routes.Route() {
         }
 
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(8.dp)
         ) {
             item {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+                Card(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    Column(
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        Text("Rule Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text("Rule Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
+                        }
+                        TextField(
+                            value = ruleName.value,
+                            onValueChange = {
+                                ruleName.value = it
+                            },
+                            singleLine = true,
+                            placeholder = {
+                                Text(
+                                    "Enter Rule Name",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
+                            ),
+                            textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text("Author Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
+                        }
+                        TextField(
+                            value = authorName.value,
+                            onValueChange = {
+                                authorName.value = it
+                            },
+                            singleLine = true,
+                            placeholder = {
+                                Text(
+                                    "Enter Author Name",
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
+                            ),
+                            textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
+                        )
                     }
-                    TextField(
-                        value = ruleName.value,
-                        onValueChange = {
-                            ruleName.value = it
-                        },
-                        singleLine = true,
-                        placeholder = {
-                            Text(
-                                "Enter Rule Name",
-                                fontSize = 18.sp,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        ),
-                        textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
-                    )
-                }
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text("Author Name", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Icon(Icons.Default.Edit, contentDescription = "Edit", modifier = Modifier.size(16.dp))
-                    }
-                    TextField(
-                        value = authorName.value,
-                        onValueChange = {
-                            authorName.value = it
-                        },
-                        singleLine = true,
-                        placeholder = {
-                            Text(
-                                "Enter Author Name",
-                                fontSize = 18.sp,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        ),
-                        textStyle = TextStyle(fontSize = 20.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
-                    )
                 }
             }
 
-
             item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                ){
-                    Text("Scope", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Scope", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
 
-                    var addFriendDialog by remember { mutableStateOf(null as AddFriendDialog?) }
+                        var addFriendDialog by remember { mutableStateOf(null as AddFriendDialog?) }
 
                     val friendDialogActions = remember {
                         AddFriendDialog.Actions(
@@ -345,21 +349,24 @@ class EditRule : Routes.Route() {
                     }
                 }
 
-                var addEventDialog by remember { mutableStateOf(false) }
-                val showDropdown = remember { mutableStateOf(false) }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Card(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Events", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
-                    IconButton(onClick = { addEventDialog = true }, modifier = Modifier.padding(8.dp)) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Event", modifier = Modifier.size(32.dp))
-                    }
-                }
+                    var addEventDialog by remember { mutableStateOf(false) }
+                    val showDropdown = remember { mutableStateOf(false) }
 
-                if (addEventDialog) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Events", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(16.dp))
+                        IconButton(onClick = { addEventDialog = true }, modifier = Modifier.padding(8.dp)) {
+                            Icon(Icons.Default.Add, contentDescription = "Add Event", modifier = Modifier.size(32.dp))
+                        }
+                    }
+
+                    if (addEventDialog) {
                     AlertDialog(
                         onDismissRequest = { addEventDialog = false },
                         title = { Text("Add Event", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
