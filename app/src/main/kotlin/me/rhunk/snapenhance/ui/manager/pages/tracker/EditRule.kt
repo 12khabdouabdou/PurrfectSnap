@@ -408,7 +408,7 @@ class EditRule : Routes.Route() {
                                             ) {
                                                 scopeOptions.forEachIndexed { index, label ->
                                                     SegmentedButton(
-                                                        shape = SegmentedButtonDefaults.shape(position = index, count = scopeOptions.size),
+                                                        shape = SegmentedButtonDefaults.itemShape(position = index, count = scopeOptions.size),
                                                         onClick = {
                                                             when (index) {
                                                                 0 -> scopes.clear()
@@ -554,7 +554,6 @@ class EditRule : Routes.Route() {
                                                 }
                                         }
                                     }
-                                }
                                 }
 
                                 item {
