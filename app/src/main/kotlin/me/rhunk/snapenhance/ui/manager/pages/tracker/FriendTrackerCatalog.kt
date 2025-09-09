@@ -9,6 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Info
@@ -42,7 +45,7 @@ data class FriendTrackerRepoEntry(
 @OptIn(ExperimentalMaterial3Api::class)
 class FriendTrackerCatalog : Routes.Route() {
     @Composable
-    fun AvailableRulesTab() {
+    private fun AvailableRulesTab() {
         val coroutineScope = rememberCoroutineScope()
         val okHttpClient = remember { OkHttpClient() }
         val gson = remember { context.gson }
@@ -247,7 +250,7 @@ class FriendTrackerCatalog : Routes.Route() {
                 }
                 when (selectedTabIndex) {
                     0 -> AvailableRulesTab()
-                    1 -> ManageFriendTrackerReposSection(routes)
+                    1 -> ManageFriendTrackerReposSection(context)
                 }
             }
         }

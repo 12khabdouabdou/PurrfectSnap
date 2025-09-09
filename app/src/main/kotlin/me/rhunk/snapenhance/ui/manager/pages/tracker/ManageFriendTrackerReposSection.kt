@@ -28,8 +28,7 @@ import me.rhunk.snapenhance.ui.manager.Routes
 import okhttp3.OkHttpClient
 
 @Composable
-fun ManageFriendTrackerReposSection(routes: Routes) {
-    val context = routes.context
+fun ManageFriendTrackerReposSection(context: me.rhunk.snapenhance.RemoteSideContext) {
     val updateDispatcher = remember { AsyncUpdateDispatcher() }
     val okHttpClient by lazy { OkHttpClient() }
     val coroutineScope = rememberCoroutineScope()

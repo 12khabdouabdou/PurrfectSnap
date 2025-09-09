@@ -78,7 +78,7 @@ class ManageReposSection: Routes.Route() {
                             context.log.info("repository index: $it")
                         }
 
-                        context.database.addRepo(modifiedUrl)
+                        context.database.addRepo("theme", modifiedUrl)
                         context.shortToast("Repository added successfully! $repoIndex")
                         showAddDialog = false
                         updateDispatcher.dispatch()
@@ -145,7 +145,7 @@ class ManageReposSection: Routes.Route() {
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
         val repositories = rememberAsyncMutableStateList(defaultValue = listOf(), updateDispatcher = updateDispatcher) {
-            context.database.getRepositories()
+            context.database.getRepositories("theme")
         }
 
         LazyColumn(
@@ -174,7 +174,7 @@ class ManageReposSection: Routes.Route() {
                         Text(text = url, modifier = Modifier.weight(1f), overflow = TextOverflow.Ellipsis, maxLines = 4, fontSize = 15.sp, lineHeight = 15.sp)
                         Button(
                             onClick = {
-                                context.database.removeRepo(url)
+                                context.database.removeRepo("theme", url)
                                 coroutineScope.launch {
                                     updateDispatcher.dispatch()
                                 }
