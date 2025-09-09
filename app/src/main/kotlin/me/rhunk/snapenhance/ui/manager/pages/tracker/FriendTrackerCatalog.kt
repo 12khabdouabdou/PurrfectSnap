@@ -29,6 +29,8 @@ import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.rhunk.snapenhance.common.ui.AsyncUpdateDispatcher
+import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.storage.getRepositories
 import me.rhunk.snapenhance.storage.getTrackerRuleByName
 import me.rhunk.snapenhance.ui.manager.Routes
@@ -53,6 +55,7 @@ class FriendTrackerCatalog : Routes.Route() {
         val coroutineScope = rememberCoroutineScope()
         val okHttpClient = remember { OkHttpClient() }
         val gson = remember { context.gson }
+        val updateDispatcher = remember { AsyncUpdateDispatcher() }
 
         var repositories by remember { mutableStateOf<List<String>>(emptyList()) }
         var repoIndexes by remember { mutableStateOf<Map<String, FriendTrackerRepoManifest>>(emptyMap()) }
@@ -96,7 +99,12 @@ class FriendTrackerCatalog : Routes.Route() {
             }
         }
 
-        LaunchedEffect(Unit) { refreshIndexes() }
+        LaunchedEffect(Unit) {
+            refreshIndexes()
+            routes.onRuleImported = {
+                updateDispatcher.dispatch()
+            }
+        }
 
         val allRules = repoIndexes.entries.flatMap { (repoUrl, manifest) ->
             manifest.rules.map { repoUrl to it }
@@ -165,7 +173,13 @@ class FriendTrackerCatalog : Routes.Route() {
                     }
                 }
                 items(allRules) { (repoUrl, entry) ->
-                    val isImported = remember(entry.name) { context.database.getTrackerRuleByName(entry.name) != null }
+                    val isImported by rememberAsyncMutableState(
+                        defaultValue = false,
+                        keys = arrayOf(entry.name),
+                        updateDispatcher = updateDispatcher
+                    ) {
+                        context.database.getTrackerRuleByName(entry.name) != null
+                    }
 
                     ElevatedCard(Modifier.padding(bottom = 8.dp)) {
                         Row(

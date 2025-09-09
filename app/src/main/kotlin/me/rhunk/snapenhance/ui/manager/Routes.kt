@@ -60,6 +60,7 @@ class Routes(
     private val routes = mutableListOf<Route>()
     var configJsonForImport: String? = null
     var friendTrackerConfigJsonForImport: String? = null
+    var onRuleImported: (() -> Unit)? = null
 
     val configImportConfirmation = route(RouteInfo(CONFIG_IMPORT_CONFIRMATION_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigImportConfirmationScreen())
     val configExportSummary = route(RouteInfo(CONFIG_EXPORT_SUMMARY_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigExportSummaryScreen())

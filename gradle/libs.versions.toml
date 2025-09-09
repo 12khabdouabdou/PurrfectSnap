@@ -40,6 +40,7 @@ androidx-material-icons-core = { module = "androidx.compose.material:material-ic
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-material-ripple = { module = "androidx.compose.material:material-ripple" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+androidx-compose-foundation-pager = { module = "androidx.compose.foundation:foundation-pager" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 apksig = { module = "com.android.tools.build:apksig", version.ref = "agp" }

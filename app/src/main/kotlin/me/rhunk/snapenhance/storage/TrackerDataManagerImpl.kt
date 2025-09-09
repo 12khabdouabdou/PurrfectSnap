@@ -34,6 +34,9 @@ class TrackerDataManagerImpl(private val db: AppDatabase) : TrackerDataManager {
             db.clearTrackerRules()
         }
         data.rules.forEach { rule ->
+            if (db.getTrackerRuleByName(rule.name) != null) {
+                return@forEach
+            }
             val ruleId = db.newTrackerRule(rule.name, rule.author)
             db.setTrackerRuleState(ruleId, rule.enabled)
             rule.events?.forEach { event ->

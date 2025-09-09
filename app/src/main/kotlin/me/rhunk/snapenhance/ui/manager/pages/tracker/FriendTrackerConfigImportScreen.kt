@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.data.ExportedTrackerData
 import me.rhunk.snapenhance.ui.manager.Routes
@@ -74,9 +73,8 @@ class FriendTrackerConfigImportScreen : Routes.Route() {
                                 context.trackerDataManager.importTrackerData(trackerData)
                             }.onSuccess {
                                 context.shortToast("Friend Tracker Rules Imported!")
-                                context.coroutineScope.launch(Dispatchers.Main) {
-                                    routes.friendTracker.navigate()
-                                }
+                                routes.onRuleImported?.invoke()
+                                routes.navController.popBackStack()
                             }.onFailure {
                                 context.longToast("Failed to import rules: ${it.message}")
                             }
