@@ -61,12 +61,18 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
 
     private inner class ConfigParser {
         fun parse(configJson: String): Map<String, List<ImportedFeature>> {
-            val featureList = mutableListOf<ImportedFeature>()
+            val featureMap = mutableMapOf<String, MutableList<ImportedFeature>>()
             val exportedData = context.gson.fromJson(configJson, ExportedTrackerData::class.java)
             exportedData.rules.forEach { rule ->
-                featureList.add(ImportedFeature("Friend Tracker Rules", rule.name, rule.id.toString(), rule.enabled, 0))
+                val features = mutableListOf<ImportedFeature>()
+                features.add(ImportedFeature(rule.name, "Author", "author", rule.author ?: "Unknown", 0))
+                features.add(ImportedFeature(rule.name, "Enabled", "enabled", rule.enabled, 0))
+                rule.events?.forEach { event ->
+                    features.add(ImportedFeature(rule.name, context.translation["tracker_events.${event.eventType}"], event.eventType, event.actions.joinToString(", ") { context.translation["tracker_actions.${it.key}"] }, 1))
+                }
+                featureMap[rule.name] = features
             }
-            return featureList.groupBy { it.category }
+            return featureMap
         }
 
         fun parseValue(featureKey: String, value: Any): Any {
@@ -98,12 +104,10 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
             }
         }
 
-        val expandedState = remember { mutableStateMapOf<String, Boolean>() }
-
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Export Friend Tracker Rules") },
+                    title = { Text("Export Rules") },
                     navigationIcon = {
                         IconButton(onClick = { routes.navController.popBackStack() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -135,61 +139,58 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                featuresByCategory.forEach { (category, features) ->
-                    item {
-                        Text(
-                            text = category,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-                    items(features) { feature ->
-                        var expanded by remember { mutableStateOf(false) }
-                        Column(
-                            modifier = Modifier.clickable { expanded = !expanded }
-                        ) {
-                            when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
-                                is String -> {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 4.dp),
-                                        verticalAlignment = Alignment.Top
-                                    ) {
-                                        Text(
-                                            text = feature.name,
-                                            modifier = Modifier.weight(1f),
-                                            fontWeight = FontWeight.SemiBold,
-                                        )
-                                        Spacer(modifier = Modifier.width(16.dp))
-                                        Text(
-                                            text = parsedValue,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            textAlign = TextAlign.End,
-                                        )
-                                    }
+                items(featuresByCategory.toList()) { (category, features) ->
+                    var isExpanded by remember { mutableStateOf(false) }
+                    val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { isExpanded = !isExpanded },
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = category,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(onClick = { isExpanded = !isExpanded }) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Expand",
+                                        modifier = Modifier.graphicsLayer(rotationZ = rotationState)
+                                    )
                                 }
                             }
-                            AnimatedVisibility(visible = expanded) {
-                                val rule = trackerData?.rules?.find { it.id.toString() == feature.key }
-                                Column(
-                                    modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-                                ) {
-                                    rule?.events?.forEach { event ->
-                                        Text(context.translation["tracker_events.${event.eventType}"], fontWeight = FontWeight.Bold)
-                                        Text("Actions: ${event.actions.joinToString(", ") { context.translation["tracker_actions.${it.key}"] }}")
-                                        if (event.params.onlyInsideConversation) Text("Condition: Only inside conversation")
-                                        if (event.params.onlyOutsideConversation) Text("Condition: Only outside conversation")
-                                        if (event.params.onlyWhenAppActive) Text("Condition: Only when Snapchat is active")
-                                        if (event.params.onlyWhenAppInactive) Text("Condition: Only when Snapchat is inactive")
-                                        if (event.params.noPushNotificationWhenAppActive) Text("Condition: No notification when Snapchat is active")
-                                        Spacer(modifier = Modifier.height(8.dp))
+                            AnimatedVisibility(visible = isExpanded) {
+                                Column {
+                                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                                    features.forEach { feature ->
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 4.dp)
+                                                .padding(start = (feature.indentation * 16).dp),
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            Text(
+                                                text = feature.name,
+                                                modifier = Modifier.weight(1f),
+                                                fontWeight = FontWeight.SemiBold,
+                                            )
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                            Text(
+                                                text = parser.parseValue(feature.key, feature.value).toString(),
+                                                color = MaterialTheme.colorScheme.primary,
+                                                textAlign = TextAlign.End,
+                                            )
+                                        }
+                                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                                     }
                                 }
                             }
                         }
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     }
                 }
             }

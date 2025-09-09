@@ -53,13 +53,13 @@ class FriendTrackerManagerRoot : Routes.Route() {
         CONVERSATION, USERNAME, EVENT
     }
 
-    private val titles = listOf("Logs", "Rules")
+    private val titles = listOf("Rules", "Logs")
     private var currentPage by mutableIntStateOf(0)
     private lateinit var logDeleteAction : () -> Unit
     private lateinit var exportAction : () -> Unit
 
     override val topBarActions: @Composable RowScope.() -> Unit = {
-        if (currentPage == 1) {
+        if (currentPage == 0) {
             IconButton(onClick = {
                 routes.activityLauncher.openFile("application/json") { uri ->
                     runCatching {
@@ -91,7 +91,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         when (currentPage) {
-            0 -> {
+            1 -> {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
@@ -113,7 +113,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     )
                 }
             }
-            1 -> {
+            0 -> {
                 ExtendedFloatingActionButton(
                     icon = { Icon(Icons.Default.Add, contentDescription = "Add Rule") },
                     expanded = true,
@@ -255,7 +255,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
     @OptIn(ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        val pagerState = rememberPagerState(initialPage = 1) { titles.size }
+        val pagerState = rememberPagerState(initialPage = 0) { titles.size }
         currentPage = pagerState.currentPage
 
         Column {
@@ -290,13 +290,13 @@ class FriendTrackerManagerRoot : Routes.Route() {
                 state = pagerState
             ) { page ->
                 when (page) {
-                    0 -> LogsTab(
+                    1 -> LogsTab(
                         context = context,
                         activityLauncherHelper = activityLauncherHelper,
                         deleteAction = { logDeleteAction = it },
                         exportAction = { exportAction = it }
                     )
-                    1 -> ConfigRulesTab()
+                    0 -> ConfigRulesTab()
                 }
             }
         }
