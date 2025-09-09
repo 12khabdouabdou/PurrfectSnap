@@ -22,6 +22,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -122,6 +124,25 @@ class FriendTrackerManagerRoot : Routes.Route() {
             )
         }
 
+        fun handleImport(type: me.rhunk.snapenhance.common.data.ExportType) {
+            routes.activityLauncher.openFile("application/json") { uri ->
+                runCatching {
+                    val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
+                        it.readBytes().toString(Charsets.UTF_8)
+                    } ?: return@runCatching
+                    val exportedData = context.gson.fromJson(content, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
+                    if (exportedData.type != type) {
+                        context.longToast("Invalid import type")
+                        return@runCatching
+                    }
+                    routes.friendTrackerConfigJsonForImport = content
+                    routes.friendTrackerConfigImport.navigate()
+                }.onFailure {
+                    context.longToast("Failed to read file: ${it.message}")
+                }
+            }
+        }
+
         if (showImportDialog) {
             AlertDialog(
                 onDismissRequest = { showImportDialog = false },
@@ -130,22 +151,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
                 confirmButton = {
                     Button(onClick = {
                         showImportDialog = false
-                        routes.activityLauncher.openFile("application/json") { uri ->
-                            runCatching {
-                                val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
-                                    it.readBytes().toString(Charsets.UTF_8)
-                                } ?: return@runCatching
-                                val exportedData = context.gson.fromJson(content, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
-                                if (exportedData.type != me.rhunk.snapenhance.common.data.ExportType.BULK) {
-                                    context.longToast("Invalid import type")
-                                    return@runCatching
-                                }
-                                routes.friendTrackerConfigJsonForImport = content
-                                routes.friendTrackerConfigImport.navigate()
-                            }.onFailure {
-                                context.longToast("Failed to read file: ${it.message}")
-                            }
-                        }
+                        handleImport(me.rhunk.snapenhance.common.data.ExportType.BULK)
                     }) {
                         Text("Bulk Import")
                     }
@@ -153,22 +159,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
                 dismissButton = {
                     Button(onClick = {
                         showImportDialog = false
-                        routes.activityLauncher.openFile("application/json") { uri ->
-                            runCatching {
-                                val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
-                                    it.readBytes().toString(Charsets.UTF_8)
-                                } ?: return@runCatching
-                                val exportedData = context.gson.fromJson(content, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
-                                if (exportedData.type != me.rhunk.snapenhance.common.data.ExportType.SINGLE) {
-                                    context.longToast("Invalid import type")
-                                    return@runCatching
-                                }
-                                routes.friendTrackerConfigJsonForImport = content
-                                routes.friendTrackerConfigImport.navigate()
-                            }.onFailure {
-                                context.longToast("Failed to read file: ${it.message}")
-                            }
-                        }
+                        handleImport(me.rhunk.snapenhance.common.data.ExportType.SINGLE)
                     }) {
                         Text("Individual Import")
                     }

@@ -7,6 +7,7 @@ import me.rhunk.snapenhance.storage.AppDatabase
 class TrackerDataManagerImpl(private val db: AppDatabase) : TrackerDataManager {
     override fun getExportedTrackerData(): ExportedTrackerData {
         return ExportedTrackerData(
+            type = me.rhunk.snapenhance.common.data.ExportType.BULK,
             rules = db.getTrackerRulesDesc().map { rule ->
                 rule.copy(
                     events = db.getTrackerEvents(rule.id),
@@ -16,8 +17,22 @@ class TrackerDataManagerImpl(private val db: AppDatabase) : TrackerDataManager {
         )
     }
 
+    override fun getExportedTrackerData(ruleId: Int): ExportedTrackerData? {
+        return db.getTrackerRule(ruleId)?.let {
+            ExportedTrackerData(
+                type = me.rhunk.snapenhance.common.data.ExportType.SINGLE,
+                rules = listOf(it.copy(
+                    events = db.getTrackerEvents(it.id),
+                    scopes = db.getRuleTrackerScopes(it.id)
+                ))
+            )
+        }
+    }
+
     override fun importTrackerData(data: ExportedTrackerData) {
-        db.clearTrackerRules()
+        if (data.type == me.rhunk.snapenhance.common.data.ExportType.BULK) {
+            db.clearTrackerRules()
+        }
         data.rules.forEach { rule ->
             val ruleId = db.newTrackerRule(rule.name, rule.author)
             db.setTrackerRuleState(ruleId, rule.enabled)
@@ -29,8 +44,12 @@ class TrackerDataManagerImpl(private val db: AppDatabase) : TrackerDataManager {
                     actions = event.actions
                 )
             }
-            rule.scopes?.forEach { (scopeId, scopeType) ->
-                db.setRuleTrackerScopes(ruleId, scopeType, listOf(scopeId))
+            rule.scopes?.let { scopes ->
+                if (scopes.isNotEmpty()) {
+                    val scopeType = scopes.values.first()
+                    val scopeIds = scopes.keys.toList()
+                    db.setRuleTrackerScopes(ruleId, scopeType, scopeIds)
+                }
             }
         }
     }

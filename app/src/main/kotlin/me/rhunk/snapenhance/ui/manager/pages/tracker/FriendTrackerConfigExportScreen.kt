@@ -46,65 +46,27 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.data.ExportedTrackerData
+import me.rhunk.snapenhance.common.data.ExportType
+import me.rhunk.snapenhance.storage.getTrackerRule
+import me.rhunk.snapenhance.storage.getTrackerRulesDesc
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.saveFile
 import org.json.JSONArray
 
 class FriendTrackerConfigExportScreen : Routes.Route() {
-    private data class ImportedFeature(
-        val category: String,
-        val name: String,
-        val key: String,
-        val value: Any,
-        val indentation: Int
-    )
-
-    private inner class ConfigParser {
-        fun parse(configJson: String): Map<String, List<ImportedFeature>> {
-            val featureMap = mutableMapOf<String, MutableList<ImportedFeature>>()
-            val exportedData = context.gson.fromJson(configJson, ExportedTrackerData::class.java)
-            exportedData.rules.forEach { rule ->
-                val features = mutableListOf<ImportedFeature>()
-                features.add(ImportedFeature(rule.name, "Author", "author", rule.author ?: "Unknown", 0))
-                features.add(ImportedFeature(rule.name, "Enabled", "enabled", rule.enabled, 0))
-                rule.events?.forEach { event ->
-                    features.add(ImportedFeature(rule.name, context.translation["tracker_events.${event.eventType}"], event.eventType, event.actions.joinToString(", ") { context.translation["tracker_actions.${it.key}"] }, 1))
-                }
-                featureMap[rule.name] = features
-            }
-            return featureMap
-        }
-
-        fun parseValue(featureKey: String, value: Any): Any {
-            return when (value) {
-                is Boolean -> if (value) "Enabled" else "Disabled"
-                is JSONArray -> {
-                    val list = mutableListOf<String>()
-                    for (i in 0 until value.length()) {
-                        list.add(value.get(i).toString())
-                    }
-                    list
-                }
-                else -> value.toString()
-            }
-        }
-    }
-
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = { navBackStackEntry ->
         val ruleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
-        val parser = remember { ConfigParser() }
+        val parser = remember { TrackerConfigParser(this) }
         var trackerData by remember { mutableStateOf<ExportedTrackerData?>(null) }
         var featuresByCategory by remember { mutableStateOf<Map<String, List<ImportedFeature>>>(emptyMap()) }
 
         LaunchedEffect(Unit) {
             launch(Dispatchers.IO) {
                 val data = if (ruleId != null) {
-                    context.database.getTrackerRule(ruleId)?.let {
-                        ExportedTrackerData(ExportType.SINGLE, listOf(it))
-                    }
+                    context.trackerDataManager.getExportedTrackerData(ruleId)
                 } else {
-                    ExportedTrackerData(ExportType.BULK, context.database.getTrackerRulesDesc())
+                    context.trackerDataManager.getExportedTrackerData()
                 }
                 trackerData = data
                 featuresByCategory = data?.let { parser.parse(context.gson.toJson(it)) } ?: emptyMap()
