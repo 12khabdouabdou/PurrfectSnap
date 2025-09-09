@@ -34,6 +34,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedIconButton
@@ -71,7 +72,6 @@ import me.rhunk.snapenhance.common.data.TrackerRuleEvent
 import me.rhunk.snapenhance.common.data.TrackerScopeType
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
-import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.pages.social.AddFriendDialog
 
@@ -249,7 +249,7 @@ class EditRule : Routes.Route() {
 
     override val title: @Composable () -> Unit = { Text("Edit Rule") }
 
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = { navBackStackEntry ->
         val currentRuleId = navBackStackEntry.arguments?.getString("rule_id")?.toIntOrNull()
         val currentEventType = remember { mutableStateOf(TrackerEventType.CONVERSATION_ENTER.key) }
@@ -359,7 +359,7 @@ class EditRule : Routes.Route() {
                             context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
                             routes.navController.popBackStack()
                         }) {
-                            Icon(Icons.Filled.Add, contentDescription = "Save")
+                            Icon(Icons.Default.Add, contentDescription = "Save")
                         }
                         if (currentRuleId != null) {
                             IconButton(onClick = { deleteConfirmation = true }) {
