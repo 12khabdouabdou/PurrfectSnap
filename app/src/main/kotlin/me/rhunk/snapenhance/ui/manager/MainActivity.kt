@@ -92,6 +92,7 @@ class MainActivity : ComponentActivity() {
                 // remain readable.
                 val bottomPadding = 80.dp + 16.dp +
                     WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                routes.bottomPadding = bottomPadding
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -129,7 +130,7 @@ class MainActivity : ComponentActivity() {
                                 top = innerPadding.calculateTopPadding(),
                                 start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
                                 end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                                bottom = bottomPadding
+                                bottom = innerPadding.calculateBottomPadding()
                             )
                         } else {
                             PaddingValues(0.dp)

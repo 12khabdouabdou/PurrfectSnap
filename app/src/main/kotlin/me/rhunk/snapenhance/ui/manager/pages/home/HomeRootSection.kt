@@ -489,6 +489,7 @@ class HomeRootSection : Routes.Route() {
                     }
                 )
             }
+            Spacer(modifier = Modifier.height(routes.bottomPadding))
         }
     }
 }

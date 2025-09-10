@@ -59,6 +59,7 @@ class Routes(
     lateinit var navController: NavController
     lateinit var activityLauncher: me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
     private val routes = mutableListOf<Route>()
+    var bottomPadding: androidx.compose.ui.unit.Dp = 0.dp
     var configJsonForImport: String? = null
     var friendTrackerConfigJsonForImport: String? = null
     var onRuleImported: (() -> Unit)? = null
