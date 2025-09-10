@@ -37,6 +37,9 @@ class ManageReposSection: Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         var showAddDialog by remember { mutableStateOf(false) }
+        val navBackStackEntry by routes.navController.currentBackStackEntryAsState()
+        val repoType = navBackStackEntry?.arguments?.getString("type") ?: "theme"
+
         ExtendedFloatingActionButton(onClick = {
             showAddDialog = true
         }) {
@@ -78,7 +81,7 @@ class ManageReposSection: Routes.Route() {
                             context.log.info("repository index: $it")
                         }
 
-                        context.database.addRepo("theme", modifiedUrl)
+                        context.database.addRepo(repoType, modifiedUrl)
                         context.shortToast("Repository added successfully! $repoIndex")
                         showAddDialog = false
                         updateDispatcher.dispatch()
@@ -144,8 +147,9 @@ class ManageReposSection: Routes.Route() {
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
+        val repoType = it.arguments?.getString("type") ?: "theme"
         val repositories = rememberAsyncMutableStateList(defaultValue = listOf(), updateDispatcher = updateDispatcher) {
-            context.database.getRepositories("theme")
+            context.database.getRepositories(repoType)
         }
 
         LazyColumn(
@@ -174,7 +178,7 @@ class ManageReposSection: Routes.Route() {
                         Text(text = url, modifier = Modifier.weight(1f), overflow = TextOverflow.Ellipsis, maxLines = 4, fontSize = 15.sp, lineHeight = 15.sp)
                         Button(
                             onClick = {
-                                context.database.removeRepo("theme", url)
+                                context.database.removeRepo(repoType, url)
                                 coroutineScope.launch {
                                     updateDispatcher.dispatch()
                                 }

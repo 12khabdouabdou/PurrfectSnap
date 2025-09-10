@@ -163,10 +163,24 @@ class Navigation(
                     val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_EXPORT_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_IMPORT_ROUTE
                     val isAddRuleScreen = route.routeInfo.id.startsWith("edit_rule")
 
+                    val animatedRoutes = setOf(
+                        "friend_tracker_catalog",
+                        "manage_friend_tracker_repos",
+                        "manage_script_repos",
+                        "manage_repos"
+                    )
+                    val isAnimatedRoute = animatedRoutes.contains(route.routeInfo.id)
+
                     val addRuleEnterAnimation = slideInHorizontally(animationSpec = tween(400)) { it }
                     val addRuleExitAnimation = slideOutHorizontally(animationSpec = tween(400)) { -it }
                     val addRulePopEnterAnimation = slideInHorizontally(animationSpec = tween(400)) { -it }
                     val addRulePopExitAnimation = slideOutHorizontally(animationSpec = tween(400)) { it }
+
+                    val animatedRouteEnter = slideInHorizontally(animationSpec = tween(400)) { it }
+                    val animatedRouteExit = slideOutHorizontally(animationSpec = tween(400)) { -it }
+                    val animatedRoutePopEnter = slideInHorizontally(animationSpec = tween(400)) { -it }
+                    val animatedRoutePopExit = slideOutHorizontally(animationSpec = tween(400)) { it }
+
 
                     composable(
                         route.routeInfo.id,
@@ -174,6 +188,7 @@ class Navigation(
                             when {
                                 isSummaryScreen -> slideInHorizontally { it }
                                 isAddRuleScreen -> addRuleEnterAnimation
+                                isAnimatedRoute -> animatedRouteEnter
                                 else -> fadeIn(tween(100))
                             }
                         },
@@ -181,6 +196,7 @@ class Navigation(
                             when {
                                 isSummaryScreen -> slideOutHorizontally { -it }
                                 isAddRuleScreen -> addRuleExitAnimation
+                                isAnimatedRoute -> animatedRouteExit
                                 else -> fadeOut(tween(100))
                             }
                         },
@@ -188,6 +204,7 @@ class Navigation(
                             when {
                                 isSummaryScreen -> slideInHorizontally { -it }
                                 isAddRuleScreen -> addRulePopEnterAnimation
+                                isAnimatedRoute -> animatedRoutePopEnter
                                 else -> fadeIn(tween(100))
                             }
                         },
@@ -195,6 +212,7 @@ class Navigation(
                             when {
                                 isSummaryScreen -> slideOutHorizontally { it }
                                 isAddRuleScreen -> addRulePopExitAnimation
+                                isAnimatedRoute -> animatedRoutePopExit
                                 else -> fadeOut(tween(100))
                             }
                         }

@@ -83,7 +83,7 @@ class Routes(
     val manageFriendTrackerRepos = route(RouteInfo("manage_friend_tracker_repos"), ManageFriendTrackerReposSection())
 
     val fileImports = route(RouteInfo("file_imports"), FileImportsRoot()).parent(home)
-    val manageRepos = route(RouteInfo("manage_repos"), ManageReposSection())
+    val manageRepos = route(RouteInfo("manage_repos/?type={type}"), ManageReposSection())
 
     val social = route(RouteInfo("social", icon = Icons.Default.Group, primary = true), SocialRootSection())
     val manageScope = route(RouteInfo("manage_scope/?scope={scope}&id={id}"), ManageScope()).parent(social)

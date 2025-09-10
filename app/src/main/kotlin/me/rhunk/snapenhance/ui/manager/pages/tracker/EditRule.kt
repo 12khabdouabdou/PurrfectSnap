@@ -17,11 +17,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -107,13 +109,13 @@ class EditRule : Routes.Route() {
 
         Dialog(
             onDismissRequest = onDismissRequest,
-            properties = DialogProperties(dismissOnClickOutside = true)
+            properties = DialogProperties(dismissOnClickOutside = true, usePlatformDefaultWidth = false)
         ) {
-            Card(
-                Modifier
-                    .fillMaxWidth(0.95f)
-            ) {
-                Column(Modifier.padding(16.dp)) {
+            Card {
+                Column(
+                    Modifier
+                        .padding(16.dp)
+                        .width(IntrinsicSize.Max)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
                         IconButton(onClick = onDismissRequest) {
@@ -127,7 +129,9 @@ class EditRule : Routes.Route() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
-                            modifier = Modifier.fillMaxWidth().menuAnchor(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(),
                             value = context.translation["tracker_events.${currentEventType.value}"],
                             onValueChange = {},
                             readOnly = true,
@@ -136,7 +140,8 @@ class EditRule : Routes.Route() {
                         )
                         ExposedDropdownMenu(
                             expanded = expanded.value,
-                            onDismissRequest = { expanded.value = false }
+                            onDismissRequest = { expanded.value = false },
+                            modifier = Modifier.width(IntrinsicSize.Max)
                         ) {
                             TrackerEventType.entries.forEach { eventType ->
                                 DropdownMenuItem(
@@ -215,9 +220,46 @@ class EditRule : Routes.Route() {
 
         var deleteConfirmation by remember { mutableStateOf(false) }
         var showDuplicateNameDialog by remember { mutableStateOf(false) }
+        var showEventsEmptyDialog by remember { mutableStateOf(false) }
         var addFriendDialog by remember { mutableStateOf<AddFriendDialog?>(null) }
         var addEventDialogVisible by remember { mutableStateOf(false) }
 
+        if (showEventsEmptyDialog) {
+            Dialog(onDismissRequest = { showEventsEmptyDialog = false }) {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Cannot Save Rule",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "A rule must have at least one event to save.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+                        Button(
+                            onClick = { showEventsEmptyDialog = false },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                }
+            }
+        }
         if (showDuplicateNameDialog) {
             AlertDialog(
                 onDismissRequest = { showDuplicateNameDialog = false },
@@ -264,6 +306,10 @@ class EditRule : Routes.Route() {
                     },
                     actions = {
                         IconButton(onClick = {
+                            if (events.isEmpty()) {
+                                showEventsEmptyDialog = true
+                                return@IconButton
+                            }
                             if (currentRuleId == null && context.database.getTrackerRuleByName(ruleName.value.trim()) != null) {
                                 showDuplicateNameDialog = true
                                 return@IconButton
