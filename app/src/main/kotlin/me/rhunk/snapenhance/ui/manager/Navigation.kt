@@ -19,10 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import android.os.Build
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -101,24 +98,15 @@ class Navigation(
                 .navigationBarsPadding(),
             contentAlignment = Alignment.BottomCenter
         ) {
-            val surfaceColor = MaterialTheme.colorScheme.surface
             Surface(
                 shape = RoundedCornerShape(24.dp),
-                shadowElevation = 24.dp, // Increased shadow
-                tonalElevation = 8.dp, // Increased tonal elevation
-                color = surfaceColor.copy(alpha = 0.85f),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)), // Subtle border
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 modifier = Modifier.shadow(
-                    elevation = 8.dp,
+                    elevation = 16.dp,
                     shape = RoundedCornerShape(24.dp),
                     spotColor = MaterialTheme.colorScheme.primary,
-                    ambientColor = MaterialTheme.colorScheme.primary
-                ).then(
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        Modifier.blur(radius = 20.dp)
-                    } else {
-                        Modifier
-                    }
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 )
             ) {
                 NavigationBar(
