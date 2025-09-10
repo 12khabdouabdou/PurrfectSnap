@@ -16,8 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -98,9 +100,16 @@ class Navigation(
         ) {
             Surface(
                 shape = RoundedCornerShape(24.dp),
-                shadowElevation = 12.dp,
-                tonalElevation = 5.dp,
-                color = MaterialTheme.colorScheme.surface
+                shadowElevation = 24.dp, // Increased shadow
+                tonalElevation = 8.dp, // Increased tonal elevation
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)), // Subtle border
+                modifier = Modifier.shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    spotColor = MaterialTheme.colorScheme.primary,
+                    ambientColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,

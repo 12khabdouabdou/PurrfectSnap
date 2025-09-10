@@ -261,7 +261,8 @@ class BetterLocationRoot : Routes.Route() {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .clipToBounds()
+                    .clipToBounds(),
+                contentPadding = PaddingValues(bottom = routes.bottomPadding)
             ) {
                 item {
                     @Composable

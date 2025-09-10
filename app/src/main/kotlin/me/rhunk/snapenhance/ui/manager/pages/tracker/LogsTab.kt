@@ -44,6 +44,7 @@ fun LogsTab(
     activityLauncherHelper: ActivityLauncherHelper,
     deleteAction: (() -> Unit) -> Unit,
     exportAction: (() -> Unit) -> Unit,
+    bottomPadding: Dp,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -516,7 +517,8 @@ fun LogsTab(
         }
 
         LazyColumn(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(bottom = bottomPadding)
         ) {
             item {
                 Row(
@@ -592,9 +594,6 @@ fun LogsTab(
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(100.dp))
-            }
         }
     }
 }

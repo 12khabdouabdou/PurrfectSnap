@@ -155,7 +155,7 @@ class ManageReposSection: Routes.Route() {
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
+            contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp + routes.bottomPadding),
         ) {
             item {
                 if (repositories.isEmpty()) {

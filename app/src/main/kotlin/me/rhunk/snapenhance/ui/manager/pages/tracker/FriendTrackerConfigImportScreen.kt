@@ -90,7 +90,7 @@ class FriendTrackerConfigImportScreen : Routes.Route() {
 
             LazyColumn(
                 modifier = Modifier.padding(padding).fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp + routes.bottomPadding),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(featuresByCategory.toList()) { (category, features) ->

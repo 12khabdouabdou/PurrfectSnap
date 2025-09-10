@@ -51,7 +51,7 @@ class SocialRootSection : Routes.Route() {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(start = 8.dp, end = 8.dp),
+            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, bottom = routes.bottomPadding),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             //check if scope list is empty

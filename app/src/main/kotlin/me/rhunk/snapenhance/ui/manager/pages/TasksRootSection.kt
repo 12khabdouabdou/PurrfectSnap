@@ -483,7 +483,8 @@ class TasksRootSection : Routes.Route() {
 
         LazyColumn(
             state = scrollState,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = routes.bottomPadding)
         ) {
             item {
                 if (activeTasks.isEmpty() && recentTasks.isEmpty()) {

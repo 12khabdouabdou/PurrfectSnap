@@ -581,7 +581,7 @@ class EditRule : Routes.Route() {
                         }
                     }
                 }
-                Spacer(Modifier.height(50.dp))
+                Spacer(Modifier.height(routes.bottomPadding))
             }
         }
     }

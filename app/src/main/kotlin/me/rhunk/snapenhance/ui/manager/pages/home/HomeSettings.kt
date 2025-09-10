@@ -485,7 +485,7 @@ class HomeSettings : Routes.Route() {
                     PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
                 }
             }
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(routes.bottomPadding))
         }
     }
 }

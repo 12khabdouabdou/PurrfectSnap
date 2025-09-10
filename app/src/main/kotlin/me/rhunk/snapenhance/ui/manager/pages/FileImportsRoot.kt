@@ -92,7 +92,8 @@ class FileImportsRoot: Routes.Route() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(2.dp),
-            verticalArrangement = Arrangement.spacedBy(5.dp)
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+            contentPadding = PaddingValues(bottom = routes.bottomPadding)
         ) {
             item {
                 if (files.isEmpty()) {
@@ -149,9 +150,6 @@ class FileImportsRoot: Routes.Route() {
                         }
                     }
                 }
-            }
-            item {
-                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }

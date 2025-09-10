@@ -227,7 +227,8 @@ class FriendTrackerManagerRoot : Routes.Route() {
             modifier = Modifier.fillMaxSize()
         ) {
             LazyColumn(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = routes.bottomPadding)
             ) {
                 item {
                     if (rules.isEmpty()) {
@@ -386,7 +387,8 @@ class FriendTrackerManagerRoot : Routes.Route() {
                         context = context,
                         activityLauncherHelper = activityLauncherHelper,
                         deleteAction = { logDeleteAction = it },
-                        exportAction = { exportAction = it }
+                        exportAction = { exportAction = it },
+                        bottomPadding = routes.bottomPadding
                     )
                     0 -> ConfigRulesTab()
                 }
