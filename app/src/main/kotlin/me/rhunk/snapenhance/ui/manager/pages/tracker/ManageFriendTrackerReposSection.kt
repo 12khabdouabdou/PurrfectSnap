@@ -1,4 +1,4 @@
-package me.rhunk.snapenhance.ui.manager.pages.scripting
+package me.rhunk.snapenhance.ui.manager.pages.tracker
 
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.*
@@ -31,19 +31,9 @@ import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.manager.components.AestheticDialog
 import okhttp3.OkHttpClient
 
-class ManageScriptReposSection : Routes.Route() {
+class ManageFriendTrackerReposSection: Routes.Route() {
     private val refreshTrigger = mutableStateOf(0)
     private val okHttpClient by lazy { OkHttpClient() }
-
-    private fun extractRepoInfo(url: String): Pair<String, String> {
-        if (url.contains("raw.githubusercontent.com")) {
-            val parts = url.removePrefix("https://raw.githubusercontent.com/").split("/")
-            if (parts.size >= 2) {
-                return parts[1] to parts[0]
-            }
-        }
-        return url.substringAfterLast("/").substringBeforeLast(".") to url.substringAfter("://").substringBefore("/")
-    }
 
     override val floatingActionButton: @Composable () -> Unit = {
         var showAddDialog by remember { mutableStateOf(false) }
@@ -118,16 +108,16 @@ class ManageScriptReposSection : Routes.Route() {
                                     val isValid = okHttpClient.newCall(request).execute().use { response ->
                                         if (!response.isSuccessful) throw Exception("Failed to fetch index.json: ${response.code}")
                                         val indexJson = response.body?.string() ?: throw Exception("Empty index.json")
-                                        JsonParser.parseString(indexJson).asJsonObject.has("scripts")
+                                        JsonParser.parseString(indexJson).asJsonObject.has("rules")
                                     }
 
                                     if (isValid) {
-                                        context.database.addRepo("script", modifiedUrl)
+                                        context.database.addRepo("friend_tracker", modifiedUrl)
                                         context.shortToast("Repository added successfully!")
                                         showAddDialog = false
                                         refreshTrigger.value++
                                     } else {
-                                        errorDialogMessage = "This does not appear to be a valid Script repository."
+                                        errorDialogMessage = "This does not appear to be a valid Friend Tracker repository."
                                         showErrorDialog = true
                                     }
                                 }.onFailure {
@@ -151,7 +141,7 @@ class ManageScriptReposSection : Routes.Route() {
 
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val repositories by remember(refreshTrigger.value) {
-            mutableStateOf<List<String>>(runBlocking { context.database.getRepositories("script") })
+            mutableStateOf<List<String>>(runBlocking { context.database.getRepositories("friend_tracker") })
         }
 
         if (repositories.isEmpty()) {
@@ -173,8 +163,10 @@ class ManageScriptReposSection : Routes.Route() {
                 contentPadding = PaddingValues(8.dp),
             ) {
                 items(repositories) { url ->
-                    val (repoName, author) = remember(url) { extractRepoInfo(url) }
-                    
+                    val (repoName, author) = remember(url) {
+                        url.removePrefix("https://raw.githubusercontent.com/").split("/").let { it[1] to it[0] }
+                    }
+
                     ElevatedCard(
                         modifier = Modifier.padding(bottom = 8.dp)
                     ) {
@@ -186,7 +178,7 @@ class ManageScriptReposSection : Routes.Route() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Public, 
+                                Icons.Default.Public,
                                 contentDescription = null,
                                 modifier = Modifier.size(40.dp),
                                 tint = MaterialTheme.colorScheme.primary
@@ -222,7 +214,7 @@ class ManageScriptReposSection : Routes.Route() {
                                     confirmButton = {
                                         Button(
                                             onClick = {
-                                                context.database.removeRepo("script", url)
+                                                context.database.removeRepo("friend_tracker", url)
                                                 showRemoveDialog = false
                                                 refreshTrigger.value++
                                             }

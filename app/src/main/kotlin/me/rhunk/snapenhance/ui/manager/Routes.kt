@@ -28,6 +28,8 @@ import me.rhunk.snapenhance.ui.manager.pages.social.MessagingPreview
 import me.rhunk.snapenhance.ui.manager.pages.social.SocialRootSection
 import me.rhunk.snapenhance.ui.manager.pages.tracker.EditRule
 import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerManagerRoot
+import me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerCatalog
+import me.rhunk.snapenhance.ui.manager.pages.tracker.ManageFriendTrackerReposSection
 import me.rhunk.snapenhance.ui.manager.pages.scripting.ManageScriptReposSection
 
 
@@ -37,6 +39,7 @@ data class RouteInfo(
     val icon: ImageVector = Icons.Default.Home,
     val primary: Boolean = false,
     val showInNavBar: Boolean = primary,
+    val hasOwnTopBar: Boolean = false,
 ) {
     var translatedKey: Lazy<String?>? = null
     val childIds = mutableListOf<String>()
@@ -49,12 +52,16 @@ class Routes(
     companion object {
         const val CONFIG_IMPORT_CONFIRMATION_ROUTE = "config_import_confirmation"
         const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary/?exportSensitiveData={exportSensitiveData}"
+        const val FRIEND_TRACKER_CONFIG_EXPORT_ROUTE = "friend_tracker_config_export/?rule_id={rule_id}"
+        const val FRIEND_TRACKER_CONFIG_IMPORT_ROUTE = "friend_tracker_config_import"
     }
 
     lateinit var navController: NavController
     lateinit var activityLauncher: me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
     private val routes = mutableListOf<Route>()
     var configJsonForImport: String? = null
+    var friendTrackerConfigJsonForImport: String? = null
+    var onRuleImported: (() -> Unit)? = null
 
     val configImportConfirmation = route(RouteInfo(CONFIG_IMPORT_CONFIRMATION_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigImportConfirmationScreen())
     val configExportSummary = route(RouteInfo(CONFIG_EXPORT_SUMMARY_ROUTE), me.rhunk.snapenhance.ui.manager.pages.features.ConfigExportSummaryScreen())
@@ -69,10 +76,14 @@ class Routes(
     val homeLogs = route(RouteInfo("home_logs"), HomeLogs()).parent(home)
     val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker"), FriendTrackerManagerRoot()).parent(home)
-    val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}"), EditRule())
+    val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}", hasOwnTopBar = true), EditRule())
+    val friendTrackerConfigExport = route(RouteInfo(FRIEND_TRACKER_CONFIG_EXPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen())
+    val friendTrackerConfigImport = route(RouteInfo(FRIEND_TRACKER_CONFIG_IMPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigImportScreen())
+    val friendTrackerCatalog = route(RouteInfo("friend_tracker_catalog"), FriendTrackerCatalog())
+    val manageFriendTrackerRepos = route(RouteInfo("manage_friend_tracker_repos"), ManageFriendTrackerReposSection())
 
     val fileImports = route(RouteInfo("file_imports"), FileImportsRoot()).parent(home)
-    val manageRepos = route(RouteInfo("manage_repos"), ManageReposSection())
+    val manageRepos = route(RouteInfo("manage_repos/?type={type}"), ManageReposSection())
 
     val social = route(RouteInfo("social", icon = Icons.Default.Group, primary = true), SocialRootSection())
     val manageScope = route(RouteInfo("manage_scope/?scope={scope}&id={id}"), ManageScope()).parent(social)

@@ -43,6 +43,7 @@ class Navigation(
     fun TopBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
+        if (currentRoute?.routeInfo?.hasOwnTopBar == true) return
         val canGoBack = remember(navBackStackEntry) {
             currentRoute?.let {
                 !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination)
@@ -159,13 +160,62 @@ class Navigation(
             routes.getRoutes().filter { it.parentRoute == null }.forEach { route ->
                 val children = routes.getRoutes().filter { it.parentRoute == route }
                 if (children.isEmpty()) {
-                    val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE
+                    val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_EXPORT_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_IMPORT_ROUTE
+                    val isAddRuleScreen = route.routeInfo.id.startsWith("edit_rule")
+
+                    val animatedRoutes = setOf(
+                        "friend_tracker_catalog",
+                        "manage_friend_tracker_repos",
+                        "manage_script_repos",
+                        "manage_repos"
+                    )
+                    val isAnimatedRoute = animatedRoutes.contains(route.routeInfo.id)
+
+                    val addRuleEnterAnimation = slideInHorizontally(animationSpec = tween(400)) { it }
+                    val addRuleExitAnimation = slideOutHorizontally(animationSpec = tween(400)) { -it }
+                    val addRulePopEnterAnimation = slideInHorizontally(animationSpec = tween(400)) { -it }
+                    val addRulePopExitAnimation = slideOutHorizontally(animationSpec = tween(400)) { it }
+
+                    val animatedRouteEnter = slideInHorizontally(animationSpec = tween(400)) { it }
+                    val animatedRouteExit = slideOutHorizontally(animationSpec = tween(400)) { -it }
+                    val animatedRoutePopEnter = slideInHorizontally(animationSpec = tween(400)) { -it }
+                    val animatedRoutePopExit = slideOutHorizontally(animationSpec = tween(400)) { it }
+
+
                     composable(
                         route.routeInfo.id,
-                        enterTransition = { if (isSummaryScreen) slideInHorizontally { it } else fadeIn(tween(100)) },
-                        exitTransition = { if (isSummaryScreen) slideOutHorizontally { -it } else fadeOut(tween(100)) },
-                        popEnterTransition = { if (isSummaryScreen) slideInHorizontally { -it } else fadeIn(tween(100)) },
-                        popExitTransition = { if (isSummaryScreen) slideOutHorizontally { it } else fadeOut(tween(100)) }
+                        enterTransition = {
+                            when {
+                                isSummaryScreen -> slideInHorizontally { it }
+                                isAddRuleScreen -> addRuleEnterAnimation
+                                isAnimatedRoute -> animatedRouteEnter
+                                else -> fadeIn(tween(100))
+                            }
+                        },
+                        exitTransition = {
+                            when {
+                                isSummaryScreen -> slideOutHorizontally { -it }
+                                isAddRuleScreen -> addRuleExitAnimation
+                                isAnimatedRoute -> animatedRouteExit
+                                else -> fadeOut(tween(100))
+                            }
+                        },
+                        popEnterTransition = {
+                            when {
+                                isSummaryScreen -> slideInHorizontally { -it }
+                                isAddRuleScreen -> addRulePopEnterAnimation
+                                isAnimatedRoute -> animatedRoutePopEnter
+                                else -> fadeIn(tween(100))
+                            }
+                        },
+                        popExitTransition = {
+                            when {
+                                isSummaryScreen -> slideOutHorizontally { it }
+                                isAddRuleScreen -> addRulePopExitAnimation
+                                isAnimatedRoute -> animatedRoutePopExit
+                                else -> fadeOut(tween(100))
+                            }
+                        }
                     ) {
                         route.content.invoke(it)
                     }

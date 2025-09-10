@@ -13,13 +13,23 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.SaveAlt
+import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,6 +51,7 @@ import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.coil.BitmojiImage
+import me.rhunk.snapenhance.ui.util.openFile
 import me.rhunk.snapenhance.ui.util.pagerTabIndicatorOffset
 
 
@@ -50,10 +61,119 @@ class FriendTrackerManagerRoot : Routes.Route() {
         CONVERSATION, USERNAME, EVENT
     }
 
-    private val titles = listOf("Logs", "Rules")
+    private val titles = listOf("Rules", "Logs")
     private var currentPage by mutableIntStateOf(0)
     private lateinit var logDeleteAction : () -> Unit
     private lateinit var exportAction : () -> Unit
+
+    override val topBarActions: @Composable RowScope.() -> Unit = {
+        var showExportDialog by remember { mutableStateOf(false) }
+        var showSingleExportDialog by remember { mutableStateOf(false) }
+        var showImportDialog by remember { mutableStateOf(false) }
+        var showInvalidImportTypeDialog by remember { mutableStateOf(false) }
+
+        if (showExportDialog) {
+            ChoiceDialog(
+                onDismissRequest = { showExportDialog = false },
+                title = "Export",
+                choices = listOf(
+                    "Bulk Export" to { Icon(Icons.Default.UploadFile, null) },
+                    "Individual Export" to { Icon(Icons.Default.FileOpen, null) }
+                ),
+                onChoiceSelected = { index ->
+                    showExportDialog = false
+                    when (index) {
+                        0 -> routes.friendTrackerConfigExport.navigate()
+                        1 -> showSingleExportDialog = true
+                    }
+                }
+            )
+        }
+
+        if (showSingleExportDialog) {
+            val rules = rememberAsyncMutableStateList(defaultValue = emptyList()) {
+                context.database.getTrackerRulesDesc()
+            }
+            SelectRuleDialog(
+                onDismissRequest = { showSingleExportDialog = false },
+                rules = rules,
+                onRuleSelected = { rule ->
+                    showSingleExportDialog = false
+                    routes.friendTrackerConfigExport.navigate {
+                        this["rule_id"] = rule.id.toString()
+                    }
+                }
+            )
+        }
+
+        fun handleImport(type: me.rhunk.snapenhance.common.data.ExportType) {
+            routes.activityLauncher.openFile("application/json") { uri ->
+                runCatching {
+                    val content = context.androidContext.contentResolver.openInputStream(android.net.Uri.parse(uri))?.use {
+                        it.readBytes().toString(Charsets.UTF_8)
+                    } ?: return@runCatching
+                    val exportedData = context.gson.fromJson(content, me.rhunk.snapenhance.common.data.ExportedTrackerData::class.java)
+                    if (exportedData.type != type) {
+                        showInvalidImportTypeDialog = true
+                        return@runCatching
+                    }
+                    routes.friendTrackerConfigJsonForImport = content
+                    routes.friendTrackerConfigImport.navigate()
+                }.onFailure {
+                    context.longToast("Failed to read file: ${it.message}")
+                }
+            }
+        }
+
+        if (showInvalidImportTypeDialog) {
+            AlertDialog(
+                onDismissRequest = { showInvalidImportTypeDialog = false },
+                title = { Text("Invalid Import Type") },
+                text = { Text("The selected file is not compatible with this import type. Please select the correct import type.") },
+                confirmButton = {
+                    Button(onClick = { showInvalidImportTypeDialog = false }) {
+                        Text("OK")
+                    }
+                }
+            )
+        }
+
+        if (showImportDialog) {
+            ChoiceDialog(
+                onDismissRequest = { showImportDialog = false },
+                title = "Import",
+                choices = listOf(
+                    "Bulk Import" to { Icon(Icons.Default.UploadFile, null) },
+                    "Individual Import" to { Icon(Icons.Default.FileOpen, null) }
+                ),
+                onChoiceSelected = { index ->
+                    showImportDialog = false
+                    when (index) {
+                        0 -> handleImport(me.rhunk.snapenhance.common.data.ExportType.BULK)
+                        1 -> handleImport(me.rhunk.snapenhance.common.data.ExportType.SINGLE)
+                    }
+                }
+            )
+        }
+
+        if (currentPage == 0) {
+            IconButton(onClick = {
+                routes.friendTrackerCatalog.navigate()
+            }) {
+                Icon(Icons.Default.Store, contentDescription = "Catalog")
+            }
+            IconButton(onClick = {
+                showImportDialog = true
+            }) {
+                Icon(Icons.Default.FolderOpen, contentDescription = "Import")
+            }
+            IconButton(onClick = {
+                showExportDialog = true
+            }) {
+                Icon(Icons.Default.SaveAlt, contentDescription = "Export")
+            }
+        }
+    }
 
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
 
@@ -63,7 +183,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         when (currentPage) {
-            0 -> {
+            1 -> {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
@@ -85,7 +205,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     )
                 }
             }
-            1 -> {
+            0 -> {
                 ExtendedFloatingActionButton(
                     icon = { Icon(Icons.Default.Add, contentDescription = "Add Rule") },
                     expanded = true,
@@ -227,33 +347,32 @@ class FriendTrackerManagerRoot : Routes.Route() {
     @OptIn(ExperimentalFoundationApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        val pagerState = rememberPagerState { titles.size }
+        val pagerState = rememberPagerState(initialPage = 0) { titles.size }
         currentPage = pagerState.currentPage
 
         Column {
-            TabRow(selectedTabIndex = pagerState.currentPage, indicator = { tabPositions ->
-                TabRowDefaults.SecondaryIndicator(
-                    Modifier.pagerTabIndicatorOffset(
-                        pagerState = pagerState,
-                        tabPositions = tabPositions
-                    )
-                )
-            }) {
-                titles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            ) {
+                titles.forEachIndexed { i, text ->
+                    val shape = when (i) {
+                        0 -> RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp)
+                        titles.lastIndex -> RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp)
+                        else -> RoundedCornerShape(0.dp)
+                    }
+                    SegmentedButton(
+                        selected = pagerState.currentPage == i,
                         onClick = {
                             coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
+                                pagerState.animateScrollToPage(i)
                             }
                         },
-                        text = {
-                            Text(
-                                text = title,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                        shape = shape,
+                        modifier = Modifier.weight(1f),
+                        icon = {},
+                        label = { Text(text) }
                     )
                 }
             }
@@ -263,15 +382,107 @@ class FriendTrackerManagerRoot : Routes.Route() {
                 state = pagerState
             ) { page ->
                 when (page) {
-                    0 -> LogsTab(
+                    1 -> LogsTab(
                         context = context,
                         activityLauncherHelper = activityLauncherHelper,
                         deleteAction = { logDeleteAction = it },
                         exportAction = { exportAction = it }
                     )
-                    1 -> ConfigRulesTab()
+                    0 -> ConfigRulesTab()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SelectRuleDialog(
+    onDismissRequest: () -> Unit,
+    rules: List<me.rhunk.snapenhance.common.data.TrackerRule>,
+    onRuleSelected: (me.rhunk.snapenhance.common.data.TrackerRule) -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text("Select Rule to Export", style = MaterialTheme.typography.headlineSmall)
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(rules) { rule ->
+                        ElevatedCard(
+                            onClick = { onRuleSelected(rule) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = rule.name,
+                                modifier = Modifier.padding(16.dp),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+                TextButton(onClick = onDismissRequest) {
+                    Text("Cancel")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChoiceDialog(
+    onDismissRequest: () -> Unit,
+    title: String,
+    choices: List<Pair<String, @Composable () -> Unit>>,
+    onChoiceSelected: (Int) -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(text = title, style = MaterialTheme.typography.headlineSmall)
+                choices.forEachIndexed { index, (text, icon) ->
+                    SelectButton(
+                        onClick = { onChoiceSelected(index) },
+                        text = text,
+                        leadingIcon = icon
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectButton(
+    onClick: () -> Unit,
+    text: String,
+    leadingIcon: @Composable (() -> Unit)? = null,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (leadingIcon != null) {
+                leadingIcon()
+            }
+            Text(text = text, modifier = Modifier.weight(1f))
         }
     }
 }

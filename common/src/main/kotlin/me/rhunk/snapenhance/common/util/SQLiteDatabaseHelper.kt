@@ -17,8 +17,8 @@ object SQLiteDatabaseHelper {
             }
             cursor.close()
 
-            val newColumns = columns.filter {
-                existingColumns.none { existingColumn -> it.startsWith(existingColumn) }
+            val newColumns = columns.filter { column ->
+                !column.uppercase().startsWith("PRIMARY KEY") && existingColumns.none { existingColumn -> column.startsWith(existingColumn) }
             }
 
             if (newColumns.isEmpty()) return@forEach

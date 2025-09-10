@@ -62,7 +62,6 @@ class ConfigExportSummaryScreen : Routes.Route() {
         fun parse(configJson: String): Map<String, List<ImportedFeature>> {
             val featureList = mutableListOf<ImportedFeature>()
             val json = JSONObject(configJson)
-
             fun parseProperties(categoryKey: String, niceCategoryName: String, properties: JSONObject, prefix: String, indent: Int) {
                 for (key in properties.keys()) {
                     val value = properties.get(key)

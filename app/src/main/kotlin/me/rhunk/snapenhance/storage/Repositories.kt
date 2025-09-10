@@ -6,9 +6,9 @@ import kotlinx.coroutines.runBlocking
 import me.rhunk.snapenhance.common.util.ktx.getStringOrNull
 
 
-fun AppDatabase.getRepositories(): List<String> {
+fun AppDatabase.getRepositories(type: String): List<String> {
     return runBlocking(executor.asCoroutineDispatcher()) {
-        database.rawQuery("SELECT url FROM repositories", null).use { cursor ->
+        database.rawQuery("SELECT url FROM repositories WHERE type = ?", arrayOf(type)).use { cursor ->
             val repos = mutableListOf<String>()
             while (cursor.moveToNext()) {
                 repos.add(cursor.getStringOrNull("url") ?: continue)
@@ -18,16 +18,17 @@ fun AppDatabase.getRepositories(): List<String> {
     }
 }
 
-fun AppDatabase.removeRepo(url: String) {
+fun AppDatabase.removeRepo(type: String, url: String) {
     runBlocking(executor.asCoroutineDispatcher()) {
-        database.delete("repositories", "url = ?", arrayOf(url))
+        database.delete("repositories", "url = ? AND type = ?", arrayOf(url, type))
     }
 }
 
-fun AppDatabase.addRepo(url: String) {
+fun AppDatabase.addRepo(type: String, url: String) {
     runBlocking(executor.asCoroutineDispatcher()) {
         database.insert("repositories", null, ContentValues().apply {
             put("url", url)
+            put("type", type)
         })
     }
 }
