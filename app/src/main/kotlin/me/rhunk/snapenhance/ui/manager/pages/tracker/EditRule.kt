@@ -17,8 +17,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +40,7 @@ import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
 import me.rhunk.snapenhance.storage.*
 import me.rhunk.snapenhance.ui.manager.Routes
+import me.rhunk.snapenhance.ui.manager.components.AestheticDialog
 import me.rhunk.snapenhance.ui.manager.pages.social.AddFriendDialog
 
 class EditRule : Routes.Route() {
@@ -218,11 +221,55 @@ class EditRule : Routes.Route() {
             currentRuleId?.let { ruleId -> context.database.getTrackerRule(ruleId)?.author ?: "" } ?: ""
         }
 
+        val initialRuleState by remember(ruleName.value.isNotBlank() || events.isNotEmpty() || scopes.isNotEmpty()) {
+            mutableStateOf(
+                mapOf(
+                    "name" to ruleName.value,
+                    "author" to authorName.value,
+                    "scopes" to scopes.toList(),
+                    "events" to events.toList(),
+                    "scopeType" to currentScopeType
+                )
+            )
+        }
+
+        val isDirty by remember {
+            derivedStateOf {
+                initialRuleState["name"] != ruleName.value ||
+                initialRuleState["author"] != authorName.value ||
+                initialRuleState["scopes"] != scopes.toList() ||
+                initialRuleState["events"] != events.toList() ||
+                initialRuleState["scopeType"] != currentScopeType
+            }
+        }
+
         var deleteConfirmation by remember { mutableStateOf(false) }
         var showDuplicateNameDialog by remember { mutableStateOf(false) }
         var showEventsEmptyDialog by remember { mutableStateOf(false) }
+        var showDiscardDialog by remember { mutableStateOf(false) }
         var addFriendDialog by remember { mutableStateOf<AddFriendDialog?>(null) }
         var addEventDialogVisible by remember { mutableStateOf(false) }
+
+
+        if (showDiscardDialog) {
+            AestheticDialog(
+                onDismissRequest = { showDiscardDialog = false },
+                title = "Discard Changes?",
+                text = "You have unsaved changes. Are you sure you want to discard them?",
+                icon = Icons.Default.Warning,
+                confirmButtonText = "Discard",
+                onConfirm = {
+                    showDiscardDialog = false
+                    routes.navController.popBackStack()
+                },
+                dismissButtonText = "Cancel",
+                onDismiss = { showDiscardDialog = false }
+            )
+        }
+
+        BackHandler(enabled = isDirty) {
+            showDiscardDialog = true
+        }
 
         if (showEventsEmptyDialog) {
             Dialog(onDismissRequest = { showEventsEmptyDialog = false }) {
@@ -300,7 +347,13 @@ class EditRule : Routes.Route() {
                 TopAppBar(
                     title = { Text(if (currentRuleId == null) "New Rule" else "Edit Rule") },
                     navigationIcon = {
-                        IconButton(onClick = { routes.navController.popBackStack() }) {
+                        IconButton(onClick = {
+                            if (isDirty) {
+                                showDiscardDialog = true
+                            } else {
+                                routes.navController.popBackStack()
+                            }
+                        }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
                     },

@@ -17,6 +17,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.material.icons.filled.Error
+import androidx.core.net.toUri
+import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -25,6 +28,7 @@ import me.rhunk.snapenhance.storage.addRepo
 import me.rhunk.snapenhance.storage.getRepositories
 import me.rhunk.snapenhance.storage.removeRepo
 import me.rhunk.snapenhance.ui.manager.Routes
+import me.rhunk.snapenhance.ui.manager.components.AestheticDialog
 import okhttp3.OkHttpClient
 
 class ManageScriptReposSection : Routes.Route() {
@@ -43,6 +47,20 @@ class ManageScriptReposSection : Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         var showAddDialog by remember { mutableStateOf(false) }
+        var showErrorDialog by remember { mutableStateOf(false) }
+        var errorDialogMessage by remember { mutableStateOf("") }
+
+        if (showErrorDialog) {
+            AestheticDialog(
+                onDismissRequest = { showErrorDialog = false },
+                title = "Invalid Repository",
+                text = errorDialogMessage,
+                icon = Icons.Default.Error,
+                confirmButtonText = "OK",
+                onConfirm = { showErrorDialog = false }
+            )
+        }
+
         ExtendedFloatingActionButton(onClick = { showAddDialog = true }) {
             Text("Add Repository")
         }
@@ -94,8 +112,20 @@ class ManageScriptReposSection : Routes.Route() {
                                             modifiedUrl = "https://raw.githubusercontent.com/$repoName/$defaultBranch/"
                                         }
                                     }
+
+                                    val indexUrl = modifiedUrl.toUri().buildUpon().appendPath("index.json").build().toString()
+                                    val request = okhttp3.Request.Builder().url(indexUrl).build()
+                                    okHttpClient.newCall(request).execute().use { response ->
+                                        if (!response.isSuccessful) throw Exception("Failed to fetch index.json: ${response.code}")
+                                        val indexJson = response.body?.string() ?: throw Exception("Empty index.json")
+                                        val jsonObject = JsonParser.parseString(indexJson).asJsonObject
+                                        if (!jsonObject.has("scripts")) {
+                                            errorDialogMessage = "This does not appear to be a valid Script repository."
+                                            showErrorDialog = true
+                                            return@use
+                                        }
+                                    }
                                     context.database.addRepo("script", modifiedUrl)
-                                }.onSuccess {
                                     context.shortToast("Repository added successfully!")
                                     showAddDialog = false
                                     refreshTrigger.value++
