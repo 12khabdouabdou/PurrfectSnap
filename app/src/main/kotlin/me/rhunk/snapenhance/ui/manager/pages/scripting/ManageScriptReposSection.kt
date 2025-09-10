@@ -115,20 +115,21 @@ class ManageScriptReposSection : Routes.Route() {
 
                                     val indexUrl = modifiedUrl.toUri().buildUpon().appendPath("index.json").build().toString()
                                     val request = okhttp3.Request.Builder().url(indexUrl).build()
-                                    okHttpClient.newCall(request).execute().use { response ->
+                                    val isValid = okHttpClient.newCall(request).execute().use { response ->
                                         if (!response.isSuccessful) throw Exception("Failed to fetch index.json: ${response.code}")
                                         val indexJson = response.body?.string() ?: throw Exception("Empty index.json")
-                                        val jsonObject = JsonParser.parseString(indexJson).asJsonObject
-                                        if (!jsonObject.has("scripts")) {
-                                            errorDialogMessage = "This does not appear to be a valid Script repository."
-                                            showErrorDialog = true
-                                            return@use
-                                        }
+                                        JsonParser.parseString(indexJson).asJsonObject.has("scripts")
                                     }
-                                    context.database.addRepo("script", modifiedUrl)
-                                    context.shortToast("Repository added successfully!")
-                                    showAddDialog = false
-                                    refreshTrigger.value++
+
+                                    if (isValid) {
+                                        context.database.addRepo("script", modifiedUrl)
+                                        context.shortToast("Repository added successfully!")
+                                        showAddDialog = false
+                                        refreshTrigger.value++
+                                    } else {
+                                        errorDialogMessage = "This does not appear to be a valid Script repository."
+                                        showErrorDialog = true
+                                    }
                                 }.onFailure {
                                     context.log.error("Failed to add repository", it)
                                     context.shortToast("Failed to add repository: ${it.message}")

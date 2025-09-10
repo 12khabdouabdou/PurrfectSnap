@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.filled.Info
@@ -204,6 +205,7 @@ class EditRule : Routes.Route() {
         val events = rememberAsyncMutableStateList<TrackerRuleEvent>(defaultValue = emptyList()) {
             currentRuleId?.let { ruleId -> context.database.getTrackerEvents(ruleId) } ?: emptyList()
         }
+        val eventsToDelete = remember { mutableStateListOf<TrackerRuleEvent>() }
 
         var currentScopeType by remember { mutableStateOf(TrackerScopeType.BLACKLIST) }
         val scopes = rememberAsyncMutableStateList<String>(defaultValue = emptyList()) {
@@ -368,6 +370,11 @@ class EditRule : Routes.Route() {
                                 return@IconButton
                             }
                             val ruleId = currentRuleId ?: context.database.newTrackerRule()
+
+                            eventsToDelete.forEach { event ->
+                                if (event.id > -1) context.database.deleteTrackerRuleEvent(event.id)
+                            }
+
                             events.forEach { event ->
                                 context.database.addOrUpdateTrackerRuleEvent(
                                     event.id.takeIf { it > -1 },
@@ -478,7 +485,10 @@ class EditRule : Routes.Route() {
                     }
                 }
                 Card(Modifier.fillMaxWidth().padding(12.dp)) {
-                    Column(Modifier.padding(16.dp)) {
+                    Column(
+                        Modifier
+                            .padding(16.dp)
+                            .animateContentSize()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -552,7 +562,9 @@ class EditRule : Routes.Route() {
                                         }
                                         OutlinedIconButton(
                                             onClick = {
-                                                if (event.id > -1) context.database.deleteTrackerRuleEvent(event.id)
+                                                if (event.id > -1) {
+                                                    eventsToDelete.add(event)
+                                                }
                                                 events.remove(event)
                                             }
                                         ) {
