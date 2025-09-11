@@ -6,15 +6,23 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.Modifier
@@ -22,6 +30,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +43,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import me.rhunk.snapenhance.RemoteSideContext
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.zIndex
 
 @OptIn(ExperimentalMaterial3Api::class)
 class Navigation(
@@ -90,7 +105,35 @@ class Navigation(
     fun FloatingBottomBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
-        val primaryRoutes = remember { routes.getRoutes().filter { it.routeInfo.showInNavBar } }
+        val haptic = LocalHapticFeedback.current
+        // Build available route set and customizable selection
+        val availableRoutes = remember { listOf(
+            routes.tasks,
+            routes.features,
+            routes.home,
+            routes.social,
+            routes.scripting,
+            routes.friendTracker
+        ) }
+        val availableRouteMap = remember(availableRoutes) { availableRoutes.associateBy { it.routeInfo.id } }
+
+        val prefs = remember { context.sharedPreferences }
+        val defaultOrder = remember { listOf("tasks", "features", "home", "social", "scripts") }
+
+        fun loadSelected(): List<String> {
+            val raw = prefs.getString("manager_nav_tabs", null)?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+            val cleaned = raw.filter { availableRouteMap.containsKey(it) }
+            val list = (if (cleaned.isNotEmpty()) cleaned else defaultOrder).distinct()
+            return list.take(5)
+        }
+
+        fun saveSelected(ids: List<String>) {
+            prefs.edit().putString("manager_nav_tabs", ids.joinToString(",")).apply()
+        }
+
+        var selectedTabIds by remember { mutableStateOf(loadSelected()) }
+        val selectedRoutes = remember(selectedTabIds) { selectedTabIds.mapNotNull { availableRouteMap[it] } }
+        var showCustomize by remember { mutableStateOf(false) }
 
         Box(
             Modifier
@@ -103,7 +146,14 @@ class Navigation(
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                modifier = Modifier.shadow(
+                modifier = Modifier
+                    .pointerInput(Unit) {
+                        detectTapGestures(onLongPress = {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            showCustomize = true
+                        })
+                    }
+                    .shadow(
                     elevation = 16.dp,
                     shape = RoundedCornerShape(24.dp),
                     spotColor = MaterialTheme.colorScheme.primary,
@@ -114,7 +164,7 @@ class Navigation(
                     containerColor = Color.Transparent,
                     tonalElevation = 0.dp
                 ) {
-                    primaryRoutes.forEach { route ->
+                    selectedRoutes.forEach { route ->
                         NavigationBarItem(
                             alwaysShowLabel = true,
                             icon = {
@@ -144,6 +194,186 @@ class Navigation(
                             selected = currentRoute == route,
                             onClick = { route.navigateReset() }
                         )
+                    }
+                }
+            }
+
+            if (showCustomize) {
+                val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                ModalBottomSheet(
+                    onDismissRequest = { showCustomize = false },
+                    sheetState = sheetState,
+                ) {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        Text(
+                            text = "Customize Bottom Bar",
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = "Tap to add, remove or reorder tabs (max 5)",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(16.dp))
+
+                        Text(text = "Shown Tabs", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        if (selectedTabIds.isEmpty()) {
+                            Text(
+                                text = "No tabs selected",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            val haptic = LocalHapticFeedback.current
+                            var draggingId by remember { mutableStateOf<String?>(null) }
+                            var dragDelta by remember { mutableStateOf(0f) }
+                            val itemPositions = remember { mutableStateMapOf<String, Pair<Int, Int>>() } // id -> (topPx, heightPx)
+
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentPadding = PaddingValues(bottom = 8.dp)
+                            ) {
+                                itemsIndexed(selectedTabIds, key = { _, id -> id }) { index, id ->
+                                    val route = availableRouteMap[id] ?: return@itemsIndexed
+                                    val label = context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
+                                    val isDragging = draggingId == id
+                                    ElevatedCard(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 8.dp)
+                                            .animateItemPlacement()
+                                            .zIndex(if (isDragging) 1f else 0f)
+                                            .graphicsLayer {
+                                                if (isDragging) {
+                                                    translationY = dragDelta
+                                                    scaleX = 1.02f
+                                                    scaleY = 1.02f
+                                                }
+                                            }
+                                            .onGloballyPositioned { coords ->
+                                                val top = coords.positionInRoot().y.toInt()
+                                                val height = coords.size.height
+                                                itemPositions[id] = top to height
+                                            }
+                                            .pointerInput(id) {
+                                                detectDragGestures(
+                                                    onDragStart = {
+                                                        draggingId = id
+                                                        dragDelta = 0f
+                                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                                    },
+                                                    onDrag = { _, dragAmount ->
+                                                        dragDelta += dragAmount.y
+                                                        val currentIndex = selectedTabIds.indexOf(id)
+                                                        val currentPos = itemPositions[id]
+                                                        if (currentPos != null) {
+                                                            val currentCenter = currentPos.first + currentPos.second / 2f + dragDelta
+                                                            // Move down
+                                                            val nextId = selectedTabIds.getOrNull(currentIndex + 1)
+                                                            val nextCenter = nextId?.let { itemPositions[it]?.let { p -> p.first + p.second / 2f } }
+                                                            if (nextId != null && nextCenter != null && currentCenter > nextCenter) {
+                                                                val height = itemPositions[nextId]?.second?.toFloat() ?: 0f
+                                                                val list = selectedTabIds.toMutableList()
+                                                                list.removeAt(currentIndex)
+                                                                list.add(currentIndex + 1, id)
+                                                                selectedTabIds = list
+                                                                saveSelected(selectedTabIds)
+                                                                dragDelta -= height
+                                                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                                                                return@detectDragGestures
+                                                            }
+                                                            // Move up
+                                                            val prevId = selectedTabIds.getOrNull(currentIndex - 1)
+                                                            val prevCenter = prevId?.let { itemPositions[it]?.let { p -> p.first + p.second / 2f } }
+                                                            if (prevId != null && prevCenter != null && currentCenter < prevCenter) {
+                                                                val height = itemPositions[prevId]?.second?.toFloat() ?: 0f
+                                                                val list = selectedTabIds.toMutableList()
+                                                                list.removeAt(currentIndex)
+                                                                list.add(currentIndex - 1, id)
+                                                                selectedTabIds = list
+                                                                saveSelected(selectedTabIds)
+                                                                dragDelta += height
+                                                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                                                                return@detectDragGestures
+                                                            }
+                                                        }
+                                                    },
+                                                    onDragEnd = {
+                                                        draggingId = null
+                                                        dragDelta = 0f
+                                                    },
+                                                    onDragCancel = {
+                                                        draggingId = null
+                                                        dragDelta = 0f
+                                                    }
+                                                )
+                                            },
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .padding(12.dp)
+                                                    .fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(route.routeInfo.icon, contentDescription = null)
+                                                Spacer(Modifier.width(12.dp))
+                                                Text(
+                                                    text = label,
+                                                    modifier = Modifier.weight(1f),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                                IconButton(onClick = {
+                                                    if (selectedTabIds.size > 1) {
+                                                        selectedTabIds = selectedTabIds.toMutableList().also { it.removeAt(index) }
+                                                        saveSelected(selectedTabIds)
+                                                    }
+                                                }) {
+                                                    Icon(Icons.Filled.Close, contentDescription = null)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+                        Text(text = "Available Tabs", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            availableRoutes.forEach { route ->
+                                val id = route.routeInfo.id
+                                val already = selectedTabIds.contains(id)
+                                val label = context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
+                                AssistChip(
+                                    onClick = {
+                                        if (!already && selectedTabIds.size < 5) {
+                                            selectedTabIds = selectedTabIds + id
+                                            saveSelected(selectedTabIds)
+                                        }
+                                    },
+                                    label = { Text(text = label) },
+                                    leadingIcon = { Icon(route.routeInfo.icon, contentDescription = null) },
+                                    enabled = !already && selectedTabIds.size < 5
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(20.dp))
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            TextButton(onClick = {
+                                selectedTabIds = defaultOrder
+                                saveSelected(selectedTabIds)
+                            }) { Text(text = "Reset") }
+                            Button(onClick = { showCustomize = false }) { Text(text = "Done") }
+                        }
+                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }
