@@ -7,9 +7,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,7 +35,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.geometry.Offset
@@ -61,7 +57,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import kotlinx.coroutines.withTimeoutOrNull
+ 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 class Navigation(
@@ -165,18 +161,6 @@ class Navigation(
                 color = MaterialTheme.colorScheme.surface,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 modifier = Modifier
-                    .pointerInput(Unit) {
-                        awaitEachGesture {
-                            awaitFirstDown(pass = PointerEventPass.Initial)
-                            val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
-                                waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                            }
-                            if (up == null) {
-                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                openBottomBarCustomization = true
-                            }
-                        }
-                    }
                     .shadow(
                     elevation = 16.dp,
                     shape = RoundedCornerShape(24.dp),
@@ -190,25 +174,14 @@ class Navigation(
                 ) {
                     selectedRoutes.forEach { route ->
                         NavigationBarItem(
-                            modifier = Modifier.pointerInput(route) {
-                                awaitEachGesture {
-                                    awaitFirstDown(pass = PointerEventPass.Initial)
-                                    val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
-                                        waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                                    }
-                                    if (up == null) {
-                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                        highlightId = route.routeInfo.id
-                                        openBottomBarCustomization = true
-                                    }
-                                }
-                            },
                             alwaysShowLabel = true,
                             icon = {
                                 Icon(imageVector = route.routeInfo.icon, contentDescription = null)
                             },
                             label = {
-                                val label = remember(context.translation.loadedLocale) {
+                                val label = if (route.routeInfo.id == "friend_tracker") {
+                                    "Tracker"
+                                } else {
                                     context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
                                 }
                                 val isLong = label.length > 11 // threshold, adjust if needed
@@ -266,7 +239,8 @@ class Navigation(
                             val haptic = LocalHapticFeedback.current
                             var draggingId by remember { mutableStateOf<String?>(null) }
                             var dragDelta by remember { mutableStateOf(0f) }
-                            val itemPositions = remember { mutableStateMapOf<String, Pair<Int, Int>>() } // id -> (topPx, heightPx)
+                            var dragStartIndex by remember { mutableStateOf(-1) }
+                            var rowHeight by remember { mutableStateOf(0) }
                             val listState = rememberLazyListState()
 
                             LaunchedEffect(highlightId, selectedTabIds) {
@@ -296,66 +270,46 @@ class Navigation(
                                             .zIndex(if (isDragging) 1f else 0f)
                                             .graphicsLayer {
                                                 if (isDragging) {
-                                                    translationY = dragDelta
                                                     scaleX = 1.02f
                                                     scaleY = 1.02f
                                                 }
                                             }
                                             .onGloballyPositioned { coords ->
-                                                val top = coords.positionInRoot().y.toInt()
-                                                val height = coords.size.height
-                                                itemPositions[id] = top to height
+                                                if (rowHeight == 0) rowHeight = coords.size.height
                                             }
                                             .pointerInput(id) {
                                                 detectDragGestures(
                                                     onDragStart = {
                                                         draggingId = id
+                                                        dragStartIndex = selectedTabIds.indexOf(id)
                                                         dragDelta = 0f
                                                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                                     },
                                                     onDrag = { _: PointerInputChange, dragAmount: Offset ->
                                                         dragDelta += dragAmount.y
-                                                        val currentIndex = selectedTabIds.indexOf(id)
-                                                        val currentPos = itemPositions[id]
-                                                        if (currentPos != null) {
-                                                            val currentCenter = currentPos.first + currentPos.second / 2f + dragDelta
-                                                            // Move down
-                                                            val nextId = selectedTabIds.getOrNull(currentIndex + 1)
-                                                            val nextCenter = nextId?.let { itemPositions[it]?.let { p -> p.first + p.second / 2f } }
-                                                            if (nextId != null && nextCenter != null && currentCenter > nextCenter) {
-                                                                val height = itemPositions[nextId]?.second?.toFloat() ?: 0f
+                                                        if (rowHeight > 0 && dragStartIndex >= 0) {
+                                                            val currentIndex = selectedTabIds.indexOf(id)
+                                                            val deltaRows = kotlin.math.round(dragDelta / rowHeight.toFloat()).toInt()
+                                                            val targetIndex = (dragStartIndex + deltaRows).coerceIn(0, selectedTabIds.lastIndex)
+                                                            if (targetIndex != currentIndex) {
                                                                 val list = selectedTabIds.toMutableList()
                                                                 list.removeAt(currentIndex)
-                                                                list.add(currentIndex + 1, id)
+                                                                list.add(targetIndex, id)
                                                                 selectedTabIds = list
                                                                 saveSelected(selectedTabIds)
-                                                                dragDelta -= height
                                                                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-                                                                return@detectDragGestures
-                                                            }
-                                                            // Move up
-                                                            val prevId = selectedTabIds.getOrNull(currentIndex - 1)
-                                                            val prevCenter = prevId?.let { itemPositions[it]?.let { p -> p.first + p.second / 2f } }
-                                                            if (prevId != null && prevCenter != null && currentCenter < prevCenter) {
-                                                                val height = itemPositions[prevId]?.second?.toFloat() ?: 0f
-                                                                val list = selectedTabIds.toMutableList()
-                                                                list.removeAt(currentIndex)
-                                                                list.add(currentIndex - 1, id)
-                                                                selectedTabIds = list
-                                                                saveSelected(selectedTabIds)
-                                                                dragDelta += height
-                                                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-                                                                return@detectDragGestures
                                                             }
                                                         }
                                                     },
                                                     onDragEnd = {
                                                         draggingId = null
                                                         dragDelta = 0f
+                                                        dragStartIndex = -1
                                                     },
                                                     onDragCancel = {
                                                         draggingId = null
                                                         dragDelta = 0f
+                                                        dragStartIndex = -1
                                                     }
                                                 )
                                             },

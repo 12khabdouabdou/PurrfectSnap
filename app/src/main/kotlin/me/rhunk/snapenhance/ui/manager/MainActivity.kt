@@ -163,17 +163,6 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(Alignment.BottomCenter)
-                                    .pointerInput(Unit) {
-                                        awaitEachGesture {
-                                            awaitFirstDown(pass = PointerEventPass.Initial)
-                                            val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
-                                                waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                                            }
-                                            if (up == null) {
-                                                navigation.openBottomBarCustomization = true
-                                            }
-                                        }
-                                    }
                             ) {
                                 navigation.FloatingBottomBar()
                             }
