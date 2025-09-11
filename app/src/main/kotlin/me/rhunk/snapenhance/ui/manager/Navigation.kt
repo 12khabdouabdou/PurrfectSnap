@@ -491,3 +491,4 @@ class Navigation(
     @Composable fun FloatingActionButton() = Fab()
     @Composable fun Content(paddingValues: PaddingValues, startDestination: String) = NavContent(paddingValues, startDestination)
 }
+
