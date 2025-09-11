@@ -505,4 +505,12 @@ class Navigation(
             }
         }
     }
+
+    // Backwards-compat wrappers for existing call sites
+    @Composable
+    fun FloatingActionButton() = Fab()
+
+    @Composable
+    fun Content(paddingValues: PaddingValues, startDestination: String) =
+        NavContent(paddingValues, startDestination)
 }
