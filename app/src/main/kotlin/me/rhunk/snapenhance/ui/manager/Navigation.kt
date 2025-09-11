@@ -210,6 +210,16 @@ class Navigation(
                                 Spacer(Modifier.height(4.dp))
                                 Text(text = "Reorder, add or remove tabs. Max of five.", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
+                            // Drag handle hint
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 8.dp)
+                                    .width(36.dp)
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(50))
+                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                            )
                         }
 
                         Spacer(Modifier.height(8.dp))
@@ -284,6 +294,21 @@ class Navigation(
                                             Icon(route.routeInfo.icon, contentDescription = null)
                                             Spacer(Modifier.width(12.dp))
                                             Text(text = label, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            if (defaultTabId == id) {
+                                                Text(
+                                                    text = "Default",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier
+                                                        .border(
+                                                            width = 1.dp,
+                                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                                            shape = RoundedCornerShape(50)
+                                                        )
+                                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                                )
+                                                Spacer(Modifier.width(8.dp))
+                                            }
                                             val defaultEligible = remember { setOf("tasks","features","home","social","scripts") }
                                             RadioButton(selected = defaultTabId == id, onClick = { if (id in defaultEligible) saveDefault(id) }, enabled = id in defaultEligible)
                                             IconButton(onClick = {
