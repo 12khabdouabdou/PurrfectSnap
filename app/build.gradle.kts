@@ -137,9 +137,6 @@ dependencies {
     fullImplementation(libs.androidx.material.ripple)
     fullImplementation(libs.androidx.material.icons.extended)
     fullImplementation(libs.androidx.material3)
-    // EXPLICITLY ADD COMPOSE UI & FOUNDATION IF NEEDED FOR widthIn/wrapContentWidth:
-    fullImplementation("androidx.compose.ui:ui:1.6.0")
-    fullImplementation("androidx.compose.foundation:foundation:1.6.0")
     fullImplementation(libs.coil.compose)
     fullImplementation(libs.coil.video)
     fullImplementation(libs.colorpicker.compose)
@@ -152,6 +149,10 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.1")
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.fetch)
+    // --- COMPOSE: explicit modern UI/Foundation for widthIn/wrapContentWidth ----
+    fullImplementation("androidx.compose.ui:ui:1.6.0")
+    fullImplementation("androidx.compose.foundation:foundation:1.6.0")
+    fullImplementation("androidx.compose.foundation:foundation-layout:1.6.0")
 }
 
 afterEvaluate {
