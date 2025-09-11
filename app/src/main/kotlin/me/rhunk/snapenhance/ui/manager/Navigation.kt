@@ -3,11 +3,12 @@ package me.rhunk.snapenhance.ui.manager
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.AnimatedVisibility
@@ -251,19 +252,25 @@ class Navigation(
                     Column(Modifier.fillMaxWidth()) {
                         val listState = rememberLazyListState()
                         var headerWidth by remember { mutableStateOf(0) }
-                        val headerPull = remember { Animatable(0f) }
+                        var isPullingHeader by remember { mutableStateOf(false) }
+                        var rawHeaderPull by remember { mutableStateOf(0f) }
+                        val headerPull by animateFloatAsState(
+                            targetValue = if (isPullingHeader) rawHeaderPull else 0f,
+                            animationSpec = if (isPullingHeader) tween(0) else tween(300),
+                            label = "headerPull"
+                        )
                         val density = LocalDensity.current
-                        val shimmer = rememberInfiniteTransition(label = "headerShimmer")
+                        val shimmer = rememberInfiniteTransition()
                         val shift by shimmer.animateFloat(
                             initialValue = -headerWidth.toFloat(),
                             targetValue = headerWidth.toFloat(),
                             animationSpec = infiniteRepeatable(
-                                animation = tween(durationMillis = 5000, easing = LinearEasing),
+                                animation = tween<Float>(durationMillis = 5000, easing = LinearEasing),
                                 repeatMode = RepeatMode.Reverse
                             )
                         )
                         // Gradient header
-                        val extraHeader = with(density) { (headerPull.value / 2f).toDp() }
+                        val extraHeader = with(density) { (headerPull / 2f).toDp() }
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -291,21 +298,15 @@ class Navigation(
                                 .onGloballyPositioned { headerWidth = it.size.width }
                                 .pointerInput(Unit) {
                                     detectDragGestures(
-                                        onDragStart = { },
+                                        onDragStart = { isPullingHeader = true },
                                         onDrag = { _, dragAmount ->
                                             val dy = dragAmount.y
-                                            if (dy > 0) {
-                                                val newVal = (headerPull.value + dy).coerceIn(0f, 200f)
-                                                headerPull.snapTo(newVal)
+                                            if (dy > 0f) {
+                                                rawHeaderPull = (rawHeaderPull + dy).coerceIn(0f, 200f)
                                             }
                                         },
-                                        onDragEnd = {
-                                            // bounce back
-                                            launch { headerPull.animateTo(0f, animationSpec = tween(300)) }
-                                        },
-                                        onDragCancel = {
-                                            launch { headerPull.animateTo(0f, animationSpec = tween(300)) }
-                                        }
+                                        onDragEnd = { isPullingHeader = false },
+                                        onDragCancel = { isPullingHeader = false }
                                     )
                                 }
                         ) {
