@@ -2,6 +2,21 @@ package me.rhunk.snapenhance.ui.manager
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -35,6 +50,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.background
+import androidx.compose.foundation.overscroll
+import androidx.compose.foundation.rememberOverscrollBehavior
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -161,7 +181,7 @@ class Navigation(
             val baseItemWidth = 92.dp
             val containerPadding = 24.dp
             val targetBarWidth = if (selectedRoutes.size < 5) {
-                (selectedRoutes.size * baseItemWidth + containerPadding)
+                (baseItemWidth * selectedRoutes.size.toFloat() + containerPadding)
             } else null
             val animatedBarWidth by animateDpAsState(targetValue = targetBarWidth ?: 0.dp, label = "barWidth")
             Surface(
@@ -227,22 +247,44 @@ class Navigation(
                 ) {
                     // Revamped, animated, polished customization UI
                     Column(Modifier.fillMaxWidth()) {
+                        val listState = rememberLazyListState()
+                        var headerWidth by remember { mutableStateOf(0) }
+                        val shimmer = rememberInfiniteTransition(label = "headerShimmer")
+                        val shift by shimmer.animateFloat(
+                            initialValue = -headerWidth.toFloat(),
+                            targetValue = headerWidth.toFloat(),
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(durationMillis = 5000, easing = LinearEasing),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "shift"
+                        )
                         // Gradient header
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(140.dp)
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-                                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.22f)
-                                        )
-                                    ),
-                                    shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
-                                )
                                 .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                                .background(
+                                    brush = run {
+                                        val isLight = MaterialTheme.colorScheme.background.luminance() > 0.5f
+                                        val primaryA = if (isLight) 0.18f else 0.12f
+                                        val midA = if (isLight) 0.06f else 0.04f
+                                        val tertiaryA = if (isLight) 0.22f else 0.14f
+                                        Brush.linearGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.primary.copy(alpha = primaryA),
+                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = midA),
+                                                MaterialTheme.colorScheme.tertiary.copy(alpha = tertiaryA)
+                                            ),
+                                            start = Offset(shift, 0f),
+                                            end = Offset(shift + headerWidth, 0f)
+                                        )
+                                    }
+                                )
                                 .padding(horizontal = 20.dp, vertical = 16.dp)
+                                .graphicsLayer { translationY = -listState.firstVisibleItemScrollOffset * 0.15f }
+                                .onGloballyPositioned { headerWidth = it.size.width }
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxSize(),
@@ -281,7 +323,7 @@ class Navigation(
                             var dragDelta by remember { mutableStateOf(0f) }
                             var dragStartIndex by remember { mutableStateOf(-1) }
                             var rowHeight by remember { mutableStateOf(0) }
-                            val listState = rememberLazyListState()
+                            val appeared = remember { mutableStateMapOf<String, Boolean>() }
 
                             LaunchedEffect(highlightId, selectedTabIds) {
                                 val hid = highlightId
@@ -291,10 +333,12 @@ class Navigation(
                                 }
                             }
 
+                            val overscroll = rememberOverscrollBehavior()
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 12.dp),
+                                    .padding(horizontal = 12.dp)
+                                    .overscroll(overscroll),
                                 contentPadding = PaddingValues(bottom = 8.dp),
                                 state = listState
                             ) {
@@ -303,6 +347,22 @@ class Navigation(
                                     val label = if (route.routeInfo.id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
                                     val isDragging = draggingId == id
                                     val isHighlighted = highlightId == id
+                                    LaunchedEffect(id) {
+                                        // Staggered appearance for a lively feel
+                                        if (appeared[id] != true) {
+                                            kotlin.runCatching { kotlinx.coroutines.delay((index * 30).toLong()) }
+                                            appeared[id] = true
+                                        }
+                                    }
+                                    AnimatedVisibility(
+                                        visible = appeared[id] == true,
+                                        enter = (
+                                            if (index == 0)
+                                                scaleIn(animationSpec = spring(dampingRatio = 0.6f, stiffness = 300f), initialScale = 0.9f)
+                                            else scaleIn(tween(180), initialScale = 0.98f)
+                                        ) + slideInVertically(animationSpec = tween(200), initialOffsetY = { it / 2 }) + fadeIn(tween(200)),
+                                        exit = slideOutVertically(animationSpec = tween(160)) + fadeOut(tween(160))
+                                    ) {
                                     ElevatedCard(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -386,6 +446,7 @@ class Navigation(
                                 }
                             }
                         }
+                        }
 
                         Spacer(Modifier.height(16.dp))
                         Text(
@@ -404,17 +465,23 @@ class Navigation(
                                 val id = route.routeInfo.id
                                 val already = selectedTabIds.contains(id)
                                 val label = if (id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
-                                AssistChip(
-                                    onClick = {
-                                        if (!already && selectedTabIds.size < 5) {
-                                            selectedTabIds = selectedTabIds + id
-                                            saveSelected(selectedTabIds)
-                                        }
-                                    },
-                                    label = { Text(text = label) },
-                                    leadingIcon = { Icon(route.routeInfo.icon, contentDescription = null) },
-                                    enabled = !already && selectedTabIds.size < 5
-                                )
+                                AnimatedVisibility(
+                                    visible = !already && selectedTabIds.size < 5,
+                                    enter = scaleIn(tween(160), initialScale = 0.95f) + fadeIn(tween(180)) + slideInVertically(tween(180), initialOffsetY = { it / 3 }),
+                                    exit = scaleOut(tween(120)) + fadeOut(tween(120)) + slideOutVertically(tween(120))
+                                ) {
+                                    AssistChip(
+                                        onClick = {
+                                            if (!already && selectedTabIds.size < 5) {
+                                                selectedTabIds = selectedTabIds + id
+                                                saveSelected(selectedTabIds)
+                                            }
+                                        },
+                                        label = { Text(text = label) },
+                                        leadingIcon = { Icon(route.routeInfo.icon, contentDescription = null) },
+                                        enabled = true
+                                    )
+                                }
                             }
                         }
 
@@ -425,11 +492,88 @@ class Navigation(
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            OutlinedButton(onClick = {
-                                selectedTabIds = defaultOrder
-                                saveSelected(selectedTabIds)
-                            }) { Text(text = "Reset") }
-                            Button(onClick = { openBottomBarCustomization = false }) { Text(text = "Done") }
+                            var pulse by remember { mutableStateOf(false) }
+                            val pulseScale by animateFloatAsState(targetValue = if (pulse) 1.05f else 1f, label = "donePulse")
+                            var rippleKey by remember { mutableStateOf(0) }
+                            var rippleProgress by remember { mutableStateOf(0f) }
+                            var resetRippleKey by remember { mutableStateOf(0) }
+                            var resetRippleProgress by remember { mutableStateOf(0f) }
+                            val scope = rememberCoroutineScope()
+                            LaunchedEffect(Unit) {
+                                pulse = true
+                                kotlin.runCatching { kotlinx.coroutines.delay(350) }
+                                pulse = false
+                            }
+                            Box {
+                                LaunchedEffect(resetRippleKey) {
+                                    if (resetRippleKey > 0) {
+                                        resetRippleProgress = 0f
+                                        val start = System.currentTimeMillis()
+                                        val dur = 160L
+                                        while (true) {
+                                            val t = (System.currentTimeMillis() - start).coerceAtMost(dur)
+                                            resetRippleProgress = t / dur.toFloat()
+                                            if (t >= dur) break
+                                            kotlinx.coroutines.delay(10)
+                                        }
+                                    }
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        resetRippleKey++
+                                        selectedTabIds = defaultOrder
+                                        saveSelected(selectedTabIds)
+                                    },
+                                    modifier = Modifier.drawBehind {
+                                        if (resetRippleKey > 0 && resetRippleProgress in 0f..1f) {
+                                            val radius = size.minDimension * (0.1f + 0.7f * resetRippleProgress)
+                                            drawCircle(
+                                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f * (1f - resetRippleProgress)),
+                                                radius = radius,
+                                                center = this.center
+                                            )
+                                        }
+                                    }
+                                ) { Text(text = "Reset") }
+                            }
+                            Box {
+                                // Custom light ripple behind the Done button
+                                LaunchedEffect(rippleKey) {
+                                    if (rippleKey > 0) {
+                                        rippleProgress = 0f
+                                        val start = System.currentTimeMillis()
+                                        val dur = 180L
+                                        while (true) {
+                                            val t = (System.currentTimeMillis() - start).coerceAtMost(dur)
+                                            rippleProgress = t / dur.toFloat()
+                                            if (t >= dur) break
+                                            kotlinx.coroutines.delay(10)
+                                        }
+                                    }
+                                }
+                                Button(
+                                    onClick = {
+                                        // Trigger ripple then close with a tiny delay so it’s visible
+                                        rippleKey++
+                                        scope.launch {
+                                            kotlinx.coroutines.delay(120)
+                                            openBottomBarCustomization = false
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .graphicsLayer { scaleX = pulseScale; scaleY = pulseScale }
+                                        .drawBehind {
+                                            if (rippleKey > 0 && rippleProgress in 0f..1f) {
+                                                val radius = size.minDimension * (0.2f + 0.8f * rippleProgress)
+                                                drawCircle(
+                                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f * (1f - rippleProgress)),
+                                                    radius = radius,
+                                                    center = this.center
+                                                )
+                                            }
+                                        }
+                                ) { Text(text = "Done") }
+                            }
                         }
                         Spacer(Modifier.height(8.dp))
                     }
