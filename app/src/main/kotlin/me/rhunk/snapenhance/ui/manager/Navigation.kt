@@ -1,6 +1,7 @@
 package me.rhunk.snapenhance.ui.manager
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -156,16 +158,25 @@ class Navigation(
                 .navigationBarsPadding(),
             contentAlignment = Alignment.BottomCenter
         ) {
+            val baseItemWidth = 92.dp
+            val containerPadding = 24.dp
+            val targetBarWidth = if (selectedRoutes.size < 5) {
+                (selectedRoutes.size * baseItemWidth + containerPadding)
+            } else null
+            val animatedBarWidth by animateDpAsState(targetValue = targetBarWidth ?: 0.dp, label = "barWidth")
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 modifier = Modifier
+                    .then(
+                        if (targetBarWidth != null) Modifier.width(animatedBarWidth) else Modifier.fillMaxWidth()
+                    )
                     .shadow(
-                    elevation = 16.dp,
-                    shape = RoundedCornerShape(24.dp),
-                    spotColor = MaterialTheme.colorScheme.primary,
-                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        elevation = 16.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        spotColor = MaterialTheme.colorScheme.primary,
+                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 )
             ) {
                 NavigationBar(
@@ -214,20 +225,49 @@ class Navigation(
                     onDismissRequest = { openBottomBarCustomization = false },
                     sheetState = sheetState,
                 ) {
-                    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                        Text(
-                            text = "Customize Bottom Bar",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = "Tap to add, remove or reorder tabs (max 5)",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(Modifier.height(16.dp))
+                    // Revamped, animated, polished customization UI
+                    Column(Modifier.fillMaxWidth()) {
+                        // Gradient header
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(140.dp)
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.22f)
+                                        )
+                                    ),
+                                    shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+                                )
+                                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                                .padding(horizontal = 20.dp, vertical = 16.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Customize Bottom Bar",
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Reorder, add or remove tabs. Max of five.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
 
-                        Text(text = "Shown Tabs", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(12.dp))
+
+                        Text(
+                            text = "Shown Tabs",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
                         Spacer(Modifier.height(8.dp))
                         if (selectedTabIds.isEmpty()) {
                             Text(
@@ -252,13 +292,15 @@ class Navigation(
                             }
 
                             LazyColumn(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp),
                                 contentPadding = PaddingValues(bottom = 8.dp),
                                 state = listState
                             ) {
                                 itemsIndexed(selectedTabIds, key = { _, id -> id }) { index, id ->
                                     val route = availableRouteMap[id] ?: return@itemsIndexed
-                                    val label = context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
+                                    val label = if (route.routeInfo.id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
                                     val isDragging = draggingId == id
                                     val isHighlighted = highlightId == id
                                     ElevatedCard(
@@ -346,16 +388,22 @@ class Navigation(
                         }
 
                         Spacer(Modifier.height(16.dp))
-                        Text(text = "Available Tabs", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = "Available Tabs",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
                         Spacer(Modifier.height(8.dp))
                         FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             availableRoutes.forEach { route ->
                                 val id = route.routeInfo.id
                                 val already = selectedTabIds.contains(id)
-                                val label = context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
+                                val label = if (id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
                                 AssistChip(
                                     onClick = {
                                         if (!already && selectedTabIds.size < 5) {
@@ -371,8 +419,13 @@ class Navigation(
                         }
 
                         Spacer(Modifier.height(20.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TextButton(onClick = {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            OutlinedButton(onClick = {
                                 selectedTabIds = defaultOrder
                                 saveSelected(selectedTabIds)
                             }) { Text(text = "Reset") }

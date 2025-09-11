@@ -158,11 +158,6 @@ class FriendTrackerManagerRoot : Routes.Route() {
 
         if (currentPage == 0) {
             IconButton(onClick = {
-                routes.friendTrackerCatalog.navigate()
-            }) {
-                Icon(Icons.Default.Store, contentDescription = "Catalog")
-            }
-            IconButton(onClick = {
                 showImportDialog = true
             }) {
                 Icon(Icons.Default.FolderOpen, contentDescription = "Import")
@@ -206,12 +201,20 @@ class FriendTrackerManagerRoot : Routes.Route() {
                 }
             }
             0 -> {
-                ExtendedFloatingActionButton(
-                    icon = { Icon(Icons.Default.Add, contentDescription = "Add Rule") },
-                    expanded = true,
-                    text = { Text("Add Rule") },
-                    onClick = { routes.editRule.navigate() }
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    ExtendedFloatingActionButton(
+                        icon = { Icon(Icons.Default.Store, contentDescription = "Catalog") },
+                        expanded = true,
+                        text = { Text("Catalog") },
+                        onClick = { routes.friendTrackerCatalog.navigate() }
+                    )
+                    ExtendedFloatingActionButton(
+                        icon = { Icon(Icons.Default.Add, contentDescription = "Add Rule") },
+                        expanded = true,
+                        text = { Text("Add Rule") },
+                        onClick = { routes.editRule.navigate() }
+                    )
+                }
             }
         }
     }
