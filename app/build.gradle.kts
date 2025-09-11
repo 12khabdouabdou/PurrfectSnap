@@ -19,6 +19,7 @@ android {
         aidl = true
         compose = true
     }
+
     defaultConfig {
         applicationId = rootProject.ext["applicationId"].toString()
         versionCode = rootProject.ext["appVersionCode"].toString().toInt()
@@ -27,6 +28,7 @@ android {
         targetSdk = 34
         multiDexEnabled = true
     }
+
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -41,8 +43,8 @@ android {
             proguardFiles += file("proguard-rules.pro")
         }
     }
+
     flavorDimensions += "abi"
-    //noinspection ChromeOsAbiSupport
     productFlavors {
         packaging {
             jniLibs {
@@ -79,9 +81,11 @@ android {
             dimension = "abi"
         }
     }
+
     properties["debug_flavor"]?.let {
-        android.productFlavors.find { it.name == it.toString()}?.setIsDefault(true)
+        android.productFlavors.find { it.name == it.toString() }?.setIsDefault(true)
     }
+
     applicationVariants.all {
         outputs.map { it as BaseVariantOutputImpl }.forEach { outputVariant ->
             outputVariant.outputFileName = when {
@@ -90,6 +94,7 @@ android {
             }
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -115,6 +120,7 @@ dependencies {
             dependencies.add("${flavorName}Implementation", dependencyNotation)
         }
     }
+
     implementation(project(":core"))
     implementation(project(":common"))
     implementation(libs.androidx.documentfile)
@@ -131,6 +137,9 @@ dependencies {
     fullImplementation(libs.androidx.material.ripple)
     fullImplementation(libs.androidx.material.icons.extended)
     fullImplementation(libs.androidx.material3)
+    // EXPLICITLY ADD COMPOSE UI & FOUNDATION IF NEEDED FOR widthIn/wrapContentWidth:
+    fullImplementation("androidx.compose.ui:ui:1.6.0")
+    fullImplementation("androidx.compose.foundation:foundation:1.6.0")
     fullImplementation(libs.coil.compose)
     fullImplementation(libs.coil.video)
     fullImplementation(libs.colorpicker.compose)
@@ -138,7 +147,6 @@ dependencies {
     properties["debug_flavor"]?.let {
         debugImplementation(libs.androidx.ui.tooling)
     }
-    // *** Add for DayNight/Material Components support ***
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.compose.material3:material3:1.2.1")
@@ -154,8 +162,8 @@ afterEvaluate {
                     commandLine("adb", "devices")
                     standardOutput = it
                 }
-            }.toString().lines().drop(1).mapNotNull {
-                line -> line.split("\t").firstOrNull()?.takeIf { it.isNotEmpty() }
+            }.toString().lines().drop(1).mapNotNull { line ->
+                line.split("\t").firstOrNull()?.takeIf { it.isNotEmpty() }
             }
             runBlocking {
                 devices.forEach { device ->
@@ -173,6 +181,7 @@ afterEvaluate {
         }
     }
 }
+
 properties["debug_flavor"]?.let {
     configurations.all {
         exclude(group = "androidx.profileinstaller", "profileinstaller")
