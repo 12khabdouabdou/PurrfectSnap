@@ -21,6 +21,8 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
@@ -157,6 +159,11 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .align(Alignment.BottomCenter)
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(onLongPress = {
+                                            navigation.openBottomBarCustomization = true
+                                        })
+                                    }
                             ) {
                                 navigation.FloatingBottomBar()
                             }

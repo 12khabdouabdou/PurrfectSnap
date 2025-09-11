@@ -66,6 +66,7 @@ class Navigation(
         it.navController = navController
     }
 ) {
+    var openBottomBarCustomization by mutableStateOf(false)
     @Composable
     fun TopBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -142,7 +143,6 @@ class Navigation(
 
         var selectedTabIds by remember { mutableStateOf(loadSelected()) }
         val selectedRoutes = remember(selectedTabIds) { selectedTabIds.mapNotNull { availableRouteMap[it] } }
-        var showCustomize by remember { mutableStateOf(false) }
         var highlightId by remember { mutableStateOf<String?>(null) }
 
         Box(
@@ -160,7 +160,7 @@ class Navigation(
                     .pointerInput(Unit) {
                         detectTapGestures(onLongPress = {
                             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                            showCustomize = true
+                            openBottomBarCustomization = true
                         })
                     }
                     .shadow(
@@ -180,7 +180,7 @@ class Navigation(
                                 detectTapGestures(onLongPress = {
                                     haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                     highlightId = route.routeInfo.id
-                                    showCustomize = true
+                                    openBottomBarCustomization = true
                                 })
                             },
                             alwaysShowLabel = true,
@@ -215,10 +215,10 @@ class Navigation(
                 }
             }
 
-            if (showCustomize) {
+            if (openBottomBarCustomization) {
                 val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                 ModalBottomSheet(
-                    onDismissRequest = { showCustomize = false },
+                    onDismissRequest = { openBottomBarCustomization = false },
                     sheetState = sheetState,
                 ) {
                     Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
@@ -402,7 +402,7 @@ class Navigation(
                                 selectedTabIds = defaultOrder
                                 saveSelected(selectedTabIds)
                             }) { Text(text = "Reset") }
-                            Button(onClick = { showCustomize = false }) { Text(text = "Done") }
+                            Button(onClick = { openBottomBarCustomization = false }) { Text(text = "Done") }
                         }
                         Spacer(Modifier.height(8.dp))
                     }
