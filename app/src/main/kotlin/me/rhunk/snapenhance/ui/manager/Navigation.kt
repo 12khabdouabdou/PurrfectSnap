@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,8 +17,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -25,13 +28,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,11 +51,14 @@ import androidx.navigation.navigation
 import me.rhunk.snapenhance.RemoteSideContext
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.zIndex
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 class Navigation(
     private val context: RemoteSideContext,
     private val navController: NavHostController,
@@ -134,6 +143,7 @@ class Navigation(
         var selectedTabIds by remember { mutableStateOf(loadSelected()) }
         val selectedRoutes = remember(selectedTabIds) { selectedTabIds.mapNotNull { availableRouteMap[it] } }
         var showCustomize by remember { mutableStateOf(false) }
+        var highlightId by remember { mutableStateOf<String?>(null) }
 
         Box(
             Modifier
@@ -166,6 +176,13 @@ class Navigation(
                 ) {
                     selectedRoutes.forEach { route ->
                         NavigationBarItem(
+                            modifier = Modifier.pointerInput(route) {
+                                detectTapGestures(onLongPress = {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                    highlightId = route.routeInfo.id
+                                    showCustomize = true
+                                })
+                            },
                             alwaysShowLabel = true,
                             icon = {
                                 Icon(imageVector = route.routeInfo.icon, contentDescription = null)
@@ -230,19 +247,31 @@ class Navigation(
                             var draggingId by remember { mutableStateOf<String?>(null) }
                             var dragDelta by remember { mutableStateOf(0f) }
                             val itemPositions = remember { mutableStateMapOf<String, Pair<Int, Int>>() } // id -> (topPx, heightPx)
+                            val listState = rememberLazyListState()
+
+                            LaunchedEffect(highlightId, selectedTabIds) {
+                                val hid = highlightId
+                                if (hid != null) {
+                                    val index = selectedTabIds.indexOf(hid)
+                                    if (index >= 0) listState.animateScrollToItem(index)
+                                }
+                            }
 
                             LazyColumn(
                                 modifier = Modifier.fillMaxWidth(),
-                                contentPadding = PaddingValues(bottom = 8.dp)
+                                contentPadding = PaddingValues(bottom = 8.dp),
+                                state = listState
                             ) {
                                 itemsIndexed(selectedTabIds, key = { _, id -> id }) { index, id ->
                                     val route = availableRouteMap[id] ?: return@itemsIndexed
                                     val label = context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
                                     val isDragging = draggingId == id
+                                    val isHighlighted = highlightId == id
                                     ElevatedCard(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(bottom = 8.dp)
+                                            .then(if (isHighlighted) Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(12.dp)) else Modifier)
                                             .animateItemPlacement()
                                             .zIndex(if (isDragging) 1f else 0f)
                                             .graphicsLayer {
@@ -264,7 +293,7 @@ class Navigation(
                                                         dragDelta = 0f
                                                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                                     },
-                                                    onDrag = { _, dragAmount ->
+                                                    onDrag = { _: PointerInputChange, dragAmount: Offset ->
                                                         dragDelta += dragAmount.y
                                                         val currentIndex = selectedTabIds.indexOf(id)
                                                         val currentPos = itemPositions[id]
@@ -317,6 +346,8 @@ class Navigation(
                                                     .fillMaxWidth(),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
+                                                Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                Spacer(Modifier.width(8.dp))
                                                 Icon(route.routeInfo.icon, contentDescription = null)
                                                 Spacer(Modifier.width(12.dp))
                                                 Text(
