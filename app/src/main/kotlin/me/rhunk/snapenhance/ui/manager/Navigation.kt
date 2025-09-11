@@ -170,8 +170,6 @@ class Navigation(
             }
             prefs.edit().putString("manager_nav_tabs", ids.joinToString(",")).apply()
         }
-
-        var selectedTabIds by remember { mutableStateOf(loadSelected()) }
         val selectedRoutes = remember(selectedTabIds) { selectedTabIds.mapNotNull { availableRouteMap[it] } }
 
         Box(
@@ -265,8 +263,6 @@ class Navigation(
 
                         Text(text = "Shown Tabs", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 16.dp))
                         Spacer(Modifier.height(8.dp))
-
-                        var selectedTabIds by remember { mutableStateOf(loadSelected()) }
                         if (selectedTabIds.isEmpty()) {
                             Text(text = "No tabs selected", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else {
@@ -491,4 +487,5 @@ class Navigation(
     @Composable fun FloatingActionButton() = Fab()
     @Composable fun Content(paddingValues: PaddingValues, startDestination: String) = NavContent(paddingValues, startDestination)
 }
+
 
