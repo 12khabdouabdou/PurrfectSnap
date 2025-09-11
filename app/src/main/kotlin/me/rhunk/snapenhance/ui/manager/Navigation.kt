@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.AnimatedVisibility
@@ -41,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.BorderStroke
@@ -51,14 +53,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.background
-import androidx.compose.foundation.overscroll
-import androidx.compose.foundation.rememberOverscrollBehavior
+// overscroll APIs not available in current compose; skip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -249,6 +251,8 @@ class Navigation(
                     Column(Modifier.fillMaxWidth()) {
                         val listState = rememberLazyListState()
                         var headerWidth by remember { mutableStateOf(0) }
+                        val headerPull = remember { Animatable(0f) }
+                        val density = LocalDensity.current
                         val shimmer = rememberInfiniteTransition(label = "headerShimmer")
                         val shift by shimmer.animateFloat(
                             initialValue = -headerWidth.toFloat(),
@@ -256,14 +260,14 @@ class Navigation(
                             animationSpec = infiniteRepeatable(
                                 animation = tween(durationMillis = 5000, easing = LinearEasing),
                                 repeatMode = RepeatMode.Reverse
-                            ),
-                            label = "shift"
+                            )
                         )
                         // Gradient header
+                        val extraHeader = with(density) { (headerPull.value / 2f).toDp() }
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(140.dp)
+                                .height(140.dp + extraHeader)
                                 .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
                                 .background(
                                     brush = run {
@@ -278,13 +282,32 @@ class Navigation(
                                                 MaterialTheme.colorScheme.tertiary.copy(alpha = tertiaryA)
                                             ),
                                             start = Offset(shift, 0f),
-                                            end = Offset(shift + headerWidth, 0f)
+                                            end = Offset(shift + headerWidth.toFloat(), 0f)
                                         )
                                     }
                                 )
                                 .padding(horizontal = 20.dp, vertical = 16.dp)
                                 .graphicsLayer { translationY = -listState.firstVisibleItemScrollOffset * 0.15f }
                                 .onGloballyPositioned { headerWidth = it.size.width }
+                                .pointerInput(Unit) {
+                                    detectDragGestures(
+                                        onDragStart = { },
+                                        onDrag = { _, dragAmount ->
+                                            val dy = dragAmount.y
+                                            if (dy > 0) {
+                                                val newVal = (headerPull.value + dy).coerceIn(0f, 200f)
+                                                headerPull.snapTo(newVal)
+                                            }
+                                        },
+                                        onDragEnd = {
+                                            // bounce back
+                                            launch { headerPull.animateTo(0f, animationSpec = tween(300)) }
+                                        },
+                                        onDragCancel = {
+                                            launch { headerPull.animateTo(0f, animationSpec = tween(300)) }
+                                        }
+                                    )
+                                }
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxSize(),
@@ -333,12 +356,11 @@ class Navigation(
                                 }
                             }
 
-                            val overscroll = rememberOverscrollBehavior()
+                            // overscroll behavior not available in current compose version
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 12.dp)
-                                    .overscroll(overscroll),
+                                    .padding(horizontal = 12.dp),
                                 contentPadding = PaddingValues(bottom = 8.dp),
                                 state = listState
                             ) {
@@ -492,6 +514,7 @@ class Navigation(
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            val primaryColor = MaterialTheme.colorScheme.primary
                             var pulse by remember { mutableStateOf(false) }
                             val pulseScale by animateFloatAsState(targetValue = if (pulse) 1.05f else 1f, label = "donePulse")
                             var rippleKey by remember { mutableStateOf(0) }
@@ -528,7 +551,7 @@ class Navigation(
                                         if (resetRippleKey > 0 && resetRippleProgress in 0f..1f) {
                                             val radius = size.minDimension * (0.1f + 0.7f * resetRippleProgress)
                                             drawCircle(
-                                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.07f * (1f - resetRippleProgress)),
+                                                color = primaryColor.copy(alpha = 0.07f * (1f - resetRippleProgress)),
                                                 radius = radius,
                                                 center = this.center
                                             )
@@ -566,7 +589,7 @@ class Navigation(
                                             if (rippleKey > 0 && rippleProgress in 0f..1f) {
                                                 val radius = size.minDimension * (0.2f + 0.8f * rippleProgress)
                                                 drawCircle(
-                                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f * (1f - rippleProgress)),
+                                                    color = primaryColor.copy(alpha = 0.08f * (1f - rippleProgress)),
                                                     radius = radius,
                                                     center = this.center
                                                 )
