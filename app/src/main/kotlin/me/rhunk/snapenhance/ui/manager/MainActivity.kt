@@ -21,6 +21,7 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
+ 
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
@@ -74,7 +75,13 @@ class MainActivity : ComponentActivity() {
                     it.navController = navController
                 })
             }
-            val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
+            val startDestination = remember {
+                intent.getStringExtra("route") ?: run {
+                    val def = managerContext.sharedPreferences.getString("manager_default_tab", "home") ?: "home"
+                    val allowed = setOf("tasks", "features", "home", "social", "scripts")
+                    if (def in allowed) def else "home"
+                }
+            }
 
             AppMaterialTheme(themeMode = themeMode) {
                 val background = MaterialTheme.colorScheme.background
@@ -119,7 +126,7 @@ class MainActivity : ComponentActivity() {
                     floatingActionButton = {
                         if (!isFullscreen) {
                             Box(Modifier.padding(bottom = bottomPadding)) {
-                                navigation.FloatingActionButton()
+                                navigation.Fab()
                             }
                         }
                     },
@@ -137,7 +144,7 @@ class MainActivity : ComponentActivity() {
                         } else {
                             PaddingValues(0.dp)
                         }
-                        navigation.Content(contentPadding, startDestination)
+                        navigation.NavContent(contentPadding, startDestination)
                         if (!isFullscreen) {
                             Box(
                                 modifier = Modifier
