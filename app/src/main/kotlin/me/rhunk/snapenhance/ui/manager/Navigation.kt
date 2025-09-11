@@ -170,6 +170,7 @@ class Navigation(
             }
             prefs.edit().putString("manager_nav_tabs", ids.joinToString(",")).apply()
         }
+        var selectedTabIds by remember { mutableStateOf(loadSelected()) }
         val selectedRoutes = remember(selectedTabIds) { selectedTabIds.mapNotNull { availableRouteMap[it] } }
 
         Box(
