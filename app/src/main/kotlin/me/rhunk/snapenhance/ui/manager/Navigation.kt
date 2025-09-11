@@ -167,10 +167,25 @@ class Navigation(
             return list.take(5)
         }
 
+        fun saveDefault(id: String) {
+            defaultTabId = id
+            prefs.edit().putString("manager_default_tab", id).apply()
+        }
+
         fun saveSelected(ids: List<String>) {
+            // Ensure default tab always remains present
+            if (defaultTabId !in ids) {
+                val candidate = when {
+                    "home" in ids -> "home"
+                    ids.isNotEmpty() -> ids.first()
+                    else -> defaultTabId
+                }
+                saveDefault(candidate)
+            }
             prefs.edit().putString("manager_nav_tabs", ids.joinToString(",")).apply()
         }
 
+        var defaultTabId by remember { mutableStateOf(prefs.getString("manager_default_tab", "home") ?: "home") }
         var selectedTabIds by remember { mutableStateOf(loadSelected()) }
         val selectedRoutes = remember(selectedTabIds) { selectedTabIds.mapNotNull { availableRouteMap[it] } }
         var highlightId by remember { mutableStateOf<String?>(null) }
@@ -275,7 +290,7 @@ class Navigation(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(140.dp + extraHeader)
+                                .height(112.dp + extraHeader)
                                 .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
                                 .background(
                                     brush = run {
@@ -311,28 +326,26 @@ class Navigation(
                                     )
                                 }
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.SpaceBetween
-                            ) {
+                            Column(modifier = Modifier.fillMaxSize()) {
                                 Text(
                                     text = "Customize Bottom Bar",
-                                    style = MaterialTheme.typography.headlineSmall,
+                                    style = MaterialTheme.typography.titleLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
+                                Spacer(Modifier.height(4.dp))
                                 Text(
                                     text = "Reorder, add or remove tabs. Max of five.",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
 
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(8.dp))
 
                         Text(
                             text = "Shown Tabs",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                         Spacer(Modifier.height(8.dp))
@@ -390,7 +403,7 @@ class Navigation(
                                     ElevatedCard(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(bottom = 8.dp)
+                                            .padding(bottom = 6.dp)
                                             .then(if (isHighlighted) Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(12.dp)) else Modifier)
                                             .animateItemPlacement()
                                             .zIndex(if (isDragging) 1f else 0f)
@@ -442,7 +455,7 @@ class Navigation(
                                         ) {
                                             Row(
                                                 modifier = Modifier
-                                                    .padding(12.dp)
+                                                    .padding(10.dp)
                                                     .fillMaxWidth(),
                                                 verticalAlignment = Alignment.CenterVertically
                                             ) {
@@ -456,15 +469,19 @@ class Navigation(
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis
                                                 )
-                                                IconButton(onClick = {
-                                                    if (selectedTabIds.size > 1) {
+                                                
+                                                val defaultEligible = remember { setOf("tasks","features","home","social","scripts") }
+                                                RadioButton(selected = defaultTabId == id, onClick = { if (id in defaultEligible) saveDefault(id) }, enabled = id in defaultEligible)
+                                                IconButton(onClick = { if (selectedTabIds.size > 1 && id != defaultTabId) {
                                                         selectedTabIds = selectedTabIds.toMutableList().also { it.removeAt(index) }
                                                         saveSelected(selectedTabIds)
                                                     }
-                                                }) {
-                                                    Icon(Icons.Filled.Close, contentDescription = null)
-                                                }
+                                                }, enabled = id != defaultTabId) { Icon(Icons.Filled.Close, contentDescription = null) }
                                             }
+                                        }
+                                    }
+                                }
+                            }
                                         }
                                     }
                                 }
@@ -559,7 +576,7 @@ class Navigation(
                                             )
                                         }
                                     }
-                                ) { Text(text = "Reset") }
+                                ) { Text(text = "Reset", style = MaterialTheme.typography.labelLarge) }
                             }
                             Box {
                                 // Custom light ripple behind the Done button
@@ -710,3 +727,11 @@ class Navigation(
     fun Content(paddingValues: PaddingValues, startDestination: String) =
         NavContent(paddingValues, startDestination)
 }
+
+
+
+
+
+
+
+

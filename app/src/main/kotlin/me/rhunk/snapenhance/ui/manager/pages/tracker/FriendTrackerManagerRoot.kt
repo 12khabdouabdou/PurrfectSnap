@@ -201,7 +201,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
                 }
             }
             0 -> {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp), horizontalAlignment = Alignment.End) {
                     ExtendedFloatingActionButton(
                         icon = { Icon(Icons.Default.Store, contentDescription = "Catalog") },
                         expanded = true,

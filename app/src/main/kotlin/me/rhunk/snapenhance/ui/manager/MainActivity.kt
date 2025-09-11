@@ -75,7 +75,13 @@ class MainActivity : ComponentActivity() {
                     it.navController = navController
                 })
             }
-            val startDestination = remember { intent.getStringExtra("route") ?: routes.home.routeInfo.id }
+            val startDestination = remember {
+                intent.getStringExtra("route") ?: run {
+                    val def = managerContext.sharedPreferences.getString("manager_default_tab", "home") ?: "home"
+                    val allowed = setOf("tasks", "features", "home", "social", "scripts")
+                    if (def in allowed) def else "home"
+                }
+            }
 
             AppMaterialTheme(themeMode = themeMode) {
                 val background = MaterialTheme.colorScheme.background
