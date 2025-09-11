@@ -138,7 +138,8 @@ class HomeLogs : Routes.Route() {
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surface)
                     .horizontalScroll(ScrollState(0)),
-                state = logListState
+                state = logListState,
+                contentPadding = PaddingValues(bottom = routes.bottomPadding)
             ) {
                 item {
                     if (lineCount == 0 && logReader != null) {

@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -59,6 +60,7 @@ class Routes(
     lateinit var navController: NavController
     lateinit var activityLauncher: me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
     private val routes = mutableListOf<Route>()
+    var bottomPadding: androidx.compose.ui.unit.Dp = 0.dp
     var configJsonForImport: String? = null
     var friendTrackerConfigJsonForImport: String? = null
     var onRuleImported: (() -> Unit)? = null

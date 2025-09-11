@@ -144,6 +144,7 @@ class ManageScope: Routes.Route() {
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(routes.bottomPadding))
         }
     }
 

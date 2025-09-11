@@ -306,7 +306,9 @@ class LoggerHistoryRoot : Routes.Route() {
             var lastFetchMessageTimestamp by remember(selectedConversation, stringFilter, reverseOrder) { mutableLongStateOf(if (reverseOrder) Long.MAX_VALUE else Long.MIN_VALUE) }
             val messages = remember(selectedConversation, stringFilter, reverseOrder) { mutableStateListOf<LoggedMessage>() }
 
-            LazyColumn {
+            LazyColumn(
+                contentPadding = PaddingValues(bottom = routes.bottomPadding)
+            ) {
                 items(messages) { message ->
                     MessageView(message)
                 }

@@ -12,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.foundation.background
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
@@ -92,6 +94,7 @@ class MainActivity : ComponentActivity() {
                 // remain readable.
                 val bottomPadding = 80.dp + 16.dp +
                     WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                routes.bottomPadding = bottomPadding
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -129,13 +132,27 @@ class MainActivity : ComponentActivity() {
                                 top = innerPadding.calculateTopPadding(),
                                 start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
                                 end = innerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                                bottom = bottomPadding
+                                bottom = innerPadding.calculateBottomPadding()
                             )
                         } else {
                             PaddingValues(0.dp)
                         }
                         navigation.Content(contentPadding, startDestination)
                         if (!isFullscreen) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .height(routes.bottomPadding)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                MaterialTheme.colorScheme.background
+                                            )
+                                        )
+                                    )
+                            )
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()

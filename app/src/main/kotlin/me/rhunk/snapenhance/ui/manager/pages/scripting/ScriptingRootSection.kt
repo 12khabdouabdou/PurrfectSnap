@@ -497,7 +497,7 @@ class ScriptingRootSection : Routes.Route() {
                     Box(modifier = Modifier.fillMaxSize()) {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().pullRefresh(pullRefreshState),
-                            contentPadding = PaddingValues(bottom = 120.dp),
+                            contentPadding = PaddingValues(bottom = routes.bottomPadding),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             item {

@@ -690,7 +690,8 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Top,
+            contentPadding = PaddingValues(bottom = routes.bottomPadding)
         ) {
             items(properties, key = { it.key.propertyName() }) {
                 PropertyCard(it)
