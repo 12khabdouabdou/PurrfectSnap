@@ -61,8 +61,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 class Navigation(
@@ -169,15 +168,13 @@ class Navigation(
                     .pointerInput(Unit) {
                         awaitEachGesture {
                             awaitFirstDown(pass = PointerEventPass.Initial)
-                            var longPressed = false
-                            val job = launch {
-                                kotlinx.coroutines.delay(viewConfiguration.longPressTimeoutMillis)
-                                longPressed = true
+                            val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                            }
+                            if (up == null) {
                                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                 openBottomBarCustomization = true
                             }
-                            val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                            job.cancel()
                         }
                     }
                     .shadow(
@@ -196,14 +193,14 @@ class Navigation(
                             modifier = Modifier.pointerInput(route) {
                                 awaitEachGesture {
                                     awaitFirstDown(pass = PointerEventPass.Initial)
-                                    val job = launch {
-                                        kotlinx.coroutines.delay(viewConfiguration.longPressTimeoutMillis)
+                                    val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                        waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                    }
+                                    if (up == null) {
                                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                         highlightId = route.routeInfo.id
                                         openBottomBarCustomization = true
                                     }
-                                    val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                                    job.cancel()
                                 }
                             },
                             alwaysShowLabel = true,

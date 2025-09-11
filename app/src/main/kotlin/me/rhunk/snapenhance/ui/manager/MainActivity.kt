@@ -26,8 +26,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
@@ -167,14 +166,12 @@ class MainActivity : ComponentActivity() {
                                     .pointerInput(Unit) {
                                         awaitEachGesture {
                                             awaitFirstDown(pass = PointerEventPass.Initial)
-                                            var longPressed = false
-                                            val job = launch {
-                                                delay(viewConfiguration.longPressTimeoutMillis)
-                                                longPressed = true
+                                            val up = withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                                                waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                            }
+                                            if (up == null) {
                                                 navigation.openBottomBarCustomization = true
                                             }
-                                            val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-                                            job.cancel()
                                         }
                                     }
                             ) {
