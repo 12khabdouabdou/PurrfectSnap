@@ -1,68 +1,45 @@
 package me.rhunk.snapenhance.ui.manager
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.foundation.background
-// overscroll APIs not available in current compose; skip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -74,87 +51,61 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import me.rhunk.snapenhance.RemoteSideContext
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import kotlinx.coroutines.launch
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.zIndex
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
- 
+import kotlin.math.round
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 class Navigation(
     private val context: RemoteSideContext,
     private val navController: NavHostController,
-    val routes: Routes = Routes(context).also {
-        it.navController = navController
-    }
+    val routes: Routes = Routes(context).also { it.navController = navController }
 ) {
     var openBottomBarCustomization by mutableStateOf(false)
+
     @Composable
     fun TopBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         if (currentRoute?.routeInfo?.hasOwnTopBar == true) return
+
         val canGoBack = remember(navBackStackEntry) {
-            currentRoute?.let {
-                !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination)
-            } == true
+            currentRoute?.let { !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination) } == true
         }
-        TopAppBar(title = {
-            currentRoute?.apply {
-                title?.invoke() ?: routeInfo.translatedKey?.value?.let {
-                    Text(text = it)
+        TopAppBar(
+            title = {
+                currentRoute?.apply {
+                    title?.invoke() ?: routeInfo.translatedKey?.value?.let { Text(it) }
                 }
-            }
-        }, navigationIcon = {
-            val backButtonAnimation by animateFloatAsState(if (canGoBack) 1f else 0f,
-                label = "backButtonAnimation"
-            )
-            Box(
-                modifier = Modifier
-                    .graphicsLayer { alpha = backButtonAnimation }
-                    .width(lerp(0.dp, 48.dp, backButtonAnimation))
-                    .height(48.dp)
-            ) {
-                IconButton(
-                    onClick = {
-                        if (canGoBack) {
-                            navController.popBackStack()
-                        }
-                    }
+            },
+            navigationIcon = {
+                val backButtonAnimation by animateFloatAsState(if (canGoBack) 1f else 0f, label = "backButton")
+                Box(
+                    modifier = Modifier.graphicsLayer { alpha = backButtonAnimation }
+                        .width(lerp(0.dp, 48.dp, backButtonAnimation))
+                        .height(48.dp)
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    IconButton(onClick = { if (canGoBack) navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                }
+            },
+            actions = {
+                currentRoute?.topBarActions?.invoke(this)
+                IconButton(onClick = { openBottomBarCustomization = true }) {
+                    Icon(Icons.Filled.Tune, contentDescription = null)
                 }
             }
-        }, actions = {
-            currentRoute?.topBarActions?.invoke(this)
-            IconButton(onClick = { openBottomBarCustomization = true }) {
-                Icon(Icons.Filled.Tune, contentDescription = null)
-            }
-        })
+        )
     }
 
-    /**
-     * Floating bottom navigation bar—dynamically adapts label width only if needed.
-     */
     @Composable
     fun FloatingBottomBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         val haptic = LocalHapticFeedback.current
-        // Build available route set and customizable selection
-        val availableRoutes = remember { listOf(
-            routes.tasks,
-            routes.features,
-            routes.home,
-            routes.social,
-            routes.scripting,
-            routes.friendTracker
-        ) }
+
+        val availableRoutes = remember {
+            listOf(routes.tasks, routes.features, routes.home, routes.social, routes.scripting, routes.friendTracker)
+        }
         val availableRouteMap = remember(availableRoutes) { availableRoutes.associateBy { it.routeInfo.id } }
 
         val prefs = remember { context.sharedPreferences }
@@ -167,13 +118,14 @@ class Navigation(
             return list.take(5)
         }
 
+        var defaultTabId by remember { mutableStateOf(prefs.getString("manager_default_tab", "home") ?: "home") }
+
         fun saveDefault(id: String) {
             defaultTabId = id
             prefs.edit().putString("manager_default_tab", id).apply()
         }
 
         fun saveSelected(ids: List<String>) {
-            // Ensure default tab always remains present
             if (defaultTabId !in ids) {
                 val candidate = when {
                     "home" in ids -> "home"
@@ -185,56 +137,37 @@ class Navigation(
             prefs.edit().putString("manager_nav_tabs", ids.joinToString(",")).apply()
         }
 
-        var defaultTabId by remember { mutableStateOf(prefs.getString("manager_default_tab", "home") ?: "home") }
         var selectedTabIds by remember { mutableStateOf(loadSelected()) }
         val selectedRoutes = remember(selectedTabIds) { selectedTabIds.mapNotNull { availableRouteMap[it] } }
-        var highlightId by remember { mutableStateOf<String?>(null) }
 
         Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
-                .navigationBarsPadding(),
+            Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 8.dp).navigationBarsPadding(),
             contentAlignment = Alignment.BottomCenter
         ) {
             val baseItemWidth = 92.dp
             val containerPadding = 24.dp
-            val targetBarWidth = if (selectedRoutes.size < 5) {
-                (baseItemWidth * selectedRoutes.size.toFloat() + containerPadding)
-            } else null
+            val targetBarWidth = if (selectedRoutes.size < 5) baseItemWidth * selectedRoutes.size.toFloat() + containerPadding else null
             val animatedBarWidth by animateDpAsState(targetValue = targetBarWidth ?: 0.dp, label = "barWidth")
+
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 color = MaterialTheme.colorScheme.surface,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                modifier = Modifier
-                    .then(
-                        if (targetBarWidth != null) Modifier.width(animatedBarWidth) else Modifier.fillMaxWidth()
-                    )
-                    .shadow(
-                        elevation = 16.dp,
-                        shape = RoundedCornerShape(24.dp),
-                        spotColor = MaterialTheme.colorScheme.primary,
-                        ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                modifier = Modifier.then(if (targetBarWidth != null) Modifier.width(animatedBarWidth) else Modifier.fillMaxWidth()).shadow(
+                    elevation = 16.dp,
+                    shape = RoundedCornerShape(24.dp),
+                    spotColor = MaterialTheme.colorScheme.primary,
+                    ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                 )
             ) {
-                NavigationBar(
-                    containerColor = Color.Transparent,
-                    tonalElevation = 0.dp
-                ) {
+                NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp) {
                     selectedRoutes.forEach { route ->
                         NavigationBarItem(
                             alwaysShowLabel = true,
-                            icon = {
-                                Icon(imageVector = route.routeInfo.icon, contentDescription = null)
-                            },
+                            icon = { Icon(imageVector = route.routeInfo.icon, contentDescription = null) },
                             label = {
-                                val label = if (route.routeInfo.id == "friend_tracker") {
-                                    "Tracker"
-                                } else {
-                                    context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
-                                }
-                                val isLong = label.length > 11 // threshold, adjust if needed
+                                val label = if (route.routeInfo.id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
+                                val isLong = label.length > 11
                                 Text(
                                     text = label,
                                     textAlign = TextAlign.Center,
@@ -242,13 +175,7 @@ class Navigation(
                                     maxLines = if (isLong) 2 else 1,
                                     overflow = if (isLong) TextOverflow.Ellipsis else TextOverflow.Clip,
                                     softWrap = isLong,
-                                    modifier = if (isLong) {
-                                        Modifier
-                                            .widthIn(max = 80.dp)
-                                            .wrapContentWidth(Alignment.CenterHorizontally)
-                                    } else {
-                                        Modifier.wrapContentWidth(Alignment.CenterHorizontally)
-                                    }
+                                    modifier = if (isLong) Modifier.widthIn(max = 80.dp).wrapContentWidth(Alignment.CenterHorizontally) else Modifier.wrapContentWidth(Alignment.CenterHorizontally)
                                 )
                             },
                             selected = currentRoute == route,
@@ -260,122 +187,48 @@ class Navigation(
 
             if (openBottomBarCustomization) {
                 val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                ModalBottomSheet(
-                    onDismissRequest = { openBottomBarCustomization = false },
-                    sheetState = sheetState,
-                ) {
-                    // Revamped, animated, polished customization UI
+                ModalBottomSheet(onDismissRequest = { openBottomBarCustomization = false }, sheetState = sheetState) {
                     Column(Modifier.fillMaxWidth()) {
-                        val listState = rememberLazyListState()
-                        var headerWidth by remember { mutableStateOf(0) }
-                        var isPullingHeader by remember { mutableStateOf(false) }
-                        var rawHeaderPull by remember { mutableStateOf(0f) }
-                        val headerPull by animateFloatAsState(
-                            targetValue = if (isPullingHeader) rawHeaderPull else 0f,
-                            animationSpec = if (isPullingHeader) tween(0) else tween(300),
-                            label = "headerPull"
-                        )
-                        val density = LocalDensity.current
-                        val shimmer = rememberInfiniteTransition()
-                        val shift by shimmer.animateFloat(
-                            initialValue = -headerWidth.toFloat(),
-                            targetValue = headerWidth.toFloat(),
-                            animationSpec = infiniteRepeatable(
-                                animation = tween<Float>(durationMillis = 5000, easing = LinearEasing),
-                                repeatMode = RepeatMode.Reverse
-                            )
-                        )
-                        // Gradient header
-                        val extraHeader = with(density) { (headerPull / 2f).toDp() }
+                        // Header
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(112.dp + extraHeader)
+                                .height(112.dp)
                                 .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
                                 .background(
-                                    brush = run {
-                                        val isLight = MaterialTheme.colorScheme.background.luminance() > 0.5f
-                                        val primaryA = if (isLight) 0.18f else 0.12f
-                                        val midA = if (isLight) 0.06f else 0.04f
-                                        val tertiaryA = if (isLight) 0.22f else 0.14f
-                                        Brush.linearGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.primary.copy(alpha = primaryA),
-                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = midA),
-                                                MaterialTheme.colorScheme.tertiary.copy(alpha = tertiaryA)
-                                            ),
-                                            start = Offset(shift, 0f),
-                                            end = Offset(shift + headerWidth.toFloat(), 0f)
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.16f),
+                                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
                                         )
-                                    }
+                                    )
                                 )
                                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                                .graphicsLayer { translationY = -listState.firstVisibleItemScrollOffset * 0.15f }
-                                .onGloballyPositioned { headerWidth = it.size.width }
-                                .pointerInput(Unit) {
-                                    detectDragGestures(
-                                        onDragStart = { isPullingHeader = true },
-                                        onDrag = { _, dragAmount ->
-                                            val dy = dragAmount.y
-                                            if (dy > 0f) {
-                                                rawHeaderPull = (rawHeaderPull + dy).coerceIn(0f, 200f)
-                                            }
-                                        },
-                                        onDragEnd = { isPullingHeader = false },
-                                        onDragCancel = { isPullingHeader = false }
-                                    )
-                                }
                         ) {
-                            Column(modifier = Modifier.fillMaxSize()) {
-                                Text(
-                                    text = "Customize Bottom Bar",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                            Column(Modifier.fillMaxSize()) {
+                                Text(text = "Customize Bottom Bar", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurface)
                                 Spacer(Modifier.height(4.dp))
-                                Text(
-                                    text = "Reorder, add or remove tabs. Max of five.",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Text(text = "Reorder, add or remove tabs. Max of five.", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
 
                         Spacer(Modifier.height(8.dp))
 
-                        Text(
-                            text = "Shown Tabs",
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                        Text(text = "Shown Tabs", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 16.dp))
                         Spacer(Modifier.height(8.dp))
+
                         if (selectedTabIds.isEmpty()) {
-                            Text(
-                                text = "No tabs selected",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Text(text = "No tabs selected", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         } else {
                             val haptic = LocalHapticFeedback.current
                             var draggingId by remember { mutableStateOf<String?>(null) }
                             var dragDelta by remember { mutableStateOf(0f) }
                             var dragStartIndex by remember { mutableStateOf(-1) }
                             var rowHeight by remember { mutableStateOf(0) }
-                            val appeared = remember { mutableStateMapOf<String, Boolean>() }
+                            val listState = rememberLazyListState()
 
-                            LaunchedEffect(highlightId, selectedTabIds) {
-                                val hid = highlightId
-                                if (hid != null) {
-                                    val index = selectedTabIds.indexOf(hid)
-                                    if (index >= 0) listState.animateScrollToItem(index)
-                                }
-                            }
-
-                            // overscroll behavior not available in current compose version
                             LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                                 contentPadding = PaddingValues(bottom = 8.dp),
                                 state = listState
                             ) {
@@ -383,39 +236,16 @@ class Navigation(
                                     val route = availableRouteMap[id] ?: return@itemsIndexed
                                     val label = if (route.routeInfo.id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
                                     val isDragging = draggingId == id
-                                    val isHighlighted = highlightId == id
-                                    LaunchedEffect(id) {
-                                        // Staggered appearance for a lively feel
-                                        if (appeared[id] != true) {
-                                            kotlin.runCatching { kotlinx.coroutines.delay((index * 30).toLong()) }
-                                            appeared[id] = true
-                                        }
-                                    }
-                                    AnimatedVisibility(
-                                        visible = appeared[id] == true,
-                                        enter = (
-                                            if (index == 0)
-                                                scaleIn(animationSpec = spring(dampingRatio = 0.6f, stiffness = 300f), initialScale = 0.9f)
-                                            else scaleIn(tween(180), initialScale = 0.98f)
-                                        ) + slideInVertically(animationSpec = tween(200), initialOffsetY = { it / 2 }) + fadeIn(tween(200)),
-                                        exit = slideOutVertically(animationSpec = tween(160)) + fadeOut(tween(160))
-                                    ) {
+
                                     ElevatedCard(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(bottom = 6.dp)
-                                            .then(if (isHighlighted) Modifier.border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(12.dp)) else Modifier)
+                                            .then(if (isDragging) Modifier else Modifier)
                                             .animateItemPlacement()
                                             .zIndex(if (isDragging) 1f else 0f)
-                                            .graphicsLayer {
-                                                if (isDragging) {
-                                                    scaleX = 1.02f
-                                                    scaleY = 1.02f
-                                                }
-                                            }
-                                            .onGloballyPositioned { coords ->
-                                                if (rowHeight == 0) rowHeight = coords.size.height
-                                            }
+                                            .graphicsLayer { if (isDragging) { scaleX = 1.02f; scaleY = 1.02f } }
+                                            .onGloballyPositioned { if (rowHeight == 0) rowHeight = it.size.height }
                                             .pointerInput(id) {
                                                 detectDragGestures(
                                                     onDragStart = {
@@ -424,11 +254,11 @@ class Navigation(
                                                         dragDelta = 0f
                                                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                                     },
-                                                    onDrag = { _: PointerInputChange, dragAmount: Offset ->
+                                                    onDrag = { _: PointerInputChange, dragAmount ->
                                                         dragDelta += dragAmount.y
                                                         if (rowHeight > 0 && dragStartIndex >= 0) {
                                                             val currentIndex = selectedTabIds.indexOf(id)
-                                                            val deltaRows = kotlin.math.round(dragDelta / rowHeight.toFloat()).toInt()
+                                                            val deltaRows = round(dragDelta / rowHeight.toFloat()).toInt()
                                                             val targetIndex = (dragStartIndex + deltaRows).coerceIn(0, selectedTabIds.lastIndex)
                                                             if (targetIndex != currentIndex) {
                                                                 val list = selectedTabIds.toMutableList()
@@ -440,68 +270,38 @@ class Navigation(
                                                             }
                                                         }
                                                     },
-                                                    onDragEnd = {
-                                                        draggingId = null
-                                                        dragDelta = 0f
-                                                        dragStartIndex = -1
-                                                    },
-                                                    onDragCancel = {
-                                                        draggingId = null
-                                                        dragDelta = 0f
-                                                        dragStartIndex = -1
-                                                    }
+                                                    onDragEnd = { draggingId = null; dragDelta = 0f; dragStartIndex = -1 },
+                                                    onDragCancel = { draggingId = null; dragDelta = 0f; dragStartIndex = -1 }
                                                 )
-                                            },
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .padding(10.dp)
-                                                    .fillMaxWidth(),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                                Spacer(Modifier.width(8.dp))
-                                                Icon(route.routeInfo.icon, contentDescription = null)
-                                                Spacer(Modifier.width(12.dp))
-                                                Text(
-                                                    text = label,
-                                                    modifier = Modifier.weight(1f),
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                                
-                                                val defaultEligible = remember { setOf("tasks","features","home","social","scripts") }
-                                                RadioButton(selected = defaultTabId == id, onClick = { if (id in defaultEligible) saveDefault(id) }, enabled = id in defaultEligible)
-                                                IconButton(onClick = { if (selectedTabIds.size > 1 && id != defaultTabId) {
-                                                        selectedTabIds = selectedTabIds.toMutableList().also { it.removeAt(index) }
-                                                        saveSelected(selectedTabIds)
-                                                    }
-                                                }, enabled = id != defaultTabId) { Icon(Icons.Filled.Close, contentDescription = null) }
                                             }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(10.dp).fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Spacer(Modifier.width(8.dp))
+                                            Icon(route.routeInfo.icon, contentDescription = null)
+                                            Spacer(Modifier.width(12.dp))
+                                            Text(text = label, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            val defaultEligible = remember { setOf("tasks","features","home","social","scripts") }
+                                            RadioButton(selected = defaultTabId == id, onClick = { if (id in defaultEligible) saveDefault(id) }, enabled = id in defaultEligible)
+                                            IconButton(onClick = {
+                                                if (selectedTabIds.size > 1 && id != defaultTabId) {
+                                                    selectedTabIds = selectedTabIds.toMutableList().also { it.removeAt(index) }
+                                                    saveSelected(selectedTabIds)
+                                                }
+                                            }, enabled = id != defaultTabId) { Icon(Icons.Filled.Close, contentDescription = null) }
                                         }
                                     }
                                 }
                             }
-                                        }
-                                    }
-                                }
-                            }
-                        }
                         }
 
                         Spacer(Modifier.height(16.dp))
-                        Text(
-                            text = "Available Tabs",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                        Text(text = "Available Tabs", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 16.dp))
                         Spacer(Modifier.height(8.dp))
-                        FlowRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        FlowRow(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             availableRoutes.forEach { route ->
                                 val id = route.routeInfo.id
                                 val already = selectedTabIds.contains(id)
@@ -527,105 +327,21 @@ class Navigation(
                         }
 
                         Spacer(Modifier.height(20.dp))
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            val primaryColor = MaterialTheme.colorScheme.primary
-                            var pulse by remember { mutableStateOf(false) }
-                            val pulseScale by animateFloatAsState(targetValue = if (pulse) 1.05f else 1f, label = "donePulse")
-                            var rippleKey by remember { mutableStateOf(0) }
-                            var rippleProgress by remember { mutableStateOf(0f) }
-                            var resetRippleKey by remember { mutableStateOf(0) }
-                            var resetRippleProgress by remember { mutableStateOf(0f) }
-                            val scope = rememberCoroutineScope()
-                            LaunchedEffect(Unit) {
-                                pulse = true
-                                kotlin.runCatching { kotlinx.coroutines.delay(350) }
-                                pulse = false
-                            }
-                            Box {
-                                LaunchedEffect(resetRippleKey) {
-                                    if (resetRippleKey > 0) {
-                                        resetRippleProgress = 0f
-                                        val start = System.currentTimeMillis()
-                                        val dur = 160L
-                                        while (true) {
-                                            val t = (System.currentTimeMillis() - start).coerceAtMost(dur)
-                                            resetRippleProgress = t / dur.toFloat()
-                                            if (t >= dur) break
-                                            kotlinx.coroutines.delay(10)
-                                        }
-                                    }
-                                }
-                                OutlinedButton(
-                                    onClick = {
-                                        resetRippleKey++
-                                        selectedTabIds = defaultOrder
-                                        saveSelected(selectedTabIds)
-                                    },
-                                    modifier = Modifier.drawBehind {
-                                        if (resetRippleKey > 0 && resetRippleProgress in 0f..1f) {
-                                            val radius = size.minDimension * (0.1f + 0.7f * resetRippleProgress)
-                                            drawCircle(
-                                                color = primaryColor.copy(alpha = 0.07f * (1f - resetRippleProgress)),
-                                                radius = radius,
-                                                center = this.center
-                                            )
-                                        }
-                                    }
-                                ) { Text(text = "Reset", style = MaterialTheme.typography.labelLarge) }
-                            }
-                            Box {
-                                // Custom light ripple behind the Done button
-                                LaunchedEffect(rippleKey) {
-                                    if (rippleKey > 0) {
-                                        rippleProgress = 0f
-                                        val start = System.currentTimeMillis()
-                                        val dur = 180L
-                                        while (true) {
-                                            val t = (System.currentTimeMillis() - start).coerceAtMost(dur)
-                                            rippleProgress = t / dur.toFloat()
-                                            if (t >= dur) break
-                                            kotlinx.coroutines.delay(10)
-                                        }
-                                    }
-                                }
-                                Button(
-                                    onClick = {
-                                        // Trigger ripple then close with a tiny delay so it’s visible
-                                        rippleKey++
-                                        scope.launch {
-                                            kotlinx.coroutines.delay(120)
-                                            openBottomBarCustomization = false
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .graphicsLayer { scaleX = pulseScale; scaleY = pulseScale }
-                                        .drawBehind {
-                                            if (rippleKey > 0 && rippleProgress in 0f..1f) {
-                                                val radius = size.minDimension * (0.2f + 0.8f * rippleProgress)
-                                                drawCircle(
-                                                    color = primaryColor.copy(alpha = 0.08f * (1f - rippleProgress)),
-                                                    radius = radius,
-                                                    center = this.center
-                                                )
-                                            }
-                                        }
-                                ) { Text(text = "Done") }
-                            }
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                            OutlinedButton(onClick = {
+                                selectedTabIds = defaultOrder
+                                saveSelected(selectedTabIds)
+                            }) { Text(text = "Reset", style = MaterialTheme.typography.labelLarge) }
+                            Button(onClick = { openBottomBarCustomization = false }) { Text(text = "Done", style = MaterialTheme.typography.labelLarge) }
                         }
                         Spacer(Modifier.height(8.dp))
                     }
                 }
             }
         }
-    
+    }
 
-    @Composable
-    fun Fab() {
+    @Composable fun Fab() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }?.floatingActionButton?.invoke()
     }
@@ -645,12 +361,7 @@ class Navigation(
                     val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE || route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_EXPORT_ROUTE || route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_IMPORT_ROUTE
                     val isAddRuleScreen = route.routeInfo.id.startsWith("edit_rule")
 
-                    val animatedRoutes = setOf(
-                        "friend_tracker_catalog",
-                        "manage_friend_tracker_repos",
-                        "manage_script_repos",
-                        "manage_repos"
-                    )
+                    val animatedRoutes = setOf("friend_tracker_catalog", "manage_friend_tracker_repos", "manage_script_repos", "manage_repos")
                     val isAnimatedRoute = animatedRoutes.contains(route.routeInfo.id)
 
                     val addRuleEnterAnimation = slideInHorizontally(animationSpec = tween(400)) { it }
@@ -663,9 +374,7 @@ class Navigation(
                     val animatedRoutePopEnter = slideInHorizontally(animationSpec = tween(400)) { -it }
                     val animatedRoutePopExit = slideOutHorizontally(animationSpec = tween(400)) { it }
 
-
-                    composable(
-                        route.routeInfo.id,
+                    composable(route.routeInfo.id,
                         enterTransition = {
                             when {
                                 isSummaryScreen -> slideInHorizontally { it }
@@ -698,20 +407,12 @@ class Navigation(
                                 else -> fadeOut(tween(100))
                             }
                         }
-                    ) {
-                        route.content.invoke(it)
-                    }
+                    ) { route.content.invoke(it) }
                     route.customComposables.invoke(this)
                 } else {
                     navigation("main_" + route.routeInfo.id, route.routeInfo.id) {
-                        composable("main_" + route.routeInfo.id) {
-                            route.content.invoke(it)
-                        }
-                        children.forEach { child ->
-                            composable(child.routeInfo.id) {
-                                child.content.invoke(it)
-                            }
-                        }
+                        composable("main_" + route.routeInfo.id) { route.content.invoke(it) }
+                        children.forEach { child -> composable(child.routeInfo.id) { child.content.invoke(it) } }
                         route.customComposables.invoke(this)
                     }
                 }
@@ -719,19 +420,6 @@ class Navigation(
         }
     }
 
-    // Backwards-compat wrappers for existing call sites
-    @Composable
-    fun FloatingActionButton() = Fab()
-
-    @Composable
-    fun Content(paddingValues: PaddingValues, startDestination: String) =
-        NavContent(paddingValues, startDestination)
+    @Composable fun FloatingActionButton() = Fab()
+    @Composable fun Content(paddingValues: PaddingValues, startDestination: String) = NavContent(paddingValues, startDestination)
 }
-
-
-
-
-
-
-
-
