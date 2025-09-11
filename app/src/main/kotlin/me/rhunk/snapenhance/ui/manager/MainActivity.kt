@@ -21,8 +21,13 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
@@ -160,9 +165,17 @@ class MainActivity : ComponentActivity() {
                                     .fillMaxWidth()
                                     .align(Alignment.BottomCenter)
                                     .pointerInput(Unit) {
-                                        detectTapGestures(onLongPress = {
-                                            navigation.openBottomBarCustomization = true
-                                        })
+                                        awaitEachGesture {
+                                            awaitFirstDown(pass = PointerEventPass.Initial)
+                                            var longPressed = false
+                                            val job = launch {
+                                                delay(viewConfiguration.longPressTimeoutMillis)
+                                                longPressed = true
+                                                navigation.openBottomBarCustomization = true
+                                            }
+                                            val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                            job.cancel()
+                                        }
                                     }
                             ) {
                                 navigation.FloatingBottomBar()

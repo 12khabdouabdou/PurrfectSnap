@@ -6,8 +6,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +38,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.geometry.Offset
@@ -57,6 +61,8 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 class Navigation(
@@ -105,6 +111,9 @@ class Navigation(
             }
         }, actions = {
             currentRoute?.topBarActions?.invoke(this)
+            IconButton(onClick = { openBottomBarCustomization = true }) {
+                Icon(Icons.Filled.Tune, contentDescription = null)
+            }
         })
     }
 
@@ -158,10 +167,18 @@ class Navigation(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 modifier = Modifier
                     .pointerInput(Unit) {
-                        detectTapGestures(onLongPress = {
-                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                            openBottomBarCustomization = true
-                        })
+                        awaitEachGesture {
+                            awaitFirstDown(pass = PointerEventPass.Initial)
+                            var longPressed = false
+                            val job = launch {
+                                kotlinx.coroutines.delay(viewConfiguration.longPressTimeoutMillis)
+                                longPressed = true
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                openBottomBarCustomization = true
+                            }
+                            val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                            job.cancel()
+                        }
                     }
                     .shadow(
                     elevation = 16.dp,
@@ -177,11 +194,17 @@ class Navigation(
                     selectedRoutes.forEach { route ->
                         NavigationBarItem(
                             modifier = Modifier.pointerInput(route) {
-                                detectTapGestures(onLongPress = {
-                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                    highlightId = route.routeInfo.id
-                                    openBottomBarCustomization = true
-                                })
+                                awaitEachGesture {
+                                    awaitFirstDown(pass = PointerEventPass.Initial)
+                                    val job = launch {
+                                        kotlinx.coroutines.delay(viewConfiguration.longPressTimeoutMillis)
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                        highlightId = route.routeInfo.id
+                                        openBottomBarCustomization = true
+                                    }
+                                    val up = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                                    job.cancel()
+                                }
                             },
                             alwaysShowLabel = true,
                             icon = {
