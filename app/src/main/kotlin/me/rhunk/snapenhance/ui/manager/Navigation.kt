@@ -412,13 +412,13 @@ class Navigation(
     }
 
     @Composable
-    fun FloatingActionButton() {
+    fun Fab() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }?.floatingActionButton?.invoke()
     }
 
     @Composable
-    fun Content(paddingValues: PaddingValues, startDestination: String) {
+    fun NavContent(paddingValues: PaddingValues, startDestination: String) {
         NavHost(
             navController = navController,
             startDestination = startDestination,

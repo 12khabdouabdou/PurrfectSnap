@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
                     floatingActionButton = {
                         if (!isFullscreen) {
                             Box(Modifier.padding(bottom = bottomPadding)) {
-                                navigation.FloatingActionButton()
+                                navigation.Fab()
                             }
                         }
                     },
@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity() {
                         } else {
                             PaddingValues(0.dp)
                         }
-                        navigation.Content(contentPadding, startDestination)
+                        navigation.NavContent(contentPadding, startDestination)
                         if (!isFullscreen) {
                             Box(
                                 modifier = Modifier
