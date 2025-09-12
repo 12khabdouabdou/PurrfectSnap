@@ -483,6 +483,7 @@ class HomeSettings : Routes.Route() {
                     PreferenceToggle(context.sharedPreferences, key = "test_mode", text = "Test Mode (FOR DEBUGGING ONLY)")
                     PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = "Disable Feature Loading")
                     PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
+                    PreferenceToggle(context.sharedPreferences, key = "disable_bypass_indicator", text = "Disable Bypass Status Indicator")
                 }
             }
             Spacer(modifier = Modifier.height(routes.bottomPadding))
