@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -191,7 +192,7 @@ class Navigation(
                     val offsetX = with(density) { offsetAnim.value.toDp() } + horizontalInset
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxHeight()
                             .width(indicatorWidth.coerceAtLeast(0.dp))
                             .offset(x = offsetX)
                             .padding(vertical = 8.dp)
@@ -223,6 +224,7 @@ class Navigation(
                                 text = tab.route
                             )
                         },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent),
                         onClick = {
                             navHostController.navigate(tab.route) {
                                 popUpTo(navHostController.graph.findStartDestination().id) {

@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -55,6 +56,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.AssistChip
@@ -281,7 +283,7 @@ class Navigation(
                             val offsetX = with(density) { offsetAnim.value.toDp() } + horizontalInset
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
+                                    .fillMaxHeight()
                                     .width(indicatorWidth.coerceAtLeast(0.dp))
                                     .offset(x = offsetX)
                                     .padding(vertical = 8.dp)
@@ -319,6 +321,7 @@ class Navigation(
                                     )
                                 },
                                 selected = currentRoute == route,
+                                colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent),
                                 onClick = { route.navigateReset() }
                             )
                         }
