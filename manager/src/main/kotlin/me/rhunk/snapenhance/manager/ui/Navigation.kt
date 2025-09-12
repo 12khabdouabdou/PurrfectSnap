@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -160,7 +159,7 @@ class Navigation(
             // Indicator background
             Box(
                 modifier = Modifier
-                    .matchParentSize()
+                    .fillMaxSize()
                     .onGloballyPositioned { barWidthPx = it.size.width.toFloat() }
             ) {
                 // Squash-and-stretch animation during tab change
@@ -189,7 +188,7 @@ class Navigation(
                     val offsetX = with(density) { offsetAnim.value.toDp() } + horizontalInset
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight()
+                            .fillMaxSize()
                             .width(indicatorWidth.coerceAtLeast(0.dp))
                             .offset(x = offsetX)
                             .padding(vertical = 8.dp)

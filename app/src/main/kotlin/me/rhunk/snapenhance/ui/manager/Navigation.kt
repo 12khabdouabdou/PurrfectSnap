@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -251,7 +250,7 @@ class Navigation(
                     // Draw the sliding pill indicator behind the NavigationBar items
                     Box(
                         modifier = Modifier
-                            .matchParentSize()
+                            .fillMaxSize()
                             .onGloballyPositioned { barWidthPx = it.size.width.toFloat() }
                     ) {
                         // Squash-and-stretch animation progress for the indicator
@@ -281,7 +280,7 @@ class Navigation(
                             val offsetX = with(density) { offsetAnim.value.toDp() } + horizontalInset
                             Box(
                                 modifier = Modifier
-                                    .fillMaxHeight()
+                                    .fillMaxSize()
                                     .width(indicatorWidth.coerceAtLeast(0.dp))
                                     .offset(x = offsetX)
                                     .padding(vertical = 8.dp)
@@ -299,7 +298,7 @@ class Navigation(
                     NavigationBar(
                         containerColor = Color.Transparent,
                         tonalElevation = 0.dp,
-                        modifier = Modifier.matchParentSize()
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         selectedRoutes.forEach { route ->
                             NavigationBarItem(
