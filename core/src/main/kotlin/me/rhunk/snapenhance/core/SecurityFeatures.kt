@@ -2,15 +2,15 @@ package me.rhunk.snapenhance.core
 
 import android.system.Os
 import android.view.ViewGroup
-import androidx.compose.animation.core.EaseInOutSine
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -69,57 +69,28 @@ class SecurityFeatures(
 
         lateinit var composable: CustomComposable
         composable = {
-            val infiniteTransition = rememberInfiniteTransition(label = "bypass_indicator")
-            val scale by infiniteTransition.animateFloat(
-                initialValue = 0.8f,
-                targetValue = 1.2f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1000, easing = EaseInOutSine),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "scale_animation"
-            )
-            val alpha by infiniteTransition.animateFloat(
-                initialValue = 0.7f,
-                targetValue = 1.0f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(800, easing = EaseInOutSine),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "alpha_animation"
-            )
-
-            Column(
+            Row(
                 modifier = Modifier
                     .padding(16.dp)
-                    .align(Alignment.TopCenter),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .scale(scale)
-                        .alpha(alpha)
-                        .background(
-                            color = if (isWorking) Color(0xFF4CAF50).copy(alpha = 0.2f) else Color(0xFFF44336).copy(alpha = 0.2f),
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (isWorking) Icons.Filled.Security else Icons.Filled.Close,
-                        contentDescription = null,
-                        tint = if (isWorking) Color(0xFF4CAF50) else Color(0xFFF44336),
-                        modifier = Modifier.size(24.dp)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        color = Color.Black.copy(alpha = 0.8f),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
                     )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = if (isWorking) Color.Green else Color.Red,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isWorking) "Bypass is Working" else "Bypass is Not Working",
-                    color = if (isWorking) Color(0xFF4CAF50) else Color(0xFFF44336),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.alpha(alpha)
+                    text = if (isWorking) "Bypass Active" else "Bypass Inactive",
+                    color = Color.White,
+                    fontSize = 14.sp
                 )
             }
 
