@@ -207,7 +207,8 @@ class Navigation(
                     )
             ) {
                 // Wrap with a Box to overlay a sliding pill indicator behind items
-                Box(Modifier.fillMaxWidth()) {
+                // Constrain overlay to NavigationBar height so it doesn't expand
+                Box(Modifier.fillMaxWidth().height(80.dp)) {
                     // Measure the bar width to compute per-item offsets
                     var barWidthPx by remember { mutableStateOf(0f) }
                     val itemCount = selectedRoutes.size.coerceAtLeast(1)

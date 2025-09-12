@@ -13,8 +13,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -113,7 +115,8 @@ class Navigation(
         val primaryTabs = remember { tabs.filter { it.isPrimary } }
 
         // Container to overlay a sliding pill indicator behind NavigationBar items
-        Box(Modifier.fillMaxWidth()) {
+        // Constrain overlay to NavigationBar height to avoid expanding the page
+        Box(Modifier.fillMaxWidth().height(80.dp)) {
             var barWidthPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(0f) }
             val itemCount = primaryTabs.size.coerceAtLeast(1)
             val density = androidx.compose.ui.platform.LocalDensity.current
