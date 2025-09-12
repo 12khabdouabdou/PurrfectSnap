@@ -3,6 +3,10 @@ package me.rhunk.snapenhance.ui.manager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -29,9 +33,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -58,6 +64,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -88,6 +95,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import me.rhunk.snapenhance.RemoteSideContext
 import kotlin.math.round
+import kotlin.math.PI
+import kotlin.math.sin
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 class Navigation(
@@ -198,27 +207,121 @@ class Navigation(
                         ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                     )
             ) {
-                NavigationBar(containerColor = Color.Transparent, tonalElevation = 0.dp) {
-                    selectedRoutes.forEach { route ->
-                        NavigationBarItem(
-                            alwaysShowLabel = true,
-                            icon = { Icon(imageVector = route.routeInfo.icon, contentDescription = null) },
-                            label = {
-                                val label = if (route.routeInfo.id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
-                                val isLong = label.length > 11
-                                Text(
-                                    text = label,
-                                    textAlign = TextAlign.Center,
-                                    fontSize = 12.sp,
-                                    maxLines = if (isLong) 2 else 1,
-                                    overflow = if (isLong) TextOverflow.Ellipsis else TextOverflow.Clip,
-                                    softWrap = isLong,
-                                    modifier = if (isLong) Modifier.widthIn(max = 80.dp).wrapContentWidth(Alignment.CenterHorizontally) else Modifier.wrapContentWidth(Alignment.CenterHorizontally)
-                                )
-                            },
-                            selected = currentRoute == route,
-                            onClick = { route.navigateReset() }
+                // Wrap with a Box to overlay a sliding pill indicator behind items
+                Box(Modifier.fillMaxWidth()) {
+                    // Measure the bar width to compute per-item offsets
+                    var barWidthPx by remember { mutableStateOf(0f) }
+                    val itemCount = selectedRoutes.size.coerceAtLeast(1)
+                    val density = androidx.compose.ui.platform.LocalDensity.current
+
+                    // Compute animated X offset for the indicator based on selected index
+                    val selectedIndex = remember(currentRoute, selectedRoutes) {
+                        selectedRoutes.indexOf(currentRoute).coerceAtLeast(0)
+                    }
+                    val itemWidthPx = remember(barWidthPx, itemCount) { if (itemCount > 0) barWidthPx / itemCount else 0f }
+                    val offsetAnim = remember { Animatable(0f) }
+                    var lastSelectedIndex by remember { mutableStateOf(selectedIndex) }
+                    // Initialize position when size becomes available
+                    LaunchedEffect(itemWidthPx) {
+                        if (itemWidthPx > 0f) {
+                            offsetAnim.snapTo(selectedIndex * itemWidthPx)
+                        }
+                    }
+                    // Animate with a spring to get a subtle overshoot
+                    LaunchedEffect(selectedIndex, itemWidthPx) {
+                        if (itemWidthPx <= 0f) return@LaunchedEffect
+                        val dist = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
+                        val damping = when {
+                            dist >= 3 -> 0.65f
+                            dist == 2 -> 0.75f
+                            else -> 0.90f
+                        }
+                        val stiffness = Spring.StiffnessMediumLow
+                        offsetAnim.animateTo(
+                            targetValue = selectedIndex * itemWidthPx,
+                            animationSpec = spring(dampingRatio = damping, stiffness = stiffness)
                         )
+                        lastSelectedIndex = selectedIndex
+                    }
+
+                    // Indicator dimensions
+                    val horizontalInset = 8.dp
+                    val indicatorWidth = with(density) { itemWidthPx.toDp() } - horizontalInset * 2
+
+                    // Draw the sliding pill indicator behind the NavigationBar items
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .onGloballyPositioned { barWidthPx = it.size.width.toFloat() }
+                    ) {
+                        // Squash-and-stretch animation progress for the indicator
+                        val motionProgress = remember { Animatable(1f) }
+                        LaunchedEffect(selectedIndex) {
+                            motionProgress.snapTo(0f)
+                            val dist = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
+                            val dur = when {
+                                dist >= 3 -> 440
+                                dist == 2 -> 380
+                                else -> 320
+                            }
+                            motionProgress.animateTo(1f, animationSpec = tween(durationMillis = dur, easing = FastOutSlowInEasing))
+                        }
+                        val pulse = sin(PI * motionProgress.value).toFloat()
+                        val distForScale = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
+                        val scaleXBase = 0.18f
+                        val scaleXExtra = 0.06f
+                        val scaleYBase = 0.06f
+                        val scaleYExtra = 0.02f
+                        val mult = (distForScale - 1).coerceAtLeast(0)
+                        val scaleXAnim = 1f + (scaleXBase + scaleXExtra * mult) * pulse
+                        val scaleYAnim = 1f - (scaleYBase + scaleYExtra * mult) * pulse
+
+                        // Only draw when we have a measurable width
+                        if (barWidthPx > 0f && itemCount > 0) {
+                            val offsetX = with(density) { offsetAnim.value.toDp() } + horizontalInset
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .width(indicatorWidth.coerceAtLeast(0.dp))
+                                    .offset(x = offsetX)
+                                    .padding(vertical = 8.dp)
+                                    .graphicsLayer { scaleX = scaleXAnim; scaleY = scaleYAnim }
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+                                    .border(
+                                        BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)),
+                                        RoundedCornerShape(14.dp)
+                                    )
+                            )
+                        }
+                    }
+
+                    NavigationBar(
+                        containerColor = Color.Transparent,
+                        tonalElevation = 0.dp,
+                        modifier = Modifier.matchParentSize()
+                    ) {
+                        selectedRoutes.forEach { route ->
+                            NavigationBarItem(
+                                alwaysShowLabel = true,
+                                icon = { Icon(imageVector = route.routeInfo.icon, contentDescription = null) },
+                                label = {
+                                    val label = if (route.routeInfo.id == "friend_tracker") "Tracker" else context.translation["manager.routes.${route.routeInfo.key.substringBefore("/")}"]
+                                    val isLong = label.length > 11
+                                    Text(
+                                        text = label,
+                                        textAlign = TextAlign.Center,
+                                        fontSize = 12.sp,
+                                        maxLines = if (isLong) 2 else 1,
+                                        overflow = if (isLong) TextOverflow.Ellipsis else TextOverflow.Clip,
+                                        softWrap = isLong,
+                                        modifier = if (isLong) Modifier.widthIn(max = 80.dp).wrapContentWidth(Alignment.CenterHorizontally) else Modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                                    )
+                                },
+                                selected = currentRoute == route,
+                                onClick = { route.navigateReset() }
+                            )
+                        }
                     }
                 }
             }
