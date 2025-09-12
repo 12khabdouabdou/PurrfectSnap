@@ -73,7 +73,7 @@ class SecurityFeatures(
                 modifier = Modifier
                     .padding(16.dp)
                     .align(Alignment.TopCenter)
-                    .offset(y = (-4).dp)
+                    .offset(y = (-8).dp)
                     .background(
                         color = Color.Black.copy(alpha = 0.8f),
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
