@@ -525,41 +525,42 @@ class HomeRootSection : Routes.Route() {
                         )
                         var dxAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
                         var dyAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
-                        ElevatedCard(
-                            modifier = Modifier
-                                .width(tileWidth)
-                                .height(tileHeight)
-                                .padding(all = 6.dp)
-                                .graphicsLayer { this.alpha = alpha; this.scaleX = scale; this.scaleY = scale }
-                                .then(if (!editMode) Modifier.scaleOnPress(interactionSource) else Modifier)
-                                .then(
-                                    if (editMode) Modifier.pointerInput(card.first, selectedTiles.size, spanTick) {
-                                        detectDragGestures(
-                                            onDragStart = { dxAcc = 0f; dyAcc = 0f },
-                                            onDrag = { change, dragAmount ->
-                                                change.consume()
-                                                dxAcc += dragAmount.x
-                                                dyAcc += dragAmount.y
-                                                val stepX = baseCellPx / 2f
-                                                val stepY = baseCellPx / 2f
-                                                var targetIndex = selectedTiles.indexOf(card.first)
-                                                while (dxAcc > stepX) { targetIndex += 1; dxAcc -= stepX }
-                                                while (dxAcc < -stepX) { targetIndex -= 1; dxAcc += stepX }
-                                                while (dyAcc > stepY) { targetIndex += 3; dyAcc -= stepY }
-                                                while (dyAcc < -stepY) { targetIndex -= 3; dyAcc += stepY }
-                                                val currentIndex = selectedTiles.indexOf(card.first)
-                                                targetIndex = targetIndex.coerceIn(0, selectedTiles.lastIndex)
-                                                if (currentIndex != -1 && targetIndex != currentIndex) {
-                                                    val item = selectedTiles.removeAt(currentIndex)
-                                                    selectedTiles.add(targetIndex, item)
-                                                }
-                                            }
-                                        )
-                                    } else Modifier
-                                ),
-                            onClick = { if (!editMode) action(routes) },
-                            interactionSource = interactionSource
-                        ) {
+                        val baseModifier = Modifier
+                            .width(tileWidth)
+                            .height(tileHeight)
+                            .padding(all = 6.dp)
+                            .graphicsLayer { this.alpha = alpha; this.scaleX = scale; this.scaleY = scale }
+                        val editModifier = baseModifier.then(
+                            Modifier.pointerInput(card.first, selectedTiles.size, spanTick) {
+                                detectDragGestures(
+                                    onDragStart = { dxAcc = 0f; dyAcc = 0f },
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        dxAcc += dragAmount.x
+                                        dyAcc += dragAmount.y
+                                        val stepX = baseCellPx / 2f
+                                        val stepY = baseCellPx / 2f
+                                        var targetIndex = selectedTiles.indexOf(card.first)
+                                        while (dxAcc > stepX) { targetIndex += 1; dxAcc -= stepX }
+                                        while (dxAcc < -stepX) { targetIndex -= 1; dxAcc += stepX }
+                                        while (dyAcc > stepY) { targetIndex += 3; dyAcc -= stepY }
+                                        while (dyAcc < -stepY) { targetIndex -= 3; dyAcc += stepY }
+                                        val currentIndex = selectedTiles.indexOf(card.first)
+                                        targetIndex = targetIndex.coerceIn(0, selectedTiles.lastIndex)
+                                        if (currentIndex != -1 && targetIndex != currentIndex) {
+                                            val item = selectedTiles.removeAt(currentIndex)
+                                            selectedTiles.add(targetIndex, item)
+                                        }
+                                    }
+                                )
+                            }
+                        )
+                        val viewModifier = baseModifier.then(Modifier.scaleOnPress(interactionSource))
+
+                        if (editMode) {
+                            ElevatedCard(
+                                modifier = editModifier
+                            ) {
                             Box(Modifier.fillMaxSize()) {
                                 Column(
                                     modifier = Modifier
@@ -583,7 +584,7 @@ class HomeRootSection : Routes.Route() {
                                     )
                                 }
                                 // Drag handle for resizing
-                                if (editMode) Box(
+                                Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
                                         .size(28.dp)
@@ -606,6 +607,37 @@ class HomeRootSection : Routes.Route() {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                            }
+                        } else {
+                            ElevatedCard(
+                                modifier = viewModifier,
+                                onClick = { action(routes) },
+                                interactionSource = interactionSource
+                            ) {
+                                Box(Modifier.fillMaxSize()) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(all = 5.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.SpaceEvenly,
+                                    ) {
+                                        Icon(
+                                            imageVector = card.second, contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(50.dp)
+                                        )
+                                        Text(
+                                            text = card.first,
+                                            lineHeight = 16.sp,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
                                 }
                             }
                         }
