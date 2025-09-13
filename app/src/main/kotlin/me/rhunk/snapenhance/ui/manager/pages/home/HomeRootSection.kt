@@ -2,7 +2,9 @@ package me.rhunk.snapenhance.ui.manager.pages.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
@@ -11,6 +13,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -52,6 +55,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -535,12 +539,40 @@ class HomeRootSection : Routes.Route() {
                 val spacing = 6.dp
                 var spanTick by remember { mutableIntStateOf(0) }
 
-                Box(
+                BoxWithConstraints(
                     modifier = Modifier.fillMaxSize().padding(horizontal = cardMargin)
                 ) {
                     val density = LocalDensity.current
-                    val baseCell = density.run { remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - (cardMargin * 2 + spacing * 2) / 3f } }
+                    val baseCell = remember { (maxWidth - (spacing * 2)) / 3f }
                     val baseCellPx = with(density) { baseCell.toPx() }
+
+                    val tilePositions = remember(selectedTiles, spanTick) {
+                        val positions = mutableMapOf<String, Offset>()
+                        var currentX = 0f
+                        var currentY = 0f
+                        var rowMaxHeight = 0f
+                        val screenWidthPx = with(density) { maxWidth.toPx() }
+
+                        selectedTiles.forEach { tileName ->
+                            val card = cards.entries.find { entry -> entry.key.first == tileName }!!.key
+                            val (wSpan, hSpan) = getTileSpan(card.first)
+                            val tileWidthPx = with(density) { (baseCell * wSpan + spacing * (wSpan - 1)).toPx() }
+                            val tileHeightPx = with(density) { (baseCell * hSpan + spacing * (hSpan - 1)).toPx() }
+
+                            if (currentX + tileWidthPx > screenWidthPx) {
+                                currentX = 0f
+                                currentY += rowMaxHeight
+                                rowMaxHeight = 0f
+                            }
+
+                            positions[tileName] = Offset(currentX, currentY)
+                            currentX += tileWidthPx + with(density) { spacing.toPx() }
+                            if (tileHeightPx > rowMaxHeight) {
+                                rowMaxHeight = tileHeightPx
+                            }
+                        }
+                        positions
+                    }
 
                     remember(selectedTiles.size, context.translation.loadedLocale) {
                         selectedTiles.mapNotNull {
@@ -555,6 +587,7 @@ class HomeRootSection : Routes.Route() {
 
                         var offsetX by remember(card.first) { mutableStateOf(0f) }
                         var offsetY by remember(card.first) { mutableStateOf(0f) }
+                        var isDragging by remember { mutableStateOf(false) }
 
                         LaunchedEffect(card.first) {
                             val (x, y) = getTileOffset(card.first)
@@ -562,20 +595,37 @@ class HomeRootSection : Routes.Route() {
                                 offsetX = x
                                 offsetY = y
                             } else {
-                                val index = selectedTiles.indexOf(card.first)
-                                val row = index / 3
-                                val col = index % 3
-                                offsetX = col * (baseCellPx + with(density) { spacing.toPx() })
-                                offsetY = row * (baseCellPx + with(density) { spacing.toPx() })
-                                setTileOffset(card.first, offsetX, offsetY)
+                                val pos = tilePositions[card.first]
+                                if (pos != null) {
+                                    offsetX = pos.x
+                                    offsetY = pos.y
+                                    setTileOffset(card.first, offsetX, offsetY)
+                                }
                             }
                         }
 
-                        val animatedOffsetX by animateFloatAsState(targetValue = offsetX, animationSpec = tween(200), label = "offsetX")
-                        val animatedOffsetY by animateFloatAsState(targetValue = offsetY, animationSpec = tween(200), label = "offsetY")
+                        val animatedOffsetX by animateFloatAsState(
+                            targetValue = offsetX,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            ),
+                            label = "offsetX"
+                        )
+                        val animatedOffsetY by animateFloatAsState(
+                            targetValue = offsetY,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            ),
+                            label = "offsetY"
+                        )
+
+                        val currentOffsetX = if (isDragging) offsetX else animatedOffsetX
+                        val currentOffsetY = if (isDragging) offsetY else animatedOffsetY
 
                         val baseModifier = Modifier
-                            .offset { IntOffset(animatedOffsetX.roundToInt(), animatedOffsetY.roundToInt()) }
+                            .offset { IntOffset(currentOffsetX.roundToInt(), currentOffsetY.roundToInt()) }
                             .width(tileWidth)
                             .height(tileHeight)
                             .padding(all = 6.dp)
@@ -583,12 +633,14 @@ class HomeRootSection : Routes.Route() {
                         val editModifier = baseModifier.then(
                             Modifier.pointerInput(card.first) {
                                 detectDragGestures(
+                                    onDragStart = { isDragging = true },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
                                         offsetX += dragAmount.x
                                         offsetY += dragAmount.y
                                     },
                                     onDragEnd = {
+                                        isDragging = false
                                         setTileOffset(card.first, offsetX, offsetY)
                                     }
                                 )
