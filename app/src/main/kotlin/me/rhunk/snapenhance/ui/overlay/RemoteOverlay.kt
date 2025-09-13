@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.arthenica.ffmpegkit.Packages.getPackageName
 import me.rhunk.snapenhance.R
 import me.rhunk.snapenhance.RemoteSideContext
@@ -48,7 +48,7 @@ class RemoteOverlay(
 
     @Composable
     private fun OverlayContent(startRoute: (Routes) -> Routes.Route) {
-        val navHostController = rememberNavController()
+        val navHostController = rememberAnimatedNavController()
 
         LaunchedEffect(Unit) {
             dismissCallback = { navHostController.popBackStack() }

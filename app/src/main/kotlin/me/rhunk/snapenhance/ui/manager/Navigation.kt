@@ -90,8 +90,8 @@ import androidx.compose.ui.zIndex
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navigation
 import me.rhunk.snapenhance.RemoteSideContext
@@ -99,7 +99,7 @@ import kotlin.math.round
 import kotlin.math.PI
 import kotlin.math.sin
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalLayoutApi::class, androidx.compose.animation.ExperimentalAnimationApi::class)
 class Navigation(
     private val context: RemoteSideContext,
     private val navController: NavHostController,
@@ -520,7 +520,7 @@ class Navigation(
 
     @Composable
     fun NavContent(paddingValues: PaddingValues, startDestination: String) {
-        NavHost(
+        AnimatedNavHost(
             navController = navController,
             startDestination = startDestination,
             Modifier.padding(paddingValues),

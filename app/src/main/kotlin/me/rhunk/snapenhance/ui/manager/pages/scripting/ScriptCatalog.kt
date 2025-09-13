@@ -1,9 +1,11 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package me.rhunk.snapenhance.ui.manager.pages.scripting
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.animateItemPlacement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material3.*
@@ -225,7 +227,7 @@ fun ScriptCatalog(root: ScriptingRootSection) {
                     isAlreadyInstalled = isScriptInstalled(entry.name)
                 }
                 
-                ElevatedCard(Modifier.padding(bottom = 8.dp)) {
+                ElevatedCard(Modifier.padding(bottom = 8.dp).animateItemPlacement()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

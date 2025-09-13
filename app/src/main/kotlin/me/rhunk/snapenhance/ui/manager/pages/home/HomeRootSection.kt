@@ -2,6 +2,10 @@ package me.rhunk.snapenhance.ui.manager.pages.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -56,6 +60,10 @@ import me.rhunk.snapenhance.ui.manager.data.UpdateDownloader
 import me.rhunk.snapenhance.ui.manager.data.Updater
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
+import me.rhunk.snapenhance.ui.util.Motion
+import me.rhunk.snapenhance.ui.util.scaleOnPress
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import java.text.DateFormat
 
 class HomeRootSection : Routes.Route() {
@@ -101,7 +109,9 @@ class HomeRootSection : Routes.Route() {
         modifier: Modifier = Modifier,
         size: Dp = 32.dp,
         imageVector: ImageVector,
+        onClick: (() -> Unit)? = null,
     ) {
+        val interactionSource = remember { MutableInteractionSource() }
         Icon(
             imageVector = imageVector,
             contentDescription = null,
@@ -109,6 +119,12 @@ class HomeRootSection : Routes.Route() {
             modifier = Modifier
                 .size(size)
                 .clip(RoundedCornerShape(50))
+                .scaleOnPress(interactionSource)
+                .then(
+                    if (onClick != null)
+                        Modifier.clickable(interactionSource = interactionSource, indication = LocalIndication.current) { onClick() }
+                    else Modifier
+                )
                 .then(modifier)
         )
     }
@@ -174,21 +190,16 @@ class HomeRootSection : Routes.Route() {
                     .padding(all = 5.dp)
             ) {
                 ExternalLinkIcon(
-                    modifier = Modifier.clickable {
-                        context.androidContext.openLink("https://t.me/snapenhance")
-                    },
+                    onClick = { context.androidContext.openLink("https://t.me/snapenhance") },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
                 )
                 ExternalLinkIcon(
-                    modifier = Modifier.clickable {
-                        context.androidContext.openLink("https://github.com/rhunk/SnapEnhance")
-                    },
+                    onClick = { context.androidContext.openLink("https://github.com/rhunk/SnapEnhance") },
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
                 )
                 ExternalLinkIcon(
-                    modifier = Modifier.offset(x = (-3).dp).clickable {
-                        context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/wiki")
-                    },
+                    onClick = { context.androidContext.openLink("https://github.com/rhunk/SnapEnhance/wiki") },
+                    modifier = Modifier.offset(x = (-3).dp),
                     size = 40.dp,
                     imageVector = Icons.AutoMirrored.Filled.Help,
                 )
@@ -442,13 +453,20 @@ class HomeRootSection : Routes.Route() {
                             cards.entries.find { entry -> entry.key.first == it }
                         }
                     }.forEach { (card, action) ->
-                        ElevatedCard(
-                            modifier = Modifier
-                                .height(tileHeight)
-                                .weight(1f)
-                                .padding(all = 6.dp),
-                            onClick = { action(routes) }
+                        val interactionSource = remember { MutableInteractionSource() }
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(animationSpec = Motion.tweenFloat(200)) + scaleIn(animationSpec = Motion.tweenFloat(220), initialScale = 0.9f)
                         ) {
+                            ElevatedCard(
+                                modifier = Modifier
+                                    .height(tileHeight)
+                                    .weight(1f)
+                                    .padding(all = 6.dp)
+                                    .scaleOnPress(interactionSource),
+                                onClick = { action(routes) },
+                                interactionSource = interactionSource
+                            ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -473,6 +491,7 @@ class HomeRootSection : Routes.Route() {
                         }
                     }
                 }
+            }
             }
             if (showQuickActionsMenu) {
                 QuickActionsDialog(

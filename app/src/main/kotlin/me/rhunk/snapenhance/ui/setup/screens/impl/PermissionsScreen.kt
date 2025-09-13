@@ -22,6 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import me.rhunk.snapenhance.ui.util.scaleOnPress
+import me.rhunk.snapenhance.ui.util.Motion
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
@@ -43,7 +50,8 @@ class PermissionsScreen : SetupScreen() {
 
     @Composable
     private fun RequestButton(onClick: () -> Unit) {
-        Button(onClick = onClick) {
+        val src = remember { MutableInteractionSource() }
+        Button(onClick = onClick, interactionSource = src, modifier = Modifier.scaleOnPress(src)) {
             Text(text = context.translation["setup.permissions.request_button"])
         }
     }
@@ -165,14 +173,22 @@ class PermissionsScreen : SetupScreen() {
                             text = context.translation["setup.permissions.${perm.translationKey}"],
                             modifier = Modifier.weight(1f)
                         )
-                        if (grantedPermissions[perm.translationKey] == true) {
-                            GrantedIcon()
-                        } else {
-                            RequestButton {
-                                if (perm.isPermissionGranted()) {
-                                    grantedPermissions[perm.translationKey] = true
-                                } else {
-                                    perm.requestPermission(perm)
+                        val granted = grantedPermissions[perm.translationKey] == true
+                        AnimatedContent(
+                            targetState = granted,
+                            transitionSpec = {
+                                fadeIn(animationSpec = Motion.tweenFloat(150)) togetherWith fadeOut(animationSpec = Motion.tweenFloat(150))
+                            }, label = "permState"
+                        ) { isGranted ->
+                            if (isGranted) {
+                                GrantedIcon()
+                            } else {
+                                RequestButton {
+                                    if (perm.isPermissionGranted()) {
+                                        grantedPermissions[perm.translationKey] = true
+                                    } else {
+                                        perm.requestPermission(perm)
+                                    }
                                 }
                             }
                         }

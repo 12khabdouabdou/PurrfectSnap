@@ -153,6 +153,9 @@ dependencies {
     fullImplementation("androidx.compose.ui:ui:1.6.0")
     fullImplementation("androidx.compose.foundation:foundation:1.6.0")
     fullImplementation("androidx.compose.foundation:foundation-layout:1.6.0")
+
+    // Animated navigation + transitions (Accompanist)
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.32.0")
 }
 
 afterEvaluate {
