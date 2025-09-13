@@ -31,6 +31,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -50,6 +52,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavBackStackEntry
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.R
 import me.rhunk.snapenhance.action.EnumQuickActions
@@ -496,7 +500,7 @@ class HomeRootSection : Routes.Route() {
                 var flowRowTop by remember { mutableStateOf(0) }
                 var flowRowBottom by remember { mutableStateOf(0) }
                 val coroutineScope = rememberCoroutineScope()
-                val autoScrollJob = remember { mutableStateOf<Job?>(null) }
+                val autoScrollJob = remember { mutableStateOf<Job?>(null as Job?) }
 
                 FlowRow(
                     modifier = Modifier
@@ -547,40 +551,30 @@ class HomeRootSection : Routes.Route() {
                                 detectDragGestures(
                                     onDragStart = { dxAcc = 0f; dyAcc = 0f },
                                     onDrag = { change, dragAmount ->
-                                        change.consumePositionChange()
+                                        change.consume()
                                         dxAcc += dragAmount.x
                                         dyAcc += dragAmount.y
-                                        // Auto-scroll handling: determine pointer Y and start/stop scrolling
-                                        try {
-                                            val windowPos = change.position
-                                            val pointerWindowY = with(LocalDensity.current) { (windowPos.y).toPx() }
-                                        } catch (_: Exception) {
-                                            // position may not be available on some events; ignore
-                                        }
-
-                                        // Compute pointer global Y using position on screen where possible
-                                        val pointerPos = change.position
-                                        val pointerWindowY = pointerPos.y.toInt()
-
+                                        // Auto-scroll handling: compute pointer window Y using FlowRow top + local pointer y
+                                        val pointerWindowY = flowRowTop + change.position.y.toInt()
                                         val threshold = 80 // px
                                         val scrollAmount = 20 // px per tick
 
                                         // Start auto-scroll up
                                         if (pointerWindowY < flowRowTop + threshold) {
                                             if (autoScrollJob.value == null) {
-                                                autoScrollJob.value = coroutineScope.launch {
-                                                    while (isActive) {
-                                                        scrollState.animateScrollBy(-scrollAmount.toFloat())
-                                                        kotlinx.coroutines.delay(50)
+                                                    autoScrollJob.value = coroutineScope.launch {
+                                                        while (true) {
+                                                            scrollState.animateScrollBy(-scrollAmount.toFloat())
+                                                            delay(50)
+                                                        }
                                                     }
-                                                }
                                             }
                                         } else if (pointerWindowY > flowRowBottom - threshold) {
                                             if (autoScrollJob.value == null) {
                                                 autoScrollJob.value = coroutineScope.launch {
-                                                    while (isActive) {
+                                                    while (true) {
                                                         scrollState.animateScrollBy(scrollAmount.toFloat())
-                                                        kotlinx.coroutines.delay(50)
+                                                        delay(50)
                                                     }
                                                 }
                                             }
@@ -649,7 +643,7 @@ class HomeRootSection : Routes.Route() {
                                         .size(28.dp)
                                         .pointerInput(card.first, spanTick) {
                                             detectDragGestures { change, dragAmount ->
-                                                change.consumePositionChange()
+                                                change.consume()
                                                 var newW = wSpan
                                                 var newH = hSpan
                                                 val step = baseCellPx / 2f
