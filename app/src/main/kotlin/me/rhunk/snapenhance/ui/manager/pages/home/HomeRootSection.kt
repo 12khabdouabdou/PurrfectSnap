@@ -542,13 +542,13 @@ class HomeRootSection : Routes.Route() {
                 var spanTick by remember { mutableIntStateOf(0) }
 
                 BoxWithConstraints(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = cardMargin)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = cardMargin)
                 ) {
                     val density = LocalDensity.current
                     val baseCell = remember { (maxWidth - (spacing * 2)) / 3f }
                     val baseCellPx = with(density) { baseCell.toPx() }
 
-                    val tilePositions = remember(selectedTiles, spanTick) {
+                    val (tilePositions, totalHeight) = remember(selectedTiles, spanTick) {
                         val positions = mutableMapOf<String, Offset>()
                         var currentX = 0f
                         var currentY = 0f
@@ -573,215 +573,234 @@ class HomeRootSection : Routes.Route() {
                                 rowMaxHeight = tileHeightPx
                             }
                         }
-                        positions
+                        positions to (currentY + rowMaxHeight)
                     }
 
-                    remember(selectedTiles.size, context.translation.loadedLocale) {
-                        selectedTiles.mapNotNull {
-                            cards.entries.find { entry -> entry.key.first == it }
-                        }
-                    }.forEach { (card, action) ->
-                        val interactionSource = remember { MutableInteractionSource() }
-                        val _tick = spanTick
-                        val (wSpan, hSpan) = getTileSpan(card.first)
-                        val tileWidth = baseCell * wSpan + spacing * (wSpan - 1)
-                        val tileHeight = baseCell * hSpan + spacing * (hSpan - 1)
+                    Box(modifier = Modifier.height(with(density) { totalHeight.toDp() })) {
+                        remember(selectedTiles.size, context.translation.loadedLocale) {
+                            selectedTiles.mapNotNull {
+                                cards.entries.find { entry -> entry.key.first == it }
+                            }
+                        }.forEach { (card, action) ->
+                            val interactionSource = remember { MutableInteractionSource() }
+                            val _tick = spanTick
+                            val (wSpan, hSpan) = getTileSpan(card.first)
+                            val tileWidth = baseCell * wSpan + spacing * (wSpan - 1)
+                            val tileHeight = baseCell * hSpan + spacing * (hSpan - 1)
+                            val tileWidthPx = with(density) { tileWidth.toPx() }
+                            val tileHeightPx = with(density) { tileHeight.toPx() }
 
-                        var offsetX by remember(card.first) { mutableStateOf(0f) }
-                        var offsetY by remember(card.first) { mutableStateOf(0f) }
-                        var isDragging by remember { mutableStateOf(false) }
+                            var offsetX by remember(card.first) { mutableStateOf(0f) }
+                            var offsetY by remember(card.first) { mutableStateOf(0f) }
+                            var isDragging by remember { mutableStateOf(false) }
 
-                        LaunchedEffect(card.first, spanTick) {
-                            val (x, y) = getTileOffset(card.first)
-                            if (x != 0f || y != 0f) {
-                                offsetX = x
-                                offsetY = y
-                            } else {
-                                val pos = tilePositions[card.first]
-                                if (pos != null) {
-                                    offsetX = pos.x
-                                    offsetY = pos.y
-                                    setTileOffset(card.first, offsetX, offsetY)
+                            LaunchedEffect(card.first, spanTick) {
+                                val (x, y) = getTileOffset(card.first)
+                                if (x != 0f || y != 0f) {
+                                    offsetX = x
+                                    offsetY = y
+                                } else {
+                                    val pos = tilePositions[card.first]
+                                    if (pos != null) {
+                                        offsetX = pos.x
+                                        offsetY = pos.y
+                                        setTileOffset(card.first, offsetX, offsetY)
+                                    }
                                 }
                             }
-                        }
 
-                        val animatedOffsetX by animateFloatAsState(
-                            targetValue = offsetX,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
-                            ),
-                            label = "offsetX"
-                        )
-                        val animatedOffsetY by animateFloatAsState(
-                            targetValue = offsetY,
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioMediumBouncy,
-                                stiffness = Spring.StiffnessLow
-                            ),
-                            label = "offsetY"
-                        )
+                            val animatedOffsetX by animateFloatAsState(
+                                targetValue = offsetX,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                ),
+                                label = "offsetX"
+                            )
+                            val animatedOffsetY by animateFloatAsState(
+                                targetValue = offsetY,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessLow
+                                ),
+                                label = "offsetY"
+                            )
 
-                        val currentOffsetX = if (isDragging) offsetX else animatedOffsetX
-                        val currentOffsetY = if (isDragging) offsetY else animatedOffsetY
+                            val currentOffsetX = if (isDragging) offsetX else animatedOffsetX
+                            val currentOffsetY = if (isDragging) offsetY else animatedOffsetY
 
-                        val baseModifier = Modifier
-                            .offset { IntOffset(currentOffsetX.roundToInt(), currentOffsetY.roundToInt()) }
-                            .width(tileWidth)
-                            .height(tileHeight)
-                            .padding(all = 6.dp)
+                            val baseModifier = Modifier
+                                .offset { IntOffset(currentOffsetX.roundToInt(), currentOffsetY.roundToInt()) }
+                                .width(tileWidth)
+                                .height(tileHeight)
+                                .padding(all = 6.dp)
 
-                        val editModifier = baseModifier.then(
-                            Modifier.pointerInput(card.first) {
-                                var originalOffsetX = 0f
-                                var originalOffsetY = 0f
-                                detectDragGestures(
-                                    onDragStart = {
-                                        isDragging = true
-                                        originalOffsetX = offsetX
-                                        originalOffsetY = offsetY
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        change.consume()
-                                        offsetX += dragAmount.x
-                                        offsetY += dragAmount.y
-                                    },
-                                    onDragEnd = {
-                                        isDragging = false
-                                        var overlaps = false
-                                        val tileRect = Rect(Offset(offsetX, offsetY), Size(tileWidth.toPx(), tileHeight.toPx()))
-                                        for (otherTileName in selectedTiles) {
-                                            if (otherTileName == card.first) continue
-                                            val (otherOffsetX, otherOffsetY) = getTileOffset(otherTileName)
-                                            val (otherWSpan, otherHSpan) = getTileSpan(otherTileName)
-                                            val otherTileWidth = baseCell * otherWSpan + spacing * (otherWSpan - 1)
-                                            val otherTileHeight = baseCell * otherHSpan + spacing * (otherHSpan - 1)
-                                            val otherRect = Rect(Offset(otherOffsetX, otherOffsetY), Size(otherTileWidth.toPx(), otherTileHeight.toPx()))
-                                            if (tileRect.overlaps(otherRect)) {
-                                                overlaps = true
-                                                break
+                            val editModifier = baseModifier.then(
+                                Modifier.pointerInput(card.first, tileWidthPx, tileHeightPx) {
+                                    var originalOffsetX = 0f
+                                    var originalOffsetY = 0f
+                                    detectDragGestures(
+                                        onDragStart = {
+                                            isDragging = true
+                                            originalOffsetX = offsetX
+                                            originalOffsetY = offsetY
+                                        },
+                                        onDrag = { change, dragAmount ->
+                                            change.consume()
+                                            offsetX += dragAmount.x
+                                            offsetY += dragAmount.y
+                                        },
+                                        onDragEnd = {
+                                            isDragging = false
+                                            var targetTile: String? = null
+                                            var maxOverlap = 0f
+                                            val tileRect = Rect(Offset(offsetX, offsetY), Size(tileWidthPx, tileHeightPx))
+
+                                            for (otherTileName in selectedTiles) {
+                                                if (otherTileName == card.first) continue
+                                                val (otherOffsetX, otherOffsetY) = getTileOffset(otherTileName)
+                                                val (otherWSpan, otherHSpan) = getTileSpan(otherTileName)
+                                                val otherTileWidth = baseCell * otherWSpan + spacing * (otherWSpan - 1)
+                                                val otherTileHeight = baseCell * otherHSpan + spacing * (otherHSpan - 1)
+                                                val otherRect = Rect(Offset(otherOffsetX, otherOffsetY), Size(with(density) { otherTileWidth.toPx() }, with(density) { otherTileHeight.toPx() }))
+                                                val intersectRect = tileRect.intersect(otherRect)
+                                                val overlapArea = intersectRect.width * intersectRect.height
+                                                if (overlapArea > maxOverlap) {
+                                                    maxOverlap = overlapArea
+                                                    targetTile = otherTileName
+                                                }
+                                            }
+
+                                            if (targetTile != null) {
+                                                val (wSpan, hSpan) = getTileSpan(card.first)
+                                                val (targetWSpan, targetHSpan) = getTileSpan(targetTile!!)
+                                                if (wSpan == targetWSpan && hSpan == targetHSpan) {
+                                                    // swap
+                                                    val (targetOffsetX, targetOffsetY) = getTileOffset(targetTile!!)
+                                                    setTileOffset(card.first, targetOffsetX, targetOffsetY)
+                                                    setTileOffset(targetTile!!, originalOffsetX, originalOffsetY)
+                                                    spanTick++ // this will trigger recomposition for all tiles
+                                                } else {
+                                                    // revert
+                                                    offsetX = originalOffsetX
+                                                    offsetY = originalOffsetY
+                                                }
+                                            } else {
+                                                setTileOffset(card.first, offsetX, offsetY)
                                             }
                                         }
+                                    )
+                                }
+                            )
+                            val viewModifier = baseModifier.then(Modifier.scaleOnPress(interactionSource))
 
-                                        if (overlaps) {
-                                            offsetX = originalOffsetX
-                                            offsetY = originalOffsetY
-                                        } else {
-                                            setTileOffset(card.first, offsetX, offsetY)
+                            if (editMode) {
+                                ElevatedCard(
+                                    modifier = editModifier
+                                ) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(all = 5.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.SpaceEvenly,
+                                        ) {
+                                            Icon(
+                                                imageVector = card.second, contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(50.dp)
+                                            )
+                                            Text(
+                                                text = card.first,
+                                                lineHeight = 16.sp,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                textAlign = TextAlign.Center,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
+                                        }
+                                        // Drag handle for resizing
+                                        var dxAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
+                                        var dyAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .size(28.dp)
+                                                .pointerInput(card.first, spanTick) {
+                                                    detectDragGestures(
+                                                        onDragStart = {
+                                                            dxAccResize = 0f
+                                                            dyAccResize = 0f
+                                                        },
+                                                        onDrag = { change, dragAmount ->
+                                                            change.consume()
+                                                            dxAccResize += dragAmount.x
+                                                            dyAccResize += dragAmount.y
+
+                                                            var newW = wSpan
+                                                            var newH = hSpan
+                                                            val step = baseCellPx / 2f
+
+                                                            while (dxAccResize > step) {
+                                                                newW = (wSpan + 1).coerceIn(1, 3)
+                                                                dxAccResize -= step
+                                                            }
+                                                            while (dxAccResize < -step) {
+                                                                newW = (wSpan - 1).coerceIn(1, 3)
+                                                                dxAccResize += step
+                                                            }
+                                                            while (dyAccResize > step) {
+                                                                newH = (hSpan + 1).coerceIn(1, 3)
+                                                                dyAccResize -= step
+                                                            }
+                                                            while (dyAccResize < -step) {
+                                                                newH = (hSpan - 1).coerceIn(1, 3)
+                                                                dyAccResize += step
+                                                            }
+
+                                                            if (newW != wSpan || newH != hSpan) {
+                                                                setTileSpan(card.first, newW, newH)
+                                                                spanTick++
+                                                                selectedTiles.forEach { clearTileOffset(it) }
+                                                            }
+                                                        }
+                                                    )
+                                                },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
-                                )
-                            }
-                        )
-                        val viewModifier = baseModifier.then(Modifier.scaleOnPress(interactionSource))
-
-                        if (editMode) {
-                            ElevatedCard(
-                                modifier = editModifier
-                            ) {
-                                Box(Modifier.fillMaxSize()) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(all = 5.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.SpaceEvenly,
-                                    ) {
-                                        Icon(
-                                            imageVector = card.second, contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(50.dp)
-                                        )
-                                        Text(
-                                            text = card.first,
-                                            lineHeight = 16.sp,
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            textAlign = TextAlign.Center,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
-                                    }
-                                    // Drag handle for resizing
-                                    var dxAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
-                                    var dyAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
-                                    Box(
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .size(28.dp)
-                                            .pointerInput(card.first, spanTick) {
-                                                detectDragGestures(
-                                                    onDragStart = {
-                                                        dxAccResize = 0f
-                                                        dyAccResize = 0f
-                                                    },
-                                                    onDrag = { change, dragAmount ->
-                                                        change.consume()
-                                                        dxAccResize += dragAmount.x
-                                                        dyAccResize += dragAmount.y
-
-                                                        var newW = wSpan
-                                                        var newH = hSpan
-                                                        val step = baseCellPx / 2f
-
-                                                        while (dxAccResize > step) {
-                                                            newW = (wSpan + 1).coerceIn(1, 3)
-                                                            dxAccResize -= step
-                                                        }
-                                                        while (dxAccResize < -step) {
-                                                            newW = (wSpan - 1).coerceIn(1, 3)
-                                                            dxAccResize += step
-                                                        }
-                                                        while (dyAccResize > step) {
-                                                            newH = (hSpan + 1).coerceIn(1, 3)
-                                                            dyAccResize -= step
-                                                        }
-                                                        while (dyAccResize < -step) {
-                                                            newH = (hSpan - 1).coerceIn(1, 3)
-                                                            dyAccResize += step
-                                                        }
-
-                                                        if (newW != wSpan || newH != hSpan) {
-                                                            setTileSpan(card.first, newW, newH)
-                                                            spanTick++
-                                                            selectedTiles.forEach { clearTileOffset(it) }
-                                                        }
-                                                    }
-                                                )
-                                            },
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
                                 }
-                            }
-                        } else {
-                            ElevatedCard(
-                                modifier = viewModifier,
-                                onClick = { action(routes) },
-                                interactionSource = interactionSource
-                            ) {
-                                Box(Modifier.fillMaxSize()) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(all = 5.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.SpaceEvenly,
-                                    ) {
-                                        Icon(
-                                            imageVector = card.second, contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(50.dp)
-                                        )
-                                        Text(
-                                            text = card.first,
-                                            lineHeight = 16.sp,
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            textAlign = TextAlign.Center,
-                                            overflow = TextOverflow.Ellipsis,
-                                        )
+                            } else {
+                                ElevatedButton(
+                                    modifier = viewModifier,
+                                    onClick = { action(routes) },
+                                    interactionSource = interactionSource
+                                ) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(all = 5.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.SpaceEvenly,
+                                        ) {
+                                            Icon(
+                                                imageVector = card.second, contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(50.dp)
+                                            )
+                                            Text(
+                                                text = card.first,
+                                                lineHeight = 16.sp,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                textAlign = TextAlign.Center,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
+                                        }
                                     }
                                 }
                             }
