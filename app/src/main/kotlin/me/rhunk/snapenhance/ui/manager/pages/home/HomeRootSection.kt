@@ -564,7 +564,8 @@ class HomeRootSection : Routes.Route() {
                                             if (autoScrollJob.value == null) {
                                                     autoScrollJob.value = coroutineScope.launch {
                                                         while (true) {
-                                                            scrollState.scrollBy(-scrollAmount.toFloat())
+                                                            val target = (scrollState.value - scrollAmount).coerceIn(0, scrollState.maxValue)
+                                                            scrollState.scrollTo(target)
                                                             delay(50)
                                                         }
                                                     }
@@ -573,7 +574,8 @@ class HomeRootSection : Routes.Route() {
                                             if (autoScrollJob.value == null) {
                                                 autoScrollJob.value = coroutineScope.launch {
                                                     while (true) {
-                                                        scrollState.scrollBy(scrollAmount.toFloat())
+                                                        val target = (scrollState.value + scrollAmount).coerceIn(0, scrollState.maxValue)
+                                                        scrollState.scrollTo(target)
                                                         delay(50)
                                                     }
                                                 }
