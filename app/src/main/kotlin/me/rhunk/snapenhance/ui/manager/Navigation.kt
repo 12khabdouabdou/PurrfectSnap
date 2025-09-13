@@ -137,8 +137,10 @@ class Navigation(
             },
             actions = {
                 currentRoute?.topBarActions?.invoke(this)
-                IconButton(onClick = { openBottomBarCustomization = true }) {
-                    Icon(Icons.Filled.Tune, contentDescription = null)
+                if (currentRoute?.routeInfo?.id == routes.settings.routeInfo.id) {
+                    IconButton(onClick = { openBottomBarCustomization = true }) {
+                        Icon(Icons.Filled.Tune, contentDescription = null)
+                    }
                 }
             }
         )
@@ -444,12 +446,12 @@ class Navigation(
                                             RadioButton(selected = defaultTabId == id, onClick = { if (id in defaultEligible) saveDefault(id) }, enabled = id in defaultEligible)
                                             IconButton(
                                                 onClick = {
-                                                    if (selectedTabIds.size > 1 && id != defaultTabId) {
+                                                    if (selectedTabIds.size > 1 && id != defaultTabId && id != "home") {
                                                         selectedTabIds = selectedTabIds.toMutableList().also { it.removeAt(index) }
                                                         saveSelected(selectedTabIds)
                                                     }
                                                 },
-                                                enabled = id != defaultTabId
+                                                enabled = id != defaultTabId && id != "home"
                                             ) { Icon(Icons.Filled.Close, contentDescription = null) }
                                         }
                                     }
