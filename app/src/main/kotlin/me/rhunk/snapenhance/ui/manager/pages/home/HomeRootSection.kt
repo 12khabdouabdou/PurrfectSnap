@@ -564,7 +564,7 @@ class HomeRootSection : Routes.Route() {
                                             if (autoScrollJob.value == null) {
                                                     autoScrollJob.value = coroutineScope.launch {
                                                         while (true) {
-                                                            scrollState.animateScrollBy(-scrollAmount.toFloat())
+                                                            scrollState.scrollBy(-scrollAmount.toFloat())
                                                             delay(50)
                                                         }
                                                     }
@@ -573,7 +573,7 @@ class HomeRootSection : Routes.Route() {
                                             if (autoScrollJob.value == null) {
                                                 autoScrollJob.value = coroutineScope.launch {
                                                     while (true) {
-                                                        scrollState.animateScrollBy(scrollAmount.toFloat())
+                                                        scrollState.scrollBy(scrollAmount.toFloat())
                                                         delay(50)
                                                     }
                                                 }
