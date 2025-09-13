@@ -774,7 +774,7 @@ class HomeRootSection : Routes.Route() {
                                     }
                                 }
                             } else {
-                                ElevatedButton(
+                                ElevatedCard(
                                     modifier = viewModifier,
                                     onClick = { action(routes) },
                                     interactionSource = interactionSource
