@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,10 +19,18 @@ import androidx.compose.ui.text.style.TextAlign
 fun QuickActionsDialog(
     quickActions: Map<Pair<String, ImageVector>, Any>,
     selectedQuickActions: List<String>,
+    getSpanFor: (name: String) -> Pair<Int, Int>,
+    setSpanFor: (name: String, w: Int, h: Int) -> Unit,
     onDismiss: () -> Unit,
     onSave: (List<String>) -> Unit
 ) {
     val selected = remember { mutableStateListOf(*selectedQuickActions.toTypedArray()) }
+    val sizes = remember {
+        val map = mutableStateMapOf<String, Pair<Int, Int>>()
+        selectedQuickActions.forEach { name -> map[name] = getSpanFor(name) }
+        map
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -39,7 +48,7 @@ fun QuickActionsDialog(
                     .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    text = "Select the actions you want to see on the home screen.",
+                    text = "Select and size your quick actions.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -76,6 +85,31 @@ fun QuickActionsDialog(
                             )
                         }
                     )
+
+                    if (isSelected) {
+                        val (w, h) = sizes[name] ?: getSpanFor(name)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 56.dp, end = 16.dp, bottom = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Size:", style = MaterialTheme.typography.labelLarge)
+                            val options = listOf(1 to 1, 2 to 1, 1 to 2, 2 to 2)
+                            options.forEach { (ow, oh) ->
+                                val selectedOpt = (w == ow && h == oh)
+                                FilterChip(
+                                    selected = selectedOpt,
+                                    onClick = {
+                                        sizes[name] = ow to oh
+                                        setSpanFor(name, ow, oh)
+                                    },
+                                    label = { Text("${ow}x${oh}") }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         },

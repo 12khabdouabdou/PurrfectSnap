@@ -2,10 +2,12 @@ package me.rhunk.snapenhance.ui.manager.pages.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateEnterExit
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -127,6 +129,18 @@ class HomeRootSection : Routes.Route() {
                 )
                 .then(modifier)
         )
+    }
+    private fun getTileSpan(name: String): Pair<Int, Int> {
+        val prefs = context.sharedPreferences
+        val raw = prefs.getString("quick_tile_size_$name", null) ?: "1x1"
+        val parts = raw.split('x')
+        val w = parts.getOrNull(0)?.toIntOrNull()?.coerceIn(1, 3) ?: 1
+        val h = parts.getOrNull(1)?.toIntOrNull()?.coerceIn(1, 2) ?: 1
+        return w to h
+    }
+    private fun setTileSpan(name: String, w: Int, h: Int) {
+        val prefs = context.sharedPreferences
+        prefs.edit().putString("quick_tile_size_$name", "${w.coerceIn(1,3)}x${h.coerceIn(1,2)}").apply()
     }
     override val title: @Composable (() -> Unit)? = {}
     override val init: () -> Unit = {
@@ -438,14 +452,14 @@ class HomeRootSection : Routes.Route() {
                     }
                 }
             } else {
+                val spacing = 6.dp
                 FlowRow(
                     modifier = Modifier
                         .padding(all = cardMargin)
                         .fillMaxWidth(),
-                    maxItemsInEachRow = 3,
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    horizontalArrangement = Arrangement.spacedBy(spacing),
                 ) {
-                    val tileHeight = LocalDensity.current.run {
+                    val baseCell = LocalDensity.current.run {
                         remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
                     }
                     remember(selectedTiles.size, context.translation.loadedLocale) {
@@ -454,19 +468,22 @@ class HomeRootSection : Routes.Route() {
                         }
                     }.forEach { (card, action) ->
                         val interactionSource = remember { MutableInteractionSource() }
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(animationSpec = Motion.tweenFloatSpec(200)) + scaleIn(animationSpec = Motion.tweenFloatSpec(220), initialScale = 0.9f)
+                        val (wSpan, hSpan) = getTileSpan(card.first)
+                        val tileWidth = baseCell * wSpan + spacing * (wSpan - 1)
+                        val tileHeight = baseCell * hSpan + spacing * (hSpan - 1)
+                        ElevatedCard(
+                            modifier = Modifier
+                                .width(tileWidth)
+                                .height(tileHeight)
+                                .padding(all = 6.dp)
+                                .animateEnterExit(
+                                    enter = fadeIn(animationSpec = Motion.tweenFloatSpec(200)) + scaleIn(animationSpec = Motion.tweenFloatSpec(220), initialScale = 0.9f),
+                                    exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150))
+                                )
+                                .scaleOnPress(interactionSource),
+                            onClick = { action(routes) },
+                            interactionSource = interactionSource
                         ) {
-                            ElevatedCard(
-                                modifier = Modifier
-                                    .height(tileHeight)
-                                    .weight(1f)
-                                    .padding(all = 6.dp)
-                                    .scaleOnPress(interactionSource),
-                                onClick = { action(routes) },
-                                interactionSource = interactionSource
-                            ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -488,7 +505,6 @@ class HomeRootSection : Routes.Route() {
                                     overflow = TextOverflow.Ellipsis,
                                 )
                             }
-                        }
                     }
                 }
             }
@@ -497,6 +513,8 @@ class HomeRootSection : Routes.Route() {
                 QuickActionsDialog(
                     quickActions = cards,
                     selectedQuickActions = selectedTiles,
+                    getSpanFor = { name -> getTileSpan(name) },
+                    setSpanFor = { name, w, h -> setTileSpan(name, w, h) },
                     onDismiss = { showQuickActionsMenu = false },
                     onSave = {
                         selectedTiles.clear()
