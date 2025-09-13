@@ -205,10 +205,11 @@ class HomeRootSection : Routes.Route() {
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
         var editMode by remember { mutableStateOf(false) }
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState, enabled = !editMode)
         ) {
             Icon(
                 imageVector = Snapenhance, contentDescription = null,
@@ -491,10 +492,21 @@ class HomeRootSection : Routes.Route() {
             } else {
                 val spacing = 6.dp
                 var spanTick by remember { mutableIntStateOf(0) }
+                // Track FlowRow position and enable auto-scroll when dragging near edges
+                var flowRowTop by remember { mutableStateOf(0) }
+                var flowRowBottom by remember { mutableStateOf(0) }
+                val coroutineScope = rememberCoroutineScope()
+                val autoScrollJob = remember { mutableStateOf<Job?>(null) }
+
                 FlowRow(
                     modifier = Modifier
                         .padding(all = cardMargin)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .onGloballyPositioned { coords ->
+                            val pos = coords.localToWindow(androidx.compose.ui.geometry.Offset.Zero)
+                            flowRowTop = pos.y.toInt()
+                            flowRowBottom = (pos.y + coords.size.height).toInt()
+                        },
                     horizontalArrangement = Arrangement.spacedBy(spacing),
                 ) {
                     val density = LocalDensity.current
@@ -535,9 +547,48 @@ class HomeRootSection : Routes.Route() {
                                 detectDragGestures(
                                     onDragStart = { dxAcc = 0f; dyAcc = 0f },
                                     onDrag = { change, dragAmount ->
-                                        change.consume()
+                                        change.consumePositionChange()
                                         dxAcc += dragAmount.x
                                         dyAcc += dragAmount.y
+                                        // Auto-scroll handling: determine pointer Y and start/stop scrolling
+                                        try {
+                                            val windowPos = change.position
+                                            val pointerWindowY = with(LocalDensity.current) { (windowPos.y).toPx() }
+                                        } catch (_: Exception) {
+                                            // position may not be available on some events; ignore
+                                        }
+
+                                        // Compute pointer global Y using position on screen where possible
+                                        val pointerPos = change.position
+                                        val pointerWindowY = pointerPos.y.toInt()
+
+                                        val threshold = 80 // px
+                                        val scrollAmount = 20 // px per tick
+
+                                        // Start auto-scroll up
+                                        if (pointerWindowY < flowRowTop + threshold) {
+                                            if (autoScrollJob.value == null) {
+                                                autoScrollJob.value = coroutineScope.launch {
+                                                    while (isActive) {
+                                                        scrollState.animateScrollBy(-scrollAmount.toFloat())
+                                                        kotlinx.coroutines.delay(50)
+                                                    }
+                                                }
+                                            }
+                                        } else if (pointerWindowY > flowRowBottom - threshold) {
+                                            if (autoScrollJob.value == null) {
+                                                autoScrollJob.value = coroutineScope.launch {
+                                                    while (isActive) {
+                                                        scrollState.animateScrollBy(scrollAmount.toFloat())
+                                                        kotlinx.coroutines.delay(50)
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            autoScrollJob.value?.cancel()
+                                            autoScrollJob.value = null
+                                        }
+
                                         val stepX = baseCellPx / 2f
                                         val stepY = baseCellPx / 2f
                                         var targetIndex = selectedTiles.indexOf(card.first)
@@ -551,6 +602,14 @@ class HomeRootSection : Routes.Route() {
                                             val item = selectedTiles.removeAt(currentIndex)
                                             selectedTiles.add(targetIndex, item)
                                         }
+                                    },
+                                    onDragEnd = {
+                                        autoScrollJob.value?.cancel()
+                                        autoScrollJob.value = null
+                                    },
+                                    onDragCancel = {
+                                        autoScrollJob.value?.cancel()
+                                        autoScrollJob.value = null
                                     }
                                 )
                             }
@@ -590,7 +649,7 @@ class HomeRootSection : Routes.Route() {
                                         .size(28.dp)
                                         .pointerInput(card.first, spanTick) {
                                             detectDragGestures { change, dragAmount ->
-                                                change.consume()
+                                                change.consumePositionChange()
                                                 var newW = wSpan
                                                 var newH = hSpan
                                                 val step = baseCellPx / 2f
