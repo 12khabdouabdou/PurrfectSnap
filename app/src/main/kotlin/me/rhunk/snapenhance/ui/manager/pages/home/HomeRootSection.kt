@@ -2,41 +2,63 @@ package me.rhunk.snapenhance.ui.manager.pages.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -49,11 +71,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavBackStackEntry
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.R
 import me.rhunk.snapenhance.action.EnumQuickActions
@@ -71,12 +92,9 @@ import me.rhunk.snapenhance.ui.manager.data.UpdateDownloader
 import me.rhunk.snapenhance.ui.manager.data.Updater
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
-import me.rhunk.snapenhance.ui.util.Motion
 import me.rhunk.snapenhance.ui.util.scaleOnPress
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.LocalIndication
- 
 import java.text.DateFormat
+import kotlin.math.roundToInt
 
 class HomeRootSection : Routes.Route() {
     companion object {
@@ -176,6 +194,30 @@ class HomeRootSection : Routes.Route() {
         val key = resolveTileKey(name)
         prefs.edit().remove("quick_tile_size_$key").apply()
     }
+
+    private fun getTileOffset(name: String): Pair<Float, Float> {
+        val prefs = context.sharedPreferences
+        val key = resolveTileKey(name)
+        val raw = prefs.getString("quick_tile_offset_$key", null)
+        if (raw == null) return 0f to 0f
+        val parts = raw.split(',')
+        val x = parts.getOrNull(0)?.toFloatOrNull() ?: 0f
+        val y = parts.getOrNull(1)?.toFloatOrNull() ?: 0f
+        return x to y
+    }
+
+    private fun setTileOffset(name: String, x: Float, y: Float) {
+        val prefs = context.sharedPreferences
+        val key = resolveTileKey(name)
+        prefs.edit().putString("quick_tile_offset_$key", "$x,$y").apply()
+    }
+
+    private fun clearTileOffset(name: String) {
+        val prefs = context.sharedPreferences
+        val key = resolveTileKey(name)
+        prefs.edit().remove("quick_tile_offset_$key").apply()
+    }
+
     override val title: @Composable (() -> Unit)? = {}
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -496,26 +538,42 @@ class HomeRootSection : Routes.Route() {
             } else {
                 val spacing = 6.dp
                 var spanTick by remember { mutableIntStateOf(0) }
-                // Track FlowRow position and enable auto-scroll when dragging near edges
-                var flowRowTop by remember { mutableStateOf(0) }
-                var flowRowBottom by remember { mutableStateOf(0) }
-                val coroutineScope = rememberCoroutineScope()
-                val autoScrollJob = remember { mutableStateOf<Job?>(null as Job?) }
 
-                FlowRow(
-                    modifier = Modifier
-                        .padding(all = cardMargin)
-                        .fillMaxWidth()
-                        .onGloballyPositioned { coords ->
-                            val pos = coords.localToWindow(androidx.compose.ui.geometry.Offset.Zero)
-                            flowRowTop = pos.y.toInt()
-                            flowRowBottom = (pos.y + coords.size.height).toInt()
-                        },
-                    horizontalArrangement = Arrangement.spacedBy(spacing),
+                BoxWithConstraints(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = cardMargin)
                 ) {
                     val density = LocalDensity.current
-                    val baseCell = density.run { remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - (cardMargin * 2 + spacing * 2) / 3f } }
+                    val baseCell = remember { (maxWidth - (spacing * 2)) / 3f }
                     val baseCellPx = with(density) { baseCell.toPx() }
+
+                    val tilePositions = remember(selectedTiles, spanTick) {
+                        val positions = mutableMapOf<String, Offset>()
+                        var currentX = 0f
+                        var currentY = 0f
+                        var rowMaxHeight = 0f
+                        val screenWidthPx = with(density) { maxWidth.toPx() }
+
+                        selectedTiles.forEach { tileName ->
+                            val card = cards.entries.find { entry -> entry.key.first == tileName }!!.key
+                            val (wSpan, hSpan) = getTileSpan(card.first)
+                            val tileWidthPx = with(density) { (baseCell * wSpan + spacing * (wSpan - 1)).toPx() }
+                            val tileHeightPx = with(density) { (baseCell * hSpan + spacing * (hSpan - 1)).toPx() }
+
+                            if (currentX + tileWidthPx > screenWidthPx) {
+                                currentX = 0f
+                                currentY += rowMaxHeight
+                                rowMaxHeight = 0f
+                            }
+
+                            positions[tileName] = Offset(currentX, currentY)
+                            currentX += tileWidthPx + with(density) { spacing.toPx() }
+                            if (tileHeightPx > rowMaxHeight) {
+                                rowMaxHeight = tileHeightPx
+                            }
+                        }
+                        positions
+                    }
+
                     remember(selectedTiles.size, context.translation.loadedLocale) {
                         selectedTiles.mapNotNull {
                             cards.entries.find { entry -> entry.key.first == it }
@@ -526,88 +584,90 @@ class HomeRootSection : Routes.Route() {
                         val (wSpan, hSpan) = getTileSpan(card.first)
                         val tileWidth = baseCell * wSpan + spacing * (wSpan - 1)
                         val tileHeight = baseCell * hSpan + spacing * (hSpan - 1)
-                        // Appear animation per tile
-                        var appeared by remember { mutableStateOf(false) }
-                        LaunchedEffect(Unit) { appeared = true }
-                        val alpha by androidx.compose.animation.core.animateFloatAsState(
-                            targetValue = if (appeared) 1f else 0f,
-                            animationSpec = Motion.tweenFloatSpec(200),
-                            label = "tileAlpha"
+
+                        var offsetX by remember(card.first) { mutableStateOf(0f) }
+                        var offsetY by remember(card.first) { mutableStateOf(0f) }
+                        var isDragging by remember { mutableStateOf(false) }
+
+                        LaunchedEffect(card.first, spanTick) {
+                            val (x, y) = getTileOffset(card.first)
+                            if (x != 0f || y != 0f) {
+                                offsetX = x
+                                offsetY = y
+                            } else {
+                                val pos = tilePositions[card.first]
+                                if (pos != null) {
+                                    offsetX = pos.x
+                                    offsetY = pos.y
+                                    setTileOffset(card.first, offsetX, offsetY)
+                                }
+                            }
+                        }
+
+                        val animatedOffsetX by animateFloatAsState(
+                            targetValue = offsetX,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            ),
+                            label = "offsetX"
                         )
-                        val scale by androidx.compose.animation.core.animateFloatAsState(
-                            targetValue = if (appeared) 1f else 0.9f,
-                            animationSpec = Motion.tweenFloatSpec(220),
-                            label = "tileScale"
+                        val animatedOffsetY by animateFloatAsState(
+                            targetValue = offsetY,
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            ),
+                            label = "offsetY"
                         )
-                        var dxAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
-                        var dyAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
-                        var dxAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
-                        var dyAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
+
+                        val currentOffsetX = if (isDragging) offsetX else animatedOffsetX
+                        val currentOffsetY = if (isDragging) offsetY else animatedOffsetY
+
                         val baseModifier = Modifier
+                            .offset { IntOffset(currentOffsetX.roundToInt(), currentOffsetY.roundToInt()) }
                             .width(tileWidth)
                             .height(tileHeight)
                             .padding(all = 6.dp)
-                            .graphicsLayer { this.alpha = alpha; this.scaleX = scale; this.scaleY = scale }
+
                         val editModifier = baseModifier.then(
-                            Modifier.pointerInput(card.first, selectedTiles.size, spanTick) {
+                            Modifier.pointerInput(card.first) {
+                                var originalOffsetX = 0f
+                                var originalOffsetY = 0f
                                 detectDragGestures(
-                                    onDragStart = { dxAcc = 0f; dyAcc = 0f },
+                                    onDragStart = {
+                                        isDragging = true
+                                        originalOffsetX = offsetX
+                                        originalOffsetY = offsetY
+                                    },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
-                                        dxAcc += dragAmount.x
-                                        dyAcc += dragAmount.y
-                                        // Auto-scroll handling: compute pointer window Y using FlowRow top + local pointer y
-                                        val pointerWindowY = flowRowTop + change.position.y.toInt()
-                                        val threshold = 80 // px
-                                        val scrollAmount = 20 // px per tick
-
-                                        // Start auto-scroll up
-                                        if (pointerWindowY < flowRowTop + threshold) {
-                                            if (autoScrollJob.value == null) {
-                                                    autoScrollJob.value = coroutineScope.launch {
-                                                        while (true) {
-                                                            val target = (scrollState.value - scrollAmount).coerceIn(0, scrollState.maxValue)
-                                                            scrollState.scrollTo(target)
-                                                            delay(50)
-                                                        }
-                                                    }
-                                            }
-                                        } else if (pointerWindowY > flowRowBottom - threshold) {
-                                            if (autoScrollJob.value == null) {
-                                                autoScrollJob.value = coroutineScope.launch {
-                                                    while (true) {
-                                                        val target = (scrollState.value + scrollAmount).coerceIn(0, scrollState.maxValue)
-                                                        scrollState.scrollTo(target)
-                                                        delay(50)
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            autoScrollJob.value?.cancel()
-                                            autoScrollJob.value = null
-                                        }
-
-                                        val stepX = baseCellPx / 4f
-                                        val stepY = baseCellPx / 4f
-                                        var targetIndex = selectedTiles.indexOf(card.first)
-                                        while (dxAcc > stepX) { targetIndex += 1; dxAcc -= stepX }
-                                        while (dxAcc < -stepX) { targetIndex -= 1; dxAcc += stepX }
-                                        while (dyAcc > stepY) { targetIndex += 3; dyAcc -= stepY }
-                                        while (dyAcc < -stepY) { targetIndex -= 3; dyAcc += stepY }
-                                        val currentIndex = selectedTiles.indexOf(card.first)
-                                        targetIndex = targetIndex.coerceIn(0, selectedTiles.lastIndex)
-                                        if (currentIndex != -1 && targetIndex != currentIndex) {
-                                            val item = selectedTiles.removeAt(currentIndex)
-                                            selectedTiles.add(targetIndex, item)
-                                        }
+                                        offsetX += dragAmount.x
+                                        offsetY += dragAmount.y
                                     },
                                     onDragEnd = {
-                                        autoScrollJob.value?.cancel()
-                                        autoScrollJob.value = null
-                                    },
-                                    onDragCancel = {
-                                        autoScrollJob.value?.cancel()
-                                        autoScrollJob.value = null
+                                        isDragging = false
+                                        var overlaps = false
+                                        val tileRect = Rect(Offset(offsetX, offsetY), Size(tileWidth.toPx(), tileHeight.toPx()))
+                                        for (otherTileName in selectedTiles) {
+                                            if (otherTileName == card.first) continue
+                                            val (otherOffsetX, otherOffsetY) = getTileOffset(otherTileName)
+                                            val (otherWSpan, otherHSpan) = getTileSpan(otherTileName)
+                                            val otherTileWidth = baseCell * otherWSpan + spacing * (otherWSpan - 1)
+                                            val otherTileHeight = baseCell * otherHSpan + spacing * (otherHSpan - 1)
+                                            val otherRect = Rect(Offset(otherOffsetX, otherOffsetY), Size(otherTileWidth.toPx(), otherTileHeight.toPx()))
+                                            if (tileRect.overlaps(otherRect)) {
+                                                overlaps = true
+                                                break
+                                            }
+                                        }
+
+                                        if (overlaps) {
+                                            offsetX = originalOffsetX
+                                            offsetY = originalOffsetY
+                                        } else {
+                                            setTileOffset(card.first, offsetX, offsetY)
+                                        }
                                     }
                                 )
                             }
@@ -618,77 +678,80 @@ class HomeRootSection : Routes.Route() {
                             ElevatedCard(
                                 modifier = editModifier
                             ) {
-                            Box(Modifier.fillMaxSize()) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(all = 5.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.SpaceEvenly,
-                                ) {
-                                    Icon(
-                                        imageVector = card.second, contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(50.dp)
-                                    )
-                                    Text(
-                                        text = card.first,
-                                        lineHeight = 16.sp,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
+                                Box(Modifier.fillMaxSize()) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(all = 5.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.SpaceEvenly,
+                                    ) {
+                                        Icon(
+                                            imageVector = card.second, contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(50.dp)
+                                        )
+                                        Text(
+                                            text = card.first,
+                                            lineHeight = 16.sp,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
+                                    // Drag handle for resizing
+                                    var dxAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
+                                    var dyAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .size(28.dp)
+                                            .pointerInput(card.first, spanTick) {
+                                                detectDragGestures(
+                                                    onDragStart = {
+                                                        dxAccResize = 0f
+                                                        dyAccResize = 0f
+                                                    },
+                                                    onDrag = { change, dragAmount ->
+                                                        change.consume()
+                                                        dxAccResize += dragAmount.x
+                                                        dyAccResize += dragAmount.y
+
+                                                        var newW = wSpan
+                                                        var newH = hSpan
+                                                        val step = baseCellPx / 2f
+
+                                                        while (dxAccResize > step) {
+                                                            newW = (wSpan + 1).coerceIn(1, 3)
+                                                            dxAccResize -= step
+                                                        }
+                                                        while (dxAccResize < -step) {
+                                                            newW = (wSpan - 1).coerceIn(1, 3)
+                                                            dxAccResize += step
+                                                        }
+                                                        while (dyAccResize > step) {
+                                                            newH = (hSpan + 1).coerceIn(1, 3)
+                                                            dyAccResize -= step
+                                                        }
+                                                        while (dyAccResize < -step) {
+                                                            newH = (hSpan - 1).coerceIn(1, 3)
+                                                            dyAccResize += step
+                                                        }
+
+                                                        if (newW != wSpan || newH != hSpan) {
+                                                            setTileSpan(card.first, newW, newH)
+                                                            spanTick++
+                                                            selectedTiles.forEach { clearTileOffset(it) }
+                                                        }
+                                                    }
+                                                )
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
                                 }
-                                // Drag handle for resizing
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .size(28.dp)
-                                        .pointerInput(card.first, spanTick) {
-                                            detectDragGestures(
-                                                onDragStart = {
-                                                    dxAccResize = 0f
-                                                    dyAccResize = 0f
-                                                },
-                                                onDrag = { change, dragAmount ->
-                                                    change.consume()
-                                                    dxAccResize += dragAmount.x
-                                                    dyAccResize += dragAmount.y
-
-                                                    var newW = wSpan
-                                                    var newH = hSpan
-                                                    val step = baseCellPx / 2f
-
-                                                    while (dxAccResize > step) {
-                                                        newW = (wSpan + 1).coerceIn(1, 3)
-                                                        dxAccResize -= step
-                                                    }
-                                                    while (dxAccResize < -step) {
-                                                        newW = (wSpan - 1).coerceIn(1, 3)
-                                                        dxAccResize += step
-                                                    }
-                                                    while (dyAccResize > step) {
-                                                        newH = (hSpan + 1).coerceIn(1, 3)
-                                                        dyAccResize -= step
-                                                    }
-                                                    while (dyAccResize < -step) {
-                                                        newH = (hSpan - 1).coerceIn(1, 3)
-                                                        dyAccResize += step
-                                                    }
-
-                                                    if (newW != wSpan || newH != hSpan) {
-                                                        setTileSpan(card.first, newW, newH)
-                                                        spanTick++
-                                                    }
-                                                }
-                                            )
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
                             }
                         } else {
                             ElevatedCard(
@@ -723,7 +786,6 @@ class HomeRootSection : Routes.Route() {
                         }
                     }
                 }
-                // No dialog-based resizing
             }
             if (showQuickActionsMenu) {
                 QuickActionsDialog(
@@ -733,7 +795,7 @@ class HomeRootSection : Routes.Route() {
                     onSave = { newList ->
                         val previous = selectedTiles.toList()
                         val removed = previous.filter { it !in newList }
-                        removed.forEach { clearTileSpan(it) }
+                        removed.forEach { clearTileSpan(it); clearTileOffset(it) }
                         selectedTiles.clear()
                         selectedTiles.addAll(newList)
                         context.coroutineScope.launch {
