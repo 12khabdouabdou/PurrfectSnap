@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateEnterExit
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -31,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -189,7 +189,7 @@ class HomeRootSection : Routes.Route() {
         )
     }
 
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val avenirNext = remember {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
@@ -506,15 +506,25 @@ class HomeRootSection : Routes.Route() {
                         val (wSpan, hSpan) = getTileSpan(card.first)
                         val tileWidth = baseCell * wSpan + spacing * (wSpan - 1)
                         val tileHeight = baseCell * hSpan + spacing * (hSpan - 1)
+                        // Appear animation per tile
+                        var appeared by remember { mutableStateOf(false) }
+                        LaunchedEffect(Unit) { appeared = true }
+                        val alpha by androidx.compose.animation.core.animateFloatAsState(
+                            targetValue = if (appeared) 1f else 0f,
+                            animationSpec = Motion.tweenFloatSpec(200),
+                            label = "tileAlpha"
+                        )
+                        val scale by androidx.compose.animation.core.animateFloatAsState(
+                            targetValue = if (appeared) 1f else 0.9f,
+                            animationSpec = Motion.tweenFloatSpec(220),
+                            label = "tileScale"
+                        )
                         ElevatedCard(
                             modifier = Modifier
                                 .width(tileWidth)
                                 .height(tileHeight)
                                 .padding(all = 6.dp)
-                                .animateEnterExit(
-                                    enter = fadeIn(animationSpec = Motion.tweenFloatSpec(200)) + scaleIn(animationSpec = Motion.tweenFloatSpec(220), initialScale = 0.9f),
-                                    exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150))
-                                )
+                                .graphicsLayer { this.alpha = alpha; this.scaleX = scale; this.scaleY = scale }
                                 .scaleOnPress(interactionSource)
                                 .then(if (editMode) Modifier.pointerInput(card.first, spanTick) {
                                     detectTapGestures(onLongPress = { editingTile = card.first })
