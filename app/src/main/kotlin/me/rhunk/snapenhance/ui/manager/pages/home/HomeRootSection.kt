@@ -541,6 +541,8 @@ class HomeRootSection : Routes.Route() {
                         )
                         var dxAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
                         var dyAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
+                        var dxAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
+                        var dyAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
                         val baseModifier = Modifier
                             .width(tileWidth)
                             .height(tileHeight)
@@ -585,8 +587,8 @@ class HomeRootSection : Routes.Route() {
                                             autoScrollJob.value = null
                                         }
 
-                                        val stepX = baseCellPx / 2f
-                                        val stepY = baseCellPx / 2f
+                                        val stepX = baseCellPx / 4f
+                                        val stepY = baseCellPx / 4f
                                         var targetIndex = selectedTiles.indexOf(card.first)
                                         while (dxAcc > stepX) { targetIndex += 1; dxAcc -= stepX }
                                         while (dxAcc < -stepX) { targetIndex -= 1; dxAcc += stepX }
@@ -644,20 +646,43 @@ class HomeRootSection : Routes.Route() {
                                         .align(Alignment.BottomEnd)
                                         .size(28.dp)
                                         .pointerInput(card.first, spanTick) {
-                                            detectDragGestures { change, dragAmount ->
-                                                change.consume()
-                                                var newW = wSpan
-                                                var newH = hSpan
-                                                val step = baseCellPx / 2f
-                                                if (dragAmount.x > step) newW = (wSpan + 1).coerceIn(1, 3)
-                                                if (dragAmount.x < -step) newW = (wSpan - 1).coerceIn(1, 3)
-                                                if (dragAmount.y > step) newH = (hSpan + 1).coerceIn(1, 3)
-                                                if (dragAmount.y < -step) newH = (hSpan - 1).coerceIn(1, 3)
-                                                if (newW != wSpan || newH != hSpan) {
-                                                    setTileSpan(card.first, newW, newH)
-                                                    spanTick++
+                                            detectDragGestures(
+                                                onDragStart = {
+                                                    dxAccResize = 0f
+                                                    dyAccResize = 0f
+                                                },
+                                                onDrag = { change, dragAmount ->
+                                                    change.consume()
+                                                    dxAccResize += dragAmount.x
+                                                    dyAccResize += dragAmount.y
+
+                                                    var newW = wSpan
+                                                    var newH = hSpan
+                                                    val step = baseCellPx / 2f
+
+                                                    while (dxAccResize > step) {
+                                                        newW = (wSpan + 1).coerceIn(1, 3)
+                                                        dxAccResize -= step
+                                                    }
+                                                    while (dxAccResize < -step) {
+                                                        newW = (wSpan - 1).coerceIn(1, 3)
+                                                        dxAccResize += step
+                                                    }
+                                                    while (dyAccResize > step) {
+                                                        newH = (hSpan + 1).coerceIn(1, 3)
+                                                        dyAccResize -= step
+                                                    }
+                                                    while (dyAccResize < -step) {
+                                                        newH = (hSpan - 1).coerceIn(1, 3)
+                                                        dyAccResize += step
+                                                    }
+
+                                                    if (newW != wSpan || newH != hSpan) {
+                                                        setTileSpan(card.first, newW, newH)
+                                                        spanTick++
+                                                    }
                                                 }
-                                            }
+                                            )
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
