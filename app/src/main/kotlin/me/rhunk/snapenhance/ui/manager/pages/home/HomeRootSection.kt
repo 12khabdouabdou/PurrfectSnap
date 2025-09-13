@@ -70,8 +70,7 @@ import me.rhunk.snapenhance.ui.util.Motion
 import me.rhunk.snapenhance.ui.util.scaleOnPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
+ 
 import java.text.DateFormat
 
 class HomeRootSection : Routes.Route() {
@@ -486,7 +485,6 @@ class HomeRootSection : Routes.Route() {
             } else {
                 val spacing = 6.dp
                 var spanTick by remember { mutableIntStateOf(0) }
-                var editingTile by remember { mutableStateOf<String?>(null) }
                 FlowRow(
                     modifier = Modifier
                         .padding(all = cardMargin)
@@ -519,19 +517,40 @@ class HomeRootSection : Routes.Route() {
                             animationSpec = Motion.tweenFloatSpec(220),
                             label = "tileScale"
                         )
+                        var dxAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
+                        var dyAcc by remember(card.first, spanTick) { mutableStateOf(0f) }
                         ElevatedCard(
                             modifier = Modifier
                                 .width(tileWidth)
                                 .height(tileHeight)
                                 .padding(all = 6.dp)
                                 .graphicsLayer { this.alpha = alpha; this.scaleX = scale; this.scaleY = scale }
-                                .scaleOnPress(interactionSource)
-                                .then(if (editMode) Modifier.pointerInput(card.first, spanTick) {
-                                    detectTapGestures(onLongPress = { editingTile = card.first })
-                                } else Modifier),
-                            onClick = {
-                                if (!editMode) action(routes) else editingTile = card.first
-                            },
+                                .then(if (!editMode) Modifier.scaleOnPress(interactionSource) else Modifier)
+                                .then(
+                                    if (editMode) Modifier.pointerInput(card.first, spanTick) {
+                                        detectDragGestures(
+                                            onDragStart = { dxAcc = 0f; dyAcc = 0f },
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                dxAcc += dragAmount.x
+                                                dyAcc += dragAmount.y
+                                                var newW = wSpan
+                                                var newH = hSpan
+                                                val stepX = baseCellPx / 2f
+                                                val stepY = baseCellPx / 2f
+                                                while (dxAcc > stepX) { newW = (newW + 1).coerceIn(1, 3); dxAcc -= stepX }
+                                                while (dxAcc < -stepX) { newW = (newW - 1).coerceIn(1, 3); dxAcc += stepX }
+                                                while (dyAcc > stepY) { newH = (newH + 1).coerceIn(1, 3); dyAcc -= stepY }
+                                                while (dyAcc < -stepY) { newH = (newH - 1).coerceIn(1, 3); dyAcc += stepY }
+                                                if (newW != wSpan || newH != hSpan) {
+                                                    setTileSpan(card.first, newW, newH)
+                                                    spanTick++
+                                                }
+                                            }
+                                        )
+                                    } else Modifier
+                                ),
+                            onClick = { if (!editMode) action(routes) },
                             interactionSource = interactionSource
                         ) {
                             Box(Modifier.fillMaxSize()) {
@@ -556,28 +575,11 @@ class HomeRootSection : Routes.Route() {
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                 }
-                                // Drag handle bottom-right for resizing
+                                // Visual drag handle indicator (drag anywhere on tile to resize)
                                 if (editMode) Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
-                                        .size(28.dp)
-                                        .pointerInput(card.first, wSpan, hSpan) {
-                                            detectDragGestures { change, dragAmount ->
-                                                change.consume()
-                                                val dx = dragAmount.x
-                                                val dy = dragAmount.y
-                                                var newW = wSpan
-                                                var newH = hSpan
-                                                if (dx > baseCellPx / 2f) newW = (wSpan + 1).coerceIn(1, 3)
-                                                if (dx < -baseCellPx / 2f) newW = (wSpan - 1).coerceIn(1, 3)
-                                                if (dy > baseCellPx / 2f) newH = (hSpan + 1).coerceIn(1, 3)
-                                                if (dy < -baseCellPx / 2f) newH = (hSpan - 1).coerceIn(1, 3)
-                                                if (newW != wSpan || newH != hSpan) {
-                                                    setTileSpan(card.first, newW, newH)
-                                                    spanTick++
-                                                }
-                                            }
-                                        },
+                                        .size(28.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -586,37 +588,12 @@ class HomeRootSection : Routes.Route() {
                         }
                     }
                 }
-                if (editMode && editingTile != null) {
-                    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                    ModalBottomSheet(onDismissRequest = { editingTile = null }, sheetState = sheetState) {
-                        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Resize \"${editingTile}\"", style = MaterialTheme.typography.titleMedium)
-                            val options = listOf(1 to 1, 2 to 1, 3 to 1, 1 to 2, 2 to 2, 3 to 2, 1 to 3, 2 to 3, 3 to 3)
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                options.forEach { (ow, oh) ->
-                                    val selected = getTileSpan(editingTile!!) == (ow to oh)
-                                    FilterChip(
-                                        selected = selected,
-                                        onClick = {
-                                            setTileSpan(editingTile!!, ow, oh)
-                                            spanTick++
-                                        },
-                                        label = { Text("${ow}x${oh}") }
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.height(8.dp))
-                            Button(onClick = { editingTile = null }, modifier = Modifier.align(Alignment.End)) { Text("Done") }
-                        }
-                    }
-                }
+                // No dialog-based resizing
             }
             if (showQuickActionsMenu) {
                 QuickActionsDialog(
                     quickActions = cards,
                     selectedQuickActions = selectedTiles,
-                    getSpanFor = { name -> getTileSpan(name) },
-                    setSpanFor = { name, w, h -> setTileSpan(name, w, h) },
                     onDismiss = { showQuickActionsMenu = false },
                     onSave = {
                         selectedTiles.clear()

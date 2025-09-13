@@ -19,17 +19,10 @@ import androidx.compose.ui.text.style.TextAlign
 fun QuickActionsDialog(
     quickActions: Map<Pair<String, ImageVector>, Any>,
     selectedQuickActions: List<String>,
-    getSpanFor: (name: String) -> Pair<Int, Int>,
-    setSpanFor: (name: String, w: Int, h: Int) -> Unit,
     onDismiss: () -> Unit,
     onSave: (List<String>) -> Unit
 ) {
     val selected = remember { mutableStateListOf(*selectedQuickActions.toTypedArray()) }
-    val sizes = remember {
-        val map = mutableStateMapOf<String, Pair<Int, Int>>()
-        selectedQuickActions.forEach { name -> map[name] = getSpanFor(name) }
-        map
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -85,31 +78,6 @@ fun QuickActionsDialog(
                             )
                         }
                     )
-
-                    if (isSelected) {
-                        val (w, h) = sizes[name] ?: getSpanFor(name)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 56.dp, end = 16.dp, bottom = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Size:", style = MaterialTheme.typography.labelLarge)
-                            val options = listOf(1 to 1, 2 to 1, 3 to 1, 1 to 2, 2 to 2, 3 to 2, 1 to 3, 2 to 3, 3 to 3)
-                            options.forEach { (ow, oh) ->
-                                val selectedOpt = (w == ow && h == oh)
-                                FilterChip(
-                                    selected = selectedOpt,
-                                    onClick = {
-                                        sizes[name] = ow to oh
-                                        setSpanFor(name, ow, oh)
-                                    },
-                                    label = { Text("${ow}x${oh}") }
-                                )
-                            }
-                        }
-                    }
                 }
             }
         },
