@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -165,6 +166,11 @@ class HomeRootSection : Routes.Route() {
         val prefs = context.sharedPreferences
         val key = resolveTileKey(name)
         prefs.edit().putString("quick_tile_size_$key", "${w.coerceIn(1,3)}x${h.coerceIn(1,3)}").apply()
+    }
+    private fun clearTileSpan(name: String) {
+        val prefs = context.sharedPreferences
+        val key = resolveTileKey(name)
+        prefs.edit().remove("quick_tile_size_$key").apply()
     }
     override val title: @Composable (() -> Unit)? = {}
     override val init: () -> Unit = {
@@ -527,24 +533,25 @@ class HomeRootSection : Routes.Route() {
                                 .graphicsLayer { this.alpha = alpha; this.scaleX = scale; this.scaleY = scale }
                                 .then(if (!editMode) Modifier.scaleOnPress(interactionSource) else Modifier)
                                 .then(
-                                    if (editMode) Modifier.pointerInput(card.first, spanTick) {
+                                    if (editMode) Modifier.pointerInput(card.first, selectedTiles.size, spanTick) {
                                         detectDragGestures(
                                             onDragStart = { dxAcc = 0f; dyAcc = 0f },
                                             onDrag = { change, dragAmount ->
                                                 change.consume()
                                                 dxAcc += dragAmount.x
                                                 dyAcc += dragAmount.y
-                                                var newW = wSpan
-                                                var newH = hSpan
                                                 val stepX = baseCellPx / 2f
                                                 val stepY = baseCellPx / 2f
-                                                while (dxAcc > stepX) { newW = (newW + 1).coerceIn(1, 3); dxAcc -= stepX }
-                                                while (dxAcc < -stepX) { newW = (newW - 1).coerceIn(1, 3); dxAcc += stepX }
-                                                while (dyAcc > stepY) { newH = (newH + 1).coerceIn(1, 3); dyAcc -= stepY }
-                                                while (dyAcc < -stepY) { newH = (newH - 1).coerceIn(1, 3); dyAcc += stepY }
-                                                if (newW != wSpan || newH != hSpan) {
-                                                    setTileSpan(card.first, newW, newH)
-                                                    spanTick++
+                                                var targetIndex = selectedTiles.indexOf(card.first)
+                                                while (dxAcc > stepX) { targetIndex += 1; dxAcc -= stepX }
+                                                while (dxAcc < -stepX) { targetIndex -= 1; dxAcc += stepX }
+                                                while (dyAcc > stepY) { targetIndex += 3; dyAcc -= stepY }
+                                                while (dyAcc < -stepY) { targetIndex -= 3; dyAcc += stepY }
+                                                val currentIndex = selectedTiles.indexOf(card.first)
+                                                targetIndex = targetIndex.coerceIn(0, selectedTiles.lastIndex)
+                                                if (currentIndex != -1 && targetIndex != currentIndex) {
+                                                    val item = selectedTiles.removeAt(currentIndex)
+                                                    selectedTiles.add(targetIndex, item)
                                                 }
                                             }
                                         )
@@ -575,11 +582,27 @@ class HomeRootSection : Routes.Route() {
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                 }
-                                // Visual drag handle indicator (drag anywhere on tile to resize)
+                                // Drag handle for resizing
                                 if (editMode) Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
-                                        .size(28.dp),
+                                        .size(28.dp)
+                                        .pointerInput(card.first, spanTick) {
+                                            detectDragGestures { change, dragAmount ->
+                                                change.consume()
+                                                var newW = wSpan
+                                                var newH = hSpan
+                                                val step = baseCellPx / 2f
+                                                if (dragAmount.x > step) newW = (wSpan + 1).coerceIn(1, 3)
+                                                if (dragAmount.x < -step) newW = (wSpan - 1).coerceIn(1, 3)
+                                                if (dragAmount.y > step) newH = (hSpan + 1).coerceIn(1, 3)
+                                                if (dragAmount.y < -step) newH = (hSpan - 1).coerceIn(1, 3)
+                                                if (newW != wSpan || newH != hSpan) {
+                                                    setTileSpan(card.first, newW, newH)
+                                                    spanTick++
+                                                }
+                                            }
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -595,9 +618,12 @@ class HomeRootSection : Routes.Route() {
                     quickActions = cards,
                     selectedQuickActions = selectedTiles,
                     onDismiss = { showQuickActionsMenu = false },
-                    onSave = {
+                    onSave = { newList ->
+                        val previous = selectedTiles.toList()
+                        val removed = previous.filter { it !in newList }
+                        removed.forEach { clearTileSpan(it) }
                         selectedTiles.clear()
-                        selectedTiles.addAll(it)
+                        selectedTiles.addAll(newList)
                         context.coroutineScope.launch {
                             context.database.setQuickTiles(selectedTiles)
                         }
