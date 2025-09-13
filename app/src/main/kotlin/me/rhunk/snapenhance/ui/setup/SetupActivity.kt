@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
 package me.rhunk.snapenhance.ui.setup
 
 import android.app.Activity
@@ -39,6 +40,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import me.rhunk.snapenhance.ui.util.scaleOnPress
 import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
@@ -183,7 +185,7 @@ class SetupActivity : ComponentActivity() {
                             .padding(bottom = 50.dp)
                             .size(60.dp)
                             .alpha(alpha)
-                            .then(me.rhunk.snapenhance.ui.util.scaleOnPress(nextSrc)),
+                            .scaleOnPress(nextSrc),
                         interactionSource = nextSrc
                     ) {
                         Icon(

@@ -25,6 +25,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import me.rhunk.snapenhance.ui.util.scaleOnPress
@@ -177,7 +178,7 @@ class PermissionsScreen : SetupScreen() {
                         AnimatedContent(
                             targetState = granted,
                             transitionSpec = {
-                                fadeIn(animationSpec = Motion.tweenFloat(150)) togetherWith fadeOut(animationSpec = Motion.tweenFloat(150))
+                                fadeIn(animationSpec = tween(150)) togetherWith fadeOut(animationSpec = tween(150))
                             }, label = "permState"
                         ) { isGranted ->
                             if (isGranted) {

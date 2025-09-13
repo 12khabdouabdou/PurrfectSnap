@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
 package me.rhunk.snapenhance.ui.overlay
 
 import android.app.Dialog

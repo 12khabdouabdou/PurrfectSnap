@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.animateItemPlacement
+import androidx.compose.foundation.lazy.animateItemPlacement
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Public

@@ -456,7 +456,7 @@ class HomeRootSection : Routes.Route() {
                         val interactionSource = remember { MutableInteractionSource() }
                         AnimatedVisibility(
                             visible = true,
-                            enter = fadeIn(animationSpec = Motion.tweenFloat(200)) + scaleIn(animationSpec = Motion.tweenFloat(220), initialScale = 0.9f)
+                            enter = fadeIn(animationSpec = Motion.tweenFloatSpec(200)) + scaleIn(animationSpec = Motion.tweenFloatSpec(220), initialScale = 0.9f)
                         ) {
                             ElevatedCard(
                                 modifier = Modifier

@@ -35,8 +35,8 @@ fun AestheticDialog(
     Dialog(onDismissRequest = onDismissRequest) {
         AnimatedVisibility(
             visible = visible,
-            enter = fadeIn(animationSpec = Motion.tweenFloat(180)) + scaleIn(animationSpec = Motion.tweenFloat(220)),
-            exit = fadeOut(animationSpec = Motion.tweenFloat(150)) + scaleOut(animationSpec = Motion.tweenFloat(180))
+            enter = fadeIn(animationSpec = Motion.tweenFloatSpec(180)) + scaleIn(animationSpec = Motion.tweenFloatSpec(220)),
+            exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150)) + scaleOut(animationSpec = Motion.tweenFloatSpec(180))
         ) {
             Card(
                 shape = RoundedCornerShape(16.dp),

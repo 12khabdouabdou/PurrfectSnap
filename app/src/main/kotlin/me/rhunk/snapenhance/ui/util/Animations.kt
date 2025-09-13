@@ -46,20 +46,19 @@ fun rememberPrefersReducedMotion(): Boolean {
     return state.value
 }
 
-object Motion
-{
+object Motion {
     @Composable
-    fun tween(durationMillis: Int, easing: Easing = androidx.compose.animation.core.FastOutSlowInEasing): FiniteAnimationSpec<Int> {
+    fun tweenSpec(durationMillis: Int, easing: Easing = androidx.compose.animation.core.FastOutSlowInEasing): FiniteAnimationSpec<Int> {
         val reduced = rememberPrefersReducedMotion()
         val d = if (reduced) 0 else durationMillis
-        return tween(durationMillis = d, easing = easing)
+        return tween<Int>(durationMillis = d, easing = easing)
     }
 
     @Composable
-    fun tweenFloat(durationMillis: Int, easing: Easing = androidx.compose.animation.core.FastOutSlowInEasing): FiniteAnimationSpec<Float> {
+    fun tweenFloatSpec(durationMillis: Int, easing: Easing = androidx.compose.animation.core.FastOutSlowInEasing): FiniteAnimationSpec<Float> {
         val reduced = rememberPrefersReducedMotion()
         val d = if (reduced) 0 else durationMillis
-        return tween(durationMillis = d, easing = easing)
+        return tween<Float>(durationMillis = d, easing = easing)
     }
 
     @Composable
@@ -78,12 +77,9 @@ fun Modifier.scaleOnPress(
     enabled: Boolean = true,
     scaleDown: Float = 0.98f
 ): Modifier {
-    interactionSource: InteractionSource,
-    scaleDown: Float
-): Modifier {
     val pressed by interactionSource.collectIsPressedAsState()
     val target = if (pressed) scaleDown else 1f
-    val spec = Motion.tweenFloat(150)
+    val spec = Motion.tweenFloatSpec(150)
     val animated by androidx.compose.animation.core.animateFloatAsState(
         targetValue = target,
         animationSpec = spec,

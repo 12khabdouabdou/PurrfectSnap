@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.animateItemPlacement
+import androidx.compose.foundation.lazy.animateItemPlacement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp

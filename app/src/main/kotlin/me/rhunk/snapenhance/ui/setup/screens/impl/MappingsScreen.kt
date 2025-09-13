@@ -38,8 +38,8 @@ class MappingsScreen : SetupScreen() {
             Dialog(onDismissRequest = { dismiss() }) {
                 AnimatedVisibility(
                     visible = visible,
-                    enter = fadeIn(animationSpec = Motion.tweenFloat(180)) + scaleIn(animationSpec = Motion.tweenFloat(200)),
-                    exit = fadeOut(animationSpec = Motion.tweenFloat(150)) + scaleOut(animationSpec = Motion.tweenFloat(180))
+                    enter = fadeIn(animationSpec = Motion.tweenFloatSpec(180)) + scaleIn(animationSpec = Motion.tweenFloatSpec(200)),
+                    exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150)) + scaleOut(animationSpec = Motion.tweenFloatSpec(180))
                 ) {
                     remember { AlertDialogs(context.translation) }.InfoDialog(title = infoText!!) {
                         dismiss()
