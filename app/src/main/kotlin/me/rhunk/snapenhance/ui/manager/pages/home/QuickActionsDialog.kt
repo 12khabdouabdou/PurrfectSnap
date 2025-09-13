@@ -96,7 +96,7 @@ fun QuickActionsDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text("Size:", style = MaterialTheme.typography.labelLarge)
-                            val options = listOf(1 to 1, 2 to 1, 1 to 2, 2 to 2)
+                            val options = listOf(1 to 1, 2 to 1, 3 to 1, 1 to 2, 2 to 2, 3 to 2, 1 to 3, 2 to 3, 3 to 3)
                             options.forEach { (ow, oh) ->
                                 val selectedOpt = (w == ow && h == oh)
                                 FilterChip(

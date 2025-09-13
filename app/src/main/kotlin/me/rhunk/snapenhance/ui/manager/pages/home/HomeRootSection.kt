@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -30,6 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -66,6 +70,8 @@ import me.rhunk.snapenhance.ui.util.Motion
 import me.rhunk.snapenhance.ui.util.scaleOnPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import java.text.DateFormat
 
 class HomeRootSection : Routes.Route() {
@@ -73,6 +79,19 @@ class HomeRootSection : Routes.Route() {
         val cardMargin = 10.dp
     }
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
+    data class QaCard(val id: String, val name: String, val icon: ImageVector, val action: (Routes) -> Unit)
+    private val cardEntries by lazy {
+        val list = mutableListOf<QaCard>()
+        EnumQuickActions.entries.forEach { q ->
+            val name = context.translation["actions.${q.key}.name"]
+            list.add(QaCard(id = "quick.${q.key}", name = name, icon = q.icon, action = q.action))
+        }
+        EnumAction.entries.forEach { a ->
+            val name = context.translation["actions.${a.key}.name"]
+            list.add(QaCard(id = "action.${a.key}", name = name, icon = a.icon, action = { context.launchActionIntent(a) }))
+        }
+        list
+    }
     private val cards by lazy {
         EnumQuickActions.entries.map {
             (context.translation["actions.${it.key}.name"] to it.icon) to it.action
@@ -130,17 +149,23 @@ class HomeRootSection : Routes.Route() {
                 .then(modifier)
         )
     }
+    private fun resolveTileKey(name: String): String {
+        val entry = cardEntries.firstOrNull { it.name == name }
+        return entry?.id ?: name
+    }
     private fun getTileSpan(name: String): Pair<Int, Int> {
         val prefs = context.sharedPreferences
-        val raw = prefs.getString("quick_tile_size_$name", null) ?: "1x1"
+        val key = resolveTileKey(name)
+        val raw = prefs.getString("quick_tile_size_$key", null) ?: "1x1"
         val parts = raw.split('x')
         val w = parts.getOrNull(0)?.toIntOrNull()?.coerceIn(1, 3) ?: 1
-        val h = parts.getOrNull(1)?.toIntOrNull()?.coerceIn(1, 2) ?: 1
+        val h = parts.getOrNull(1)?.toIntOrNull()?.coerceIn(1, 3) ?: 1
         return w to h
     }
     private fun setTileSpan(name: String, w: Int, h: Int) {
         val prefs = context.sharedPreferences
-        prefs.edit().putString("quick_tile_size_$name", "${w.coerceIn(1,3)}x${h.coerceIn(1,2)}").apply()
+        val key = resolveTileKey(name)
+        prefs.edit().putString("quick_tile_size_$key", "${w.coerceIn(1,3)}x${h.coerceIn(1,3)}").apply()
     }
     override val title: @Composable (() -> Unit)? = {}
     override val init: () -> Unit = {
@@ -174,6 +199,7 @@ class HomeRootSection : Routes.Route() {
         }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
+        var editMode by remember { mutableStateOf(false) }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -410,6 +436,12 @@ class HomeRootSection : Routes.Route() {
                                 contentDescription = "Manage Quick Actions"
                             )
                         }
+                        FilterChip(
+                            selected = editMode,
+                            onClick = { editMode = !editMode },
+                            label = { Text(if (editMode) "Done" else "Edit") },
+                            leadingIcon = { Icon(Icons.Filled.DragHandle, contentDescription = null) }
+                        )
                     }
                 }
             }
@@ -453,21 +485,24 @@ class HomeRootSection : Routes.Route() {
                 }
             } else {
                 val spacing = 6.dp
+                var spanTick by remember { mutableIntStateOf(0) }
+                var editingTile by remember { mutableStateOf<String?>(null) }
                 FlowRow(
                     modifier = Modifier
                         .padding(all = cardMargin)
                         .fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(spacing),
                 ) {
-                    val baseCell = LocalDensity.current.run {
-                        remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 }
-                    }
+                    val density = LocalDensity.current
+                    val baseCell = density.run { remember { (context.androidContext.resources.displayMetrics.widthPixels / 3).toDp() - cardMargin / 2 } }
+                    val baseCellPx = with(density) { baseCell.toPx() }
                     remember(selectedTiles.size, context.translation.loadedLocale) {
                         selectedTiles.mapNotNull {
                             cards.entries.find { entry -> entry.key.first == it }
                         }
                     }.forEach { (card, action) ->
                         val interactionSource = remember { MutableInteractionSource() }
+                        val _tick = spanTick
                         val (wSpan, hSpan) = getTileSpan(card.first)
                         val tileWidth = baseCell * wSpan + spacing * (wSpan - 1)
                         val tileHeight = baseCell * hSpan + spacing * (hSpan - 1)
@@ -480,34 +515,91 @@ class HomeRootSection : Routes.Route() {
                                     enter = fadeIn(animationSpec = Motion.tweenFloatSpec(200)) + scaleIn(animationSpec = Motion.tweenFloatSpec(220), initialScale = 0.9f),
                                     exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150))
                                 )
-                                .scaleOnPress(interactionSource),
-                            onClick = { action(routes) },
+                                .scaleOnPress(interactionSource)
+                                .then(if (editMode) Modifier.pointerInput(card.first, spanTick) {
+                                    detectTapGestures(onLongPress = { editingTile = card.first })
+                                } else Modifier),
+                            onClick = {
+                                if (!editMode) action(routes) else editingTile = card.first
+                            },
                             interactionSource = interactionSource
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(all = 5.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.SpaceEvenly,
-                            ) {
-                                Icon(
-                                    imageVector = card.second, contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(50.dp)
-                                )
-                                Text(
-                                    text = card.first,
-                                    lineHeight = 16.sp,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
+                            Box(Modifier.fillMaxSize()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(all = 5.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.SpaceEvenly,
+                                ) {
+                                    Icon(
+                                        imageVector = card.second, contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(50.dp)
+                                    )
+                                    Text(
+                                        text = card.first,
+                                        lineHeight = 16.sp,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                // Drag handle bottom-right for resizing
+                                if (editMode) Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .size(28.dp)
+                                        .pointerInput(card.first, wSpan, hSpan) {
+                                            detectDragGestures { change, dragAmount ->
+                                                change.consume()
+                                                val dx = dragAmount.x
+                                                val dy = dragAmount.y
+                                                var newW = wSpan
+                                                var newH = hSpan
+                                                if (dx > baseCellPx / 2f) newW = (wSpan + 1).coerceIn(1, 3)
+                                                if (dx < -baseCellPx / 2f) newW = (wSpan - 1).coerceIn(1, 3)
+                                                if (dy > baseCellPx / 2f) newH = (hSpan + 1).coerceIn(1, 3)
+                                                if (dy < -baseCellPx / 2f) newH = (hSpan - 1).coerceIn(1, 3)
+                                                if (newW != wSpan || newH != hSpan) {
+                                                    setTileSpan(card.first, newW, newH)
+                                                    spanTick++
+                                                }
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Filled.DragHandle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
                             }
+                        }
                     }
                 }
-            }
+                if (editMode && editingTile != null) {
+                    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    ModalBottomSheet(onDismissRequest = { editingTile = null }, sheetState = sheetState) {
+                        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Resize \"${editingTile}\"", style = MaterialTheme.typography.titleMedium)
+                            val options = listOf(1 to 1, 2 to 1, 3 to 1, 1 to 2, 2 to 2, 3 to 2, 1 to 3, 2 to 3, 3 to 3)
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                options.forEach { (ow, oh) ->
+                                    val selected = getTileSpan(editingTile!!) == (ow to oh)
+                                    FilterChip(
+                                        selected = selected,
+                                        onClick = {
+                                            setTileSpan(editingTile!!, ow, oh)
+                                            spanTick++
+                                        },
+                                        label = { Text("${ow}x${oh}") }
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Button(onClick = { editingTile = null }, modifier = Modifier.align(Alignment.End)) { Text("Done") }
+                        }
+                    }
+                }
             }
             if (showQuickActionsMenu) {
                 QuickActionsDialog(
