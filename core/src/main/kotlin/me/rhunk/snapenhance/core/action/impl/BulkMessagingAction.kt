@@ -1,5 +1,4 @@
 package me.rhunk.snapenhance.core.action.impl
-
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -69,7 +68,6 @@ class BulkMessagingAction : AbstractAction() {
         MOST_RECENT_MESSAGE,
         NEAREST_LOCATION
     }
-
     enum class Filter {
         ALL,
         MY_FRIENDS,
@@ -82,10 +80,8 @@ class BulkMessagingAction : AbstractAction() {
         NON_STREAKS,
         LOCATION_ON_MAP
     }
-
     private val translation by lazy { context.translation.getCategory("bulk_messaging_action") }
     private val betterLocation by lazy { context.feature(BetterLocation::class) }
-
     private fun removeAction(
         ctx: Context,
         ids: List<String>,
@@ -108,7 +104,6 @@ class BulkMessagingAction : AbstractAction() {
                 .setCancelable(false)
                 .show()
         }
-
         ids.forEachIndexed { index, id ->
             launch(Dispatchers.Main) {
                 dialog.setTitle(
@@ -131,7 +126,6 @@ class BulkMessagingAction : AbstractAction() {
             dialog.dismiss()
         }
     }
-
     @Composable
     private fun ConfirmationDialog(
         onConfirm: () -> Unit,
@@ -153,14 +147,12 @@ class BulkMessagingAction : AbstractAction() {
             }
         )
     }
-
     private fun filterFriends(friends: List<FriendInfo>, filter: Filter, nameFilter: String): List<FriendInfo> {
         val userIdBlacklist = arrayOf(
             context.database.myUserId,
             "b42f1f70-5a8b-4c53-8c25-34e7ec9e6781", // myai
             "84ee8839-3911-492d-8b94-72dd80f3713a", // teamsnapchat
         )
-
         return friends.filter { friend ->
             friend.userId !in userIdBlacklist && when (filter) {
                 Filter.ALL -> true
@@ -181,13 +173,11 @@ class BulkMessagingAction : AbstractAction() {
             } ?: true
         }
     }
-
     private fun getDMLastMessage(userId: String?): ConversationMessage? {
         return context.database.getDMConversationId(userId ?: return null)?.let {
             context.database.getMessagesFromConversationId(it, 1)
         }?.firstOrNull()
     }
-
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     @Composable
     private fun BulkMessagingDialog() {
@@ -199,13 +189,10 @@ class BulkMessagingAction : AbstractAction() {
         val friends = remember { mutableStateListOf<FriendInfo>() }
         val bitmojiCache = remember { EvictingMap<String, Bitmap>(50) }
         val noBitmojiBitmap = remember { BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_report_image).asImageBitmap() }
-
         val focusManager = LocalFocusManager.current
         var nameFilter by remember { mutableStateOf("") }
-
         suspend fun refreshList(clearSelected: Boolean = true) {
             val myLocation = betterLocation.locationHistory[context.database.myUserId]
-
             withContext(Dispatchers.IO) {
                 val newFriends = context.database.getAllFriends().let { friends ->
                     filterFriends(friends, filter, nameFilter)
@@ -239,7 +226,6 @@ class BulkMessagingAction : AbstractAction() {
                 }
             }
         }
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -252,7 +238,6 @@ class BulkMessagingAction : AbstractAction() {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 var filterMenuExpanded by remember { mutableStateOf(false) }
-
                 ExposedDropdownMenuBox(
                     expanded = filterMenuExpanded,
                     onExpandedChange = { filterMenuExpanded = it },
@@ -262,7 +247,6 @@ class BulkMessagingAction : AbstractAction() {
                     ) {
                         Text(text = filter.name, modifier = Modifier.padding(5.dp))
                     }
-
                     DropdownMenu(
                         expanded = filterMenuExpanded,
                         onDismissRequest = { filterMenuExpanded = false }
@@ -277,9 +261,7 @@ class BulkMessagingAction : AbstractAction() {
                         }
                     }
                 }
-
                 var sortMenuExpanded by remember { mutableStateOf(false) }
-
                 ExposedDropdownMenuBox(
                     expanded = sortMenuExpanded,
                     onExpandedChange = { sortMenuExpanded = it },
@@ -289,7 +271,6 @@ class BulkMessagingAction : AbstractAction() {
                     ) {
                         Text(text = "Sort by", modifier = Modifier.padding(5.dp))
                     }
-
                     DropdownMenu(
                         expanded = sortMenuExpanded,
                         onDismissRequest = { sortMenuExpanded = false }
@@ -304,7 +285,6 @@ class BulkMessagingAction : AbstractAction() {
                         }
                     }
                 }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -315,7 +295,6 @@ class BulkMessagingAction : AbstractAction() {
                     Text(text = "Reverse order", fontSize = 15.sp, fontWeight = FontWeight.Light, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -346,7 +325,6 @@ class BulkMessagingAction : AbstractAction() {
                                 unfocusedContainerColor = Color.Transparent
                             ),
                         )
-
                         Checkbox(
                             checked = if (friends.isEmpty() || selectedFriends.size < friends.size) false else friends.all { friend -> selectedFriends.contains(friend.userId) },
                             onCheckedChange = { state ->
@@ -376,7 +354,6 @@ class BulkMessagingAction : AbstractAction() {
                 }
                 items(friends, key = { it.userId!! }) { friendInfo ->
                     var bitmojiBitmap by remember(friendInfo) { mutableStateOf(bitmojiCache[friendInfo.bitmojiAvatarId]) }
-
                     fun selectFriend(state: Boolean) {
                         friendInfo.userId?.let {
                             if (state) {
@@ -386,7 +363,6 @@ class BulkMessagingAction : AbstractAction() {
                             }
                         }
                     }
-
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -403,9 +379,7 @@ class BulkMessagingAction : AbstractAction() {
                         LaunchedEffect(friendInfo) {
                             withContext(Dispatchers.IO) {
                                 if (bitmojiBitmap != null || friendInfo.bitmojiAvatarId == null || friendInfo.bitmojiSelfieId == null) return@withContext
-
                                 val bitmojiUrl = BitmojiSelfie.getBitmojiSelfie(friendInfo.bitmojiSelfieId, friendInfo.bitmojiAvatarId, BitmojiSelfie.BitmojiSelfieType.NEW_THREE_D) ?: return@withContext
-
                                 runCatching {
                                     RemoteMediaResolver.downloadMedia(bitmojiUrl) { inputStream, length ->
                                         bitmojiCache[friendInfo.bitmojiAvatarId ?: return@withContext] = BitmapFactory.decodeStream(inputStream).also {
@@ -415,13 +389,11 @@ class BulkMessagingAction : AbstractAction() {
                                 }
                             }
                         }
-
                         Image(
                             bitmap = remember (bitmojiBitmap) { bitmojiBitmap?.asImageBitmap() ?: noBitmojiBitmap },
                             contentDescription = null,
                             modifier = Modifier.size(35.dp)
                         )
-
                         Column(
                             modifier = Modifier.weight(1f),
                         ) {
@@ -436,7 +408,6 @@ class BulkMessagingAction : AbstractAction() {
                             val lastMessage by rememberAsyncMutableState(defaultValue = null) {
                                 getDMLastMessage(friendInfo.userId)
                             }
-
                             val userInfo = remember(friendInfo, lastMessage) {
                                 buildString {
                                     append("Relationship: ")
@@ -465,7 +436,6 @@ class BulkMessagingAction : AbstractAction() {
                             }
                             Text(text = userInfo, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 12.sp, overflow = TextOverflow.Ellipsis)
                         }
-
                         Checkbox(
                             checked = selectedFriends.contains(friendInfo.userId),
                             onCheckedChange = { selectFriend(it) }
@@ -473,10 +443,8 @@ class BulkMessagingAction : AbstractAction() {
                     }
                 }
             }
-
             var showConfirmationDialog by remember { mutableStateOf(false) }
             var action by remember { mutableStateOf({}) }
-
             if (showConfirmationDialog) {
                 ConfirmationDialog(
                     onConfirm = {
@@ -490,9 +458,7 @@ class BulkMessagingAction : AbstractAction() {
                     }
                 )
             }
-
             val ctx = LocalContext.current
-
             val actions = remember {
                 mapOf<() -> String, () -> Unit>(
                     { "Clean " + selectedFriends.size + " conversations" } to {
@@ -535,7 +501,6 @@ class BulkMessagingAction : AbstractAction() {
                     }
                 )
             }
-
             Column(
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -555,14 +520,12 @@ class BulkMessagingAction : AbstractAction() {
                 }
             }
         }
-
         LaunchedEffect(sortBy, sortReverseOrder) {
             coroutineScope.launch {
                 refreshList(clearSelected = false)
             }
             focusManager.clearFocus()
         }
-
         LaunchedEffect(filter) {
             coroutineScope.launch {
                 refreshList()
@@ -570,7 +533,6 @@ class BulkMessagingAction : AbstractAction() {
             focusManager.clearFocus()
         }
     }
-
     override fun run() {
         context.coroutineScope.launch(Dispatchers.Main) {
             createComposeAlertDialog(context.mainActivity!!) {
@@ -581,45 +543,44 @@ class BulkMessagingAction : AbstractAction() {
             }
         }
     }
-
     private fun removeFriend(userId: String) {
         context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
-            val friendRelationshipChangerInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
-                ?: classReference.get()?.constructors?.firstOrNull { it.parameterCount == 2 }?.newInstance(
-                    context.mainActivity,
-                    context.mainActivity!!.application
-                ) ?: throw Exception("Failed to create FriendRelationshipChanger instance")
+            val friendRelationshipChangerInstance =
+                context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
+                ?: classReference.get()?.constructors?.firstOrNull { it.parameterCount == 2 }
+                    ?.newInstance(
+                        context.mainActivity,
+                        context.mainActivity!!.application
+                    )
+                ?: throw Exception("Failed to create FriendRelationshipChanger instance")
 
-            val runFriendDurableJobMethod = classReference.getAsClass()?.methods?.firstOrNull {
-                java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 5 && it.returnType.name.endsWith(".Completable")
-            } ?: throw Exception("Failed to find a suitable method to remove friend. Please contact support.")
+            // Find a method with 5 parameters (may be obfuscated, but signature will match)
+            val method = friendRelationshipChangerInstance.javaClass.methods.firstOrNull {
+                it.parameterTypes.size == 5
+            } ?: throw Exception("Failed to find a suitable method for remove friend. Please contact support.")
 
-            val removeFriendDurableJob = context.androidContext.classLoader.loadClass("com.snap.identity.job.snapchatter.RemoveFriendDurableJob")
-                .constructors.firstOrNull {
-                it.parameterTypes.size == 1
-            }?.run {
-                newInstance(
-                    parameterTypes[0].dataBuilder {
-                        set("a", userId) // userId
-                        set("b", "DELETED_BY_MY_FRIENDS") // deleteSourceType
-                        set("f", "")
-                    }
-                )
-            } ?: throw Exception("Failed to create RemoveFriendDurableJob instance")
+            val enumClass = context.androidContext.classLoader.loadClass("defpackage.EnumC35369pw5")
+            val deletedByMyFriends = enumClass.enumConstants.firstOrNull {
+                it.toString() == "DELETED_BY_MY_FRIENDS"
+            } ?: enumClass.enumConstants.first() // fallback
 
-            val completable = runFriendDurableJobMethod.invoke(null,
+            val c36077qT8Class = context.androidContext.classLoader.loadClass("defpackage.C36077qT8")
+            val emptyC36077qT8 = c36077qT8Class.constructors.firstOrNull { it.parameterTypes.isEmpty() }
+                ?.newInstance() ?: throw Exception("Failed to create placementInfo")
+
+            val completable = method.invoke(
                 friendRelationshipChangerInstance,
-                userId, // userId
-                removeFriendDurableJob, // friend durable job
-                0x5, // action type
-                "DELETED_BY_MY_FRIENDS", // deleteSourceType
-            )!!
-            completable::class.java.methods.first {
-                it.name == "subscribe" && it.parameterTypes.isEmpty()
-            }.invoke(completable)
+                userId,                // String userId
+                deletedByMyFriends,    // EnumC35369pw5 deleteSourceType
+                "",                    // String snapId
+                "",                    // String compositeStoryId
+                emptyC36077qT8         // C36077qT8 placementInfo
+            ) ?: throw Exception("Friend removal call returned null.")
+
+            completable::class.java.methods.first { it.name == "subscribe" && it.parameterTypes.isEmpty() }
+                .invoke(completable)
         }
     }
-
     private suspend fun cleanConversation(
         conversationId: String,
         setDialogMessage: (String) -> Unit
