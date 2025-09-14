@@ -590,7 +590,7 @@ class BulkMessagingAction : AbstractAction() {
                     context.mainActivity!!.application
                 ) ?: throw Exception("Failed to create FriendRelationshipChanger instance")
 
-            val runFriendDurableJobMethod = classReference.getAsClass()?.methods?.first {
+            val runFriendDurableJobMethod = classReference.getAsClass()?.methods?.firstOrNull {
                 it.name == runFriendDurableJob.getAsString()
             } ?: throw Exception("Failed to find runFriendDurableJobMethod method")
 
