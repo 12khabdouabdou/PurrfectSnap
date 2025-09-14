@@ -591,8 +591,8 @@ class BulkMessagingAction : AbstractAction() {
                 ) ?: throw Exception("Failed to create FriendRelationshipChanger instance")
 
             val runFriendDurableJobMethod = classReference.getAsClass()?.methods?.firstOrNull {
-                it.name == runFriendDurableJob.getAsString()
-            } ?: throw Exception("Failed to find runFriendDurableJobMethod method")
+                java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 5 && it.returnType.name.endsWith(".Completable")
+            } ?: throw Exception("Failed to find a suitable method to remove friend. Please contact support.")
 
             val removeFriendDurableJob = context.androidContext.classLoader.loadClass("com.snap.identity.job.snapchatter.RemoveFriendDurableJob")
                 .constructors.firstOrNull {
@@ -614,9 +614,9 @@ class BulkMessagingAction : AbstractAction() {
                 0x5, // action type
                 "DELETED_BY_MY_FRIENDS", // deleteSourceType
             )!!
-            completable::class.java.methods.find { it.name == "subscribe" }?.let {
-                it.invoke(completable, *Array(it.parameterCount) { null })
-            }
+            completable::class.java.methods.first {
+                it.name == "subscribe" && it.parameterTypes.isEmpty()
+            }.invoke(completable)
         }
     }
 
