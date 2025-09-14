@@ -584,7 +584,12 @@ class BulkMessagingAction : AbstractAction() {
 
     private fun removeFriend(userId: String) {
         context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
-            val friendRelationshipChangerInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance!!
+            val friendRelationshipChangerInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
+                ?: classReference.get()?.constructors?.firstOrNull { it.parameterCount == 2 }?.newInstance(
+                    context.mainActivity,
+                    context.mainActivity!!.application
+                ) ?: throw Exception("Failed to create FriendRelationshipChanger instance")
+
             val runFriendDurableJobMethod = classReference.getAsClass()?.methods?.first {
                 it.name == runFriendDurableJob.getAsString()
             } ?: throw Exception("Failed to find runFriendDurableJobMethod method")
