@@ -614,9 +614,9 @@ class BulkMessagingAction : AbstractAction() {
                 0x5, // action type
                 "DELETED_BY_MY_FRIENDS", // deleteSourceType
             )!!
-            completable::class.java.methods.first {
-                it.name == "subscribe" && it.parameterTypes.isEmpty()
-            }.invoke(completable)
+            completable::class.java.methods.find { it.name == "subscribe" }?.let {
+                it.invoke(completable, *Array(it.parameterCount) { null })
+            }
         }
     }
 
