@@ -545,13 +545,18 @@ class BulkMessagingAction : AbstractAction() {
     }
     private fun removeFriend(userId: String) {
         context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
-            val friendRelationshipChangerInstance =
-                context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
-                ?: classReference.get()?.constructors?.firstOrNull { it.parameterCount == 2 }
-                    ?.newInstance(
-                        context.mainActivity,
-                        context.mainActivity!!.application
-                    )
+            val addFriendSpoofInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
+
+            val friendRelationshipChangerInstance: Any? = addFriendSpoofInstance ?: run {
+                val clazz = classReference.get()
+                    ?: throw Exception("FriendRelationshipChanger class not found")
+                context.log.info("FriendRelationshipChanger constructors: " + clazz.constructors.joinToString { it.toString() })
+
+                // Try various constructor combos: no-arg, single-arg, double-arg
+                clazz.constructors.firstOrNull { it.parameterTypes.isEmpty() }?.newInstance()
+                    ?: clazz.constructors.firstOrNull { it.parameterTypes.size == 1 }?.newInstance(context.mainActivity)
+                    ?: clazz.constructors.firstOrNull { it.parameterTypes.size == 2 }?.newInstance(context.mainActivity, context.mainActivity!!.application)
+            }
                 ?: throw Exception("Failed to create FriendRelationshipChanger instance")
 
             // Find a method with 5 parameters (may be obfuscated, but signature will match)
