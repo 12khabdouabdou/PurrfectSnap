@@ -65,7 +65,7 @@ class SettingsGearInjector : AbstractMenu() {
 
                         this@SettingsGearInjector.context.log.info("Friend icon details: width=$friendIconWidth, marginEnd=$friendIconMarginEnd, paddingStart=${addFriendIcon.paddingStart}", logTag)
 
-                        val newMargin = friendIconWidth + friendIconMarginEnd + (addFriendIcon.paddingStart / 2)
+                        val newMargin = friendIconWidth + friendIconMarginEnd + this@SettingsGearInjector.context.userInterface.dpToPx(4)
                         this@SettingsGearInjector.context.log.info("Calculated new marginEnd for gear icon: $newMargin", logTag)
 
                         (gearIcon.layoutParams as FrameLayout.LayoutParams).apply {
