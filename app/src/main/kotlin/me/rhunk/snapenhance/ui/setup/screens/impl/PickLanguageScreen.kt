@@ -1,5 +1,11 @@
 package me.rhunk.snapenhance.ui.setup.screens.impl
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
@@ -28,6 +34,9 @@ import androidx.compose.ui.window.Dialog
 import me.rhunk.snapenhance.common.bridge.wrapper.LocaleWrapper
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
 import me.rhunk.snapenhance.ui.util.ObservableMutableState
+import me.rhunk.snapenhance.ui.util.Motion
+import me.rhunk.snapenhance.ui.util.scaleOnPress
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import java.util.Locale
 
 
@@ -83,32 +92,40 @@ class PickLanguageScreen : SetupScreen(){
         var isDialog by remember { mutableStateOf(false) }
 
         if (isDialog) {
+            var visible by remember { mutableStateOf(false) }
+            androidx.compose.runtime.LaunchedEffect(Unit) { visible = true }
             Dialog(onDismissRequest = { isDialog = false }) {
-                Surface(
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = fadeIn(animationSpec = Motion.tweenFloatSpec(180)) + scaleIn(animationSpec = Motion.tweenFloatSpec(200)),
+                    exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150)) + scaleOut(animationSpec = Motion.tweenFloatSpec(180))
                 ) {
-                    LazyColumn(
-                        modifier = Modifier.scrollable(rememberScrollState(), orientation = Orientation.Vertical)
+                    Surface(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium
                     ) {
-                        items(availableLocales) { locale ->
-                            Box(
-                                modifier = Modifier
-                                    .height(70.dp)
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        selectedLocale.value = locale
-                                        isDialog = false
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = remember(locale) { getLocaleDisplayName(locale) },
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Light,
-                                )
+                        LazyColumn(
+                            modifier = Modifier.scrollable(rememberScrollState(), orientation = Orientation.Vertical)
+                        ) {
+                            items(availableLocales) { locale ->
+                                Box(
+                                    modifier = Modifier
+                                        .height(70.dp)
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selectedLocale.value = locale
+                                            isDialog = false
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = remember(locale) { getLocaleDisplayName(locale) },
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Light,
+                                    )
+                                }
                             }
                         }
                     }
@@ -122,9 +139,10 @@ class PickLanguageScreen : SetupScreen(){
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
+            val btnSrc = remember { MutableInteractionSource() }
             Button(onClick = {
                 isDialog = true
-            }) {
+            }, interactionSource = btnSrc, modifier = Modifier.scaleOnPress(btnSrc)) {
                 Text(text = remember(selectedLocale.value) { getLocaleDisplayName(selectedLocale.value) }, fontSize = 16.sp,
                     fontWeight = FontWeight.Normal)
             }

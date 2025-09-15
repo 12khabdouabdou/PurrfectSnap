@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package me.rhunk.snapenhance.ui.manager.pages.tracker
 
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Public
@@ -186,7 +188,7 @@ class FriendTrackerCatalog : Routes.Route() {
                         value = exists
                     }
 
-                    ElevatedCard(Modifier.padding(bottom = 8.dp)) {
+                    ElevatedCard(Modifier.padding(bottom = 8.dp).animateContentSize()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()

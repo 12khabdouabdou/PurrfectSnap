@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
 package me.rhunk.snapenhance.ui.setup
 
 import android.app.Activity
@@ -32,9 +33,14 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import me.rhunk.snapenhance.ui.util.scaleOnPress
 import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
@@ -91,7 +97,7 @@ class SetupActivity : ComponentActivity() {
         }
 
         setContent {
-            val navController = rememberNavController()
+            val navController = rememberAnimatedNavController()
             var canGoNext by remember { mutableStateOf(false) }
 
             fun nextScreen() {
@@ -132,9 +138,13 @@ class SetupActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(bottom = bottomPadding)
                     ) {
-                        NavHost(
+                        AnimatedNavHost(
                             navController = navController,
-                            startDestination = requiredScreens.first().route
+                            startDestination = requiredScreens.first().route,
+                            enterTransition = { fadeIn() },
+                            exitTransition = { fadeOut() },
+                            popEnterTransition = { fadeIn() },
+                            popExitTransition = { fadeOut() }
                         ) {
                             requiredScreens.forEach { screen ->
                                 screen.allowNext = { canGoNext = it }
@@ -142,7 +152,13 @@ class SetupActivity : ComponentActivity() {
                                     canGoNext = true
                                     nextScreen()
                                 }
-                                composable(screen.route) {
+                                composable(
+                                    screen.route,
+                                    enterTransition = { slideInHorizontally { it } },
+                                    exitTransition = { slideOutHorizontally { -it } },
+                                    popEnterTransition = { slideInHorizontally { -it } },
+                                    popExitTransition = { slideOutHorizontally { it } }
+                                ) {
                                     BackHandler(true) {}
                                     Column(
                                         modifier = Modifier.fillMaxSize(),
@@ -160,6 +176,7 @@ class SetupActivity : ComponentActivity() {
                         label = "NextButton"
                     )
 
+                    val nextSrc = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
                     FilledIconButton(
                         onClick = { nextScreen() },
                         modifier = Modifier
@@ -168,6 +185,8 @@ class SetupActivity : ComponentActivity() {
                             .padding(bottom = 50.dp)
                             .size(60.dp)
                             .alpha(alpha)
+                            .scaleOnPress(nextSrc),
+                        interactionSource = nextSrc
                     ) {
                         Icon(
                             imageVector = if (requiredScreens.size <= 1 && canGoNext) {

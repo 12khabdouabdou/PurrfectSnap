@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ fun QuickActionsDialog(
     onSave: (List<String>) -> Unit
 ) {
     val selected = remember { mutableStateListOf(*selectedQuickActions.toTypedArray()) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -39,7 +41,7 @@ fun QuickActionsDialog(
                     .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    text = "Select the actions you want to see on the home screen.",
+                    text = "Select and size your quick actions.",
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier

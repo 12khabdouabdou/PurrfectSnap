@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
 package me.rhunk.snapenhance.ui.manager
 
 import android.app.Activity
@@ -31,6 +32,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import me.rhunk.snapenhance.RemoteSideContext
 import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
@@ -69,7 +71,8 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             // ThemeMode is tracked directly
             val themeMode by ThemePreferences.getThemeModeFlow(context).collectAsState(initial = ThemeMode.SYSTEM)
-            navController = rememberNavController()
+            // Use animated nav controller for smoother screen transitions
+            navController = rememberAnimatedNavController()
             val navigation = remember {
                 Navigation(managerContext, navController, routes.also {
                     it.navController = navController

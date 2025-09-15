@@ -1,8 +1,10 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package me.rhunk.snapenhance.ui.manager.pages
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
@@ -167,7 +169,7 @@ class ManageReposSection: Routes.Route() {
             items(repositories) { url ->
                 ElevatedCard(onClick = {
                     context.androidContext.copyToClipboard(url)
-                }) {
+                }, modifier = Modifier.animateContentSize()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
