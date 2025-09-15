@@ -595,24 +595,24 @@ class BulkMessagingAction : AbstractAction() {
                 context.log.info("All Completable methods:\n$allMethods")
                 val vMethod = completableClass.methods.firstOrNull { it.name == "V" && it.parameterTypes.size == 1 }
                 if (vMethod != null) {
-                    context.log.info("Found V(hq3), creating proxy...")
-                    val hq3Class = completableClass.classLoader.loadClass("defpackage.hq3")
+                    context.log.info("Found V(hq3), creating dynamic proxy by parameter type...")
+                    val hq3Class = vMethod.parameterTypes[0]
                     val proxy = java.lang.reflect.Proxy.newProxyInstance(
                         hq3Class.classLoader,
                         arrayOf(hq3Class)
                     ) { _, _, _ -> }
-                    context.log.info("Invoking V(hq3) with proxy")
+                    context.log.info("Invoking V(hq3) with dynamic proxy")
                     vMethod.invoke(completable, proxy)
                     context.log.info("removeFriend triggered with V(hq3) and proxy")
                 } else {
                     val bMethod = completableClass.methods.firstOrNull { it.name == "b" && it.parameterTypes.size == 1 }
                     if (bMethod != null) {
-                        val hq3Class = completableClass.classLoader.loadClass("defpackage.hq3")
+                        val hq3Class = bMethod.parameterTypes[0]
                         val proxy = java.lang.reflect.Proxy.newProxyInstance(
                             hq3Class.classLoader,
                             arrayOf(hq3Class)
                         ) { _, _, _ -> }
-                        context.log.info("Invoking b(hq3) with proxy")
+                        context.log.info("Invoking b(hq3) with dynamic proxy")
                         bMethod.invoke(completable, proxy)
                         context.log.info("removeFriend triggered with b(hq3) and proxy")
                     } else {
