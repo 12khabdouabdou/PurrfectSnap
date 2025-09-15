@@ -189,10 +189,6 @@ class SnapEnhance {
                         durationMs = 3000
                     )
                 }
-
-                if (config.userInterface.settingsMenu.get() == "legacy") {
-                    me.rhunk.snapenhance.core.ui.menu.impl.SettingsGearInjector().init()
-                }
             }
         }.also { time ->
             appContext.log.verbose("onActivityCreate took $time")

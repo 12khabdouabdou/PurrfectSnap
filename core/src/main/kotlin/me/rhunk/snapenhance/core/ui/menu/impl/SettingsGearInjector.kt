@@ -2,21 +2,23 @@ package me.rhunk.snapenhance.core.ui.menu.impl
 
 import android.widget.FrameLayout
 import android.widget.ImageView
+import me.rhunk.snapenhance.common.Constants
 import me.rhunk.snapenhance.common.ui.OverlayType
 import me.rhunk.snapenhance.core.event.events.impl.AddViewEvent
 import me.rhunk.snapenhance.core.ui.menu.AbstractMenu
-import me.rhunk.snapenhance.core.util.ktx.getId
 
 class SettingsGearInjector : AbstractMenu() {
     private val hovaHeaderSearchIconId by lazy {
-        context.resources.getId("hova_header_search_icon")
+        context.resources.getIdentifier("hova_header_search_icon", "id", "com.snapchat.android")
     }
 
     private val gearIconId by lazy {
-        context.resources.getId("ic_settings_gear", "drawable", context.snapchatPackageName)
+        context.resources.getIdentifier("ic_settings_gear", "drawable", Constants.SNAPENHANCE_PACKAGE_NAME)
     }
 
     override fun init() {
+        if (context.config.userInterface.settingsMenu.get() != "legacy") return
+
         context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view.id == hovaHeaderSearchIconId) {
                 val parent = event.parent as? FrameLayout ?: return@subscribe
