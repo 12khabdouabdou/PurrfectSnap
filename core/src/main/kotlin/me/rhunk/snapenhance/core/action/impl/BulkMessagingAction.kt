@@ -15,7 +15,20 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -381,7 +394,7 @@ class BulkMessagingAction : AbstractAction() {
                                 if (bitmojiBitmap != null || friendInfo.bitmojiAvatarId == null || friendInfo.bitmojiSelfieId == null) return@withContext
                                 val bitmojiUrl = BitmojiSelfie.getBitmojiSelfie(friendInfo.bitmojiSelfieId, friendInfo.bitmojiAvatarId, BitmojiSelfie.BitmojiSelfieType.NEW_THREE_D) ?: return@withContext
                                 runCatching {
-                                    RemoteMediaResolver.downloadMedia(bitmojiUrl) { inputStream, length ->
+                                    RemoteMediaResolver.downloadMedia(bitmojiUrl) { inputStream, _ ->
                                         bitmojiCache[friendInfo.bitmojiAvatarId ?: return@withContext] = BitmapFactory.decodeStream(inputStream).also {
                                             bitmojiBitmap = it
                                         }
@@ -547,19 +560,21 @@ class BulkMessagingAction : AbstractAction() {
         context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
             val addFriendSpoofInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
 
-            val friendRelationshipChangerInstance: Any? = addFriendSpoofInstance ?: run {
+            val friendRelationshipChangerInstance: Any = addFriendSpoofInstance ?: run {
                 val clazz = classReference.get()
                     ?: throw Exception("FriendRelationshipChanger class not found")
                 context.log.info("FriendRelationshipChanger constructors: " + clazz.constructors.joinToString { it.toString() })
-
-                // Try various constructor combos: no-arg, single-arg, double-arg
-                clazz.constructors.firstOrNull { it.parameterTypes.isEmpty() }?.newInstance()
-                    ?: clazz.constructors.firstOrNull { it.parameterTypes.size == 1 }?.newInstance(context.mainActivity)
-                    ?: clazz.constructors.firstOrNull { it.parameterTypes.size == 2 }?.newInstance(context.mainActivity, context.mainActivity!!.application)
+                when {
+                    clazz.constructors.any { it.parameterTypes.isEmpty() } ->
+                        clazz.constructors.first { it.parameterTypes.isEmpty() }.newInstance()
+                    clazz.constructors.any { it.parameterTypes.size == 1 } ->
+                        clazz.constructors.first { it.parameterTypes.size == 1 }.newInstance(context.mainActivity)
+                    clazz.constructors.any { it.parameterTypes.size == 2 } ->
+                        clazz.constructors.first { it.parameterTypes.size == 2 }.newInstance(context.mainActivity, context.mainActivity!!.application)
+                    else -> throw Exception("No suitable FriendRelationshipChanger constructor found")
+                }
             }
-                ?: throw Exception("Failed to create FriendRelationshipChanger instance")
 
-            // Find a method with 5 parameters (may be obfuscated, but signature will match)
             val method = friendRelationshipChangerInstance.javaClass.methods.firstOrNull {
                 it.parameterTypes.size == 5
             } ?: throw Exception("Failed to find a suitable method for remove friend. Please contact support.")
@@ -575,15 +590,16 @@ class BulkMessagingAction : AbstractAction() {
 
             val completable = method.invoke(
                 friendRelationshipChangerInstance,
-                userId,                // String userId
-                deletedByMyFriends,    // EnumC35369pw5 deleteSourceType
-                "",                    // String snapId
-                "",                    // String compositeStoryId
-                emptyC36077qT8         // C36077qT8 placementInfo
+                userId,
+                deletedByMyFriends,
+                "",
+                "",
+                emptyC36077qT8
             ) ?: throw Exception("Friend removal call returned null.")
 
-            completable::class.java.methods.first { it.name == "subscribe" && it.parameterTypes.isEmpty() }
-                .invoke(completable)
+            val subscribe = completable::class.java.methods.firstOrNull { it.name == "subscribe" && it.parameterTypes.isEmpty() }
+            requireNotNull(subscribe) { "subscribe() method not found on Completable" }
+            subscribe.invoke(completable)
         }
     }
     private suspend fun cleanConversation(
