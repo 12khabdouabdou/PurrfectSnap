@@ -1,26 +1,25 @@
 package me.rhunk.snapenhance.core.ui.menu.impl
 
 import android.view.View
-import android.widget.FrameLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import me.rhunk.snapenhance.common.ui.OverlayType
 import me.rhunk.snapenhance.core.event.events.impl.AddViewEvent
 import me.rhunk.snapenhance.core.ui.menu.AbstractMenu
 
 class SettingsGearInjector : AbstractMenu() {
-    private val hovaHeaderSearchIconId by lazy {
-        this.context.resources.getIdentifier("hova_header_search_icon", "id", "com.snapchat.android")
+    private val hovaHeaderAddFriendIconId by lazy {
+        context.resources.getIdentifier("hova_header_add_friend_icon", "id", "com.snapchat.android")
     }
 
     private val gearIconId = View.generateViewId()
 
     override fun init() {
-        if (this.context.config.userInterface.settingsMenu.get() != "legacy") return
+        if (context.config.userInterface.settingsMenu.get() != "legacy") return
 
-        this.context.event.subscribe(AddViewEvent::class) { event ->
-            if (event.view.id == hovaHeaderSearchIconId) {
-                val parent = event.parent as? FrameLayout ?: return@subscribe
-
+        context.event.subscribe(AddViewEvent::class) { event ->
+            if (event.view.id == hovaHeaderAddFriendIconId) {
+                val parent = event.parent as? RelativeLayout ?: return@subscribe
                 if (parent.findViewById<View>(gearIconId) != null) {
                     return@subscribe
                 }
@@ -36,12 +35,13 @@ class SettingsGearInjector : AbstractMenu() {
                     setPadding(15, 15, 15, 15)
                 }
 
-                val layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
+                val layoutParams = RelativeLayout.LayoutParams(
+                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
-                    marginEnd = this@SettingsGearInjector.context.userInterface.dpToPx(12)
+                    addRule(RelativeLayout.LEFT_OF, event.view.id)
+                    addRule(RelativeLayout.CENTER_VERTICAL)
+                   // marginEnd = this@SettingsGearInjector.context.userInterface.dpToPx(12)
                 }
 
                 parent.addView(gearIcon, layoutParams)
