@@ -13,7 +13,7 @@ class SettingsGearInjector : AbstractMenu() {
     }
 
     private val gearIconId by lazy {
-        this.context.resources.getIdentifier("ic_settings_gear", "drawable", Constants.SNAPENHANCE_PACKAGE_NAME)
+        this.context.resources.getIdentifier("ic_settings_gear", "drawable", Constants.SE_PACKAGE_NAME)
     }
 
     override fun init() {
