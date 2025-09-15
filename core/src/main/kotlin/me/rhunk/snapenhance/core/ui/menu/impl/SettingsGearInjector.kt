@@ -14,35 +14,32 @@ class SettingsGearInjector : AbstractMenu() {
     }
 
     private val gearIconId = View.generateViewId()
-
-    private fun logInfo(message: String) {
-        context.logger.log("SettingsGearInjector", message)
-    }
+    private val logTag = "SettingsGearInjector"
 
     override fun init() {
-        logInfo("Initializing")
+        context.log.info("Initializing", logTag)
         if (context.config.userInterface.settingsMenu.get() != "legacy") {
-            logInfo("Settings menu is not legacy, aborting init.")
+            context.log.info("Settings menu is not legacy, aborting init.", logTag)
             return
         }
 
         context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view.id == hovaHeaderAddFriendIconId) {
-                logInfo("AddViewEvent triggered for hova_header_add_friend_icon")
+                context.log.info("AddViewEvent triggered for hova_header_add_friend_icon", logTag)
                 val parent = event.parent as? FrameLayout ?: return@subscribe
                 if (parent.findViewById<View>(gearIconId) != null) {
-                    logInfo("Gear icon already exists, skipping.")
+                    context.log.info("Gear icon already exists, skipping.", logTag)
                     return@subscribe
                 }
 
-                logInfo("Creating and adding gear icon.")
+                context.log.info("Creating and adding gear icon.", logTag)
                 val gearIcon = TextView(parent.context).apply {
                     id = gearIconId
                     text = "⚙️"
                     textSize = 28f
                     setTextColor(this@SettingsGearInjector.context.userInterface.colorPrimary)
                     setOnClickListener {
-                        logInfo("Gear icon clicked.")
+                        context.log.info("Gear icon clicked.", logTag)
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
                     setPadding(15, 15, 15, 15)
@@ -56,29 +53,29 @@ class SettingsGearInjector : AbstractMenu() {
                 }
 
                 parent.addView(gearIcon, layoutParams)
-                logInfo("Gear icon added to parent. Posting position update.")
+                context.log.info("Gear icon added to parent. Posting position update.", logTag)
 
                 event.view.post {
                     try {
-                        logInfo("Running position update.")
+                        context.log.info("Running position update.", logTag)
                         val addFriendIcon = event.view
                         val friendIconParams = addFriendIcon.layoutParams as ViewGroup.MarginLayoutParams
                         val friendIconMarginEnd = friendIconParams.marginEnd
                         val friendIconWidth = addFriendIcon.width
 
-                        logInfo("Friend icon details: width=$friendIconWidth, marginEnd=$friendIconMarginEnd, paddingStart=${addFriendIcon.paddingStart}")
+                        context.log.info("Friend icon details: width=$friendIconWidth, marginEnd=$friendIconMarginEnd, paddingStart=${addFriendIcon.paddingStart}", logTag)
 
                         val newMargin = friendIconWidth + friendIconMarginEnd + (addFriendIcon.paddingStart / 2)
-                        logInfo("Calculated new marginEnd for gear icon: $newMargin")
+                        context.log.info("Calculated new marginEnd for gear icon: $newMargin", logTag)
 
                         (gearIcon.layoutParams as FrameLayout.LayoutParams).apply {
                             marginEnd = newMargin
                         }.also {
                             gearIcon.layoutParams = it
                         }
-                        logInfo("Successfully updated gear icon position.")
+                        context.log.info("Successfully updated gear icon position.", logTag)
                     } catch (t: Throwable) {
-                        context.logger.logError("SettingsGearInjector", t)
+                        context.log.error("Failed to position gear icon", t, logTag)
                     }
                 }
             }
