@@ -1,5 +1,7 @@
 package me.rhunk.snapenhance.core.ui.menu.impl
 
+import android.graphics.PorterDuff
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import me.rhunk.snapenhance.common.Constants
@@ -22,19 +24,26 @@ class SettingsGearInjector : AbstractMenu() {
         this.context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view.id == hovaHeaderSearchIconId) {
                 val parent = event.parent as? FrameLayout ?: return@subscribe
+
+                if (parent.findViewById<View>(hovaHeaderSearchIconId + 1) != null) {
+                    return@subscribe
+                }
+
                 val gearIcon = ImageView(parent.context).apply {
                     id = hovaHeaderSearchIconId + 1
                     setImageResource(gearIconId)
+                    setColorFilter(this@SettingsGearInjector.context.userInterface.colorPrimary, PorterDuff.Mode.SRC_IN)
                     setOnClickListener {
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
+                    setPadding(15, 15, 15, 15)
                 }
                 parent.addView(gearIcon, FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     FrameLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
                     gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
-                    marginEnd = 100
+                    marginEnd = this@SettingsGearInjector.context.userInterface.dpToPx(16)
                 })
             }
         }
