@@ -1,5 +1,6 @@
 package me.rhunk.snapenhance.core.ui.menu.impl
 
+import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
@@ -20,31 +21,56 @@ class SettingsGearInjector : AbstractMenu() {
         this.context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view.id == hovaHeaderSearchIconId) {
                 val parent = event.parent as? FrameLayout ?: return@subscribe
+                val searchIcon = event.view
 
                 if (parent.findViewById<View>(gearIconId) != null) {
                     return@subscribe
                 }
+
+                parent.clipChildren = false
 
                 val gearIcon = TextView(parent.context).apply {
                     id = gearIconId
                     text = "⚙️"
                     textSize = 28f
                     setTextColor(this@SettingsGearInjector.context.userInterface.colorPrimary)
+                    isClickable = true
                     setOnClickListener {
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
                     setPadding(15, 15, 15, 15)
                 }
 
-                val layoutParams = FrameLayout.LayoutParams(
+                parent.addView(gearIcon, FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.WRAP_CONTENT,
                     FrameLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
-                    marginEnd = this@SettingsGearInjector.context.userInterface.dpToPx(12)
+                ))
+
+                parent.post {
+                    val searchIconWidth = searchIcon.width
+                    val margin = this@SettingsGearInjector.context.userInterface.dpToPx(8)
+                    gearIcon.x = -(searchIconWidth + margin).toFloat()
+                    gearIcon.y = searchIcon.y + (searchIcon.height - gearIcon.height) / 2
                 }
 
-                parent.addView(gearIcon, layoutParams)
+                parent.setOnTouchListener { _, motionEvent ->
+                    val gearIconLocation = IntArray(2)
+                    gearIcon.getLocationOnScreen(gearIconLocation)
+                    val gearIconLeft = gearIconLocation[0]
+                    val gearIconTop = gearIconLocation[1]
+                    val gearIconRight = gearIconLeft + gearIcon.width
+                    val gearIconBottom = gearIconTop + gearIcon.height
+
+                    if (motionEvent.rawX > gearIconLeft && motionEvent.rawX < gearIconRight &&
+                        motionEvent.rawY > gearIconTop && motionEvent.rawY < gearIconBottom) {
+                        if (motionEvent.action == MotionEvent.ACTION_UP) {
+                            gearIcon.performClick()
+                        }
+                        true
+                    } else {
+                        false
+                    }
+                }
             }
         }
     }
