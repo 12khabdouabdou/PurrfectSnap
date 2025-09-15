@@ -584,14 +584,14 @@ class BulkMessagingAction : AbstractAction() {
             } ?: throw Exception("Failed to find a suitable method for remove friend. Please contact support.")
             context.log.info("Target method found: ${method.name}")
 
-            // KEY FIX: Use the class loader of the actual instance!
-            val enumClass = friendRelationshipChangerInstance.javaClass.classLoader.loadClass("defpackage.EnumC35369pw5")
+            // Get parameter types from the method signature to avoid ClassNotFoundException
+            val enumClass = method.parameterTypes[1]
             val deletedByMyFriends = enumClass.enumConstants.firstOrNull {
                 it.toString() == "DELETED_BY_MY_FRIENDS"
             } ?: enumClass.enumConstants.first()
             context.log.info("Enum resolved: $deletedByMyFriends")
 
-            val c36077qT8Class = friendRelationshipChangerInstance.javaClass.classLoader.loadClass("defpackage.C36077qT8")
+            val c36077qT8Class = method.parameterTypes[4]
             val emptyC36077qT8 = c36077qT8Class.constructors.firstOrNull { it.parameterTypes.isEmpty() }
                 ?.newInstance() ?: throw Exception("Failed to create placementInfo")
             context.log.info("C36077qT8 instance created: $emptyC36077qT8")
