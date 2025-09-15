@@ -557,73 +557,77 @@ class BulkMessagingAction : AbstractAction() {
         }
     }
     private fun removeFriend(userId: String) {
-    context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
-        try {
-            context.log.info("removeFriend started for $userId")
-            val addFriendSpoofInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
-            context.log.info("addFriendSpoofInstance is: ${addFriendSpoofInstance?.javaClass?.name}")
-
-            val friendRelationshipChangerInstance: Any = addFriendSpoofInstance ?: run {
-                val clazz = classReference.get()
-                    ?: throw Exception("FriendRelationshipChanger class not found")
-                context.log.info("FriendRelationshipChanger constructors: " + clazz.constructors.joinToString { it.toString() })
-                when {
-                    clazz.constructors.any { it.parameterTypes.isEmpty() } ->
-                        clazz.constructors.first { it.parameterTypes.isEmpty() }.newInstance()
-                    clazz.constructors.any { it.parameterTypes.size == 1 } ->
-                        clazz.constructors.first { it.parameterTypes.size == 1 }.newInstance(context.mainActivity)
-                    clazz.constructors.any { it.parameterTypes.size == 2 } ->
-                        clazz.constructors.first { it.parameterTypes.size == 2 }.newInstance(context.mainActivity, context.mainActivity!!.application)
-                    else -> throw Exception("No suitable FriendRelationshipChanger constructor found")
+        context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
+            try {
+                context.log.info("removeFriend started for $userId")
+                val addFriendSpoofInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
+                context.log.info("addFriendSpoofInstance is: ${addFriendSpoofInstance?.javaClass?.name}")
+                val friendRelationshipChangerInstance: Any = addFriendSpoofInstance ?: run {
+                    val clazz = classReference.get()
+                        ?: throw Exception("FriendRelationshipChanger class not found")
+                    context.log.info("FriendRelationshipChanger constructors: " + clazz.constructors.joinToString { it.toString() })
+                    when {
+                        clazz.constructors.any { it.parameterTypes.isEmpty() } ->
+                            clazz.constructors.first { it.parameterTypes.isEmpty() }.newInstance()
+                        clazz.constructors.any { it.parameterTypes.size == 1 } ->
+                            clazz.constructors.first { it.parameterTypes.size == 1 }.newInstance(context.mainActivity)
+                        clazz.constructors.any { it.parameterTypes.size == 2 } ->
+                            clazz.constructors.first { it.parameterTypes.size == 2 }.newInstance(context.mainActivity, context.mainActivity!!.application)
+                        else -> throw Exception("No suitable FriendRelationshipChanger constructor found")
+                    }
                 }
+                context.log.info("Obtained instance: ${friendRelationshipChangerInstance.javaClass.name}")
+                val method = friendRelationshipChangerInstance.javaClass.methods.firstOrNull {
+                    it.parameterTypes.size == 5
+                } ?: throw Exception("Failed to find a suitable method for remove friend. Please contact support.")
+                context.log.info("Target method found: ${method.name}")
+                // Get parameter types from the method signature to avoid ClassNotFoundException
+                val enumClass = method.parameterTypes[1]
+                val deletedByMyFriends = enumClass.enumConstants.firstOrNull {
+                    it.toString() == "DELETED_BY_MY_FRIENDS"
+                } ?: enumClass.enumConstants.first()
+                context.log.info("Enum resolved: $deletedByMyFriends")
+                // Get the class for the 5th parameter (C36077qT8)
+                val c36077qT8Class = method.parameterTypes[4]
+                // Find the 2-argument constructor (String, String)
+                val constructor = c36077qT8Class.constructors.firstOrNull {
+                    it.parameterTypes.size == 2 && it.parameterTypes.all { p -> p == String::class.java }
+                } ?: throw Exception("Failed to find suitable constructor for C36077qT8")
+                // Create a new instance with empty strings
+                val placementInfo = constructor.newInstance("", "")
+                context.log.info("C36077qT8 instance created: $placementInfo")
+                val completable = method.invoke(
+                    friendRelationshipChangerInstance,
+                    userId,
+                    deletedByMyFriends,
+                    "",
+                    "",
+                    placementInfo
+                ) ?: throw Exception("Friend removal call returned null.")
+                context.log.info("Completable: $completable")
+                // Robust: Try 0-arg and 1-arg subscribe() for compatibility
+                val completableClass = completable::class.java
+                val allMethods = completableClass.methods.joinToString("\n") { it.toString() }
+                context.log.info("Completable class: ${completableClass.name}")
+                context.log.info("All Completable methods:\n$allMethods")
+                val subscribeNoArg = completableClass.methods.firstOrNull { it.name == "subscribe" && it.parameterTypes.isEmpty() }
+                if (subscribeNoArg != null) {
+                    subscribeNoArg.invoke(completable)
+                    context.log.info("removeFriend completed successfully for $userId with no-arg subscribe()")
+                } else {
+                    val subscribe1Arg = completableClass.methods.firstOrNull { it.name == "subscribe" && it.parameterTypes.size == 1 }
+                    requireNotNull(subscribe1Arg) { "subscribe() method not found on Completable" }
+                    subscribe1Arg.invoke(completable, null)
+                    context.log.info("removeFriend completed successfully for $userId with null 1-arg subscribe()")
+                }
+            } catch (e: Exception) {
+                context.log.error("removeFriend failed", e)
+                println("removeFriend failed: " + e + "\n" + e.stackTraceToString())
+                context.shortToast("removeFriend failed: ${e.message}")
+                throw e
             }
-            context.log.info("Obtained instance: ${friendRelationshipChangerInstance.javaClass.name}")
-
-            val method = friendRelationshipChangerInstance.javaClass.methods.firstOrNull {
-                it.parameterTypes.size == 5
-            } ?: throw Exception("Failed to find a suitable method for remove friend. Please contact support.")
-            context.log.info("Target method found: ${method.name}")
-
-            // Get parameter types from the method signature to avoid ClassNotFoundException
-            val enumClass = method.parameterTypes[1]
-            val deletedByMyFriends = enumClass.enumConstants.firstOrNull {
-                it.toString() == "DELETED_BY_MY_FRIENDS"
-            } ?: enumClass.enumConstants.first()
-            context.log.info("Enum resolved: $deletedByMyFriends")
-
-            // Get the class for the 5th parameter (C36077qT8)
-            val c36077qT8Class = method.parameterTypes[4]
-            // Find the 2-argument constructor (String, String)
-            val constructor = c36077qT8Class.constructors.firstOrNull {
-                it.parameterTypes.size == 2 && it.parameterTypes.all { p -> p == String::class.java }
-            } ?: throw Exception("Failed to find suitable constructor for C36077qT8")
-            // Create a new instance with empty strings
-            val placementInfo = constructor.newInstance("", "")
-            context.log.info("C36077qT8 instance created: $placementInfo")
-
-            val completable = method.invoke(
-                friendRelationshipChangerInstance,
-                userId,
-                deletedByMyFriends,
-                "",
-                "",
-                placementInfo
-            ) ?: throw Exception("Friend removal call returned null.")
-
-            context.log.info("Completable: $completable")
-
-            val subscribe = completable::class.java.methods.firstOrNull { it.name == "subscribe" && it.parameterTypes.isEmpty() }
-            requireNotNull(subscribe) { "subscribe() method not found on Completable" }
-            subscribe.invoke(completable)
-            context.log.info("removeFriend completed successfully for $userId")
-        } catch (e: Exception) {
-            context.log.error("removeFriend failed", e)
-            println("removeFriend failed: " + e + "\n" + e.stackTraceToString())
-            context.shortToast("removeFriend failed: ${e.message}")
-            throw e
         }
     }
-}
     private suspend fun cleanConversation(
         conversationId: String,
         setDialogMessage: (String) -> Unit
