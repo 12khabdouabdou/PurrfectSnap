@@ -2,6 +2,7 @@ package me.rhunk.snapenhance.core.ui.menu.impl
 
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import me.rhunk.snapenhance.common.ui.OverlayType
@@ -27,7 +28,9 @@ class SettingsGearInjector : AbstractMenu() {
                     return@subscribe
                 }
 
+                // Disable clipping on parent and grandparent
                 parent.clipChildren = false
+                (parent.parent as? ViewGroup)?.clipChildren = false
 
                 val gearIcon = TextView(parent.context).apply {
                     id = gearIconId
@@ -39,6 +42,8 @@ class SettingsGearInjector : AbstractMenu() {
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
                     setPadding(15, 15, 15, 15)
+                    // Make invisible initially
+                    visibility = View.INVISIBLE
                 }
 
                 parent.addView(gearIcon, FrameLayout.LayoutParams(
@@ -51,6 +56,8 @@ class SettingsGearInjector : AbstractMenu() {
                     val margin = this@SettingsGearInjector.context.userInterface.dpToPx(8)
                     gearIcon.x = -(searchIconWidth + margin).toFloat()
                     gearIcon.y = searchIcon.y + (searchIcon.height - gearIcon.height) / 2
+                    // Make visible after positioning
+                    gearIcon.visibility = View.VISIBLE
                 }
 
                 parent.setOnTouchListener { _, motionEvent ->
