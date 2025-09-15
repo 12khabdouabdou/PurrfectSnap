@@ -15,34 +15,34 @@ class SettingsGearInjector : AbstractMenu() {
 
     private val gearIconId = View.generateViewId()
 
-    private fun log(message: String) {
+    private fun logInfo(message: String) {
         context.logger.log("SettingsGearInjector", message)
     }
 
     override fun init() {
-        log("Initializing")
+        logInfo("Initializing")
         if (context.config.userInterface.settingsMenu.get() != "legacy") {
-            log("Settings menu is not legacy, aborting init.")
+            logInfo("Settings menu is not legacy, aborting init.")
             return
         }
 
         context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view.id == hovaHeaderAddFriendIconId) {
-                log("AddViewEvent triggered for hova_header_add_friend_icon")
+                logInfo("AddViewEvent triggered for hova_header_add_friend_icon")
                 val parent = event.parent as? FrameLayout ?: return@subscribe
                 if (parent.findViewById<View>(gearIconId) != null) {
-                    log("Gear icon already exists, skipping.")
+                    logInfo("Gear icon already exists, skipping.")
                     return@subscribe
                 }
 
-                log("Creating and adding gear icon.")
+                logInfo("Creating and adding gear icon.")
                 val gearIcon = TextView(parent.context).apply {
                     id = gearIconId
                     text = "⚙️"
                     textSize = 28f
                     setTextColor(this@SettingsGearInjector.context.userInterface.colorPrimary)
                     setOnClickListener {
-                        log("Gear icon clicked.")
+                        logInfo("Gear icon clicked.")
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
                     setPadding(15, 15, 15, 15)
@@ -56,29 +56,29 @@ class SettingsGearInjector : AbstractMenu() {
                 }
 
                 parent.addView(gearIcon, layoutParams)
-                log("Gear icon added to parent. Posting position update.")
+                logInfo("Gear icon added to parent. Posting position update.")
 
                 event.view.post {
                     try {
-                        log("Running position update.")
+                        logInfo("Running position update.")
                         val addFriendIcon = event.view
                         val friendIconParams = addFriendIcon.layoutParams as ViewGroup.MarginLayoutParams
                         val friendIconMarginEnd = friendIconParams.marginEnd
                         val friendIconWidth = addFriendIcon.width
 
-                        log("Friend icon details: width=$friendIconWidth, marginEnd=$friendIconMarginEnd, paddingStart=${addFriendIcon.paddingStart}")
+                        logInfo("Friend icon details: width=$friendIconWidth, marginEnd=$friendIconMarginEnd, paddingStart=${addFriendIcon.paddingStart}")
 
                         val newMargin = friendIconWidth + friendIconMarginEnd + (addFriendIcon.paddingStart / 2)
-                        log("Calculated new marginEnd for gear icon: $newMargin")
+                        logInfo("Calculated new marginEnd for gear icon: $newMargin")
 
                         (gearIcon.layoutParams as FrameLayout.LayoutParams).apply {
                             marginEnd = newMargin
                         }.also {
                             gearIcon.layoutParams = it
                         }
-                        log("Successfully updated gear icon position.")
+                        logInfo("Successfully updated gear icon position.")
                     } catch (t: Throwable) {
-                        context.logger.log("SettingsGearInjector", "Failed to position gear icon", t)
+                        context.logger.logError("SettingsGearInjector", t)
                     }
                 }
             }
