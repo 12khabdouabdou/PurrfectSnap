@@ -36,13 +36,13 @@ class SettingsGearInjector : AbstractMenu() {
                 val gearIcon = TextView(parent.context).apply {
                     id = gearIconId
                     text = "⚙️"
-                    textSize = 28f
+                    textSize = 24f
                     setTextColor(this@SettingsGearInjector.context.userInterface.colorPrimary)
                     setOnClickListener {
                         this@SettingsGearInjector.context.log.info("Gear icon clicked.", logTag)
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
-                    setPadding(15, 15, 15, 15)
+                    setPadding(8, 8, 8, 8)
                 }
 
                 val layoutParams = FrameLayout.LayoutParams(
