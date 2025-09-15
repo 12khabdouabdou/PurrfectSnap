@@ -21,35 +21,35 @@ class SettingsGearInjector : AbstractMenu() {
     }
 
     override fun init() {
-        context.log.verbose("SettingsGearInjector: init called")
+        this.context.log.verbose("SettingsGearInjector: init called")
         if (this.context.config.userInterface.settingsMenu.get() != "legacy") {
-            context.log.verbose("SettingsGearInjector: legacy mode not enabled, returning.")
+            this.context.log.verbose("SettingsGearInjector: legacy mode not enabled, returning.")
             return
         }
-        context.log.verbose("SettingsGearInjector: legacy mode enabled, subscribing to AddViewEvent")
+        this.context.log.verbose("SettingsGearInjector: legacy mode enabled, subscribing to AddViewEvent")
 
         this.context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view.id == hovaHeaderSearchIconId) {
-                context.log.verbose("SettingsGearInjector: hova_header_search_icon found!")
+                this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: hova_header_search_icon found!")
                 val parent = event.parent as? FrameLayout
                 if (parent == null) {
-                    context.log.error("SettingsGearInjector: parent is not a FrameLayout! It is ${event.parent?.javaClass?.name}")
+                    this@SettingsGearInjector.context.log.error("SettingsGearInjector: parent is not a FrameLayout! It is ${event.parent?.javaClass?.name}")
                     return@subscribe
                 }
-                context.log.verbose("SettingsGearInjector: parent is a FrameLayout.")
+                this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: parent is a FrameLayout.")
 
                 if (parent.findViewById<View>(hovaHeaderSearchIconId + 1) != null) {
-                    context.log.verbose("SettingsGearInjector: gear icon already exists.")
+                    this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: gear icon already exists.")
                     return@subscribe
                 }
-                context.log.verbose("SettingsGearInjector: gear icon not found, creating it.")
+                this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: gear icon not found, creating it.")
 
                 val gearIcon = ImageView(parent.context).apply {
                     id = hovaHeaderSearchIconId + 1
                     setImageResource(gearIconId)
                     setColorFilter(this@SettingsGearInjector.context.userInterface.colorPrimary, PorterDuff.Mode.SRC_IN)
                     setOnClickListener {
-                        context.log.verbose("SettingsGearInjector: gear icon clicked!")
+                        this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: gear icon clicked!")
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
                     setPadding(15, 15, 15, 15)
@@ -63,16 +63,16 @@ class SettingsGearInjector : AbstractMenu() {
                     marginEnd = this@SettingsGearInjector.context.userInterface.dpToPx(16)
                 }
 
-                context.log.verbose("SettingsGearInjector: adding gear icon to parent.")
+                this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: adding gear icon to parent.")
                 parent.addView(gearIcon, layoutParams)
-                context.log.verbose("SettingsGearInjector: gear icon added to parent.")
+                this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: gear icon added to parent.")
 
                 parent.post {
                     val addedIcon = parent.findViewById<View>(hovaHeaderSearchIconId + 1)
                     if (addedIcon != null) {
-                        context.log.verbose("SettingsGearInjector: post-layout check, icon is still in parent. Is visible: ${addedIcon.visibility == View.VISIBLE}, width: ${addedIcon.width}, height: ${addedIcon.height}")
+                        this@SettingsGearInjector.context.log.verbose("SettingsGearInjector: post-layout check, icon is still in parent. Is visible: ${addedIcon.visibility == View.VISIBLE}, width: ${addedIcon.width}, height: ${addedIcon.height}")
                     } else {
-                        context.log.error("SettingsGearInjector: post-layout check, icon is GONE from parent.")
+                        this@SettingsGearInjector.context.log.error("SettingsGearInjector: post-layout check, icon is GONE from parent.")
                     }
                 }
             }
