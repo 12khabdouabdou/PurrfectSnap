@@ -591,10 +591,15 @@ class BulkMessagingAction : AbstractAction() {
             } ?: enumClass.enumConstants.first()
             context.log.info("Enum resolved: $deletedByMyFriends")
 
+            // Get the class for the 5th parameter (C36077qT8)
             val c36077qT8Class = method.parameterTypes[4]
-            val emptyC36077qT8 = c36077qT8Class.constructors.firstOrNull { it.parameterTypes.isEmpty() }
-                ?.newInstance() ?: throw Exception("Failed to create placementInfo")
-            context.log.info("C36077qT8 instance created: $emptyC36077qT8")
+            // Find the 2-argument constructor (String, String)
+            val constructor = c36077qT8Class.constructors.firstOrNull {
+                it.parameterTypes.size == 2 && it.parameterTypes.all { p -> p == String::class.java }
+            } ?: throw Exception("Failed to find suitable constructor for C36077qT8")
+            // Create a new instance with empty strings
+            val placementInfo = constructor.newInstance("", "")
+            context.log.info("C36077qT8 instance created: $placementInfo")
 
             val completable = method.invoke(
                 friendRelationshipChangerInstance,
@@ -602,7 +607,7 @@ class BulkMessagingAction : AbstractAction() {
                 deletedByMyFriends,
                 "",
                 "",
-                emptyC36077qT8
+                placementInfo
             ) ?: throw Exception("Friend removal call returned null.")
 
             context.log.info("Completable: $completable")
