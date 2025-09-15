@@ -15,20 +15,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -582,19 +569,15 @@ class BulkMessagingAction : AbstractAction() {
                     it.parameterTypes.size == 5
                 } ?: throw Exception("Failed to find a suitable method for remove friend. Please contact support.")
                 context.log.info("Target method found: ${method.name}")
-                // Get parameter types from the method signature to avoid ClassNotFoundException
                 val enumClass = method.parameterTypes[1]
                 val deletedByMyFriends = enumClass.enumConstants.firstOrNull {
                     it.toString() == "DELETED_BY_MY_FRIENDS"
                 } ?: enumClass.enumConstants.first()
                 context.log.info("Enum resolved: $deletedByMyFriends")
-                // Get the class for the 5th parameter (C36077qT8)
                 val c36077qT8Class = method.parameterTypes[4]
-                // Find the 2-argument constructor (String, String)
                 val constructor = c36077qT8Class.constructors.firstOrNull {
                     it.parameterTypes.size == 2 && it.parameterTypes.all { p -> p == String::class.java }
                 } ?: throw Exception("Failed to find suitable constructor for C36077qT8")
-                // Create a new instance with empty strings
                 val placementInfo = constructor.newInstance("", "")
                 context.log.info("C36077qT8 instance created: $placementInfo")
                 val completable = method.invoke(
@@ -610,18 +593,28 @@ class BulkMessagingAction : AbstractAction() {
                 val allMethods = completableClass.methods.joinToString("\n") { it.toString() }
                 context.log.info("Completable class: ${completableClass.name}")
                 context.log.info("All Completable methods:\n$allMethods")
-                // Try the likely Rx trigger method(s).
                 val vMethod = completableClass.methods.firstOrNull { it.name == "V" && it.parameterTypes.size == 1 }
                 if (vMethod != null) {
-                    context.log.info("Found V(hq3), invoking with null...")
-                    vMethod.invoke(completable, null)
-                    context.log.info("removeFriend triggered with V(hq3)")
+                    context.log.info("Found V(hq3), creating proxy...")
+                    val hq3Class = completableClass.classLoader.loadClass("defpackage.hq3")
+                    val proxy = java.lang.reflect.Proxy.newProxyInstance(
+                        hq3Class.classLoader,
+                        arrayOf(hq3Class)
+                    ) { _, _, _ -> }
+                    context.log.info("Invoking V(hq3) with proxy")
+                    vMethod.invoke(completable, proxy)
+                    context.log.info("removeFriend triggered with V(hq3) and proxy")
                 } else {
                     val bMethod = completableClass.methods.firstOrNull { it.name == "b" && it.parameterTypes.size == 1 }
                     if (bMethod != null) {
-                        context.log.info("Found b(hq3), invoking with null...")
-                        bMethod.invoke(completable, null)
-                        context.log.info("removeFriend triggered with b(hq3)")
+                        val hq3Class = completableClass.classLoader.loadClass("defpackage.hq3")
+                        val proxy = java.lang.reflect.Proxy.newProxyInstance(
+                            hq3Class.classLoader,
+                            arrayOf(hq3Class)
+                        ) { _, _, _ -> }
+                        context.log.info("Invoking b(hq3) with proxy")
+                        bMethod.invoke(completable, proxy)
+                        context.log.info("removeFriend triggered with b(hq3) and proxy")
                     } else {
                         val triggerMethods = completableClass.methods.filter { it.returnType == Void.TYPE && it.parameterTypes.size == 1 }
                         context.log.error("No trigger method found. 1-arg void methods: ${triggerMethods.joinToString { it.toString() }}")
