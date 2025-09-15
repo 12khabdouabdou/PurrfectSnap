@@ -1,5 +1,6 @@
 package me.rhunk.snapenhance.core.ui.menu.impl
 
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -15,63 +16,74 @@ class SettingsGearInjector : AbstractMenu() {
     }
 
     private val gearIconId = View.generateViewId()
+    private val gearIconContainerId = View.generateViewId()
 
     override fun init() {
         if (this.context.config.userInterface.settingsMenu.get() != "legacy") return
 
         this.context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view.id == hovaHeaderSearchIconId) {
-                val parent = event.parent as? FrameLayout ?: return@subscribe
+                val directParent = event.parent as? FrameLayout ?: return@subscribe
                 val searchIcon = event.view
 
-                if (parent.findViewById<View>(gearIconId) != null) {
+                if (directParent.findViewById<View>(gearIconContainerId) != null) {
                     return@subscribe
                 }
 
                 // Disable clipping on parent and grandparent
-                parent.clipChildren = false
-                (parent.parent as? ViewGroup)?.clipChildren = false
+                directParent.clipChildren = false
+                (directParent.parent as? ViewGroup)?.clipChildren = false
 
-                val gearIcon = TextView(parent.context).apply {
+                val gearIcon = TextView(directParent.context).apply {
                     id = gearIconId
                     text = "⚙️"
                     textSize = 28f
                     setTextColor(this@SettingsGearInjector.context.userInterface.colorPrimary)
+                }
+
+                val gearContainer = FrameLayout(directParent.context).apply {
+                    id = gearIconContainerId
                     isClickable = true
                     setOnClickListener {
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
-                    setPadding(15, 15, 15, 15)
+                    addView(gearIcon, FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        Gravity.CENTER
+                    ))
                     // Make invisible initially
                     visibility = View.INVISIBLE
                 }
 
-                parent.addView(gearIcon, FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT
-                ))
+                directParent.addView(gearContainer)
 
-                parent.post {
+                directParent.post {
                     val searchIconWidth = searchIcon.width
                     val margin = this@SettingsGearInjector.context.userInterface.dpToPx(8)
-                    gearIcon.x = -(searchIconWidth + margin).toFloat()
-                    gearIcon.y = searchIcon.y + (searchIcon.height - gearIcon.height) / 2
+
+                    gearContainer.layoutParams = FrameLayout.LayoutParams(searchIcon.layoutParams.width, searchIcon.layoutParams.height).apply {
+                        x = -(searchIconWidth + margin).toFloat()
+                        y = searchIcon.y
+                    }
                     // Make visible after positioning
-                    gearIcon.visibility = View.VISIBLE
+                    gearContainer.visibility = View.VISIBLE
                 }
 
-                parent.setOnTouchListener { _, motionEvent ->
-                    val gearIconLocation = IntArray(2)
-                    gearIcon.getLocationOnScreen(gearIconLocation)
-                    val gearIconLeft = gearIconLocation[0]
-                    val gearIconTop = gearIconLocation[1]
-                    val gearIconRight = gearIconLeft + gearIcon.width
-                    val gearIconBottom = gearIconTop + gearIcon.height
+                (directParent.parent as? ViewGroup)?.setOnTouchListener { _, motionEvent ->
+                    if (gearContainer.visibility != View.VISIBLE) return@setOnTouchListener false
 
-                    if (motionEvent.rawX > gearIconLeft && motionEvent.rawX < gearIconRight &&
-                        motionEvent.rawY > gearIconTop && motionEvent.rawY < gearIconBottom) {
+                    val location = IntArray(2)
+                    gearContainer.getLocationOnScreen(location)
+                    val left = location[0]
+                    val top = location[1]
+                    val right = left + gearContainer.width
+                    val bottom = top + gearContainer.height
+
+                    if (motionEvent.rawX > left && motionEvent.rawX < right &&
+                        motionEvent.rawY > top && motionEvent.rawY < bottom) {
                         if (motionEvent.action == MotionEvent.ACTION_UP) {
-                            gearIcon.performClick()
+                            gearContainer.performClick()
                         }
                         true
                     } else {
