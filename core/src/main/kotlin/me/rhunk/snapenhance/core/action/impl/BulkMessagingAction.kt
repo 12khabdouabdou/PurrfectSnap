@@ -381,7 +381,8 @@ class BulkMessagingAction : AbstractAction() {
                             .fillMaxWidth()
                             .clickable {
                                 selectFriend(!selectedFriends.contains(friendInfo.userId))
-                            }.pointerInput(Unit) {
+                            }
+                            .pointerInput(Unit) {
                                 detectTapGestures(
                                     onLongPress = { context.androidContext.copyToClipboard(friendInfo.mutableUsername.toString()) }
                                 )
@@ -605,20 +606,27 @@ class BulkMessagingAction : AbstractAction() {
                     placementInfo
                 ) ?: throw Exception("Friend removal call returned null.")
                 context.log.info("Completable: $completable")
-                // Robust: Try 0-arg and 1-arg subscribe() for compatibility
                 val completableClass = completable::class.java
                 val allMethods = completableClass.methods.joinToString("\n") { it.toString() }
                 context.log.info("Completable class: ${completableClass.name}")
                 context.log.info("All Completable methods:\n$allMethods")
-                val subscribeNoArg = completableClass.methods.firstOrNull { it.name == "subscribe" && it.parameterTypes.isEmpty() }
-                if (subscribeNoArg != null) {
-                    subscribeNoArg.invoke(completable)
-                    context.log.info("removeFriend completed successfully for $userId with no-arg subscribe()")
+                // Try the likely Rx trigger method(s).
+                val vMethod = completableClass.methods.firstOrNull { it.name == "V" && it.parameterTypes.size == 1 }
+                if (vMethod != null) {
+                    context.log.info("Found V(hq3), invoking with null...")
+                    vMethod.invoke(completable, null)
+                    context.log.info("removeFriend triggered with V(hq3)")
                 } else {
-                    val subscribe1Arg = completableClass.methods.firstOrNull { it.name == "subscribe" && it.parameterTypes.size == 1 }
-                    requireNotNull(subscribe1Arg) { "subscribe() method not found on Completable" }
-                    subscribe1Arg.invoke(completable, null)
-                    context.log.info("removeFriend completed successfully for $userId with null 1-arg subscribe()")
+                    val bMethod = completableClass.methods.firstOrNull { it.name == "b" && it.parameterTypes.size == 1 }
+                    if (bMethod != null) {
+                        context.log.info("Found b(hq3), invoking with null...")
+                        bMethod.invoke(completable, null)
+                        context.log.info("removeFriend triggered with b(hq3)")
+                    } else {
+                        val triggerMethods = completableClass.methods.filter { it.returnType == Void.TYPE && it.parameterTypes.size == 1 }
+                        context.log.error("No trigger method found. 1-arg void methods: ${triggerMethods.joinToString { it.toString() }}")
+                        throw IllegalArgumentException("No trigger method found on Completable.")
+                    }
                 }
             } catch (e: Exception) {
                 context.log.error("removeFriend failed", e)
