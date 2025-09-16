@@ -7,6 +7,8 @@ import android.widget.ImageView
 import me.rhunk.snapenhance.common.ui.OverlayType
 import me.rhunk.snapenhance.core.event.events.impl.AddViewEvent
 import me.rhunk.snapenhance.core.ui.menu.AbstractMenu
+import me.rhunk.snapenhance.core.util.ktx.getDrawable
+import me.rhunk.snapenhance.core.util.ktx.getStyledAttributes
 
 class SettingsGearInjector : AbstractMenu() {
     private val hovaHeaderAddFriendIconId by lazy {
