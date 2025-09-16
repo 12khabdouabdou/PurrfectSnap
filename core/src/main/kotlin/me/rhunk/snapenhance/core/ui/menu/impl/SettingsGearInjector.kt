@@ -37,7 +37,6 @@ class SettingsGearInjector : AbstractMenu() {
                 this@SettingsGearInjector.context.log.info("Creating and adding gear icon.", logTag)
                 val gearIcon = FrameLayout(parent.context).apply {
                     id = gearIconId
-                    visibility = View.INVISIBLE // Hide the view initially
                     setOnClickListener {
                         this@SettingsGearInjector.context.log.info("Gear icon clicked.", logTag)
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
@@ -62,6 +61,8 @@ class SettingsGearInjector : AbstractMenu() {
                     FrameLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
                     gravity = android.view.Gravity.END or android.view.Gravity.CENTER_VERTICAL
+                    // Place it off-screen initially
+                    marginEnd = this@SettingsGearInjector.context.resources.displayMetrics.widthPixels
                 }
 
                 parent.addView(gearIcon, layoutParams)
@@ -92,7 +93,6 @@ class SettingsGearInjector : AbstractMenu() {
                             gearIcon.layoutParams = it
                         }
                         this@SettingsGearInjector.context.log.info("Successfully updated gear icon position and size.", logTag)
-                        gearIcon.visibility = View.VISIBLE // Make the view visible now
                     } catch (t: Throwable) {
                         this@SettingsGearInjector.context.log.error("Failed to position or size gear icon", t, logTag)
                     }
