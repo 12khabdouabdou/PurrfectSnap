@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.navigationBars
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.fadeIn
@@ -44,11 +45,33 @@ import me.rhunk.snapenhance.ui.util.scaleOnPress
 import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
+import me.rhunk.snapenhance.R
+import android.net.Uri
+import android.widget.VideoView
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.viewinterop.AndroidView
 import me.rhunk.snapenhance.ui.setup.screens.impl.MappingsScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.PermissionsScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.PickLanguageScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.SaveFolderScreen
 
+
+@Composable
+fun VideoPlayer(onCompletion: () -> Unit) {
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = { context ->
+            VideoView(context).apply {
+                val uri = Uri.parse("android.resource://${context.packageName}/${R.raw.setup_video}")
+                setVideoURI(uri)
+                setOnCompletionListener {
+                    onCompletion()
+                }
+                start()
+            }
+        }
+    )
+}
 
 class SetupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,6 +122,8 @@ class SetupActivity : ComponentActivity() {
         setContent {
             val navController = rememberAnimatedNavController()
             var canGoNext by remember { mutableStateOf(false) }
+            var showVideo by remember { mutableStateOf(true) }
+
 
             fun nextScreen() {
                 if (!canGoNext) return
@@ -131,71 +156,91 @@ class SetupActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(background)
                 ) {
-                    val bottomPadding = 110.dp +
-                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(bottom = bottomPadding)
+                    AnimatedVisibility(
+                        visible = showVideo,
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
-                        AnimatedNavHost(
-                            navController = navController,
-                            startDestination = requiredScreens.first().route,
-                            enterTransition = { fadeIn() },
-                            exitTransition = { fadeOut() },
-                            popEnterTransition = { fadeIn() },
-                            popExitTransition = { fadeOut() }
+                        VideoPlayer {
+                            showVideo = false
+                        }
+                    }
+
+
+                    AnimatedVisibility(
+                        visible = !showVideo,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        val bottomPadding = 110.dp +
+                                WindowInsets.navigationBars.asPaddingValues()
+                                    .calculateBottomPadding()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(bottom = bottomPadding)
                         ) {
-                            requiredScreens.forEach { screen ->
-                                screen.allowNext = { canGoNext = it }
-                                screen.goNext = {
-                                    canGoNext = true
-                                    nextScreen()
-                                }
-                                composable(
-                                    screen.route,
-                                    enterTransition = { slideInHorizontally { it } },
-                                    exitTransition = { slideOutHorizontally { -it } },
-                                    popEnterTransition = { slideInHorizontally { -it } },
-                                    popExitTransition = { slideOutHorizontally { it } }
-                                ) {
-                                    BackHandler(true) {}
-                                    Column(
-                                        modifier = Modifier.fillMaxSize(),
-                                        verticalArrangement = Arrangement.Center,
-                                        horizontalAlignment = Alignment.CenterHorizontally
+                            AnimatedNavHost(
+                                navController = navController,
+                                startDestination = requiredScreens.first().route,
+                                enterTransition = { fadeIn() },
+                                exitTransition = { fadeOut() },
+                                popEnterTransition = { fadeIn() },
+                                popExitTransition = { fadeOut() }
+                            ) {
+                                requiredScreens.forEach { screen ->
+                                    screen.allowNext = { canGoNext = it }
+                                    screen.goNext = {
+                                        canGoNext = true
+                                        nextScreen()
+                                    }
+                                    composable(
+                                        screen.route,
+                                        enterTransition = { slideInHorizontally { it } },
+                                        exitTransition = { slideOutHorizontally { -it } },
+                                        popEnterTransition = { slideInHorizontally { -it } },
+                                        popExitTransition = { slideOutHorizontally { it } }
                                     ) {
-                                        screen.Content()
+                                        BackHandler(true) {}
+                                        Column(
+                                            modifier = Modifier.fillMaxSize(),
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            screen.Content()
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    val alpha: Float by animateFloatAsState(if (canGoNext) 1f else 0f,
-                        label = "NextButton"
-                    )
-
-                    val nextSrc = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                    FilledIconButton(
-                        onClick = { nextScreen() },
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .navigationBarsPadding()
-                            .padding(bottom = 50.dp)
-                            .size(60.dp)
-                            .alpha(alpha)
-                            .scaleOnPress(nextSrc),
-                        interactionSource = nextSrc
-                    ) {
-                        Icon(
-                            imageVector = if (requiredScreens.size <= 1 && canGoNext) {
-                                Icons.Default.Check
-                            } else {
-                                Icons.AutoMirrored.Default.ArrowForwardIos
-                            },
-                            contentDescription = null
+                        val alpha: Float by animateFloatAsState(
+                            if (canGoNext) 1f else 0f,
+                            label = "NextButton"
                         )
+
+                        val nextSrc =
+                            remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                        FilledIconButton(
+                            onClick = { nextScreen() },
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .navigationBarsPadding()
+                                .padding(bottom = 50.dp)
+                                .size(60.dp)
+                                .alpha(alpha)
+                                .scaleOnPress(nextSrc),
+                            interactionSource = nextSrc
+                        ) {
+                            Icon(
+                                imageVector = if (requiredScreens.size <= 1 && canGoNext) {
+                                    Icons.Default.Check
+                                } else {
+                                    Icons.AutoMirrored.Default.ArrowForwardIos
+                                },
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
             }
