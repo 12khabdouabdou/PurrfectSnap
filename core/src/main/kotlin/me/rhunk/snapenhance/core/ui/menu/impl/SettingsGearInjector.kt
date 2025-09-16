@@ -3,7 +3,7 @@ package me.rhunk.snapenhance.core.ui.menu.impl
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.TextView
+import android.widget.ImageView
 import me.rhunk.snapenhance.common.ui.OverlayType
 import me.rhunk.snapenhance.core.event.events.impl.AddViewEvent
 import me.rhunk.snapenhance.core.ui.menu.AbstractMenu
@@ -33,16 +33,18 @@ class SettingsGearInjector : AbstractMenu() {
                 }
 
                 this@SettingsGearInjector.context.log.info("Creating and adding gear icon.", logTag)
-                val gearIcon = TextView(parent.context).apply {
+                val gearIcon = ImageView(parent.context).apply {
                     id = gearIconId
-                    text = "⚙️"
-                    textSize = 22f // Smaller default size
-                    setTextColor(this@SettingsGearInjector.context.userInterface.colorPrimary)
+                    val resources = this@SettingsGearInjector.context.resources
+                    val theme = this@SettingsGearInjector.context.androidContext.theme
+                    setImageDrawable(resources.getDrawable("svg_settings_32x32", theme))
+                    resources.getStyledAttributes("headerButtonOpaqueIconTint", theme).getColorStateList(0)?.let {
+                        imageTintList = it
+                    }
                     setOnClickListener {
                         this@SettingsGearInjector.context.log.info("Gear icon clicked.", logTag)
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
-                    // Padding is removed, size will be handled by layout params
                 }
 
                 val layoutParams = FrameLayout.LayoutParams(
