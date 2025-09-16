@@ -36,13 +36,13 @@ class SettingsGearInjector : AbstractMenu() {
                 val gearIcon = TextView(parent.context).apply {
                     id = gearIconId
                     text = "⚙️"
-                    textSize = 24f
+                    textSize = 22f // Smaller default size
                     setTextColor(this@SettingsGearInjector.context.userInterface.colorPrimary)
                     setOnClickListener {
                         this@SettingsGearInjector.context.log.info("Gear icon clicked.", logTag)
                         this@SettingsGearInjector.context.bridgeClient.openOverlay(OverlayType.SETTINGS)
                     }
-                    setPadding(8, 8, 8, 8)
+                    // Padding is removed, size will be handled by layout params
                 }
 
                 val layoutParams = FrameLayout.LayoutParams(
@@ -53,29 +53,32 @@ class SettingsGearInjector : AbstractMenu() {
                 }
 
                 parent.addView(gearIcon, layoutParams)
-                this@SettingsGearInjector.context.log.info("Gear icon added to parent. Posting position update.", logTag)
+                this@SettingsGearInjector.context.log.info("Gear icon added to parent. Posting position and size update.", logTag)
 
                 event.view.post {
                     try {
-                        this@SettingsGearInjector.context.log.info("Running position update.", logTag)
+                        this@SettingsGearInjector.context.log.info("Running position and size update.", logTag)
                         val addFriendIcon = event.view
                         val friendIconParams = addFriendIcon.layoutParams as ViewGroup.MarginLayoutParams
                         val friendIconMarginEnd = friendIconParams.marginEnd
                         val friendIconWidth = addFriendIcon.width
+                        val friendIconHeight = addFriendIcon.height
 
-                        this@SettingsGearInjector.context.log.info("Friend icon details: width=$friendIconWidth, marginEnd=$friendIconMarginEnd, paddingStart=${addFriendIcon.paddingStart}", logTag)
+                        this@SettingsGearInjector.context.log.info("Friend icon details: width=$friendIconWidth, height=$friendIconHeight, marginEnd=$friendIconMarginEnd", logTag)
 
                         val newMargin = friendIconWidth + friendIconMarginEnd + this@SettingsGearInjector.context.userInterface.dpToPx(4)
                         this@SettingsGearInjector.context.log.info("Calculated new marginEnd for gear icon: $newMargin", logTag)
 
                         (gearIcon.layoutParams as FrameLayout.LayoutParams).apply {
+                            height = friendIconHeight
+                            width = friendIconHeight // Make it a square
                             marginEnd = newMargin
                         }.also {
                             gearIcon.layoutParams = it
                         }
-                        this@SettingsGearInjector.context.log.info("Successfully updated gear icon position.", logTag)
+                        this@SettingsGearInjector.context.log.info("Successfully updated gear icon position and size.", logTag)
                     } catch (t: Throwable) {
-                        this@SettingsGearInjector.context.log.error("Failed to position gear icon", t, logTag)
+                        this@SettingsGearInjector.context.log.error("Failed to position or size gear icon", t, logTag)
                     }
                 }
             }
