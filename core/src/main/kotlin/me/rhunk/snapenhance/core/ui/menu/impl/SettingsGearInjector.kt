@@ -70,7 +70,7 @@ class SettingsGearInjector : AbstractMenu() {
                     try {
                         this@SettingsGearInjector.context.log.info("Running position and size update.", logTag)
                         val addFriendIcon = event.view
-                        gearIcon.background = addFriendIcon.background
+                        gearIcon.background = addFriendIcon.background.mutate()
                         gearIcon.backgroundTintList = addFriendIcon.backgroundTintList
 
                         val friendIconParams = addFriendIcon.layoutParams as ViewGroup.MarginLayoutParams
