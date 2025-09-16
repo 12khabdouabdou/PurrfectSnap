@@ -59,4 +59,5 @@ class UserInterfaceTweaks : ConfigContainer() {
         requireRestart(); addNotices(FeatureNotice.BAN_RISK, FeatureNotice.INTERNAL_BEHAVIOR)
     }
     val preventForcedKeyboard = boolean("prevent_forced_keyboard") { requireRestart() }
+    val settingsMenu = unique("settings_menu", "default", "legacy") { requireRestart() }
 }

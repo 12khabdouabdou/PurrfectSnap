@@ -14,6 +14,7 @@ class SettingsMenu : AbstractMenu() {
     }
 
     override fun init() {
+        if (context.config.userInterface.settingsMenu.get() != "default") return
         context.androidContext.classLoader.loadClass("com.snap.ui.view.SnapFontTextView").hook("setText", HookStage.BEFORE) { param ->
             val view = param.thisObject<View>()
             if ((view.parent as? FrameLayout)?.findViewById<View>(hovaHeaderSearchIconId) != null) {

@@ -22,6 +22,7 @@ class MenuViewInjector : Feature("MenuViewInjector") {
             OperaViewerIcons(),
             FriendFeedInfoMenu(),
             ChatActionMenu(),
+            SettingsGearInjector(),
         ).associateBy {
             it.context = context
             it.menuViewInjector = this
