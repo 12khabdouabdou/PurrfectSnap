@@ -29,22 +29,22 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
-        run: ./gradlew assembleArmv8Debug
+        run: ./gradlew --configuration-cache assembleArmv8Debug
 
       - name: Get current build version
         id: version-env
         run: |
-          ./gradlew getVersion
+          ./gradlew --configuration-cache getVersion
           echo "version=$(cat app/build/version.txt)" >> $GITHUB_ENV
 
       - name: Rename APK file
         run: |
-          mv app/build/outputs/apk/armv8/debug/*.apk app/build/outputs/apk/armv8/debug/snapenhance-${{ env.version }}-armv8-${GITHUB_SHA::7}.apk
+          mv app/build/outputs/apk/armv8/debug/*.apk app/build/outputs/apk/armv8/debug/purrfectsnap-${{ env.version }}-armv8-${GITHUB_SHA::7}.apk
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: snapenhance-armv8-debug
+          name: purrfectsnap-armv8-debug
           path: app/build/outputs/apk/armv8/debug/*.apk
           
   job_armv7:
@@ -72,22 +72,22 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
-        run: ./gradlew assembleArmv7Debug
+        run: ./gradlew --configuration-cache assembleArmv7Debug
 
       - name: Get current build version
         id: version-env
         run: |
-          ./gradlew getVersion
+          ./gradlew --configuration-cache getVersion
           echo "version=$(cat app/build/version.txt)" >> $GITHUB_ENV
 
       - name: Rename APK file
         run: |
-          mv app/build/outputs/apk/armv7/debug/*.apk app/build/outputs/apk/armv7/debug/snapenhance-${{ env.version }}-armv7-${GITHUB_SHA::7}.apk
+          mv app/build/outputs/apk/armv7/debug/*.apk app/build/outputs/apk/armv7/debug/purrfectsnap-${{ env.version }}-armv7-${GITHUB_SHA::7}.apk
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: snapenhance-armv7-debug
+          name: purrfectsnap-armv7-debug
           path: app/build/outputs/apk/armv7/debug/*.apk
 
   job_manager:
@@ -109,7 +109,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build
-        run: ./gradlew manager:assembleDebug
+        run: ./gradlew --configuration-cache manager:assembleDebug
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -139,10 +139,11 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
-        run: ./gradlew assembleCoreDebug
+        run: ./gradlew --configuration-cache assembleCoreDebug
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: core
           path: app/build/outputs/apk/core/debug/*.apk
+

@@ -45,7 +45,7 @@ object LSPatchUpdater {
 
         val seAppApk = File(context.bridgeClient.getApplicationApkPath()).also {
             if (!it.canRead()) {
-                throw IllegalStateException("Cannot read SnapEnhance apk")
+                throw IllegalStateException("Cannot read PurrfectSnap apk")
             }
         }
 
@@ -59,19 +59,19 @@ object LSPatchUpdater {
         }
 
         context.log.verbose("updating", TAG)
-        context.shortToast("Updating SnapEnhance. Please wait...")
+        context.shortToast("Updating PurrfectSnap. Please wait...")
         // copy embedded module to cache
         runCatching {
             seAppApk.copyTo(embeddedModule, overwrite = true)
         }.onFailure {
             seAppApk.delete()
             context.log.error("Failed to copy embedded module", it, TAG)
-            context.longToast("Failed to update SnapEnhance. Please check logcat for more details.")
+            context.longToast("Failed to update PurrfectSnap. Please check logcat for more details.")
             context.forceCloseApp()
             return
         }
 
-        context.longToast("SnapEnhance updated!")
+        context.longToast("PurrfectSnap updated!")
         context.log.verbose("updated", TAG)
         context.softRestartApp()
     }

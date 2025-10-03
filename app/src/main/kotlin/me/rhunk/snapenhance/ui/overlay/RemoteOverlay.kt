@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
 package me.rhunk.snapenhance.ui.overlay
 
 import android.app.Dialog
@@ -60,7 +61,7 @@ class RemoteOverlay(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = { navigation.TopBar() }
         ) { innerPadding ->
-            navigation.Content(
+            navigation.NavContent(
                 innerPadding,
                 startDestination = remember { startRoute(navigation.routes).routeInfo.id }
             )
@@ -124,3 +125,4 @@ class RemoteOverlay(
         }
     }
 }
+

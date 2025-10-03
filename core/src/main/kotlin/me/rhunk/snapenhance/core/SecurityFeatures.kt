@@ -2,20 +2,34 @@ package me.rhunk.snapenhance.core
 
 import android.system.Os
 import android.view.ViewGroup
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.rounded.NotInterested
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import me.rhunk.snapenhance.common.bridge.FileHandleScope
 import me.rhunk.snapenhance.common.bridge.toWrapper
@@ -48,9 +62,52 @@ class SecurityFeatures(
         transact(this, 0)?.toString(2)?.padStart(32, '0')?.count { it == '1' }
     }
 
+    private fun showBypassStatusIndicator(isWorking: Boolean) {
+        if (context.bridgeClient.getDebugProp("disable_bypass_indicator", "false") == "true") {
+            return
+        }
+
+        lateinit var composable: CustomComposable
+        composable = {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter)
+                    .offset(y = (-8).dp)
+                    .background(
+                        color = Color.Black.copy(alpha = 0.8f),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = if (isWorking) Color.Green else Color.Red,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (isWorking) "Bypass Active" else "Bypass Inactive",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
+
+            LaunchedEffect(Unit) {
+                delay(3000)
+                context.inAppOverlay.removeCustomComposable(composable)
+            }
+        }
+
+        context.inAppOverlay.addCustomComposable(composable)
+    }
+
     fun init() {
         val snapchatVersionCode = context.androidContext.packageManager?.getPackageInfo(context.androidContext.packageName, 0)?.longVersionCode ?: throw IllegalStateException("Failed to get version code")
         var shouldDisablePlugin = MOD_DETECTION_VERSION_CHECK.checkVersion(snapchatVersionCode)?.second == VersionRequirement.OLDER_REQUIRED
+        var usingCustomSharedLibrary = false
 
         // load user shared library
         context.config.experimental.nativeHooks.customSharedLibrary.get().takeIf { it.isNotEmpty() }?.let {
@@ -60,6 +117,7 @@ class SecurityFeatures(
                 )
                 context.log.verbose("loaded custom shared library")
                 shouldDisablePlugin = false
+                usingCustomSharedLibrary = true
 
                 lateinit var composable: CustomComposable
                 composable = {
@@ -89,6 +147,11 @@ class SecurityFeatures(
 
         context.disablePlugin = shouldDisablePlugin
         context.log.verbose("disablePlugin=${context.disablePlugin}")
+
+        // Show bypass status indicator only when not using custom shared library
+        if (!usingCustomSharedLibrary) {
+            showBypassStatusIndicator(context.disablePlugin)
+        }
         if (!context.disablePlugin) return
 
         val allowedEPs = listOf(

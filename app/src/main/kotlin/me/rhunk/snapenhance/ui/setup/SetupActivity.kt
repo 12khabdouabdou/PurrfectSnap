@@ -1,6 +1,8 @@
+@file:OptIn(androidx.compose.animation.ExperimentalAnimationApi::class)
+
 package me.rhunk.snapenhance.ui.setup
 
-import android.annotation.SuppressLint
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -14,7 +16,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,10 +24,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import me.rhunk.snapenhance.ui.util.scaleOnPress
 import me.rhunk.snapenhance.SharedContextHolder
 import me.rhunk.snapenhance.common.ui.AppMaterialTheme
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
@@ -34,27 +50,19 @@ import me.rhunk.snapenhance.ui.setup.screens.impl.PermissionsScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.PickLanguageScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.SaveFolderScreen
 
-
 class SetupActivity : ComponentActivity() {
-    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val setupContext = SharedContextHolder.remote(this).apply {
             activity = this@SetupActivity
         }
-
         fun endActivity() {
             setupContext.reload()
             finish()
         }
-
         val requirements = intent.getIntExtra("requirements", Requirements.FIRST_RUN)
-
         fun hasRequirement(requirement: Int) = requirements and requirement == requirement
-
         val requiredScreens = mutableListOf<SetupScreen>()
-
         with(requiredScreens) {
             val isFirstRun = hasRequirement(Requirements.FIRST_RUN)
             if (isFirstRun || hasRequirement(Requirements.LANGUAGE)) {
@@ -71,73 +79,62 @@ class SetupActivity : ComponentActivity() {
             }
         }
 
-        // If there are no required screens, we can just finish the activity
         if (requiredScreens.isEmpty()) {
             endActivity()
             return
         }
-
         requiredScreens.forEach { screen ->
             screen.context = setupContext
             screen.init()
         }
-
         setContent {
             val navController = rememberNavController()
             var canGoNext by remember { mutableStateOf(false) }
-
             fun nextScreen() {
                 if (!canGoNext) return
                 requiredScreens.firstOrNull()?.onLeave()
                 if (requiredScreens.size > 1) {
                     canGoNext = false
-                    requiredScreens.removeFirst()
+                    requiredScreens.removeAt(0)
                     navController.navigate(requiredScreens.first().route)
                 } else {
                     endActivity()
                 }
             }
-
             AppMaterialTheme {
-                Scaffold(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    bottomBar = {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            val alpha: Float by animateFloatAsState(if (canGoNext) 1f else 0f,
-                                label = "NextButton"
-                            )
-
-                            FilledIconButton(
-                                onClick = { nextScreen() },
-                                modifier = Modifier.padding(50.dp)
-                                    .width(60.dp)
-                                    .height(60.dp)
-                                    .alpha(alpha)
-                            ) {
-                                Icon(
-                                    imageVector = if (requiredScreens.size <= 1 && canGoNext) {
-                                        Icons.Default.Check
-                                    } else {
-                                        Icons.AutoMirrored.Default.ArrowForwardIos
-                                    },
-                                    contentDescription = null
-                                )
-                            }
-                        }
-                    },
+                val background = MaterialTheme.colorScheme.background
+                val isLight = background.luminance() > 0.5f
+                val view = LocalView.current
+                @Suppress("DEPRECATION")
+                SideEffect {
+                    val window = (view.context as Activity).window
+                    WindowCompat.setDecorFitsSystemWindows(window, false)
+                    // Set transparent system bars and light/dark icons
+                    window.statusBarColor = Color.Transparent.toArgb()
+                    window.navigationBarColor = Color.Transparent.toArgb()
+                    val insetsController = WindowInsetsControllerCompat(window, window.decorView)
+                    insetsController.isAppearanceLightStatusBars = isLight
+                    insetsController.isAppearanceLightNavigationBars = isLight
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(background)
                 ) {
+                    val bottomPadding = 110.dp +
+                        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                     Column(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.background)
                             .fillMaxSize()
+                            .padding(bottom = bottomPadding)
                     ) {
                         NavHost(
                             navController = navController,
-                            startDestination = requiredScreens.first().route
+                            startDestination = requiredScreens.first().route,
+                            enterTransition = { fadeIn() },
+                            exitTransition = { fadeOut() },
+                            popEnterTransition = { fadeIn() },
+                            popExitTransition = { fadeOut() }
                         ) {
                             requiredScreens.forEach { screen ->
                                 screen.allowNext = { canGoNext = it }
@@ -145,7 +142,13 @@ class SetupActivity : ComponentActivity() {
                                     canGoNext = true
                                     nextScreen()
                                 }
-                                composable(screen.route) {
+                                composable(
+                                    screen.route,
+                                    enterTransition = { slideInHorizontally { it } },
+                                    exitTransition = { slideOutHorizontally { -it } },
+                                    popEnterTransition = { slideInHorizontally { -it } },
+                                    popExitTransition = { slideOutHorizontally { it } }
+                                ) {
                                     BackHandler(true) {}
                                     Column(
                                         modifier = Modifier.fillMaxSize(),
@@ -157,6 +160,30 @@ class SetupActivity : ComponentActivity() {
                                 }
                             }
                         }
+                    }
+                    val alpha: Float by animateFloatAsState(if (canGoNext) 1f else 0f,
+                        label = "NextButton"
+                    )
+                    val nextSrc = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    FilledIconButton(
+                        onClick = { nextScreen() },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(bottom = 50.dp)
+                            .size(60.dp)
+                            .alpha(alpha)
+                            .scaleOnPress(nextSrc),
+                        interactionSource = nextSrc
+                    ) {
+                        Icon(
+                            imageVector = if (requiredScreens.size <= 1 && canGoNext) {
+                                Icons.Default.Check
+                            } else {
+                                Icons.AutoMirrored.Filled.ArrowForwardIos
+                            },
+                            contentDescription = null
+                        )
                     }
                 }
             }

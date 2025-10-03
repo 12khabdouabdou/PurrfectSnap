@@ -2,14 +2,13 @@ import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
 
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".manager"
-    compileSdk = 34
+    compileSdk = 36
 
     androidResources {
         noCompress += ".so"
@@ -26,7 +25,7 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         minSdk = 28
-        targetSdk = 34
+        targetSdk = 36
         multiDexEnabled = true
     }
 
@@ -45,19 +44,18 @@ android {
         }
     }
 
-    applicationVariants.all {
-        outputs.map { it as BaseVariantOutputImpl }.forEach { outputVariant ->
-            outputVariant.outputFileName = "manager.apk"
+    androidComponents {
+        onVariants { variant ->
+            variant.outputs.forEach { output ->
+                val variantOutput = output as com.android.build.api.variant.impl.VariantOutputImpl
+                variantOutput.outputFileName.set("manager.apk")
+            }
         }
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    kotlinOptions {
-        jvmTarget = "21"
     }
 }
 

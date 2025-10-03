@@ -75,9 +75,9 @@ val AppleLogo by lazy {
 }
 
 
-val Snapenhance by lazy {
+val PurrfectSnap by lazy {
     ImageVector.Builder(
-        name = "SnapEnhance",
+        name = "PurrfectSnap",
         defaultWidth = 247.92.dp,
         defaultHeight = 39.84.dp,
         viewportWidth = 247.92f,

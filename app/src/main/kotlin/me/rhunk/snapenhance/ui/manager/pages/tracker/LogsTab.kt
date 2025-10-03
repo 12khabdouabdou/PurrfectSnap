@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.PopupProperties
 import com.google.gson.stream.JsonWriter
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,7 @@ fun LogsTab(
     activityLauncherHelper: ActivityLauncherHelper,
     deleteAction: (() -> Unit) -> Unit,
     exportAction: (() -> Unit) -> Unit,
+    bottomPadding: Dp,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -516,7 +518,8 @@ fun LogsTab(
         }
 
         LazyColumn(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(bottom = bottomPadding)
         ) {
             item {
                 Row(
@@ -592,9 +595,6 @@ fun LogsTab(
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(100.dp))
-            }
         }
     }
 }

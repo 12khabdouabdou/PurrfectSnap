@@ -63,6 +63,7 @@ class AppDatabase(
                 "id INTEGER PRIMARY KEY AUTOINCREMENT",
                 "enabled BOOLEAN DEFAULT 1",
                 "name VARCHAR",
+                "author VARCHAR",
             ),
             "tracker_scopes" to listOf(
                 "id INTEGER PRIMARY KEY AUTOINCREMENT",
@@ -104,7 +105,9 @@ class AppDatabase(
                 "content TEXT",
             ),
             "repositories" to listOf(
-                "url VARCHAR PRIMARY KEY",
+                "url VARCHAR",
+                "type VARCHAR",
+                "PRIMARY KEY (url, type)"
             ),
             "notes" to listOf(
                 "id CHAR(36) PRIMARY KEY",

@@ -1,12 +1,12 @@
-{
+﻿{
     "setup": {
         "dialogs": {
             "select_language": "Select Language",
             "select_save_folder_button": "Select Folder",
-            "save_folder": "SnapEnhance requires Storage permissions to download and Save Media from Snapchat.\nPlease choose the location where media should be downloaded to."
+            "save_folder": "PurrfectSnap requires Storage permissions to download and Save Media from Snapchat.\nPlease choose the location where media should be downloaded to."
         },
         "mappings": {
-            "generate_failure_no_snapchat": "SnapEnhance was unable to detect Snapchat, please try reinstalling Snapchat.",
+            "generate_failure_no_snapchat": "PurrfectSnap was unable to detect Snapchat, please try reinstalling Snapchat.",
             "generate_failure": "An error occurred while trying to generate mappings, please try again.",
             "dialog": "Generating Mappings, this may take a while, please be patient..."
         },
@@ -65,11 +65,11 @@
                 "empty_hint": "(blank)"
             },
             "home": {
-                "update_title": "SnapEnhance Update",
+                "update_title": "PurrfectSnap Update",
                 "update_button": "Download",
                 "update_content": "Version {version} is Available!",
-                "debug_build_summary_title": "You are running a debug build of SnapEnhance",
-                "version_title": "v{versionName} · by rhunk",
+                "debug_build_summary_title": "You are running a debug build of PurrfectSnap",
+                "version_title": "v{versionName} · forked by Eternal",
                 "debug_build_summary_date": "Build date: {date} ({days} days ago)",
                 "debug_build_summary_content": "Version {versionName} ({versionCode})",
                 "quick_actions_title": "Quick Actions"
@@ -174,7 +174,7 @@
             },
             "scripting_warning": {
                 "title": "Warning",
-                "content": "SnapEnhance includes a scripting tool, allowing the execution of user-defined code on your device. Use extreme caution and only install modules from known, reliable sources. Unauthorised or unverified modules may pose security risks to your system."
+                "content": "PurrfectSnap includes a scripting tool, allowing the execution of user-defined code on your device. Use extreme caution and only install modules from known, reliable sources. Unauthorised or unverified modules may pose security risks to your system."
             },
             "reset_config": {
                 "title": "Reset config",
@@ -287,7 +287,7 @@
         },
         "change_language": {
             "name": "Change Language",
-            "description": "Change the Language of SnapEnhance"
+            "description": "Change the Language of PurrfectSnap"
         },
         "logger_history": {
             "name": "Logger History",
@@ -901,7 +901,7 @@
                                     },
                                     "composer_logs": {
                                         "name": "Composer Logs",
-                                        "description": "Redirects console logs of Composer to SnapEnhance"
+                                        "description": "Redirects console logs of Composer to PurrfectSnap"
                                     },
                                     "show_first_created_username": {
                                         "description": "Shows the first created username next to the current username in the profile page",
@@ -1055,7 +1055,7 @@
             },
             "scripting": {
                 "name": "Scripting",
-                "description": "Run custom scripts to extend SnapEnhance",
+                "description": "Run custom scripts to extend PurrfectSnap",
                 "properties": {
                     "developer_mode": {
                         "name": "Developer Mode",
@@ -1223,7 +1223,7 @@
             },
             "auto_reload": {
                 "snapchat_only": "Snapchat Only",
-                "all": "All (Snapchat + SnapEnhance)"
+                "all": "All (Snapchat + PurrfectSnap)"
             },
             "edit_text_override": {
                 "multi_line_chat_input": "Multi Line Chat Input",

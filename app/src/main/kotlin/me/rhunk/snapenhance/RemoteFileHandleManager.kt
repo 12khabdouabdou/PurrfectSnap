@@ -70,51 +70,46 @@ class RemoteFileHandleManager(
         mkdirs()
     }
 
-    override fun getFileHandle(scope: String, name: String): FileHandle? {
+        override fun getFileHandle(scope: String, name: String): FileHandle? {
         val fileHandleScope = FileHandleScope.fromValue(scope) ?: run {
             context.log.error("invalid file handle scope: $scope", "FileHandleManager")
             return null
         }
-        when (fileHandleScope) {
+        return when (fileHandleScope) {
             FileHandleScope.INTERNAL -> {
                 val fileHandleType = InternalFileHandleType.fromValue(name) ?: run {
                     context.log.error("invalid file handle name: $name", "FileHandleManager")
                     return null
                 }
-
-                return LocalFileHandle(
-                    fileHandleType.resolve(context.androidContext)
-                )
+                LocalFileHandle(fileHandleType.resolve(context.androidContext))
             }
             FileHandleScope.LOCALE -> {
                 val foundLocale = context.androidContext.resources.assets.list("lang")?.firstOrNull {
                     it.startsWith(name)
                 }?.substringBefore(".") ?: return null
-
                 if (name == LocaleWrapper.DEFAULT_LOCALE) {
-                    return AssetFileHandle(
+                    AssetFileHandle(
                         context,
                         "lang/${LocaleWrapper.DEFAULT_LOCALE}.json"
                     )
+                } else {
+                    AssetFileHandle(
+                        context,
+                        "lang/$foundLocale.json"
+                    )
                 }
-
-                return AssetFileHandle(
-                    context,
-                    "lang/$foundLocale.json"
-                )
             }
             FileHandleScope.USER_IMPORT -> {
-                return LocalFileHandle(
+                LocalFileHandle(
                     File(userImportFolder, name.substringAfterLast("/"))
                 )
             }
             FileHandleScope.COMPOSER -> {
-                return AssetFileHandle(
+                AssetFileHandle(
                     context,
                     "composer/${name.substringAfterLast("/")}"
                 )
             }
-            else -> return null
         }
     }
 
@@ -151,3 +146,4 @@ class RemoteFileHandleManager(
         }.isSuccess
     }
 }
+

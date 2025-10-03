@@ -60,7 +60,7 @@ object PreviewUtils {
 
         val dx = (outWidth - (scale * sourceWidth)) / 2F
         val dy = (outHeight - (scale * sourceHeight)) / 2F
-        val dest = Bitmap.createBitmap(outWidth, outHeight, source.getConfig())
+        val dest = Bitmap.createBitmap(outWidth, outHeight, source.getConfig() ?: Bitmap.Config.ARGB_8888)
         val canvas = Canvas(dest)
         canvas.drawBitmap(source, Matrix().apply {
             postScale(scale, scale)
@@ -73,7 +73,7 @@ object PreviewUtils {
         val biggestBitmap = if (originalMedia.width * originalMedia.height > overlayLayer.width * overlayLayer.height) originalMedia else overlayLayer
         val smallestBitmap = if (biggestBitmap == originalMedia) overlayLayer else originalMedia
 
-        val mergedBitmap = Bitmap.createBitmap(biggestBitmap.width, biggestBitmap.height, biggestBitmap.config)
+        val mergedBitmap = Bitmap.createBitmap(biggestBitmap.width, biggestBitmap.height, biggestBitmap.config ?: Bitmap.Config.ARGB_8888)
 
         with(Canvas(mergedBitmap)) {
             val scaleMatrix = Matrix().apply {

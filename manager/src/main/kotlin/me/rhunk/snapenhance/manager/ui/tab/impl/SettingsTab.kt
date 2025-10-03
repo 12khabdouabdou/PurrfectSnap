@@ -141,7 +141,7 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
             ConfigEditRow(
                 getValue = { sharedConfig.snapEnhancePackageName },
                 setValue = { sharedConfig.snapEnhancePackageName = it },
-                label = "Override SnapEnhance package name",
+                label = "Override PurrfectSnap package name",
                 randomValueProvider = {
                     (0..Random.nextInt(7, 16)).map { ('a'..'z').random() }.joinToString("").chunked(4).joinToString(".")
                 }
@@ -149,7 +149,7 @@ class SettingsTab : Tab("settings", isPrimary = true, icon = Icons.Default.Setti
             ConfigBooleanRow(
                 getValue = { sharedConfig.enableRepackage },
                 setValue = { sharedConfig.enableRepackage = it },
-                label = "Repackage SnapEnhance (experimental)"
+                label = "Repackage PurrfectSnap (experimental)"
             )
             ConfigBooleanRow(
                 getValue = { sharedConfig.useRootInstaller },

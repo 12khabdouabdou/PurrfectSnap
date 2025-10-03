@@ -145,8 +145,11 @@ class RemoteScriptManager(
         if (!response.isSuccessful) {
             throw Exception("Failed to fetch script. Code: ${response.code}")
         }
-        response.body.byteStream().use { inputStream ->
-            val bufferedInputStream = inputStream.buffered()
+
+        val inputStream = response.body?.byteStream() ?: throw Exception("Response body is null or cannot be read")
+
+        inputStream.use {
+            val bufferedInputStream = it.buffered()
             bufferedInputStream.mark(0)
             val moduleInfo = bufferedInputStream.bufferedReader().readModuleInfo()
             bufferedInputStream.reset()
@@ -173,7 +176,7 @@ class RemoteScriptManager(
             if (!response.isSuccessful) {
                 return@runCatching null
             }
-            response.body.byteStream().use { inputStream ->
+            response.body?.byteStream()?.use { inputStream ->
                 val reader = inputStream.buffered().bufferedReader()
                 val moduleInfo = reader.readModuleInfo()
                 moduleInfo.takeIf {

@@ -48,11 +48,19 @@ import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
+import com.tonyodev.fetch2.Fetch
+import com.tonyodev.fetch2.FetchConfiguration
 
 
 class RemoteSideContext(
     val androidContext: Context
 ) {
+    val fetch: Fetch by lazy {
+        val fetchConfiguration = FetchConfiguration.Builder(androidContext)
+            .setDownloadConcurrentLimit(3)
+            .build()
+        Fetch.getInstance(fetchConfiguration)
+    }
     val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     private var _activity: WeakReference<ComponentActivity>? = null
@@ -64,11 +72,12 @@ class RemoteSideContext(
 
     val sharedPreferences: SharedPreferences get() = androidContext.getSharedPreferences("prefs", 0)
     val fileHandleManager = RemoteFileHandleManager(this)
+    val database = AppDatabase(this)
+    val trackerDataManager = me.rhunk.snapenhance.storage.TrackerDataManagerImpl(database)
     val config = ModConfig(androidContext, constantLazyBridge { fileHandleManager })
     val translation = LocaleWrapper(constantLazyBridge { fileHandleManager })
     val mappings = MappingsWrapper(constantLazyBridge { fileHandleManager })
     val taskManager = TaskManager(this)
-    val database = AppDatabase(this)
     val streaksReminder = StreaksReminder(this)
     val log = LogManager(this)
     val scriptManager = RemoteScriptManager(this)
@@ -145,11 +154,12 @@ class RemoteSideContext(
     val installationSummary by lazy {
         InstallationSummary(
             snapchatInfo = mappings.getSnapchatPackageInfo()?.let {
+                val packageName = requireNotNull(it.packageName) { "Package name cannot be null" }
                 SnapchatAppInfo(
-                    packageName = it.packageName,
-                    version = it.versionName,
+                    packageName = packageName,
+                    version = it.versionName ?: "unknown",
                     versionCode = it.longVersionCode,
-                    isLSPatched = it.applicationInfo.appComponentFactory != CoreComponentFactory::class.java.name,
+                    isLSPatched = it.applicationInfo?.appComponentFactory != CoreComponentFactory::class.java.name,
                     isSplitApk = it.splitNames?.isNotEmpty() ?: false
                 )
             },
@@ -238,3 +248,4 @@ class RemoteSideContext(
         androidContext.startActivity(intent)
     }
 }
+

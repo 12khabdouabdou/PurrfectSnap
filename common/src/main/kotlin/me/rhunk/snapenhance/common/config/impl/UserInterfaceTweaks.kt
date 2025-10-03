@@ -29,6 +29,7 @@ class UserInterfaceTweaks : ConfigContainer() {
     val friendFeedMessagePreview = container("friend_feed_message_preview", FriendFeedMessagePreview()) { requireRestart() }
     val snapPreview = boolean("snap_preview") { addNotices(FeatureNotice.UNSTABLE); requireRestart() }
     val bootstrapOverride = container("bootstrap_override", BootstrapOverride()) { requireRestart() }
+    val forceAmoledTheme = boolean("force_amoled_theme") { requireRestart() }
     val mapFriendNameTags = boolean("map_friend_nametags") { requireRestart() }
     val preventMessageListAutoScroll = boolean("prevent_message_list_auto_scroll") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
     val streakExpirationInfo = boolean("streak_expiration_info") { requireRestart() }
@@ -58,4 +59,5 @@ class UserInterfaceTweaks : ConfigContainer() {
         requireRestart(); addNotices(FeatureNotice.BAN_RISK, FeatureNotice.INTERNAL_BEHAVIOR)
     }
     val preventForcedKeyboard = boolean("prevent_forced_keyboard") { requireRestart() }
+    val settingsMenu = unique("settings_menu", "default", "legacy") { requireRestart() }.apply { set("default") }
 }

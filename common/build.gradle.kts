@@ -2,14 +2,13 @@ import java.io.ByteArrayOutputStream
 
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
 
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".common"
-    compileSdk = 34
+    compileSdk = 35
 
     buildFeatures {
         aidl = true
@@ -24,12 +23,13 @@ android {
         buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
-        val gitHash = ByteArrayOutputStream()
-        exec {
-            commandLine("git", "rev-parse", "HEAD")
-            standardOutput = gitHash
-        }
-        buildConfigField("String", "GIT_HASH", "\"${gitHash.toString(Charsets.UTF_8).trim()}\"")
+        val gitHash = providers.environmentVariable("GITHUB_SHA")
+            .orElse(providers.environmentVariable("GIT_COMMIT"))
+            .orElse(providers.gradleProperty("gitHash"))
+            .orElse(providers.systemProperty("git.hash"))
+            .orElse("unknown")
+            .get()
+        buildConfigField("String", "GIT_HASH", "\"$gitHash\"")
         buildConfigField("String", "SIF_ENDPOINT", "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\"")
     }
 
@@ -37,13 +37,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-
-    kotlinOptions {
-        jvmTarget = "21"
-    }
 }
 
 dependencies {
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
     implementation(libs.coroutines)
     implementation(libs.gson)
     implementation(libs.okhttp)
@@ -63,3 +60,4 @@ dependencies {
 
     implementation(project(":mapper"))
 }
+

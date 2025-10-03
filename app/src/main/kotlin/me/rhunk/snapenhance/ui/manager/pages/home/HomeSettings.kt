@@ -7,10 +7,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Brightness4
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,36 +27,75 @@ import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.action.EnumAction
 import me.rhunk.snapenhance.common.bridge.InternalFileHandleType
+import me.rhunk.snapenhance.common.ui.ThemeChooserDialog
+import me.rhunk.snapenhance.common.ui.ThemeMode
+import me.rhunk.snapenhance.common.ui.ThemePreferences
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.saveFile
+import androidx.work.WorkManager
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import me.rhunk.snapenhance.task.UpdateCheckWorker
+import java.util.concurrent.TimeUnit
 
 class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
 
+    private fun scheduleUpdateCheck() {
+        val workManager = WorkManager.getInstance(context.androidContext)
+        if (context.config.root.global.updateSettings.autoUpdateCheck.get()) {
+            val frequency = context.config.root.global.updateSettings.updateCheckFrequency.get()
+            val repeatInterval = when (frequency) {
+                "daily" -> 1L
+                "weekly" -> 7L
+                "monthly" -> 30L
+                else -> 1L
+            }
+
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
+                .setConstraints(constraints)
+                .build()
+
+            workManager.enqueueUniquePeriodicWork(
+                "snapenhance_update_check",
+                ExistingPeriodicWorkPolicy.REPLACE,
+                workRequest
+            )
+        } else {
+            workManager.cancelUniqueWork("snapenhance_update_check")
+        }
+    }
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     @Composable
     private fun RowTitle(title: String) {
         Text(text = title, modifier = Modifier.padding(16.dp), fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
-
     @Composable
     private fun PreferenceToggle(sharedPreferences: SharedPreferences, key: String, text: String) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, false)) }
-
+        val hapticFeedback = LocalHapticFeedback.current
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 55.dp)
                 .clickable {
+                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
                     value = !value
                     sharedPreferences
                         .edit() {
@@ -62,18 +107,19 @@ class HomeSettings : Routes.Route() {
         ) {
             Text(text = text, modifier = Modifier.padding(end = 16.dp), fontSize = 14.sp)
             Switch(checked = value, onCheckedChange = {
+                if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
                 value = it
                 sharedPreferences.edit().putBoolean(realKey, it).apply()
             }, modifier = Modifier.padding(end = 26.dp))
         }
     }
-
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
         var confirmationDialog by remember {
             mutableStateOf(false)
         }
-
         fun takeAction() {
             if (requireConfirmation) {
                 confirmationDialog = true
@@ -81,7 +127,6 @@ class HomeSettings : Routes.Route() {
                 action()
             }
         }
-
         if (requireConfirmation && confirmationDialog) {
             Dialog(onDismissRequest = { confirmationDialog = false }) {
                 dialogs.ConfirmDialog(title = context.translation["manager.dialogs.action_confirm.title"], onConfirm = {
@@ -92,7 +137,6 @@ class HomeSettings : Routes.Route() {
                 })
             }
         }
-
         ShiftedRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,7 +164,6 @@ class HomeSettings : Routes.Route() {
             }
         }
     }
-
     @Composable
     private fun ShiftedRow(
         modifier: Modifier = Modifier,
@@ -137,11 +180,58 @@ class HomeSettings : Routes.Route() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
+        val contextC = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
+        var showThemeDialog by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
+            // APP THEME (Popup)
+            Spacer(Modifier.height(20.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .clickable { showThemeDialog = true },
+                shape = MaterialTheme.shapes.medium,
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Brightness4,
+                        contentDescription = "Theme",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(26.dp)
+                    )
+                    Spacer(modifier = Modifier.width(18.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("App Theme", fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                        Text(themeMode.displayName, color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
+                    }
+                }
+            }
+            if (showThemeDialog) {
+                ThemeChooserDialog(
+                    selected = themeMode,
+                    onSelect = { mode ->
+                        scope.launch {
+                            ThemePreferences.setThemeMode(contextC, mode)
+                        }
+                    },
+                    onDismiss = { showThemeDialog = false }
+                )
+            }
+            Spacer(Modifier.height(20.dp))
+
             RowTitle(title = translation["actions_title"])
             EnumAction.entries.forEach { enumAction ->
                 RowAction(key = enumAction.key) {
@@ -154,6 +244,117 @@ class HomeSettings : Routes.Route() {
             RowAction(key = "change_language") {
                 context.checkForRequirements(Requirements.LANGUAGE)
             }
+
+            RowTitle(title = "UI Settings")
+            ShiftedRow {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 55.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Haptic Feedback")
+                    var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+                    val hapticFeedback = LocalHapticFeedback.current
+                    Switch(
+                        checked = hapticFeedbackEnabled,
+                        onCheckedChange = {
+                            if (it) {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            }
+                            hapticFeedbackEnabled = it
+                            context.config.root.global.uiSettings.hapticFeedback.set(it)
+                            context.config.writeConfig()
+                        },
+                        modifier = Modifier.padding(end = 26.dp)
+                    )
+                }
+            }
+
+            RowTitle(title = translation["updates_title"])
+            ShiftedRow {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
+                    var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
+                    var frequencyMenuExpanded by remember { mutableStateOf(false) }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 55.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(text = translation["auto_update_check"])
+                            if (autoUpdateCheck) {
+                                Text(
+                                    text = translation["update_check_frequency_" + selectedFrequency],
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Light
+                                )
+                            }
+                        }
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box {
+                                IconButton(
+                                    onClick = { frequencyMenuExpanded = true },
+                                    enabled = autoUpdateCheck,
+                                    modifier = Modifier.alpha(if (autoUpdateCheck) 1f else 0f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = translation["update_check_frequency"]
+                                    )
+                                }
+                                if (autoUpdateCheck) {
+                                    DropdownMenu(
+                                        expanded = frequencyMenuExpanded,
+                                        onDismissRequest = { frequencyMenuExpanded = false }
+                                    ) {
+                                        val frequencies = remember { listOf("daily", "weekly", "monthly") }
+                                        frequencies.forEach { frequency ->
+                                            DropdownMenuItem(
+                                                text = { Text(text = translation["update_check_frequency_" + frequency]) },
+                                                onClick = {
+                                                    selectedFrequency = frequency
+                                                    context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
+                                                    context.config.writeConfig()
+                                                    scheduleUpdateCheck()
+                                                    frequencyMenuExpanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            val hapticFeedback = LocalHapticFeedback.current
+                            Switch(
+                                checked = autoUpdateCheck,
+                                onCheckedChange = {
+                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    autoUpdateCheck = it
+                                    context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                                    if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
+                                        context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
+                                    }
+                                    context.config.writeConfig()
+                                    scheduleUpdateCheck()
+                                },
+                                modifier = Modifier.padding(end = 26.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             RowTitle(title = translation["message_logger_title"])
             ShiftedRow {
                 Column(
@@ -225,7 +426,6 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
-
             RowTitle(title = translation["debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -238,7 +438,6 @@ class HomeSettings : Routes.Route() {
                         .padding(start = 26.dp)
                 ) {
                     var expanded by remember { mutableStateOf(false) }
-
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
@@ -250,7 +449,6 @@ class HomeSettings : Routes.Route() {
                             readOnly = true,
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
                         )
-
                         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                             InternalFileHandleType.entries.forEach { fileType ->
                                 DropdownMenuItem(onClick = {
@@ -285,9 +483,10 @@ class HomeSettings : Routes.Route() {
                     PreferenceToggle(context.sharedPreferences, key = "test_mode", text = "Test Mode (FOR DEBUGGING ONLY)")
                     PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = "Disable Feature Loading")
                     PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
+                    PreferenceToggle(context.sharedPreferences, key = "disable_bypass_indicator", text = "Disable Bypass Status Indicator")
                 }
             }
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(routes.bottomPadding))
         }
     }
 }

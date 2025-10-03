@@ -349,6 +349,7 @@ class MessagingPreview: Routes.Route() {
             modifier = Modifier
                 .fillMaxWidth(),
             state = previewScrollState,
+            contentPadding = PaddingValues(bottom = routes.bottomPadding)
         ) {
             items(messages, key = { it.serverMessageId }) {message ->
                 val messageReader = remember(message.contentType) { ProtoReader(message.content) }

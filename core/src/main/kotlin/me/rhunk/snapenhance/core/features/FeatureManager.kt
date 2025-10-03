@@ -144,6 +144,7 @@ class FeatureManager(
             SnapScoreChanges(),
             DisableSnapModeRestrictions(),
             PreventForcedKeyboard(),
+            CustomTheming(),
         )
 
         features.values.toList().forEach { feature ->

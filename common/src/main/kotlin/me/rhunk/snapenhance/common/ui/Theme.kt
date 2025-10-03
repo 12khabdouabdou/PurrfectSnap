@@ -2,14 +2,14 @@ package me.rhunk.snapenhance.common.ui
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
+// ---------- Light color palette ----------
 val md_theme_light_primary = Color(0xFF6750A4)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 val md_theme_light_primaryContainer = Color(0xFFE9DDFF)
@@ -40,6 +40,7 @@ val md_theme_light_surfaceTint = Color(0xFF6750A4)
 val md_theme_light_outlineVariant = Color(0xFFCAC4CF)
 val md_theme_light_scrim = Color(0xFF000000)
 
+// ---------- Dark color palette ----------
 val md_theme_dark_primary = Color(0xFFCFBCFF)
 val md_theme_dark_onPrimary = Color(0xFF381E72)
 val md_theme_dark_primaryContainer = Color(0xFF4F378A)
@@ -70,10 +71,13 @@ val md_theme_dark_surfaceTint = Color(0xFFCFBCFF)
 val md_theme_dark_outlineVariant = Color(0xFF49454E)
 val md_theme_dark_scrim = Color(0xFF000000)
 
+// ---------- AMOLED (true black dark) palette (only crucial overrides) ----------
+val md_theme_amoled_background = Color(0xFF000000)
+val md_theme_amoled_surface = Color(0xFF000000)
+val md_theme_amoled_onBackground = Color(0xFFE6E1E6)
+val md_theme_amoled_onSurface = Color(0xFFE6E1E6)
 
-val seed = Color(0xFF6750A4)
-
-
+// Material3 ColorScheme for light theme
 private val LightThemeColors = lightColorScheme(
     primary = md_theme_light_primary,
     onPrimary = md_theme_light_onPrimary,
@@ -106,7 +110,8 @@ private val LightThemeColors = lightColorScheme(
     scrim = md_theme_light_scrim
 )
 
-private val DarkThemeColors = lightColorScheme(
+// Material3 ColorScheme for dark theme
+private val DarkThemeColors = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
     primaryContainer = md_theme_dark_primaryContainer,
@@ -141,22 +146,41 @@ private val DarkThemeColors = lightColorScheme(
 @Composable
 fun AppMaterialTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode? = null,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
     val dynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val colorScheme = when {
-        dynamicColor && isDarkTheme -> {
-            dynamicDarkColorScheme(LocalContext.current)
+    val effectiveThemeMode = themeMode ?: if (isDarkTheme) ThemeMode.DARK else ThemeMode.LIGHT
+    val colorScheme = when (effectiveThemeMode) {
+        ThemeMode.AMOLED -> {
+            val baseScheme = if (dynamicColor) dynamicDarkColorScheme(context) else DarkThemeColors
+            baseScheme.copy(
+                background = md_theme_amoled_background,
+                onBackground = md_theme_amoled_onBackground,
+                surface = md_theme_amoled_surface,
+                onSurface = md_theme_amoled_onSurface
+            )
         }
-        dynamicColor && !isDarkTheme -> {
-            dynamicLightColorScheme(LocalContext.current)
+        ThemeMode.DARK -> if (dynamicColor) dynamicDarkColorScheme(context) else DarkThemeColors
+        ThemeMode.LIGHT -> if (dynamicColor) dynamicLightColorScheme(context) else LightThemeColors
+        ThemeMode.SYSTEM -> when {
+            isSystemInDarkTheme() && dynamicColor -> dynamicDarkColorScheme(context)
+            !isSystemInDarkTheme() && dynamicColor -> dynamicLightColorScheme(context)
+            isSystemInDarkTheme() -> DarkThemeColors
+            else -> LightThemeColors
         }
-        !isDarkTheme -> LightThemeColors
-        else -> DarkThemeColors
     }
-
+    val shapes = Shapes(
+        extraSmall = RoundedCornerShape(24.dp),
+        small = RoundedCornerShape(24.dp),
+        medium = RoundedCornerShape(24.dp),
+        large = RoundedCornerShape(24.dp),
+        extraLarge = RoundedCornerShape(24.dp)
+    )
     MaterialTheme(
         colorScheme = colorScheme,
+        shapes = shapes,
         content = content
     )
 }

@@ -50,34 +50,28 @@ class BridgeService : Service() {
                 remoteSideContext.log.warn("Failed to sync $scope $id: Callback is dead")
                 return
             }
-            val modDatabase = remoteSideContext.database
+
+            val database = remoteSideContext.database
             val syncedObject = when (scope) {
                 SocialScope.FRIEND -> {
-                    if (updateOnly && modDatabase.getFriendInfo(id) == null) return
+                    if (updateOnly && database.getFriendInfo(id) == null) return
                     syncCallback.syncFriend(id)
                 }
                 SocialScope.GROUP -> {
-                    if (updateOnly && modDatabase.getGroupInfo(id) == null) return
+                    if (updateOnly && database.getGroupInfo(id) == null) return
                     syncCallback.syncGroup(id)
                 }
-                else -> null
-            }
-
-            if (syncedObject == null) {
+            } ?: run {
                 remoteSideContext.log.warn("Failed to sync $scope $id")
                 return
             }
 
             when (scope) {
                 SocialScope.FRIEND -> {
-                    toParcelable<MessagingFriendInfo>(syncedObject)?.let {
-                        modDatabase.syncFriend(it)
-                    }
+                    toParcelable<MessagingFriendInfo>(syncedObject)?.let { database.syncFriend(it) }
                 }
                 SocialScope.GROUP -> {
-                    toParcelable<MessagingGroupInfo>(syncedObject)?.let {
-                        modDatabase.syncGroupInfo(it)
-                    }
+                    toParcelable<MessagingGroupInfo>(syncedObject)?.let { database.syncGroupInfo(it) }
                 }
             }
         }.onFailure {
@@ -247,3 +241,4 @@ class BridgeService : Service() {
         }
     }
 }
+

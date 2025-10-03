@@ -63,9 +63,9 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = "SnapEnhance", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                        Text(text = "PurrfectSnap", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
                         snapEnhanceInfo?.let {
-                            Text(text = "${it.versionName} (${it.longVersionCode}) - ${if ((it.applicationInfo.flags and FLAG_DEBUGGABLE) != 0) "Debug" else "Release"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(text = "${it.versionName} (${it.longVersionCode}) - ${if (((it.applicationInfo?.flags ?: 0) and FLAG_DEBUGGABLE) != 0) "Debug" else "Release"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(it.packageName, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
@@ -113,7 +113,7 @@ class HomeTab : Tab("home", true, icon = Icons.Default.Home) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         snapchatAppInfo?.let { appInfo ->
-                            val isLSPatched = appInfo.applicationInfo.appComponentFactory == Constants.PROXY_APP_COMPONENT_FACTORY
+                            val isLSPatched = appInfo.applicationInfo?.appComponentFactory == Constants.PROXY_APP_COMPONENT_FACTORY
                             if (isLSPatched) {
                                 Icon(imageVector = Icons.Default.Check, contentDescription = null)
                                 Text(text = "Patched", fontSize = 16.sp)

@@ -15,75 +15,10 @@ use android_logger::Config;
 use log::LevelFilter;
 use modules::{composer_hook, custom_font_hook, duplex_hook, fstat_hook, linker_hook, sqlite_hook, unary_call_hook};
 
+use jni::{JNIEnv, JavaVM, NativeMethod};
 use jni::objects::{JObject, JString};
 use jni::sys::{jint, jstring, JNI_VERSION_1_6};
-use jni::{JNIEnv, JavaVM, NativeMethod};
-use util::get_jni_string;
-
 use std::ffi::c_void;
-use std::thread::JoinHandle;
-
-fn pre_init() {
-    debug!("Pre init");
-    linker_hook::init();
-    custom_font_hook::init();
-    fstat_hook::init();
-}
-
-fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
-    debug!("Initializing native lib");
-
-    let start_time = std::time::Instant::now();
-
-    // load signature cache
-    
-    if !signature_cache.is_null() {
-        let sig_cache_str = get_jni_string(&mut env, signature_cache).expect("Failed to convert mappings to string");
-        
-        if let Ok(signature_cache) = serde_json::from_str(sig_cache_str.as_str()) {
-            sig::add_signatures(signature_cache);
-        } else {
-            error!("Failed to load signature cache");
-        }
-    }
-
-    common::set_native_lib_instance(env.new_global_ref(_class).ok().expect("Failed to create global ref"));
-
-    let _ = common::CLIENT_MODULE;
-
-    // initialize modules asynchronously
-
-    let mut threads: Vec<JoinHandle<()>> = Vec::new();
-
-    macro_rules! async_init {
-        ($($f:expr),*) => {
-            $(
-                threads.push(std::thread::spawn(move || {
-                    $f;
-                }));
-            )*
-        };
-    }
-
-    async_init!(
-        duplex_hook::init(),
-        unary_call_hook::init(),
-        composer_hook::init(),
-        sqlite_hook::init()
-    );
-    
-    threads.into_iter().for_each(|t| t.join().unwrap());
-
-    info!("native init took {:?}", start_time.elapsed());
-
-    // send back the signature cache
-    if let Ok(signature_cache) = serde_json::to_string(&sig::get_signatures()) {
-        env.new_string(signature_cache).ok().expect("Failed to create new string").into_raw()
-    } else {
-        std::ptr::null_mut()
-    }
-}
-
 
 #[allow(non_snake_case)]
 #[no_mangle]
@@ -148,4 +83,65 @@ pub extern "system" fn JNI_OnLoad(_vm: JavaVM, _: *mut c_void) -> jint {
     ).expect("Failed to register native methods");
 
     JNI_VERSION_1_6
+}
+
+fn pre_init(_env: JNIEnv, _class: JObject) {
+    debug!("Pre init");
+    linker_hook::init();
+    custom_font_hook::init();
+    fstat_hook::init();
+}
+
+fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
+    debug!("Initializing native lib");
+
+    let start_time = std::time::Instant::now();
+
+    // load signature cache
+    
+    if !signature_cache.is_null() {
+        let sig_cache_str = util::get_jni_string(&mut env, signature_cache).expect("Failed to convert mappings to string");
+        
+        if let Ok(signature_cache) = serde_json::from_str(sig_cache_str.as_str()) {
+            sig::add_signatures(signature_cache);
+        } else {
+            error!("Failed to load signature cache");
+        }
+    }
+
+    common::set_native_lib_instance(env.new_global_ref(_class).ok().expect("Failed to create global ref"));
+
+    let _ = common::CLIENT_MODULE;
+
+    // initialize modules asynchronously
+
+    let mut threads: Vec<std::thread::JoinHandle<()>> = Vec::new();
+
+    macro_rules! async_init {
+        ($($f:expr),*) => {
+            $(
+                threads.push(std::thread::spawn(move || {
+                    $f;
+                }));
+            )*
+        };
+    }
+
+    async_init!(
+        duplex_hook::init(),
+        unary_call_hook::init(),
+        composer_hook::init(),
+        sqlite_hook::init()
+    );
+    
+    threads.into_iter().for_each(|t| t.join().unwrap());
+
+    info!("native init took {:?}", start_time.elapsed());
+
+    // send back the signature cache
+    if let Ok(signature_cache) = serde_json::to_string(&sig::get_signatures()) {
+        env.new_string(signature_cache).ok().expect("Failed to create new string").into_raw()
+    } else {
+        std::ptr::null_mut()
+    }
 }

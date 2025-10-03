@@ -56,4 +56,16 @@ class Global : ConfigContainer() {
     val disableTelecomFramework = boolean("disable_telecom_framework") { requireRestart() }
     val hideActiveMusic = boolean("hide_active_music") { requireRestart() }
     val disableSnapSplitting = boolean("disable_snap_splitting") { addNotices(FeatureNotice.UNSTABLE) }
+
+    inner class UpdateSettings : ConfigContainer() {
+        val autoUpdateCheck = boolean("auto_update_check")
+        val updateCheckFrequency = unique("update_check_frequency", "daily", "weekly", "monthly")
+    }
+
+    inner class UISettings : ConfigContainer() {
+        val hapticFeedback = boolean("haptic_feedback", true)
+    }
+
+    val updateSettings = container("update_settings", UpdateSettings()) { addFlags(ConfigFlag.HIDDEN) }
+    val uiSettings = container("ui_settings", UISettings()) { addFlags(ConfigFlag.HIDDEN) }
 }

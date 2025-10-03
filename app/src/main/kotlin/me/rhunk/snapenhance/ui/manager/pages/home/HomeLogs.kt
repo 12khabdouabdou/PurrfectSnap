@@ -1,3 +1,4 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package me.rhunk.snapenhance.ui.manager.pages.home
 
 import android.net.Uri
@@ -8,6 +9,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
@@ -21,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -45,20 +49,16 @@ import me.rhunk.snapenhance.ui.util.saveFile
 class HomeLogs : Routes.Route() {
     private val logListState by lazy { LazyListState(0) }
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-
     override val topBarActions: @Composable (RowScope.() -> Unit) = {
         var showDropDown by remember { mutableStateOf(false) }
-
         IconButton(onClick = {
             showDropDown = true
         }) {
             Icon(Icons.Filled.MoreVert, contentDescription = null)
         }
-
         DropdownMenu(
             expanded = showDropDown,
             onDismissRequest = { showDropDown = false },
@@ -73,9 +73,8 @@ class HomeLogs : Routes.Route() {
             }, text = {
                 Text(translation["clear_logs_button"])
             })
-
             DropdownMenuItem(onClick = {
-                activityLauncherHelper.saveFile("snapenhance-logs-${System.currentTimeMillis()}.zip", "application/zip") { uri ->
+                activityLauncherHelper.saveFile("purrfectsnap-logs-${System.currentTimeMillis()}.zip", "application/zip") { uri ->
                     context.coroutineScope.launch {
                         context.shortToast(translation["saving_logs_toast"])
                         context.androidContext.contentResolver.openOutputStream(Uri.parse(uri))?.use {
@@ -84,7 +83,7 @@ class HomeLogs : Routes.Route() {
                                 context.longToast(translation["saved_logs_success_toast"])
                             }.onFailure {
                                 context.longToast(translation["saved_logs_failure_toast"])
-                                context.log.error("Failed to save logs to $uri!", it)
+                                context.log.error("Failed to save logs to ${'$'}uri!", it)
                             }
                         }
                     }
@@ -95,14 +94,13 @@ class HomeLogs : Routes.Route() {
             })
         }
     }
-
+    @Suppress("DEPRECATION")
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        val clipboardManager = LocalClipboardManager.current
+        val clipboard: ClipboardManager = LocalClipboardManager.current
         var lineCount by remember { mutableIntStateOf(0) }
         var logReader by remember { mutableStateOf<LogReader?>(null) }
         var isRefreshing by remember { mutableStateOf(false) }
-
         fun refreshLogs() {
             coroutineScope.launch(Dispatchers.IO) {
                 runCatching {
@@ -120,16 +118,13 @@ class HomeLogs : Routes.Route() {
                 }
             }
         }
-
         val pullRefreshState = rememberPullRefreshState(isRefreshing, onRefresh = {
             refreshLogs()
         })
-
         LaunchedEffect(Unit) {
             isRefreshing = true
             refreshLogs()
         }
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -138,7 +133,8 @@ class HomeLogs : Routes.Route() {
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.surface)
                     .horizontalScroll(ScrollState(0)),
-                state = logListState
+                state = logListState,
+                contentPadding = PaddingValues(bottom = routes.bottomPadding)
             ) {
                 item {
                     if (lineCount == 0 && logReader != null) {
@@ -157,21 +153,22 @@ class HomeLogs : Routes.Route() {
                         })
                     }
                     logLine?.let { line ->
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onLongPress = {
-                                        coroutineScope.launch {
-                                            clipboardManager.setText(
-                                                AnnotatedString(
-                                                    line.message
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateContentSize()
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            coroutineScope.launch {
+                                                clipboard.setText(
+                                                    AnnotatedString(line.message)
                                                 )
-                                            )
+                                            }
                                         }
-                                    }
-                                )
-                            }) {
+                                    )
+                                }
+                        ) {
                             Column(
                                 modifier = Modifier
                                     .padding(4.dp)
@@ -187,26 +184,22 @@ class HomeLogs : Routes.Route() {
                                             LogLevel.ERROR, LogLevel.ASSERT -> Icons.Outlined.Report
                                             LogLevel.INFO, LogLevel.VERBOSE -> Icons.Outlined.Info
                                             LogLevel.WARN -> Icons.Outlined.Warning
-                                            else -> Icons.Outlined.Info
                                         },
                                         modifier = Modifier.size(16.dp),
                                         contentDescription = null,
                                     )
-
                                     Text(
                                         text = LogChannel.fromChannel(line.tag)?.shortName ?: line.tag,
                                         modifier = Modifier.padding(start = 4.dp),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 12.sp,
                                     )
-
                                     Text(
                                         text = line.dateTime,
                                         modifier = Modifier.padding(start = 4.dp, end = 4.dp),
                                         fontSize = 10.sp
                                     )
                                 }
-
                                 Text(
                                     text = line.message.trimIndent(),
                                     lineHeight = 10.sp,
@@ -218,7 +211,6 @@ class HomeLogs : Routes.Route() {
                     }
                 }
             }
-
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
@@ -226,7 +218,6 @@ class HomeLogs : Routes.Route() {
             )
         }
     }
-
     override val floatingActionButton: @Composable () -> Unit = {
         val coroutineScope = rememberCoroutineScope()
         Column(
@@ -244,7 +235,6 @@ class HomeLogs : Routes.Route() {
             ) {
                 Icon(Icons.Filled.KeyboardDoubleArrowUp, contentDescription = null)
             }
-
             FilledIconButton(
                 onClick = {
                     coroutineScope.launch {

@@ -15,3 +15,7 @@
 -keepclassmembers class * implements android.os.Parcelable {
     public static final ** CREATOR;
 }
+# Prevent WorkManager from stripping generated Room database constructor
+-keep class androidx.work.impl.WorkDatabase_Impl { *; }
+
+

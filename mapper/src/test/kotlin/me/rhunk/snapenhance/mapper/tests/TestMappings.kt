@@ -13,7 +13,12 @@ class TestMappings {
         val classMapper = ClassMapper()
 
         val gson = GsonBuilder().setPrettyPrinting().create()
-        val apkFile = File(System.getenv("SNAPCHAT_APK")!!)
+        val apkPath = System.getenv("SNAPCHAT_APK")
+        if (apkPath == null) {
+            println("Skipping test: SNAPCHAT_APK environment variable is not set.")
+            return
+        }
+        val apkFile = File(apkPath)
         classMapper.loadApk(apkFile.absolutePath)
         runBlocking {
             val result = classMapper.run()

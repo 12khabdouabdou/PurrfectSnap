@@ -8,11 +8,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.ui.setup.screens.SetupScreen
 import me.rhunk.snapenhance.ui.util.AlertDialogs
+import me.rhunk.snapenhance.ui.util.Motion
 
 class MappingsScreen : SetupScreen() {
     @Composable
@@ -27,9 +33,17 @@ class MappingsScreen : SetupScreen() {
                 goNext()
             }
 
+            var visible by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) { visible = true }
             Dialog(onDismissRequest = { dismiss() }) {
-                remember { AlertDialogs(context.translation) }.InfoDialog(title = infoText!!) {
-                    dismiss()
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = fadeIn(animationSpec = Motion.tweenFloatSpec(180)) + scaleIn(animationSpec = Motion.tweenFloatSpec(200)),
+                    exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150)) + scaleOut(animationSpec = Motion.tweenFloatSpec(180))
+                ) {
+                    remember { AlertDialogs(context.translation) }.InfoDialog(title = infoText!!) {
+                        dismiss()
+                    }
                 }
             }
         }
@@ -63,15 +77,17 @@ class MappingsScreen : SetupScreen() {
             }
         }
 
-        if (isGenerating) {
-            DialogText(text = context.translation["setup.mappings.dialog"])
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .padding()
-                    .size(50.dp),
-                strokeWidth = 3.dp,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
+        AnimatedVisibility(visible = isGenerating, enter = fadeIn(), exit = fadeOut()) {
+            androidx.compose.foundation.layout.Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                DialogText(text = context.translation["setup.mappings.dialog"])
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding()
+                        .size(50.dp),
+                    strokeWidth = 3.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
     }
 }

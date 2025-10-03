@@ -58,10 +58,9 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
 import java.io.File
 
-
 class AlertDialogs(
     private val translation: LocaleWrapper,
-){
+) {
     @Composable
     fun DefaultDialogCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
         Card(
@@ -159,11 +158,9 @@ class AlertDialogs(
         val keys = (property.value.defaultValues as List<String>).toMutableList().apply {
             add(0, "null")
         }
-
         var selectedValue by remember {
             mutableStateOf(property.value.getNullable()?.toString() ?: "null")
         }
-
         DefaultDialogCard {
             keys.forEachIndexed { index, item ->
                 fun select() {
@@ -174,7 +171,6 @@ class AlertDialogs(
                         item
                     })
                 }
-
                 Row(
                     modifier = Modifier.clickable { select() },
                     verticalAlignment = Alignment.CenterVertically
@@ -197,7 +193,6 @@ class AlertDialogs(
     fun KeyboardInputDialog(property: PropertyPair<*>, dismiss: () -> Unit = {}) {
         val focusRequester = remember { FocusRequester() }
         val context = LocalContext.current
-
         DefaultDialogCard {
             var fieldValue by remember {
                 mutableStateOf(property.value.get().toString().let {
@@ -207,7 +202,6 @@ class AlertDialogs(
                     )
                 })
             }
-
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -225,7 +219,6 @@ class AlertDialogs(
                 },
                 singleLine = true
             )
-
             Row(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -240,7 +233,6 @@ class AlertDialogs(
                         Toast.makeText(context, "Invalid input! Make sure you entered a valid value.", Toast.LENGTH_SHORT).show() //TODO: i18n
                         return@Button
                     }
-
                     when (property.key.dataType.type) {
                         DataProcessors.Type.INTEGER -> {
                             runCatching {
@@ -269,12 +261,10 @@ class AlertDialogs(
     @Composable
     fun RawInputDialog(onDismiss: () -> Unit, onConfirm: (value: String) -> Unit) {
         val focusRequester = remember { FocusRequester() }
-
         DefaultDialogCard {
             val fieldValue = remember {
                 mutableStateOf(TextFieldValue())
             }
-
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -289,7 +279,6 @@ class AlertDialogs(
                 },
                 singleLine = true
             )
-
             Row(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -316,7 +305,6 @@ class AlertDialogs(
         DefaultDialogCard {
             defaultItems.forEach { key ->
                 var state by remember { mutableStateOf(toggledStates.contains(key)) }
-
                 fun toggle(value: Boolean? = null) {
                     state = value ?: !state
                     if (state) {
@@ -325,7 +313,6 @@ class AlertDialogs(
                         toggledStates.remove(key)
                     }
                 }
-
                 Row(
                     modifier = Modifier.clickable { toggle() },
                     verticalAlignment = Alignment.CenterVertically
@@ -353,19 +340,12 @@ class AlertDialogs(
         setProperty: (Color?) -> Unit,
         dismiss: () -> Unit
     ) {
-        var currentColor by remember { mutableStateOf(initialColor) }
-
+        var currentColor by remember { mutableStateOf(initialColor ?: Color.White.copy(alpha = 1f)) }
         DefaultDialogCard {
-            val controller = remember { ColorPickerController().apply {
-                if (currentColor == null) {
-                    setWheelAlpha(1f)
-                    setBrightness(1f, false)
-                }
-            } }
+            val controller = remember { ColorPickerController() }
             var colorHexValue by remember {
                 mutableStateOf(currentColor?.toArgb()?.let { Integer.toHexString(it) } ?: "")
             }
-
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
@@ -380,7 +360,7 @@ class AlertDialogs(
                                 setProperty(it)
                             }
                         }.onFailure {
-                            currentColor = null
+                            currentColor = Color.White
                         }
                     },
                     label = { Text(text = "Hex Color") },
@@ -438,7 +418,7 @@ class AlertDialogs(
                     controller = controller
                 )
                 IconButton(onClick = {
-                    setProperty(null)
+                    setProperty(Color.White)
                     dismiss()
                 }) {
                     Icon(
@@ -459,7 +439,6 @@ class AlertDialogs(
         var currentColor by remember {
             mutableStateOf((property.value.getNullable() as? Int)?.let { Color(it) })
         }
-
         ColorPickerDialog(
             initialColor = currentColor,
             setProperty = setProperty@{
@@ -487,7 +466,6 @@ class AlertDialogs(
             }
         }
         val context = LocalContext.current
-
         mapView.value = remember {
             Configuration.getInstance().apply {
                 osmdroidBasePath = File(context.cacheDir, "osmdroid")
@@ -497,17 +475,14 @@ class AlertDialogs(
                 setMultiTouchControls(true)
                 zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                 setTileSource(TileSourceFactory.MAPNIK)
-
                 val startPoint = GeoPoint(coordinates.first, coordinates.second)
                 controller.setZoom(10.0)
                 controller.setCenter(startPoint)
-
                 marker.value = Marker(this).apply {
                     isDraggable = true
                     position = startPoint
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 }
-
                 overlays.add(object: Overlay() {
                     override fun onSingleTapConfirmed(e: MotionEvent, mapView: MapView): Boolean {
                         marker.value?.position = mapView.projection.fromPixels(e.x.toInt(), e.y.toInt()) as GeoPoint
@@ -515,23 +490,17 @@ class AlertDialogs(
                         return true
                     }
                 })
-
                 overlays.add(marker.value)
             }
         }
-
         DisposableEffect(Unit) {
             onDispose {
                 mapView.value?.onDetach()
             }
         }
-
         var customCoordinatesDialog by remember { mutableStateOf(false) }
-
-
         val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
         val okHttpClient by lazy { OkHttpClient() }
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -543,13 +512,12 @@ class AlertDialogs(
             )
             Column(
                 modifier = Modifier
-                .align(Alignment.TopCenter)
+                    .align(Alignment.TopCenter)
                     .fillMaxWidth()
             ) {
                 var locationName by remember { mutableStateOf<String>("") }
                 var addressResults by remember { mutableStateOf<List<Triple<String, String, String>>>(emptyList()) }
                 var searchJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
-
                 suspend fun search() {
                     okHttpClient.newCall(Request.Builder()
                         .url("https://nominatim.openstreetmap.org/search".toUri().buildUpon().appendQueryParameter("q", locationName).appendQueryParameter("format", "jsonv2").build().toString())
@@ -559,9 +527,8 @@ class AlertDialogs(
                         if (!response.isSuccessful) {
                             return@use
                         }
-
                         runCatching {
-                            val body = JsonParser.parseString(response.body.string()).asJsonArray
+                            val body = JsonParser.parseString(response.body?.string()).asJsonArray
                             addressResults = body.take(5).map { jsonElement ->
                                 val jsonObject = jsonElement.asJsonObject
                                 Triple(
@@ -572,10 +539,8 @@ class AlertDialogs(
                             }
                         }
                     }
-
                     searchJob = null
                 }
-
                 TextField(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -598,14 +563,12 @@ class AlertDialogs(
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.None)
                 )
-
                 AutoClearKeyboardFocus(onFocusClear = {
                     locationName = ""
                     addressResults = emptyList()
                     searchJob?.cancel()
                     searchJob = null
                 })
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -613,38 +576,36 @@ class AlertDialogs(
                         .verticalScroll(ScrollState(0)),
                 ) {
                     if (addressResults.isNotEmpty()) {
-                            addressResults.forEach { address ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            marker.value?.position = GeoPoint(address.second.toDouble(), address.third.toDouble())
-                                            mapView.value?.controller?.setCenter(marker.value?.position)
-                                            mapView.value?.invalidate()
-                                        }
-                                ) {
-                                    Text(
-                                        text = address.first,
-                                        modifier = Modifier
-                                            .padding(10.dp)
-                                            .fillMaxWidth(),
-                                    )
-                                }
-                            }
-                    } else {
-                        if (searchJob?.isActive == true) {
+                        addressResults.forEach { address ->
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(10.dp),
-                                horizontalArrangement = Arrangement.Center
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        marker.value?.position = GeoPoint(address.second.toDouble(), address.third.toDouble())
+                                        mapView.value?.controller?.setCenter(marker.value?.position)
+                                        mapView.value?.invalidate()
+                                    }
                             ) {
-                                CircularProgressIndicator()
+                                Text(
+                                    text = address.first,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .fillMaxWidth(),
+                                )
                             }
+                        }
+                    } else if (searchJob?.isActive == true) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
                 }
             }
-
-
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -678,7 +639,6 @@ class AlertDialogs(
                         )
                     }
                 }
-
                 FilledIconButton(
                     onClick = {
                         customCoordinatesDialog = true
@@ -692,11 +652,9 @@ class AlertDialogs(
                     )
                 }
             }
-
             if (customCoordinatesDialog) {
                 val lat = remember { mutableStateOf(coordinates.first.toString()) }
                 val lon = remember { mutableStateOf(coordinates.second.toString()) }
-
                 Dialog(onDismissRequest = {
                     customCoordinatesDialog = false
                 }) {
@@ -730,7 +688,6 @@ class AlertDialogs(
                             }) {
                                 Text(text = translation["button.cancel"])
                             }
-
                             Button(onClick = {
                                 marker.value?.position = GeoPoint(lat.value.toDouble(), lon.value.toDouble())
                                 mapView.value?.controller?.setCenter(marker.value?.position)

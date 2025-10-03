@@ -38,7 +38,7 @@ import java.util.Locale
 class SEDownloadTab : Tab("se_download") {
     private fun fetchSEReleases(): List<SEVersion>? {
         return runCatching {
-            val endpoint = Request.Builder().url("https://api.github.com/repos/rhunk/SnapEnhance/releases").build()
+            val endpoint = Request.Builder().url("https://api.github.com/repos/particle-box/PurrfectSnap/releases").build()
             val response = OkHttpClient().newCall(endpoint).execute()
             if (!response.isSuccessful) return null
 
@@ -112,7 +112,7 @@ class SEDownloadTab : Tab("se_download") {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Choose SnapEnhance version")
+            Text(text = "Choose PurrfectSnap version")
 
             LazyColumn(
                 modifier = Modifier
@@ -217,7 +217,7 @@ class SEDownloadTab : Tab("se_download") {
                         Button(
                             onClick = {
                                 navigation.navigateTo(RepackageTab::class, Bundle().apply {
-                                    putString("apkPath", snapEnhanceApp.applicationInfo.sourceDir)
+                                    putString("apkPath", snapEnhanceApp.applicationInfo?.sourceDir)
                                     putString("oldPackage", snapEnhanceApp.packageName)
                                 }, noHistory = true)
                             },

@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,11 +22,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -43,6 +48,8 @@ import me.rhunk.snapenhance.common.ui.transparentTextFieldColors
 import me.rhunk.snapenhance.ui.manager.MainActivity
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.util.*
+import org.json.JSONArray
+import org.json.JSONObject
 
 class FeaturesRootSection : Routes.Route() {
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
@@ -87,18 +94,8 @@ class FeaturesRootSection : Routes.Route() {
         )
     }
 
-    override val init: () -> Unit = {
-        activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
-    }
-
     private fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
-        activityLauncherHelper?.let(block) ?: run {
-            //open manager if activity launcher is null
-            val intent = Intent(context.androidContext, MainActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.putExtra("route", routeInfo.id)
-            context.androidContext.startActivity(intent)
-        }
+        routes.activityLauncher.let(block)
     }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
@@ -251,9 +248,13 @@ class FeaturesRootSection : Routes.Route() {
         when (val dataType = remember { property.key.dataType.type }) {
             DataProcessors.Type.BOOLEAN -> {
                 var state by remember { mutableStateOf(propertyValue.get() as Boolean) }
+                val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
                     onCheckedChange = registerClickCallback {
+                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
                         state = state.not()
                         propertyValue.setAny(state)
                     }
@@ -363,9 +364,13 @@ class FeaturesRootSection : Routes.Route() {
                         ))
                 }
 
+                val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
                     onCheckedChange = {
+                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
                         state = state.not()
                         container.globalState = state
                     }
@@ -521,6 +526,41 @@ class FeaturesRootSection : Routes.Route() {
         }
     }
 
+    @Composable
+    private fun SensitiveDataDialog(
+        onDismiss: () -> Unit,
+        onConfirm: (exportSensitiveData: Boolean) -> Unit
+    ) {
+        Dialog(onDismissRequest = onDismiss) {
+            Card(shape = RoundedCornerShape(16.dp)) {
+                Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "Export Sensitive Data?",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    Text(
+                        text = "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                    ) {
+                        TextButton(onClick = { onConfirm(false) }) {
+                            Text("No")
+                        }
+                        TextButton(onClick = { onConfirm(true) }) {
+                            Text("Yes")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override val topBarActions: @Composable (RowScope.() -> Unit) = topBarActions@{
         var showSearchBar by remember { mutableStateOf(false) }
         val focusRequester = remember { FocusRequester() }
@@ -590,41 +630,12 @@ class FeaturesRootSection : Routes.Route() {
         }
 
         if (showExportDialog) {
-            fun exportConfig(
-                exportSensitiveData: Boolean
-            ) {
-                showExportDialog = false
-                activityLauncher {
-                    saveFile("config.json", "application/json") { uri ->
-                        runCatching {
-                            context.androidContext.contentResolver.openOutputStream(Uri.parse(uri))?.use {
-                                context.config.writeConfig()
-                                context.config.exportToString(exportSensitiveData).byteInputStream().copyTo(it)
-                                context.shortToast(translation["config_export_success_toast"])
-                            }
-                        }.onFailure {
-                            context.longToast(translation.format("config_export_failure_toast", "error" to it.message.toString()))
-                        }
-                    }
-                }
-            }
-
-            AlertDialog(
-                title = { Text(text = context.translation["manager.dialogs.export_config.title"]) },
-                text = { Text(text = context.translation["manager.dialogs.export_config.content"]) },
-                onDismissRequest = { showExportDialog = false },
-                confirmButton = {
-                    Button(
-                        onClick = { exportConfig(true) }
-                    ) {
-                        Text(text = context.translation["button.positive"])
-                    }
-                },
-                dismissButton = {
-                    Button(
-                        onClick = { exportConfig(false) }
-                    ) {
-                        Text(text = context.translation["button.negative"])
+            SensitiveDataDialog(
+                onDismiss = { showExportDialog = false },
+                onConfirm = { exportSensitiveData ->
+                    showExportDialog = false
+                    routes.configExportSummary.navigate {
+                        put("exportSensitiveData", exportSensitiveData.toString())
                     }
                 }
             )
@@ -637,16 +648,8 @@ class FeaturesRootSection : Routes.Route() {
                     activityLauncher {
                         openFile("application/json") { uri ->
                             context.androidContext.contentResolver.openInputStream(Uri.parse(uri))?.use {
-                                runCatching {
-                                    context.config.loadFromString(it.readBytes().toString(Charsets.UTF_8))
-                                }.onFailure {
-                                    context.longToast(translation.format("config_import_failure_toast", "error" to it.message.toString()))
-                                    return@use
-                                }
-                                context.shortToast(translation["config_import_success_toast"])
-                                context.coroutineScope.launch(Dispatchers.Main) {
-                                    navigateReload()
-                                }
+                                routes.configJsonForImport = it.readBytes().toString(Charsets.UTF_8)
+                                routes.navController.navigate(Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE)
                             }
                         }
                     }
@@ -685,23 +688,15 @@ class FeaturesRootSection : Routes.Route() {
     private fun PropertiesView(
         properties: List<PropertyPair<*>>
     ) {
-        Scaffold(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            content = { innerPadding ->
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .padding(innerPadding),
-                    //save button space
-                    contentPadding = PaddingValues(top = 10.dp, bottom = 110.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    items(properties, key = { it.key.propertyName() }) {
-                        PropertyCard(it)
-                    }
-                }
+            verticalArrangement = Arrangement.Top,
+            contentPadding = PaddingValues(bottom = routes.bottomPadding)
+        ) {
+            items(properties, key = { it.key.propertyName() }) {
+                PropertyCard(it)
             }
-        )
+        }
     }
 
     override val floatingActionButton: @Composable () -> Unit = {
@@ -726,12 +721,15 @@ class FeaturesRootSection : Routes.Route() {
     }
 
 
+
     @Composable
     private fun Container(
         configContainer: ConfigContainer
     ) {
         PropertiesView(remember {
-            configContainer.properties.map { PropertyPair(it.key, it.value) }
+            configContainer.properties.map { PropertyPair(it.key, it.value) }.filter {
+                !it.key.params.flags.contains(ConfigFlag.HIDDEN)
+            }
         })
     }
 }

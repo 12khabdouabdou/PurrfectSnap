@@ -1,13 +1,13 @@
-{
+﻿{
     "setup": {
         "dialogs": {
             "select_language": "Select Language",
-            "save_folder": "SnapEnhance requires Storage permissions to download and Save Media from Snapchat.\nPlease choose the location where media should be downloaded to.",
+            "save_folder": "PurrfectSnap requires Storage permissions to download and Save Media from Snapchat.\nPlease choose the location where media should be downloaded to.",
             "select_save_folder_button": "Select Folder"
         },
         "mappings": {
             "dialog": "Generating Mappings, this may take a while ...",
-            "generate_failure_no_snapchat": "SnapEnhance was unable to detect Snapchat, please try reinstalling Snapchat.",
+            "generate_failure_no_snapchat": "PurrfectSnap was unable to detect Snapchat, please try reinstalling Snapchat.",
             "generate_failure": "An error occurred while trying to generate mappings, please try again."
         },
         "permissions": {
@@ -46,11 +46,11 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} · by rhunk",
-                "update_title": "SnapEnhance Update",
+                "version_title": "v{versionName} · forked by Eternal",
+                "update_title": "PurrfectSnap Update",
                 "update_content": "Version {version} is available!",
                 "update_button": "Download",
-                "debug_build_summary_title": "You are running a debug build of SnapEnhance",
+                "debug_build_summary_title": "You are running a debug build of PurrfectSnap",
                 "debug_build_summary_content": "Version {versionName} ({versionCode})",
                 "debug_build_summary_date": "Build date: {date} ({days} days ago)",
                 "quick_actions_title": "Quick Actions"
@@ -71,7 +71,13 @@
                 "message_logger_summary": "{messageCount} messages\n{storyCount} stories",
                 "export_button": "Export",
                 "clear_button": "Clear",
-                "view_logger_history_button": "View Logger History"
+                "view_logger_history_button": "View Logger History",
+                "updates_title": "Updates",
+                "auto_update_check": "Auto check for updates",
+                "update_check_frequency": "Update check frequency",
+                "update_check_frequency_daily": "Daily",
+                "update_check_frequency_weekly": "Weekly",
+                "update_check_frequency_monthly": "Monthly"
             },
             "tasks": {
                 "no_tasks": "No tasks",
@@ -200,7 +206,7 @@
             },
             "scripting_warning": {
                 "title": "Warning",
-                "content": "SnapEnhance includes a scripting tool, allowing the execution of user-defined code on your device. Use extreme caution and only install modules from known, reliable sources. Unauthorized or unverified modules may pose security risks to your system."
+                "content": "PurrfectSnap includes a scripting tool, allowing the execution of user-defined code on your device. Use extreme caution and only install modules from known, reliable sources. Unauthorized or unverified modules may pose security risks to your system."
             },
             "reset_config": {
                 "title": "Reset config",
@@ -314,7 +320,7 @@
         },
         "change_language": {
             "name": "Change Language",
-            "description": "Change the language of SnapEnhance"
+            "description": "Change the language of PurrfectSnap"
         },
         "file_imports": {
             "name": "File Imports",
@@ -469,6 +475,10 @@
                             }
                         }
                     },
+                    "force_amoled_theme": {
+                        "name": "Amoled Dark Mode",
+                        "description": "Uses a true black background for the dark theme"
+                    },
                     "map_friend_nametags": {
                         "name": "Enhanced Friend Map Nametags",
                         "description": "Improves the Nametags of friends on the Snapmap"
@@ -544,6 +554,14 @@
                     "prevent_forced_keyboard": {
                         "name": "Prevent Forced Keyboard",
                         "description": "Prevents Snapchat from automatically popping up the keyboard when you open a conversation"
+                    },
+                    "settings_menu": {
+                        "name": "Settings Menu",
+                        "description": "Changes the way you open the PurrfectSnap menu",
+                        "options": {
+                            "default": "Default",
+                            "legacy": "Legacy"
+                        }
                     }
                 }
             },
@@ -979,7 +997,7 @@
                                     },
                                     "composer_logs": {
                                         "name": "Composer Logs",
-                                        "description": "Redirects console logs of Composer to SnapEnhance"
+                                        "description": "Redirects console logs of Composer to PurrfectSnap"
                                     }
                                 }
                             },
@@ -1139,7 +1157,7 @@
             },
             "scripting": {
                 "name": "Scripting",
-                "description": "Run custom scripts to extend SnapEnhance",
+                "description": "Run custom scripts to extend PurrfectSnap",
                 "properties": {
                     "developer_mode": {
                         "name": "Developer Mode",
@@ -1305,7 +1323,7 @@
             },
             "auto_reload": {
                 "snapchat_only": "Snapchat Only",
-                "all": "All (Snapchat + SnapEnhance)"
+                "all": "All (Snapchat + PurrfectSnap)"
             },
             "edit_text_override": {
                 "multi_line_chat_input": "Multi Line Chat Input",

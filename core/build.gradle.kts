@@ -1,12 +1,11 @@
 plugins {
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".core"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 28
@@ -19,10 +18,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    kotlinOptions {
-        jvmTarget = "21"
     }
 }
 
@@ -37,7 +32,7 @@ dependencies {
 
     implementation(project(":common"))
     implementation(project(":mapper"))
-    implementation(project(":native"))
+        implementation(project(":native"))
     implementation(project(":composer"))
 
     implementation(libs.androidx.activity.ktx)
@@ -48,4 +43,5 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material3)
     implementation(libs.hiddenapibypass)
+    implementation(libs.bcprov.jdk18on)
 }

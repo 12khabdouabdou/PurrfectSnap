@@ -262,7 +262,7 @@ class SnapchatPatchTab : Tab("snapchat_download") {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "SnapEnhance")
+                    Text(text = "PurrfectSnap")
                     Text(text = installedSnapEnhanceVersion?.versionName ?: "Not installed")
                 }
             }

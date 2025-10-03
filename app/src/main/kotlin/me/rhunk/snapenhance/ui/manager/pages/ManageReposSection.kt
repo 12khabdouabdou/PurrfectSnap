@@ -1,8 +1,10 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package me.rhunk.snapenhance.ui.manager.pages
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.data.RepositoryIndex
@@ -37,6 +40,9 @@ class ManageReposSection: Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         var showAddDialog by remember { mutableStateOf(false) }
+        val navBackStackEntry by routes.navController.currentBackStackEntryAsState()
+        val repoType = navBackStackEntry?.arguments?.getString("type") ?: "theme"
+
         ExtendedFloatingActionButton(onClick = {
             showAddDialog = true
         }) {
@@ -59,7 +65,7 @@ class ManageReposSection: Routes.Route() {
                         if (!response.isSuccessful) {
                             throw Exception("Failed to fetch default branch: ${response.code}")
                         }
-                        val json = response.body.string()
+                        val json = response.body?.string()
                         val defaultBranch = context.gson.fromJson(json, Map::class.java)["default_branch"] as String
                         context.log.info("Default branch for $repoName is $defaultBranch")
                         modifiedUrl = "https://raw.githubusercontent.com/$repoName/$defaultBranch/"
@@ -74,11 +80,11 @@ class ManageReposSection: Routes.Route() {
                         throw Exception("Failed to fetch index from $indexUri: ${response.code}")
                     }
                     runCatching {
-                        val repoIndex = context.gson.fromJson(response.body.charStream(), RepositoryIndex::class.java).also {
+                        val repoIndex = context.gson.fromJson(response.body?.charStream(), RepositoryIndex::class.java).also {
                             context.log.info("repository index: $it")
                         }
 
-                        context.database.addRepo(modifiedUrl)
+                        context.database.addRepo(repoType, modifiedUrl)
                         context.shortToast("Repository added successfully! $repoIndex")
                         showAddDialog = false
                         updateDispatcher.dispatch()
@@ -144,13 +150,14 @@ class ManageReposSection: Routes.Route() {
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
+        val repoType = it.arguments?.getString("type") ?: "theme"
         val repositories = rememberAsyncMutableStateList(defaultValue = listOf(), updateDispatcher = updateDispatcher) {
-            context.database.getRepositories()
+            context.database.getRepositories(repoType)
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
+            contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp + routes.bottomPadding),
         ) {
             item {
                 if (repositories.isEmpty()) {
@@ -162,7 +169,7 @@ class ManageReposSection: Routes.Route() {
             items(repositories) { url ->
                 ElevatedCard(onClick = {
                     context.androidContext.copyToClipboard(url)
-                }) {
+                }, modifier = Modifier.animateContentSize()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -174,7 +181,7 @@ class ManageReposSection: Routes.Route() {
                         Text(text = url, modifier = Modifier.weight(1f), overflow = TextOverflow.Ellipsis, maxLines = 4, fontSize = 15.sp, lineHeight = 15.sp)
                         Button(
                             onClick = {
-                                context.database.removeRepo(url)
+                                context.database.removeRepo(repoType, url)
                                 coroutineScope.launch {
                                     updateDispatcher.dispatch()
                                 }

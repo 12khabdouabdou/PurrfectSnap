@@ -10,7 +10,9 @@ private val rhinoAndroidHelper = RhinoAndroidHelper(null as File?)
 fun contextScope(shouldOptimize: Boolean = false, f: Context.() -> Any?): Any? {
     val context = rhinoAndroidHelper.enterContext().apply {
         languageVersion = Context.VERSION_ES6
-        optimizationLevel = if (!shouldOptimize) -1 else 0
+        // Deprecated: optimizationLevel. No longer set in new Rhino/Java.
+        // If you have a modern way to tweak optimization, use it here.
+        // optimizationLevel = if (!shouldOptimize) -1 else 0   <-- REMOVE THIS LINE
     }
     try {
         return context.f().let {
@@ -49,7 +51,7 @@ fun ScriptableObject.putFunction(name: String, proxy: Scriptable.(Array<out Any?
 }
 
 fun scriptableObject(name: String? = "ScriptableObject", f: ScriptableObject.() -> Unit): ScriptableObject {
-    return object: ScriptableObject() {
+    return object : ScriptableObject() {
         override fun getClassName() = name
     }.apply(f)
 }
