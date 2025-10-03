@@ -28,7 +28,7 @@ rust-android = "0.9.6"
 hiddenapibypass = "6.1"
 smart-exception-java = "0.2.1"
 workmanager = "2.10.4"
-fetch = "3.4.2"
+fetch = "3.4.1"
 
 [libraries]
 accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
