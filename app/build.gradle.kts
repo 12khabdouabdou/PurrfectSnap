@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 android {
@@ -148,7 +149,12 @@ dependencies {
     implementation("com.google.android.material:material:1.13.0")
     implementation(libs.androidx.material3)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.fetch)
+    implementation(libs.fetch) {
+        exclude(group = "androidx.room", module = "room-runtime")
+    }
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
     // --- COMPOSE: explicit modern UI/Foundation for widthIn/wrapContentWidth ----
     fullImplementation(libs.foundation)
     fullImplementation(libs.ui)
