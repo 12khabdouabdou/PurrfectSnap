@@ -211,74 +211,82 @@ class Navigation(
                     val itemCount = selectedRoutes.size.coerceAtLeast(1)
                     val density = androidx.compose.ui.platform.LocalDensity.current
                     val selectedIndex = remember(currentRoute, selectedRoutes) {
-                        selectedRoutes.indexOf(currentRoute).coerceAtLeast(0)
+                        val index = selectedRoutes.indexOf(currentRoute)
+                        if (index >= 0) index else null
                     }
-                    val itemWidthPx = remember(barWidthPx, itemCount) { if (itemCount > 0) barWidthPx / itemCount else 0f }
-                    val offsetAnim = remember { Animatable(0f) }
-                    var lastSelectedIndex by remember { mutableStateOf(selectedIndex) }
-                    LaunchedEffect(itemWidthPx) {
-                        if (itemWidthPx > 0f) {
-                            offsetAnim.snapTo(selectedIndex * itemWidthPx)
-                        }
-                    }
-                    LaunchedEffect(selectedIndex, itemWidthPx) {
-                        if (itemWidthPx <= 0f) return@LaunchedEffect
-                        val dist = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
-                        val damping = when {
-                            dist >= 3 -> 0.65f
-                            dist == 2 -> 0.75f
-                            else -> 0.90f
-                        }
-                        val stiffness = Spring.StiffnessMediumLow
-                        offsetAnim.animateTo(
-                            targetValue = selectedIndex * itemWidthPx,
-                            animationSpec = spring(dampingRatio = damping, stiffness = stiffness)
-                        )
-                        lastSelectedIndex = selectedIndex
-                    }
-                    val horizontalInset = 8.dp
-                    val indicatorWidth = with(density) { itemWidthPx.toDp() } - horizontalInset * 2
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .onGloballyPositioned { barWidthPx = it.size.width.toFloat() }
-                    ) {
-                        val motionProgress = remember { Animatable(1f) }
-                        LaunchedEffect(selectedIndex) {
-                            motionProgress.snapTo(0f)
-                            val dist = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
-                            val dur = when {
-                                dist >= 3 -> 440
-                                dist == 2 -> 380
-                                else -> 320
+
+                    selectedIndex?.let {
+                        val itemWidthPx =
+                            remember(barWidthPx, itemCount) { if (itemCount > 0) barWidthPx / itemCount else 0f }
+                        val offsetAnim = remember { Animatable(0f) }
+                        var lastSelectedIndex by remember { mutableStateOf(selectedIndex) }
+                        LaunchedEffect(itemWidthPx) {
+                            if (itemWidthPx > 0f) {
+                                offsetAnim.snapTo(selectedIndex * itemWidthPx)
                             }
-                            motionProgress.animateTo(1f, animationSpec = tween(durationMillis = dur, easing = FastOutSlowInEasing))
                         }
-                        val pulse = sin(PI * motionProgress.value).toFloat()
-                        val distForScale = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
-                        val scaleXBase = 0.18f
-                        val scaleXExtra = 0.06f
-                        val scaleYBase = 0.06f
-                        val scaleYExtra = 0.02f
-                        val mult = (distForScale - 1).coerceAtLeast(0)
-                        val scaleXAnim = 1f + (scaleXBase + scaleXExtra * mult) * pulse
-                        val scaleYAnim = 1f - (scaleYBase + scaleYExtra * mult) * pulse
-                        if (barWidthPx > 0f && itemCount > 0) {
-                            val offsetX = with(density) { offsetAnim.value.toDp() } + horizontalInset
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .width(indicatorWidth.coerceAtLeast(0.dp))
-                                    .offset(x = offsetX)
-                                    .padding(vertical = 8.dp)
-                                    .graphicsLayer { scaleX = scaleXAnim; scaleY = scaleYAnim }
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
-                                    .border(
-                                        BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)),
-                                        RoundedCornerShape(14.dp)
-                                    )
+                        LaunchedEffect(selectedIndex, itemWidthPx) {
+                            if (itemWidthPx <= 0f) return@LaunchedEffect
+                            val dist = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
+                            val damping = when {
+                                dist >= 3 -> 0.65f
+                                dist == 2 -> 0.75f
+                                else -> 0.90f
+                            }
+                            val stiffness = Spring.StiffnessMediumLow
+                            offsetAnim.animateTo(
+                                targetValue = selectedIndex * itemWidthPx,
+                                animationSpec = spring(dampingRatio = damping, stiffness = stiffness)
                             )
+                            lastSelectedIndex = selectedIndex
+                        }
+                        val horizontalInset = 8.dp
+                        val indicatorWidth = with(density) { itemWidthPx.toDp() } - horizontalInset * 2
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .onGloballyPositioned { barWidthPx = it.size.width.toFloat() }
+                        ) {
+                            val motionProgress = remember { Animatable(1f) }
+                            LaunchedEffect(selectedIndex) {
+                                motionProgress.snapTo(0f)
+                                val dist = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
+                                val dur = when {
+                                    dist >= 3 -> 440
+                                    dist == 2 -> 380
+                                    else -> 320
+                                }
+                                motionProgress.animateTo(
+                                    1f,
+                                    animationSpec = tween(durationMillis = dur, easing = FastOutSlowInEasing)
+                                )
+                            }
+                            val pulse = sin(PI * motionProgress.value).toFloat()
+                            val distForScale = kotlin.math.abs(selectedIndex - lastSelectedIndex).coerceAtLeast(1)
+                            val scaleXBase = 0.18f
+                            val scaleXExtra = 0.06f
+                            val scaleYBase = 0.06f
+                            val scaleYExtra = 0.02f
+                            val mult = (distForScale - 1).coerceAtLeast(0)
+                            val scaleXAnim = 1f + (scaleXBase + scaleXExtra * mult) * pulse
+                            val scaleYAnim = 1f - (scaleYBase + scaleYExtra * mult) * pulse
+                            if (barWidthPx > 0f && itemCount > 0) {
+                                val offsetX = with(density) { offsetAnim.value.toDp() } + horizontalInset
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .width(indicatorWidth.coerceAtLeast(0.dp))
+                                        .offset(x = offsetX)
+                                        .padding(vertical = 8.dp)
+                                        .graphicsLayer { scaleX = scaleXAnim; scaleY = scaleYAnim }
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+                                        .border(
+                                            BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)),
+                                            RoundedCornerShape(14.dp)
+                                        )
+                                )
+                            }
                         }
                     }
                     NavigationBar(
