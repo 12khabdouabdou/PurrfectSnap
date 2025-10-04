@@ -100,9 +100,9 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 @OptIn(
-    ExperimentalMaterial3Api::class, 
-    ExperimentalFoundationApi::class, 
-    ExperimentalLayoutApi::class, 
+    ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class,
+    ExperimentalLayoutApi::class,
     androidx.compose.animation.ExperimentalAnimationApi::class
 )
 class Navigation(
@@ -212,10 +212,10 @@ class Navigation(
                     val density = androidx.compose.ui.platform.LocalDensity.current
                     val selectedIndex = remember(currentRoute, selectedRoutes) {
                         val index = selectedRoutes.indexOf(currentRoute)
-                        if (index >= 0) index else null
+                        if (index >= 0) index else null // indexOf returns -1 when not found, replace with null
                     }
 
-                    selectedIndex?.let {
+                    selectedIndex?.let { // Null check
                         val itemWidthPx =
                             remember(barWidthPx, itemCount) { if (itemCount > 0) barWidthPx / itemCount else 0f }
                         val offsetAnim = remember { Animatable(0f) }
@@ -507,9 +507,9 @@ class Navigation(
                 val children = routes.getRoutes().filter { it.parentRoute == route }
                 if (children.isEmpty()) {
                     val isSummaryScreen = route.routeInfo.id == Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE ||
-                                         route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE ||
-                                         route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_EXPORT_ROUTE ||
-                                         route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_IMPORT_ROUTE
+                            route.routeInfo.id == Routes.CONFIG_EXPORT_SUMMARY_ROUTE ||
+                            route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_EXPORT_ROUTE ||
+                            route.routeInfo.id == Routes.FRIEND_TRACKER_CONFIG_IMPORT_ROUTE
                     val isAddRuleScreen = route.routeInfo.id.startsWith("edit_rule")
                     val animatedRoutes = setOf("friend_tracker_catalog", "manage_friend_tracker_repos", "manage_script_repos", "manage_repos")
                     val isAnimatedRoute = animatedRoutes.contains(route.routeInfo.id)
