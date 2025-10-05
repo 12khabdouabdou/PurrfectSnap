@@ -387,6 +387,25 @@ class DownloadProcessor (
             }
 
             runCatching {
+                if (downloadRequest.isFFmpegMixAudio) {
+                    val mixRequest = downloadRequest.ffmpegMixAudioRequest!!
+                    val outputFile = File.createTempFile("mixed_audio", ".wav")
+                    callbackOnProgress("Mixing audio streams")
+                    pendingTask.updateProgress("Mixing audio streams")
+                    newFFMpegProcessor(pendingTask).execute(FFMpegProcessor.Request(
+                        action = FFMpegProcessor.Action.MIX_AUDIO,
+                        inputs = listOf(mixRequest.remoteRawPath, mixRequest.localRawPath),
+                        output = outputFile,
+                        sampleRate = mixRequest.sampleRate
+                    ))
+                    saveMediaToGallery(pendingTask, outputFile, downloadMetadata)
+                    File(mixRequest.localRawPath).delete()
+                    File(mixRequest.remoteRawPath).delete()
+                    outputFile.delete()
+                    return@launch
+                }
+
+
                 if (downloadRequest.isAudioStream) {
                     val streamUrl = downloadRequest.inputMedias.first().content
                     val outputFile = File.createTempFile("audio_stream", ".mp3")

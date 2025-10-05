@@ -16,16 +16,24 @@ data class InputMedia(
     val isOverlay: Boolean = false,
 )
 
+data class FFmpegMixAudioRequest(
+    val localRawPath: String,
+    val remoteRawPath: String,
+    val sampleRate: Int,
+)
+
 data class DownloadRequest(
     val inputMedias: Array<InputMedia>,
     val dashOptions: DashOptions? = null,
     val audioStreamFormat: AudioStreamFormat? = null,
+    val ffmpegMixAudioRequest: FFmpegMixAudioRequest? = null,
     private val flags: Int = 0,
 ) {
     object Flags {
         const val MERGE_OVERLAY = 1
         const val DASH_PLAYLIST = 2
         const val AUDIO_STREAM = 4
+        const val FFMPEG_MIX_AUDIO = 8
     }
 
     val isDashPlaylist: Boolean
@@ -36,6 +44,9 @@ data class DownloadRequest(
 
     val isAudioStream: Boolean
         get() = flags and Flags.AUDIO_STREAM != 0
+
+    val isFFmpegMixAudio: Boolean
+        get() = flags and Flags.FFMPEG_MIX_AUDIO != 0
 }
 
 fun String.sanitizeForPath(): String {

@@ -93,4 +93,8 @@ class DownloadManagerClient (
             )
         )
     }
+
+    fun addRequest(request: DownloadRequest) {
+        enqueueDownloadRequest(request)
+    }
 }
