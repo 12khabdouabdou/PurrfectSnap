@@ -2,6 +2,7 @@ package me.rhunk.snapenhance.core.features.impl.experiments
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioRecord
 import android.media.AudioTrack
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
@@ -21,17 +22,18 @@ import java.nio.ByteBuffer
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.LinkedBlockingQueue
+import kotlin.concurrent.thread
 
 class CallRecorder : Feature("Call Recorder") {
     private val httpServer = HttpServer(
         timeout = Integer.MAX_VALUE
     )
+    private val participants = CopyOnWriteArrayList<String>()
+    private val lock = Any()
 
     override fun init() {
         if (!context.config.experimental.callRecorder.get()) return
-
-        val streamHandlers = ConcurrentHashMap<Int, MutableList<(data: ByteArray) -> Unit>>() // audioTrack -> handlers
-        val participants = CopyOnWriteArrayList<String>()
 
         runCatching {
             findClass("com.snapchat.talkcorev3.CallingSessionState")
@@ -52,6 +54,16 @@ class CallRecorder : Feature("Call Recorder") {
             }
         }
 
+        if (context.config.experimental.callRecordingMode.get() == "mixed") {
+            setupMixedRecording()
+        } else {
+            setupRemoteRecording()
+        }
+    }
+
+    private fun setupRemoteRecording() {
+        val streamHandlers = ConcurrentHashMap<Int, MutableList<(data: ByteArray) -> Unit>>() // audioTrack -> handlers
+
         AudioTrack::class.java.apply {
             getConstructor(
                 AudioAttributes::class.java,
@@ -67,12 +79,12 @@ class CallRecorder : Feature("Call Recorder") {
 
                 lateinit var streamUrl: String
                 streamUrl = httpServer.ensureServerStarted()?.putContent(
-                    object: HttpServer.HttpContent() {
+                    object : HttpServer.HttpContent() {
                         override val contentType: String = "audio/wav"
                         override val chunked: Boolean = true
                         override val contentLength: Long? = null
                         override val newBody: () -> HttpServer.HttpBody = {
-                            object: HttpServer.HttpBody() {
+                            object : HttpServer.HttpBody() {
                                 val outputStream = PipedOutputStream()
                                 val inputStream = PipedInputStream(outputStream)
 
@@ -135,6 +147,146 @@ class CallRecorder : Feature("Call Recorder") {
 
             hook("release", HookStage.BEFORE) {
                 streamHandlers.remove(it.thisObject<Any>().hashCode())?.forEach { it(ByteArray(0)) }
+            }
+        }
+    }
+
+    private fun setupMixedRecording() {
+        val remoteQueue = LinkedBlockingQueue<ByteArray>()
+        val localQueue = LinkedBlockingQueue<ByteArray>()
+        var callActive = false
+
+        val startRecording: (format: AudioFormat) -> Unit = { format ->
+            synchronized(lock) {
+                if (callActive) return@synchronized
+                callActive = true
+
+                lateinit var streamUrl: String
+                streamUrl = httpServer.ensureServerStarted()?.putContent(
+                    object : HttpServer.HttpContent() {
+                        override val contentType: String = "audio/wav"
+                        override val chunked: Boolean = true
+                        override val contentLength: Long? = null
+                        override val newBody: () -> HttpServer.HttpBody = {
+                            object : HttpServer.HttpBody() {
+                                val outputStream = PipedOutputStream()
+                                val inputStream = PipedInputStream(outputStream)
+                                val mixerThread = thread(start = false) {
+                                    try {
+                                        while (true) {
+                                            val remoteData = remoteQueue.take()
+                                            val localData = localQueue.take()
+
+                                            if (remoteData.isEmpty() || localData.isEmpty()) {
+                                                break
+                                            }
+
+                                            val maxSize = maxOf(remoteData.size, localData.size)
+                                            val paddedRemote = if (remoteData.size < maxSize) remoteData.copyOf(maxSize) else remoteData
+                                            val paddedLocal = if (localData.size < maxSize) localData.copyOf(maxSize) else localData
+                                            val mixedData = ByteArray(maxSize * 2)
+
+                                            for (i in 0 until maxSize step 2) {
+                                                mixedData[i * 2] = paddedRemote[i]
+                                                mixedData[i * 2 + 1] = paddedRemote[i + 1]
+                                                mixedData[i * 2 + 2] = paddedLocal[i]
+                                                mixedData[i * 2 + 3] = paddedLocal[i + 1]
+                                            }
+                                            outputStream.write(mixedData)
+                                            outputStream.flush()
+                                        }
+                                    } catch (e: InterruptedException) {
+                                        // expected
+                                    } catch (t: Throwable) {
+                                        context.log.error("Call recorder mixer thread failed", t)
+                                    } finally {
+                                        outputStream.close()
+                                    }
+                                }
+
+                                override val onOpen: () -> Unit = {
+                                    mixerThread.start()
+                                }
+
+                                override val readBytes: (byteArray: ByteArray) -> Int = { byteArray ->
+                                    inputStream.read(byteArray)
+                                }
+
+                                override val onClose: () -> Unit = {
+                                    context.log.verbose("Streaming url closed")
+                                    callActive = false
+                                    mixerThread.interrupt()
+                                    remoteQueue.clear()
+                                    localQueue.clear()
+                                    inputStream.close()
+                                }
+                            }
+                        }
+                    }
+                ) ?: return@synchronized
+
+                context.log.verbose("streaming url = $streamUrl, sampleRate = ${format.sampleRate}, audioFormat = ${format.encoding}")
+
+                context.feature(MediaDownloader::class).provideDownloadManagerClient(
+                    UUID.randomUUID().toString(),
+                    participants.mapNotNull { context.database.getFriendInfo(it)?.mutableUsername }.joinToString("-"),
+                    System.currentTimeMillis(),
+                    MediaDownloadSource.VOICE_CALL
+                ).downloadStream(streamUrl, AudioStreamFormat(2, format.sampleRate, format.encoding)) // Stereo
+            }
+        }
+
+        AudioTrack::class.java.getConstructor(
+            AudioAttributes::class.java,
+            AudioFormat::class.java,
+            Int::class.javaPrimitiveType,
+            Int::class.javaPrimitiveType,
+            Int::class.javaPrimitiveType,
+        ).hook(HookStage.BEFORE) { param ->
+            val audioAttributes = param.arg<AudioAttributes>(0)
+            if (audioAttributes.usage != AudioAttributes.USAGE_VOICE_COMMUNICATION) return@hook
+            startRecording(param.arg(1))
+        }
+
+        AudioTrack::class.java.getMethod("write", ByteBuffer::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType).hook(HookStage.BEFORE) { param ->
+            if (!callActive) return@hook
+            val byteBuffer = param.arg<ByteBuffer>(0)
+            val position = byteBuffer.position()
+            val buffer = ByteArray(param.arg(1))
+            byteBuffer.get(buffer)
+            byteBuffer.position(position)
+            remoteQueue.put(buffer)
+        }
+
+        AudioTrack::class.java.hook("release", HookStage.BEFORE) {
+            if (callActive) {
+                remoteQueue.put(ByteArray(0))
+            }
+        }
+
+        AudioRecord::class.java.getConstructor(
+            AudioAttributes::class.java,
+            AudioFormat::class.java,
+            Int::class.javaPrimitiveType,
+            Int::class.javaPrimitiveType
+        ).hook(HookStage.BEFORE) { param ->
+            val audioAttributes = param.arg<AudioAttributes>(0)
+            if (audioAttributes.usage == AudioAttributes.USAGE_ASSISTANT) return@hook
+            startRecording(param.arg(1))
+        }
+
+        AudioRecord::class.java.getMethod("read", ByteArray::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType).hook(HookStage.AFTER) { param ->
+            if (!callActive) return@hook
+            val buffer = param.arg<ByteArray>(0)
+            val size = param.getResult() as? Int ?: return@hook
+            if (size > 0) {
+                localQueue.put(buffer.copyOf(size))
+            }
+        }
+
+        AudioRecord::class.java.hook("release", HookStage.BEFORE) {
+            if (callActive) {
+                localQueue.put(ByteArray(0))
             }
         }
     }
