@@ -1,9 +1,9 @@
-# Snapenhance Script Repositories
+# PurrfectSnap Script Repositories
 
 ## How to Add a Repository
 
 1. Copy the script repo URL from here
-2. Open SnapEnhance
+2. Open PurrfectSnap
 3. Navigate to **Scripting** section
 4. Go to the **Catalog** tab
 5. Tap the **Manage Repos** button
