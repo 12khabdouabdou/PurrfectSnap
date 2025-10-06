@@ -189,7 +189,7 @@ fun ScriptCatalog(root: ScriptingRootSection) {
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.clickable {
                             context.androidContext.openLink(
-                                "https://github.com/particle-box/PurrfectSnap/blob/main/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
+                                "https://github.com/particle-box/PurrfectSnap/blob/dev/app/src/main/kotlin/me/rhunk/snapenhance/ui/manager/pages/scripting/ScriptRepos.md"
                             )
                         }
                     )
