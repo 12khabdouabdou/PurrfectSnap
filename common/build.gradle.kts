@@ -49,7 +49,7 @@ dependencies {
     implementation(libs.rhino.android) {
         exclude(group = "org.mozilla", module = "rhino-runtime")
     }
-    api(files("../libs/ffmpeg-kit-full-gpl-6.0-2.LTS.aar"))
+    api(project(":ffmpeg-kit"))
 
     compileOnly(libs.androidx.activity.ktx)
     compileOnly(platform(libs.androidx.compose.bom))

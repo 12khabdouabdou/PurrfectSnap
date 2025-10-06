@@ -66,7 +66,6 @@ class FFMpegProcessor(
         CONVERSION,
         MERGE_MEDIA,
         DOWNLOAD_AUDIO_STREAM,
-        MIX_AUDIO,
     }
 
     data class Request(
@@ -77,7 +76,6 @@ class FFMpegProcessor(
         val startTime: Long? = null, //only for DOWNLOAD_DASH
         val duration: Long? = null, //only for DOWNLOAD_DASH
         val audioStreamFormat: AudioStreamFormat? = null, //only for DOWNLOAD_AUDIO_STREAM
-        val sampleRate: Int? = null, // for MIX_AUDIO
 
         var videoCodec: String? = null,
         var audioCodec: String? = null,
@@ -137,27 +135,6 @@ class FFMpegProcessor(
         }
 
         when (args.action) {
-            Action.MIX_AUDIO -> {
-                inputArguments.clear()
-                outputArguments.clear()
-
-                val remotePath = args.inputs[0]
-                val localPath = args.inputs[1]
-                val sampleRate = args.sampleRate!!
-
-                inputArguments += "-f" to "s16le"
-                inputArguments += "-ar" to sampleRate.toString()
-                inputArguments += "-ac" to "1"
-                inputArguments += "-i" to remotePath
-
-                inputArguments += "-f" to "s16le"
-                inputArguments += "-ar" to sampleRate.toString()
-                inputArguments += "-ac" to "1"
-                inputArguments += "-i" to localPath
-
-                outputArguments += "-filter_complex" to "\"[0:a][1:a]amerge=inputs=2[a]\""
-                outputArguments += "-map" to "\"[a]\""
-            }
             Action.DOWNLOAD_DASH -> {
                 outputArguments += "-ss" to "'${args.startTime}ms'"
                 if (args.duration != null) {
