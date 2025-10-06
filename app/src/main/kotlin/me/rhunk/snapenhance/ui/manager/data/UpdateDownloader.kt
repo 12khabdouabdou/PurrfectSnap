@@ -15,15 +15,6 @@ import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
 
 object UpdateDownloader {
-    enum class DownloadState {
-        IDLE,
-        DOWNLOADING,
-        COMPLETED,
-        FAILED
-    }
-
-    val downloadState = MutableStateFlow(DownloadState.IDLE)
-    val downloadProgress = MutableStateFlow(0f)
     private var fetch: Fetch? = null
     private var listener: FetchListener? = null
 
@@ -42,6 +33,16 @@ object UpdateDownloader {
         }
         return fetch!!
     }
+    enum class DownloadState {
+        IDLE,
+        DOWNLOADING,
+        COMPLETED,
+        FAILED
+    }
+
+    val downloadState = MutableStateFlow(DownloadState.IDLE)
+    val downloadProgress = MutableStateFlow(0f)
+
 
     private fun unzip(zipFile: File, targetDirectory: File) {
         ZipInputStream(zipFile.inputStream()).use { zis ->

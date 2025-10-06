@@ -1,6 +1,9 @@
 -dontwarn de.robv.android.xposed.**
 -dontwarn org.mozilla.javascript.**
 
+-keep class com.tonyodev.fetch2.** { *; }
+-keep class com.tonyodev.fetch2core.** { *; }
+
 -keep enum * { *; }
 
 -keep class com.android.tools.smali.dexlib2.** { *; }

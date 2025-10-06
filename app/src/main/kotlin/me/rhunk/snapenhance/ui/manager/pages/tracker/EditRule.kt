@@ -111,8 +111,7 @@ class EditRule : Routes.Route() {
             Card {
                 Column(
                     Modifier
-                        .padding(16.dp)
-                        .width(IntrinsicSize.Max)) {
+                        .padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Add Event", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
                         IconButton(onClick = onDismissRequest) {
@@ -120,23 +119,16 @@ class EditRule : Routes.Route() {
                         }
                     }
                     Spacer(Modifier.height(16.dp))
-                    ExposedDropdownMenuBox(
-                        expanded = expanded.value,
-                        onExpandedChange = { expanded.value = !expanded.value },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextField(
-                            modifier = Modifier.fillMaxWidth(),
-                            value = context.translation["tracker_events.${currentEventType.value}"],
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Event type") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded.value) },
-                        )
-                        ExposedDropdownMenu(
+                    Column {
+                        OutlinedButton(
+                            onClick = { expanded.value = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(context.translation["tracker_events.${currentEventType.value}"])
+                        }
+                        DropdownMenu(
                             expanded = expanded.value,
-                            onDismissRequest = { expanded.value = false },
-                            modifier = Modifier.width(IntrinsicSize.Max)
+                            onDismissRequest = { expanded.value = false }
                         ) {
                             TrackerEventType.entries.forEach { eventType ->
                                 DropdownMenuItem(

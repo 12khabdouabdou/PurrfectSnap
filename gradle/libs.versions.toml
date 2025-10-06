@@ -74,6 +74,3 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 rust-android = { id = "org.mozilla.rust-android-gradle.rust-android", version.ref = "rust-android" }
 
 [bundles]
-
-
-

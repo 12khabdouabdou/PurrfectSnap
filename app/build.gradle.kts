@@ -206,4 +206,3 @@ properties["debug_flavor"]?.let {
         exclude(group = "androidx.profileinstaller", "profileinstaller")
     }
 }
-
