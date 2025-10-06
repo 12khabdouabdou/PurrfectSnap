@@ -60,24 +60,26 @@ class AutoMarkAsRead : Feature("Auto Mark As Read") {
             return
         }
 
-        var job: Job? = null
-        val dialog = ViewAppearanceHelper.newAlertDialogBuilder(context.mainActivity)
-            .setTitle("Processing...")
-            .setView(ProgressBar(context.mainActivity).apply {
+        val dialog = ViewAppearanceHelper.newAlertDialogBuilder(context.mainActivity).apply {
+            setTitle("Processing...")
+            setView(ProgressBar(context.mainActivity).apply {
                 setPadding(10, 10, 10, 10)
             })
-            .setOnDismissListener { job?.cancel() }
-            .show()
+        }.show()
 
-        context.coroutineScope.launch(Dispatchers.IO) {
-            messageIds.forEach { messageId ->
+        val job = context.coroutineScope.launch(Dispatchers.IO) {
+            messageIds.forEachIndexed { index, messageId ->
                 markSnapAsSeen(conversationId, messageId)
                 delay(Random.nextLong(20, 60))
-                context.runOnUiThread {
-                    dialog.setTitle("Processing... (${messageIds.indexOf(messageId) + 1}/${messageIds.size})")
+                launch(Dispatchers.Main) {
+                    dialog.setTitle("Processing... (${index + 1}/${messageIds.size})")
                 }
             }
-        }.also { job = it }.invokeOnCompletion {
+        }
+
+        dialog.setOnDismissListener { job.cancel() }
+
+        job.invokeOnCompletion {
             context.runOnUiThread {
                 dialog.dismiss()
             }
