@@ -37,6 +37,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -52,6 +53,28 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 class FeaturesRootSection : Routes.Route() {
+    override val title: @Composable (() -> Unit)? = @Composable {
+        val navBackStackEntry by routes.navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+
+        val titleText = when (currentDestination?.route) {
+            FEATURE_CONTAINER_ROUTE -> {
+                navBackStackEntry?.arguments?.getString("name")?.let { containerName ->
+                    allContainers[containerName]?.let {
+                        context.translation[it.key.propertyName()]
+                    }
+                } ?: routeInfo.translatedKey?.value
+            }
+            SEARCH_FEATURE_ROUTE -> {
+                translation["search_button"] ?: "Search"
+            }
+            else -> {
+                routeInfo.translatedKey?.value
+            }
+        }
+        Text(titleText ?: "")
+    }
+
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
 
     companion object {
