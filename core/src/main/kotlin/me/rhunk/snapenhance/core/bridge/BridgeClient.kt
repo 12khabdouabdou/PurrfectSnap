@@ -255,6 +255,10 @@ class BridgeClient(
 
     fun setScopeNotes(id: String, content: String?) = safeServiceCall { service.setScopeNotes(id, content) }
 
+    fun getAllScopeNotes(): Map<String, String> = safeServiceCall { service.getAllScopeNotes() }
+
+    fun setAllScopeNotes(notes: Map<String, String>) = safeServiceCall { service.setAllScopeNotes(notes) }
+
     fun getScriptingInterface(): IScripting = safeServiceCall { service.scriptingInterface }
 
     fun getE2eeInterface(): E2eeInterface = safeServiceCall { service.e2eeInterface }

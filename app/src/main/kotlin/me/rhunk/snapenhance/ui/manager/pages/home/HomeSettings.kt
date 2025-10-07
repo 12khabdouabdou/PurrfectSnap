@@ -24,6 +24,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.action.EnumAction
 import me.rhunk.snapenhance.common.bridge.InternalFileHandleType
@@ -31,17 +36,15 @@ import me.rhunk.snapenhance.common.ui.ThemeChooserDialog
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableState
+import me.rhunk.snapenhance.storage.getAllScopeNotes
+import me.rhunk.snapenhance.storage.setAllScopeNotes
+import me.rhunk.snapenhance.task.UpdateCheckWorker
 import me.rhunk.snapenhance.ui.manager.Routes
 import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
+import me.rhunk.snapenhance.ui.util.openFile
 import me.rhunk.snapenhance.ui.util.saveFile
-import androidx.work.WorkManager
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import me.rhunk.snapenhance.task.UpdateCheckWorker
 import java.util.concurrent.TimeUnit
 
 class HomeSettings : Routes.Route() {
@@ -426,6 +429,67 @@ class HomeSettings : Routes.Route() {
                     }
                 }
             }
+
+            RowTitle(title = translation["friend_notes_title"])
+            ShiftedRow {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp)
+                    ) {
+                        Text(
+                            text = translation["friend_notes_description"],
+                            modifier = Modifier.weight(1f)
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = {
+                                runCatching {
+                                    val notes = context.database.getAllScopeNotes()
+                                    if (notes.isEmpty()) {
+                                        context.shortToast(translation["friend_notes_no_notes_to_backup"])
+                                        return@runCatching
+                                    }
+                                    val json = context.gson.toJson(notes)
+                                    activityLauncherHelper.saveFile("friend_notes_backup.json", "application/json") { uri ->
+                                        context.androidContext.contentResolver.openOutputStream(uri.toUri())?.use {
+                                            it.write(json.toByteArray())
+                                        }
+                                        context.shortToast(translation["friend_notes_backup_success"])
+                                    }
+                                }.onFailure {
+                                    context.log.error("Failed to backup notes", it)
+                                    context.longToast(translation.format("friend_notes_backup_failure", "error" to (it.localizedMessage ?: "")))
+                                }
+                            }) {
+                                Text(text = translation["backup_button"])
+                            }
+                            Button(onClick = {
+                                runCatching {
+                                    activityLauncherHelper.openFile("application/json") { uri ->
+                                        context.androidContext.contentResolver.openInputStream(uri.toUri())?.use {
+                                            val json = it.reader().readText()
+                                            val notes = context.gson.fromJson<Map<String, String>>(json, object : com.google.gson.reflect.TypeToken<Map<String, String>>() {}.type)
+                                            context.database.setAllScopeNotes(notes)
+                                            context.shortToast(translation["friend_notes_restore_success"])
+                                        }
+                                    }
+                                }.onFailure {
+                                    context.log.error("Failed to restore notes", it)
+                                    context.longToast(translation.format("friend_notes_restore_failure", "error" to (it.localizedMessage ?: "")))
+                                }
+                            }) {
+                                Text(text = translation["restore_button"])
+                            }
+                        }
+                    }
+                }
+            }
+
             RowTitle(title = translation["debug_title"])
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
