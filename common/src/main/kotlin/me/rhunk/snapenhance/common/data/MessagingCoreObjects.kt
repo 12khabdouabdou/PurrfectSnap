@@ -48,6 +48,7 @@ enum class MessagingRuleType(
     val configNotices: Array<FeatureNotice> = emptyArray()
 ) {
     STEALTH("stealth", true, Icons.Outlined.TrackChanges),
+    HIDE_TYPING_INDICATOR("hide_typing_indicator", true, Icons.Outlined.KeyboardHide, defaultValue = "whitelist"),
     AUTO_DOWNLOAD("auto_download", true, Icons.Outlined.DownloadForOffline),
     AUTO_SAVE("auto_save", true, Icons.Outlined.Save, defaultValue = "blacklist"),
     AUTO_OPEN_SNAPS("auto_open_snaps", true, Icons.Outlined.OpenInFull, configNotices = arrayOf(FeatureNotice.BAN_RISK, FeatureNotice.UNSTABLE), defaultValue = null),
