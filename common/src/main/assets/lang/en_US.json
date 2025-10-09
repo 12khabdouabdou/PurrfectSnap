@@ -354,6 +354,9 @@
     },
 
     "features": {
+        "friend_notes": {
+            "placeholder": "Click to add a note"
+        },
         "notices": {
             "unstable": "\u26A0 Unstable",
             "ban_risk": "\u26A0 This feature may cause bans",

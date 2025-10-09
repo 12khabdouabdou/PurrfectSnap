@@ -162,7 +162,7 @@ class ManageScope: Routes.Route() {
         EditNoteTextField(
             modifier = Modifier.padding(8.dp),
             primaryColor = Color.White,
-            translation = context.translation,
+            placeholder = context.translation["manager.sections.manage_scope.notes_placeholder"],
             content = scopeNotes,
             setContent = { scopeNotes = it }
         )
