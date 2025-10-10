@@ -2,12 +2,13 @@ package me.rhunk.snapenhance.core.features.impl.tweaks
 
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.ui.showToast
 import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookAdapter
 import me.rhunk.snapenhance.core.util.hook.HookStage
@@ -49,7 +50,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { mkdirs() }
                         try {
                             withContext(Dispatchers.Main) {
-                                showToast("Processing video...")
+                                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Processing video...")
                             }
 
                             val contentUriStr = item.getObjectField("contentUri")?.toString() ?: throw IllegalStateException("Content URI not found")
@@ -88,21 +89,24 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                     val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toDoubleOrNull() ?: 1920.0
 
                                     newItem = item.dataBuilder {
-                                        from(item)
                                         set("contentUri", chunkUri.toString())
                                         set("durationMs", chunkDuration.toDouble())
                                         set("width", chunkWidth)
                                         set("height", chunkHeight)
-                                        from("itemId") {
+                                        // copy other fields from original item
+                                        set("type", item.getObjectField("type"))
+                                        set("encryptionInfo", item.getObjectField("encryptionInfo"))
+                                        from("itemId", new = true) {
                                             set("itemId", chunkUri.toString())
                                         }
-                                    }.build()
+                                    }.build()!!
 
                                     newMediaItem = mediaItem.dataBuilder {
-                                        from(mediaItem)
                                         set("item", newItem)
                                         set("order", index.toDouble())
-                                    }.build()
+                                        //copy other fields from original mediaItem
+                                        set("thumbnail", mediaItem.getObjectField("thumbnail"))
+                                    }.build()!!
                                 } finally {
                                     retriever.release()
                                 }
@@ -113,7 +117,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         } catch (e: Exception) {
                             context.log.error("Failed to split and send video", e)
                             withContext(Dispatchers.Main) {
-                                showToast("Failed to process video.")
+                                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Failed to process video.")
                             }
                         } finally {
                             tempDir.deleteRecursively()
