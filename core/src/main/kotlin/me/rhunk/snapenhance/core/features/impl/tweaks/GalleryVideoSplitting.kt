@@ -7,11 +7,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
+import me.rhunk.snapenhance.core.ui.showToast
 import me.rhunk.snapenhance.core.util.dataBuilder
+import me.rhunk.snapenhance.core.util.hook.HookAdapter
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import java.io.File
+import java.lang.reflect.Method
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
@@ -19,38 +22,37 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
     override fun init() {
         val actionHandlerClass = findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
-        val sendItemsMethod = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
+        val sendItemsMethod = action_handler_class.methods.firstOrNull { it.name == "sendItems" }
             ?: run {
                 context.log.error("Could not find sendItems method, feature disabled.")
                 return
             }
 
-        hook(sendItemsMethod, HookStage.BEFORE) { param ->
+        hook(sendItemsMethod, HookStage.BEFORE) { param: HookAdapter ->
             if (isSplitting || !context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
                 return@hook
             }
 
-            runCatching {
-                val mediaItems = param.arg<List<*>>(1)
-                if (mediaItems.size != 1) return@runCatching
+            try {
+                val mediaItems = param.arg<List<Any?>>(1)
+                if (mediaItems.size != 1) return@hook
 
-                val mediaItem = mediaItems.firstOrNull() ?: return@runCatching
-                val item = mediaItem.getObjectField<Any>("item") ?: return@runCatching
-                val itemType = item.getObjectField<Any>("type")?.toString()
+                val mediaItem = mediaItems.first() ?: return@hook
+                val item = mediaItem.getObjectField("item") ?: return@hook
+                val itemType = item.getObjectField("type")?.toString()
 
                 if (itemType == "VIDEO") {
-                    // Cancel original call
-                    param.setResult(null)
+                    param.setResult(null) // Cancel original call
 
                     context.coroutineScope.launch {
                         isSplitting = true
                         val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { mkdirs() }
                         try {
                             withContext(Dispatchers.Main) {
-                                context.inAppOverlay.showToast("Processing video...")
+                                showToast("Processing video...")
                             }
 
-                            val contentUriStr = item.getObjectField<Any>("contentUri")?.toString() ?: throw IllegalStateException("Content URI not found")
+                            val contentUriStr = item.getObjectField("contentUri")?.toString() ?: throw IllegalStateException("Content URI not found")
                             val mediaUri = Uri.parse(contentUriStr)
                             val cachedVideo = File(tempDir, "input.mp4")
 
@@ -76,37 +78,42 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             for ((index, file) in outputFiles.withIndex()) {
                                 val chunkUri = Uri.fromFile(file)
                                 val retriever = MediaMetadataRetriever()
-                                retriever.setDataSource(context.androidContext, chunkUri)
-                                val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
-                                val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toDoubleOrNull() ?: 1080.0
-                                val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toDoubleOrNull() ?: 1920.0
-                                retriever.release()
+                                val newItem: Any
+                                val newMediaItem: Any
 
-                                val newItem = item::class.java.dataBuilder {
-                                    from(item)
-                                    set("contentUri", chunkUri)
-                                    set("durationMs", chunkDuration.toDouble())
-                                    set("width", chunkWidth)
-                                    set("height", chunkHeight)
-                                    from("itemId") {
-                                        set("itemId", chunkUri.toString())
+                                try {
+                                    retriever.setDataSource(context.androidContext, chunkUri)
+                                    val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                                    val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toDoubleOrNull() ?: 1080.0
+                                    val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toDoubleOrNull() ?: 1920.0
+
+                                    newItem = item.dataBuilder {
+                                        from(item)
+                                        set("contentUri", chunkUri)
+                                        set("durationMs", chunkDuration.toDouble())
+                                        set("width", chunkWidth)
+                                        set("height", chunkHeight)
+                                        from("itemId") {
+                                            set("itemId", chunkUri.toString())
+                                        }
                                     }
-                                }.build()
 
-                                val newMediaItem = mediaItem::class.java.dataBuilder {
-                                    from(mediaItem)
-                                    set("item", newItem)
-                                    set("order", index.toDouble())
-                                }.build()
+                                    newMediaItem = mediaItem.dataBuilder {
+                                        from(mediaItem)
+                                        set("item", newItem)
+                                        set("order", index.toDouble())
+                                    }
+                                } finally {
+                                    retriever.release()
+                                }
 
-                                // Invoke the original method for each chunk
-                                sendItemsMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
+                                (sendItemsMethod as Method).invoke(actionHandler, conversationIds, listOf(newMediaItem))
                                 delay(500)
                             }
                         } catch (e: Exception) {
                             context.log.error("Failed to split and send video", e)
                             withContext(Dispatchers.Main) {
-                                context.inAppOverlay.showToast("Failed to process video.")
+                                showToast("Failed to process video.")
                             }
                         } finally {
                             tempDir.deleteRecursively()
@@ -114,8 +121,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         }
                     }
                 }
-            }.onFailure {
-                context.log.error("Error in GalleryVideoSplitting hook", it)
+            } catch (e: Exception) {
+                context.log.error("Error in GalleryVideoSplitting hook", e)
             }
         }
     }
