@@ -84,6 +84,7 @@ class RemoteSideContext(
     val remoteOverlay = RemoteOverlay(this)
     val e2eeImplementation = E2EEImplementation(this)
     val messageLogger by lazy { LoggerWrapper(androidContext) }
+    val friendMutationLogger by lazy { me.rhunk.snapenhance.common.bridge.wrapper.FriendMutationLoggerWrapper(androidContext) }
     val tracker = RemoteTracker(this)
     val accountStorage = RemoteAccountStorage(this)
     val locationManager = RemoteLocationManager(this)

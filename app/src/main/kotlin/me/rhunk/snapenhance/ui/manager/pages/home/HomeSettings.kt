@@ -422,7 +422,7 @@ class HomeSettings : Routes.Route() {
                             .fillMaxWidth()
                             .padding(5.dp),
                         onClick = {
-                            routes.loggerHistory.navigate()
+                            routes.messageLogger.navigate()
                         }
                     ) {
                         Text(translation["view_logger_history_button"])

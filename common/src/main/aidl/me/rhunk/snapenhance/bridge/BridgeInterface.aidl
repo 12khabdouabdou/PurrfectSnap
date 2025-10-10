@@ -5,6 +5,7 @@ import me.rhunk.snapenhance.bridge.DownloadCallback;
 import me.rhunk.snapenhance.bridge.SyncCallback;
 import me.rhunk.snapenhance.bridge.scripting.IScripting;
 import me.rhunk.snapenhance.bridge.e2ee.E2eeInterface;
+import me.rhunk.snapenhance.bridge.logger.FriendMutationLoggerInterface;
 import me.rhunk.snapenhance.bridge.logger.LoggerInterface;
 import me.rhunk.snapenhance.bridge.logger.TrackerInterface;
 import me.rhunk.snapenhance.bridge.ConfigStateListener;
@@ -84,6 +85,8 @@ interface BridgeInterface {
     E2eeInterface getE2eeInterface();
 
     LoggerInterface getLogger();
+
+    FriendMutationLoggerInterface getFriendMutationLogger();
 
     TrackerInterface getTracker();
 

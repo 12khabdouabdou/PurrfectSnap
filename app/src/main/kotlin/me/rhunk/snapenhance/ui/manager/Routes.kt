@@ -13,7 +13,8 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import me.rhunk.snapenhance.RemoteSideContext
 import me.rhunk.snapenhance.ui.manager.pages.FileImportsRoot
-import me.rhunk.snapenhance.ui.manager.pages.LoggerHistoryRoot
+import me.rhunk.snapenhance.ui.manager.pages.FriendMutationLoggerView
+import me.rhunk.snapenhance.ui.manager.pages.MessageLoggerView
 import me.rhunk.snapenhance.ui.manager.pages.ManageReposSection
 import me.rhunk.snapenhance.ui.manager.pages.TasksRootSection
 import me.rhunk.snapenhance.ui.manager.pages.features.FeaturesRootSection
@@ -76,7 +77,8 @@ class Routes(
     val home = route(RouteInfo("home", icon = Icons.Default.Home, primary = true), HomeRootSection())
     val settings = route(RouteInfo("home_settings"), HomeSettings()).parent(home)
     val homeLogs = route(RouteInfo("home_logs"), HomeLogs()).parent(home)
-    val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
+    val messageLogger = route(RouteInfo("message_logger"), MessageLoggerView()).parent(home)
+    val friendMutationLogger = route(RouteInfo("friend_mutation_logger"), FriendMutationLoggerView()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker", icon = Icons.Default.PersonSearch), FriendTrackerManagerRoot()).parent(home)
     val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}", hasOwnTopBar = true), EditRule())
     val friendTrackerConfigExport = route(RouteInfo(FRIEND_TRACKER_CONFIG_EXPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen())

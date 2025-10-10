@@ -137,6 +137,21 @@ class HomeLogs : Routes.Route() {
                 contentPadding = PaddingValues(bottom = routes.bottomPadding)
             ) {
                 item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(onClick = { routes.messageLogger.navigate() }) {
+                            Text("Message Logger")
+                        }
+                        Button(onClick = { routes.friendMutationLogger.navigate() }) {
+                            Text("Friend Mutation Logger")
+                        }
+                    }
+                }
+                item {
                     if (lineCount == 0 && logReader != null) {
                         Text(
                             text = translation["no_logs_hint"],

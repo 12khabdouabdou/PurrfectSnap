@@ -18,7 +18,7 @@ enum class EnumQuickActions(
     FRIEND_TRACKER("friend_tracker", Icons.Default.PersonSearch, {
         friendTracker.navigateReset()
     }),
-    LOGGER_HISTORY("logger_history", Icons.Default.History, {
-        loggerHistory.navigateReset()
+    MESSAGE_LOGGER("message_logger", Icons.Default.History, {
+        messageLogger.navigateReset()
     }),
 }

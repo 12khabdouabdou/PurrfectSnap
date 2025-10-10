@@ -8,15 +8,16 @@ import androidx.compose.material.icons.filled.WarningAmber
 import com.google.gson.JsonObject
 import me.rhunk.snapenhance.common.data.FriendLinkType
 import me.rhunk.snapenhance.common.database.impl.FriendInfo
+import me.rhunk.snapenhance.common.util.lazyBridge
 import me.rhunk.snapenhance.core.event.events.impl.NetworkApiRequestEvent
 import me.rhunk.snapenhance.core.features.Feature
-
 import me.rhunk.snapenhance.core.util.EvictingMap
 import java.io.InputStreamReader
 import java.util.Calendar
 
 class FriendMutationObserver: Feature("FriendMutationObserver") {
     private val translation by lazy { context.translation.getCategory("friend_mutation_observer") }
+    private val logger by lazyBridge { context.bridgeClient.getFriendMutationLogger() }
     private val addSourceCache = EvictingMap<String, String>(500)
 
     private val notificationManager by lazy { context.androidContext.getSystemService(NotificationManager::class.java) }
@@ -102,7 +103,9 @@ class FriendMutationObserver: Feature("FriendMutationObserver") {
                             if (FriendLinkType.fromValue(databaseFriend.friendLinkType) != FriendLinkType.MUTUAL) return@forEach
 
                             if (config.contains("remove_friend") && friend.get("direction")?.asString == "OUTGOING" && !friend.has("fidelius_info")) {
-                                sendWarnNotification(translation.format("friend_removed", "username" to formatUsername(databaseFriend)))
+                                val friendName = formatUsername(databaseFriend)
+                                logger.logFriendMutation("friend_removed", friendName, "Friend removed you")
+                                sendWarnNotification(translation.format("friend_removed", "username" to friendName))
                                 return@forEach
                             }
 
@@ -115,34 +118,56 @@ class FriendMutationObserver: Feature("FriendMutationObserver") {
                                     prettyPrintBirthday((it shr 32).toInt() - 1, it.toInt())
                                 }
 
+                                val friendName = formatUsername(databaseFriend)
                                 if (!friend.has("birthday")) {
-                                    sendWarnNotification(translation.format("birthday_removed", "username" to formatUsername(databaseFriend), "birthday" to oldBirthday.orEmpty()))
+                                    val details = JsonObject().apply {
+                                        addProperty("old", oldBirthday.orEmpty())
+                                    }
+                                    logger.logFriendMutation("birthday_removed", friendName, context.gson.toJson(details))
+                                    sendWarnNotification(translation.format("birthday_removed", "username" to friendName, "birthday" to oldBirthday.orEmpty()))
                                 } else {
                                     val newBirthday = friend.get("birthday")?.asString?.split("-")?.let {
                                         prettyPrintBirthday(it[0].toInt() - 1, it[1].toInt())
                                     }
                                     if (oldBirthday == null) {
-                                        sendWarnNotification(translation.format("birthday_added", "username" to formatUsername(databaseFriend), "birthday" to newBirthday.orEmpty()))
+                                        val details = JsonObject().apply {
+                                            addProperty("new", newBirthday.orEmpty())
+                                        }
+                                        logger.logFriendMutation("birthday_added", friendName, context.gson.toJson(details))
+                                        sendWarnNotification(translation.format("birthday_added", "username" to friendName, "birthday" to newBirthday.orEmpty()))
                                     } else {
-                                        sendWarnNotification(translation.format("birthday_changed", "username" to formatUsername(databaseFriend), "oldBirthday" to oldBirthday, "newBirthday" to newBirthday.orEmpty()))
+                                        val details = JsonObject().apply {
+                                            addProperty("old", oldBirthday)
+                                            addProperty("new", newBirthday.orEmpty())
+                                        }
+                                        logger.logFriendMutation("birthday_changed", friendName, context.gson.toJson(details))
+                                        sendWarnNotification(translation.format("birthday_changed", "username" to friendName, "oldBirthday" to oldBirthday, "newBirthday" to newBirthday.orEmpty()))
                                     }
                                 }
                             }
 
                             if (config.contains("bitmoji_avatar_changes") && databaseFriend.bitmojiAvatarId != friend.get("bitmoji_avatar_id")?.asString) {
-                                sendWarnNotification(translation.format("bitmoji_avatar_changed", "username" to formatUsername(databaseFriend)))
+                                val friendName = formatUsername(databaseFriend)
+                                logger.logFriendMutation("bitmoji_avatar_changed", friendName, "Bitmoji avatar changed")
+                                sendWarnNotification(translation.format("bitmoji_avatar_changed", "username" to friendName))
                             }
 
                             if (config.contains("bitmoji_selfie_changes") && databaseFriend.bitmojiSelfieId != friend.get("bitmoji_selfie_id")?.asString) {
-                                sendWarnNotification(translation.format("bitmoji_selfie_changed", "username" to formatUsername(databaseFriend)))
+                                val friendName = formatUsername(databaseFriend)
+                                logger.logFriendMutation("bitmoji_selfie_changed", friendName, "Bitmoji selfie changed")
+                                sendWarnNotification(translation.format("bitmoji_selfie_changed", "username" to friendName))
                             }
 
                             if (config.contains("bitmoji_background_changes") && databaseFriend.bitmojiBackgroundId != friend.get("bitmoji_background_id")?.asString) {
-                                sendWarnNotification(translation.format("bitmoji_background_changed", "username" to formatUsername(databaseFriend)))
+                                val friendName = formatUsername(databaseFriend)
+                                logger.logFriendMutation("bitmoji_background_changed", friendName, "Bitmoji background changed")
+                                sendWarnNotification(translation.format("bitmoji_background_changed", "username" to friendName))
                             }
 
                             if (config.contains("bitmoji_scene_changes") && databaseFriend.bitmojiSceneId != friend.get("bitmoji_scene_id")?.asString) {
-                                sendWarnNotification(translation.format("bitmoji_scene_changed", "username" to formatUsername(databaseFriend)))
+                                val friendName = formatUsername(databaseFriend)
+                                logger.logFriendMutation("bitmoji_scene_changed", friendName, "Bitmoji scene changed")
+                                sendWarnNotification(translation.format("bitmoji_scene_changed", "username" to friendName))
                             }
                         }.onFailure {
                             context.log.error("Failed to process friend", it)

@@ -209,6 +209,7 @@ class BridgeService : Service() {
 
         override fun getE2eeInterface() = remoteSideContext.e2eeImplementation
         override fun getLogger() = remoteSideContext.messageLogger
+        override fun getFriendMutationLogger() = remoteSideContext.friendMutationLogger
         override fun getTracker() = remoteSideContext.tracker
         override fun getAccountStorage() = remoteSideContext.accountStorage
         override fun getFileHandleManager() = remoteSideContext.fileHandleManager

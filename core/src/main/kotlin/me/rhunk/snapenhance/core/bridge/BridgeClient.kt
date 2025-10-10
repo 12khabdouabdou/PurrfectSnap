@@ -16,6 +16,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import me.rhunk.snapenhance.bridge.*
 import me.rhunk.snapenhance.bridge.e2ee.E2eeInterface
 import me.rhunk.snapenhance.bridge.location.LocationManager
+import me.rhunk.snapenhance.bridge.logger.FriendMutationLoggerInterface
 import me.rhunk.snapenhance.bridge.logger.LoggerInterface
 import me.rhunk.snapenhance.bridge.logger.TrackerInterface
 import me.rhunk.snapenhance.bridge.scripting.IScripting
@@ -264,6 +265,8 @@ class BridgeClient(
     fun getE2eeInterface(): E2eeInterface = safeServiceCall { service.e2eeInterface }
 
     fun getMessageLogger(): LoggerInterface = safeServiceCall { service.logger }
+
+    fun getFriendMutationLogger(): FriendMutationLoggerInterface = safeServiceCall { service.friendMutationLogger }
 
     fun getTracker(): TrackerInterface = safeServiceCall { service.tracker }
 

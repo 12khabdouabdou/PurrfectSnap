@@ -108,11 +108,13 @@ android {
     sourceSets["main"].jniLibs.srcDir("build/rustJniLibs/android")
 }
 
+val rustupTasks = mutableListOf<org.gradle.api.tasks.TaskProvider<Exec>>()
 val syncTasks = cargoTargets.map { target ->
     val rustupTask = tasks.register<Exec>("rustup${target.taskSuffix}") {
         workingDir = file("rust")
         commandLine("rustup", "target", "add", target.triple)
     }
+    rustupTasks.add(rustupTask)
 
     val cargoTask = tasks.register<Exec>("cargoBuild${target.taskSuffix}") {
         group = "build"
@@ -142,6 +144,12 @@ val syncTasks = cargoTargets.map { target ->
             rename { outputLibName }
         }
         into(layout.buildDirectory.dir("rustJniLibs/android/${target.abi}"))
+    }
+}
+
+for (i in 1 until rustupTasks.size) {
+    rustupTasks[i].configure {
+        mustRunAfter(rustupTasks[i - 1])
     }
 }
 

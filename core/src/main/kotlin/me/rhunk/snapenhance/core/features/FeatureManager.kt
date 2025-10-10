@@ -12,6 +12,7 @@ import me.rhunk.snapenhance.core.features.impl.experiments.*
 import me.rhunk.snapenhance.core.features.impl.global.*
 import me.rhunk.snapenhance.core.features.impl.messaging.*
 import me.rhunk.snapenhance.core.features.impl.spying.FriendTracker
+import me.rhunk.snapenhance.core.features.impl.spying.FriendMutationLogger
 import me.rhunk.snapenhance.core.features.impl.spying.HalfSwipeNotifier
 import me.rhunk.snapenhance.core.features.impl.spying.MessageLogger
 import me.rhunk.snapenhance.core.features.impl.spying.StealthMode
@@ -64,6 +65,7 @@ class FeatureManager(
 
     fun init() {
         register(
+            FriendMutationLogger(),
             Debug(),
             EndToEndEncryption(),
             ScopeSync(),
