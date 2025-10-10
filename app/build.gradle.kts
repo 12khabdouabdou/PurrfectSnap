@@ -127,7 +127,6 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.gson)
     implementation(libs.smart.exception.java)
-    implementation(files("libs/ffmpeg-kit-full-gpl-6.0-2.LTS.aar"))
     implementation(libs.osmdroid.android)
     implementation(libs.rhino)
     implementation(libs.androidx.activity.ktx)

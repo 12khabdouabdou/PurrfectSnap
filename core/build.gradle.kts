@@ -29,7 +29,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.documentfile)
     implementation(libs.rhino)
-    implementation("com.arthenica:ffmpeg-kit-full:6.0-2")
 
     implementation(project(":common"))
     implementation(project(":mapper"))
