@@ -27,6 +27,8 @@ import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.bridge.wrapper.FriendMutationLog
 import me.rhunk.snapenhance.common.bridge.wrapper.FriendMutationLoggerWrapper
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
+import me.rhunk.snapenhance.ui.util.openFile
+import me.rhunk.snapenhance.ui.util.saveFile
 import java.text.DateFormat
 
 class FriendMutationLoggerView : LoggerView<FriendMutationLog>() {
@@ -50,7 +52,7 @@ class FriendMutationLoggerView : LoggerView<FriendMutationLog>() {
             onDismissRequest = { showDropDown = false }
         ) {
             DropdownMenuItem(onClick = {
-                activityLauncherHelper.saveFile("friend_mutation_logs.json", "application/json") { uri ->
+                activityLauncherHelper.saveFile("friend_mutation_logs.json", "application/json") { uri: String ->
                     context.coroutineScope.launch {
                         val logs = loggerWrapper.getAllLogs()
                         val json = context.gson.toJson(logs)
@@ -65,7 +67,7 @@ class FriendMutationLoggerView : LoggerView<FriendMutationLog>() {
                 Text("Export")
             })
             DropdownMenuItem(onClick = {
-                activityLauncherHelper.openFile("application/json") { uri ->
+                activityLauncherHelper.openFile("application/json") { uri: String ->
                     context.coroutineScope.launch {
                         val json = context.androidContext.contentResolver.openInputStream(uri.toUri())?.reader()?.readText()
                         val logs = context.gson.fromJson<List<FriendMutationLog>>(json, object : com.google.gson.reflect.TypeToken<List<FriendMutationLog>>() {}.type)
