@@ -146,6 +146,7 @@ class FeatureManager(
             DisableSnapModeRestrictions(),
             PreventForcedKeyboard(),
             CustomTheming(),
+            GalleryVideoSplitting(),
         )
 
         features.values.toList().forEach { feature ->

@@ -751,6 +751,10 @@
                         "name": "Gallery Media Send Override",
                         "description": "Spoofs the media source when sending from the Gallery"
                     },
+                    "split_video_into_ten_second_snaps": {
+                        "name": "Split Video Into 10-Second Snaps",
+                        "description": "Splits videos sent from the gallery into 10-second snaps, just like normal snaps."
+                    },
                     "strip_media_metadata": {
                         "name": "Strip Media Metadata",
                         "description": "Removes metadata of media before sending as a message"
