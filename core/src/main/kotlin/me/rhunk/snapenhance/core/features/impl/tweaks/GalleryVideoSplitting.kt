@@ -23,13 +23,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
     override fun init() {
         val actionHandlerClass = findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
-        val sendItemsMethod = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
+        val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
             ?: run {
                 context.log.error("Could not find sendItems method, feature disabled.")
                 return
             }
 
-        hook(sendItemsMethod, HookStage.BEFORE) { param: HookAdapter ->
+        sendItemsMethod.hook(HookStage.BEFORE) { param ->
             if (isSplitting || !context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
                 return@hook
             }
@@ -79,8 +79,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             for ((index, file) in outputFiles.withIndex()) {
                                 val chunkUri = Uri.fromFile(file)
                                 val retriever = MediaMetadataRetriever()
-                                val newItem: Any
-                                val newMediaItem: Any
+                                val newItem: Any?
+                                val newMediaItem: Any?
 
                                 try {
                                     retriever.setDataSource(context.androidContext, chunkUri)
@@ -88,30 +88,28 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                     val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toDoubleOrNull() ?: 1080.0
                                     val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toDoubleOrNull() ?: 1920.0
 
-                                    newItem = item.dataBuilder {
+                                    newItem = item.javaClass.dataBuilder {
+                                        set("type", item.getObjectField("type"))
+                                        set("encryptionInfo", item.getObjectField("encryptionInfo"))
                                         set("contentUri", chunkUri.toString())
                                         set("durationMs", chunkDuration.toDouble())
                                         set("width", chunkWidth)
                                         set("height", chunkHeight)
-                                        // copy other fields from original item
-                                        set("type", item.getObjectField("type"))
-                                        set("encryptionInfo", item.getObjectField("encryptionInfo"))
                                         from("itemId", new = true) {
                                             set("itemId", chunkUri.toString())
                                         }
-                                    }.build()!!
+                                    }
 
-                                    newMediaItem = mediaItem.dataBuilder {
+                                    newMediaItem = mediaItem.javaClass.dataBuilder {
+                                        set("thumbnail", mediaItem.getObjectField("thumbnail"))
                                         set("item", newItem)
                                         set("order", index.toDouble())
-                                        //copy other fields from original mediaItem
-                                        set("thumbnail", mediaItem.getObjectField("thumbnail"))
-                                    }.build()!!
+                                    }
                                 } finally {
                                     retriever.release()
                                 }
 
-                                (sendItemsMethod as Method).invoke(actionHandler, conversationIds, listOf(newMediaItem))
+                                sendItemsMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
                                 delay(500)
                             }
                         } catch (e: Exception) {
