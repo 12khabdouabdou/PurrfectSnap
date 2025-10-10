@@ -22,7 +22,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
     override fun init() {
         val actionHandlerClass = findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
-        val sendItemsMethod = action_handler_class.methods.firstOrNull { it.name == "sendItems" }
+        val sendItemsMethod = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
             ?: run {
                 context.log.error("Could not find sendItems method, feature disabled.")
                 return
@@ -89,20 +89,20 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                                     newItem = item.dataBuilder {
                                         from(item)
-                                        set("contentUri", chunkUri)
+                                        set("contentUri", chunkUri.toString())
                                         set("durationMs", chunkDuration.toDouble())
                                         set("width", chunkWidth)
                                         set("height", chunkHeight)
                                         from("itemId") {
                                             set("itemId", chunkUri.toString())
                                         }
-                                    }
+                                    }.build()
 
                                     newMediaItem = mediaItem.dataBuilder {
                                         from(mediaItem)
                                         set("item", newItem)
                                         set("order", index.toDouble())
-                                    }
+                                    }.build()
                                 } finally {
                                     retriever.release()
                                 }
