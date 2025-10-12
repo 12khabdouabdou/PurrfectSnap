@@ -72,7 +72,7 @@ class FeaturesRootSection : Routes.Route() {
                 routeInfo.translatedKey?.value
             }
         }
-        Text(titleText ?: "")
+        Text(titleText ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
@@ -119,18 +119,6 @@ class FeaturesRootSection : Routes.Route() {
 
     private fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
         routes.activityLauncher.let(block)
-    }
-
-    override val title: @Composable () -> Unit = {
-        val navBackStackEntry by routes.navController.currentBackStackEntryAsState()
-        val text = remember(navBackStackEntry) {
-            navBackStackEntry?.arguments?.getString("name")?.let { containerName ->
-                allContainers[containerName]?.let {
-                    context.translation[it.key.propertyName()]
-                }
-            } ?: routeInfo.translatedKey?.value
-        }
-        text?.let { Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis) }
     }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
