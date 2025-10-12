@@ -72,7 +72,8 @@ class OperaViewerParamsOverride : Feature("OperaViewerParamsOverride") {
                 }
 
                 classReference.get()?.hookConstructor(HookStage.AFTER) { param ->
-                    ParamMap(param.thisObject()).paramMapField.set(param.thisObject(), object: ConcurrentHashMap<Any, Any>() {
+                    val paramMap = ParamMap(param.thisObject())
+                    val newMap = object : ConcurrentHashMap<Any, Any>() {
                         override fun put(key: Any, value: Any): Any? {
                             return super.put(key, overrideParamResult(key, value) ?: return value)
                         }
@@ -80,7 +81,13 @@ class OperaViewerParamsOverride : Feature("OperaViewerParamsOverride") {
                         override fun get(key: Any): Any? {
                             return overrideParamResult(key, super.get(key))
                         }
-                    })
+                    }
+                    try {
+                        paramMap.paramMapField.set(param.thisObject(), newMap)
+                    } catch (e: IllegalAccessException) {
+                        paramMap.paramMapField.isAccessible = true
+                        paramMap.paramMapField.set(param.thisObject(), newMap)
+                    }
                 }
             }
         }
