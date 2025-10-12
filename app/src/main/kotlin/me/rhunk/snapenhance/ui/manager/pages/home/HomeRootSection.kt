@@ -101,6 +101,8 @@ import java.text.DateFormat
 import kotlin.math.roundToInt
 
 class HomeRootSection : Routes.Route() {
+    override val translation by lazy { context.translation.getCategory("manager.sections.home") }
+
     companion object {
         val cardMargin = 10.dp
     }
@@ -370,17 +372,17 @@ class HomeRootSection : Routes.Route() {
                                         },
                                         modifier = Modifier.scaleOnPress(remember { MutableInteractionSource() })
                                     ) {
-                                        Icon(imageVector = Icons.Default.Download, contentDescription = "Download")
+                                        Icon(imageVector = Icons.Default.Download, contentDescription = translation["download_icon_description"])
                                     }
                                 }
                                 UpdateDownloader.DownloadState.DOWNLOADING -> {
                                     CircularProgressIndicator(progress = { downloadProgress })
                                 }
                                 UpdateDownloader.DownloadState.COMPLETED -> {
-                                    Icon(imageVector = Icons.Default.Check, contentDescription = "Completed")
+                                    Icon(imageVector = Icons.Default.Check, contentDescription = translation["completed_icon_description"])
                                 }
                                 UpdateDownloader.DownloadState.FAILED -> {
-                                    Icon(imageVector = Icons.Default.Close, contentDescription = "Failed")
+                                    Icon(imageVector = Icons.Default.Close, contentDescription = translation["failed_icon_description"])
                                 }
                             }
                         }
@@ -494,7 +496,7 @@ class HomeRootSection : Routes.Route() {
                         ) {
                             Icon(
                                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
-                                contentDescription = "Manage Quick Actions"
+                                contentDescription = translation["manage_quick_actions_description"]
                             )
                         }
                         FilterChip(
@@ -519,7 +521,7 @@ class HomeRootSection : Routes.Route() {
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Widgets,
-                            contentDescription = "Quick Actions",
+                            contentDescription = translation["quick_actions_icon_description"],
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -536,7 +538,7 @@ class HomeRootSection : Routes.Route() {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Add Quick Action",
+                                contentDescription = translation["add_quick_action_description"],
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -555,7 +557,7 @@ class HomeRootSection : Routes.Route() {
                     val baseCell = remember { (maxWidth - (spacing * 2)) / 3f }
                     val baseCellPx = with(density) { baseCell.toPx() }
 
-                    val (tilePositions, totalHeight) = remember(selectedTiles, spanTick) {
+                    val (tilePositions, totalHeight) = remember(selectedTiles.size, spanTick) {
                         val positions = mutableMapOf<String, Offset>()
                         var currentX = 0f
                         var currentY = 0f
@@ -563,21 +565,23 @@ class HomeRootSection : Routes.Route() {
                         val screenWidthPx = with(density) { maxWidth.toPx() }
 
                         selectedTiles.forEach { tileName ->
-                            val card = cards.entries.find { entry -> entry.key.first == tileName }!!.key
-                            val (wSpan, hSpan) = getTileSpan(card.first)
-                            val tileWidthPx = with(density) { (baseCell * wSpan + spacing * (wSpan - 1)).toPx() }
-                            val tileHeightPx = with(density) { (baseCell * hSpan + spacing * (hSpan - 1)).toPx() }
+                            cards.entries.find { entry -> entry.key.first == tileName }?.let {
+                                val card = it.key
+                                val (wSpan, hSpan) = getTileSpan(card.first)
+                                val tileWidthPx = with(density) { (baseCell * wSpan + spacing * (wSpan - 1)).toPx() }
+                                val tileHeightPx = with(density) { (baseCell * hSpan + spacing * (hSpan - 1)).toPx() }
 
-                            if (currentX + tileWidthPx > screenWidthPx) {
-                                currentX = 0f
-                                currentY += rowMaxHeight
-                                rowMaxHeight = 0f
-                            }
+                                if (currentX + tileWidthPx > screenWidthPx) {
+                                    currentX = 0f
+                                    currentY += rowMaxHeight
+                                    rowMaxHeight = 0f
+                                }
 
-                            positions[tileName] = Offset(currentX, currentY)
-                            currentX += tileWidthPx + with(density) { spacing.toPx() }
-                            if (tileHeightPx > rowMaxHeight) {
-                                rowMaxHeight = tileHeightPx
+                                positions[tileName] = Offset(currentX, currentY)
+                                currentX += tileWidthPx + with(density) { spacing.toPx() }
+                                if (tileHeightPx > rowMaxHeight) {
+                                    rowMaxHeight = tileHeightPx
+                                }
                             }
                         }
                         positions to (currentY + rowMaxHeight)
@@ -824,13 +828,18 @@ class HomeRootSection : Routes.Route() {
                         val previous = selectedTiles.toList()
                         val removed = previous.filter { it !in newList }
                         removed.forEach { clearTileSpan(it); clearTileOffset(it) }
+                        newList.forEach { clearTileOffset(it) }
                         selectedTiles.clear()
                         selectedTiles.addAll(newList)
+                        if (newList.isEmpty()) {
+                            editMode = false
+                        }
                         context.coroutineScope.launch {
                             context.database.setQuickTiles(selectedTiles)
                         }
                         showQuickActionsMenu = false
-                    }
+                    },
+                    translation = translation
                 )
             }
             Spacer(modifier = Modifier.height(routes.bottomPadding))

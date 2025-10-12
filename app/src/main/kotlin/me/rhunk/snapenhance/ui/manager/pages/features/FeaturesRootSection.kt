@@ -121,6 +121,18 @@ class FeaturesRootSection : Routes.Route() {
         routes.activityLauncher.let(block)
     }
 
+    override val title: @Composable () -> Unit = {
+        val navBackStackEntry by routes.navController.currentBackStackEntryAsState()
+        val text = remember(navBackStackEntry) {
+            navBackStackEntry?.arguments?.getString("name")?.let { containerName ->
+                allContainers[containerName]?.let {
+                    context.translation[it.key.propertyName()]
+                }
+            } ?: routeInfo.translatedKey?.value
+        }
+        text?.let { Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+    }
+
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         Container(context.config.root)
     }
@@ -558,12 +570,12 @@ class FeaturesRootSection : Routes.Route() {
             Card(shape = RoundedCornerShape(16.dp)) {
                 Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Export Sensitive Data?",
+                        text = context.translation["manager.dialogs.export_config.title"],
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
                     Text(
-                        text = "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)",
+                        text = context.translation["manager.dialogs.export_config.content"],
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(bottom = 24.dp)
@@ -573,10 +585,10 @@ class FeaturesRootSection : Routes.Route() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                     ) {
                         TextButton(onClick = { onConfirm(false) }) {
-                            Text("No")
+                            Text(context.translation["button.negative"])
                         }
                         TextButton(onClick = { onConfirm(true) }) {
-                            Text("Yes")
+                            Text(context.translation["button.positive"])
                         }
                     }
                 }

@@ -108,12 +108,25 @@ android {
     sourceSets["main"].jniLibs.srcDir("build/rustJniLibs/android")
 }
 
-val syncTasks = cargoTargets.map { target ->
-    val rustupTask = tasks.register<Exec>("rustup${target.taskSuffix}") {
+val rustupTargetTasks = cargoTargets.mapIndexed { i, target ->
+    tasks.register<Exec>("rustup${target.taskSuffix}") {
+        group = "build"
         workingDir = file("rust")
-        commandLine("rustup", "target", "add", target.triple)
-    }
+        // Idempotent add (only if missing)
+        commandLine(
+            "sh", "-c",
+            "rustup target list --installed | grep -q ${target.triple} || rustup target add ${target.triple}"
+        )
 
+        if (i > 0) {
+            val previousTaskName = "rustup${cargoTargets[i - 1].taskSuffix}"
+            mustRunAfter(tasks.named(previousTaskName))
+        }
+    }
+}
+
+val syncTasks = cargoTargets.map { target ->
+    val rustupTask = tasks.named("rustup${target.taskSuffix}")
     val cargoTask = tasks.register<Exec>("cargoBuild${target.taskSuffix}") {
         group = "build"
         dependsOn(rustupTask)
@@ -148,5 +161,3 @@ val syncTasks = cargoTargets.map { target ->
 tasks.named("preBuild").configure {
     syncTasks.forEach { dependsOn(it) }
 }
-
-

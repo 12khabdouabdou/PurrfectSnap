@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -146,6 +147,20 @@ class BetterLocationRoot : Routes.Route() {
                     FriendLocationItem(friendLocation, dismiss)
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun ThemedEditLocationButton(onClick: () -> Unit) {
+        FilledIconButton(
+            modifier = Modifier.size(40.dp),
+            colors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = if (isSystemInDarkTheme()) Color.White else Color(0xFF151A1A),
+            ),
+            onClick = onClick
+        ) {
+            Icon(Icons.Default.Edit, contentDescription = translation["edit_location_button_description"])
         }
     }
 
@@ -326,7 +341,7 @@ class BetterLocationRoot : Routes.Route() {
                                 addSavedCoordinateDialog = true
                             }
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
+                            Icon(Icons.Default.Add, contentDescription = translation["add_icon_description"])
                         }
                     }
                 }
@@ -447,13 +462,13 @@ class BetterLocationRoot : Routes.Route() {
                             FilledIconButton(onClick = {
                                 showEditDialog = true
                             }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Delete")
+                                Icon(Icons.Default.Edit, contentDescription = translation["edit_icon_description"])
                             }
                             Spacer(modifier = Modifier.width(4.dp))
                             FilledIconButton(onClick = {
                                 showDeleteDialog = true
                             }) {
-                                Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
+                                Icon(Icons.Default.DeleteOutline, contentDescription = translation["delete_icon_description"])
                             }
                         }
                     }

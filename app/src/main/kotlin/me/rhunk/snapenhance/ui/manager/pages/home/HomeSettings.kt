@@ -25,6 +25,7 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
@@ -48,6 +49,7 @@ import me.rhunk.snapenhance.ui.util.saveFile
 import java.util.concurrent.TimeUnit
 
 class HomeSettings : Routes.Route() {
+    override val translation by lazy { context.translation.getCategory("manager.sections.home_settings") }
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
 
@@ -66,8 +68,16 @@ class HomeSettings : Routes.Route() {
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
+            val inputData = Data.Builder()
+                .putString("channel_name", translation["update_notification_channel_name"])
+                .putString("channel_description", translation["update_notification_channel_description"])
+                .putString("notification_title", translation["update_notification_title"])
+                .putString("notification_text", translation["update_notification_text"])
+                .build()
+
             val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
                 .setConstraints(constraints)
+                .setInputData(inputData)
                 .build()
 
             workManager.enqueueUniquePeriodicWork(
@@ -161,7 +171,7 @@ class HomeSettings : Routes.Route() {
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                    contentDescription = null,
+                    contentDescription = context.translation.getOrNull("actions.$key.name"),
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -211,14 +221,19 @@ class HomeSettings : Routes.Route() {
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Brightness4,
-                        contentDescription = "Theme",
+                        contentDescription = translation["theme_icon_description"],
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(26.dp)
                     )
                     Spacer(modifier = Modifier.width(18.dp))
                     Column(Modifier.weight(1f)) {
-                        Text("App Theme", fontWeight = FontWeight.Medium, fontSize = 16.sp)
-                        Text(themeMode.displayName, color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
+                        Text(translation["app_theme_title"], fontWeight = FontWeight.Medium, fontSize = 16.sp)
+                        Text(when (themeMode) {
+                            ThemeMode.SYSTEM -> translation["theme_mode_system"]
+                            ThemeMode.LIGHT -> translation["theme_mode_light"]
+                            ThemeMode.DARK -> translation["theme_mode_dark"]
+                            ThemeMode.AMOLED -> translation["theme_mode_dark"] + " (AMOLED)"
+                        }, color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
                     }
                 }
             }
@@ -248,7 +263,7 @@ class HomeSettings : Routes.Route() {
                 context.checkForRequirements(Requirements.LANGUAGE)
             }
 
-            RowTitle(title = "UI Settings")
+            RowTitle(title = translation["ui_settings_title"])
             ShiftedRow {
                 Row(
                     modifier = Modifier
@@ -257,7 +272,7 @@ class HomeSettings : Routes.Route() {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "Haptic Feedback")
+                    Text(text = translation["haptic_feedback_label"])
                     var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
                     val hapticFeedback = LocalHapticFeedback.current
                     Switch(
@@ -397,7 +412,7 @@ class HomeSettings : Routes.Route() {
                                 }
                             }.onFailure {
                                 context.log.error("Failed to export database", it)
-                                context.longToast("Failed to export database! ${it.localizedMessage}")
+                                context.longToast(translation.format("export_database_failed_toast", "message" to (it.localizedMessage ?: "")))
                             }
                         }) {
                             Text(text = translation["export_button"])
@@ -409,7 +424,7 @@ class HomeSettings : Routes.Route() {
                                 storedStoriesCount = 0
                             }.onFailure {
                                 context.log.error("Failed to clear messages", it)
-                                context.longToast("Failed to clear messages! ${it.localizedMessage}")
+                                context.longToast(translation.format("clear_messages_failed_toast", "message" to (it.localizedMessage ?: "")))
                             }.onSuccess {
                                 context.shortToast(translation["success_toast"])
                             }
@@ -508,7 +523,7 @@ class HomeSettings : Routes.Route() {
                         modifier = Modifier.fillMaxWidth(0.7f)
                     ) {
                         TextField(
-                            value = selectedFileType.fileName,
+                            value = translation.getOrNull("debug_file_${selectedFileType.name.lowercase()}") ?: selectedFileType.fileName,
                             onValueChange = {},
                             readOnly = true,
                             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -519,7 +534,7 @@ class HomeSettings : Routes.Route() {
                                     expanded = false
                                     selectedFileType = fileType
                                 }, text = {
-                                    Text(text = fileType.fileName)
+                                    Text(text = translation.getOrNull("debug_file_${fileType.name.lowercase()}") ?: fileType.fileName)
                                 })
                             }
                         }
@@ -532,7 +547,7 @@ class HomeSettings : Routes.Route() {
                         }
                     }.onFailure {
                         context.log.error("Failed to clear file", it)
-                        context.longToast("Failed to clear file! ${it.localizedMessage}")
+                        context.longToast(translation.format("clear_file_failed_toast", "message" to (it.localizedMessage ?: "")))
                     }.onSuccess {
                         context.shortToast(translation["success_toast"])
                     }
@@ -544,10 +559,10 @@ class HomeSettings : Routes.Route() {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    PreferenceToggle(context.sharedPreferences, key = "test_mode", text = "Test Mode (FOR DEBUGGING ONLY)")
-                    PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = "Disable Feature Loading")
-                    PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = "Disable Auto Mapper")
-                    PreferenceToggle(context.sharedPreferences, key = "disable_bypass_indicator", text = "Disable Bypass Status Indicator")
+                    PreferenceToggle(context.sharedPreferences, key = "test_mode", text = translation["test_mode_label"])
+                    PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = translation["disable_feature_loading_label"])
+                    PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = translation["disable_auto_mapper_label"])
+                    PreferenceToggle(context.sharedPreferences, key = "disable_bypass_indicator", text = translation["disable_bypass_indicator_label"])
                 }
             }
             Spacer(modifier = Modifier.height(routes.bottomPadding))
