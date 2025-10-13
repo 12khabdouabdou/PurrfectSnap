@@ -19,7 +19,7 @@
         android:allowBackup="true"
         android:hasFragileUserData="true"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@drawable/purrfect_snap_logo">
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
