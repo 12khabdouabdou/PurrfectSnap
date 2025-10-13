@@ -146,20 +146,16 @@ class FFMpegProcessor(
                 outputArguments += "-filter_complex" to "\"[0]scale2ref[img][vid];[img]setsar=1[img];[vid]nullsink;[img][1]overlay=(W-w)/2:(H-h)/2,scale=2*trunc(iw*sar/2):2*trunc(ih/2)\""
             }
             Action.CONVERSION -> {
+                outputArguments.clear()
                 if (args.duration != null) {
                     outputArguments += "-t" to (args.duration / 1000.0).toString()
                 }
-                if (ffmpegOptions.customAudioCodec.isEmpty()) {
-                    outputArguments -= "-c:a"
-                }
-                outputArguments -= "-c:v"
                 args.videoCodec?.let {
                     outputArguments += "-c:v" to it
                 } ?: run {
                     outputArguments += "-vn"
                 }
                 args.audioCodec?.let {
-                    outputArguments -= "-c:a"
                     outputArguments += "-c:a" to it
                 }
             }
