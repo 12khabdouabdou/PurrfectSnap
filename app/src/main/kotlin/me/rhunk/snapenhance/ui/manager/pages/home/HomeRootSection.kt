@@ -254,6 +254,11 @@ class HomeRootSection : Routes.Route() {
         val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
             context.database.getQuickTiles().filter { it.isNotBlank() }
         }
+        val renderableTiles = remember(selectedTiles.size, context.translation.loadedLocale) {
+            selectedTiles.mapNotNull {
+                cards.entries.find { entry -> entry.key.first == it }
+            }
+        }
         val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
         var showQuickActionsMenu by remember { mutableStateOf(false) }
         var editMode by remember { mutableStateOf(false) }
@@ -450,7 +455,7 @@ class HomeRootSection : Routes.Route() {
                 }
             }
             Spacer(modifier = Modifier.height(12.dp))
-            AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsAnim") { hasQuickActions ->
+            AnimatedContent(targetState = renderableTiles.isNotEmpty(), label = "QuickActionsAnim") { hasQuickActions ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     if (!hasQuickActions) {
                         Box(
@@ -556,42 +561,35 @@ class HomeRootSection : Routes.Route() {
                             val baseCell = remember { (maxWidth - (spacing * 2)) / 3f }
                             val baseCellPx = with(density) { baseCell.toPx() }
 
-                            val (tilePositions, totalHeight) = remember(selectedTiles.size, spanTick) {
+                            val (tilePositions, totalHeight) = remember(renderableTiles.size, spanTick) {
                                 val positions = mutableMapOf<String, Offset>()
                                 var currentX = 0f
                                 var currentY = 0f
                                 var rowMaxHeight = 0f
                                 val screenWidthPx = with(density) { maxWidth.toPx() }
 
-                                selectedTiles.forEach { tileName ->
-                                    cards.entries.find { entry -> entry.key.first == tileName }?.let {
-                                        val card = it.key
-                                        val (wSpan, hSpan) = getTileSpan(card.first)
-                                        val tileWidthPx = with(density) { (baseCell * wSpan + spacing * (wSpan - 1)).toPx() }
-                                        val tileHeightPx = with(density) { (baseCell * hSpan + spacing * (hSpan - 1)).toPx() }
+                                renderableTiles.forEach { (card, _) ->
+                                    val (wSpan, hSpan) = getTileSpan(card.first)
+                                    val tileWidthPx = with(density) { (baseCell * wSpan + spacing * (wSpan - 1)).toPx() }
+                                    val tileHeightPx = with(density) { (baseCell * hSpan + spacing * (hSpan - 1)).toPx() }
 
-                                        if (currentX + tileWidthPx > screenWidthPx) {
-                                            currentX = 0f
-                                            currentY += rowMaxHeight
-                                            rowMaxHeight = 0f
-                                        }
+                                    if (currentX + tileWidthPx > screenWidthPx) {
+                                        currentX = 0f
+                                        currentY += rowMaxHeight
+                                        rowMaxHeight = 0f
+                                    }
 
-                                        positions[tileName] = Offset(currentX, currentY)
-                                        currentX += tileWidthPx + with(density) { spacing.toPx() }
-                                        if (tileHeightPx > rowMaxHeight) {
-                                            rowMaxHeight = tileHeightPx
-                                        }
+                                    positions[card.first] = Offset(currentX, currentY)
+                                    currentX += tileWidthPx + with(density) { spacing.toPx() }
+                                    if (tileHeightPx > rowMaxHeight) {
+                                        rowMaxHeight = tileHeightPx
                                     }
                                 }
                                 positions to (currentY + rowMaxHeight)
                             }
 
                             Box(modifier = Modifier.height(with(density) { totalHeight.toDp() })) {
-                                remember(selectedTiles.size, context.translation.loadedLocale) {
-                                    selectedTiles.mapNotNull {
-                                        cards.entries.find { entry -> entry.key.first == it }
-                                    }
-                                }.forEach { (card, action) ->
+                                renderableTiles.forEach { (card, action) ->
                                     val interactionSource = remember { MutableInteractionSource() }
                                     val _tick = spanTick
                                     val (wSpan, hSpan) = getTileSpan(card.first)
