@@ -32,7 +32,7 @@ interface BridgeInterface {
     /**
      * File conversation
      */
-    @nullable ParcelFileDescriptor convertMedia(in ParcelFileDescriptor input, String inputExtension, String outputExtension, @nullable String audioCodec, @nullable String videoCodec);
+    @nullable ParcelFileDescriptor convertMedia(in ParcelFileDescriptor input, String inputExtension, String outputExtension, @nullable String audioCodec, @nullable String videoCodec, long duration);
 
     /**
     * Get rules for a given user or conversation

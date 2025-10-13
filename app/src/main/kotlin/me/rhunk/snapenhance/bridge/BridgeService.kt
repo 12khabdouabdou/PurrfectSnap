@@ -97,7 +97,8 @@ class BridgeService : Service() {
             inputExtension: String,
             outputExtension: String,
             audioCodec: String?,
-            videoCodec: String?
+            videoCodec: String?,
+            duration: Long
         ): ParcelFileDescriptor? {
             return runBlocking {
                 val taskId = UUID.randomUUID().toString()
@@ -131,7 +132,8 @@ class BridgeService : Service() {
                             inputs = listOf(inputFile.absolutePath),
                             output = cachedFile,
                             videoCodec = videoCodec,
-                            audioCodec = audioCodec
+                            audioCodec = audioCodec,
+                            duration = if (duration > 0) duration else null
                         )
                     )
                     pendingTask.success()

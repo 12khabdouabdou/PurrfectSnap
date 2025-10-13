@@ -215,9 +215,10 @@ class BridgeClient(
         inputExtension: String,
         outputExtension: String,
         audioCodec: String?,
-        videoCodec: String?
+        videoCodec: String?,
+        duration: Long
     ): ParcelFileDescriptor? = safeServiceCall {
-        service.convertMedia(input, inputExtension, outputExtension, audioCodec, videoCodec)
+        service.convertMedia(input, inputExtension, outputExtension, audioCodec, videoCodec, duration)
     }
 
     fun sync(callback: SyncCallback) {

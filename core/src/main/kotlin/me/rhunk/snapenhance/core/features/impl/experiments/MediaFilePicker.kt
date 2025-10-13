@@ -152,7 +152,8 @@ class MediaFilePicker : Feature("Media File Picker") {
                             "m4a",
                             "m4a",
                             "aac",
-                            if (!audioOnly) "libx264" else null
+                            if (!audioOnly) "libx264" else null,
+                            lastMediaDuration ?: 0L
                         )
 
                         if (pfd == null) {
