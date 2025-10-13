@@ -74,6 +74,7 @@
                 "success_toast": "Done!",
                 "message_logger_summary": "{messageCount} messages\n{storyCount} stories",
                 "export_button": "Export",
+                "view_button": "View",
                 "clear_button": "Clear",
                 "backup_button": "Backup",
                 "restore_button": "Restore",

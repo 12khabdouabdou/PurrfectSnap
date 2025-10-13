@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavBackStackEntry
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +47,7 @@ import me.rhunk.snapenhance.core.features.impl.downloader.decoder.MessageDecoder
 import me.rhunk.snapenhance.download.DownloadProcessor
 import me.rhunk.snapenhance.storage.findFriend
 import me.rhunk.snapenhance.ui.manager.Routes
+import java.net.URLDecoder
 import java.text.DateFormat
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.absoluteValue
@@ -216,9 +218,14 @@ class LoggerHistoryRoot : Routes.Route() {
 
 
     @OptIn(ExperimentalMaterial3Api::class)
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
+    override val content: @Composable (NavBackStackEntry) -> Unit = { navBackStackEntry ->
         LaunchedEffect(Unit) {
-            loggerWrapper = LoggerWrapper(context.androidContext)
+            val uri = navBackStackEntry.arguments?.getString("uri")?.let {
+                runCatching {
+                    URLDecoder.decode(it, "UTF-8").toUri()
+                }.getOrNull()
+            }
+            loggerWrapper = LoggerWrapper(context.androidContext, uri)
         }
 
         val conversationInfoCache = remember { ConcurrentHashMap<String, String?>() }

@@ -46,6 +46,9 @@ import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.openFile
 import me.rhunk.snapenhance.ui.util.saveFile
+import java.io.File
+import java.io.FileOutputStream
+import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 class HomeSettings : Routes.Route() {
@@ -416,6 +419,26 @@ class HomeSettings : Routes.Route() {
                             }
                         }) {
                             Text(text = translation["export_button"])
+                        }
+                        Button(onClick = {
+                            runCatching {
+                                activityLauncherHelper.openFile("application/octet-stream") { uri ->
+                                    val tempFile = File(context.androidContext.cacheDir, "view_message_logger.db")
+                                    context.androidContext.contentResolver.openInputStream(uri.toUri())?.use { inputStream ->
+                                        FileOutputStream(tempFile).use { outputStream ->
+                                            inputStream.copyTo(outputStream)
+                                        }
+                                    }
+                                    routes.viewLoggerHistory.navigate {
+                                        put("uri", URLEncoder.encode(tempFile.toUri().toString(), "UTF-8"))
+                                    }
+                                }
+                            }.onFailure {
+                                context.log.error("Failed to open file", it)
+                                context.longToast("Failed to open file! ${it.localizedMessage}")
+                            }
+                        }) {
+                            Text(text = translation["view_button"])
                         }
                         Button(onClick = {
                             runCatching {

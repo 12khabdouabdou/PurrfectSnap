@@ -55,6 +55,7 @@ class Routes(
         const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary/?exportSensitiveData={exportSensitiveData}"
         const val FRIEND_TRACKER_CONFIG_EXPORT_ROUTE = "friend_tracker_config_export/?rule_id={rule_id}"
         const val FRIEND_TRACKER_CONFIG_IMPORT_ROUTE = "friend_tracker_config_import"
+        const val VIEW_LOGGER_HISTORY_ROUTE = "view_logger_history/{uri}"
     }
 
     lateinit var navController: NavController
@@ -77,6 +78,7 @@ class Routes(
     val settings = route(RouteInfo("home_settings"), HomeSettings()).parent(home)
     val homeLogs = route(RouteInfo("home_logs"), HomeLogs()).parent(home)
     val loggerHistory = route(RouteInfo("logger_history"), LoggerHistoryRoot()).parent(home)
+    val viewLoggerHistory = route(RouteInfo(VIEW_LOGGER_HISTORY_ROUTE), LoggerHistoryRoot()).parent(home)
     val friendTracker = route(RouteInfo("friend_tracker", icon = Icons.Default.PersonSearch), FriendTrackerManagerRoot()).parent(home)
     val editRule = route(RouteInfo("edit_rule/?rule_id={rule_id}", hasOwnTopBar = true), EditRule())
     val friendTrackerConfigExport = route(RouteInfo(FRIEND_TRACKER_CONFIG_EXPORT_ROUTE), me.rhunk.snapenhance.ui.manager.pages.tracker.FriendTrackerConfigExportScreen())
