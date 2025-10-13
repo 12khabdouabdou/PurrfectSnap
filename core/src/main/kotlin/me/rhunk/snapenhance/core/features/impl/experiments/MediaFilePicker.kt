@@ -120,7 +120,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                             from("_item") {
                                 set("_cameraRollSource", "Snapchat")
                                 set("_contentUri", "")
-                                set("_durationMs", 0.0)
+                                set("_durationMs", lastMediaDuration?.toDouble() ?: 0.0)
                                 set("_disabled", false)
                                 set("_imageRotation", 0.0)
                                 set("_width", 1080.0)
