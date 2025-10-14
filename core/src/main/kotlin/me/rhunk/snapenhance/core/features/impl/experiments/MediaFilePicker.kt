@@ -114,7 +114,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                     return@subscribe
                 }
 
-                fun sendMedia() {
+                fun sendMedia(audioOnly: Boolean) {
                     sendItemsMethod.invoke(chatMediaDrawerActionHandler, listOf<Any>(), listOf(
                         sendItemsMethod.genericParameterTypes[1].getTypeArguments().first().dataBuilder {
                             from("_item") {
@@ -128,7 +128,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                                 set("_timestampMs", System.currentTimeMillis().toDouble())
                                 from("_itemId") {
                                     set("_itemId", firstVideoId.toString())
-                                    set("_type", "VIDEO")
+                                    set("_type", if (audioOnly) "AUDIO" else "VIDEO")
                                 }
                             }
                             set("_order", 0.0)
@@ -165,7 +165,7 @@ class MediaFilePicker : Feature("Media File Picker") {
 
                         runCatching {
                             mediaInputStream = ParcelFileDescriptor.AutoCloseInputStream(pfd)
-                            sendMedia()
+                            sendMedia(audioOnly)
                         }.onFailure {
                             mediaInputStream = null
                             context.log.error(it)
