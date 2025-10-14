@@ -42,6 +42,7 @@ import androidx.work.WorkManager
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.action.EnumAction
 import me.rhunk.snapenhance.common.bridge.InternalFileHandleType
+import me.rhunk.snapenhance.common.bridge.wrapper.LocaleWrapper
 import me.rhunk.snapenhance.common.ui.ThemeChooserDialog
 import me.rhunk.snapenhance.common.ui.ThemeMode
 import me.rhunk.snapenhance.common.ui.ThemePreferences
@@ -66,7 +67,7 @@ class HomeSettings : Routes.Route() {
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
 
-    private val availableLocales by lazy {
+    private val availableLocales: List<String> by lazy {
         LocaleWrapper.fetchAvailableLocales(context.androidContext)
     }
 
@@ -316,12 +317,16 @@ class HomeSettings : Routes.Route() {
                     Spacer(modifier = Modifier.width(18.dp))
                     Column(Modifier.weight(1f)) {
                         Text(translation["app_theme_title"], fontWeight = FontWeight.Medium, fontSize = 16.sp)
-                        Text(when (themeMode) {
-                            ThemeMode.SYSTEM -> translation["theme_mode_system"]
-                            ThemeMode.LIGHT -> translation["theme_mode_light"]
-                            ThemeMode.DARK -> translation["theme_mode_dark"]
-                            ThemeMode.AMOLED -> translation["theme_mode_dark"] + " (AMOLED)"
-                        }, color = MaterialTheme.colorScheme.primary, fontSize = 14.sp)
+                        Text(
+                            text = when (themeMode) {
+                                ThemeMode.SYSTEM -> translation["theme_mode_system"]
+                                ThemeMode.LIGHT -> translation["theme_mode_light"]
+                                ThemeMode.DARK -> translation["theme_mode_dark"]
+                                ThemeMode.AMOLED -> translation["theme_mode_dark"] + " (AMOLED)"
+                            },
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 14.sp
+                        )
                     }
                 }
             }
