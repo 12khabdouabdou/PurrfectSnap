@@ -28,6 +28,15 @@ import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.launch
@@ -45,6 +54,7 @@ import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.openFile
+import me.rhunk.snapenhance.ui.util.Motion
 import me.rhunk.snapenhance.ui.util.saveFile
 import java.io.File
 import java.io.FileOutputStream
@@ -55,6 +65,31 @@ class HomeSettings : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.sections.home_settings") }
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     private val dialogs by lazy { AlertDialogs(context.translation) }
+
+    private val availableLocales by lazy {
+        LocaleWrapper.fetchAvailableLocales(context.androidContext)
+    }
+
+    private fun getLocaleDisplayName(locale: String): String {
+        val displayLocale = when (locale) {
+            "zh-Hans" -> java.util.Locale.forLanguageTag("zh-Hans")
+            "zh_TW" -> java.util.Locale.TRADITIONAL_CHINESE
+            else -> try {
+                java.util.Locale.forLanguageTag(locale.replace('_', '-'))
+            } catch (e: Exception) {
+                java.util.Locale.getDefault()
+            }
+        }
+        return displayLocale.getDisplayName(java.util.Locale.getDefault())
+    }
+
+    private fun setLocale(locale: String) {
+        with(context) {
+            config.locale = locale
+            config.writeConfig()
+            translation.reload(locale, isSetup = false)
+        }
+    }
 
     private fun scheduleUpdateCheck() {
         val workManager = WorkManager.getInstance(context.androidContext)
@@ -194,12 +229,62 @@ class HomeSettings : Routes.Route() {
         ) { content(this) }
     }
 
+    @Composable
+    fun LanguageDialog(onDismiss: () -> Unit) {
+        var visible by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) { visible = true }
+        Dialog(onDismissRequest = onDismiss) {
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn(animationSpec = Motion.tweenFloatSpec(180)) + scaleIn(animationSpec = Motion.tweenFloatSpec(200)),
+                exit = fadeOut(animationSpec = Motion.tweenFloatSpec(150)) + scaleOut(animationSpec = Motion.tweenFloatSpec(180))
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.scrollable(rememberScrollState(), orientation = Orientation.Vertical)
+                    ) {
+                        items(availableLocales) { locale ->
+                            Box(
+                                modifier = Modifier
+                                    .height(70.dp)
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        setLocale(locale)
+                                        onDismiss()
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = remember(locale) { getLocaleDisplayName(locale) },
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Light,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @OptIn(ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
         val themeMode by ThemePreferences.getThemeModeFlow(contextC).collectAsState(initial = ThemeMode.SYSTEM)
         var showThemeDialog by remember { mutableStateOf(false) }
+        var showLanguageDialog by remember { mutableStateOf(false) }
+
+        if (showLanguageDialog) {
+            LanguageDialog {
+                showLanguageDialog = false
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -263,7 +348,7 @@ class HomeSettings : Routes.Route() {
                 context.checkForRequirements(Requirements.MAPPINGS)
             }
             RowAction(key = "change_language") {
-                context.checkForRequirements(Requirements.LANGUAGE)
+                showLanguageDialog = true
             }
 
             RowTitle(title = translation["ui_settings_title"])
