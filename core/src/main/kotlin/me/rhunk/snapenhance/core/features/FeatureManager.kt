@@ -146,6 +146,7 @@ class FeatureManager(
             DisableSnapModeRestrictions(),
             PreventForcedKeyboard(),
             CustomTheming(),
+            AutoReply(),
         )
 
         features.values.toList().forEach { feature ->

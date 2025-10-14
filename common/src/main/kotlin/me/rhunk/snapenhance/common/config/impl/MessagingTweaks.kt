@@ -101,4 +101,62 @@ class MessagingTweaks : ConfigContainer() {
     val doubleTapChatAction = unique("double_tap_chat_action", "like_message", "copy_text", "delete_message", "mark_as_read", "custom_emoji_reaction") { requireRestart() }
     val doubleTapChatActionCustomEmoji = string("double_tap_chat_action_custom_emoji") {
         inputCheck = { it.length == 2 && it.toByteArray(Charsets.UTF_8).size >= 4 } }
+
+    class AutoReplyConfig : ConfigContainer(hasGlobalState = true) {
+        val cooldownSeconds = integer("cooldown_seconds", 60)
+        val messageAgeThreshold = integer("message_age_threshold", 60)
+        val allowRunningInBackground = boolean("allow_running_in_background")
+
+        inner class AutoTriggerConfig: ConfigContainer() {
+            val autoReplyContentTypes = multiple("auto_reply_content_types",
+                "chat_messages",
+                "snap_messages",
+                "story_reply_messages",
+                "story_share_messages",
+                "external_media_messages",
+                "sticker_messages",
+                "tiny_snap_messages",
+                "map_reaction_messages",
+                "voice_note_messages",
+                "half_swipes"
+            ) {
+                customOptionTranslationPath = "features.options.auto_reply.content_types"
+            }
+            val chatMessages = string("chat_messages", "{\"type\":\"list\",\"values\":[\"hi!\",\"hello\"]}")
+            val snapMessages = string("snap_messages", "{\"type\":\"list\",\"values\":[\"received your snap!\"]}")
+            val storyReplyMessages = string("story_reply_messages", "{\"type\":\"list\",\"values\":[\"thanks for the reply!\"]}")
+            val storyShareMessages = string("story_share_messages", "{\"type\":\"list\",\"values\":[\"cool story!\"]}")
+            val externalMediaMessages = string("external_media_messages", "{\"type\":\"list\",\"values\":[\"nice media!\"]}")
+            val stickerMessages = string("sticker_messages", "{\"type\":\"list\",\"values\":[\"nice sticker!\"]}")
+            val tinySnapMessages = string("tiny_snap_messages", "{\"type\":\"list\",\"values\":[\"tiny snap received!\"]}")
+            val mapReactionMessages = string("map_reaction_messages", "{\"type\":\"list\",\"values\":[\"thanks for the reaction!\"]}")
+            val voiceNoteMessages = string("voice_note_messages", "{\"type\":\"list\",\"values\":[\"got your voice note!\"]}")
+            val halfSwipeMessages = string("half_swipe_messages", "{\"type\":\"list\",\"values\":[\"i see you peeking!\"]}")
+            val friendSpecificGreeting = boolean("friend_specific_greeting")
+            val friendGreeting = string("friend_greeting", "Hey")
+        }
+
+        inner class AIConfig: ConfigContainer() {
+            val enableAiReplies = boolean("enable_ai_replies")
+            val aiEndpointUrl = string("ai_endpoint_url", "http://localhost:11434/v1/chat/completions")
+            val aiApiKey = string("ai_api_key", "")
+            val aiModel = string("ai_model", "gpt-3.5-turbo")
+            val aiSystemPrompt = string("ai_system_prompt", "You are a helpful assistant.")
+            val aiMaxTokens = integer("ai_max_tokens", 150)
+            val aiTemperature = float("ai_temperature", 0.7f)
+            val aiUseConversationHistory = boolean("ai_use_conversation_history")
+            val aiContextLength = integer("ai_context_length", 10)
+            val aiIncludeFriendInfo = boolean("ai_include_friend_info")
+            val aiResponseLanguage = string("ai_response_language", "auto")
+            val aiPersonalityTraits = string("ai_personality_traits", "")
+            val aiResponseStyle = string("ai_response_style", "casual")
+            val aiRequestTimeout = integer("ai_request_timeout", 15)
+            val aiRetryAttempts = integer("ai_retry_attempts", 2)
+            val aiFallbackToTemplate = boolean("ai_fallback_to_template")
+        }
+
+        val autoTriggerConfig = container("auto_trigger_config", AutoTriggerConfig())
+        val aiConfig = container("ai_config", AIConfig())
+    }
+    val autoReply = container("auto_reply", AutoReplyConfig()) { requireRestart() }
 }

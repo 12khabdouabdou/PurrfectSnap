@@ -87,7 +87,8 @@ enum class ContentType(val id: Int) {
     PROMPT_LENS_RESPONSE(25),
     TINY_SNAP(26),
     STATUS_COUNTDOWN(27),
-    MAP_REACTION(28);
+    MAP_REACTION(28),
+    STORY_REPLY(29);
 
     companion object {
         fun fromId(i: Int): ContentType {
