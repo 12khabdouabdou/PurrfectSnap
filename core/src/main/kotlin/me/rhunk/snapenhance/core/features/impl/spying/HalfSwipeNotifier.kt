@@ -17,7 +17,6 @@ import kotlin.time.Duration.Companion.milliseconds
 class HalfSwipeNotifier : Feature("Half Swipe Notifier") {
     private val peekingConversations = ConcurrentHashMap<String, List<String>>()
     private val startPeekingTimestamps = ConcurrentHashMap<String, Long>()
-    private val halfSwipeListeners = mutableListOf<(String, String, Long) -> Unit>()
 
     private val notificationManager get() = context.androidContext.getSystemService(NotificationManager::class.java)
     private val translation by lazy { context.translation.getCategory("half_swipe_notifier")}
@@ -33,9 +32,6 @@ class HalfSwipeNotifier : Feature("Half Swipe Notifier") {
         }
     }
 
-    fun addOnHalfSwipeListener(listener: (conversationId: String, userId: String, duration: Long) -> Unit) {
-        halfSwipeListeners.add(listener)
-    }
 
     override fun init() {
         if (context.config.messaging.halfSwipeNotifier.globalState != true) return
@@ -92,15 +88,6 @@ class HalfSwipeNotifier : Feature("Half Swipe Notifier") {
             val maxDuration = context.config.messaging.halfSwipeNotifier.maxDuration.get().toLong()
 
             if (minDuration > peekingDuration || maxDuration < peekingDuration) return
-
-            // Notify listeners about the half-swipe
-            halfSwipeListeners.forEach { listener ->
-                runCatching {
-                    listener(conversationId, userId, peekingDuration)
-                }.onFailure {
-                    context.log.error("Error in half-swipe listener", it)
-                }
-            }
 
             val feedEntry = context.database.getFeedEntryByConversationId(conversationId)
             val friendInfo = context.database.getFriendInfo(userId) ?: return
