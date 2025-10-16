@@ -1,6 +1,7 @@
 package me.rhunk.snapenhance.core
 
 import android.app.AlertDialog
+import android.content.Context
 import android.system.Os
 import android.view.ViewGroup
 import androidx.compose.foundation.background
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.bridge.FileHandleScope
 import me.rhunk.snapenhance.common.bridge.toWrapper
@@ -53,7 +55,7 @@ import kotlin.system.exitProcess
 class SecurityFeatures(
     private val context: ModContext
 ) {
-    private val BYPASS_DOWNLOAD_URL = "https://github.com/particle-box/Pfsnap-Bypass/releases/download/1.0.0/bypass.dex"
+    private val BYPASS_DOWNLOAD_URL = "https://your-private-repo.com/bypass.dex" // TODO: Replace with your private repo URL
 
     private fun showConsentDialog() {
         val activity = context.mainActivity ?: return
@@ -62,11 +64,11 @@ class SecurityFeatures(
                 .setTitle("Security Bypass")
                 .setMessage("PurrfectSnap offers a closed-source security bypass for enhanced functionality. By clicking 'Agree', you consent to downloading and using this feature.")
                 .setPositiveButton("Agree") { _, _ ->
-                    context.sharedPreferences.edit().putBoolean("bypass_consent", true).apply()
+                    context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).edit().putBoolean("bypass_consent", true).apply()
                     downloadAndLoadBypass()
                 }
                 .setNegativeButton("Disagree") { _, _ ->
-                    context.sharedPreferences.edit().putBoolean("bypass_consent", false).apply()
+                    context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).edit().putBoolean("bypass_consent", false).apply()
                     context.config.experimental.useRemoteBypass.set(false)
                 }
                 .setCancelable(false)
@@ -75,7 +77,6 @@ class SecurityFeatures(
     }
 
     private fun downloadAndLoadBypass() {
-        val activity = context.mainActivity ?: return
         context.coroutineScope.launch {
             try {
                 val url = URL(BYPASS_DOWNLOAD_URL)
@@ -89,7 +90,7 @@ class SecurityFeatures(
                     val file = File(context.androidContext.filesDir, "bypass.dex")
                     withContext(Dispatchers.IO) {
                         connection.inputStream.use { input ->
-                            file.outputStream().use {
+                            file.outputStream().use { output ->
                                 input.copyTo(output)
                             }
                         }
@@ -156,7 +157,7 @@ class SecurityFeatures(
         }
 
         if (context.config.experimental.useRemoteBypass.get()) {
-            if (context.sharedPreferences.getBoolean("bypass_consent", false)) {
+            if (context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).getBoolean("bypass_consent", false)) {
                 val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
                 if (bypassFile.exists()) {
                     loadBypassModule(bypassFile)
@@ -213,7 +214,7 @@ class SecurityFeatures(
 
 
         context.androidContext.classLoader.apply {
-            loadClass("com.snapchat.client.client_attestation.ArgosClient$CppProxy").apply {
+            loadClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy").apply {
                 hookConstructor(HookStage.BEFORE) { it.setResult(null) }
                 hook("getArgosTokenAsync", HookStage.BEFORE) { it.setResult(null) }
                 hook("getAttestationHeaders", HookStage.BEFORE) { it.setResult(null) }
@@ -235,7 +236,7 @@ class SecurityFeatures(
                     exitProcess(139)
                 }
             }
-            loadClass("com.snapchat.client.duplex.DuplexClient$CppProxy").hook("registerHandler",
+            loadClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").hook("registerHandler",
                 HookStage.BEFORE) { param ->
                 val path = param.arg<String>(0)
                 if (path == "hermod_dup") {
