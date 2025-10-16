@@ -55,7 +55,7 @@ import kotlin.system.exitProcess
 class SecurityFeatures(
     private val context: ModContext
 ) {
-    private val BYPASS_DOWNLOAD_URL = "https://your-private-repo.com/bypass.dex" // TODO: Replace with your private repo URL
+    private val BYPASS_DOWNLOAD_URL = "https://github.com/particle-box/Pfsnap-Bypass/releases/download/1.0.0/bypass.dex"
 
     private fun showConsentDialog() {
         val activity = context.mainActivity ?: return
