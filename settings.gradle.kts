@@ -41,17 +41,17 @@ fun ensureAndroidSdk(rootDir: File) {
     if (!cmdlineToolsDir.exists()) {
         println("Unzipping command-line tools...")
         cmdlineToolsDir.mkdirs()
-        ZipInputStream(cmdlineToolsZip.inputStream()).use { zis ->
-            var entry = zis.nextEntry
+        ZipInputStream(cmdlineToolsZip.inputStream()).use {
+            var entry = it.nextEntry
             while (entry != null) {
                 val newFile = File(cmdlineToolsDir, entry.name.substringAfter('/'))
                 if (entry.isDirectory) {
                     newFile.mkdirs()
                 } else {
                     newFile.parentFile.mkdirs()
-                    FileOutputStream(newFile).use { fos -> zis.copyTo(fos) }
+                    FileOutputStream(newFile).use { fos -> it.copyTo(fos) }
                 }
-                entry = zis.nextEntry
+                entry = it.nextEntry
             }
         }
     }

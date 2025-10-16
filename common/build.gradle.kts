@@ -18,24 +18,30 @@ android {
 
     defaultConfig {
         minSdk = 28
-        buildConfigField("String", "VERSION_NAME", "\"${rootProject.ext["appVersionName"]}\"")
+        buildConfigField("String", "VERSION_NAME", """${rootProject.ext["appVersionName"]}""")
         buildConfigField("int", "VERSION_CODE", "${rootProject.ext["appVersionCode"]}")
-        buildConfigField("String", "APPLICATION_ID", "\"${rootProject.ext["applicationId"]}\"")
+        buildConfigField("String", "APPLICATION_ID", """${rootProject.ext["applicationId"]}""")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
-        buildConfigField("String", "BUILD_HASH", "\"${rootProject.ext["buildHash"]}\".toString()")
+        buildConfigField("String", "BUILD_HASH", """${rootProject.ext["buildHash"]}""`.toString())
         val gitHash = providers.environmentVariable("GITHUB_SHA")
             .orElse(providers.environmentVariable("GIT_COMMIT"))
             .orElse(providers.gradleProperty("gitHash"))
             .orElse(providers.systemProperty("git.hash"))
             .orElse("unknown")
             .get()
-        buildConfigField("String", "GIT_HASH", "\"$gitHash\"")
-        buildConfigField("String", "SIF_ENDPOINT", "\"${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}\"")
+        buildConfigField("String", "GIT_HASH", """$gitHash""")
+        buildConfigField("String", "SIF_ENDPOINT", """${properties["debug_sif_endpoint"]?.toString() ?: "https://github.com/SnapEnhance/resources/raw/refs/heads/main/sif"}""")
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
     }
 }
 

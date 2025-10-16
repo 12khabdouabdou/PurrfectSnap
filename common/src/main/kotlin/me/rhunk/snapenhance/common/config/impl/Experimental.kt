@@ -64,7 +64,7 @@ class Experimental : ConfigContainer() {
 
     val nativeHooks = container("native_hooks", NativeHooks()) { icon = Icons.Default.Memory; requireRestart() }
     val spoof = container("spoof", Spoof()) { icon = Icons.Default.Fingerprint ; addNotices(FeatureNotice.BAN_RISK); requireRestart() }
-    val securityBypass = boolean("security_bypass") { 
+    val useRemoteBypass = boolean("use_remote_bypass") {
         icon = Icons.Default.Security
         requireRestart()
     }
