@@ -1,3 +1,4 @@
+
 -dontwarn de.robv.android.xposed.**
 -dontwarn org.mozilla.javascript.**
 
@@ -20,5 +21,3 @@
 }
 # Prevent WorkManager from stripping generated Room database constructor
 -keep class androidx.work.impl.WorkDatabase_Impl { *; }
-
-

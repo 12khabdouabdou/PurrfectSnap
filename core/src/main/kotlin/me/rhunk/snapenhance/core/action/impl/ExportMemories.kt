@@ -42,6 +42,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.math.absoluteValue
 
 class ExportMemories : AbstractAction() {
+    private val translation by lazy { context.translation.getCategory("memories") }
     data class TimeRange(
         val start: Long?,
         val end: Long?,
@@ -241,10 +242,10 @@ class ExportMemories : AbstractAction() {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Export memories", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 20.sp)
+                            Text(translation.get("export_title"), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 20.sp)
 
             if (exportJob != null) {
-                Text(text = "Exporting memories... (${exportProgress.second} failed)", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                                 Text(text = translation.get("exporting_memories").replace("{failed}", exportProgress.second.toString()), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
                 LinearProgressIndicator(
                     progress = { exportProgress.first / 100f },
                     modifier = Modifier.fillMaxWidth(),
@@ -259,19 +260,19 @@ class ExportMemories : AbstractAction() {
                         exportJob = null
                         onDismiss()
                     }) {
-                        Text("Quit")
+                        Text(translation.get("quit"))
                     }
                     if (exportFinished) {
                         Button(onClick = {
                             exportJob = null
                             onDismiss()
                         }) {
-                            Text("Done")
+                            Text(translation.get("done"))
                         }
                     }
                 }
             } else {
-                Text("Total memories: $totalCount", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                Text(translation.get("total_memories").replace("{count}", totalCount.toString()), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -280,9 +281,9 @@ class ExportMemories : AbstractAction() {
                 ) {
                     var dateRangeDialog by remember { mutableStateOf(false) }
                     Checkbox(checked = dateRangeFilter, onCheckedChange = { dateRangeFilter = it })
-                    Text("Date Range", modifier = Modifier.weight(1f))
+                                            Text(translation.get("date_range"), modifier = Modifier.weight(1f))
                     Button(onClick = { dateRangeDialog = true }, enabled = dateRangeFilter) {
-                        Text("Select")
+                        Text(translation.get("select"))
                     }
 
                     if (dateRangeDialog) {
@@ -302,7 +303,7 @@ class ExportMemories : AbstractAction() {
                                 Button(onClick = {
                                     dateRangeDialog = false
                                 }) {
-                                    Text("OK")
+                                    Text(translation.get("ok"))
                                 }
                             }
                         }
@@ -315,7 +316,7 @@ class ExportMemories : AbstractAction() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(checked = sortByFolder, onCheckedChange = { sortByFolder = it })
-                    Text("Sort by folder", modifier = Modifier.weight(1f))
+                    Text(translation.get("sort_by_folder"), modifier = Modifier.weight(1f))
                 }
 
                 Row(
@@ -324,7 +325,7 @@ class ExportMemories : AbstractAction() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(checked = includeMEO, onCheckedChange = { includeMEO = it })
-                    Text("Include My Eyes Only", modifier = Modifier.weight(1f))
+                    Text(translation.get("include_my_eyes_only"), modifier = Modifier.weight(1f))
                 }
 
                 Row(
@@ -333,7 +334,7 @@ class ExportMemories : AbstractAction() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(onClick = onDismiss) {
-                        Text("Cancel")
+                        Text(translation.get("cancel"))
                     }
                     Button(onClick = {
                         context.coroutineScope.launch {
@@ -352,7 +353,7 @@ class ExportMemories : AbstractAction() {
                             exportFinished = true
                         }
                     }) {
-                        Text("Export")
+                        Text(translation.get("export"))
                     }
                 }
             }

@@ -200,12 +200,12 @@ class ChatActionMenu : AbstractMenu() {
                                         .convertMessageInterface(it)
                                 }.onFailure {
                                     this@ChatActionMenu.context.log.verbose("Failed to convert message: $it")
-                                    this@ChatActionMenu.context.shortToast("Failed to edit message: $it")
+                                    this@ChatActionMenu.context.shortToast(this@ChatActionMenu.context.translation["error_messages.failed_to_edit_message"].replace("{error}", it.toString()))
                                 }
                             }
                         },
                         onError = {
-                            this@ChatActionMenu.context.shortToast("Failed to fetch message: $it")
+                            this@ChatActionMenu.context.shortToast(this@ChatActionMenu.context.translation["error_messages.failed_to_fetch_message"].replace("{error}", it.toString()))
                         }
                     )
                 }

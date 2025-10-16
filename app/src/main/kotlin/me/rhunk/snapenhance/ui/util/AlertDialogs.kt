@@ -7,14 +7,12 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,9 +30,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog as StandardDialog
 import androidx.core.net.toUri
 import com.github.skydoves.colorpicker.compose.*
 import com.google.gson.JsonParser
@@ -58,9 +59,10 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
 import java.io.File
 
+
 class AlertDialogs(
     private val translation: LocaleWrapper,
-) {
+){
     @Composable
     fun DefaultDialogCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
         Card(
@@ -158,9 +160,11 @@ class AlertDialogs(
         val keys = (property.value.defaultValues as List<String>).toMutableList().apply {
             add(0, "null")
         }
+
         var selectedValue by remember {
             mutableStateOf(property.value.getNullable()?.toString() ?: "null")
         }
+
         DefaultDialogCard {
             keys.forEachIndexed { index, item ->
                 fun select() {
@@ -171,6 +175,7 @@ class AlertDialogs(
                         item
                     })
                 }
+
                 Row(
                     modifier = Modifier.clickable { select() },
                     verticalAlignment = Alignment.CenterVertically
@@ -193,6 +198,7 @@ class AlertDialogs(
     fun KeyboardInputDialog(property: PropertyPair<*>, dismiss: () -> Unit = {}) {
         val focusRequester = remember { FocusRequester() }
         val context = LocalContext.current
+
         DefaultDialogCard {
             var fieldValue by remember {
                 mutableStateOf(property.value.get().toString().let {
@@ -202,6 +208,7 @@ class AlertDialogs(
                     )
                 })
             }
+
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -219,6 +226,7 @@ class AlertDialogs(
                 },
                 singleLine = true
             )
+
             Row(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -230,9 +238,10 @@ class AlertDialogs(
                 }
                 Button(onClick = {
                     if (fieldValue.text.isNotEmpty() && property.key.params.inputCheck?.invoke(fieldValue.text) == false) {
-                        Toast.makeText(context, translation["invalid_input_toast"], Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Invalid input! Make sure you entered a valid value.", Toast.LENGTH_SHORT).show() //TODO: i18n
                         return@Button
                     }
+
                     when (property.key.dataType.type) {
                         DataProcessors.Type.INTEGER -> {
                             runCatching {
@@ -261,10 +270,12 @@ class AlertDialogs(
     @Composable
     fun RawInputDialog(onDismiss: () -> Unit, onConfirm: (value: String) -> Unit) {
         val focusRequester = remember { FocusRequester() }
+
         DefaultDialogCard {
             val fieldValue = remember {
                 mutableStateOf(TextFieldValue())
             }
+
             TextField(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -279,6 +290,7 @@ class AlertDialogs(
                 },
                 singleLine = true
             )
+
             Row(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -305,6 +317,7 @@ class AlertDialogs(
         DefaultDialogCard {
             defaultItems.forEach { key ->
                 var state by remember { mutableStateOf(toggledStates.contains(key)) }
+
                 fun toggle(value: Boolean? = null) {
                     state = value ?: !state
                     if (state) {
@@ -313,6 +326,7 @@ class AlertDialogs(
                         toggledStates.remove(key)
                     }
                 }
+
                 Row(
                     modifier = Modifier.clickable { toggle() },
                     verticalAlignment = Alignment.CenterVertically
@@ -340,12 +354,19 @@ class AlertDialogs(
         setProperty: (Color?) -> Unit,
         dismiss: () -> Unit
     ) {
-        var currentColor by remember { mutableStateOf(initialColor ?: Color.White.copy(alpha = 1f)) }
+        var currentColor by remember { mutableStateOf(initialColor) }
+
         DefaultDialogCard {
-            val controller = remember { ColorPickerController() }
+            val controller = remember { ColorPickerController().apply {
+                if (currentColor == null) {
+                    setWheelAlpha(1f)
+                    setBrightness(1f, false)
+                }
+            } }
             var colorHexValue by remember {
                 mutableStateOf(currentColor?.toArgb()?.let { Integer.toHexString(it) } ?: "")
             }
+
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
@@ -360,7 +381,7 @@ class AlertDialogs(
                                 setProperty(it)
                             }
                         }.onFailure {
-                            currentColor = Color.White
+                            currentColor = null
                         }
                     },
                     label = { Text(text = "Hex Color") },
@@ -418,7 +439,7 @@ class AlertDialogs(
                     controller = controller
                 )
                 IconButton(onClick = {
-                    setProperty(Color.White)
+                    setProperty(null)
                     dismiss()
                 }) {
                     Icon(
@@ -439,6 +460,7 @@ class AlertDialogs(
         var currentColor by remember {
             mutableStateOf((property.value.getNullable() as? Int)?.let { Color(it) })
         }
+
         ColorPickerDialog(
             initialColor = currentColor,
             setProperty = setProperty@{
@@ -466,6 +488,7 @@ class AlertDialogs(
             }
         }
         val context = LocalContext.current
+
         mapView.value = remember {
             Configuration.getInstance().apply {
                 osmdroidBasePath = File(context.cacheDir, "osmdroid")
@@ -475,14 +498,17 @@ class AlertDialogs(
                 setMultiTouchControls(true)
                 zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                 setTileSource(TileSourceFactory.MAPNIK)
+
                 val startPoint = GeoPoint(coordinates.first, coordinates.second)
                 controller.setZoom(10.0)
                 controller.setCenter(startPoint)
+
                 marker.value = Marker(this).apply {
                     isDraggable = true
                     position = startPoint
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 }
+
                 overlays.add(object: Overlay() {
                     override fun onSingleTapConfirmed(e: MotionEvent, mapView: MapView): Boolean {
                         marker.value?.position = mapView.projection.fromPixels(e.x.toInt(), e.y.toInt()) as GeoPoint
@@ -490,17 +516,23 @@ class AlertDialogs(
                         return true
                     }
                 })
+
                 overlays.add(marker.value)
             }
         }
+
         DisposableEffect(Unit) {
             onDispose {
                 mapView.value?.onDetach()
             }
         }
+
         var customCoordinatesDialog by remember { mutableStateOf(false) }
+
+
         val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
         val okHttpClient by lazy { OkHttpClient() }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -512,12 +544,13 @@ class AlertDialogs(
             )
             Column(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
+                .align(Alignment.TopCenter)
                     .fillMaxWidth()
             ) {
                 var locationName by remember { mutableStateOf<String>("") }
                 var addressResults by remember { mutableStateOf<List<Triple<String, String, String>>>(emptyList()) }
                 var searchJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+
                 suspend fun search() {
                     okHttpClient.newCall(Request.Builder()
                         .url("https://nominatim.openstreetmap.org/search".toUri().buildUpon().appendQueryParameter("q", locationName).appendQueryParameter("format", "jsonv2").build().toString())
@@ -527,8 +560,9 @@ class AlertDialogs(
                         if (!response.isSuccessful) {
                             return@use
                         }
+
                         runCatching {
-                            val body = JsonParser.parseString(response.body?.string()).asJsonArray
+                            val body = JsonParser.parseString(response.body.string()).asJsonArray
                             addressResults = body.take(5).map { jsonElement ->
                                 val jsonObject = jsonElement.asJsonObject
                                 Triple(
@@ -539,11 +573,14 @@ class AlertDialogs(
                             }
                         }
                     }
+
                     searchJob = null
                 }
-                TextField(
+
+                OutlinedTextField(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     value = locationName,
                     onValueChange = {
                         locationName = it.replace("\n", "")
@@ -551,61 +588,135 @@ class AlertDialogs(
                             addressResults = emptyList()
                             searchJob?.cancel()
                             searchJob = null
-                            return@TextField
+                            return@OutlinedTextField
                         }
                         searchJob?.cancel()
                         searchJob = coroutineScope.launch {
-                            delay(500)
+                            delay(300)
                             search()
                         }
                     },
-                    label = { Text(text = "Search") },
+                    placeholder = { Text(text = "Enter location name...") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
+                        )
+                    },
+                    trailingIcon = {
+                        if (locationName.isNotEmpty()) {
+                            IconButton(onClick = {
+                                locationName = ""
+                                addressResults = emptyList()
+                                searchJob?.cancel()
+                                searchJob = null
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Clear,
+                                    contentDescription = "Clear"
+                                )
+                            }
+                        }
+                    },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.None)
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                    )
                 )
+
                 AutoClearKeyboardFocus(onFocusClear = {
                     locationName = ""
                     addressResults = emptyList()
                     searchJob?.cancel()
                     searchJob = null
                 })
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.background)
-                        .verticalScroll(ScrollState(0)),
-                ) {
-                    if (addressResults.isNotEmpty()) {
-                        addressResults.forEach { address ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        marker.value?.position = GeoPoint(address.second.toDouble(), address.third.toDouble())
-                                        mapView.value?.controller?.setCenter(marker.value?.position)
-                                        mapView.value?.invalidate()
-                                    }
-                            ) {
-                                Text(
-                                    text = address.first,
-                                    modifier = Modifier
-                                        .padding(10.dp)
-                                        .fillMaxWidth(),
-                                )
-                            }
-                        }
-                    } else if (searchJob?.isActive == true) {
-                        Row(
+
+                if (addressResults.isNotEmpty() || searchJob?.isActive == true) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
+                        )
+                    ) {
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(10.dp),
-                            horizontalArrangement = Arrangement.Center
+                                .verticalScroll(ScrollState(0)),
                         ) {
-                            CircularProgressIndicator()
+                            if (addressResults.isNotEmpty()) {
+                                addressResults.forEachIndexed { index, address ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                marker.value?.position = GeoPoint(address.second.toDouble(), address.third.toDouble())
+                                                mapView.value?.controller?.setCenter(marker.value?.position)
+                                                mapView.value?.invalidate()
+                                                locationName = ""
+                                                addressResults = emptyList()
+                                            }
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.LocationOn,
+                                            contentDescription = "Location",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(end = 12.dp)
+                                        )
+                                        Text(
+                                            text = address.first,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            modifier = Modifier.weight(1f),
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                    if (index < addressResults.size - 1) {
+                                        HorizontalDivider(
+                                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                            thickness = 0.5.dp,
+                                            modifier = Modifier.padding(horizontal = 16.dp)
+                                        )
+                                    }
+                                }
+                            } else {
+                                if (searchJob?.isActive == true) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(24.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(
+                                            text = "Searching...",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+
+
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -639,6 +750,7 @@ class AlertDialogs(
                         )
                     }
                 }
+
                 FilledIconButton(
                     onClick = {
                         customCoordinatesDialog = true
@@ -652,12 +764,19 @@ class AlertDialogs(
                     )
                 }
             }
+
             if (customCoordinatesDialog) {
                 val lat = remember { mutableStateOf(coordinates.first.toString()) }
                 val lon = remember { mutableStateOf(coordinates.second.toString()) }
-                Dialog(onDismissRequest = {
+
+                Dialog(
+                    onDismissRequest = {
                     customCoordinatesDialog = false
-                }) {
+                    },
+                    properties = DialogProperties(
+                        usePlatformDefaultWidth = false
+                    )
+                ) {
                     DefaultDialogCard(
                         modifier = Modifier.align(Alignment.Center)
                     ) {
@@ -688,6 +807,7 @@ class AlertDialogs(
                             }) {
                                 Text(text = translation["button.cancel"])
                             }
+
                             Button(onClick = {
                                 marker.value?.position = GeoPoint(lat.value.toDouble(), lon.value.toDouble())
                                 mapView.value?.controller?.setCenter(marker.value?.position)
@@ -696,6 +816,265 @@ class AlertDialogs(
                             }) {
                                 Text(text = translation["button.ok"])
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun MessageListPropertyDialog(property: PropertyPair<*>, onDismiss: () -> Unit = {}) {
+        val currentValue = property.value.getNullable()?.toString() ?: "[]"
+        val propertyName = translation[property.key.propertyName()]
+        
+        MessageListManagerDialog(
+            title = propertyName,
+            messageListJson = currentValue,
+            onSave = { newValue ->
+                property.value.setAny(newValue)
+            },
+            onDismiss = onDismiss
+        )
+    }
+
+    @Composable
+    fun MessageListManagerDialog(
+        title: String,
+        messageListJson: String,
+        onSave: (String) -> Unit,
+        onDismiss: () -> Unit,
+    ) {
+        var messageList by remember { 
+            mutableStateOf(
+                try {
+                    val gson = com.google.gson.Gson()
+                    val type = object : com.google.gson.reflect.TypeToken<List<String>>() {}.type
+                    gson.fromJson(messageListJson, type) ?: listOf<String>()
+                } catch (e: Exception) {
+                    listOf<String>()
+                }
+            ) 
+        }
+        
+        var showAddDialog by remember { mutableStateOf(false) }
+        var editingIndex by remember { mutableStateOf(-1) }
+        var editingText by remember { mutableStateOf("") }
+
+        DefaultDialogCard {
+            Column {
+                Text(
+                    text = title,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                // Message list
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 200.dp, max = 400.dp)
+                        .padding(8.dp),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    if (messageList.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = translation["auto_reply_messages.dialog.no_messages"],
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(8.dp)
+                        ) {
+                            items(messageList.size) { index ->
+                                ElevatedCard(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    shape = MaterialTheme.shapes.small
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = messageList[index],
+                                            modifier = Modifier.weight(1f),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            IconButton(
+                                                onClick = { 
+                                                    editingIndex = index
+                                                    editingText = messageList[index]
+                                                    showAddDialog = true
+                                                }
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.Edit,
+                                                    contentDescription = "Edit",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                            IconButton(
+                                                onClick = { 
+                                                    messageList = messageList.toMutableList().apply {
+                                                        removeAt(index)
+                                                    }
+                                                }
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    contentDescription = "Delete",
+                                                    tint = MaterialTheme.colorScheme.error
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Add button
+                Button(
+                    onClick = { 
+                        editingIndex = -1
+                        editingText = ""
+                        showAddDialog = true
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = translation["auto_reply_messages.dialog.add_message"])
+                }
+
+                // Dialog buttons
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = { onDismiss() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text(text = translation["button.cancel"])
+                    }
+                    Button(
+                        onClick = {
+                            val gson = com.google.gson.Gson()
+                            val jsonString = gson.toJson(messageList)
+                            onSave(jsonString)
+                            onDismiss()
+                        }
+                    ) {
+                        Text(text = translation["button.save"])
+                    }
+                }
+            }
+        }
+
+        // Add/Edit message dialog
+        if (showAddDialog) {
+            Dialog(
+                onDismissRequest = { showAddDialog = false },
+                properties = DialogProperties(
+                    usePlatformDefaultWidth = false
+                )
+            ) {
+                DefaultDialogCard {
+                    Text(
+                        text = if (editingIndex == -1) translation["auto_reply_messages.dialog.add_message"] else translation["auto_reply_messages.dialog.edit_message"],
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    
+                    TextField(
+                        value = editingText,
+                        onValueChange = { editingText = it },
+                        label = { Text(translation["auto_reply_messages.dialog.message_label"]) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        minLines = 2,
+                        maxLines = 4,
+                        placeholder = { Text(translation["auto_reply_messages.dialog.message_placeholder"]) }
+                    )
+                    
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = { showAddDialog = false },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Text(text = translation["button.cancel"])
+                        }
+                        Button(
+                            onClick = {
+                                if (editingText.isNotBlank()) {
+                                    if (editingIndex == -1) {
+                                        // Add new message
+                                        messageList = messageList.toMutableList().apply {
+                                            add(editingText)
+                                        }
+                                    } else {
+                                        // Edit existing message
+                                        messageList = messageList.toMutableList().apply {
+                                            set(editingIndex, editingText)
+                                        }
+                                    }
+                                }
+                                showAddDialog = false
+                            },
+                            enabled = editingText.isNotBlank()
+                        ) {
+                            Text(text = if (editingIndex == -1) translation["auto_reply_messages.dialog.add_message"] else translation["button.save"])
                         }
                     }
                 }

@@ -9,7 +9,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -50,10 +49,9 @@ typealias CustomComposable = @Composable BoxScope.() -> Unit
 class InAppOverlay(
     private val context: ModContext
 ) {
-    enum class ToastPosition { Start, Center, End }
-
     companion object {
         fun showCrashOverlay(content: String, throwable: Throwable? = null) {
+            // deny network requests
             SnapEnhance.classCache.apply {
                 unifiedGrpcService.hook("unaryCall", HookStage.BEFORE) { param ->
                     param.setResult(null)
@@ -62,6 +60,7 @@ class InAppOverlay(
                     param.setResult(null)
                 }
             }
+
             Hooker.ephemeralHook(Activity::class.java, "onPostCreate", HookStage.AFTER) { param ->
                 val contentView = param.thisObject<Activity>().findViewById<FrameLayout>(android.R.id.content)
                 contentView.children().forEach { it.visibility = View.GONE }
@@ -81,7 +80,7 @@ class InAppOverlay(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        text = "PurrfectSnap",
+                                        text = "SnapEnhance",
                                         fontSize = 28.sp
                                     )
                                     Spacer(modifier = Modifier.height(40.dp))
@@ -94,9 +93,9 @@ class InAppOverlay(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceEvenly
                                     ) {
-                                        throwable?.let { th ->
+                                        throwable?.let {
                                             Button(onClick = {
-                                                contentView.context.copyToClipboard(th.stackTraceToString())
+                                                contentView.context.copyToClipboard(it.stackTraceToString())
                                             }) {
                                                 Text("Copy error to clipboard")
                                             }
@@ -118,6 +117,7 @@ class InAppOverlay(
             }
         }
     }
+
     inner class Toast(
         val composable: @Composable Toast.() -> Unit,
         val durationMs: Int
@@ -125,8 +125,10 @@ class InAppOverlay(
         var shown by mutableStateOf(false)
         var visible by mutableStateOf(false)
     }
+
     private val toasts = mutableStateListOf<Toast>()
     private val customComposables = mutableStateListOf<CustomComposable>()
+
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun OverlayContent() {
@@ -142,6 +144,7 @@ class InAppOverlay(
                     animationSpec = if (toast.visible) tween(durationMillis = 150) else tween(durationMillis = 300),
                     label = "toast"
                 )
+
                 LaunchedEffect(toast) {
                     toast.visible = true
                     if (toast.durationMs < 0) return@LaunchedEffect
@@ -153,36 +156,34 @@ class InAppOverlay(
                         if (toasts.isNotEmpty() && toasts.all { it.shown }) toasts.clear()
                     }
                 }
+
                 val deviceWidth = LocalContext.current.resources.displayMetrics.widthPixels
-                val anchors = DraggableAnchors<ToastPosition> {
-                    ToastPosition.Start at -deviceWidth.toFloat()
-                    ToastPosition.Center at 0f
-                    ToastPosition.End at deviceWidth.toFloat()
-                }
+                val delayAnimationSpec =  rememberSplineBasedDecay<Float>()
                 val draggableState = remember {
                     AnchoredDraggableState(
-                        initialValue = ToastPosition.Center,
-                        anchors = anchors,
+                        initialValue = 0,
+                        anchors = DraggableAnchors {
+                            -1 at -deviceWidth.toFloat()
+                            0 at 0f
+                            1 at deviceWidth.toFloat()
+                        },
+                        positionalThreshold = { distance: Float -> distance * 0.5f },
+                        velocityThreshold = { deviceWidth / 2f },
+                        snapAnimationSpec = tween(),
+                        decayAnimationSpec = delayAnimationSpec,
+                        confirmValueChange = {
+                            if (it == 0) return@AnchoredDraggableState true
+                            toast.visible = false
+                            true
+                        }
                     )
                 }
-                LaunchedEffect(draggableState.currentValue) {
-                    if (draggableState.currentValue != ToastPosition.Center) {
-                        toast.visible = false
-                    }
-                }
-                val flingBehavior = AnchoredDraggableDefaults.flingBehavior(draggableState, animationSpec = tween())
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .anchoredDraggable(
-                            state = draggableState,
-                            orientation = Orientation.Horizontal,
-                            flingBehavior = flingBehavior
-                        )
-                        .offset {
-                            val offsetValue = draggableState.offset
-                            IntOffset(offsetValue.roundToInt(), 0)
-                        }
+                        .anchoredDraggable(draggableState, Orientation.Horizontal)
+                        .offset { IntOffset(draggableState.offset.roundToInt(), 0) }
                         .graphicsLayer {
                             alpha = animation
                             translationY = -100.dp.toPx() * (1 - animation)
@@ -193,12 +194,15 @@ class InAppOverlay(
                     }
                 }
             }
-            customComposables.forEach { customComposable ->
-                customComposable()
+
+            customComposables.forEach {
+                it()
             }
         }
     }
+
     private val overlayTag = Random.nextLong()
+
     private fun injectOverlay(activity: Activity) {
         val root = activity.findViewById<FrameLayout>(android.R.id.content)
         activity.runOnUiThread {
@@ -213,32 +217,39 @@ class InAppOverlay(
             })
         }
     }
+
     fun onActivityCreate(activity: Activity) {
         injectOverlay(activity)
     }
+
     fun addCustomComposable(composable: CustomComposable) {
         customComposables.add(composable)
     }
+
     fun removeCustomComposable(composable: CustomComposable) {
         customComposables.remove(composable)
     }
+
     @Composable
     private fun DurationProgress(
         duration: Int,
         modifier: Modifier = Modifier
     ) {
         val progress = remember { Animatable(1f) }
+
         LaunchedEffect(Unit) {
             progress.animateTo(
                 targetValue = 0f,
                 animationSpec = tween(durationMillis = duration, easing = LinearEasing)
             )
         }
+
         LinearProgressIndicator(
             progress = { progress.value },
             modifier = modifier
         )
     }
+
     fun showStatusToast(
         icon: ImageVector,
         text: String,
@@ -255,6 +266,7 @@ class InAppOverlay(
             showDuration = showDuration
         )
     }
+
     private fun showToast(
         icon: @Composable () -> Unit = {
             Icon(Icons.Outlined.Warning, contentDescription = "icon", modifier = Modifier.size(32.dp))

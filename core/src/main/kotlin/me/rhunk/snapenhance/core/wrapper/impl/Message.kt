@@ -14,6 +14,7 @@ fun ByteArray.getMessageText(contentType: ContentType): String? {
         ContentType.CHAT -> protoReader.getString(2, 1) ?: "Failed to parse message"
         ContentType.TINY_SNAP -> protoReader.getString(19, 1, 1)
         ContentType.EXTERNAL_MEDIA -> protoReader.getString(7, 11, 1)
+        ContentType.STORY_REPLY -> protoReader.getString(7, 11, 1)
         ContentType.SNAP -> protoReader.followPath(11, 5)?.run {
             val captions = mutableListOf<String>()
 

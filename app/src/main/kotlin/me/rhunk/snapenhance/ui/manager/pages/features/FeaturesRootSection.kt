@@ -43,6 +43,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.rhunk.snapenhance.common.config.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import me.rhunk.snapenhance.common.ui.TopBarActionButton
 import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
 import me.rhunk.snapenhance.common.ui.transparentTextFieldColors
@@ -76,6 +78,8 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     private val alertDialogs by lazy { AlertDialogs(context.translation) }
+    private val gson by lazy { Gson() }
+    private val listTypeToken = object : TypeToken<List<String>>() {}.type
 
     companion object {
         const val FEATURE_CONTAINER_ROUTE = "feature_container/{name}"
@@ -326,7 +330,13 @@ class FeaturesRootSection : Routes.Route() {
                             alertDialogs.MultipleSelectionDialog(property)
                         }
                         DataProcessors.Type.STRING, DataProcessors.Type.INTEGER, DataProcessors.Type.FLOAT -> {
-                            alertDialogs.KeyboardInputDialog(property) { showDialog = false }
+                            // Check if this is a message list property
+                            val isMessageListProperty = property.key.name.endsWith("_messages")
+                            if (isMessageListProperty) {
+                                alertDialogs.MessageListPropertyDialog(property) { showDialog = false }
+                            } else {
+                                alertDialogs.KeyboardInputDialog(property) { showDialog = false }
+                            }
                         }
                         else -> {}
                     }
@@ -343,8 +353,27 @@ class FeaturesRootSection : Routes.Route() {
                             )
                         }
                     } else {
-                        IconButton(onClick = it) {
-                            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                        // Check if this is a message list property
+                        val isMessageListProperty = property.key.name.endsWith("_messages")
+                        if (isMessageListProperty) {
+                            // Show message count
+                            val messageCount = try {
+                                val messageList: List<String> = gson.fromJson(propertyValue.get().toString(), listTypeToken) ?: emptyList()
+                                messageList.size
+                            } catch (e: Exception) {
+                                1
+                            }
+
+                            Text(
+                                text = "$messageCount messages",
+                                modifier = Modifier.padding(8.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            IconButton(onClick = it) {
+                                Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
+                            }
                         }
                     }
                 }

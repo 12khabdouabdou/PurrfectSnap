@@ -81,7 +81,7 @@ class FeatureManager(
             PreventMessageSending(),
             Notifications(),
             AutoSave(),
-            HideTypingIndicator(),
+            AutoReply(),
             UITweaks(),
             ConfigurationOverride(),
             COFOverride(),
@@ -140,12 +140,15 @@ class FeatureManager(
             DisableTelecomFramework(),
             BetterTranscript(),
             VoiceNoteOverride(),
+            AutoDeleteSentMessages(),
             FriendNotes(),
             DoubleTapChatAction(),
             SnapScoreChanges(),
             DisableSnapModeRestrictions(),
+            MessageTranslator(),
             PreventForcedKeyboard(),
             CustomTheming(),
+            HideTypingIndicator(),
         )
 
         features.values.toList().forEach { feature ->

@@ -142,7 +142,7 @@ class NewChatActionMenu : AbstractMenu() {
                             }.toString()
                         )
                     }) {
-                        Text("Info")
+                        Text(this@NewChatActionMenu.context.translation["debug_dialogs.info"])
                     }
                     Button(onClick = {
                         val arroyoMessage = lastFocusedMessage ?: return@Button
@@ -150,7 +150,7 @@ class NewChatActionMenu : AbstractMenu() {
                             val decodedAttachments = MessageDecoder.decode(message.messageContent!!)
                             debugAlertDialog(
                                 context,
-                                "Media References",
+                                this@NewChatActionMenu.context.translation["debug_dialogs.media_references"],
                                 decodedAttachments.mapIndexed { index, attachment ->
                                     StringBuilder().apply {
                                         append("---- media $index ----\n")
@@ -184,31 +184,31 @@ class NewChatActionMenu : AbstractMenu() {
                             )
                         })
                     }) {
-                        Text("Refs")
+                        Text(this@NewChatActionMenu.context.translation["debug_dialogs.refs"])
                     }
                     Button(onClick = {
                         val message = lastFocusedMessage ?: return@Button
                         debugAlertDialog(
                             context,
-                            "Arroyo proto",
+                            this@NewChatActionMenu.context.translation["debug_dialogs.arroyo_proto"],
                             message.messageContent?.let { ProtoReader(it) }?.toString() ?: "empty"
                         )
                     }) {
-                        Text("Arroyo")
+                        Text(this@NewChatActionMenu.context.translation["debug_dialogs.arroyo"])
                     }
                     Button(onClick = {
                         val arroyoMessage = lastFocusedMessage ?: return@Button
                         messaging.conversationManager?.fetchMessage(arroyoMessage.clientConversationId!!, arroyoMessage.clientMessageId.toLong(), onSuccess = { message ->
-                            debugAlertDialog(
-                                context,
-                                "Message proto",
+                                                    debugAlertDialog(
+                            context,
+                            this@NewChatActionMenu.context.translation["debug_dialogs.message_proto"],
                                 message.messageContent?.content?.let { ProtoReader(it) }?.toString() ?: "empty"
                             )
                         }, onError = {
-                            this@NewChatActionMenu.context.shortToast("Failed to fetch message: $it")
+                            this@NewChatActionMenu.context.shortToast(this@NewChatActionMenu.context.translation["error_messages.failed_to_fetch_message"].replace("{error}", it.toString()))
                         })
                     }) {
-                        Text("Message")
+                        Text(this@NewChatActionMenu.context.translation["debug_dialogs.message"])
                     }
                 }
             }
@@ -320,12 +320,12 @@ class NewChatActionMenu : AbstractMenu() {
                                             .convertMessageInterface(it)
                                     }.onFailure {
                                         context.log.verbose("Failed to convert message: $it")
-                                        context.shortToast("Failed to edit message: $it")
+                                        context.shortToast(context.translation["error_messages.failed_to_edit_message"].replace("{error}", it.toString()))
                                     }
                                 }
                             },
                             onError = {
-                                context.shortToast("Failed to fetch message: $it")
+                                context.shortToast(context.translation["error_messages.failed_to_fetch_message"].replace("{error}", it.toString()))
                             }
                         )
                     })

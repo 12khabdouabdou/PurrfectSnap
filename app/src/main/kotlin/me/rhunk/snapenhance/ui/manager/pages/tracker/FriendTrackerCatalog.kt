@@ -257,4 +257,3 @@ class FriendTrackerCatalog : Routes.Route() {
         AvailableRulesTab()
     }
 }
-

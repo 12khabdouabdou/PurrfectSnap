@@ -32,4 +32,3 @@ fun AppDatabase.addRepo(type: String, url: String) {
         })
     }
 }
-

@@ -8,7 +8,7 @@ import me.rhunk.snapenhance.common.data.NotificationType.entries
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
 
 enum class MessageState {
-    PREPARING, SENDING, COMMITTED, FAILED, CANCELING
+    PREPARING, SENDING, COMMITTED, FAILED, CANCELING, PENDING_DECRYPTION
 }
 
 enum class NotificationType (
@@ -87,7 +87,12 @@ enum class ContentType(val id: Int) {
     PROMPT_LENS_RESPONSE(25),
     TINY_SNAP(26),
     STATUS_COUNTDOWN(27),
-    MAP_REACTION(28);
+    MAP_REACTION(28),
+    STORY_REPLY(29),
+    MY_AI_SPECTACLES_BOT_RESPONSE(30),
+    STATUS_SNAP_REMIX_CAPTURE(31),
+    STATUS_STICKER_CUTOUT(32),
+    STATUS_FRIEND_PLACE_ALERT(33);
 
     companion object {
         fun fromId(i: Int): ContentType {
@@ -105,7 +110,7 @@ enum class ContentType(val id: Int) {
                     contains(3) -> EXTERNAL_MEDIA
                     contains(4) -> STICKER
                     contains(5) -> SHARE
-                    contains(7) -> EXTERNAL_MEDIA // story replies
+                    contains(7) -> STORY_REPLY // story replies
                     contains(20) -> MAP_REACTION
                     else -> null
                 }

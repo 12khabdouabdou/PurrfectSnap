@@ -31,6 +31,7 @@ import me.rhunk.snapenhance.mapper.impl.FriendRelationshipChangerMapper
 import kotlin.random.Random
 
 class ManageFriendList : AbstractAction() {
+    private val translation by lazy { context.translation.getCategory("friend_list") }
     private var pendingPickerAction: Pair<Int, (data: Uri) -> Unit>? = null
 
     private val uuidRegex by lazy {
@@ -113,10 +114,10 @@ class ManageFriendList : AbstractAction() {
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("Manage Friend List", fontSize = 20.sp)
+                    Text(translation.get("manage_title"), fontSize = 20.sp)
                     Spacer(modifier = Modifier.height(5.dp))
                     Text(
-                        text = "Export friends allows you to save a list of your friends' IDs in a text file. Importing from a file will display the friends in a list where you can add them.",
+                        text = translation.get("export_description"),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light,
                         textAlign = TextAlign.Center
@@ -128,7 +129,7 @@ class ManageFriendList : AbstractAction() {
                         Button(onClick = {
                             exportFriends(context.database.getAllFriends().filter { it.friendLinkType == FriendLinkType.MUTUAL.value && it.addedTimestamp > 0L }.mapNotNull { it.userId })
                         }) {
-                            Text("Export friends")
+                            Text(translation.get("export_friends"))
                         }
                         Button(onClick = {
                             pendingPickerAction = Random.nextInt(0, 65535) to { data ->
@@ -153,7 +154,7 @@ class ManageFriendList : AbstractAction() {
                                 pendingPickerAction!!.first
                             )
                         }) {
-                            Text("Import from file")
+                            Text(translation.get("import_from_file"))
                         }
                     }
                 }
@@ -172,16 +173,16 @@ class ManageFriendList : AbstractAction() {
                             fetchedFriends = null
                         }
                     ) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = "Back")
+                                                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = context.translation["common.back"])
                     }
                 }
                 LazyColumn(
                     modifier = Modifier.weight(1f).padding(8.dp)
                 ) {
                     item {
-                        if (fetchedFriends?.isEmpty() == true) {
-                            Text("No friends found", modifier = Modifier.padding(8.dp))
-                        }
+                                                 if (fetchedFriends?.isEmpty() == true) {
+                             Text(context.translation["common.no_friends_found"], modifier = Modifier.padding(8.dp))
+                         }
                     }
                     items(fetchedFriends ?: emptyList()) { userId ->
                         fun fetchLocalLinkType(): FriendLinkType? {
@@ -212,9 +213,9 @@ class ManageFriendList : AbstractAction() {
                             Column(
                                 modifier = Modifier.weight(1f)
                             ) {
-                                friendSnapchatter?.let { snapchatter ->
-                                    Text(snapchatter.displayName?.let { "$it (${snapchatter.username}) " } ?: snapchatter.username ?: "Unknown")
-                                }
+                                                                 friendSnapchatter?.let { snapchatter ->
+                                     Text(snapchatter.displayName?.let { "$it (${snapchatter.username}) " } ?: snapchatter.username ?: context.translation["common.unknown"])
+                                 }
                                 Text(userId, fontSize = 12.sp, fontWeight = FontWeight.Light)
                             }
 
@@ -239,12 +240,12 @@ class ManageFriendList : AbstractAction() {
                                         }
                                     }
                                 ) {
-                                    if (friendLinkType == FriendLinkType.MUTUAL) {
-                                        Text("Added")
-                                    } else if (pendingFriendRequests[userId]?.isActive == true) {
+                                                                         if (friendLinkType == FriendLinkType.MUTUAL) {
+                                         Text(context.translation["common.added"])
+                                     } else if (pendingFriendRequests[userId]?.isActive == true) {
                                         CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp), strokeWidth = 1.dp)
                                     } else {
-                                        Text("Add")
+                                        Text(translation.get("add"))
                                     }
                                 }
                             }

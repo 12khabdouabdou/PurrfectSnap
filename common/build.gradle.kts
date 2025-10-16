@@ -60,4 +60,3 @@ dependencies {
 
     implementation(project(":mapper"))
 }
-

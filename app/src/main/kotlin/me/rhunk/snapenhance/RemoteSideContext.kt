@@ -248,4 +248,3 @@ class RemoteSideContext(
         androidContext.startActivity(intent)
     }
 }
-

@@ -47,6 +47,7 @@ class Global : ConfigContainer() {
     val disablePermissionRequests = multiple("disable_permission_requests", *permissionMap.values.toTypedArray()) { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
     val disableMemoriesSnapFeed = boolean("disable_memories_snap_feed")
     val spotlightCommentsUsername = boolean("spotlight_comments_username") { requireRestart() }
+    val spotlightCommentsUsernameIcon = string("spotlight_comments_username_icon", "[👤]") { requireRestart() }
     val bypassVideoLengthRestriction = unique("bypass_video_length_restriction", "split", "single") { addNotices(
         FeatureNotice.BAN_RISK); requireRestart() }
     val defaultVideoPlaybackRate = float("default_video_playback_rate", 1.0F) { requireRestart(); inputCheck = { (it.toFloatOrNull() ?: 1.0F) in 0.1F..4.0F} }

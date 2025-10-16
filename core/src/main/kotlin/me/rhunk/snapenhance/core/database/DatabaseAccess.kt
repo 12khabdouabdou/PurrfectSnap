@@ -39,6 +39,14 @@ class DatabaseAccess(
         } == true
     }
 
+    private val hasMainFriendsFeedView by lazy {
+        useDatabase(DatabaseType.MAIN)?.performOperation {
+            safeRawQuery("SELECT name FROM sqlite_master WHERE name = 'FriendsFeedView'")?.use { query ->
+                query.moveToFirst() && query.getStringOrNull("name") == "FriendsFeedView"
+            }
+        } == true
+    }
+
     private fun useDatabase(database: DatabaseType, writeMode: Boolean = false): SQLiteDatabase? {
         // only cache read-only databases
         if (!writeMode && openedDatabases.containsKey(database) && openedDatabases[database]?.isOpen == true) {
@@ -218,14 +226,16 @@ class DatabaseAccess(
                 "client_conversation_id = ?",
                 arrayOf(conversationId)
             )
-        } ?: useDatabase(DatabaseType.MAIN)?.performOperation {
-            readDatabaseObject(
-                FriendFeedEntry(),
-                "FriendsFeedView",
-                "key = ?",
-                arrayOf(conversationId)
-            )
-        }
+        } ?: if (hasMainFriendsFeedView) {
+            useDatabase(DatabaseType.MAIN)?.performOperation {
+                readDatabaseObject(
+                    FriendFeedEntry(),
+                    "FriendsFeedView",
+                    "key = ?",
+                    arrayOf(conversationId)
+                )
+            }
+        } else null
     }
 
     fun getFriendInfo(userId: String): FriendInfo? {
