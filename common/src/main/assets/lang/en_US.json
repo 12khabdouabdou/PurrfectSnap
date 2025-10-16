@@ -620,6 +620,22 @@
             },
             "exclude_message_logger": {
                 "name": "Exclude From Message Logger"
+            },
+            "auto_reply": {
+                "name": "Auto Reply",
+                "description": "Automatically sends replies to incoming messages when you're away",
+                "options": {
+                    "blacklist": "Exclude from Auto Reply",
+                    "whitelist": "Auto Reply"
+                }
+            },
+            "auto_delete_sent_messages": {
+                "name": "Auto Delete Sent Messages",
+                "description": "Automatically deletes sent messages after a specified time period",
+                "options": {
+                    "blacklist": "Exclude from Auto Delete Sent Messages",
+                    "whitelist": "Auto Delete Sent Messages"
+                }
             }
         }
     },
@@ -894,6 +910,120 @@
                             "default": "Default",
                             "legacy": "Legacy"
                         }
+                    },
+                    "auto_open_snaps": {
+                        "name": "Auto Open Snaps Settings",
+                        "description": "Configure delay and queue settings for Auto Open Snaps",
+                        "properties": {
+                            "allow_running_in_background": {
+                                "name": "Allow Running in Background",
+                                "description": "Allows Auto Open Snaps to run in the background. Note: This will significantly drain your battery"
+                            },
+                            "min_delay": {
+                                "name": "Min Delay (ms)",
+                                "description": "Minimum delay in milliseconds before opening a snap"
+                            },
+                            "max_delay_ms": {
+                                "name": "Max Delay (ms)",
+                                "description": "Maximum delay in milliseconds before opening a snap"
+                            },
+                            "queue_size": {
+                                "name": "Queue Size",
+                                "description": "Maximum number of snaps to keep in queue"
+                            },
+                            "retry_attempts": {
+                                "name": "Retry Attempts",
+                                "description": "Number of times to retry opening a snap if it fails"
+                            },
+                            "retry_delay": {
+                                "name": "Retry Delay (ms)",
+                                "description": "Delay in milliseconds between retry attempts"
+                            }
+                        }
+                    },
+                    "auto_delete_sent_messages": {
+                        "name": "Auto Delete Sent Messages",
+                        "description": "Automatically deletes sent messages after a specified time period",
+                        "properties": {
+                            "allow_running_in_background": {
+                                "name": "Allow Running in Background",
+                                "description": "Allows Auto Delete Sent Messages to run in the background. Note: This will significantly drain your battery"
+                            },
+                            "delete_after_value": {
+                                "name": "Delete After (value)",
+                                "description": "Time value before deleting the sent message"
+                            },
+                            "delete_after_unit": {
+                                "name": "Time Unit",
+                                "description": "Select the time unit for deletion delay"
+                            },
+                            "message_types": {
+                                "name": "Message Types",
+                                "description": "Select which message types should be auto-deleted"
+                            },
+                            "show_countdown": {
+                                "name": "Show Countdown",
+                                "description": "Show countdown before deleting the message"
+                            },
+                            "show_notification": {
+                                "name": "Show Notification",
+                                "description": "Show notification during countdown"
+                            }
+                        }
+                    },
+                    "instant_translation": {
+                        "name": "Message Translator",
+                        "description": "Automatically translate incoming messages to your preferred language",
+                        "properties": {
+                            "enabled": {
+                                "name": "Enable Message Translator",
+                                "description": "Enable automatic translation of messages"
+                            },
+                            "source_language": {
+                                "name": "Source Language",
+                                "description": "Language to translate from (use 'auto' for automatic detection)"
+                            },
+                            "target_language": {
+                                "name": "Target Language",
+                                "description": "Language to translate to"
+                            },
+                            "show_original": {
+                                "name": "Show Original Text",
+                                "description": "Display the original message text"
+                            },
+                            "show_translation": {
+                                "name": "Show Translation",
+                                "description": "Display the translated text"
+                            },
+                            "translation_position": {
+                                "name": "Translation Position",
+                                "description": "Where to display the translation relative to original text"
+                            },
+                            "auto_translate": {
+                                "name": "Auto Translate",
+                                "description": "Automatically translate messages when received"
+                            },
+                            "translate_on_tap": {
+                                "name": "Translate on Tap",
+                                "description": "Translate messages when tapped"
+                            },
+                            "supported_languages": {
+                                "name": "Supported Languages",
+                                "description": "Languages available for translation"
+                            },
+                            "pause_on_error": {
+                                "name": "Pause on Error",
+                                "description": "Pause translation when service is blocked"
+                            },
+                            "max_retries": {
+                                "name": "Max Retries",
+                                "description": "Maximum number of retry attempts"
+                            },
+                            "retry_delay": {
+                                "name": "Retry Delay",
+                                "description": "Delay between retry attempts (milliseconds)"
+                            }
+                        }
                     }
                 }
             },
@@ -920,6 +1050,10 @@
                     "hide_bitmoji_presence": {
                         "name": "Hide Bitmoji Presence",
                         "description": "Prevents your Bitmoji from popping up while in Chat"
+                    },
+                    "hide_typing_notifications": {
+                        "name": "Hide Typing Notifications",
+                        "description": "Prevents anyone from knowing you're typing a message"
                     },
                     "unlimited_snap_view_time": {
                         "name": "Unlimited Snap View Time",
@@ -1086,6 +1220,152 @@
                     "double_tap_chat_action_custom_emoji": {
                         "name": "Double Tap Chat Action Custom Emoji Reaction",
                         "description": "Sets a custom emoji reaction for the double tap chat action"
+                    },
+                    "auto_reply": {
+                        "name": "Auto Reply",
+                        "description": "Automatically sends replies to incoming messages when you're away",
+                        "properties": {
+                            "allow_running_in_background": {
+                                "name": "Allow Running in Background",
+                                "description": "Allows Auto Reply to run in the background. Note: This will significantly drain your battery"
+                            },
+                            "cooldown_seconds": {
+                                "name": "Cooldown Seconds",
+                                "description": "Minimum time between auto-replies to the same conversation (in seconds)"
+                            },
+                            "message_age_threshold": {
+                                "name": "Message Age Threshold",
+                                "description": "Only reply to messages received within this timeframe (in seconds)"
+                            },
+                            "ai_config": {
+                                "name": "AI Configuration",
+                                "description": "Settings for AI-powered auto-replies",
+                                "properties": {
+                                    "enable_ai_replies": {
+                                        "name": "Enable AI Replies",
+                                        "description": "Use AI to generate intelligent auto-replies instead of template messages"
+                                    },
+                                    "ai_endpoint_url": {
+                                        "name": "AI Endpoint URL",
+                                        "description": "API endpoint URL for the AI service (e.g., OpenAI, local AI server)"
+                                    },
+                                    "ai_model": {
+                                        "name": "AI Model",
+                                        "description": "AI model to use for generating replies (e.g., gpt-3.5-turbo, gpt-4)"
+                                    },
+                                    "ai_api_key": {
+                                        "name": "AI API Key",
+                                        "description": "API key for authenticating with the AI service"
+                                    },
+                                    "ai_system_prompt": {
+                                        "name": "AI System Prompt",
+                                        "description": "System prompt that defines the AI's personality and behavior"
+                                    },
+                                    "ai_max_tokens": {
+                                        "name": "AI Max Tokens",
+                                        "description": "Maximum number of tokens (words) the AI can use in responses"
+                                    },
+                                    "ai_temperature": {
+                                        "name": "AI Temperature",
+                                        "description": "Controls randomness in AI responses (0.0 = deterministic, 2.0 = very random)"
+                                    },
+                                    "ai_context_length": {
+                                        "name": "AI Context Length",
+                                        "description": "Number of previous messages to include as context for AI responses"
+                                    },
+                                    "ai_personality_traits": {
+                                        "name": "AI Personality Traits",
+                                        "description": "Comma-separated personality traits for the AI (e.g., friendly, casual, helpful)"
+                                    },
+                                    "ai_response_style": {
+                                        "name": "AI Response Style",
+                                        "description": "Overall style for AI responses"
+                                    },
+                                    "ai_response_language": {
+                                        "name": "AI Response Language",
+                                        "description": "Language for AI responses (auto = same as received message)"
+                                    },
+                                    "ai_use_conversation_history": {
+                                        "name": "Use Conversation History",
+                                        "description": "Include previous messages as context for more relevant AI responses"
+                                    },
+                                    "ai_include_friend_info": {
+                                        "name": "Include Friend Info",
+                                        "description": "Include friend's name and other available info in AI context"
+                                    },
+                                    "ai_fallback_to_template": {
+                                        "name": "Fallback to Template",
+                                        "description": "Use template messages if AI fails to generate a response"
+                                    },
+                                    "ai_request_timeout": {
+                                        "name": "AI Request Timeout",
+                                        "description": "Maximum time to wait for AI response (in seconds)"
+                                    },
+                                    "ai_retry_attempts": {
+                                        "name": "AI Retry Attempts",
+                                        "description": "Number of times to retry AI requests if they fail"
+                                    }
+                                }
+                            },
+                            "auto_trigger_config": {
+                                "name": "Auto Trigger Configuration",
+                                "description": "Settings for auto-reply triggers and message templates",
+                                "properties": {
+                                    "friendSpecificGreeting": {
+                                        "name": "Friend Specific Greeting",
+                                        "description": "Add friend's name to auto-replies for personalization"
+                                    },
+                                    "friendGreeting": {
+                                        "name": "Friend Greeting",
+                                        "description": "Greeting text to use when friend specific greeting is enabled"
+                                    },
+                                    "auto_reply_content_types": {
+                                        "name": "Auto Reply Triggers",
+                                        "description": "Select which message types should trigger auto-replies"
+                                    },
+                                    "chat_messages": {
+                                        "name": "Chat Message Replies",
+                                        "description": "Auto-reply messages for text chat messages"
+                                    },
+                                    "snap_messages": {
+                                        "name": "Snap Replies",
+                                        "description": "Auto-reply messages for snaps"
+                                    },
+                                    "story_share_messages": {
+                                        "name": "Story Share Replies",
+                                        "description": "Auto-reply messages for story shares"
+                                    },
+                                    "story_reply_messages": {
+                                        "name": "Story Reply Responses",
+                                        "description": "Auto-reply messages for story replies"
+                                    },
+                                    "external_media_messages": {
+                                        "name": "External Media Replies",
+                                        "description": "Auto-reply messages for external media"
+                                    },
+                                    "voice_note_messages": {
+                                        "name": "Voice Note Replies",
+                                        "description": "Auto-reply messages for voice notes"
+                                    },
+                                    "sticker_messages": {
+                                        "name": "Sticker Replies",
+                                        "description": "Auto-reply messages for stickers"
+                                    },
+                                    "tiny_snap_messages": {
+                                        "name": "Tiny Snap Replies",
+                                        "description": "Auto-reply messages for tiny snaps"
+                                    },
+                                    "map_reaction_messages": {
+                                        "name": "Map Reaction Replies",
+                                        "description": "Auto-reply messages for map reactions"
+                                    },
+                                    "half_swipe_messages": {
+                                        "name": "Half Swipe Messages",
+                                        "description": "Auto-reply messages for half swipes"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },
@@ -1671,6 +1951,11 @@
                 "3_months": "3 Months",
                 "6_months": "6 Months"
             },
+            "delete_after_unit": {
+                "seconds": "Seconds",
+                "minutes": "Minutes",
+                "hours": "Hours"
+            },
             "disable_story_sections": {
                 "friends": "Friends",
                 "suggested_stories": "Suggested Stories",
@@ -1760,7 +2045,17 @@
         "STATUS_PLUS_GIFT": "Status Plus Gift",
         "TINY_SNAP": "Tiny Snap",
         "STATUS_COUNTDOWN": "Countdown",
-        "MAP_REACTION": "Map Reaction"
+        "MAP_REACTION": "Map Reaction",
+        "chat_messages": "Chat Messages",
+        "snap_messages": "Snaps",
+        "story_share_messages": "Story Shares",
+        "story_reply_messages": "Story Replies",
+        "external_media_messages": "External Media",
+        "voice_note_messages": "Voice Note",
+        "sticker_messages": "Sticker",
+        "tiny_snap_messages": "Tiny Snap",
+        "map_reaction_messages": "Map Reaction",
+        "half_swipes": "Half Swipes"
     },
     "media_download_source": {
         "none": "None",
@@ -2035,5 +2330,313 @@
         "saveable_snap_hint": "Make Snap saveable in the chat",
         "unlimited_duration": "Unlimited"
     },
-    "invalid_input_toast": "Invalid input! Make sure you entered a valid value."
+    "invalid_input_toast": "Invalid input! Make sure you entered a valid value.",
+    "auto_reply_messages": {
+        "dialog": {
+            "add_message": "Add Message",
+            "edit_message": "Edit Message",
+            "message_label": "Message",
+            "no_messages": "No messages yet. Add your first message!",
+            "message_placeholder": "Enter your auto-reply message..."
+        }
+    },
+
+    "auto_delete_sent_messages": {
+        "countdown_toast": "Message will be deleted in {time}",
+        "delete_success_toast": "Message deleted successfully",
+        "delete_failed_toast": "Failed to delete message"
+    },
+
+    "translation_position": {
+        "above": "Above",
+        "below": "Below",
+        "inline": "Inline"
+    },
+
+    "language_codes": {
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "it": "Italian",
+        "pt": "Portuguese",
+        "ru": "Russian",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "zh": "Chinese",
+        "ar": "Arabic",
+        "hi": "Hindi",
+        "tr": "Turkish",
+        "nl": "Dutch",
+        "pl": "Polish",
+        "sv": "Swedish",
+        "da": "Danish",
+        "no": "Norwegian",
+        "fi": "Finnish",
+        "cs": "Czech",
+        "hu": "Hungarian",
+        "ro": "Romanian",
+        "bg": "Bulgarian",
+        "hr": "Croatian",
+        "sk": "Slovak",
+        "sl": "Slovenian",
+        "et": "Estonian",
+        "lv": "Latvian",
+        "lt": "Lithuanian",
+        "mt": "Maltese",
+        "ga": "Irish",
+        "cy": "Welsh"
+    },
+
+    "tracker": {
+        "tabs": {
+            "logs": "Logs",
+            "rules": "Rules"
+        },
+        "actions": {
+            "export": "Export",
+            "delete": "Delete",
+            "add_rule": "Add Rule",
+            "save_rule": "Save Rule"
+        },
+        "messages": {
+            "no_logs_found": "No logs found",
+            "no_rules_found": "No rules found",
+            "no_events": "No events"
+        },
+        "search": {
+            "placeholder": "Search"
+        },
+        "filters": {
+            "newest_first": "Newest first",
+            "pick_a_date": "Pick a date",
+            "title": "Filters",
+            "search_by": "Search by",
+            "since": "Since",
+            "until": "Until",
+            "types": {
+                "username": "Username",
+                "conversation": "Conversation",
+                "event": "Event"
+            },
+            "event_types": {
+                "conversation_enter": "Entered conversation",
+                "conversation_exit": "Left conversation",
+                "started_typing": "Started typing",
+                "stopped_typing": "Stopped typing",
+                "started_speaking": "Started speaking",
+                "stopped_speaking": "Stopped speaking",
+                "started_peeking": "Started peeking",
+                "stopped_peeking": "Stopped peeking",
+                "message_read": "Read message",
+                "message_deleted": "Deleted message",
+                "message_saved": "Saved message",
+                "message_unsaved": "Unsaved message",
+                "message_edited": "Edited message",
+                "message_reaction_add": "Added reaction",
+                "message_reaction_remove": "Removed reaction",
+                "snap_opened": "Opened snap",
+                "snap_replayed": "Replayed snap",
+                "snap_replayed_twice": "Replayed snap twice",
+                "snap_screenshot": "Took screenshot",
+                "snap_screen_record": "Screen recorded"
+            }
+        },
+        "logs": {
+            "export_dialog": {
+                "title": "Export Logs",
+                "description": "Export your friend tracker logs to a file",
+                "progress": "Exporting logs...",
+                "export_as": "Export as {type}",
+                "format_json": "JSON",
+                "format_csv": "CSV"
+            },
+            "delete_dialog": {
+                "title": "Delete Logs",
+                "message": "Are you sure you want to delete all logs? This action cannot be undone.",
+                "confirm": "Delete All",
+                "cancel": "Cancel",
+                "progress": "Deleting {count} logs..."
+            },
+            "log_entry": {
+                "in_conversation": "in {conversation}",
+                "unknown_user": "Unknown",
+                "unknown_conversation": "DMs",
+                "event_text": "{friend} {event} in {conversation}",
+                "events": {
+                    "conversation_enter": "entered",
+                    "conversation_exit": "left",
+                    "started_typing": "started typing",
+                    "stopped_typing": "stopped typing",
+                    "started_speaking": "started speaking",
+                    "stopped_speaking": "stopped speaking",
+                    "started_peeking": "started peeking",
+                    "stopped_peeking": "stopped peeking",
+                    "message_read": "read a message",
+                    "message_deleted": "deleted a message",
+                    "message_saved": "saved a message",
+                    "message_unsaved": "unsaved a message",
+                    "message_edited": "edited a message",
+                    "message_reaction_add": "added a reaction",
+                    "message_reaction_remove": "removed a reaction",
+                    "snap_opened": "opened a snap",
+                    "snap_replayed": "replayed a snap",
+                    "snap_replayed_twice": "replayed a snap twice",
+                    "snap_screenshot": "took a screenshot",
+                    "snap_screen_record": "screen recorded"
+                }
+            }
+        },
+        "edit_rule": {
+            "custom_rule": "Custom Rule",
+            "scope": "Scope",
+            "events": "Events",
+            "add_event": "Add Event",
+            "type": "Type",
+            "triggers": "Triggers",
+            "conditions": "Conditions",
+            "only_inside_conversation": "Only when I'm inside conversation",
+            "only_outside_conversation": "Only when I'm outside conversation",
+            "only_when_app_active": "Only when Snapchat is active",
+            "only_when_app_inactive": "Only when Snapchat is inactive",
+            "no_notification_when_app_active": "No notification when Snapchat is active",
+            "scope_options": {
+                "all_friends_groups": "All Friends/Groups",
+                "no_one_except": "No one except",
+                "everyone_except": "Everyone except"
+            }
+        }
+    },
+
+    "debug": {
+        "title": "Debug",
+        "clear": "Clear",
+        "files": {
+            "config_json": "Configuration File",
+            "mappings_json": "Mappings File",
+            "message_logger_db": "Message Logger Database",
+            "pinned_best_friend_txt": "Pinned Best Friend File",
+            "native_sig_cache_txt": "Native Signature Cache File"
+        },
+        "settings": {
+            "test_mode": "Test Mode (FOR DEBUGGING ONLY)",
+            "disable_feature_loading": "Disable Feature Loading",
+            "disable_auto_mapper": "Disable Auto Mapper",
+            "disable_bypass_status_indicator": "Disable Bypass Status Indicator"
+        }
+    },
+
+    "friend_list": {
+        "manage_title": "Manage Friend List",
+        "export_description": "Export friends allows you to save a list of your friends' IDs in a text file. Importing from a file will display the friends in a list where you can add them.",
+        "export_friends": "Export friends",
+        "import_from_file": "Import from file",
+        "add": "Add"
+    },
+
+    "memories": {
+        "export_title": "Export memories",
+        "total_memories": "Total memories: {count}",
+        "date_range": "Date Range",
+        "select": "Select",
+        "sort_by_folder": "Sort by folder",
+        "include_my_eyes_only": "Include My Eyes Only",
+        "cancel": "Cancel",
+        "export": "Export",
+        "quit": "Quit",
+        "done": "Done",
+        "ok": "OK",
+        "exporting_memories": "Exporting memories... ({failed} failed)"
+    },
+
+    "scripting_ui": {
+        "no_scripts_folder_selected": "No scripts folder selected",
+        "select_folder": "Select folder",
+        "import_from_url": "Import from URL",
+        "open_scripts_folder": "Open Scripts Folder",
+        "import_script_from_url": "Import Script from URL",
+        "warning_imported_scripts": "Warning: Imported scripts can be harmful to your device. Only import scripts from trusted sources.",
+        "enter_url_here": "Enter URL here:",
+        "import": "Import",
+        "cancel": "Cancel",
+        "documentation": "Documentation"
+    },
+
+    "common": {
+        "cancel": "Cancel",
+        "add": "Add",
+        "ok": "OK",
+        "quit": "Quit",
+        "done": "Done",
+        "back": "Back",
+        "unknown": "Unknown",
+        "added": "Added",
+        "no_friends_found": "No friends found",
+        "exporting_memories": "Exporting memories... ({failed} failed)"
+    },
+
+    "logger_history": {
+        "download_started": "Download started!",
+        "downloaded_to": "Downloaded to {path}",
+        "failed_to_download": "Failed to download {message}",
+        "select_conversation": "Select a conversation",
+        "edited_at": "edited at {date}",
+        "download_attachment_failed_toast": "Failed to download attachment",
+        "message_parse_failed": "Message parse failed",
+        "empty_message": "Empty message",
+        "no_more_messages": "No more messages",
+        "reverse_order_checkbox": "Reverse order",
+        "view_logger_history_button": "View Logger History",
+        "posted_at": "Posted at {date}",
+        "created_at": "Created at {date}",
+        "failed_to_open_file": "Failed to open file. Check logs for more info",
+        "failed_to_get_file": "Failed to get file"
+    },
+
+    "debug_dialogs": {
+        "info": "Info",
+        "refs": "Refs",
+        "arroyo": "Arroyo",
+        "message": "Message",
+        "media_references": "Media References",
+        "arroyo_proto": "Arroyo proto",
+        "message_proto": "Message proto"
+    },
+
+    "error_messages": {
+        "failed_to_fetch_message": "Failed to fetch message: {error}",
+        "failed_to_edit_message": "Failed to edit message: {error}"
+    },
+
+    "ai_response_style": {
+        "casual": "Casual",
+        "formal": "Formal",
+        "friendly": "Friendly",
+        "humorous": "Humorous",
+        "empathetic": "Empathetic",
+        "toxic": "Toxic"
+    },
+
+    "ai_response_language": {
+        "auto": "Auto (Same as received)",
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "it": "Italian",
+        "pt": "Portuguese",
+        "ru": "Russian",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "zh": "Chinese",
+        "ar": "Arabic (UAE) and (KSA)",
+        "hi": "Hindi",
+        "tr": "Turkish",
+        "pl": "Polish",
+        "nl": "Dutch",
+        "sv": "Swedish",
+        "da": "Danish",
+        "no": "Norwegian",
+        "fi": "Finnish"
+    }
 }
