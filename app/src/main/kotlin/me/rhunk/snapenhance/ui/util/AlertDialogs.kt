@@ -238,7 +238,7 @@ class AlertDialogs(
                 }
                 Button(onClick = {
                     if (fieldValue.text.isNotEmpty() && property.key.params.inputCheck?.invoke(fieldValue.text) == false) {
-                        Toast.makeText(context, "Invalid input! Make sure you entered a valid value.", Toast.LENGTH_SHORT).show() //TODO: i18n
+                        Toast.makeText(context, translation["invalid_input_toast"], Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 
@@ -354,18 +354,11 @@ class AlertDialogs(
         setProperty: (Color?) -> Unit,
         dismiss: () -> Unit
     ) {
-        var currentColor by remember { mutableStateOf(initialColor) }
+        var currentColor by remember { mutableStateOf(initialColor ?: Color.White.copy(alpha = 1f)) }
 
         DefaultDialogCard {
-            val controller = remember { ColorPickerController().apply {
-                if (currentColor == null) {
-                    setWheelAlpha(1f)
-                    setBrightness(1f, false)
-                }
-            } }
-            var colorHexValue by remember {
-                mutableStateOf(currentColor?.toArgb()?.let { Integer.toHexString(it) } ?: "")
-            }
+            val controller = remember { ColorPickerController() }
+            var colorHexValue by remember { mutableStateOf(currentColor?.toArgb()?.let { Integer.toHexString(it) } ?: "") }
 
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -381,7 +374,7 @@ class AlertDialogs(
                                 setProperty(it)
                             }
                         }.onFailure {
-                            currentColor = null
+                            currentColor = Color.White
                         }
                     },
                     label = { Text(text = "Hex Color") },
@@ -395,6 +388,7 @@ class AlertDialogs(
                     )
                 )
             }
+
             HsvColorPicker(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -409,6 +403,7 @@ class AlertDialogs(
                     setProperty(it.color)
                 }
             )
+
             AlphaSlider(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -417,6 +412,7 @@ class AlertDialogs(
                 initialColor = remember { currentColor },
                 controller = controller,
             )
+
             BrightnessSlider(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -425,6 +421,7 @@ class AlertDialogs(
                 initialColor = remember { currentColor },
                 controller = controller,
             )
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -439,7 +436,7 @@ class AlertDialogs(
                     controller = controller
                 )
                 IconButton(onClick = {
-                    setProperty(null)
+                    setProperty(Color.White)
                     dismiss()
                 }) {
                     Icon(
@@ -544,25 +541,25 @@ class AlertDialogs(
             )
             Column(
                 modifier = Modifier
-                .align(Alignment.TopCenter)
+                    .align(Alignment.TopCenter)
                     .fillMaxWidth()
             ) {
-                var locationName by remember { mutableStateOf<String>("") }
+                var locationName by remember { mutableStateOf("") }
                 var addressResults by remember { mutableStateOf<List<Triple<String, String, String>>>(emptyList()) }
                 var searchJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
 
                 suspend fun search() {
-                    okHttpClient.newCall(Request.Builder()
-                        .url("https://nominatim.openstreetmap.org/search".toUri().buildUpon().appendQueryParameter("q", locationName).appendQueryParameter("format", "jsonv2").build().toString())
-                        .header("User-Agent", Constants.USER_AGENT)
-                        .build()
+                    okHttpClient.newCall(
+                        Request.Builder()
+                            .url("https://nominatim.openstreetmap.org/search".toUri().buildUpon().appendQueryParameter("q", locationName).appendQueryParameter("format", "jsonv2").build().toString())
+                            .header("User-Agent", Constants.USER_AGENT)
+                            .build()
                     ).await().use { response ->
                         if (!response.isSuccessful) {
                             return@use
                         }
-
                         runCatching {
-                            val body = JsonParser.parseString(response.body.string()).asJsonArray
+                            val body = JsonParser.parseString(response.body?.string()).asJsonArray
                             addressResults = body.take(5).map { jsonElement ->
                                 val jsonObject = jsonElement.asJsonObject
                                 Triple(
@@ -573,14 +570,12 @@ class AlertDialogs(
                             }
                         }
                     }
-
                     searchJob = null
                 }
 
-                OutlinedTextField(
+                TextField(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                        .fillMaxWidth(),
                     value = locationName,
                     onValueChange = {
                         locationName = it.replace("\n", "")
@@ -588,45 +583,17 @@ class AlertDialogs(
                             addressResults = emptyList()
                             searchJob?.cancel()
                             searchJob = null
-                            return@OutlinedTextField
+                            return@TextField
                         }
                         searchJob?.cancel()
                         searchJob = coroutineScope.launch {
-                            delay(300)
+                            delay(500)
                             search()
                         }
                     },
-                    placeholder = { Text(text = "Enter location name...") },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
-                        )
-                    },
-                    trailingIcon = {
-                        if (locationName.isNotEmpty()) {
-                            IconButton(onClick = {
-                                locationName = ""
-                                addressResults = emptyList()
-                                searchJob?.cancel()
-                                searchJob = null
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Clear,
-                                    contentDescription = "Clear"
-                                )
-                            }
-                        }
-                    },
+                    label = { Text(text = "Search") },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-                        focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                    )
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.None)
                 )
 
                 AutoClearKeyboardFocus(onFocusClear = {
@@ -636,81 +603,39 @@ class AlertDialogs(
                     searchJob = null
                 })
 
-                if (addressResults.isNotEmpty() || searchJob?.isActive == true) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
-                        )
-                    ) {
-                        Column(
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
+                        .verticalScroll(ScrollState(0)),
+                ) {
+                    if (addressResults.isNotEmpty()) {
+                        addressResults.forEach { address ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        marker.value?.position = GeoPoint(address.second.toDouble(), address.third.toDouble())
+                                        mapView.value?.controller?.setCenter(marker.value?.position)
+                                        mapView.value?.invalidate()
+                                    }
+                            ) {
+                                Text(
+                                    text = address.first,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .fillMaxWidth(),
+                                )
+                            }
+                        }
+                    } else if (searchJob?.isActive == true) {
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .verticalScroll(ScrollState(0)),
+                                .padding(10.dp),
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            if (addressResults.isNotEmpty()) {
-                                addressResults.forEachIndexed { index, address ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                marker.value?.position = GeoPoint(address.second.toDouble(), address.third.toDouble())
-                                                mapView.value?.controller?.setCenter(marker.value?.position)
-                                                mapView.value?.invalidate()
-                                                locationName = ""
-                                                addressResults = emptyList()
-                                            }
-                                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Filled.LocationOn,
-                                            contentDescription = "Location",
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.padding(end = 12.dp)
-                                        )
-                                        Text(
-                                            text = address.first,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            modifier = Modifier.weight(1f),
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    }
-                                    if (index < addressResults.size - 1) {
-                                        HorizontalDivider(
-                                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                                            thickness = 0.5.dp,
-                                            modifier = Modifier.padding(horizontal = 16.dp)
-                                        )
-                                    }
-                                }
-                            } else {
-                                if (searchJob?.isActive == true) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(24.dp),
-                                        horizontalArrangement = Arrangement.Center,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(20.dp),
-                                            strokeWidth = 2.dp
-                                        )
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        Text(
-                                            text = "Searching...",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                        )
-                                    }
-                                }
-                            }
+                            CircularProgressIndicator()
                         }
                     }
                 }
@@ -769,14 +694,7 @@ class AlertDialogs(
                 val lat = remember { mutableStateOf(coordinates.first.toString()) }
                 val lon = remember { mutableStateOf(coordinates.second.toString()) }
 
-                Dialog(
-                    onDismissRequest = {
-                    customCoordinatesDialog = false
-                    },
-                    properties = DialogProperties(
-                        usePlatformDefaultWidth = false
-                    )
-                ) {
+                Dialog(onDismissRequest = { customCoordinatesDialog = false }) {
                     DefaultDialogCard(
                         modifier = Modifier.align(Alignment.Center)
                     ) {
