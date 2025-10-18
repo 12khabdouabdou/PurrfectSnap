@@ -8,7 +8,7 @@ mod util;
 mod mapped_lib;
 mod config;
 mod sig;
-mod secrets;
+include!(concat!(env!("OUT_DIR"), "/secrets.rs"));
 
 mod modules;
 
