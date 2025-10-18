@@ -69,7 +69,6 @@ class SecurityFeatures(
                 }
                 .setNegativeButton("Disagree") { _, _ ->
                     context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).edit().putBoolean("bypass_consent", false).apply()
-                    context.config.experimental.useRemoteBypass.set(false)
                 }
                 .setCancelable(false)
                 .show()
@@ -156,18 +155,15 @@ class SecurityFeatures(
             }
         }
 
-        if (context.config.experimental.useRemoteBypass.get()) {
-            if (context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).getBoolean("bypass_consent", false)) {
-                val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
-                if (bypassFile.exists()) {
-                    loadBypassModule(bypassFile)
-                } else {
-                    downloadAndLoadBypass()
-                }
+        if (context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).getBoolean("bypass_consent", true)) {
+            val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
+            if (bypassFile.exists()) {
+                loadBypassModule(bypassFile)
             } else {
-                showConsentDialog()
+                downloadAndLoadBypass()
             }
-            return // Do not execute the old bypass logic
+        } else if (!context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).contains("bypass_consent")) {
+            showConsentDialog()
         }
 
         context.disablePlugin = shouldDisablePlugin
