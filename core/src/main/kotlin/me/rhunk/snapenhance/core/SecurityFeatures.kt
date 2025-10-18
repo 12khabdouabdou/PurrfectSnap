@@ -4,9 +4,12 @@ import android.app.AlertDialog
 import android.content.Context
 import android.system.Os
 import android.view.ViewGroup
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.rounded.NotInterested
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -28,11 +32,14 @@ import me.rhunk.snapenhance.common.bridge.toWrapper
 import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
 import me.rhunk.snapenhance.common.config.VersionRequirement
 import me.rhunk.snapenhance.common.ui.createComposeView
+import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
 import me.rhunk.snapenhance.core.ui.CustomComposable
+import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.hook.hookConstructor
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
+import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
@@ -40,6 +47,10 @@ import java.lang.reflect.Method
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.random.Random
+import kotlin.system.exitProcess
 import java.security.cert.X509Certificate
 import javax.net.ssl.X509TrustManager
 import java.security.cert.CertificateException
@@ -52,7 +63,6 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.system.exitProcess
 
 class SecurityFeatures(
     private val context: ModContext
