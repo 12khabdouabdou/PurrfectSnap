@@ -29,6 +29,8 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
+        env:
+          BYPASS_SECRET_KEY: ${{ secrets.BYPASS_SECRET_KEY }}
         run: ./gradlew --configuration-cache assembleArmv8Debug
 
       - name: Get current build version
@@ -72,6 +74,8 @@ jobs:
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
 
       - name: Build
+        env:
+          BYPASS_SECRET_KEY: ${{ secrets.BYPASS_SECRET_KEY }}
         run: ./gradlew --configuration-cache assembleArmv7Debug
 
       - name: Get current build version

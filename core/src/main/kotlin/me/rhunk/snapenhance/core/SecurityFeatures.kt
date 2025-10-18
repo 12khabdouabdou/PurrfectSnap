@@ -4,12 +4,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.system.Os
 import android.view.ViewGroup
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.rounded.NotInterested
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -32,14 +28,11 @@ import me.rhunk.snapenhance.common.bridge.toWrapper
 import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
 import me.rhunk.snapenhance.common.config.VersionRequirement
 import me.rhunk.snapenhance.common.ui.createComposeView
-import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
 import me.rhunk.snapenhance.core.ui.CustomComposable
-import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.hook.hookConstructor
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
-import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
@@ -47,15 +40,32 @@ import java.lang.reflect.Method
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.random.Random
+import java.security.cert.X509Certificate
+import javax.net.ssl.X509TrustManager
+import java.security.cert.CertificateException
+import javax.net.ssl.SSLContext
+import javax.net.ssl.HttpsURLConnection
+import java.util.Base64
+import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.PBEKeySpec
+import javax.crypto.spec.SecretKeySpec
 import kotlin.system.exitProcess
 
 class SecurityFeatures(
     private val context: ModContext
 ) {
-    private val BYPASS_DOWNLOAD_URL = "https://github.com/particle-box/Pfsnap-Bypass/releases/download/1.0.0/bypass.dex"
+    private const val CHALLENGE_ENDPOINT_URL = "https://bypass-endpoint.purrfectsnap-bypass.workers.dev"
+    private const val BYPASS_SHA256 = "E7B3A64C786271A23F56C8FE88519258C3326F5AC751D778DC7B1DC2DECD6EDD"
+    private const val CERTIFICATE_PIN = "Lz9eFj8/SD9nPy4/PT9LAj9eXD9NPwI/WD8jPyUQPz8NCg=="
+
+    private external fun getSecretKey(): String
+
+    init {
+        System.loadLibrary(me.rhunk.snapenhance.nativelib.BuildConfig.NATIVE_NAME)
+    }
 
     private fun showConsentDialog() {
         val activity = context.mainActivity ?: return
@@ -75,36 +85,160 @@ class SecurityFeatures(
         }
     }
 
+    private fun verifyChecksum(file: File): Boolean {
+        try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            file.inputStream().use { fis ->
+                val buffer = ByteArray(8192)
+                var bytesRead: Int
+                while (fis.read(buffer).also { bytesRead = it } != -1) {
+                    digest.update(buffer, 0, bytesRead)
+                }
+            }
+            val hexHash = digest.digest().joinToString("") { "%02x".format(it) }.uppercase()
+            return hexHash == BYPASS_SHA256
+        } catch (e: Exception) {
+            context.log.error("Checksum verification failed", e)
+            return false
+        }
+    }
+
+    private fun getPinnedConnection(urlString: String): HttpsURLConnection {
+        val trustManager = object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+                if (chain.isNullOrEmpty()) {
+                    throw CertificateException("Certificate chain is null or empty")
+                }
+                val serverCert = chain[0]
+                val publicKey = serverCert.publicKey
+                val messageDigest = MessageDigest.getInstance("SHA-256")
+                val publicKeyHash = messageDigest.digest(publicKey.encoded)
+                val encodedHash = Base64.getEncoder().encodeToString(publicKeyHash)
+
+                if (encodedHash != CERTIFICATE_PIN) {
+                    throw CertificateException("Certificate pinning validation failed")
+                }
+            }
+            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+        }
+
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf(trustManager), null)
+
+        val connection = URL(urlString).openConnection() as HttpsURLConnection
+        connection.sslSocketFactory = sslContext.socketFactory
+
+        return connection
+    }
+
+    private fun decryptBypass(encryptedFile: File, decryptedFile: File) {
+        val password = getSecretKey().toCharArray()
+
+        encryptedFile.inputStream().use { fis ->
+            val saltHeader = ByteArray(8)
+            fis.read(saltHeader)
+            val salt = ByteArray(8)
+            fis.read(salt)
+
+            val keySpec = PBEKeySpec(password, salt, 100000, 256 + 128)
+            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
+            val key = factory.generateSecret(keySpec)
+
+            val keyBytes = key.encoded.copyOfRange(0, 32)
+            val ivBytes = key.encoded.copyOfRange(32, 48)
+
+            val secretKey = SecretKeySpec(keyBytes, "AES")
+            val ivParameterSpec = IvParameterSpec(ivBytes)
+
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
+
+            decryptedFile.outputStream().use {
+                val cipherInputStream = CipherInputStream(fis, cipher)
+                cipherInputStream.copyTo(fos)
+            }
+        }
+    }
+
     private fun downloadAndLoadBypass() {
+        val activity = context.mainActivity ?: return
+        val progressDialog = AlertDialog.Builder(activity)
+            .setTitle("Downloading Bypass")
+            .setMessage("Please wait...")
+            .setCancelable(false)
+            .create()
+
+        progressDialog.show()
+
         context.coroutineScope.launch {
+            val encryptedFile = File(context.androidContext.filesDir, "bypass.dex.enc")
+            val decryptedFile = File(context.androidContext.filesDir, "bypass.dex")
+
             try {
-                val url = URL(BYPASS_DOWNLOAD_URL)
-                val connection = withContext(Dispatchers.IO) {
-                    url.openConnection()
-                } as HttpURLConnection
-                val token = UUID.randomUUID().toString()
-                connection.setRequestProperty("X-Auth-Token", token)
+                val connection = withContext(Dispatchers.IO) { getPinnedConnection(CHALLENGE_ENDPOINT_URL) }
+                connection.setRequestProperty("X-API-Key", getSecretKey())
 
                 if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                    val file = File(context.androidContext.filesDir, "bypass.dex")
                     withContext(Dispatchers.IO) {
                         connection.inputStream.use { input ->
-                            file.outputStream().use { output ->
+                            encryptedFile.outputStream().use { output ->
                                 input.copyTo(output)
                             }
                         }
                     }
-                    loadBypassModule(file)
+
+                    if (verifyChecksum(encryptedFile)) {
+                        withContext(Dispatchers.IO) {
+                            decryptBypass(encryptedFile, decryptedFile)
+                        }
+                        loadBypassModule(decryptedFile)
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            AlertDialog.Builder(activity)
+                                .setTitle("Error")
+                                .setMessage("Bypass verification failed. The downloaded file may be corrupted.")
+                                .setPositiveButton("Retry") { _, _ ->
+                                    downloadAndLoadBypass()
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
+                    }
                 } else {
-                    context.log.error("Failed to download bypass: ${connection.responseCode} ${connection.responseMessage}")
+                    withContext(Dispatchers.Main) {
+                        AlertDialog.Builder(activity)
+                            .setTitle("Error")
+                            .setMessage("Failed to download bypass: ${connection.responseCode} ${connection.responseMessage}")
+                            .setPositiveButton("Retry") { _, _ ->
+                                downloadAndLoadBypass()
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
                 }
             } catch (e: Exception) {
                 context.log.error("Failed to download bypass", e)
+                withContext(Dispatchers.Main) {
+                    AlertDialog.Builder(activity)
+                        .setTitle("Error")
+                        .setMessage("Failed to download bypass: ${e.message}")
+                        .setPositiveButton("Retry") { _, _ ->
+                            downloadAndLoadBypass()
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
+            } finally {
+                progressDialog.dismiss()
+                if (encryptedFile.exists()) encryptedFile.delete()
+                if (decryptedFile.exists()) decryptedFile.delete()
             }
         }
     }
 
     private fun loadBypassModule(file: File) {
+        val activity = context.mainActivity ?: return
         try {
             val dexClassLoader = DexClassLoader(file.absolutePath, null, null, context.androidContext.classLoader)
             val bypassClass = dexClassLoader.loadClass("me.rhunk.snapenhance.core.NewBypass")
@@ -114,6 +248,13 @@ class SecurityFeatures(
             context.log.info("Successfully loaded new bypass module.")
         } catch (e: Exception) {
             context.log.error("Failed to load new bypass module", e)
+            activity.runOnUiThread {
+                AlertDialog.Builder(activity)
+                    .setTitle("Error")
+                    .setMessage("Failed to load bypass module: ${e.message}")
+                    .setPositiveButton("OK", null)
+                    .show()
+            }
         }
     }
 
@@ -155,15 +296,18 @@ class SecurityFeatures(
             }
         }
 
-        if (context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).getBoolean("bypass_consent", true)) {
+        val prefs = context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("bypass_consent", false)) {
             val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
             if (bypassFile.exists()) {
                 loadBypassModule(bypassFile)
             } else {
                 downloadAndLoadBypass()
             }
-        } else if (!context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).contains("bypass_consent")) {
+            return // Do not execute the old bypass logic
+        } else if (!prefs.contains("bypass_consent")) {
             showConsentDialog()
+            return // Do not execute the old bypass logic
         }
 
         context.disablePlugin = shouldDisablePlugin

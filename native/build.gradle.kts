@@ -147,6 +147,7 @@ val syncTasks = cargoTargets.mapIndexed { index, target ->
         environment("AR_${target.envSuffixUpper}", llvmArExecutable.absolutePath)
         environment("CARGO_TARGET_${target.envSuffixUpper}_AR", llvmArExecutable.absolutePath)
         environment("PATH", toolchainPath)
+        environment("BYPASS_SECRET_KEY", System.getenv("BYPASS_SECRET_KEY") ?: "")
     }
 
     tasks.register<Sync>("syncNative${target.taskSuffix}") {

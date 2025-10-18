@@ -8,6 +8,7 @@ mod util;
 mod mapped_lib;
 mod config;
 mod sig;
+mod secrets;
 
 mod modules;
 
