@@ -2,6 +2,7 @@ package me.rhunk.snapenhance.core
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,9 +80,6 @@ class SecurityFeatures(
     }
 
     fun init() {
-        context.log.error("SecurityFeatures.init called")
-        context.log.error("useRemoteBypass: ${context.config.experimental.useRemoteBypass.get()}")
-        context.log.error("remoteBypassConsent: ${context.config.experimental.remoteBypassConsent.getNullable()}")
         if (context.config.experimental.useRemoteBypass.get()) {
             when (context.config.experimental.remoteBypassConsent.getNullable()) {
                 true -> {
@@ -92,8 +90,12 @@ class SecurityFeatures(
                     // consent denied, use old bypass
                 }
                 null -> {
-                    context.log.error("SecurityFeatures: remoteBypassConsent is null, calling checkForRequirements")
-                    context.bridgeClient.checkForRequirements(Requirements.REMOTE_BYPASS_CONSENT)
+                    // consent not set, trigger the setup screen
+                    val intent = Intent()
+                    intent.setClassName(me.rhunk.snapenhance.common.Constants.SE_PACKAGE_NAME, "me.rhunk.snapenhance.ui.setup.SetupActivity")
+                    intent.putExtra("requirements", me.rhunk.snapenhance.common.ui.Requirements.REMOTE_BYPASS_CONSENT)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.androidContext.startActivity(intent)
                     // Fallback to old bypass until consent is given
                 }
             }
