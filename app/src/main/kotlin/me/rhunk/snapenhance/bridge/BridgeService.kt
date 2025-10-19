@@ -249,6 +249,7 @@ class BridgeService : Service() {
         }
 
         override fun checkForRequirements(requirements: Int) {
+            remoteSideContext.log.error("BridgeService: checkForRequirements called with $requirements")
             remoteSideContext.checkForRequirements(requirements)
         }
     }

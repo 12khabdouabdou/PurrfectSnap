@@ -79,6 +79,9 @@ class SecurityFeatures(
     }
 
     fun init() {
+        context.log.error("SecurityFeatures.init called")
+        context.log.error("useRemoteBypass: ${context.config.experimental.useRemoteBypass.get()}")
+        context.log.error("remoteBypassConsent: ${context.config.experimental.remoteBypassConsent.getNullable()}")
         if (context.config.experimental.useRemoteBypass.get()) {
             when (context.config.experimental.remoteBypassConsent.getNullable()) {
                 true -> {
@@ -89,6 +92,7 @@ class SecurityFeatures(
                     // consent denied, use old bypass
                 }
                 null -> {
+                    context.log.error("SecurityFeatures: remoteBypassConsent is null, calling checkForRequirements")
                     context.bridgeClient.checkForRequirements(Requirements.REMOTE_BYPASS_CONSENT)
                     // Fallback to old bypass until consent is given
                 }

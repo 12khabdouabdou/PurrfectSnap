@@ -282,5 +282,8 @@ class BridgeClient(
 
     fun getDebugProp(name: String, defaultValue: String? = null): String? = safeServiceCall { service.getDebugProp(name, defaultValue) }
 
-    fun checkForRequirements(requirements: Int) = safeServiceCall { service.checkForRequirements(requirements) }
+    fun checkForRequirements(requirements: Int) {
+        context.log.error("BridgeClient: checkForRequirements called with $requirements")
+        safeServiceCall { service.checkForRequirements(requirements) }
+    }
 }

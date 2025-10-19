@@ -204,6 +204,7 @@ class RemoteSideContext(
     fun hasMessagingBridge() = bridgeService != null && bridgeService?.messagingBridge != null && bridgeService?.messagingBridge?.asBinder()?.pingBinder() == true
 
     fun checkForRequirements(overrideRequirements: Int? = null): Boolean {
+        log.error("RemoteSideContext: checkForRequirements called with $overrideRequirements")
         var requirements = overrideRequirements ?: 0
         if (!config.wasPresent) {
             requirements = requirements or Requirements.FIRST_RUN

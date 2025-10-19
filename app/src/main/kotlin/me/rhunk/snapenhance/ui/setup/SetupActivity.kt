@@ -64,6 +64,7 @@ class SetupActivity : ComponentActivity() {
             finish()
         }
         val requirements = intent.getIntExtra("requirements", Requirements.FIRST_RUN)
+        setupContext.log.error("SetupActivity: onCreate with requirements: $requirements")
         fun hasRequirement(requirement: Int) = requirements and requirement == requirement
         val requiredScreens = mutableListOf<SetupScreen>()
         with(requiredScreens) {
