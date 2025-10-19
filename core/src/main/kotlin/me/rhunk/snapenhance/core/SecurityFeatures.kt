@@ -106,7 +106,7 @@ class SecurityFeatures(
             file.inputStream().use { fis ->
                 val buffer = ByteArray(8192)
                 var bytesRead: Int
-                while (fis.read(buffer).also { bytesRead = it }) != -1) {
+                while (fis.read(buffer).also { bytesRead = it } != -1) {
                     digest.update(buffer, 0, bytesRead)
                 }
             }
