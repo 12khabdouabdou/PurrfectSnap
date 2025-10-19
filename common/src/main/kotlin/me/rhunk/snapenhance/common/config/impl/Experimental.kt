@@ -69,7 +69,6 @@ class Experimental : ConfigContainer() {
         requireRestart()
     }
     val remoteBypassConsent = triState("remote_bypass_consent") { requireRestart() }
-    val remoteBypassConsent = triState("remote_bypass_consent") { requireRestart() }
     val convertMessageLocally = boolean("convert_message_locally") { requireRestart() }
     val mediaFilePicker = boolean("media_file_picker") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
     val storyLogger = boolean("story_logger") { requireRestart(); addNotices(FeatureNotice.UNSTABLE); }

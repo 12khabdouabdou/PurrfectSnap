@@ -2,26 +2,28 @@ package me.rhunk.snapenhance.core
 
 import android.app.AlertDialog
 import android.content.Context
-import android.system.Os
 import android.view.ViewGroup
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.rounded.NotInterested
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -33,23 +35,22 @@ import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
 import me.rhunk.snapenhance.common.config.VersionRequirement
 import me.rhunk.snapenhance.common.ui.Requirements
 import me.rhunk.snapenhance.common.ui.createComposeView
-import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
 import me.rhunk.snapenhance.core.ui.CustomComposable
-import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.hook.hookConstructor
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
-import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
+import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
 import javax.crypto.SecretKeyFactory
@@ -59,7 +60,6 @@ import javax.crypto.spec.SecretKeySpec
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
-import kotlin.random.Random
 import kotlin.system.exitProcess
 
 class SecurityFeatures(
@@ -87,7 +87,7 @@ class SecurityFeatures(
                     return
                 }
                 false -> {
-                    // consent denied, do nothing special
+                    // consent denied, use old bypass
                 }
                 null -> {
                     context.bridgeClient.checkForRequirements(Requirements.REMOTE_BYPASS_CONSENT)
@@ -115,7 +115,9 @@ class SecurityFeatures(
             ?: throw IllegalStateException("Failed to get version code")
 
         var shouldDisablePlugin = MOD_DETECTION_VERSION_CHECK.checkVersion(snapchatVersionCode)?.second == VersionRequirement.OLDER_REQUIRED
-        
+        var usingCustomSharedLibrary = false
+
+        // load user shared library
         context.config.experimental.nativeHooks.customSharedLibrary.get().takeIf { it.isNotEmpty() }?.let {
             runCatching {
                 context.native.loadSharedLibrary(
@@ -123,6 +125,7 @@ class SecurityFeatures(
                 )
                 context.log.verbose("loaded custom shared library")
                 shouldDisablePlugin = false
+                usingCustomSharedLibrary = true
 
                 lateinit var composable: CustomComposable
                 composable = {
@@ -145,7 +148,7 @@ class SecurityFeatures(
         }
 
         context.disablePlugin = shouldDisablePlugin
-        context.log.verbose("disablePlugin=${context.disablePlugin}")
+        context.log.verbose("disablePlugin=	extvariable.disablePlugin")
 
         if (context.disablePlugin) {
              context.features.addActivityCreateListener { activity ->
@@ -185,6 +188,7 @@ class SecurityFeatures(
             }
             return
         }
+
 
         context.androidContext.classLoader.apply {
             loadClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy").apply {
@@ -227,7 +231,7 @@ class SecurityFeatures(
                     if (method.returnType.name.endsWith("Single")) {
                         param.setResult(
                             method.returnType.methods.first {
-                                java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 1 && it.parameterTypes[0] == Throwable::class.java
+                                Modifier.isStatic(it.modifiers) && it.parameterCount == 1 && it.parameterTypes[0] == Throwable::class.java
                             }.invoke(null, IOException())
                         )
                         return@hook
@@ -262,16 +266,16 @@ class SecurityFeatures(
             override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
             override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
                 if (chain.isNullOrEmpty()) {
-                    throw java.security.cert.CertificateException("Certificate chain is null or empty")
+                    throw CertificateException("Certificate chain is null or empty")
                 }
                 val serverCert = chain[0]
                 val publicKey = serverCert.publicKey
                 val messageDigest = MessageDigest.getInstance("SHA-256")
                 val publicKeyHash = messageDigest.digest(publicKey.encoded)
-                val encodedHash = java.util.Base64.getEncoder().encodeToString(publicKeyHash)
+                val encodedHash = Base64.getEncoder().encodeToString(publicKeyHash)
 
                 if (encodedHash != CERTIFICATE_PIN) {
-                    throw java.security.cert.CertificateException("Certificate pinning validation failed")
+                    throw CertificateException("Certificate pinning validation failed")
                 }
             }
             override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
@@ -316,6 +320,15 @@ class SecurityFeatures(
     }
 
     private fun downloadAndLoadBypass() {
+        val activity = context.mainActivity ?: return
+        val progressDialog = AlertDialog.Builder(activity)
+            .setTitle("Downloading Bypass")
+            .setMessage("Please wait...")
+            .setCancelable(false)
+            .create()
+
+        progressDialog.show()
+
         context.coroutineScope.launch {
             val encryptedFile = File(context.androidContext.filesDir, "bypass.dex.enc")
             val decryptedFile = File(context.androidContext.filesDir, "bypass.dex")
@@ -339,15 +352,43 @@ class SecurityFeatures(
                         }
                         loadBypassModule(decryptedFile)
                     } else {
-                        context.longToast("Bypass verification failed. The downloaded file may be corrupted.")
+                        withContext(Dispatchers.Main) {
+                            AlertDialog.Builder(activity)
+                                .setTitle("Error")
+                                .setMessage("Bypass verification failed. The downloaded file may be corrupted.")
+                                .setPositiveButton("Retry") { _, _ ->
+                                    downloadAndLoadBypass()
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
                     }
                 } else {
-                    context.longToast("Failed to download bypass: ${connection.responseCode} ${connection.responseMessage}")
+                    withContext(Dispatchers.Main) {
+                        AlertDialog.Builder(activity)
+                            .setTitle("Error")
+                            .setMessage("Failed to download bypass: ${connection.responseCode} ${connection.responseMessage}")
+                            .setPositiveButton("Retry") { _, _ ->
+                                downloadAndLoadBypass()
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
                 }
             } catch (e: Exception) {
                 context.log.error("Failed to download bypass", e)
-                context.longToast("Failed to download bypass: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    AlertDialog.Builder(activity)
+                        .setTitle("Error")
+                        .setMessage("Failed to download bypass: ${e.message}")
+                        .setPositiveButton("Retry") { _, _ ->
+                            downloadAndLoadBypass()
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
             } finally {
+                progressDialog.dismiss()
                 if (encryptedFile.exists()) encryptedFile.delete()
                 if (decryptedFile.exists()) decryptedFile.delete()
             }
@@ -355,6 +396,7 @@ class SecurityFeatures(
     }
 
     private fun loadBypassModule(file: File) {
+        val activity = context.mainActivity ?: return
         try {
             val dexClassLoader = DexClassLoader(file.absolutePath, null, null, context.androidContext.classLoader)
             val bypassClass = dexClassLoader.loadClass("me.rhunk.snapenhance.core.NewBypass")
@@ -364,7 +406,13 @@ class SecurityFeatures(
             context.log.info("Successfully loaded new bypass module.")
         } catch (e: Exception) {
             context.log.error("Failed to load new bypass module", e)
-            context.longToast("Failed to load bypass module: ${e.message}")
+            activity.runOnUiThread {
+                AlertDialog.Builder(activity)
+                    .setTitle("Error")
+                    .setMessage("Failed to load bypass module: ${e.message}")
+                    .setPositiveButton("OK", null)
+                    .show()
+            }
         }
     }
 }
