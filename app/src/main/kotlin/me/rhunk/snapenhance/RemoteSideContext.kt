@@ -42,7 +42,6 @@ import me.rhunk.snapenhance.ui.manager.data.ModInfo
 import me.rhunk.snapenhance.ui.manager.data.PlatformInfo
 import me.rhunk.snapenhance.ui.manager.data.SnapchatAppInfo
 import me.rhunk.snapenhance.ui.overlay.RemoteOverlay
-import me.rhunk.snapenhance.ui.setup.Requirements
 import me.rhunk.snapenhance.common.ui.Requirements
 import me.rhunk.snapenhance.ui.setup.SetupActivity
 import java.io.ByteArrayInputStream
