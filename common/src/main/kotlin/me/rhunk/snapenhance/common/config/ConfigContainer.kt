@@ -74,6 +74,9 @@ open class ConfigContainer(
         params: ConfigParamsBuilder = {}
     ) = registerProperty(key, DataProcessors.INT_COLOR, PropertyValue(defaultValue, defaultValues = defaultValue?.let { listOf(it) }), params)
 
+    protected fun triState(key: String, defaultValue: Boolean? = null, params: ConfigParamsBuilder = {}) =
+        registerProperty(key, DataProcessors.NULLABLE_BOOLEAN, PropertyValue(defaultValue), params)
+
     fun toJson(exportSensitiveData: Boolean = true): JsonObject {
         val json = JsonObject()
         properties.forEach { (propertyKey, propertyValue) ->

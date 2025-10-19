@@ -1,51 +1,66 @@
 package me.rhunk.snapenhance.core
 
+import android.app.AlertDialog
+import android.content.Context
+import android.system.Os
+import android.view.ViewGroup
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.rounded.NotInterested
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import dalvik.system.DexClassLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import me.rhunk.snapenhance.common.bridge.FileHandleScope
+import me.rhunk.snapenhance.common.bridge.toWrapper
 import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
 import me.rhunk.snapenhance.common.config.VersionRequirement
 import me.rhunk.snapenhance.common.ui.Requirements
+import me.rhunk.snapenhance.common.ui.createComposeView
+import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
+import me.rhunk.snapenhance.core.ui.CustomComposable
+import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.hook.hookConstructor
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
+import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.Method
-import dalvik.system.DexClassLoader
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
-import java.security.cert.X509Certificate
-import javax.net.ssl.X509TrustManager
-import java.security.cert.CertificateException
-import javax.net.ssl.SSLContext
 import javax.net.ssl.HttpsURLConnection
-import java.util.Base64
-import me.rhunk.snapenhance.core.ui.CustomComposable
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Icon
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import me.rhunk.snapenhance.common.bridge.FileHandleScope
-import me.rhunk.snapenhance.common.bridge.toWrapper
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
+import kotlin.random.Random
 import kotlin.system.exitProcess
-
 
 class SecurityFeatures(
     private val context: ModContext
@@ -133,6 +148,41 @@ class SecurityFeatures(
         context.log.verbose("disablePlugin=${context.disablePlugin}")
 
         if (context.disablePlugin) {
+             context.features.addActivityCreateListener { activity ->
+                if (!activity.javaClass.name.endsWith("LoginSignupActivity")) return@addActivityCreateListener
+                activity.findViewById<ViewGroup>(android.R.id.content).apply {
+                    visibility = ViewGroup.INVISIBLE
+                    post {
+                        addView(createComposeView(activity) {
+                            Surface(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .padding(16.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                    ) {
+                                        Icon(Icons.Rounded.NotInterested, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(110.dp))
+                                        Spacer(Modifier.height(50.dp))
+                                        Text(
+                                            "SnapEnhance can't be used to login or signup because your Snapchat version isn't the recommended one. Please downgrade to Snapchat v${MOD_DETECTION_VERSION_CHECK.maxVersion?.first ?: "0.0.0"} or disable SnapEnhance in LSPosed to continue.\n\nFor more details, join t.me/snapenhance_chat",
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
+                                }
+                            }
+                            LaunchedEffect(Unit) {
+                                visibility = ViewGroup.VISIBLE
+                            }
+                        })
+                    }
+                }
+            }
             return
         }
 
@@ -212,16 +262,16 @@ class SecurityFeatures(
             override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
             override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
                 if (chain.isNullOrEmpty()) {
-                    throw CertificateException("Certificate chain is null or empty")
+                    throw java.security.cert.CertificateException("Certificate chain is null or empty")
                 }
                 val serverCert = chain[0]
                 val publicKey = serverCert.publicKey
                 val messageDigest = MessageDigest.getInstance("SHA-256")
                 val publicKeyHash = messageDigest.digest(publicKey.encoded)
-                val encodedHash = Base64.getEncoder().encodeToString(publicKeyHash)
+                val encodedHash = java.util.Base64.getEncoder().encodeToString(publicKeyHash)
 
                 if (encodedHash != CERTIFICATE_PIN) {
-                    throw CertificateException("Certificate pinning validation failed")
+                    throw java.security.cert.CertificateException("Certificate pinning validation failed")
                 }
             }
             override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()

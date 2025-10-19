@@ -17,6 +17,7 @@ object DataProcessors {
         MAP_COORDINATES,
         INT_COLOR,
         CONTAINER,
+        NULLABLE_BOOLEAN,
     }
 
     class PropertyDataProcessor<T>
@@ -98,6 +99,21 @@ object DataProcessors {
             it?.let { JsonPrimitive(it) } ?: JsonNull.INSTANCE
         },
         deserialize = { if (it.isJsonNull) null else it.asString.toIntOrNull() },
+    )
+
+    val NULLABLE_BOOLEAN = PropertyDataProcessor(
+        type = Type.NULLABLE_BOOLEAN,
+        serialize = { it, _ ->
+            when (it) {
+                true -> JsonPrimitive(true)
+                false -> JsonPrimitive(false)
+                null -> JsonNull.INSTANCE
+            }
+        },
+        deserialize = {
+            if (it.isJsonNull) null
+            else it.asBoolean
+        },
     )
 
     fun <T : ConfigContainer> container(container: T) = PropertyDataProcessor(

@@ -283,11 +283,6 @@ class SnapEnhance {
                     appContext.log.verbose("onConfigChanged")
                     appContext.reloadConfig()
                     securityFeatures.init()
-                    if (securityFeatures.showConsentDialogOnActivityReady) {
-                        appContext.mainActivity?.let {
-                            securityFeatures.showConsentDialog()
-                        }
-                    }
                 }
 
                 override fun onRestartRequired() {
