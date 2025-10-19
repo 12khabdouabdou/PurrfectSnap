@@ -102,4 +102,5 @@ interface BridgeInterface {
     oneway void registerConfigStateListener(in ConfigStateListener listener);
 
     @nullable String getDebugProp(String key, @nullable String defaultValue);
+    oneway void checkForRequirements(int requirements);
 }

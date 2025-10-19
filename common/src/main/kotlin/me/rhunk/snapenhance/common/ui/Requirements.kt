@@ -1,4 +1,4 @@
-package me.rhunk.snapenhance.ui.setup
+package me.rhunk.snapenhance.common.ui
 
 object Requirements {
     const val FIRST_RUN = 0b000001
@@ -7,5 +7,5 @@ object Requirements {
     const val SAVE_FOLDER = 0b001000
     const val GRANT_PERMISSIONS = 0b010000
     const val SIF = 0b100000
+    const val REMOTE_BYPASS_CONSENT = 0b1000000
 }
-

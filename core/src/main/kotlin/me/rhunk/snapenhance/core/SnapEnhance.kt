@@ -128,12 +128,6 @@ class SnapEnhance {
 
                 hookMainActivity("onResume") {
                     appContext.mainActivity = this
-
-                    appContext.shortToast("SE.onResume: showConsent=${securityFeatures.showConsentDialogOnActivityReady}, mappings=${appContext.mappings.isMappingsLoaded}")
-                    if (securityFeatures.showConsentDialogOnActivityReady && appContext.mappings.isMappingsLoaded) {
-                        securityFeatures.showConsentDialog()
-                    }
-
                     if (appContext.isMainActivityPaused.also {
                         appContext.isMainActivityPaused = false
                     }) {
@@ -189,10 +183,6 @@ class SnapEnhance {
                 inAppOverlay.onActivityCreate(activity)
                 scriptRuntime.eachModule { callFunction("module.onSnapMainActivityCreate", activity) }
                 actionManager.onActivityCreate()
-
-                if (securityFeatures.showConsentDialogOnActivityReady) {
-                    securityFeatures.showConsentDialog()
-                }
 
                 if (safeMode) {
                     appContext.inAppOverlay.showStatusToast(

@@ -247,5 +247,9 @@ class BridgeService : Service() {
         override fun getDebugProp(key: String, defaultValue: String?): String? {
             return remoteSideContext.sharedPreferences.all["debug_$key"]?.toString() ?: defaultValue
         }
+
+        override fun checkForRequirements(requirements: Int) {
+            remoteSideContext.checkForRequirements(requirements)
+        }
     }
 }

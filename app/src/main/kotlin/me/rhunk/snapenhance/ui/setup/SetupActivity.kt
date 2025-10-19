@@ -2,6 +2,8 @@
 
 package me.rhunk.snapenhance.ui.setup
 
+import me.rhunk.snapenhance.common.ui.Requirements
+
 import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -49,6 +51,7 @@ import me.rhunk.snapenhance.ui.setup.screens.impl.MappingsScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.PermissionsScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.PickLanguageScreen
 import me.rhunk.snapenhance.ui.setup.screens.impl.SaveFolderScreen
+import me.rhunk.snapenhance.ui.setup.screens.impl.RemoteBypassConsentScreen
 
 class SetupActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +76,9 @@ class SetupActivity : ComponentActivity() {
             }
             if (isFirstRun || hasRequirement(Requirements.SAVE_FOLDER)) {
                 add(SaveFolderScreen().apply { route = "saveFolder" })
+            }
+            if (hasRequirement(Requirements.REMOTE_BYPASS_CONSENT)) {
+                add(RemoteBypassConsentScreen().apply { route = "remoteBypassConsent" })
             }
             if (isFirstRun || hasRequirement(Requirements.MAPPINGS)) {
                 add(MappingsScreen().apply { route = "mappings" })

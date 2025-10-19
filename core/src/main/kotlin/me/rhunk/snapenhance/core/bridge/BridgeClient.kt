@@ -281,4 +281,6 @@ class BridgeClient(
     fun registerConfigStateListener(listener: ConfigStateListener) = safeServiceCall { service.registerConfigStateListener(listener) }
 
     fun getDebugProp(name: String, defaultValue: String? = null): String? = safeServiceCall { service.getDebugProp(name, defaultValue) }
+
+    fun checkForRequirements(requirements: Int) = safeServiceCall { service.checkForRequirements(requirements) }
 }
