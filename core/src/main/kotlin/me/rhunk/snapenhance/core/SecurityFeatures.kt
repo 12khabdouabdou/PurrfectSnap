@@ -44,7 +44,6 @@ import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.Method
-import java.lang.reflect.Modifier
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
@@ -231,7 +230,7 @@ class SecurityFeatures(
                     if (method.returnType.name.endsWith("Single")) {
                         param.setResult(
                             method.returnType.methods.first {
-                                Modifier.isStatic(it.modifiers) && it.parameterCount == 1 && it.parameterTypes[0] == Throwable::class.java
+                                java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 1 && it.parameterTypes[0] == Throwable::class.java
                             }.invoke(null, IOException())
                         )
                         return@hook
