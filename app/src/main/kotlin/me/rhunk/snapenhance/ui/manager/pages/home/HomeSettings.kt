@@ -41,7 +41,8 @@ import me.rhunk.snapenhance.storage.getAllScopeNotes
 import me.rhunk.snapenhance.storage.setAllScopeNotes
 import me.rhunk.snapenhance.task.UpdateCheckWorker
 import me.rhunk.snapenhance.ui.manager.Routes
-import me.rhunk.snapenhance.ui.setup.Requirements
+import me.rhunk.snapenhance.common.ui.Requirements
+import me.rhunk.snapenhance.ui.setup.SetupActivity
 import me.rhunk.snapenhance.ui.util.ActivityLauncherHelper
 import me.rhunk.snapenhance.ui.util.AlertDialogs
 import me.rhunk.snapenhance.ui.util.openFile

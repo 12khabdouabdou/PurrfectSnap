@@ -26,7 +26,7 @@ class RemoteBypassConsentScreen : SetupScreen() {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(onClick = {
-                context.config.experimental.remoteBypassConsent.set(false)
+                context.config.root.experimental.remoteBypassConsent.set(false)
                 context.config.writeConfig()
                 allowNext(true)
                 goNext()
@@ -34,7 +34,7 @@ class RemoteBypassConsentScreen : SetupScreen() {
                 Text("Disagree")
             }
             Button(onClick = {
-                context.config.experimental.remoteBypassConsent.set(true)
+                context.config.root.experimental.remoteBypassConsent.set(true)
                 context.config.writeConfig()
                 allowNext(true)
                 goNext()

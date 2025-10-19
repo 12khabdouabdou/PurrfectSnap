@@ -428,6 +428,7 @@ class FeaturesRootSection : Routes.Route() {
                     }
                 )
             }
+            else -> {}
         }
 
     }
