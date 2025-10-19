@@ -287,14 +287,14 @@ class SecurityFeatures(
 
         val consentGiven = prefs.getBoolean("bypass_consent", false)
         val consentNotSet = !prefs.contains("bypass_consent")
-        context.log.error("SecurityFeatures.init: useRemoteBypass=$useRemoteBypass, consentGiven=$consentGiven, consentNotSet=$consentNotSet")
+        context.shortToast("SF.init: useRemoteBypass=$useRemoteBypass, consentGiven=$consentGiven, consentNotSet=$consentNotSet")
 
         if (consentGiven) {
             initNewBypass()
             return
         } else if (consentNotSet) {
             showConsentDialogOnActivityReady = true
-            context.log.error("SecurityFeatures.init: showConsentDialogOnActivityReady set to true")
+            context.shortToast("SF.init: showConsentDialogOnActivityReady=true")
             return
         }
 

@@ -142,12 +142,15 @@ class SetupActivity : ComponentActivity() {
                                     setupContext.log.error("SetupActivity: allowNext called with $it for screen ${screen.route}")
                                     canGoNext = it
                                 }
-                                screen.goNext = {
-                                    setupContext.log.error("SetupActivity: goNext called for screen ${screen.route}")
-                                    canGoNext = true
-                                    nextScreen()
-                                }
-                                composable(
+                                                            screen.goNext = {
+                                                                if (screen.route != requiredScreens.first().route) {
+                                                                    setupContext.log.error("SetupActivity: goNext called for non-current screen ${screen.route}, ignoring")
+                                                                    return@goNext
+                                                                }
+                                                                setupContext.log.error("SetupActivity: goNext called for screen ${screen.route}")
+                                                                canGoNext = true
+                                                                nextScreen()
+                                                            }                                composable(
                                     screen.route,
                                     enterTransition = { slideInHorizontally { it } },
                                     exitTransition = { slideOutHorizontally { -it } },
