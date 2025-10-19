@@ -129,7 +129,7 @@ class SnapEnhance {
                 hookMainActivity("onResume") {
                     appContext.mainActivity = this
 
-                    appContext.log.debug("SnapEnhance.onResume: showConsentDialogOnActivityReady=${securityFeatures.showConsentDialogOnActivityReady}, mappings.isMappingsLoaded=${appContext.mappings.isMappingsLoaded}")
+                    appContext.log.error("SnapEnhance.onResume: showConsentDialogOnActivityReady=${securityFeatures.showConsentDialogOnActivityReady}, mappings.isMappingsLoaded=${appContext.mappings.isMappingsLoaded}")
                     if (securityFeatures.showConsentDialogOnActivityReady && appContext.mappings.isMappingsLoaded) {
                         securityFeatures.showConsentDialog()
                     }

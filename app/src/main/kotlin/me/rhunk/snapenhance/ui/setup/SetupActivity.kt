@@ -91,6 +91,7 @@ class SetupActivity : ComponentActivity() {
             val navController = rememberNavController()
             var canGoNext by remember { mutableStateOf(false) }
             fun nextScreen() {
+                setupContext.log.error("SetupActivity: nextScreen called, canGoNext is $canGoNext")
                 if (!canGoNext) return
                 requiredScreens.firstOrNull()?.onLeave()
                 if (requiredScreens.size > 1) {
@@ -137,8 +138,12 @@ class SetupActivity : ComponentActivity() {
                             popExitTransition = { fadeOut() }
                         ) {
                             requiredScreens.forEach { screen ->
-                                screen.allowNext = { canGoNext = it }
+                                screen.allowNext = {
+                                    setupContext.log.error("SetupActivity: allowNext called with $it for screen ${screen.route}")
+                                    canGoNext = it
+                                }
                                 screen.goNext = {
+                                    setupContext.log.error("SetupActivity: goNext called for screen ${screen.route}")
                                     canGoNext = true
                                     nextScreen()
                                 }

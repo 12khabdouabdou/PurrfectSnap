@@ -26,6 +26,7 @@ class SaveFolderScreen : SetupScreen() {
     @Composable
     override fun Content() {
         LaunchedEffect(Unit) {
+            context.log.error("SaveFolderScreen: LaunchedEffect: calling allowNext(false)")
             allowNext(false)
         }
         DialogText(text = context.translation["setup.dialogs.save_folder"])
@@ -33,12 +34,15 @@ class SaveFolderScreen : SetupScreen() {
         val src = remember { MutableInteractionSource() }
         Button(onClick = {
             activityLauncherHelper.chooseFolder {
+                context.log.error("SaveFolderScreen: chooseFolder callback, path: $it")
                 if (it.isBlank()) {
+                    context.log.error("SaveFolderScreen: path is blank, calling allowNext(false)")
                     allowNext(false)
                     return@chooseFolder
                 }
                 context.config.root.downloader.saveFolder.set(it)
                 context.config.writeConfig()
+                context.log.error("SaveFolderScreen: path is valid, calling allowNext(true)")
                 allowNext(true)
             }
         }, interactionSource = src, modifier = Modifier.scaleOnPress(src)) {
