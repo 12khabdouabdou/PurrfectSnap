@@ -73,6 +73,7 @@ class SecurityFeatures(
         private const val CERTIFICATE_PIN = "Lz9eFj8/SD9nPy4/PT9LAj9eXD9NPwI/WD8jPyUQPz8NCg=="
     }
 
+    var showConsentDialogOnActivityReady = false
     private var oldBypassInitialized = false
 
     private external fun getSecretKey(): String
@@ -81,7 +82,8 @@ class SecurityFeatures(
         System.loadLibrary(me.rhunk.snapenhance.nativelib.BuildConfig.NATIVE_NAME)
     }
 
-    private fun showConsentDialog() {
+    fun showConsentDialog() {
+        showConsentDialogOnActivityReady = false
         val activity = context.mainActivity ?: return
         activity.runOnUiThread {
             AlertDialog.Builder(activity)
@@ -275,20 +277,26 @@ class SecurityFeatures(
 
     fun init() {
         val useRemoteBypass = context.config.experimental.useRemoteBypass.get()
-
         val prefs = context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE)
+
+        if (!useRemoteBypass) {
+            prefs.edit().remove("bypass_consent").apply()
+            initOldBypass()
+            return
+        }
+
         val consentGiven = prefs.getBoolean("bypass_consent", false)
         val consentNotSet = !prefs.contains("bypass_consent")
 
-        if (useRemoteBypass) {
-            if (consentGiven) {
-                initNewBypass()
-                return
-            } else if (consentNotSet) {
-                showConsentDialog()
-                return
-            }
+        if (consentGiven) {
+            initNewBypass()
+            return
+        } else if (consentNotSet) {
+            showConsentDialogOnActivityReady = true
+            return
         }
+
+        // This is the case where consent is present and is false
         initOldBypass()
     }
 

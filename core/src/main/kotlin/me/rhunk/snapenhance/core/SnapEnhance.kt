@@ -128,6 +128,11 @@ class SnapEnhance {
 
                 hookMainActivity("onResume") {
                     appContext.mainActivity = this
+
+                    if (securityFeatures.showConsentDialogOnActivityReady && appContext.mappings.isMappingsLoaded) {
+                        securityFeatures.showConsentDialog()
+                    }
+
                     if (appContext.isMainActivityPaused.also {
                         appContext.isMainActivityPaused = false
                     }) {
@@ -183,6 +188,10 @@ class SnapEnhance {
                 inAppOverlay.onActivityCreate(activity)
                 scriptRuntime.eachModule { callFunction("module.onSnapMainActivityCreate", activity) }
                 actionManager.onActivityCreate()
+
+                if (securityFeatures.showConsentDialogOnActivityReady) {
+                    securityFeatures.showConsentDialog()
+                }
 
                 if (safeMode) {
                     appContext.inAppOverlay.showStatusToast(
@@ -283,6 +292,11 @@ class SnapEnhance {
                     appContext.log.verbose("onConfigChanged")
                     appContext.reloadConfig()
                     securityFeatures.init()
+                    if (securityFeatures.showConsentDialogOnActivityReady) {
+                        appContext.mainActivity?.let {
+                            securityFeatures.showConsentDialog()
+                        }
+                    }
                 }
 
                 override fun onRestartRequired() {

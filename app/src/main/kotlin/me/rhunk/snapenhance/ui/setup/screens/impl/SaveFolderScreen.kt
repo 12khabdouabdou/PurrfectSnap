@@ -19,6 +19,7 @@ class SaveFolderScreen : SetupScreen() {
 
     override fun init() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
+        allowNext(false)
     }
 
     @Composable
