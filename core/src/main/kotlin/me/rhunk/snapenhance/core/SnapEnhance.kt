@@ -48,6 +48,7 @@ class SnapEnhance {
     }
     private lateinit var appContext: ModContext
     private var isBridgeInitialized = false
+    private lateinit var securityFeatures: SecurityFeatures
 
     private fun hookMainActivity(methodName: String, stage: HookStage = HookStage.AFTER, block: Activity.(param: HookAdapter) -> Unit) {
         Activity::class.java.hook(methodName, stage, { isBridgeInitialized }) { param ->
@@ -61,6 +62,7 @@ class SnapEnhance {
         appContext = ModContext(
             androidContext = context.also { classLoader = it.classLoader }
         )
+        securityFeatures = SecurityFeatures(appContext)
         appContext.apply {
             bridgeClient = BridgeClient(this)
             initConfigListener()
@@ -223,7 +225,7 @@ class SnapEnhance {
             }
         }
 
-        SecurityFeatures(appContext).init()
+        securityFeatures.init()
 
         Runtime::class.java.findRestrictedMethod {
             it.name == "loadLibrary0" && it.parameterTypes.contentEquals(
@@ -280,6 +282,7 @@ class SnapEnhance {
                 override fun onConfigChanged() {
                     appContext.log.verbose("onConfigChanged")
                     appContext.reloadConfig()
+                    securityFeatures.init()
                 }
 
                 override fun onRestartRequired() {

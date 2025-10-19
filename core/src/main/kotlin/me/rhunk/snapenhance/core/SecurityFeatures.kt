@@ -67,9 +67,13 @@ import javax.crypto.spec.SecretKeySpec
 class SecurityFeatures(
     private val context: ModContext
 ) {
-    private const val CHALLENGE_ENDPOINT_URL = "https://bypass-endpoint.purrfectsnap-bypass.workers.dev"
-    private const val BYPASS_SHA256 = "E7B3A64C786271A23F56C8FE88519258C3326F5AC751D778DC7B1DC2DECD6EDD"
-    private const val CERTIFICATE_PIN = "Lz9eFj8/SD9nPy4/PT9LAj9eXD9NPwI/WD8jPyUQPz8NCg=="
+    companion object {
+        private const val CHALLENGE_ENDPOINT_URL = "https://bypass-endpoint.purrfectsnap-bypass.workers.dev"
+        private const val BYPASS_SHA256 = "E7B3A64C786271A23F56C8FE88519258C3326F5AC751D778DC7B1DC2DECD6EDD"
+        private const val CERTIFICATE_PIN = "Lz9eFj8/SD9nPy4/PT9LAj9eXD9NPwI/WD8jPyUQPz8NCg=="
+    }
+
+    private var oldBypassInitialized = false
 
     private external fun getSecretKey(): String
 
@@ -85,10 +89,11 @@ class SecurityFeatures(
                 .setMessage("PurrfectSnap offers a closed-source security bypass for enhanced functionality. By clicking 'Agree', you consent to downloading and using this feature.")
                 .setPositiveButton("Agree") { _, _ ->
                     context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).edit().putBoolean("bypass_consent", true).apply()
-                    downloadAndLoadBypass()
+                    initNewBypass()
                 }
                 .setNegativeButton("Disagree") { _, _ ->
                     context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE).edit().putBoolean("bypass_consent", false).apply()
+                    initOldBypass()
                 }
                 .setCancelable(false)
                 .show()
@@ -101,7 +106,7 @@ class SecurityFeatures(
             file.inputStream().use { fis ->
                 val buffer = ByteArray(8192)
                 var bytesRead: Int
-                while (fis.read(buffer).also { bytesRead = it } != -1) {
+                while (fis.read(buffer).also { bytesRead = it }) != -1) {
                     digest.update(buffer, 0, bytesRead)
                 }
             }
@@ -164,7 +169,7 @@ class SecurityFeatures(
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
 
-            decryptedFile.outputStream().use {
+            decryptedFile.outputStream().use { fos ->
                 val cipherInputStream = CipherInputStream(fis, cipher)
                 cipherInputStream.copyTo(fos)
             }
@@ -268,8 +273,38 @@ class SecurityFeatures(
         }
     }
 
-
     fun init() {
+        val useRemoteBypass = context.config.experimental.useRemoteBypass.get()
+
+        val prefs = context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE)
+        val consentGiven = prefs.getBoolean("bypass_consent", false)
+        val consentNotSet = !prefs.contains("bypass_consent")
+
+        if (useRemoteBypass) {
+            if (consentGiven) {
+                initNewBypass()
+                return
+            } else if (consentNotSet) {
+                showConsentDialog()
+                return
+            }
+        }
+        initOldBypass()
+    }
+
+    private fun initNewBypass() {
+        val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
+        if (bypassFile.exists()) {
+            loadBypassModule(bypassFile)
+        } else {
+            downloadAndLoadBypass()
+        }
+    }
+
+    private fun initOldBypass() {
+        if (oldBypassInitialized) return
+        oldBypassInitialized = true
+
         val snapchatVersionCode = context.androidContext.packageManager?.getPackageInfo(context.androidContext.packageName, 0)?.longVersionCode
             ?: throw IllegalStateException("Failed to get version code")
 
@@ -304,20 +339,6 @@ class SecurityFeatures(
             }.onFailure {
                 context.log.error("Failed to load custom shared library", it)
             }
-        }
-
-        val prefs = context.androidContext.getSharedPreferences("bypass_consent", Context.MODE_PRIVATE)
-        if (prefs.getBoolean("bypass_consent", false)) {
-            val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
-            if (bypassFile.exists()) {
-                loadBypassModule(bypassFile)
-            } else {
-                downloadAndLoadBypass()
-            }
-            return // Do not execute the old bypass logic
-        } else if (!prefs.contains("bypass_consent")) {
-            showConsentDialog()
-            return // Do not execute the old bypass logic
         }
 
         context.disablePlugin = shouldDisablePlugin
@@ -364,7 +385,7 @@ class SecurityFeatures(
 
 
         context.androidContext.classLoader.apply {
-            loadClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy").apply {
+            loadClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy").apply { // Escaped '$' is correct here
                 hookConstructor(HookStage.BEFORE) { it.setResult(null) }
                 hook("getArgosTokenAsync", HookStage.BEFORE) { it.setResult(null) }
                 hook("getAttestationHeaders", HookStage.BEFORE) { it.setResult(null) }
@@ -386,7 +407,7 @@ class SecurityFeatures(
                     exitProcess(139)
                 }
             }
-            loadClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").hook("registerHandler",
+            loadClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").hook("registerHandler", // Escaped '$' is correct here
                 HookStage.BEFORE) { param ->
                 val path = param.arg<String>(0)
                 if (path == "hermod_dup") {
