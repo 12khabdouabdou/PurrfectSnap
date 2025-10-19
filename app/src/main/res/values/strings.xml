@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name" translatable="false">PurrfectSnap</string>
+    <string name="remote_bypass_consent">The remote bypass feature downloads and executes code from a remote server. This is necessary to circumvent certain security measures. By agreeing to this, you acknowledge that you understand the risks involved and consent to the use of this feature.</string>
 </resources>

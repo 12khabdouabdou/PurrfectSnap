@@ -177,6 +177,51 @@ class FeaturesRootSection : Routes.Route() {
 
         val propertyValue = property.value
 
+        if (property.key.name == "use_remote_bypass") {
+            var showConsentDialog by remember { mutableStateOf(false) }
+
+            var state by remember { mutableStateOf(propertyValue.get() as Boolean) }
+
+            if (showConsentDialog) {
+                val consentText = context.translation["remote_bypass_consent"]
+                me.rhunk.snapenhance.ui.manager.components.ConsentDialog(
+                    title = "Remote Bypass Consent",
+                    text = consentText,
+                    onAgree = {
+                        propertyValue.setAny(true)
+                        state = true
+                        context.config.root.experimental.remoteBypassConsent.set(true)
+                        showConsentDialog = false
+                    },
+                    onDisagree = {
+                        propertyValue.setAny(false)
+                        state = false
+                        context.config.root.experimental.remoteBypassConsent.set(false)
+                        showConsentDialog = false
+                    },
+                    onDismiss = {
+                        showConsentDialog = false
+                    }
+                )
+            }
+            val hapticFeedback = LocalHapticFeedback.current
+            Switch(
+                checked = state,
+                onCheckedChange = registerClickCallback {
+                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                    if (context.config.root.experimental.remoteBypassConsent.getNullable() != true) {
+                        showConsentDialog = true
+                    } else {
+                        state = state.not()
+                        propertyValue.setAny(state)
+                    }
+                }
+            )
+            return
+        }
+
         if (property.key.params.flags.contains(ConfigFlag.USER_IMPORT)) {
             registerDialogOnClickCallback()
             dialogComposable = {

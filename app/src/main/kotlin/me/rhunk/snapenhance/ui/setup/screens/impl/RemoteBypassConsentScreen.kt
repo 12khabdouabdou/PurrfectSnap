@@ -35,6 +35,7 @@ class RemoteBypassConsentScreen : SetupScreen() {
             }
             Button(onClick = {
                 context.config.root.experimental.remoteBypassConsent.set(true)
+                context.config.root.experimental.useRemoteBypass.set(true)
                 context.config.writeConfig()
                 allowNext(true)
                 goNext()

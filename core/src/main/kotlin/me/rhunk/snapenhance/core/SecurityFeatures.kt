@@ -72,6 +72,7 @@ class SecurityFeatures(
     }
 
     private var oldBypassInitialized = false
+    private var newBypassInitialized = false
 
     private external fun getSecretKey(): String
 
@@ -81,29 +82,21 @@ class SecurityFeatures(
 
     fun init() {
         if (context.config.experimental.useRemoteBypass.get()) {
-            when (context.config.experimental.remoteBypassConsent.getNullable()) {
-                true -> {
-                    initNewBypass()
-                    return
-                }
-                false -> {
-                    // consent denied, use old bypass
-                }
-                null -> {
-                    // consent not set, trigger the setup screen
-                    val intent = Intent()
-                    intent.setClassName(me.rhunk.snapenhance.common.Constants.SE_PACKAGE_NAME, "me.rhunk.snapenhance.ui.setup.SetupActivity")
-                    intent.putExtra("requirements", me.rhunk.snapenhance.common.ui.Requirements.REMOTE_BYPASS_CONSENT)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.androidContext.startActivity(intent)
-                    // Fallback to old bypass until consent is given
-                }
+            if (context.config.experimental.remoteBypassConsent.get()) {
+                initNewBypass()
+            } else {
+                context.log.debug("Remote bypass consent not granted, using old bypass")
+                initOldBypass()
             }
+            return
         }
         initOldBypass()
     }
 
     private fun initNewBypass() {
+        if (newBypassInitialized) return
+        newBypassInitialized = true
+
         val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
         if (bypassFile.exists()) {
             loadBypassModule(bypassFile)
@@ -325,14 +318,17 @@ class SecurityFeatures(
     }
 
     private fun downloadAndLoadBypass() {
-        val activity = context.mainActivity ?: return
-        val progressDialog = AlertDialog.Builder(activity)
-            .setTitle("Downloading Bypass")
-            .setMessage("Please wait...")
-            .setCancelable(false)
-            .create()
-
-        progressDialog.show()
+        lateinit var composable: CustomComposable
+        composable = {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter),
+            ) {
+                Text("Downloading bypass...")
+            }
+        }
+        context.inAppOverlay.addCustomComposable(composable)
 
         context.coroutineScope.launch {
             val encryptedFile = File(context.androidContext.filesDir, "bypass.dex.enc")
@@ -356,44 +352,41 @@ class SecurityFeatures(
                             decryptBypass(encryptedFile, decryptedFile)
                         }
                         loadBypassModule(decryptedFile)
-                    } else {
-                        withContext(Dispatchers.Main) {
-                            AlertDialog.Builder(activity)
-                                .setTitle("Error")
-                                .setMessage("Bypass verification failed. The downloaded file may be corrupted.")
-                                .setPositiveButton("Retry") { _, _ ->
-                                    downloadAndLoadBypass()
-                                }
-                                .setNegativeButton("Cancel", null)
-                                .show()
-                        }
-                    }
-                } else {
-                    withContext(Dispatchers.Main) {
-                        AlertDialog.Builder(activity)
-                            .setTitle("Error")
-                            .setMessage("Failed to download bypass: ${connection.responseCode} ${connection.responseMessage}")
-                            .setPositiveButton("Retry") { _, _ ->
-                                downloadAndLoadBypass()
+                        context.inAppOverlay.removeCustomComposable(composable)
+                        composable = {
+                            Row(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .align(Alignment.TopCenter),
+                            ) {
+                                Icon(Icons.Filled.Check, contentDescription = null, tint = Color(0xFF85A947))
                             }
-                            .setNegativeButton("Cancel", null)
-                            .show()
+                            LaunchedEffect(Unit) {
+                                delay(2500)
+                                context.inAppOverlay.removeCustomComposable(composable)
+                            }
+                        }
+                        context.inAppOverlay.addCustomComposable(composable)
                     }
                 }
             } catch (e: Exception) {
                 context.log.error("Failed to download bypass", e)
-                withContext(Dispatchers.Main) {
-                    AlertDialog.Builder(activity)
-                        .setTitle("Error")
-                        .setMessage("Failed to download bypass: ${e.message}")
-                        .setPositiveButton("Retry") { _, _ ->
-                            downloadAndLoadBypass()
-                        }
-                        .setNegativeButton("Cancel", null)
-                        .show()
+                context.inAppOverlay.removeCustomComposable(composable)
+                composable = {
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .align(Alignment.TopCenter),
+                    ) {
+                        Text("Failed to download bypass: ${e.message}")
+                    }
+                    LaunchedEffect(Unit) {
+                        delay(2500)
+                        context.inAppOverlay.removeCustomComposable(composable)
+                    }
                 }
+                context.inAppOverlay.addCustomComposable(composable)
             } finally {
-                progressDialog.dismiss()
                 if (encryptedFile.exists()) encryptedFile.delete()
                 if (decryptedFile.exists()) decryptedFile.delete()
             }

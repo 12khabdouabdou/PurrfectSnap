@@ -210,6 +210,10 @@ class RemoteSideContext(
             requirements = requirements or Requirements.FIRST_RUN
         }
 
+        if (config.root.experimental.remoteBypassConsent.getNullable() == null) {
+            requirements = requirements or Requirements.REMOTE_BYPASS_CONSENT
+        }
+
         config.root.downloader.saveFolder.get().let {
             if (it.isEmpty() || run {
                     val documentFile = runCatching { DocumentFile.fromTreeUri(androidContext, Uri.parse(it)) }.getOrNull()
