@@ -113,6 +113,13 @@ class ModConfig(
         val oldConfig = runCatching { fileWrapper.readBytes().toString(Charsets.UTF_8) }.getOrNull()
         fileWrapper.writeBytes(exportToString(config = config).toByteArray(Charsets.UTF_8))
 
+        if (root.experimental.useRemoteBypass.get().not()) {
+            val encryptedFile = java.io.File(context.filesDir, "bypass.dex.enc")
+            if (encryptedFile.exists()) {
+                encryptedFile.delete()
+            }
+        }
+
         configStateListener?.takeIf { dispatchConfigListener && it.asBinder().pingBinder() }?.also {
             runCatching {
                 compareDiff(createRootConfig().apply {

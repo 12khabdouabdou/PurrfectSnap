@@ -3,17 +3,22 @@ package me.rhunk.snapenhance.core
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.system.Os
 import android.view.ViewGroup
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.NotInterested
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import dalvik.system.DexClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -36,11 +42,14 @@ import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
 import me.rhunk.snapenhance.common.config.VersionRequirement
 import me.rhunk.snapenhance.common.ui.Requirements
 import me.rhunk.snapenhance.common.ui.createComposeView
+import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
 import me.rhunk.snapenhance.core.ui.CustomComposable
+import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.hook.hookConstructor
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
+import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
@@ -74,6 +83,48 @@ class SecurityFeatures(
     private var oldBypassInitialized = false
     private var newBypassInitialized = false
 
+    private fun showBypassStatusIndicator(isWorking: Boolean) {
+        if (context.bridgeClient.getDebugProp("disable_bypass_indicator", "false") == "true") {
+            return
+        }
+
+        lateinit var composable: CustomComposable
+        composable = {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter)
+                    .offset(y = (-8).dp)
+                    .background(
+                        color = Color.Black.copy(alpha = 0.8f),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
+                    contentDescription = null,
+                    tint = if (isWorking) Color.Green else Color.Red,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (isWorking) "Bypass Active" else "Bypass Inactive",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
+
+            LaunchedEffect(Unit) {
+                delay(3000)
+                context.inAppOverlay.removeCustomComposable(composable)
+            }
+        }
+
+        context.inAppOverlay.addCustomComposable(composable)
+    }
+
     fun init() {
         if (context.config.experimental.useRemoteBypass.get()) {
             if (context.config.experimental.remoteBypassConsent.get()) {
@@ -91,9 +142,49 @@ class SecurityFeatures(
         if (newBypassInitialized) return
         newBypassInitialized = true
 
-        val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
-        if (bypassFile.exists()) {
-            loadBypassModule(bypassFile)
+        val encryptedFile = File(context.androidContext.filesDir, "bypass.dex.enc")
+        if (encryptedFile.exists()) {
+            val decryptedFile = File(context.androidContext.cacheDir, "bypass.dex")
+            try {
+                decryptBypass(encryptedFile, decryptedFile)
+                loadBypassModule(decryptedFile)
+            } finally {
+                if (decryptedFile.exists()) {
+                    decryptedFile.delete()
+                }
+            }
+        } else {
+            context.log.warn("bypass.dex.enc not found, falling back to old bypass")
+            initOldBypass()
+        }
+    }
+
+    private fun decryptBypass(encryptedFile: File, decryptedFile: File) {
+        val password = context.native.getSecretKey().toCharArray()
+
+        encryptedFile.inputStream().use { fis ->
+            val saltHeader = ByteArray(8)
+            fis.read(saltHeader)
+            val salt = ByteArray(8)
+            fis.read(salt)
+
+            val keySpec = PBEKeySpec(password, salt, 100000, 256 + 128)
+            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+            val key = factory.generateSecret(keySpec)
+
+            val keyBytes = key.encoded.copyOfRange(0, 32)
+            val ivBytes = key.encoded.copyOfRange(32, 48)
+
+            val secretKey = SecretKeySpec(keyBytes, "AES")
+            val ivParameterSpec = IvParameterSpec(ivBytes)
+
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
+
+            decryptedFile.outputStream().use { fos ->
+                val cipherInputStream = CipherInputStream(fis, cipher)
+                cipherInputStream.copyTo(fos)
+            }
         }
     }
 
@@ -138,45 +229,34 @@ class SecurityFeatures(
         }
 
         context.disablePlugin = shouldDisablePlugin
-        context.log.verbose("disablePlugin=	extvariable.disablePlugin")
+        context.log.verbose("disablePlugin=${shouldDisablePlugin}")
 
-        if (context.disablePlugin) {
-             context.features.addActivityCreateListener { activity ->
-                if (!activity.javaClass.name.endsWith("LoginSignupActivity")) return@addActivityCreateListener
-                activity.findViewById<ViewGroup>(android.R.id.content).apply {
-                    visibility = ViewGroup.INVISIBLE
-                    post {
-                        addView(createComposeView(activity) {
-                            Surface(
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .align(Alignment.Center)
-                                            .padding(16.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                    ) {
-                                        Icon(Icons.Rounded.NotInterested, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(110.dp))
-                                        Spacer(Modifier.height(50.dp))
-                                        Text(
-                                            "SnapEnhance can't be used to login or signup because your Snapchat version isn't the recommended one. Please downgrade to Snapchat v${MOD_DETECTION_VERSION_CHECK.maxVersion?.first ?: "0.0.0"} or disable SnapEnhance in LSPosed to continue.\n\nFor more details, join t.me/snapenhance_chat",
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            textAlign = TextAlign.Center,
-                                        )
-                                    }
-                                }
-                            }
-                            LaunchedEffect(Unit) {
-                                visibility = ViewGroup.VISIBLE
-                            }
-                        })
-                    }
+        if (!usingCustomSharedLibrary) {
+            showBypassStatusIndicator(context.disablePlugin)
+        }
+
+        if (!context.disablePlugin) return
+
+        val allowedEPs = listOf(
+            "/messagingcoreservice.MessagingCoreService/",
+            "/GetConvoSafetyPrompt",
+            "/GetSnapchatterPublicInfo",
+            "/UserRecentlyActive",
+            "/socialsms.SocialSms/UpdateLink", // Direct link sharing
+        )
+
+        context.event.subscribe(UnaryCallEvent::class) { event ->
+            val callOptions = event.adapter.arg<Any>(2).let { it.javaClass.getMethod("build").invoke(it) } ?: return@subscribe
+            if (callOptions.getObjectField("mAttestation") != null || event.uri.endsWith("/IncomingFriendSync")) {
+                context.log.verbose("blocked ep ${event.adapter.arg<Any>(0)}", "UnaryCallEvent")
+                event.canceled = true
+                val eventHandler = event.adapter.arg<Any>(3)
+                eventHandler.javaClass.methods.first { it.name == "onEvent" }.also { method ->
+                    method.invoke(eventHandler, null, method.parameterTypes[0].dataBuilder {
+                        set("mStatusCode", "CANCELLED")
+                    })
                 }
             }
-            return
         }
 
 
@@ -213,6 +293,23 @@ class SecurityFeatures(
             }
         }
 
+        context.mappings.useMapper(CallbackMapper::class) {
+            callbacks.getClass("AuthContextDelegate")?.hook("getAuthContext", HookStage.BEFORE) { param ->
+                val authContextRequest = param.arg<Any>(0)
+                val requestPath = authContextRequest.getObjectField("mRequestPath").toString()
+
+                if (authContextRequest.getObjectField("mAttestationRequired") == true) {
+                    if (allowedEPs.any { requestPath.contains(it) }) {
+                        context.log.verbose("ep $requestPath", "AuthContextDelegate")
+                        return@hook
+                    }
+
+                    context.log.verbose("blocked ep $requestPath", "AuthContextDelegate")
+                    param.setResult(null)
+                }
+            } ?: error("AuthContextDelegate not found in mappings")
+        }
+
         context.mappings.useMapper(PlatformClientAttestationMapper::class) {
             apiInvocationHandler.getAsClass()?.hook("invoke", HookStage.BEFORE) { param ->
                 val method = param.arg<Method>(1)
@@ -230,6 +327,45 @@ class SecurityFeatures(
                     param.setResult(null)
                 }
             } ?: context.log.warn("apiInvocationHandler not found in mappings")
+        }
+
+        context.features.addActivityCreateListener { activity ->
+            if (!activity.javaClass.name.endsWith("LoginSignupActivity")) return@addActivityCreateListener
+
+            activity.findViewById<ViewGroup>(android.R.id.content).apply {
+                visibility = ViewGroup.INVISIBLE
+
+                post {
+                    addView(createComposeView(activity) {
+                        Surface(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Icon(Icons.Rounded.NotInterested, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(110.dp))
+                                    Spacer(Modifier.height(50.dp))
+                                    Text(
+                                        "SnapEnhance can't be used to login or signup because your Snapchat version isn't the recommended one. Please downgrade to Snapchat v${MOD_DETECTION_VERSION_CHECK.maxVersion?.first ?: "0.0.0"} or disable SnapEnhance in LSPosed to continue.\n\nFor more details, join t.me/snapenhance_chat",
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
+                            }
+                        }
+
+                        LaunchedEffect(Unit) {
+                            visibility = ViewGroup.VISIBLE
+                        }
+                    })
+                }
+            }
         }
     }
 

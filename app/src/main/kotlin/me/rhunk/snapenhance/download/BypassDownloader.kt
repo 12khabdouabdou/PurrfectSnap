@@ -64,7 +64,6 @@ object BypassDownloader {
 
     private fun decryptBypass(context: Context, encryptedFile: File, decryptedFile: File) {
         val password = me.rhunk.snapenhance.SharedContextHolder.remote(context).native.getSecretKey().toCharArray()
-        me.rhunk.snapenhance.SharedContextHolder.remote(context).log.error("Decrypting with key: ${String(password)}")
 
         encryptedFile.inputStream().use { fis ->
             val saltHeader = ByteArray(8)
@@ -96,7 +95,6 @@ object BypassDownloader {
         val log = me.rhunk.snapenhance.SharedContextHolder.remote(context).log
         scope.launch(Dispatchers.IO) {
             val encryptedFile = File(context.filesDir, "bypass.dex.enc")
-            val decryptedFile = File(context.filesDir, "bypass.dex")
 
             try {
                 log.info("Starting bypass download...")
@@ -105,7 +103,6 @@ object BypassDownloader {
 
                 log.info("Request URL: $CHALLENGE_ENDPOINT_URL")
                 val apiKey = me.rhunk.snapenhance.SharedContextHolder.remote(context).native.getSecretKey()
-                log.info("API Key: $apiKey")
 
                 val connection = createConnection(CHALLENGE_ENDPOINT_URL)
                 connection.setRequestProperty("X-API-Key", apiKey)
@@ -133,10 +130,8 @@ object BypassDownloader {
 
                     if (verifyChecksum(encryptedFile)) {
                         log.info("Checksum verification successful.")
-                        downloadState.value = DownloadState.DECRYPTING
-                        decryptBypass(context, encryptedFile, decryptedFile)
                         downloadState.value = DownloadState.COMPLETED
-                        log.info("Decryption successful.")
+                        log.info("Download successful.")
                     } else {
                         errorMessage.value = "Checksum verification failed."
                         log.error("Checksum verification failed.")
@@ -155,9 +150,6 @@ object BypassDownloader {
                 errorMessage.value = "An unknown error occurred: ${e.message ?: "No message"}"
                 log.error("An unknown error occurred during bypass download.", e)
                 downloadState.value = DownloadState.FAILED
-            } finally {
-                if (encryptedFile.exists()) encryptedFile.delete()
-                log.info("Bypass download process finished.")
             }
         }
     }
