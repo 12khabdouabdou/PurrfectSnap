@@ -178,74 +178,24 @@ class FeaturesRootSection : Routes.Route() {
         val propertyValue = property.value
 
         if (property.key.name == "use_remote_bypass") {
-            var showConsentDialog by remember { mutableStateOf(false) }
-            val bypassDownloader = me.rhunk.snapenhance.download.BypassDownloader
-            val downloadState by bypassDownloader.downloadState.collectAsState()
-            val downloadProgress by bypassDownloader.downloadProgress.collectAsState()
-            val scope = rememberCoroutineScope()
-
             var state by remember { mutableStateOf(propertyValue.get() as Boolean) }
-
-            if (showConsentDialog) {
-                val consentText = context.translation["remote_bypass_consent"]
-                me.rhunk.snapenhance.ui.manager.components.ConsentDialog(
-                    title = "Remote Bypass Consent",
-                    text = consentText,
-                    onAgree = {
-                        propertyValue.setAny(true)
-                        state = true
-                        context.config.root.experimental.remoteBypassConsent.set(true)
-                        bypassDownloader.download(context.androidContext, scope)
-                        showConsentDialog = false
-                    },
-                    onDisagree = {
-                        propertyValue.setAny(false)
-                        state = false
-                        context.config.root.experimental.remoteBypassConsent.set(false)
-                        showConsentDialog = false
-                    },
-                    onDismiss = {
-                        showConsentDialog = false
-                    }
-                )
-            }
             val hapticFeedback = LocalHapticFeedback.current
-            Column {
-                Switch(
-                    checked = state,
-                    onCheckedChange = registerClickCallback {
-                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
-                        if (context.config.root.experimental.remoteBypassConsent.getNullable() != true) {
-                            showConsentDialog = true
-                        } else {
-                            state = state.not()
-                            propertyValue.setAny(state)
-                        }
+            Switch(
+                checked = state,
+                onCheckedChange = registerClickCallback {
+                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
-                )
-                if (downloadState != me.rhunk.snapenhance.download.BypassDownloader.DownloadState.IDLE && downloadState != me.rhunk.snapenhance.download.BypassDownloader.DownloadState.COMPLETED) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    LinearProgressIndicator(
-                        progress = { downloadProgress },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    val errorMessage by bypassDownloader.errorMessage.collectAsState()
-                    Text(
-                        text = when (downloadState) {
-                            me.rhunk.snapenhance.download.BypassDownloader.DownloadState.DOWNLOADING -> "Downloading..."
-                            me.rhunk.snapenhance.download.BypassDownloader.DownloadState.DECRYPTING -> "Decrypting..."
-                            me.rhunk.snapenhance.download.BypassDownloader.DownloadState.FAILED -> "Download failed: ${errorMessage ?: "Unknown error"}"
-                            else -> ""
-                        },
-                        fontSize = 12.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    if (!state) {
+                        val intent = Intent(context.activity, me.rhunk.snapenhance.ui.setup.SetupActivity::class.java)
+                        intent.putExtra("requirements", me.rhunk.snapenhance.common.ui.Requirements.REMOTE_BYPASS_CONSENT)
+                        context.activity?.startActivity(intent)
+                    } else {
+                        state = false
+                        propertyValue.setAny(false)
+                    }
                 }
-            }
+            )
             return
         }
 

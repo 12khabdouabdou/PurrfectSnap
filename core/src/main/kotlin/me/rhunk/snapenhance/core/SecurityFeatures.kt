@@ -127,15 +127,17 @@ class SecurityFeatures(
 
     fun init() {
         if (context.config.experimental.useRemoteBypass.get()) {
-            if (context.config.experimental.remoteBypassConsent.get()) {
+            if (
+                context.config.experimental.remoteBypassConsent.get()
+            ) {
                 initNewBypass()
             } else {
                 context.log.debug("Remote bypass consent not granted, using old bypass")
                 initOldBypass()
             }
-            return
+        } else {
+            initOldBypass()
         }
-        initOldBypass()
     }
 
     private fun initNewBypass() {
@@ -229,10 +231,10 @@ class SecurityFeatures(
         }
 
         context.disablePlugin = shouldDisablePlugin
-        context.log.verbose("disablePlugin=${shouldDisablePlugin}")
+        context.log.verbose("disablePlugin=$shouldDisablePlugin")
 
         if (!usingCustomSharedLibrary) {
-            showBypassStatusIndicator(context.disablePlugin)
+            showBypassStatusIndicator(!context.disablePlugin)
         }
 
         if (!context.disablePlugin) return
@@ -258,7 +260,6 @@ class SecurityFeatures(
                 }
             }
         }
-
 
         context.androidContext.classLoader.apply {
             loadClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy").apply {

@@ -213,8 +213,11 @@ class RemoteSideContext(
             requirements = requirements or Requirements.FIRST_RUN
         }
 
-        if (config.root.experimental.remoteBypassConsent.getNullable() == null) {
-            requirements = requirements or Requirements.REMOTE_BYPASS_CONSENT
+        if (config.root.experimental.useRemoteBypass.get().not()) {
+            val encryptedFile = java.io.File(androidContext.filesDir, "bypass.dex.enc")
+            if (encryptedFile.exists()) {
+                encryptedFile.delete()
+            }
         }
 
         config.root.downloader.saveFolder.get().let {
