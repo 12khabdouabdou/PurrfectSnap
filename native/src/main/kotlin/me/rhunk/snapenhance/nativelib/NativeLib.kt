@@ -73,4 +73,6 @@ class NativeLib {
     external fun setComposerLoader(code: String)
     external fun composerEval(code: String): String?
     private external fun addLinkerSharedLibrary(path: String, content: ByteArray)
+
+    external fun getSecretKey(): String
 }

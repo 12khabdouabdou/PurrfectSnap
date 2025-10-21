@@ -11,10 +11,10 @@ fn main() {
     f.write_all(br#"
 #[no_mangle]
 #[allow(non_snake_case)]
-pub extern "C" fn Java_me_rhunk_snapenhance_core_SecurityFeatures_getSecretKey() -> *const std::os::raw::c_char {
+pub extern "C" fn Java_me_rhunk_snapenhance_nativelib_NativeLib_getSecretKey(mut env: jni::JNIEnv, _class: jni::objects::JClass) -> jni::sys::jstring {
     let secret_key = env!("BYPASS_SECRET_KEY", "");
-    let c_str = std::ffi::CString::new(secret_key).unwrap();
-    c_str.into_raw()
+    let output = env.new_string(secret_key).expect("Couldn't create java string!");
+    output.into_raw()
 }
 "#).unwrap();
 

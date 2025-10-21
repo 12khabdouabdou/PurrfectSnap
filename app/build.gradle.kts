@@ -124,6 +124,7 @@ dependencies {
 
     implementation(project(":core"))
     implementation(project(":common"))
+    implementation(project(":native"))
     implementation(libs.androidx.documentfile)
     implementation(libs.gson)
     implementation(libs.smart.exception.java)

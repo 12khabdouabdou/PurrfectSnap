@@ -108,9 +108,12 @@ class RemoteSideContext(
 
     val gson: Gson by lazy { GsonBuilder().setPrettyPrinting().create() }
 
+    val native = me.rhunk.snapenhance.nativelib.NativeLib()
+
     fun reload() {
         runCatching {
             runBlocking(Dispatchers.IO) {
+                System.loadLibrary(me.rhunk.snapenhance.nativelib.BuildConfig.NATIVE_NAME)
                 log.init()
                 log.verbose("Loading RemoteSideContext")
                 config.load()

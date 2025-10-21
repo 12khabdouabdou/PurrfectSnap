@@ -43,6 +43,7 @@ class ModContext(
 ) {
     val coroutineScope = CoroutineScope(Dispatchers.IO)
 
+    lateinit var securityFeatures: SecurityFeatures
     lateinit var bridgeClient: BridgeClient
     var mainActivity: Activity? = null
 

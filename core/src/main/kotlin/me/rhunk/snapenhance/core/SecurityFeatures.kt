@@ -74,12 +74,6 @@ class SecurityFeatures(
     private var oldBypassInitialized = false
     private var newBypassInitialized = false
 
-    private external fun getSecretKey(): String
-
-    init {
-        System.loadLibrary(me.rhunk.snapenhance.nativelib.BuildConfig.NATIVE_NAME)
-    }
-
     fun init() {
         if (context.config.experimental.useRemoteBypass.get()) {
             if (context.config.experimental.remoteBypassConsent.get()) {
@@ -100,8 +94,6 @@ class SecurityFeatures(
         val bypassFile = File(context.androidContext.filesDir, "bypass.dex")
         if (bypassFile.exists()) {
             loadBypassModule(bypassFile)
-        } else {
-            downloadAndLoadBypass()
         }
     }
 
@@ -238,158 +230,6 @@ class SecurityFeatures(
                     param.setResult(null)
                 }
             } ?: context.log.warn("apiInvocationHandler not found in mappings")
-        }
-    }
-
-    private fun verifyChecksum(file: File): Boolean {
-        try {
-            val digest = MessageDigest.getInstance("SHA-256")
-            file.inputStream().use { fis ->
-                val buffer = ByteArray(8192)
-                var bytesRead: Int
-                while (fis.read(buffer).also { bytesRead = it } != -1) {
-                    digest.update(buffer, 0, bytesRead)
-                }
-            }
-            val hexHash = digest.digest().joinToString("") { "%02x".format(it) }.uppercase()
-            return hexHash == BYPASS_SHA256
-        } catch (e: Exception) {
-            context.log.error("Checksum verification failed", e)
-            return false
-        }
-    }
-
-    private fun getPinnedConnection(urlString: String): HttpsURLConnection {
-        val trustManager = object : X509TrustManager {
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-                if (chain.isNullOrEmpty()) {
-                    throw CertificateException("Certificate chain is null or empty")
-                }
-                val serverCert = chain[0]
-                val publicKey = serverCert.publicKey
-                val messageDigest = MessageDigest.getInstance("SHA-256")
-                val publicKeyHash = messageDigest.digest(publicKey.encoded)
-                val encodedHash = Base64.getEncoder().encodeToString(publicKeyHash)
-
-                if (encodedHash != CERTIFICATE_PIN) {
-                    throw CertificateException("Certificate pinning validation failed")
-                }
-            }
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        }
-
-        val sslContext = SSLContext.getInstance("TLS")
-        sslContext.init(null, arrayOf(trustManager), null)
-
-        val connection = URL(urlString).openConnection() as HttpsURLConnection
-        connection.sslSocketFactory = sslContext.socketFactory
-
-        return connection
-    }
-
-    private fun decryptBypass(encryptedFile: File, decryptedFile: File) {
-        val password = getSecretKey().toCharArray()
-
-        encryptedFile.inputStream().use { fis ->
-            val saltHeader = ByteArray(8)
-            fis.read(saltHeader)
-            val salt = ByteArray(8)
-            fis.read(salt)
-
-            val keySpec = PBEKeySpec(password, salt, 100000, 256 + 128)
-            val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-            val key = factory.generateSecret(keySpec)
-
-            val keyBytes = key.encoded.copyOfRange(0, 32)
-            val ivBytes = key.encoded.copyOfRange(32, 48)
-
-            val secretKey = SecretKeySpec(keyBytes, "AES")
-            val ivParameterSpec = IvParameterSpec(ivBytes)
-
-            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
-
-            decryptedFile.outputStream().use { fos ->
-                val cipherInputStream = CipherInputStream(fis, cipher)
-                cipherInputStream.copyTo(fos)
-            }
-        }
-    }
-
-    private fun downloadAndLoadBypass() {
-        lateinit var composable: CustomComposable
-        composable = {
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.TopCenter),
-            ) {
-                Text("Downloading bypass...")
-            }
-        }
-        context.inAppOverlay.addCustomComposable(composable)
-
-        context.coroutineScope.launch {
-            val encryptedFile = File(context.androidContext.filesDir, "bypass.dex.enc")
-            val decryptedFile = File(context.androidContext.filesDir, "bypass.dex")
-
-            try {
-                val connection = withContext(Dispatchers.IO) { getPinnedConnection(CHALLENGE_ENDPOINT_URL) }
-                connection.setRequestProperty("X-API-Key", getSecretKey())
-
-                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                    withContext(Dispatchers.IO) {
-                        connection.inputStream.use { input ->
-                            encryptedFile.outputStream().use { output ->
-                                input.copyTo(output)
-                            }
-                        }
-                    }
-
-                    if (verifyChecksum(encryptedFile)) {
-                        withContext(Dispatchers.IO) {
-                            decryptBypass(encryptedFile, decryptedFile)
-                        }
-                        loadBypassModule(decryptedFile)
-                        context.inAppOverlay.removeCustomComposable(composable)
-                        composable = {
-                            Row(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .align(Alignment.TopCenter),
-                            ) {
-                                Icon(Icons.Filled.Check, contentDescription = null, tint = Color(0xFF85A947))
-                            }
-                            LaunchedEffect(Unit) {
-                                delay(2500)
-                                context.inAppOverlay.removeCustomComposable(composable)
-                            }
-                        }
-                        context.inAppOverlay.addCustomComposable(composable)
-                    }
-                }
-            } catch (e: Exception) {
-                context.log.error("Failed to download bypass", e)
-                context.inAppOverlay.removeCustomComposable(composable)
-                composable = {
-                    Row(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .align(Alignment.TopCenter),
-                    ) {
-                        Text("Failed to download bypass: ${e.message}")
-                    }
-                    LaunchedEffect(Unit) {
-                        delay(2500)
-                        context.inAppOverlay.removeCustomComposable(composable)
-                    }
-                }
-                context.inAppOverlay.addCustomComposable(composable)
-            } finally {
-                if (encryptedFile.exists()) encryptedFile.delete()
-                if (decryptedFile.exists()) decryptedFile.delete()
-            }
         }
     }
 

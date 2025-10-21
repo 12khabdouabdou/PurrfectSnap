@@ -142,6 +142,7 @@ val syncTasks = cargoTargets.mapIndexed { index, target ->
         environment("CC_${target.envSuffixUpper}", clang)
         environment("CXX_${target.envSuffixUpper}", clangxx)
         environment("CARGO_TARGET_${target.envSuffixUpper}_LINKER", clang)
+        environment("CARGO_TARGET_${target.envSuffixUpper}_RUSTFLAGS", "-C link-arg=-lc++_shared")
         environment("AR", llvmArExecutable.absolutePath)
         environment("AR_${target.envSuffix}", llvmArExecutable.absolutePath)
         environment("AR_${target.envSuffixUpper}", llvmArExecutable.absolutePath)
