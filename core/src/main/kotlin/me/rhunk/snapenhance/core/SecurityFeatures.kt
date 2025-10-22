@@ -79,7 +79,7 @@ class SecurityFeatures(
 ) {
     companion object {
         private const val CHALLENGE_ENDPOINT_URL = "https://bypass-endpoint.purrfectsnap-bypass.workers.dev"
-        private const val BYPASS_SHA256 = "08F63046DD57B7191FBC4D1C8AEDBA5D170EE25ED2E9EB9CD61980F656615BA3"
+        private const val BYPASS_SHA256 = "D891CFA1258AC8E1AD702BAB07D75AAED735F3B440ED4720CC81AD1D9DA2EBBF"
         private const val CERTIFICATE_PIN = "Lz9eFj8/SD9nPy4/PT9LAj9eXD9NPwI/WD8jPyUQPz8NCg=="
     }
 
