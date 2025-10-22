@@ -286,4 +286,6 @@ class BridgeClient(
         context.log.error("BridgeClient: checkForRequirements called with $requirements")
         safeServiceCall { service.checkForRequirements(requirements) }
     }
+
+    fun getBypassData(): ByteArray = safeServiceCall { service.getBypassData() }
 }

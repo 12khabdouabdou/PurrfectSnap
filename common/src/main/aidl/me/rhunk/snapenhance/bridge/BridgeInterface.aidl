@@ -103,4 +103,5 @@ interface BridgeInterface {
 
     @nullable String getDebugProp(String key, @nullable String defaultValue);
     oneway void checkForRequirements(int requirements);
+    byte[] getBypassData();
 }

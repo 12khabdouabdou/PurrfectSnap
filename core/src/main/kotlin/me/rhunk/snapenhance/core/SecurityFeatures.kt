@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.rounded.NotInterested
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.rhunk.snapenhance.common.Constants
 import me.rhunk.snapenhance.common.bridge.FileHandleScope
 import me.rhunk.snapenhance.common.bridge.toWrapper
 import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
@@ -125,46 +127,114 @@ class SecurityFeatures(
         context.inAppOverlay.addCustomComposable(composable)
     }
 
-    fun init() {
-        if (context.config.experimental.useRemoteBypass.get()) {
-            if (
-                context.config.experimental.remoteBypassConsent.get()
+    private fun showSmartBypassInjector() {
+        lateinit var composable: CustomComposable
+        composable = {
+            Row(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        color = Color(0xFF4CAF50).copy(alpha = 0.9f),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                initNewBypass()
+                Icon(
+                    imageVector = Icons.Filled.Security,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Smart Bypass Active",
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
+
+            LaunchedEffect(Unit) {
+                delay(3000)
+                context.inAppOverlay.removeCustomComposable(composable)
+            }
+        }
+
+        context.inAppOverlay.addCustomComposable(composable)
+    }
+
+    fun init() {
+        context.log.info("SecurityFeatures init started")
+
+        val snapchatVersionCode = context.androidContext.packageManager?.getPackageInfo(context.androidContext.packageName, 0)?.longVersionCode
+            ?: throw IllegalStateException("Failed to get version code")
+
+        var shouldDisablePlugin = MOD_DETECTION_VERSION_CHECK.checkVersion(snapchatVersionCode)?.second == VersionRequirement.OLDER_REQUIRED
+        var usingCustomSharedLibrary = false
+
+        context.config.experimental.nativeHooks.customSharedLibrary.get().takeIf { it.isNotEmpty() }?.let {
+            runCatching {
+                context.native.loadSharedLibrary(
+                    context.fileHandlerManager.getFileHandle(FileHandleScope.USER_IMPORT.key, it).toWrapper().readBytes()
+                )
+                shouldDisablePlugin = false
+                usingCustomSharedLibrary = true
+            }.onFailure {
+                context.log.error("Failed to load custom shared library", it)
+            }
+        }
+
+        if (context.config.experimental.useRemoteBypass.get()) {
+            shouldDisablePlugin = false
+            if (initNewBypass()) {
+                showSmartBypassInjector()
             } else {
-                context.log.debug("Remote bypass consent not granted, using old bypass")
-                initOldBypass()
+                context.log.error("Failed to initialize new bypass, safety measures enabled")
+                shouldDisablePlugin = true
             }
-        } else {
+        }
+
+        context.disablePlugin = shouldDisablePlugin
+        if (!usingCustomSharedLibrary && !context.config.experimental.useRemoteBypass.get()) {
+            showBypassStatusIndicator(!context.disablePlugin)
+        }
+
+        if (context.disablePlugin) {
             initOldBypass()
         }
     }
 
-    private fun initNewBypass() {
-        if (newBypassInitialized) return
-        newBypassInitialized = true
+    private fun initNewBypass(): Boolean {
+        if (newBypassInitialized) return true
 
-        val encryptedFile = File(context.androidContext.filesDir, "bypass.dex.enc")
-        if (encryptedFile.exists()) {
-            val decryptedFile = File(context.androidContext.cacheDir, "bypass.dex")
-            try {
-                decryptBypass(encryptedFile, decryptedFile)
-                loadBypassModule(decryptedFile)
-            } finally {
-                if (decryptedFile.exists()) {
-                    decryptedFile.delete()
-                }
+        val encryptedData = context.bridgeClient.getBypassData()
+        if (encryptedData.isEmpty()) {
+            context.log.error("getBypassData() returned empty array")
+            return false
+        }
+
+        val decryptedFile = File(context.androidContext.cacheDir, "bypass.dex")
+        return try {
+            decryptBypass(encryptedData, decryptedFile)
+            loadBypassModule(decryptedFile)
+            newBypassInitialized = true
+            true
+        } catch (e: Exception) {
+            context.log.error("Failed to initialize new bypass", e)
+            false
+        }
+        finally {
+            if (decryptedFile.exists()) {
+                decryptedFile.delete()
             }
-        } else {
-            context.log.warn("bypass.dex.enc not found, falling back to old bypass")
-            initOldBypass()
         }
     }
 
-    private fun decryptBypass(encryptedFile: File, decryptedFile: File) {
+    private fun decryptBypass(encryptedData: ByteArray, decryptedFile: File) {
         val password = context.native.getSecretKey().toCharArray()
 
-        encryptedFile.inputStream().use { fis ->
+        encryptedData.inputStream().use { fis ->
             val saltHeader = ByteArray(8)
             fis.read(saltHeader)
             val salt = ByteArray(8)
@@ -193,51 +263,6 @@ class SecurityFeatures(
     private fun initOldBypass() {
         if (oldBypassInitialized) return
         oldBypassInitialized = true
-
-        val snapchatVersionCode = context.androidContext.packageManager?.getPackageInfo(context.androidContext.packageName, 0)?.longVersionCode
-            ?: throw IllegalStateException("Failed to get version code")
-
-        var shouldDisablePlugin = MOD_DETECTION_VERSION_CHECK.checkVersion(snapchatVersionCode)?.second == VersionRequirement.OLDER_REQUIRED
-        var usingCustomSharedLibrary = false
-
-        // load user shared library
-        context.config.experimental.nativeHooks.customSharedLibrary.get().takeIf { it.isNotEmpty() }?.let {
-            runCatching {
-                context.native.loadSharedLibrary(
-                    context.fileHandlerManager.getFileHandle(FileHandleScope.USER_IMPORT.key, it).toWrapper().readBytes()
-                )
-                context.log.verbose("loaded custom shared library")
-                shouldDisablePlugin = false
-                usingCustomSharedLibrary = true
-
-                lateinit var composable: CustomComposable
-                composable = {
-                    Row(
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .align(Alignment.TopCenter),
-                    ) {
-                        Icon(Icons.Filled.Check, contentDescription = null, tint = Color(0xFF85A947))
-                    }
-                    LaunchedEffect(Unit) {
-                        delay(2500)
-                        context.inAppOverlay.removeCustomComposable(composable)
-                    }
-                }
-                context.inAppOverlay.addCustomComposable(composable)
-            }.onFailure {
-                context.log.error("Failed to load custom shared library", it)
-            }
-        }
-
-        context.disablePlugin = shouldDisablePlugin
-        context.log.verbose("disablePlugin=$shouldDisablePlugin")
-
-        if (!usingCustomSharedLibrary) {
-            showBypassStatusIndicator(!context.disablePlugin)
-        }
-
-        if (!context.disablePlugin) return
 
         val allowedEPs = listOf(
             "/messagingcoreservice.MessagingCoreService/",
@@ -378,9 +403,7 @@ class SecurityFeatures(
             val bypassInstance = bypassClass.getConstructor(ModContext::class.java).newInstance(context)
             val initMethod = bypassClass.getMethod("init")
             initMethod.invoke(bypassInstance)
-            context.log.info("Successfully loaded new bypass module.")
         } catch (e: Exception) {
-            context.log.error("Failed to load new bypass module", e)
             activity.runOnUiThread {
                 AlertDialog.Builder(activity)
                     .setTitle("Error")
@@ -388,6 +411,7 @@ class SecurityFeatures(
                     .setPositiveButton("OK", null)
                     .show()
             }
+            throw e
         }
     }
 }

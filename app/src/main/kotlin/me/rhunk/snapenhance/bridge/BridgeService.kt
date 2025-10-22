@@ -252,5 +252,14 @@ class BridgeService : Service() {
             remoteSideContext.log.error("BridgeService: checkForRequirements called with $requirements")
             remoteSideContext.checkForRequirements(requirements)
         }
+
+        override fun getBypassData(): ByteArray {
+            val file = File(filesDir, "bypass.dex.enc")
+            return if (file.exists()) {
+                file.readBytes()
+            } else {
+                ByteArray(0)
+            }
+        }
     }
 }
