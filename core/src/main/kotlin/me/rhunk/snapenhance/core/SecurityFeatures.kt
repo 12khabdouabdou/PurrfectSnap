@@ -1,5 +1,8 @@
 package me.rhunk.snapenhance.core
 
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
 import android.system.Os
 import android.view.ViewGroup
 import androidx.compose.foundation.background
@@ -30,11 +33,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dalvik.system.DexClassLoader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import me.rhunk.snapenhance.common.Constants
 import me.rhunk.snapenhance.common.bridge.FileHandleScope
 import me.rhunk.snapenhance.common.bridge.toWrapper
 import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
 import me.rhunk.snapenhance.common.config.VersionRequirement
+import me.rhunk.snapenhance.common.ui.Requirements
 import me.rhunk.snapenhance.common.ui.createComposeView
 import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
 import me.rhunk.snapenhance.core.ui.CustomComposable
@@ -48,13 +56,21 @@ import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.Method
+import java.net.HttpURLConnection
+import java.net.URL
 import java.security.MessageDigest
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
+import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.X509TrustManager
 import kotlin.system.exitProcess
 
 class SecurityFeatures(
