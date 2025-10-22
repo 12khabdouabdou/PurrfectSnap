@@ -1,8 +1,5 @@
 package me.rhunk.snapenhance.core
 
-import android.app.AlertDialog
-import android.content.Context
-import android.content.Intent
 import android.system.Os
 import android.view.ViewGroup
 import androidx.compose.foundation.background
@@ -33,16 +30,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dalvik.system.DexClassLoader
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.rhunk.snapenhance.common.Constants
 import me.rhunk.snapenhance.common.bridge.FileHandleScope
 import me.rhunk.snapenhance.common.bridge.toWrapper
 import me.rhunk.snapenhance.common.config.MOD_DETECTION_VERSION_CHECK
 import me.rhunk.snapenhance.common.config.VersionRequirement
-import me.rhunk.snapenhance.common.ui.Requirements
 import me.rhunk.snapenhance.common.ui.createComposeView
 import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
 import me.rhunk.snapenhance.core.ui.CustomComposable
@@ -56,21 +48,13 @@ import me.rhunk.snapenhance.mapper.impl.PlatformClientAttestationMapper
 import java.io.File
 import java.io.IOException
 import java.lang.reflect.Method
-import java.net.HttpURLConnection
-import java.net.URL
 import java.security.MessageDigest
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
-import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
-import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.X509TrustManager
 import kotlin.system.exitProcess
 
 class SecurityFeatures(
@@ -217,14 +201,20 @@ class SecurityFeatures(
         val decryptedFile = File(context.androidContext.cacheDir, "bypass.dex")
         return try {
             decryptBypass(encryptedData, decryptedFile)
+            
+            // Verify checksum after decryption
+            if (!verifyBypassChecksum(decryptedFile)) {
+                context.log.error("Bypass checksum verification failed!")
+                return false
+            }
+            
             loadBypassModule(decryptedFile)
             newBypassInitialized = true
             true
         } catch (e: Exception) {
             context.log.error("Failed to initialize new bypass", e)
             false
-        }
-        finally {
+        } finally {
             if (decryptedFile.exists()) {
                 decryptedFile.delete()
             }
@@ -260,6 +250,25 @@ class SecurityFeatures(
         }
     }
 
+    private fun verifyBypassChecksum(file: File): Boolean {
+        try {
+            val digest = MessageDigest.getInstance("SHA-256")
+            file.inputStream().use { fis ->
+                val buffer = ByteArray(8192)
+                var bytesRead: Int
+                while (fis.read(buffer).also { bytesRead = it } != -1) {
+                    digest.update(buffer, 0, bytesRead)
+                }
+            }
+            val hexHash = digest.digest().joinToString("") { "%02x".format(it) }.uppercase()
+            context.log.info("Bypass DEX SHA256: $hexHash")
+            return hexHash == BYPASS_SHA256
+        } catch (e: Exception) {
+            context.log.error("Failed to verify bypass checksum", e)
+            return false
+        }
+    }
+
     private fun initOldBypass() {
         if (oldBypassInitialized) return
         oldBypassInitialized = true
@@ -269,7 +278,7 @@ class SecurityFeatures(
             "/GetConvoSafetyPrompt",
             "/GetSnapchatterPublicInfo",
             "/UserRecentlyActive",
-            "/socialsms.SocialSms/UpdateLink", // Direct link sharing
+            "/socialsms.SocialSms/UpdateLink",
         )
 
         context.event.subscribe(UnaryCallEvent::class) { event ->
@@ -396,21 +405,28 @@ class SecurityFeatures(
     }
 
     private fun loadBypassModule(file: File) {
-        val activity = context.mainActivity ?: return
         try {
-            val dexClassLoader = DexClassLoader(file.absolutePath, null, null, context.androidContext.classLoader)
+            context.log.info("Loading bypass module from: ${file.absolutePath}")
+            
+            val dexClassLoader = DexClassLoader(
+                file.absolutePath, 
+                context.androidContext.cacheDir.absolutePath, 
+                null, 
+                context.androidContext.classLoader
+            )
+            
             val bypassClass = dexClassLoader.loadClass("me.rhunk.snapenhance.core.NewBypass")
+            context.log.info("NewBypass class loaded successfully")
+            
             val bypassInstance = bypassClass.getConstructor(ModContext::class.java).newInstance(context)
+            context.log.info("NewBypass instance created")
+            
             val initMethod = bypassClass.getMethod("init")
             initMethod.invoke(bypassInstance)
+            context.log.info("NewBypass initialized successfully")
+            
         } catch (e: Exception) {
-            activity.runOnUiThread {
-                AlertDialog.Builder(activity)
-                    .setTitle("Error")
-                    .setMessage("Failed to load bypass module: ${e.message}")
-                    .setPositiveButton("OK", null)
-                    .show()
-            }
+            context.log.error("Failed to load bypass module", e)
             throw e
         }
     }
