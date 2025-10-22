@@ -27,7 +27,7 @@ import javax.net.ssl.X509TrustManager
 
 object BypassDownloader {
     private const val CHALLENGE_ENDPOINT_URL = "https://bypass-endpoint.purrfectsnap-bypass.workers.dev"
-    private const val BYPASS_SHA256 = "5D5BDE03E3D54C4F03A0365F42A9B11AB10B7BA1D126CAAF82F04A7FC282A1FF"
+    private const val BYPASS_SHA256 = "E02BDCA03CE0B6C9AE8F487BD4AB52507845F8CE62BD01A5A69C9645605EF251"
 
     enum class DownloadState {
         IDLE,
