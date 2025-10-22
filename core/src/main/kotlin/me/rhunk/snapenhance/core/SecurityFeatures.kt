@@ -429,7 +429,7 @@ class SecurityFeatures(
             val dexBytes = file.readBytes()
             context.log.info("Read ${dexBytes.size} bytes from bypass DEX")
             
-            // Use InMemoryDexClassLoader to load from byte array (bypasses writable file restriction)
+            // Use InMemoryDexClassLoader
             val dexClassLoader = InMemoryDexClassLoader(
                 ByteBuffer.wrap(dexBytes),
                 context.androidContext.classLoader
@@ -438,8 +438,19 @@ class SecurityFeatures(
             val bypassClass = dexClassLoader.loadClass("me.rhunk.snapenhance.core.NewBypass")
             context.log.info("NewBypass class loaded successfully")
             
-            val bypassInstance = bypassClass.getConstructor(ModContext::class.java).newInstance(context)
-            context.log.info("NewBypass instance created")
+            // Get ALL constructors and find the one that takes exactly 1 parameter
+            val constructors = bypassClass.declaredConstructors
+            context.log.info("Found ${constructors.size} constructor(s)")
+            
+            val constructor = constructors.firstOrNull { 
+                it.parameterTypes.size == 1
+            } ?: throw NoSuchMethodException("No single-parameter constructor found")
+            
+            constructor.isAccessible = true
+            context.log.info("Using constructor with parameter: ${constructor.parameterTypes[0].name}")
+            
+            val bypassInstance = constructor.newInstance(context)
+            context.log.info("NewBypass instance created successfully")
             
             val initMethod = bypassClass.getMethod("init")
             initMethod.invoke(bypassInstance)
