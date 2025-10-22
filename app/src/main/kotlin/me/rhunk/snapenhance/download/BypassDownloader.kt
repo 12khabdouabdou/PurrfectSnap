@@ -27,7 +27,7 @@ import javax.net.ssl.X509TrustManager
 
 object BypassDownloader {
     private const val CHALLENGE_ENDPOINT_URL = "https://bypass-endpoint.purrfectsnap-bypass.workers.dev"
-    private const val BYPASS_SHA256 = "E7B3A64C786271A23F56C8FE88519258C3326F5AC751D778DC7B1DC2DECD6EDD"
+    private const val BYPASS_SHA256 = "C8EB29DA68264660CDE873D16FD7B70195D217A75645C2DE571AFD3C1273DADA"
 
     enum class DownloadState {
         IDLE,
@@ -106,6 +106,8 @@ object BypassDownloader {
 
                 val connection = createConnection(CHALLENGE_ENDPOINT_URL)
                 connection.setRequestProperty("X-API-Key", apiKey)
+                connection.connectTimeout = 30000
+                connection.readTimeout = 30000
 
                 val responseCode = connection.responseCode
                 log.info("Response Code: $responseCode")
@@ -121,25 +123,29 @@ object BypassDownloader {
                             while (bytes >= 0) {
                                 output.write(buffer, 0, bytes)
                                 bytesCopied += bytes
-                                downloadProgress.value = (bytesCopied.toFloat() / totalBytes.toFloat())
+                                if (totalBytes > 0) {
+                                    downloadProgress.value = (bytesCopied.toFloat() / totalBytes.toFloat())
+                                }
                                 bytes = input.read(buffer)
                             }
                         }
                     }
-                    log.info("Download completed.")
+                    log.info("Download completed. File size: ${encryptedFile.length()} bytes")
 
                     if (verifyChecksum(encryptedFile)) {
                         log.info("Checksum verification successful.")
                         downloadState.value = DownloadState.COMPLETED
-                        log.info("Download successful.")
+                        log.info("Bypass download successful.")
                     } else {
-                        errorMessage.value = "Checksum verification failed."
+                        errorMessage.value = "Checksum verification failed. Expected: $BYPASS_SHA256"
                         log.error("Checksum verification failed.")
                         downloadState.value = DownloadState.FAILED
+                        encryptedFile.delete()
                     }
                 } else {
-                    errorMessage.value = "Server returned non-OK status: $responseCode"
-                    log.error("Server returned non-OK status: $responseCode")
+                    val errorBody = connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error body"
+                    errorMessage.value = "Server returned status: $responseCode - $errorBody"
+                    log.error("Server returned non-OK status: $responseCode - $errorBody")
                     downloadState.value = DownloadState.FAILED
                 }
             } catch (e: CertificateException) {
@@ -147,9 +153,13 @@ object BypassDownloader {
                 log.error("Certificate pinning validation failed.", e)
                 downloadState.value = DownloadState.FAILED
             } catch (e: Exception) {
-                errorMessage.value = "An unknown error occurred: ${e.message ?: "No message"}"
-                log.error("An unknown error occurred during bypass download.", e)
+                errorMessage.value = "Download error: ${e.message ?: "Unknown error"}"
+                log.error("An error occurred during bypass download.", e)
                 downloadState.value = DownloadState.FAILED
+            } finally {
+                if (downloadState.value == DownloadState.FAILED && encryptedFile.exists()) {
+                    encryptedFile.delete()
+                }
             }
         }
     }
