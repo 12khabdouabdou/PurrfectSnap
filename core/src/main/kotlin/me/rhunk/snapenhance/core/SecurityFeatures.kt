@@ -32,7 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dalvik.system.DexClassLoader
+import dalvik.system.InMemoryDexClassLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,6 +58,7 @@ import java.io.IOException
 import java.lang.reflect.Method
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
@@ -424,10 +425,13 @@ class SecurityFeatures(
         try {
             context.log.info("Loading bypass module from: ${file.absolutePath}")
             
-            val dexClassLoader = DexClassLoader(
-                file.absolutePath, 
-                context.androidContext.cacheDir.absolutePath, 
-                null, 
+            // Read DEX file into memory
+            val dexBytes = file.readBytes()
+            context.log.info("Read ${dexBytes.size} bytes from bypass DEX")
+            
+            // Use InMemoryDexClassLoader to load from byte array (bypasses writable file restriction)
+            val dexClassLoader = InMemoryDexClassLoader(
+                ByteBuffer.wrap(dexBytes),
                 context.androidContext.classLoader
             )
             
