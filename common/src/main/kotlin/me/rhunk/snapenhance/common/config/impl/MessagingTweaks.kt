@@ -229,7 +229,12 @@ class MessagingTweaks : ConfigContainer() {
         val showCountdown = boolean("show_countdown", defaultValue = true)
         val showNotification = boolean("show_notification", defaultValue = true)
     }
-
+val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
+    addNotices(
+        ConfigNotice.UNSTABLE,
+        ConfigNotice.REQUIRE_NATIVE_HOOKS
+    )
+}
     val bypassScreenshotDetection = boolean("bypass_screenshot_detection") { requireRestart() }
     val anonymousStoryViewing = boolean("anonymous_story_viewing")
     val preventStoryRewatchIndicator = boolean("prevent_story_rewatch_indicator") { requireRestart() }
@@ -314,5 +319,5 @@ class MessagingTweaks : ConfigContainer() {
     }
     
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
-    val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig())
+    
 }
