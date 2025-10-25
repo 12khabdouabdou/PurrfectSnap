@@ -150,7 +150,7 @@ class FeatureManager(
             PreventForcedKeyboard(),
             CustomTheming(),
             HideTypingIndicator(),
-            register(BatchFriendSelector::class),
+            BatchFriendSelector(),
         )
 
         features.values.toList().forEach { feature ->
