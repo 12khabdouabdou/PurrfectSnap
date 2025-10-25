@@ -41,36 +41,24 @@ class MessagingTweaks : ConfigContainer() {
     }
     class BatchFriendSelectorConfig : ConfigContainer() {
 
-    val enabled = boolean("enabled", default = false)
+    val enabled = boolean("enabled", defaultValue = false)
 
-    val batchSize = integer("batch_size", default = 100, min = 50, max = 200)
+    val batchSize = integer("batch_size", defaultValue = 100, min = 50, max = 200)
 
-    val delayBetweenBatches = integer("delay_between_batches", default = 2, min = 0, max = 10) {
+    val delayBetweenBatches = integer("delay_between_batches", defaultValue = 2, min = 0, max = 10) {
         requireRestart = false
     }
 
-    val enableNotifications = boolean("enable_notifications", default = true)
+    val enableNotifications = boolean("enable_notifications", defaultValue = true)
 
-    val notifyOnBatchComplete = boolean("notify_on_batch_complete", default = true)
+    val notifyOnBatchComplete = boolean("notify_on_batch_complete", defaultValue = true)
 
-    val notifyOnError = boolean("notify_on_error", default = true)
+    val notifyOnError = boolean("notify_on_error", defaultValue = true)
 
-    val autoCleanupDays = integer("auto_cleanup_days", default = 7, min = 1, max = 30)
+    val autoCleanupDays = integer("auto_cleanup_days", defaultValue = 7, min = 1, max = 30)
 }
     
-    val notifyOnBatchComplete = boolean("notify_on_batch_complete") {
-        defaultValue = true
-    }
     
-    val notifyOnError = boolean("notify_on_error") {
-        defaultValue = true
-    }
-    
-    val autoCleanupDays = integer("auto_cleanup_days") {
-        defaultValue = 7
-        min = 1
-        max = 30
-    }
 }
     class BetterNotifications: ConfigContainer() {
         val groupNotifications = boolean("group_notifications")
