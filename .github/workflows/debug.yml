@@ -31,7 +31,7 @@ jobs:
       - name: Build
         env:
           BYPASS_SECRET_KEY: ${{ secrets.BYPASS_SECRET_KEY }}
-        run: ./gradlew --configuration-cache assembleArmv8Debug
+        run: ./gradlew --stacktrace --debug --configuration-cache assembleArmv8Debug
       - name: Determine the latest Build Tools version installed
         shell: bash
         run: echo "BUILD_TOOL_VERSION=$(ls "$ANDROID_HOME/build-tools/" | tail -n 1)" >> $GITHUB_ENV
