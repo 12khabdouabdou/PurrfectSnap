@@ -299,7 +299,6 @@ class BatchFriendSelectorConfig : ConfigContainer() {
         defaultValue = 2
         min = 0
         max = 10
-        requireRestart = false
     }
     
     val enableNotifications = boolean("enable_notifications") {
@@ -321,10 +320,5 @@ class BatchFriendSelectorConfig : ConfigContainer() {
     }
 }
 
-// Dans la classe MessagingTweaks, ajoutez :
-val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
-    addNotices(
-        ConfigNotice.UNSTABLE,
-        ConfigNotice.REQUIRE_NATIVE_HOOKS
-    )
-}
+// Dans MessagingTweaks:
+val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig())
