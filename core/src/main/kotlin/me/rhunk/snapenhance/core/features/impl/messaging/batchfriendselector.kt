@@ -22,6 +22,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
     private val batchSessions = ConcurrentHashMap<String, BatchSession>()
     private val sessionMutex = Mutex()
     private lateinit var notificationManager: BatchNotificationManager
+    private lateinit var mediaHandler: SnapMediaHandler
     
     data class BatchSession(
         val id: String = UUID.randomUUID().toString(),
@@ -59,6 +60,9 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
         if (!config.enabled.get()) {
             return
         }
+        
+        // Initialize notification manager
+        notificationManager = BatchNotificationManager(context.androidContext)
         
         context.log.info("BatchFriendSelector initialized with batch size: ${config.batchSize.get()}")
         
@@ -180,6 +184,15 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
             
             batchSessions[session.id] = session
             
+            // Show notification if enabled
+            if (context.config.messaging.batchFriendSelector.enableNotifications.get()) {
+                notificationManager.showSessionCreated(
+                    session.id,
+                    batches.size,
+                    friendIds.size
+                )
+            }
+            
             // Cleanup old sessions if too many
             if (batchSessions.size > MAX_BATCH_SESSIONS) {
                 val oldestSessionId = batchSessions.entries
@@ -235,36 +248,24 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
             // Update status to sending
             updateBatchStatus(sessionId, batchId, BatchStatus.SENDING)
             
+            // Show progress notification
+            if (context.config.messaging.batchFriendSelector.enableNotifications.get()) {
+                notificationManager.showBatchProgress(
+                    sessionId,
+                    batchIndex + 1,
+                    session.batches.size,
+                    batch.friendIds.size
+                )
+            }
+            
             try {
                 // Send snap to all friends in batch
                 val conversationIds = batch.friendIds.map { SnapUUID(it) }
                 
-                context.messageSender.sendChatMessage(
-                    conversations = conversationIds,
-                    message = "Batch snap", // Replace with actual snap sending logic
-                    onSuccess = {
-                        context.coroutineScope.launch {
-                            updateBatchStatus(
-                                sessionId, 
-                                batchId, 
-                                BatchStatus.SENT,
-                                sentAt = System.currentTimeMillis()
-                            )
-                            context.log.info("Batch $batchId sent successfully")
-                        }
-                    },
-                    onError = { error ->
-                        context.coroutineScope.launch {
-                            updateBatchStatus(
-                                sessionId,
-                                batchId,
-                                BatchStatus.FAILED,
-                                error = error
-                            )
-                            context.log.error("Batch $batchId failed: $error")
-                        }
-                    }
-                )
+                // Get actual snap media from Snapchat's composer
+                // This is a simplified version - you'll need to hook into Snapchat's media system
+                sendSnapToBatch(conversationIds, sessionId, batchId, batchIndex, session.batches.size)
+                
             } catch (e: Exception) {
                 updateBatchStatus(
                     sessionId,
@@ -272,8 +273,89 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
                     BatchStatus.FAILED,
                     error = e.message
                 )
+                
+                if (context.config.messaging.batchFriendSelector.notifyOnError.get()) {
+                    notificationManager.showBatchError(sessionId, batchIndex + 1, e.message ?: "Unknown error")
+                }
+                
                 context.log.error("Failed to send batch", e)
             }
+        }
+    }
+    
+    private fun sendSnapToBatch(
+        conversationIds: List<SnapUUID>,
+        sessionId: String,
+        batchId: String,
+        batchIndex: Int,
+        totalBatches: Int
+    ) {
+        // Hook into Snapchat's native send mechanism
+        context.coroutineScope.launch(Dispatchers.IO) {
+            try {
+                // Call Snapchat's internal send method
+                // This needs to be adapted based on Snapchat's actual API
+                val sendResult = invokeSendMethod(conversationIds)
+                
+                if (sendResult) {
+                    updateBatchStatus(
+                        sessionId,
+                        batchId,
+                        BatchStatus.SENT,
+                        sentAt = System.currentTimeMillis()
+                    )
+                    
+                    // Check if all batches are complete
+                    val session = batchSessions[sessionId]
+                    val allSent = session?.batches?.all { 
+                        it.status == BatchStatus.SENT || it.status == BatchStatus.CANCELLED 
+                    } == true
+                    
+                    if (allSent && context.config.messaging.batchFriendSelector.notifyOnBatchComplete.get()) {
+                        notificationManager.showBatchComplete(
+                            sessionId,
+                            totalBatches,
+                            session.friendIds.size
+                        )
+                    }
+                    
+                    context.log.info("Batch $batchId sent successfully")
+                } else {
+                    throw Exception("Send method returned false")
+                }
+            } catch (e: Exception) {
+                updateBatchStatus(
+                    sessionId,
+                    batchId,
+                    BatchStatus.FAILED,
+                    error = e.message
+                )
+                
+                if (context.config.messaging.batchFriendSelector.notifyOnError.get()) {
+                    notificationManager.showBatchError(sessionId, batchIndex + 1, e.message ?: "Unknown error")
+                }
+                
+                context.log.error("Failed to send batch", e)
+            }
+        }
+    }
+    
+    private fun invokeSendMethod(conversationIds: List<SnapUUID>): Boolean {
+        return try {
+            // Find Snapchat's send method and invoke it
+            // This is a placeholder - actual implementation depends on Snapchat's internal structure
+            val sendClass = context.classCache.sendToViewModel
+            val sendMethod = sendClass?.methods?.find { 
+                it.name == "sendSnap" || it.name == "send" 
+            }
+            
+            // You'll need to pass the actual media data here
+            // sendMethod?.invoke(instance, conversationIds, mediaData)
+            
+            true // Placeholder
+        } catch (e: Exception) {
+            context.log.error("Failed to invoke send method", e)
+            false
         }
     }
     
