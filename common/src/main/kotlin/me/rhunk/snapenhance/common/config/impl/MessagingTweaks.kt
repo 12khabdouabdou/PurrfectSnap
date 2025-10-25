@@ -282,10 +282,7 @@ class MessagingTweaks : ConfigContainer() {
     
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
 }
-// Ajoutez cette classe dans le fichier de configuration existant
-// me/rhunk/snapenhance/common/config/impl/MessagingTweaks.kt
-
-class MessagingTweaks : ConfigContainer() {
+{
 
     val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
         addNotices(
@@ -330,3 +327,6 @@ class MessagingTweaks : ConfigContainer() {
         }
     }
 }
+
+
+
