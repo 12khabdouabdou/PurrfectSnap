@@ -1,7 +1,6 @@
 package me.rhunk.snapenhance.core.features.impl.messaging
 
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.features.FeatureLoadParams
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
@@ -12,7 +11,7 @@ import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = FeatureLoadParams.INIT_SYNC) {
+class BatchFriendSelector : Feature("Batch Friend Selector") {
     
     companion object {
         private const val DEFAULT_BATCH_SIZE = 100
@@ -28,7 +27,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
         val id: String = UUID.randomUUID().toString(),
         val friendIds: List<String>,
         val batches: List<FriendBatch>,
-        val snapMedia: SnapMediaData? = null,
+        val snapMedia: SnapMediaHandler.SnapMediaData? = null,
         val createdAt: Long = System.currentTimeMillis()
     )
     
@@ -48,21 +47,16 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
         CANCELLED
     }
     
-    data class SnapMediaData(
-        val mediaPath: String,
-        val mediaType: String,
-        val duration: Long? = null
-    )
-    
     override fun init() {
         val config = context.config.messaging.batchFriendSelector
         
-        if (!config.enabled.get()) {
+        if (config.globalState != true) {
             return
         }
         
-        // Initialize notification manager
+        // Initialize notification manager and media handler
         notificationManager = BatchNotificationManager(context.androidContext)
+        mediaHandler = SnapMediaHandler(context)
         
         context.log.info("BatchFriendSelector initialized with batch size: ${config.batchSize.get()}")
         
@@ -81,7 +75,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
     private fun hookFriendSelection() {
         try {
             // Hook the send validation method
-            findClass("com.snapchat.client.messaging.SendToViewModel")?.apply {
+            context.androidContext.classLoader.loadClass("com.snapchat.client.messaging.SendToViewModel")?.apply {
                 hook("validateFriendSelection", HookStage.BEFORE) { param ->
                     try {
                         val selectedFriends = param.arg<List<Any>>(0)
@@ -110,7 +104,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
             }
             
             // Also hook the send button to intercept before Snapchat's validation
-            findClass("com.snapchat.client.messaging.SendToFragment")?.apply {
+            context.androidContext.classLoader.loadClass("com.snapchat.client.messaging.SendToFragment")?.apply {
                 hook("onSendButtonClicked", HookStage.BEFORE) { param ->
                     try {
                         // Get selected friends count
@@ -173,13 +167,22 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
     
     suspend fun launchBatchManager(friendIds: List<String>) {
         sessionMutex.withLock {
+            // Capture media data before creating session
+            val capturedMedia = mediaHandler.getCapturedMedia()
+            
+            if (capturedMedia == null) {
+                context.log.error("No media captured for batch send")
+                return
+            }
+            
             // Create new batch session
             val batchSize = context.config.messaging.batchFriendSelector.batchSize.get()
             val batches = createBatches(friendIds, batchSize)
             
             val session = BatchSession(
                 friendIds = friendIds,
-                batches = batches
+                batches = batches,
+                snapMedia = capturedMedia
             )
             
             batchSessions[session.id] = session
@@ -201,7 +204,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
             }
             
             // Launch UI
-            context.log.info("Created batch session ${session.id} with ${batches.size} batches")
+            context.log.info("Created batch session ${session.id} with ${batches.size} batches, media type: ${capturedMedia.mediaType}")
             showBatchManagerUI(session.id)
         }
     }
@@ -215,7 +218,12 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
     private fun showBatchManagerUI(sessionId: String) {
         try {
             // Use Snapchat's navigation to show custom UI
-            context.androidContext.runOnUiThread {
+            val activity = context.androidContext as? android.app.Activity ?: run {
+                context.log.error("Context is not an Activity")
+                return
+            }
+            
+            activity.runOnUiThread {
                 // Create and show the batch manager dialog/activity
                 val intent = android.content.Intent(
                     context.androidContext,
@@ -263,7 +271,6 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
                 val conversationIds = batch.friendIds.map { SnapUUID(it) }
                 
                 // Get actual snap media from Snapchat's composer
-                // This is a simplified version - you'll need to hook into Snapchat's media system
                 sendSnapToBatch(conversationIds, sessionId, batchId, batchIndex, session.batches.size)
                 
             } catch (e: Exception) {
@@ -271,7 +278,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
                     sessionId,
                     batchId,
                     BatchStatus.FAILED,
-                    error = e.message
+                    error = e.message ?: "Unknown error"
                 )
                 
                 if (context.config.messaging.batchFriendSelector.notifyOnError.get()) {
@@ -290,38 +297,51 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
         batchIndex: Int,
         totalBatches: Int
     ) {
-        // Hook into Snapchat's native send mechanism
         context.coroutineScope.launch(Dispatchers.IO) {
             try {
-                // Call Snapchat's internal send method
-                // This needs to be adapted based on Snapchat's actual API
-                val sendResult = invokeSendMethod(conversationIds)
+                val session = batchSessions[sessionId]
+                val mediaData = session?.snapMedia
                 
-                if (sendResult) {
-                    updateBatchStatus(
-                        sessionId,
-                        batchId,
-                        BatchStatus.SENT,
-                        sentAt = System.currentTimeMillis()
-                    )
-                    
-                    // Check if all batches are complete
-                    val session = batchSessions[sessionId]
-                    val allSent = session?.batches?.all { 
-                        it.status == BatchStatus.SENT || it.status == BatchStatus.CANCELLED 
-                    } == true
-                    
-                    if (allSent && context.config.messaging.batchFriendSelector.notifyOnBatchComplete.get()) {
-                        notificationManager.showBatchComplete(
-                            sessionId,
-                            totalBatches,
-                            session.friendIds.size
-                        )
+                if (mediaData == null) {
+                    throw Exception("No media data found for session")
+                }
+                
+                // Use SnapMediaHandler to send the snap
+                val result = mediaHandler.sendSnapToConversations(
+                    conversationIds = conversationIds,
+                    mediaData = mediaData,
+                    onProgress = { sent, total ->
+                        context.log.verbose("Batch progress: $sent/$total")
                     }
-                    
-                    context.log.info("Batch $batchId sent successfully")
-                } else {
-                    throw Exception("Send method returned false")
+                )
+                
+                when (result) {
+                    is SnapMediaHandler.SendResult.Success -> {
+                        updateBatchStatus(
+                            sessionId,
+                            batchId,
+                            BatchStatus.SENT,
+                            sentAt = System.currentTimeMillis()
+                        )
+                        
+                        // Check if all batches are complete
+                        val allSent = session.batches.all { 
+                            it.status == BatchStatus.SENT || it.status == BatchStatus.CANCELLED 
+                        }
+                        
+                        if (allSent && context.config.messaging.batchFriendSelector.notifyOnBatchComplete.get()) {
+                            notificationManager.showBatchComplete(
+                                sessionId,
+                                totalBatches,
+                                session.friendIds.size
+                            )
+                        }
+                        
+                        context.log.info("Batch $batchId sent successfully")
+                    }
+                    is SnapMediaHandler.SendResult.Failure -> {
+                        throw Exception(result.error)
+                    }
                 }
             } catch (e: Exception) {
                 updateBatchStatus(
@@ -337,25 +357,6 @@ class BatchFriendSelector : Feature("Batch Friend Selector", loadParams = Featur
                 
                 context.log.error("Failed to send batch", e)
             }
-        }
-    }
-    
-    private fun invokeSendMethod(conversationIds: List<SnapUUID>): Boolean {
-        return try {
-            // Find Snapchat's send method and invoke it
-            // This is a placeholder - actual implementation depends on Snapchat's internal structure
-            val sendClass = context.classCache.sendToViewModel
-            val sendMethod = sendClass?.methods?.find { 
-                it.name == "sendSnap" || it.name == "send" 
-            }
-            
-            // You'll need to pass the actual media data here
-            // sendMethod?.invoke(instance, conversationIds, mediaData)
-            
-            true // Placeholder
-        } catch (e: Exception) {
-            context.log.error("Failed to invoke send method", e)
-            false
         }
     }
     
