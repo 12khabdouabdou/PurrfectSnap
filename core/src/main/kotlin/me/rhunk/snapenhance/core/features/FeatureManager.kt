@@ -21,6 +21,7 @@ import me.rhunk.snapenhance.core.logger.CoreLogger
 import me.rhunk.snapenhance.core.ui.menu.MenuViewInjector
 import kotlin.reflect.KClass
 import kotlin.system.measureTimeMillis
+import me.rhunk.snapenhance.core.features.impl.messaging.BatchFriendSelector
 
 class FeatureManager(
     private val context: ModContext
@@ -149,6 +150,7 @@ class FeatureManager(
             PreventForcedKeyboard(),
             CustomTheming(),
             HideTypingIndicator(),
+            register(BatchFriendSelector::class),
         )
 
         features.values.toList().forEach { feature ->
