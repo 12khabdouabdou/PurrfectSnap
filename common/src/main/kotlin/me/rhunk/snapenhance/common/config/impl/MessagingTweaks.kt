@@ -281,3 +281,50 @@ class MessagingTweaks : ConfigContainer() {
     
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
 }
+// Ajoutez cette classe dans le fichier de configuration existant
+// me/rhunk/snapenhance/common/config/impl/MessagingTweaks.kt
+
+class BatchFriendSelectorConfig : ConfigContainer() {
+    val enabled = boolean("enabled") {
+        defaultValue = false
+    }
+    
+    val batchSize = integer("batch_size") {
+        defaultValue = 100
+        min = 50
+        max = 200
+    }
+    
+    val delayBetweenBatches = integer("delay_between_batches") {
+        defaultValue = 2
+        min = 0
+        max = 10
+        requireRestart = false
+    }
+    
+    val enableNotifications = boolean("enable_notifications") {
+        defaultValue = true
+    }
+    
+    val notifyOnBatchComplete = boolean("notify_on_batch_complete") {
+        defaultValue = true
+    }
+    
+    val notifyOnError = boolean("notify_on_error") {
+        defaultValue = true
+    }
+    
+    val autoCleanupDays = integer("auto_cleanup_days") {
+        defaultValue = 7
+        min = 1
+        max = 30
+    }
+}
+
+// Dans la classe MessagingTweaks, ajoutez :
+val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
+    addNotices(
+        ConfigNotice.UNSTABLE,
+        ConfigNotice.REQUIRE_NATIVE_HOOKS
+    )
+}
