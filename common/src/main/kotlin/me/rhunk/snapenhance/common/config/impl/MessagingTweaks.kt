@@ -40,25 +40,23 @@ class MessagingTweaks : ConfigContainer() {
         val deletedMessageColor = color("deleted_message_color", DELETED_MESSAGE_COLOR)
     }
     class BatchFriendSelectorConfig : ConfigContainer() {
-    val enabled = boolean("enabled") {
-        defaultValue = false
+
+    val enabled = boolean("enabled", default = false)
+
+    val batchSize = integer("batch_size", default = 100, min = 50, max = 200)
+
+    val delayBetweenBatches = integer("delay_between_batches", default = 2, min = 0, max = 10) {
+        requireRestart = false
     }
-    
-    val batchSize = integer("batch_size") {
-        defaultValue = 100
-        min = 50
-        max = 200
-    }
-    
-    val delayBetweenBatches = integer("delay_between_batches") {
-        defaultValue = 2
-        min = 0
-        max = 10
-    }
-    
-    val enableNotifications = boolean("enable_notifications") {
-        defaultValue = true
-    }
+
+    val enableNotifications = boolean("enable_notifications", default = true)
+
+    val notifyOnBatchComplete = boolean("notify_on_batch_complete", default = true)
+
+    val notifyOnError = boolean("notify_on_error", default = true)
+
+    val autoCleanupDays = integer("auto_cleanup_days", default = 7, min = 1, max = 30)
+}
     
     val notifyOnBatchComplete = boolean("notify_on_batch_complete") {
         defaultValue = true
@@ -231,8 +229,8 @@ class MessagingTweaks : ConfigContainer() {
     }
 val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
     addNotices(
-        ConfigNotice.UNSTABLE,
-        ConfigNotice.REQUIRE_NATIVE_HOOKS
+        featureNotice.UNSTABLE,
+        featureNotice.REQUIRE_NATIVE_HOOKS
     )
 }
     val bypassScreenshotDetection = boolean("bypass_screenshot_detection") { requireRestart() }
