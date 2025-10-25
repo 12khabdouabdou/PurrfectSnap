@@ -8,6 +8,7 @@ import me.rhunk.snapenhance.common.data.NotificationType
 import me.rhunk.snapenhance.common.util.PURGE_DISABLED_KEY
 import me.rhunk.snapenhance.common.util.PURGE_TRANSLATION_KEY
 import me.rhunk.snapenhance.common.util.PURGE_VALUES
+import me.rhunk.snapenhance.common.config.dsl.*
 
 class MessagingTweaks : ConfigContainer() {
     companion object {
