@@ -39,7 +39,41 @@ class MessagingTweaks : ConfigContainer() {
         }
         val deletedMessageColor = color("deleted_message_color", DELETED_MESSAGE_COLOR)
     }
-
+    class BatchFriendSelectorConfig : ConfigContainer() {
+    val enabled = boolean("enabled") {
+        defaultValue = false
+    }
+    
+    val batchSize = integer("batch_size") {
+        defaultValue = 100
+        min = 50
+        max = 200
+    }
+    
+    val delayBetweenBatches = integer("delay_between_batches") {
+        defaultValue = 2
+        min = 0
+        max = 10
+    }
+    
+    val enableNotifications = boolean("enable_notifications") {
+        defaultValue = true
+    }
+    
+    val notifyOnBatchComplete = boolean("notify_on_batch_complete") {
+        defaultValue = true
+    }
+    
+    val notifyOnError = boolean("notify_on_error") {
+        defaultValue = true
+    }
+    
+    val autoCleanupDays = integer("auto_cleanup_days") {
+        defaultValue = 7
+        min = 1
+        max = 30
+    }
+}
     class BetterNotifications: ConfigContainer() {
         val groupNotifications = boolean("group_notifications")
         val chatPreview = boolean("chat_preview")
@@ -246,42 +280,7 @@ class MessagingTweaks : ConfigContainer() {
     val autoReply = container("auto_reply", AutoReplyConfig()) { requireRestart() }
     val autoOpenSnaps = container("auto_open_snaps", AutoOpenSnapsConfig()) { requireRestart(); addNotices(FeatureNotice.BAN_RISK, FeatureNotice.UNSTABLE) }
     val autoDeleteSentMessages = container("auto_delete_sent_messages", AutoDeleteSentMessagesConfig()) { requireRestart() }
-    val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig())
-    class BatchFriendSelectorConfig : ConfigContainer() {
-    val enabled = boolean("enabled") {
-        defaultValue = false
-    }
     
-    val batchSize = integer("batch_size") {
-        defaultValue = 100
-        min = 50
-        max = 200
-    }
-    
-    val delayBetweenBatches = integer("delay_between_batches") {
-        defaultValue = 2
-        min = 0
-        max = 10
-    }
-    
-    val enableNotifications = boolean("enable_notifications") {
-        defaultValue = true
-    }
-    
-    val notifyOnBatchComplete = boolean("notify_on_batch_complete") {
-        defaultValue = true
-    }
-    
-    val notifyOnError = boolean("notify_on_error") {
-        defaultValue = true
-    }
-    
-    val autoCleanupDays = integer("auto_cleanup_days") {
-        defaultValue = 7
-        min = 1
-        max = 30
-    }
-}
     class InstantTranslationConfig : ConfigContainer(hasGlobalState = true) {
         val enabled = boolean("enabled", false)
         val sourceLanguage = string("source_language", defaultValue = "auto") {
@@ -315,4 +314,5 @@ class MessagingTweaks : ConfigContainer() {
     }
     
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
+    val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig())
 }
