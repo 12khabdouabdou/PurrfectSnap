@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import me.rhunk.snapenhance.R
 
 class BatchNotificationManager(private val context: Context) {
     
@@ -84,31 +83,44 @@ class BatchNotificationManager(private val context: Context) {
     }
     
     fun showSessionCreated(sessionId: String, batchCount: Int, totalFriends: Int) {
-        val intent = Intent(context, me.rhunk.snapenhance.ui.manager.pages.social.BatchManagerActivity::class.java)
-        intent.putExtra("SESSION_ID", sessionId)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("🐱 Batch Manager")
-            .setContentText("$batchCount batches créés pour $totalFriends amis")
-            .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .addAction(
-                android.R.drawable.ic_menu_send,
-                "Ouvrir",
-                pendingIntent
+        try {
+            val intent = Intent(context, Class.forName("me.rhunk.snapenhance.ui.manager.pages.social.BatchManagerActivity"))
+            intent.putExtra("SESSION_ID", sessionId)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            
+            val pendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            .build()
-        
-        notificationManager.notify(NOTIFICATION_ID_BASE + sessionId.hashCode(), notification)
+            
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("🐱 Batch Manager")
+                .setContentText("$batchCount batches créés pour $totalFriends amis")
+                .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .addAction(
+                    android.R.drawable.ic_menu_send,
+                    "Ouvrir",
+                    pendingIntent
+                )
+                .build()
+            
+            notificationManager.notify(NOTIFICATION_ID_BASE + sessionId.hashCode(), notification)
+        } catch (e: Exception) {
+            // Si l'Activity n'existe pas encore, créer notification simple
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("🐱 Batch Manager")
+                .setContentText("$batchCount batches créés pour $totalFriends amis")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .build()
+            
+            notificationManager.notify(NOTIFICATION_ID_BASE + sessionId.hashCode(), notification)
+        }
     }
 }
