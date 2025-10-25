@@ -259,8 +259,8 @@ class BatchFriendSelectorConfig : ConfigContainer() {
     }
     val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
     addNotices(
-        ConfigNotice.UNSTABLE,
-        ConfigNotice.REQUIRE_NATIVE_HOOKS
+        FeatureNotice.UNSTABLE,
+        FeatureNotice.REQUIRE_NATIVE_HOOKS
     )
 }
     val friendMutationNotifier = multiple("friend_mutation_notifier",
