@@ -61,9 +61,9 @@ class SnapMediaHandler(private val context: ModContext) {
             findClass("com.snapchat.client.camera.CameraController")?.apply {
                 hook("capturePhoto", HookStage.AFTER) { param ->
                     try {
-                        val photoData = param.result
+                        val photoData = param.getResult<Any>()
                         context.log.info("Photo captured, extracting data...")
-                        extractPhotoData(photoData)
+                        if (photoData != null) extractPhotoData(photoData)
                     } catch (e: Exception) {
                         context.log.error("Error extracting photo data", e)
                     }
@@ -71,9 +71,9 @@ class SnapMediaHandler(private val context: ModContext) {
                 
                 hook("captureVideo", HookStage.AFTER) { param ->
                     try {
-                        val videoData = param.result
+                        val videoData = param.getResult<Any>()
                         context.log.info("Video captured, extracting data...")
-                        extractVideoData(videoData)
+                        if (videoData != null) extractVideoData(videoData)
                     } catch (e: Exception) {
                         context.log.error("Error extracting video data", e)
                     }
@@ -380,56 +380,144 @@ class SnapMediaHandler(private val context: ModContext) {
     /**
      * Envoie un snap (photo ou vidéo) à une liste de conversations
      */
-    suspend fun sendSnapToConversations(
+    fun sendSnapToConversations(
         conversationIds: List<SnapUUID>,
         mediaData: SnapMediaData,
         onProgress: ((Int, Int) -> Unit)? = null
-    ): SendResult = withContext(Dispatchers.IO) {
-        suspendCoroutine { continuation ->
-            try {
-                context.log.info("Sending ${mediaData.mediaType} snap to ${conversationIds.size} conversations")
-                
-                // Appeler la méthode native de Snapchat pour envoyer le snap
-                val sendClass = findClass("com.snapchat.client.messaging.SendController")
-                val sendMethod = sendClass?.methods?.find { method ->
-                    method.name == "sendSnap" || 
-                    method.name == "sendMedia" ||
-                    method.name == "sendSnapToConversations"
-                }
-                
-                if (sendMethod == null) {
-                    continuation.resume(SendResult.Failure("Send method not found"))
-                    return@suspendCoroutine
-                }
-                
-                // Créer l'objet média pour Snapchat
-                val snapMediaObject = createSnapMediaObject(mediaData)
-                
-                // Invoquer la méthode d'envoi
-                val result = when (mediaData.mediaType) {
-                    MediaType.VIDEO, MediaType.BOOMERANG -> {
-                        sendVideoSnap(conversationIds, mediaData, onProgress)
-                    }
-                    MediaType.PHOTO, MediaType.DUAL_CAMERA -> {
-                        sendPhotoSnap(conversationIds, mediaData, onProgress)
-                    }
-                }
-                
-                continuation.resume(result)
-                
-            } catch (e: Exception) {
-                context.log.error("Failed to send snap", e)
-                continuation.resume(SendResult.Failure(e.message ?: "Unknown error"))
+    ): SendResult {
+        return try {
+            context.log.info("Sending ${mediaData.mediaType} snap to ${conversationIds.size} conversations")
+            
+            // Appeler la méthode native de Snapchat pour envoyer le snap
+            val sendClass = findClass("com.snapchat.client.messaging.SendController")
+            val sendMethod = sendClass?.methods?.find { method ->
+                method.name == "sendSnap" || 
+                method.name == "sendMedia" ||
+                method.name == "sendSnapToConversations"
             }
+            
+            if (sendMethod == null) {
+                return SendResult.Failure("Send method not found")
+            }
+            
+            // Créer l'objet média pour Snapchat
+            val snapMediaObject = createSnapMediaObject(mediaData)
+            
+            // Invoquer la méthode d'envoi
+            val result = when (mediaData.mediaType) {
+                MediaType.VIDEO, MediaType.BOOMERANG -> {
+                    sendVideoSnap(conversationIds, mediaData, onProgress)
+                }
+                MediaType.PHOTO, MediaType.DUAL_CAMERA -> {
+                    sendPhotoSnap(conversationIds, mediaData, onProgress)
+                }
+            }
+            
+            result
+            
+        } catch (e: Exception) {
+            context.log.error("Failed to send snap", e)
+            SendResult.Failure(e.message ?: "Unknown error")
         }
     }
     
     /**
      * Envoie un snap photo
      */
-    private suspend fun sendPhotoSnap(
+    private fun sendPhotoSnap(
         conversationIds: List<SnapUUID>,
         mediaData: SnapMediaData,
+        onProgress: ((Int, Int) -> Unit)?
+    ): SendResult {
+        return try {
+            val sendClass = findClass("com.snapchat.client.messaging.SendController")
+            val sendInstance = getSendControllerInstance()
+            
+            if (sendInstance == null) {
+                return SendResult.Failure("SendController instance not found")
+            }
+            
+            // Préparer les paramètres d'envoi
+            val file = File(mediaData.mediaPath)
+            if (!file.exists()) {
+                return SendResult.Failure("Media file not found: ${mediaData.mediaPath}")
+            }
+            
+            // Convertir les SnapUUID en format Snapchat natif
+            val nativeConversationIds = conversationIds.map { it.toString() }
+            
+            // Appeler l'API native de Snapchat
+            val sendMethod = sendClass?.methods?.find { 
+                it.name == "sendPhotoSnap" || it.name == "sendImageSnap" 
+            }
+            
+            val result = sendMethod?.invoke(
+                sendInstance,
+                nativeConversationIds,
+                file.absolutePath,
+                mediaData.width,
+                mediaData.height
+            )
+            
+            if (result != null && isSuccessResult(result)) {
+                SendResult.Success(conversationIds.size)
+            } else {
+                SendResult.Failure("Send returned unsuccessful result")
+            }
+            
+        } catch (e: Exception) {
+            context.log.error("Failed to send photo snap", e)
+            SendResult.Failure(e.message ?: "Unknown error")
+        }
+    }
+    
+    /**
+     * Envoie un snap vidéo
+     */
+    private fun sendVideoSnap(
+        conversationIds: List<SnapUUID>,
+        mediaData: SnapMediaData,
+        onProgress: ((Int, Int) -> Unit)?
+    ): SendResult {
+        return try {
+            val sendClass = findClass("com.snapchat.client.messaging.SendController")
+            val sendInstance = getSendControllerInstance()
+            
+            if (sendInstance == null) {
+                return SendResult.Failure("SendController instance not found")
+            }
+            
+            val file = File(mediaData.mediaPath)
+            if (!file.exists()) {
+                return SendResult.Failure("Media file not found: ${mediaData.mediaPath}")
+            }
+            
+            val nativeConversationIds = conversationIds.map { it.toString() }
+            
+            val sendMethod = sendClass?.methods?.find { 
+                it.name == "sendVideoSnap" || it.name == "sendVideo" 
+            }
+            
+            val result = sendMethod?.invoke(
+                sendInstance,
+                nativeConversationIds,
+                file.absolutePath,
+                mediaData.duration,
+                mediaData.width,
+                mediaData.height
+            )
+            
+            if (result != null && isSuccessResult(result)) {
+                SendResult.Success(conversationIds.size)
+            } else {
+                SendResult.Failure("Send returned unsuccessful result")
+            }
+            
+        } catch (e: Exception) {
+            context.log.error("Failed to send video snap", e)
+            SendResult.Failure(e.message ?: "Unknown error")
+        }
+    }SnapMediaData,
         onProgress: ((Int, Int) -> Unit)?
     ): SendResult = withContext(Dispatchers.IO) {
         try {
