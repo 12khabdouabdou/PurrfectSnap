@@ -63,6 +63,11 @@
             android:theme="@style/BiometricPromptTheme"
             android:excludeFromRecents="true"
             android:exported="true" />
+        <activity
+    android:name="me.rhunk.snapenhance.ui.manager.pages.social.BatchManagerActivity"
+    android:theme="@style/Theme.AppCompat.NoActionBar"
+    android:exported="false"
+    android:launchMode="singleTask" />
         <receiver android:name=".StreaksReminder" />
         <provider
             android:name="androidx.core.content.FileProvider"
