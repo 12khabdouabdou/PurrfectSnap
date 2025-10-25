@@ -39,27 +39,7 @@ class MessagingTweaks : ConfigContainer() {
         }
         val deletedMessageColor = color("deleted_message_color", DELETED_MESSAGE_COLOR)
     }
-    class BatchFriendSelectorConfig : ConfigContainer() {
 
-    val enabled = boolean("enabled", defaultValue = false)
-
-    val batchSize = integer("batch_size", defaultValue = 100, min = 50, max = 200)
-
-    val delayBetweenBatches = integer("delay_between_batches", defaultValue = 2, min = 0, max = 10) {
-        requireRestart = false
-    }
-
-    val enableNotifications = boolean("enable_notifications", defaultValue = true)
-
-    val notifyOnBatchComplete = boolean("notify_on_batch_complete", defaultValue = true)
-
-    val notifyOnError = boolean("notify_on_error", defaultValue = true)
-
-    val autoCleanupDays = integer("auto_cleanup_days", defaultValue = 7, min = 1, max = 30)
-}
-    
-    
-}
     class BetterNotifications: ConfigContainer() {
         val groupNotifications = boolean("group_notifications")
         val chatPreview = boolean("chat_preview")
@@ -215,12 +195,59 @@ class MessagingTweaks : ConfigContainer() {
         val showCountdown = boolean("show_countdown", defaultValue = true)
         val showNotification = boolean("show_notification", defaultValue = true)
     }
-val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
-    addNotices(
-        featureNotice.UNSTABLE,
-        featureNotice.REQUIRE_NATIVE_HOOKS
-    )
-}
+    
+    inner class BatchFriendSelectorConfig : ConfigContainer(hasGlobalState = true) {
+        val batchSize = integer("batch_size", defaultValue = 100) {
+            inputCheck = { it.toIntOrNull()?.coerceIn(50, 200) != null }
+        }
+        
+        val delayBetweenBatches = integer("delay_between_batches", defaultValue = 2) {
+            inputCheck = { it.toIntOrNull()?.coerceIn(0, 10) != null }
+        }
+        
+        val enableNotifications = boolean("enable_notifications", defaultValue = true)
+        
+        val notifyOnBatchComplete = boolean("notify_on_batch_complete", defaultValue = true)
+        
+        val notifyOnError = boolean("notify_on_error", defaultValue = true)
+        
+        val autoCleanupDays = integer("auto_cleanup_days", defaultValue = 7) {
+            inputCheck = { it.toIntOrNull()?.coerceIn(1, 30) != null }
+        }
+    }
+    
+    class InstantTranslationConfig : ConfigContainer(hasGlobalState = true) {
+        val enabled = boolean("enabled", false)
+        val sourceLanguage = string("source_language", defaultValue = "auto") {
+            inputCheck = { it.isNotBlank() }
+        }
+        val targetLanguage = string("target_language", defaultValue = "en") {
+            inputCheck = { it.isNotBlank() }
+        }
+        val showOriginal = boolean("show_original", defaultValue = true)
+        val showTranslation = boolean("show_translation", defaultValue = true)
+        val translationPosition = unique("translation_position", "above", "below", "inline") {
+            customOptionTranslationPath = "translation_position"
+        }.apply { set("below") }
+        val autoTranslate = boolean("auto_translate", defaultValue = true)
+        val translateOnTap = boolean("translate_on_tap", defaultValue = false)
+        val pauseOnError = boolean("pause_on_error", defaultValue = true)
+        val maxRetries = integer("max_retries", defaultValue = 3) {
+            inputCheck = { it.toIntOrNull()?.coerceIn(1, 10) != null }
+        }
+        val retryDelay = integer("retry_delay", defaultValue = 1000) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(500) != null }
+        }
+
+        val supportedLanguages = multiple("supported_languages",
+            "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr", "nl", "pl", "sv", "da", "no", "fi", "cs", "hu", "ro", "bg", "hr", "sk", "sl", "et", "lv", "lt", "mt", "ga", "cy"
+        ) {
+            customOptionTranslationPath = "language_codes"
+        }.apply {
+            set(mutableListOf("en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr"))
+        }
+    }
+
     val bypassScreenshotDetection = boolean("bypass_screenshot_detection") { requireRestart() }
     val anonymousStoryViewing = boolean("anonymous_story_viewing")
     val preventStoryRewatchIndicator = boolean("prevent_story_rewatch_indicator") { requireRestart() }
@@ -271,39 +298,6 @@ val batchFriendSelector = container("batch_friend_selector", BatchFriendSelector
     val autoReply = container("auto_reply", AutoReplyConfig()) { requireRestart() }
     val autoOpenSnaps = container("auto_open_snaps", AutoOpenSnapsConfig()) { requireRestart(); addNotices(FeatureNotice.BAN_RISK, FeatureNotice.UNSTABLE) }
     val autoDeleteSentMessages = container("auto_delete_sent_messages", AutoDeleteSentMessagesConfig()) { requireRestart() }
-    
-    class InstantTranslationConfig : ConfigContainer(hasGlobalState = true) {
-        val enabled = boolean("enabled", false)
-        val sourceLanguage = string("source_language", defaultValue = "auto") {
-            inputCheck = { it.isNotBlank() }
-        }
-        val targetLanguage = string("target_language", defaultValue = "en") {
-            inputCheck = { it.isNotBlank() }
-        }
-        val showOriginal = boolean("show_original", defaultValue = true)
-        val showTranslation = boolean("show_translation", defaultValue = true)
-        val translationPosition = unique("translation_position", "above", "below", "inline") {
-            customOptionTranslationPath = "translation_position"
-        }.apply { set("below") }
-        val autoTranslate = boolean("auto_translate", defaultValue = true)
-        val translateOnTap = boolean("translate_on_tap", defaultValue = false)
-        val pauseOnError = boolean("pause_on_error", defaultValue = true)
-        val maxRetries = integer("max_retries", defaultValue = 3) {
-            inputCheck = { it.toIntOrNull()?.coerceIn(1, 10) != null }
-        }
-        val retryDelay = integer("retry_delay", defaultValue = 1000) {
-            inputCheck = { it.toIntOrNull()?.coerceAtLeast(500) != null }
-        }
-
-        val supportedLanguages = multiple("supported_languages",
-            "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr", "nl", "pl", "sv", "da", "no", "fi", "cs", "hu", "ro", "bg", "hr", "sk", "sl", "et", "lv", "lt", "mt", "ga", "cy"
-        ) {
-            customOptionTranslationPath = "language_codes"
-        }.apply {
-            set(mutableListOf("en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr"))
-        }
-    }
-    
+    val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
-    
 }
