@@ -42,7 +42,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
     enum class BatchStatus { PENDING, SENDING, SENT, FAILED, CANCELLED }
 
     override fun init() {
-        val config = context.config.messaging.batchFriendSelector
+        val config = context.config.messaging.BatchFriendSelector
 
         if (!config.enabled.value) return
 
@@ -69,7 +69,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                 ?.hook("validateFriendSelection", HookStage.BEFORE) { param ->
                     val selectedFriends = param.arg<List<Any>>(0)
                     val batchSize =
-                        context.config.messaging.batchFriendSelector.batchSize.value
+                        context.config.messaging.BatchFriendSelector.batchSize.value
 
                     if (selectedFriends.size > batchSize) {
                         context.log.info(
@@ -88,7 +88,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                 ?.hook("onSendButtonClicked", HookStage.BEFORE) { param ->
                     val selectedCount = getSelectedFriendsCount(param.thisObject())
                     val batchSize =
-                        context.config.messaging.batchFriendSelector.batchSize.value
+                        context.config.messaging.BatchFriendSelector.batchSize.value
 
                     if (selectedCount > batchSize) {
                         context.log.info("Intercepting send with $selectedCount friends")
@@ -139,7 +139,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                 return
             }
 
-            val batchSize = context.config.messaging.batchFriendSelector.batchSize.value
+            val batchSize = context.config.messaging.BatchFriendSelector.batchSize.value
             val batches = createBatches(friendIds, batchSize)
 
             val session = BatchSession(
@@ -150,7 +150,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
 
             batchSessions[session.id] = session
 
-            if (context.config.messaging.batchFriendSelector.enableNotifications.value) {
+            if (context.config.messaging.BatchFriendSelector.enableNotifications.value) {
                 notificationManager.showSessionCreated(
                     session.id,
                     batches.size,
@@ -223,7 +223,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                         }
 
                         if (allSent &&
-                            context.config.messaging.batchFriendSelector.notifyOnBatchComplete.value
+                            context.config.messaging.BatchFriendSelector.notifyOnBatchComplete.value
                         ) {
                             notificationManager.showBatchComplete(
                                 sessionId, totalBatches, session.friendIds.size
@@ -241,7 +241,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                     sessionId, batchId, BatchStatus.FAILED, error = e.message
                 )
 
-                if (context.config.messaging.batchFriendSelector.notifyOnError.value) {
+                if (context.config.messaging.BatchFriendSelector.notifyOnError.value) {
                     notificationManager.showBatchError(
                         sessionId, batchIndex + 1, e.message ?: "Unknown error"
                     )
