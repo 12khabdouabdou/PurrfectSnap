@@ -1,19 +1,56 @@
-// File: me/rhunk/snapenhance/common/config/impl/MessagingTweaks.kt
-
 package me.rhunk.snapenhance.common.config.impl
 
-import me.rhunk.snapenhance.common.config.*
+import me.rhunk.snapenhance.common.config.ConfigContainer
+import me.rhunk.snapenhance.common.config.ConfigFlag
+import me.rhunk.snapenhance.common.config.FeatureNotice
+import me.rhunk.snapenhance.common.config.PropertyValue
 import me.rhunk.snapenhance.common.data.NotificationType
-import me.rhunk.snapenhance.common.util.*
-import me.rhunk.snapenhance.common.config.dsl.*
+import me.rhunk.snapenhance.common.util.PURGE_DISABLED_KEY
+import me.rhunk.snapenhance.common.util.PURGE_TRANSLATION_KEY
+import me.rhunk.snapenhance.common.util.PURGE_VALUES
 
 class MessagingTweaks : ConfigContainer() {
     companion object {
-        const val DELETED_MESSAGE_COLOR = 0x6Eb71c1c
+        const val DELETED_MESSAGE_COLOR = 0x6Eb71c1c;
     }
+class BatchFriendSelectorConfig : ConfigContainer() {
+    val enabled = boolean("enabled") {
+        defaultValue = false
+    }
+    
+    val batchSize = integer("batch_size") {
+        defaultValue = 100
+        min = 50
+        max = 200
+    }
+    
+    val delayBetweenBatches = integer("delay_between_batches") {
+        defaultValue = 2
+        min = 0
+        max = 10
+    }
+    
+    val enableNotifications = boolean("enable_notifications") {
+        defaultValue = true
+    }
+    
+    val notifyOnBatchComplete = boolean("notify_on_batch_complete") {
+        defaultValue = true
+    }
+    
+    val notifyOnError = boolean("notify_on_error") {
+        defaultValue = true
+    }
+    
+    val autoCleanupDays = integer("auto_cleanup_days") {
+        defaultValue = 7
+        min = 1
+        max = 30
+    }
+}
 
-    // ---------------------- Inner Config Classes ----------------------
-
+// Dans MessagingTweaks:
+val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig())
     inner class HalfSwipeNotifierConfig : ConfigContainer(hasGlobalState = true) {
         val minDuration: PropertyValue<Int> = integer("min_duration", defaultValue = 0) {
             inputCheck = { it.toIntOrNull()?.coerceAtLeast(0) != null && maxDuration.get() >= it.toInt() }
@@ -29,13 +66,18 @@ class MessagingTweaks : ConfigContainer() {
             customOptionTranslationPath = PURGE_TRANSLATION_KEY
             disabledKey = PURGE_DISABLED_KEY
         }.apply { set("3_days") }
-        val messageFilter = multiple("message_filter", "CHAT", "SNAP", "NOTE", "EXTERNAL_MEDIA", "STICKER") {
+        val messageFilter = multiple("message_filter", "CHAT",
+            "SNAP",
+            "NOTE",
+            "EXTERNAL_MEDIA",
+            "STICKER"
+        ) {
             customOptionTranslationPath = "content_type"
         }
         val deletedMessageColor = color("deleted_message_color", DELETED_MESSAGE_COLOR)
     }
 
-    class BetterNotifications : ConfigContainer() {
+    class BetterNotifications: ConfigContainer() {
         val groupNotifications = boolean("group_notifications")
         val chatPreview = boolean("chat_preview")
         val mediaPreview = multiple("media_preview", "SNAP", "EXTERNAL_MEDIA", "STICKER", "SHARE", "TINY_SNAP", "MAP_REACTION") {
@@ -59,7 +101,7 @@ class MessagingTweaks : ConfigContainer() {
         val messageAgeThreshold = integer("message_age_threshold", defaultValue = 15) {
             inputCheck = { it.toIntOrNull()?.coerceAtLeast(1) != null }
         }
-
+        
         inner class AiConfig : ConfigContainer(hasGlobalState = false) {
             val enableAiReplies = boolean("enable_ai_replies", false)
             val aiEndpointUrl = string("ai_endpoint_url", defaultValue = "http://localhost:11434/api/chat") {
@@ -69,12 +111,9 @@ class MessagingTweaks : ConfigContainer() {
                 inputCheck = { it.isNotBlank() }
             }
             val aiApiKey = string("ai_api_key", defaultValue = "") {
-                inputCheck = { true }
+                inputCheck = { true } // Allow empty for local endpoints like Ollama
             }
-            val aiSystemPrompt = string(
-                "ai_system_prompt",
-                defaultValue = "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational."
-            ) {
+            val aiSystemPrompt = string("ai_system_prompt", defaultValue = "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.") {
                 inputCheck = { it.isNotBlank() }
             }
             val aiMaxTokens = integer("ai_max_tokens", defaultValue = 150) {
@@ -89,10 +128,7 @@ class MessagingTweaks : ConfigContainer() {
             val aiPersonalityTraits = string("ai_personality_traits", defaultValue = "friendly, casual, helpful, empathetic") {
                 inputCheck = { it.isNotBlank() }
             }
-            val aiResponseStyle = unique(
-                "ai_response_style",
-                "casual", "formal", "friendly", "humorous", "empathetic", "toxic"
-            ) {
+            val aiResponseStyle = unique("ai_response_style", "casual", "formal", "friendly", "humorous", "empathetic", "toxic") {
                 customOptionTranslationPath = "ai_response_style"
             }.apply { set("casual") }
             val aiUseConversationHistory = boolean("ai_use_conversation_history", true)
@@ -104,36 +140,45 @@ class MessagingTweaks : ConfigContainer() {
             val aiRetryAttempts = integer("ai_retry_attempts", defaultValue = 2) {
                 inputCheck = { it.toIntOrNull()?.coerceIn(0, 5) != null }
             }
-            val aiResponseLanguage = unique(
-                "ai_response_language",
-                "auto", "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr", "pl", "nl", "sv", "da", "no", "fi"
-            ) {
+            val aiResponseLanguage = unique("ai_response_language", "auto", "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr", "pl", "nl", "sv", "da", "no", "fi") {
                 customOptionTranslationPath = "ai_response_language"
             }.apply { set("auto") }
         }
-
+        
         inner class AutoTriggerConfig : ConfigContainer(hasGlobalState = false) {
             val friendSpecificGreeting = boolean("friendSpecificGreeting")
             val friendGreeting = string("friendGreeting", defaultValue = "Hey") {
                 inputCheck = { it.isNotBlank() }
             }
-            val autoReplyContentTypes = multiple(
-                "auto_reply_content_types",
-                "chat_messages", "snap_messages", "story_share_messages", "story_reply_messages",
-                "external_media_messages", "voice_note_messages", "sticker_messages",
-                "tiny_snap_messages", "map_reaction_messages", "half_swipes"
-            ) {
-                customOptionTranslationPath = "content_type"
+            
+            val autoReplyContentTypes = multiple("auto_reply_content_types",
+                "chat_messages",
+                "snap_messages", 
+                "story_share_messages",
+                "story_reply_messages",
+                "external_media_messages",
+                "voice_note_messages",
+                "sticker_messages",
+                "tiny_snap_messages",
+                "map_reaction_messages",
+                "half_swipes"
+            ) { 
+                customOptionTranslationPath = "content_type" 
             }.apply {
-                set(
-                    mutableListOf(
-                        "chat_messages", "snap_messages", "story_share_messages", "story_reply_messages",
-                        "external_media_messages", "voice_note_messages", "sticker_messages",
-                        "tiny_snap_messages", "map_reaction_messages", "half_swipes"
-                    )
-                )
+                set(mutableListOf(
+                    "chat_messages",
+                    "snap_messages", 
+                    "story_share_messages",
+                    "story_reply_messages",
+                    "external_media_messages",
+                    "voice_note_messages",
+                    "sticker_messages",
+                    "tiny_snap_messages",
+                    "map_reaction_messages",
+                    "half_swipes"
+                ))
             }
-
+            
             val chatMessages = string("chat_messages", defaultValue = "Hello! How are you?")
             val snapMessages = string("snap_messages", defaultValue = "Thanks for the snap!")
             val storyShareMessages = string("story_share_messages", defaultValue = "Thanks for sharing!")
@@ -145,37 +190,82 @@ class MessagingTweaks : ConfigContainer() {
             val mapReactionMessages = string("map_reaction_messages", defaultValue = "Thanks for the map reaction!")
             val halfSwipeMessages = string("half_swipe_messages", defaultValue = "[\"I noticed you half-swiped! I'll respond soon.\"]")
         }
-
+        
         val aiConfig = container("ai_config", AiConfig())
         val autoTriggerConfig = container("auto_trigger_config", AutoTriggerConfig())
     }
 
-    // --------------- Existing Configs ---------------
+    class AutoOpenSnapsConfig : ConfigContainer(hasGlobalState = true) {
+        val allowRunningInBackground = boolean("allow_running_in_background", false)
+        val minDelay = integer("min_delay", defaultValue = 50) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(0) != null }
+        }
+        val maxDelayMs = integer("max_delay_ms", defaultValue = 100) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(0) != null && it.toInt() > minDelay.get() }
+        }
+        val queueSize = integer("queue_size", defaultValue = 10) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(1) != null }
+        }
+        val retryAttempts = integer("retry_attempts", defaultValue = 5) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(1) != null }
+        }
+        val retryDelay = integer("retry_delay", defaultValue = 3000) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(1000) != null }
+        }
+
+    }
+
+    class AutoDeleteSentMessagesConfig : ConfigContainer(hasGlobalState = true) {
+        val allowRunningInBackground = boolean("allow_running_in_background", false)
+        val deleteAfterValue = integer("delete_after_value", defaultValue = 10) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(1) != null }
+        }
+        val deleteAfterUnit = unique("delete_after_unit", "seconds", "minutes", "hours") {
+            customOptionTranslationPath = "features.options.delete_after_unit"
+            addFlags(ConfigFlag.NO_DISABLE_KEY)
+        }.apply { set("seconds") }
+        val messageTypes = multiple("message_types", "CHAT", "SNAP", "NOTE", "EXTERNAL_MEDIA", "STICKER") {
+            customOptionTranslationPath = "content_type"
+        }.apply {
+            set(mutableListOf("CHAT"))
+        }
+        val showCountdown = boolean("show_countdown", defaultValue = true)
+        val showNotification = boolean("show_notification", defaultValue = true)
+    }
+
     val bypassScreenshotDetection = boolean("bypass_screenshot_detection") { requireRestart() }
     val anonymousStoryViewing = boolean("anonymous_story_viewing")
     val preventStoryRewatchIndicator = boolean("prevent_story_rewatch_indicator") { requireRestart() }
     val hidePeekAPeek = boolean("hide_peek_a_peek")
     val hideBitmojiPresence = boolean("hide_bitmoji_presence")
+
     val unlimitedSnapViewTime = boolean("unlimited_snap_view_time")
     val autoMarkAsRead = multiple("auto_mark_as_read", "snap_reply", "conversation_read", "save_snap_in_chat") { requireRestart() }
     val markSnapAsSeenButton = boolean("mark_snap_as_seen_button") { requireRestart() }
     val skipWhenMarkingAsSeen = boolean("skip_when_marking_as_seen") { requireRestart() }
     val loopMediaPlayback = boolean("loop_media_playback") { requireRestart() }
     val disableReplayInFF = boolean("disable_replay_in_ff")
-    val halfSwipeNotifier = container("half_swipe_notifier", HalfSwipeNotifierConfig()) { requireRestart() }
+    val halfSwipeNotifier = container("half_swipe_notifier", HalfSwipeNotifierConfig()) { requireRestart()}
     val callStartConfirmation = boolean("call_start_confirmation") { requireRestart() }
     val unlimitedConversationPinning = boolean("unlimited_conversation_pinning") { requireRestart() }
     val disableSnapModeRestrictions = boolean("disable_snap_mode_restrictions") { requireRestart() }
-    val autoSaveMessagesInConversations = multiple("auto_save_messages_in_conversations", "CHAT", "SNAP", "NOTE", "EXTERNAL_MEDIA", "STICKER") {
-        requireRestart(); customOptionTranslationPath = "content_type"
-    }
+    val autoSaveMessagesInConversations = multiple("auto_save_messages_in_conversations",
+        "CHAT",
+        "SNAP",
+        "NOTE",
+        "EXTERNAL_MEDIA",
+        "STICKER"
+    ) { requireRestart(); customOptionTranslationPath = "content_type" }
     val preventMessageSending = multiple("prevent_message_sending", *NotificationType.getOutgoingValues().map { it.key }.toTypedArray()) {
         customOptionTranslationPath = "features.options.notifications"
     }
-    val friendMutationNotifier = multiple(
-        "friend_mutation_notifier",
-        "remove_friend", "birthday_changes", "bitmoji_selfie_changes", "bitmoji_avatar_changes",
-        "bitmoji_background_changes", "bitmoji_scene_changes"
+    val friendMutationNotifier = multiple("friend_mutation_notifier",
+        "remove_friend",
+        "birthday_changes",
+        "bitmoji_selfie_changes",
+        "bitmoji_avatar_changes",
+        "bitmoji_background_changes",
+        "bitmoji_scene_changes",
     ) { requireRestart() }
     val betterNotifications = container("better_notifications", BetterNotifications()) { requireRestart() }
     val notificationBlacklist = multiple("notification_blacklist", *NotificationType.getIncomingValues().map { it.key }.toTypedArray()) {
@@ -189,34 +279,42 @@ class MessagingTweaks : ConfigContainer() {
     val removeGroupsLockedStatus = boolean("remove_groups_locked_status") { requireRestart() }
     val doubleTapChatAction = unique("double_tap_chat_action", "like_message", "copy_text", "delete_message", "mark_as_read", "custom_emoji_reaction") { requireRestart() }
     val doubleTapChatActionCustomEmoji = string("double_tap_chat_action_custom_emoji") {
-        inputCheck = { it.length == 2 && it.toByteArray(Charsets.UTF_8).size >= 4 }
-    }
+        inputCheck = { it.length == 2 && it.toByteArray(Charsets.UTF_8).size >= 4 } }
     val autoReply = container("auto_reply", AutoReplyConfig()) { requireRestart() }
     val autoOpenSnaps = container("auto_open_snaps", AutoOpenSnapsConfig()) { requireRestart(); addNotices(FeatureNotice.BAN_RISK, FeatureNotice.UNSTABLE) }
     val autoDeleteSentMessages = container("auto_delete_sent_messages", AutoDeleteSentMessagesConfig()) { requireRestart() }
-    val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
-
-    // ✅ Merged BatchFriendSelectorConfig
-    val batchFriendSelector = container("batch_friend_selector", BatchFriendSelectorConfig()) {
-        addNotices(
-            ConfigNotice("Enables batch sending to multiple friends."),
-            ConfigNotice("Adjust limits carefully to avoid API throttling.")
-        )
-    }
-
-    class BatchFriendSelectorConfig : ConfigContainer() {
+    
+    class InstantTranslationConfig : ConfigContainer(hasGlobalState = true) {
         val enabled = boolean("enabled", false)
-        val batchSize = integer("batch_size", defaultValue = 100) {
-            inputCheck = { it.toIntOrNull()?.coerceIn(50, 200) != null }
+        val sourceLanguage = string("source_language", defaultValue = "auto") {
+            inputCheck = { it.isNotBlank() }
         }
-        val delayBetweenBatches = integer("delay_between_batches", defaultValue = 2) {
-            inputCheck = { it.toIntOrNull()?.coerceIn(0, 10) != null }
+        val targetLanguage = string("target_language", defaultValue = "en") {
+            inputCheck = { it.isNotBlank() }
         }
-        val enableNotifications = boolean("enable_notifications", defaultValue = true)
-        val notifyOnBatchComplete = boolean("notify_on_batch_complete", defaultValue = true)
-        val notifyOnError = boolean("notify_on_error", defaultValue = true)
-        val autoCleanupDays = integer("auto_cleanup_days", defaultValue = 7) {
-            inputCheck = { it.toIntOrNull()?.coerceIn(1, 30) != null }
+        val showOriginal = boolean("show_original", defaultValue = true)
+        val showTranslation = boolean("show_translation", defaultValue = true)
+        val translationPosition = unique("translation_position", "above", "below", "inline") {
+            customOptionTranslationPath = "translation_position"
+        }.apply { set("below") }
+        val autoTranslate = boolean("auto_translate", defaultValue = true)
+        val translateOnTap = boolean("translate_on_tap", defaultValue = false)
+        val pauseOnError = boolean("pause_on_error", defaultValue = true)
+        val maxRetries = integer("max_retries", defaultValue = 3) {
+            inputCheck = { it.toIntOrNull()?.coerceIn(1, 10) != null }
+        }
+        val retryDelay = integer("retry_delay", defaultValue = 1000) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(500) != null }
+        }
+
+        val supportedLanguages = multiple("supported_languages",
+            "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr", "nl", "pl", "sv", "da", "no", "fi", "cs", "hu", "ro", "bg", "hr", "sk", "sl", "et", "lv", "lt", "mt", "ga", "cy"
+        ) {
+            customOptionTranslationPath = "language_codes"
+        }.apply {
+            set(mutableListOf("en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr"))
         }
     }
+    
+    val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
 }
