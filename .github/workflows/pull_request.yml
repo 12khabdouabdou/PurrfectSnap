@@ -1,36 +1,44 @@
 name: Generate Keystore
 
 on:
-  workflow_dispatch: # Allows manual triggering of the workflow
+  workflow_dispatch: # Manual trigger
 
 jobs:
   generate_key:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Set up JDK
-      uses: actions/setup-java@v4
-      with:
-        java-version: '11' # Or your required Java version
-        distribution: 'temurin'
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Generate Keystore
-      run: |
-        keytool -genkeypair \
-          -alias purfectsnap \
-          -keyalg RSA \
-          -keysize 2048 \
-          -keystore purfectsnap.jks \
-          -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
-          -keypass ${{ secrets.KEY_PASSWORD }} \
-          -dname "CN=My App, OU=My Org, O=My Company, L=City, ST=State, C=Country" \
-          -validity 3650 # Validity in days
+      - name: Generate Keystore
+        run: |
+          keytool -genkeypair \
+            -alias purrfectsnap \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storetype JKS \
+            -keystore purrfectsnap.jks \
+            -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
+            -keypass "${{ secrets.KEY_PASSWORD }}" \
+            -dname "CN=PurrfectSnap, OU=Dev, O=PurrfectSnap, L=Internet, S=NA, C=US"
 
-    - name: Upload Keystore as Artifact (Optional)
-      uses: actions/upload-artifact@v4
-      with:
-        name: myapp-keystore
-        path: myapp.jks
+      - name: Convert Keystore to Base64
+        run: |
+          base64 purrfectsnap.jks | tr -d '\n' > purrfectsnap.jks.b64
+          echo "✅ Base64 encoded keystore saved to purrfectsnap.jks.b64"
+
+      - name: Upload Keystore Files as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: purrfectsnap-keystore
+          path: |
+            purrfectsnap.jks
+            purrfectsnap.jks.b64
