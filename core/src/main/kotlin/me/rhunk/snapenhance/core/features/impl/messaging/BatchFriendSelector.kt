@@ -98,7 +98,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                             }
                         }
                     } catch (e: Exception) {
-                        context.log.error("Error in friend selection hook", e)
+                        context.log.error("Error in friend selection hook: ${e.message}", e)
                     }
                 }
             }
@@ -121,12 +121,12 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                             }
                         }
                     } catch (e: Exception) {
-                        context.log.error("Error intercepting send button", e)
+                        context.log.error("Error intercepting send button : ${e.message}", e)
                     }
                 }
             }
         } catch (e: Exception) {
-            context.log.error("Error setting up friend selection hooks", e)
+            context.log.error("Error setting up friend selection hooks: ${e.message}", e)
         }
     }
     
@@ -160,7 +160,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
             
             selectedFriends?.mapNotNull { extractFriendId(it!!) } ?: emptyList()
         } catch (e: Exception) {
-            context.log.error("Failed to extract selected friend IDs", e)
+            context.log.error("Failed to extract selected friend IDs: ${e.message}", e)
             emptyList()
         }
     }
@@ -171,7 +171,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
             val capturedMedia = mediaHandler.getCapturedMedia()
             
             if (capturedMedia == null) {
-                context.log.error("No media captured for batch send")
+                context.log.error("No media captured for batch send: ${e.message}")
                 return
             }
             
@@ -219,7 +219,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
         try {
             // Use Snapchat's navigation to show custom UI
             val activity = context.androidContext as? android.app.Activity ?: run {
-                context.log.error("Context is not an Activity")
+                context.log.error("Context is not an Activity: ${e.message}")
                 return
             }
             
@@ -234,7 +234,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                 context.androidContext.startActivity(intent)
             }
         } catch (e: Exception) {
-            context.log.error("Failed to launch batch manager UI", e)
+            context.log.error("Failed to launch batch manager UI: ${e.message}", e)
         }
     }
     
@@ -285,7 +285,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                     notificationManager.showBatchError(sessionId, batchIndex + 1, e.message ?: "Unknown error")
                 }
                 
-                context.log.error("Failed to send batch", e)
+                context.log.error("Failed to send batch: ${e.message}", e)
             }
         }
     }
@@ -355,7 +355,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                     notificationManager.showBatchError(sessionId, batchIndex + 1, e.message ?: "Unknown error")
                 }
                 
-                context.log.error("Failed to send batch", e)
+                context.log.error("Failed to send batch: ${e.message}", e)
             }
         }
     }
