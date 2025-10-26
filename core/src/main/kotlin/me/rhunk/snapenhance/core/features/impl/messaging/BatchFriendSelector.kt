@@ -137,7 +137,7 @@ class BatchFriendSelector : Feature("Batch Friend Selector") {
                 it.name == "getUserId" || it.name == "getId" || it.name == "getFriendUserId"
             }?.invoke(friendObject)?.toString()
         } catch (e: Exception) {
-            context.log.warn("Failed to extract friend ID", e)
+            context.log.warn("Failed to extract friend ID: ${e.message}", e)
             null
         }
     }
