@@ -1,86 +1,192 @@
-name: Generated APK AAB (Upload - Create Artifact To Github Action)
-
-env:
-  # The name of the main module repository
-  main_project_module: app
-
-  # The name of the Play Store
-  playstore_name: Frogobox ID
-
+name: PurrfectSnap Debug CI
 on:
-
-  push:
-    branches:
-      - 'release/**'
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
+    inputs:
+      ci_upload:
+        description: 'Upload to CI channel'
+        required: false
+        type: boolean
 jobs:
-  build:
-
+  job_armv8:
     runs-on: ubuntu-latest
-
+    outputs:
+      armv8_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
     steps:
-      - uses: actions/checkout@v4
-
-      # Set Current Date As Env Variable
-      - name: Set current date as env variable
-        run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-      # Set Repository Name As Env Variable
-      - name: Set repository name as env variable
-        run: echo "repository_name=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
-
-      - name: Set Up JDK
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '17'
-          cache: 'gradle'
-
-      - name: Change wrapper permissions
-        run: chmod +x ./gradlew
-
-      # Run Tests Build
-      - name: Run gradle tests
-        run: ./gradlew test
-
-      # Run Build Project
-      - name: Build gradle project
-        run: ./gradlew build
-
-      # Create APK Debug
-      - name: Build apk debug project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assembleDebug
-
-      # Create APK Release
-      - name: Build apk release project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assemble
-
-      # Create Bundle AAB Release
-      # Noted for main module build [main_project_module]:bundleRelease
-      - name: Build app bundle release (AAB) - ${{ env.main_project_module }} module
-        run: ./gradlew ${{ env.main_project_module }}:bundleRelease
-
-      # Upload Artifact Build
-      # Noted For Output [main_project_module]/build/outputs/apk/debug/
-      - name: Upload APK Debug - ${{ env.repository_name }}
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Setup NPM Dependencies
+        run: npm install typescript -g
+      - name: Add Android targets for Rust
+        run: rustup target add armv7-linux-androideabi aarch64-linux-android
+      - name: Build
+        env:
+          BYPASS_SECRET_KEY: ${{ secrets.BYPASS_SECRET_KEY }}
+        run: ./gradlew --configuration-cache assembleArmv8Debug
+      - name: Determine the latest Build Tools version installed
+        shell: bash
+        run: echo "BUILD_TOOL_VERSION=$(ls "$ANDROID_HOME/build-tools/" | tail -n 1)" >> $GITHUB_ENV
+      - name: Sign APK
+        id: sign_app
+        uses: SnapEnhance/sign-android-release@master
+        with:
+          releaseDirectory: app/build/outputs/apk/armv8/debug/
+          signingKeyBase64: ${{ secrets.JAVA_KEYSTORE_DATA }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+      - name: Get current build version
+        id: version-env
+        run: |
+          ./gradlew --configuration-cache getVersion
+          echo "version=$(cat app/build/version.txt)" >> $GITHUB_ENV
+      - name: Delete unsigned APK file and rename the signed one
+        run: |
+          find app/build/outputs/apk/armv8/debug/ -type f ! -name '*-signed*' -delete
+          mv ${{steps.sign_app.outputs.signedReleaseFile}} app/build/outputs/apk/armv8/debug/purrfectsnap-${{ env.version }}-armv8-${GITHUB_SHA::7}.apk
+      - name: Upload artifact
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - APK(s) debug generated
-          path: ${{ env.main_project_module }}/build/outputs/apk/debug/
-
-      # Noted For Output [main_project_module]/build/outputs/apk/release/
-      - name: Upload APK Release - ${{ env.repository_name }}
+          name: purrfectsnap-armv8-debug
+          path: app/build/outputs/apk/armv8/debug/*.apk
+  job_armv7:
+    runs-on: ubuntu-latest
+    outputs:
+      armv7_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Setup NPM Dependencies
+        run: npm install typescript -g
+      - name: Add Android targets for Rust
+        run: rustup target add armv7-linux-androideabi aarch64-linux-android
+      - name: Build
+        env:
+          BYPASS_SECRET_KEY: ${{ secrets.BYPASS_SECRET_KEY }}
+        run: ./gradlew --configuration-cache assembleArmv7Debug
+      - name: Determine the latest Build Tools version installed
+        shell: bash
+        run: echo "BUILD_TOOL_VERSION=$(ls \"$ANDROID_HOME/build-tools/\" | tail -n 1)" >> $GITHUB_ENV
+      - name: Sign APK
+        id: sign_app
+        uses: SnapEnhance/sign-android-release@master
+        with:
+          releaseDirectory: app/build/outputs/apk/armv7/debug/
+          signingKeyBase64: ${{ secrets.JAVA_KEYSTORE_DATA }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+      - name: Get current build version
+        id: version-env
+        run: |
+          ./gradlew --configuration-cache getVersion
+          echo "version=$(cat app/build/version.txt)" >> $GITHUB_ENV
+      - name: Delete unsigned APK file and rename the signed one
+        run: |
+          find app/build/outputs/apk/armv7/debug/ -type f ! -name '*-signed*' -delete
+          mv ${{steps.sign_app.outputs.signedReleaseFile}} app/build/outputs/apk/armv7/debug/purrfectsnap-${{ env.version }}-armv7-${GITHUB_SHA::7}.apk
+      - name: Upload artifact
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - APK(s) release generated
-          path: ${{ env.main_project_module }}/build/outputs/apk/release/
-
-      # Noted For Output [main_project_module]/build/outputs/bundle/release/
-      - name: Upload AAB (App Bundle) Release - ${{ env.repository_name }}
+          name: purrfectsnap-armv7-debug
+          path: app/build/outputs/apk/armv7/debug/*.apk
+  job_manager:
+    runs-on: ubuntu-latest
+    outputs:
+      manager_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build
+        run: ./gradlew --configuration-cache manager:assembleDebug
+      - name: Upload artifact
+        id: upload_apk
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
-          path: ${{ env.main_project_module }}/build/outputs/bundle/release/
+          name: manager
+          path: manager/build/outputs/apk/debug/*.apk
+  job_core:
+    runs-on: ubuntu-latest
+    outputs:
+      core_apk: ${{ steps.upload_apk.outputs.artifact-paths }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Add Android targets for Rust
+        run: rustup target add armv7-linux-androideabi aarch64-linux-android
+      - name: Build
+        run: ./gradlew --configuration-cache assembleCoreDebug
+      - name: Upload artifact
+        id: upload_apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: core
+          path: app/build/outputs/apk/core/debug/*.apk
+  make_prerelease:
+    needs: [job_armv7, job_armv8, job_manager, job_core]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./all-apks
+      - name: Display all files for debug
+        run: find ./all-apks
+      - name: Set up GitHub CLI
+        run: |
+          sudo apt-get install -y gh
+      - name: Create Debug Prerelease with all APKs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="debug-${{ github.run_id }}-${{ github.sha }}"
+          TITLE="Debug CI $VERSION"
+          NOTE="Auto-generated debug prerelease including all APKs from jobs."
+          APKLIST=$(find ./all-apks -type f -name '*.apk' | tr '\n' ' ')
+          echo "APKS: $APKLIST"
+          gh release create "$VERSION" $APKLIST --repo ${{ github.repository }} --title "$TITLE" --notes "$NOTE" --prerelease
