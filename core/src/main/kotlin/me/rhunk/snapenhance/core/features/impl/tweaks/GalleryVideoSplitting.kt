@@ -13,12 +13,25 @@ import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.messaging.MessageSender
+import me.rhunk.snapenhance.core.features.impl.messaging.Messaging
+import me.rhunk.snapenhance.core.util.CallbackBuilder
+import me.rhunk.snapenhance.core.wrapper.AbstractWrapper
+import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
+import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
+import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import java.io.File
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
     private var isSplitting = false
+
+    private val sendMessageCallback by lazy {
+        lateinit var result: Class<*>
+        context.mappings.useMapper(CallbackMapper::class) {
+            result = callbacks.getClass("SendMessageCallback") ?: return@useMapper
+        }
+        result
+    }
 
     override fun init() {
         if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) return
@@ -79,6 +92,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             event.canceled = true
             context.log.info("Canceling original send to split video")
 
+            // Save original event data
+            val conversationIds = event.destinations.conversations?.map { SnapUUID(it as String) } ?: emptyList()
+            val originalContent = localMessageContent.content!!
+
             context.coroutineScope.launch {
                 isSplitting = true
                 val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}")
@@ -129,13 +146,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             "Sending ${outputFiles.size} snaps..."
                         )
                     }
-
-                    // Get conversations to send to
-                    val conversations = event.destinations.conversations ?: emptyList()
                     
                     // Send each chunk
                     for ((index, file) in outputFiles.withIndex()) {
-                        sendVideoChunk(conversations, messageProtoReader, file, index)
+                        sendVideoChunk(conversationIds, originalContent, file, index)
                         delay(800)
                     }
                     
@@ -162,9 +176,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
-    private suspend fun sendVideoChunk(
-        conversations: List<String>,
-        originalProto: ProtoReader,
+    private fun sendVideoChunk(
+        conversations: List<SnapUUID>,
+        originalProtoContent: ByteArray,
         videoFile: File,
         index: Int
     ) {
@@ -186,7 +200,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             context.log.info("Sending chunk $index: ${chunkDuration}ms, ${width}x${height}")
 
             // Build new protobuf with updated video chunk
-            val newProtoContent = ProtoEditor(originalProto.buffer).apply {
+            val newProtoContent = ProtoEditor(originalProtoContent).apply {
                 // Update the video URI
                 edit(3, 3, 5, 1, 1) {
                     remove(2)
@@ -210,23 +224,53 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
             }.toByteArray()
 
-            // Send using MessageSender
-            for (conversationId in conversations) {
-                context.log.info("Sending chunk $index to conversation $conversationId")
-                
-                MessageSender.sendContentMessage(
-                    context = context,
-                    conversationId = conversationId,
-                    messageContent = newProtoContent,
-                    contentType = ContentType.EXTERNAL_MEDIA
-                )
-                
-                delay(200) // Small delay between conversations
+            // Create message content JSON template
+            val localMessageContentTemplate = """
+            {
+                "mAllowsTranscription": false,
+                "mBotMention": false,
+                "mContent": [${newProtoContent.joinToString(",")}],
+                "mContentType": "EXTERNAL_MEDIA",
+                "mIncidentalAttachments": [],
+                "mLocalMediaReferences": [],
+                "mPlatformAnalytics": {
+                    "mAttemptId": null,
+                    "mContent": null,
+                    "mMetricsMessageMediaType": "VIDEO",
+                    "mMetricsMessageType": "MEDIA",
+                    "mReactionSource": "NONE"
+                },
+                "mSavePolicy": "PROHIBITED"
             }
+            """.trimIndent()
+
+            // Send the message
+            val sendMessageWithContentMethod = context.classCache.conversationManager.declaredMethods.first { it.name == "sendMessageWithContent" }
+            val localMessageContent = context.gson.fromJson(localMessageContentTemplate, context.classCache.localMessageContent)
+            val messageDestinations = MessageDestinations(AbstractWrapper.newEmptyInstance(context.classCache.messageDestinations)).also {
+                it.conversations = conversations.toCollection(ArrayList())
+                it.mPhoneNumbers = arrayListOf<Any>()
+                it.stories = arrayListOf<Any>()
+            }
+
+            val callback = CallbackBuilder(sendMessageCallback)
+                .override("onSuccess") {
+                    context.log.info("Chunk $index sent successfully")
+                }
+                .override("onError") { params ->
+                    context.log.error("Failed to send chunk $index: ${params.arg<Any>(0)}")
+                }
+                .build()
+
+            sendMessageWithContentMethod.invoke(
+                context.feature(Messaging::class).conversationManager?.instanceNonNull(),
+                messageDestinations.instanceNonNull(),
+                localMessageContent,
+                callback
+            )
             
         } catch (e: Exception) {
             context.log.error("Failed to send chunk $index", e)
-            // Don't rethrow - try to send remaining chunks
         }
     }
 
