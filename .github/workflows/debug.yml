@@ -1,3 +1,8 @@
+name: PurrfectSnap Debug CI
+on:
+  workflow_dispatch:
+  jobs:
+  steps:
 - name: Generate Keystore
         run: |
           keytool -genkeypair \
