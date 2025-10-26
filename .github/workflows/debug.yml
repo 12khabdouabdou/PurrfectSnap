@@ -1,8 +1,22 @@
-name: PurrfectSnap Debug CI
+name: Generate Keystore
+
 on:
-  workflow_dispatch:
-  jobs:
-  steps:
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  generate_key:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
 - name: Generate Keystore
         run: |
           keytool -genkeypair \
