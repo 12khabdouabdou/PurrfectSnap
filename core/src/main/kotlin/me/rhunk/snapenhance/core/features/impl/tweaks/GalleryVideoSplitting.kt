@@ -256,12 +256,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             }
 
             val callback = CallbackBuilder(sendMessageCallback)
-                .override("onSuccess", callback = {
+                .override("onSuccess") { 
                     context.log.info("Chunk $index sent successfully")
-                })
-                .override("onError", callback = { 
+                }
+                .override("onError") { 
                     context.log.error("Failed to send chunk $index: ${it.arg<Any>(0)}")
-                })
+                }
                 .build()
 
             sendMessageWithContentMethod.invoke(
