@@ -179,26 +179,14 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     }
 
     private fun splitVideoWithFFmpeg(input: File, outputDir: File): List<File> {
-        val ffmpegKit = Class.forName("com.arthenica.ffmpegkit.FFmpegKit")
-        val returnCodeClass = Class.forName("com.arthenica.ffmpegkit.ReturnCode")
-        
         val command = "-i \"${input.absolutePath}\" -c copy -f segment " +
                      "-segment_time 10 -reset_timestamps 1 " +
                      "\"${outputDir.absolutePath}/split_%03d.mp4\""
         
-        val executeMethod = ffmpegKit.getMethod("execute", String::class.java)
-        val session = executeMethod.invoke(null, command)
+        val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
         
-        val getReturnCodeMethod = session.javaClass.getMethod("getReturnCode")
-        val returnCode = getReturnCodeMethod.invoke(session)
-        
-        val isSuccessMethod = returnCodeClass.getMethod("isSuccess", returnCode.javaClass)
-        val success = isSuccessMethod.invoke(null, returnCode) as Boolean
-        
-        if (!success) {
-            val getFailStackTraceMethod = session.javaClass.getMethod("getFailStackTrace")
-            val stackTrace = getFailStackTraceMethod.invoke(session)
-            throw IllegalStateException("FFmpeg failed: $stackTrace")
+        if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
+            throw IllegalStateException("FFmpeg failed: ${session.failStackTrace}")
         }
 
         return outputDir.listFiles()
@@ -278,16 +266,16 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         height: Double
     ): Any {
         return originalItem.dataBuilder {
-            set("type", originalItem.getObjectField("type"))
-            set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
-            set("contentUri", contentUri)
-            set("durationMs", durationMs)
-            set("width", width)
-            set("height", height)
-            from("itemId", new = true) {
-                set("itemId", "${contentUri}_${System.currentTimeMillis()}")
+            this.set("type", originalItem.getObjectField("type") ?: "VIDEO")
+            this.set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
+            this.set("contentUri", contentUri)
+            this.set("durationMs", durationMs)
+            this.set("width", width)
+            this.set("height", height)
+            this.from("itemId", new = true) {
+                this.set("itemId", "${contentUri}_${System.currentTimeMillis()}")
             }
-        }!!
+        } ?: throw IllegalStateException("Failed to create modified item")
     }
 
     private fun createModifiedMediaItem(
@@ -296,9 +284,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         order: Double
     ): Any {
         return originalMediaItem.dataBuilder {
-            set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
-            set("item", newItem)
-            set("order", order)
-        }!!
+            this.set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
+            this.set("item", newItem)
+            this.set("order", order)
+        } ?: throw IllegalStateException("Failed to create modified media item")
     }
 }
