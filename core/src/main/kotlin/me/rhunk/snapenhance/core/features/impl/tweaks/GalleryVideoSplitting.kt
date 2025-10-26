@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.util.dataBuilder
@@ -244,7 +243,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
                 )?.toDoubleOrNull() ?: 1920.0
 
-                val newItem = originalItem.javaClass.dataBuilder {
+                // Create new item using dataBuilder with proper syntax
+                val newItem = dataBuilder(originalItem.javaClass) {
                     set("type", originalItem.getObjectField("type"))
                     set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
                     set("contentUri", chunkUri.toString())
@@ -256,7 +256,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     }
                 }
 
-                val newMediaItem = originalMediaItem.javaClass.dataBuilder {
+                val newMediaItem = dataBuilder(originalMediaItem.javaClass) {
                     set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
                     set("item", newItem)
                     set("order", index.toDouble())
