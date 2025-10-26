@@ -15,38 +15,42 @@ import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import java.io.File
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
     private var isSplitting = false
 
     override fun init() {
-        // Try multiple possible class names across Snapchat versions
+        // Find the abstract/interface class first
         val actionHandlerClass = runCatching {
-            findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
-        }.recoverCatching {
-            context.log.warn("Primary class not found, trying alternatives...")
             findClass("com.snap.composer.memories.ChatMediaDrawerActionHandler")
         }.recoverCatching {
-            findClass("com.snapchat.client.memories.composer.ChatMediaDrawerActionHandler")
-        }.recoverCatching {
-            findClass("com.snap.composer.ChatMediaDrawerActionHandler")
+            findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
         }.getOrElse {
-            context.log.error("Could not find ChatMediaDrawerActionHandler in any known location")
-            scanForPossibleClasses()
+            context.log.error("Could not find ChatMediaDrawerActionHandler")
             return
         }
 
-        context.log.info("Found ActionHandler: ${actionHandlerClass.name}")
+        context.log.info("Found abstract class: ${actionHandlerClass.name}")
 
-        val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
-            ?: run {
-                context.log.error("Could not find sendItems method in ${actionHandlerClass.name}")
-                context.log.error("Available methods: ${actionHandlerClass.methods.joinToString { it.name }}")
-                return
-            }
+        // Now find the concrete implementation
+        val implementationClass = findImplementation(actionHandlerClass)
+        if (implementationClass == null) {
+            context.log.error("Could not find concrete implementation of ${actionHandlerClass.name}")
+            return
+        }
 
-        context.log.info("Hooking sendItems method")
+        context.log.info("Found implementation: ${implementationClass.name}")
+
+        val sendItemsMethod: Method = implementationClass.methods.firstOrNull { 
+            it.name == "sendItems" && !Modifier.isAbstract(it.modifiers)
+        } ?: run {
+            context.log.error("Could not find concrete sendItems method in ${implementationClass.name}")
+            return
+        }
+
+        context.log.info("Hooking sendItems method in ${implementationClass.name}")
 
         sendItemsMethod.hook(HookStage.BEFORE) { param ->
             if (isSplitting || !context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
@@ -137,10 +141,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         val actionHandler = param.thisObject<Any>()
 
                         for ((index, file) in outputFiles.withIndex()) {
-                            val chunkUri = Uri.fromFile(file)
                             val chunkRetriever = MediaMetadataRetriever()
                             
                             try {
+                                val chunkUri = Uri.fromFile(file)
                                 chunkRetriever.setDataSource(context.androidContext, chunkUri)
                                 val chunkDuration = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
                                 val chunkWidth = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toDoubleOrNull() ?: 1080.0
@@ -173,7 +177,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                 }
 
                                 sendItemsMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
-                                delay(800) // Slightly longer delay to avoid rate limiting
+                                delay(800)
                                 
                             } catch (e: Exception) {
                                 context.log.error("Failed to send chunk $index", e)
@@ -202,31 +206,57 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
-    private fun scanForPossibleClasses() {
+    private fun findImplementation(interfaceClass: Class<*>): Class<*>? {
         try {
-            context.log.info("Scanning for possible ActionHandler classes...")
+            context.log.info("Searching for implementations of ${interfaceClass.name}...")
             val dexFile = dalvik.system.DexFile(context.androidContext.applicationInfo.sourceDir)
             val entries = dexFile.entries()
-            val candidates = mutableListOf<String>()
+            
+            val candidates = mutableListOf<Class<*>>()
             
             while (entries.hasMoreElements()) {
                 val className = entries.nextElement()
-                if ((className.contains("MediaDrawer", ignoreCase = true) || 
-                     className.contains("ChatMedia", ignoreCase = true)) &&
-                    (className.contains("ActionHandler", ignoreCase = true) ||
-                     className.contains("Handler", ignoreCase = true))) {
-                    candidates.add(className)
+                
+                // Look for classes in the same package or related packages
+                if (!className.contains("composer", ignoreCase = true) && 
+                    !className.contains("memories", ignoreCase = true)) {
+                    continue
+                }
+                
+                runCatching {
+                    val clazz = findClass(className)
+                    
+                    // Check if this class implements or extends our interface
+                    if (interfaceClass.isAssignableFrom(clazz) && 
+                        clazz != interfaceClass &&
+                        !Modifier.isAbstract(clazz.modifiers) &&
+                        !Modifier.isInterface(clazz.modifiers)) {
+                        
+                        // Check if it has a concrete sendItems method
+                        val hasSendItems = clazz.methods.any { 
+                            it.name == "sendItems" && !Modifier.isAbstract(it.modifiers)
+                        }
+                        
+                        if (hasSendItems) {
+                            context.log.info("  ✓ Found candidate: $className")
+                            candidates.add(clazz)
+                        }
+                    }
                 }
             }
             
-            if (candidates.isNotEmpty()) {
-                context.log.info("Found ${candidates.size} potential classes:")
-                candidates.forEach { context.log.info("  → $it") }
-            } else {
-                context.log.error("No potential classes found. Try broader search.")
+            if (candidates.isEmpty()) {
+                context.log.error("No concrete implementations found")
+                return null
             }
+            
+            // Prefer classes with "Impl" or specific naming patterns
+            return candidates.firstOrNull { it.simpleName.contains("Impl") }
+                ?: candidates.firstOrNull()
+            
         } catch (e: Exception) {
-            context.log.error("Failed to scan classes", e)
+            context.log.error("Failed to find implementation", e)
+            return null
         }
     }
 }
