@@ -17,7 +17,7 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-- name: Generate Keystore
+      - name: Generate Keystore
         run: |
           keytool -genkeypair \
             -alias purrfectsnap \
@@ -44,4 +44,4 @@ jobs:
           name: purrfectsnap-keystore
           path: |
             purrfectsnap.jks
-            purrfectsnap.txt
+            keystore.txt
