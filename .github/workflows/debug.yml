@@ -89,14 +89,6 @@ jobs:
       - name: Determine the latest Build Tools version installed
         shell: bash
         run: echo "BUILD_TOOL_VERSION=$(ls \"$ANDROID_HOME/build-tools/\" | tail -n 1)" >> $GITHUB_ENV
-     - name: Build Debug APK (unsigned)
-  run: ./gradlew assembleArmv8Debug
-  
-- name: Upload unsigned APK
-  uses: actions/upload-artifact@v4
-  with:
-    name: snapenhance-debug-apk
-    path: app/build/outputs/apk/armv8/debug/*.apk
       - name: Sign APK
         id: sign_app
         uses: SnapEnhance/sign-android-release@master
