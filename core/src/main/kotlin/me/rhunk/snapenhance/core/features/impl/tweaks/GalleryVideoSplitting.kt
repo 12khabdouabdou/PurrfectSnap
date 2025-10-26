@@ -176,9 +176,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             context.log.info("Sending chunk $index: ${duration}ms, ${width}x${height}")
 
-            // Update protobuf with chunk data - SAME PATTERN AS SendOverride
-            val localMessageContent = originalEvent.messageContent
-            localMessageContent.content = ProtoEditor(localMessageContent.content!!).apply {
+            // Create a copy of the original message content protobuf
+            val originalProto = originalEvent.messageContent.content!!
+            
+            // Update protobuf with chunk data
+            val updatedProto = ProtoEditor(originalProto).apply {
                 edit(3, 3, 5, 1, 1) {
                     remove(2)
                     addString(2, chunkUri.toString())
@@ -195,7 +197,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
             }.toByteArray()
 
-            // Send it - SAME PATTERN AS SendOverride
+            // Temporarily update the message content
+            originalEvent.messageContent.content = updatedProto
+            
+            // Send using the original event
             originalEvent.invokeOriginal()
             
         } catch (e: Exception) {
