@@ -265,8 +265,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         builder.set("durationMs", durationMs)
         builder.set("width", width)
         builder.set("height", height)
-        builder.from("itemId", new = true) { itemIdBuilder ->
-            itemIdBuilder.set("itemId", "${contentUri}_${System.currentTimeMillis()}")
+        builder.from("itemId", true) {
+            set("itemId", "${contentUri}_${System.currentTimeMillis()}")
         }
         return builder.build()
     }
