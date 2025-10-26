@@ -93,7 +93,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             context.log.info("Canceling original send to split video")
 
             // Save original event data
-            val conversationIds = event.destinations.conversations?.map { SnapUUID(it as String) } ?: emptyList()
+            val conversationIds = event.destinations.conversations?.map { 
+                SnapUUID(it.toString())
+            } ?: emptyList()
             val originalContent = localMessageContent.content!!
 
             context.coroutineScope.launch {
