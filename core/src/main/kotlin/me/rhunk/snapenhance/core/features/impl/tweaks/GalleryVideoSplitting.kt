@@ -22,32 +22,30 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     override fun init() {
         if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) return
 
-        context.log.info("Gallery Video Splitting initialized")
-
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
             if (isSplitting) return@subscribe
             
-            // Only handle conversations, not stories
+            // Skip stories
             if (event.destinations.stories?.isNotEmpty() == true && 
                 event.destinations.conversations?.isEmpty() == true) {
                 return@subscribe
             }
 
-            val messageContent = event.messageContent
+            val localMessageContent = event.messageContent
             
-            // Only handle external media from gallery
-            if (messageContent.contentType != ContentType.EXTERNAL_MEDIA) {
+            // Only handle external media (gallery)
+            if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA) {
                 return@subscribe
             }
 
-            val protoReader = ProtoReader(messageContent.content ?: return@subscribe)
+            val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
             
-            // Check if it's a video (field 3.3.5.2.5 == 1 means video)
-            val isVideo = protoReader.getVarInt(3, 3, 5, 2, 5) == 1L
+            // Check if video (field 3.3.5.2.5 == 1)
+            val isVideo = messageProtoReader.getVarInt(3, 3, 5, 2, 5) == 1L
             if (!isVideo) return@subscribe
 
-            // Get video URI
-            val contentUriBytes = protoReader.getByteArray(3, 3, 5, 1, 1, 2) ?: return@subscribe
+            // Get video URI from protobuf
+            val contentUriBytes = messageProtoReader.getByteArray(3, 3, 5, 1, 1, 2) ?: return@subscribe
             val contentUri = String(contentUriBytes)
             val videoUri = Uri.parse(contentUri)
             
@@ -70,12 +68,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
 
-            // Cancel original send
+            // Cancel original send and split
             event.canceled = true
             
-            // Start splitting process
             context.coroutineScope.launch {
-                splitAndSendVideo(event, videoUri, durationMs, protoReader.buffer)
+                splitAndSendVideo(event, videoUri, durationMs)
             }
         }
     }
@@ -83,8 +80,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private suspend fun splitAndSendVideo(
         originalEvent: SendMessageWithContentEvent,
         videoUri: Uri,
-        durationMs: Long,
-        originalProtoBuffer: ByteArray
+        durationMs: Long
     ) {
         isSplitting = true
         val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}")
@@ -98,26 +94,24 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 )
             }
 
-            // Copy video to temp file
+            // Copy video
             val inputVideo = File(tempDir, "input.mp4")
             context.mainActivity!!.contentResolver.openInputStream(videoUri)?.use { input ->
                 inputVideo.outputStream().use { output ->
                     input.copyTo(output)
                 }
-            } ?: throw Exception("Failed to open video stream")
+            } ?: throw Exception("Failed to open video")
 
             // Split with FFmpeg
-            val ffmpegCommand = "-i ${inputVideo.absolutePath} -c copy -f segment -segment_time 10 " +
+            val command = "-i ${inputVideo.absolutePath} -c copy -f segment -segment_time 10 " +
                     "-reset_timestamps 1 -avoid_negative_ts make_zero ${tempDir.absolutePath}/chunk_%03d.mp4"
             
-            context.log.info("FFmpeg: $ffmpegCommand")
-            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(ffmpegCommand)
+            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
 
             if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
                 throw Exception("FFmpeg failed: ${session.output}")
             }
 
-            // Get output chunks
             val chunks = tempDir.listFiles()
                 ?.filter { it.name.startsWith("chunk_") }
                 ?.sortedBy { it.name }
@@ -134,7 +128,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             // Send each chunk
             for ((index, chunkFile) in chunks.withIndex()) {
-                sendChunk(originalEvent, chunkFile, originalProtoBuffer, index)
+                sendChunk(originalEvent, chunkFile, index)
                 delay(800)
             }
             
@@ -162,7 +156,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private fun sendChunk(
         originalEvent: SendMessageWithContentEvent,
         chunkFile: File,
-        originalProtoBuffer: ByteArray,
         index: Int
     ) {
         try {
@@ -176,15 +169,16 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 val w = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
                 val h = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
                 val a = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) == "yes"
-                ChunkMetadata(d, w, h, a)
+                ChunkMeta(d, w, h, a)
             } finally {
                 retriever.release()
             }
 
-            context.log.info("Chunk $index: ${duration}ms, ${width}x${height}, audio=$hasAudio")
+            context.log.info("Sending chunk $index: ${duration}ms, ${width}x${height}")
 
-            // Update protobuf with chunk data
-            val updatedProto = ProtoEditor(originalProtoBuffer).apply {
+            // Update protobuf with chunk data - SAME PATTERN AS SendOverride
+            val localMessageContent = originalEvent.messageContent
+            localMessageContent.content = ProtoEditor(localMessageContent.content!!).apply {
                 edit(3, 3, 5, 1, 1) {
                     remove(2)
                     addString(2, chunkUri.toString())
@@ -201,26 +195,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
             }.toByteArray()
 
-            // Create new message content
-            val newMessageContent = me.rhunk.snapenhance.common.data.MessageContent().apply {
-                contentType = ContentType.EXTERNAL_MEDIA
-                content = updatedProto
-            }
-
-            // Create new event and send
-            val chunkEvent = SendMessageWithContentEvent(
-                destinations = originalEvent.destinations,
-                messageContent = newMessageContent
-            )
-            
-            chunkEvent.invokeOriginal()
+            // Send it - SAME PATTERN AS SendOverride
+            originalEvent.invokeOriginal()
             
         } catch (e: Exception) {
             context.log.error("Failed to send chunk $index", e)
         }
     }
 
-    private data class ChunkMetadata(
+    private data class ChunkMeta(
         val duration: Long,
         val width: Int,
         val height: Int,
