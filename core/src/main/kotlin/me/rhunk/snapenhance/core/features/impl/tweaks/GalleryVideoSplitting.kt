@@ -10,11 +10,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.util.DataClassBuilder
+import me.rhunk.snapenhance.core.util.CallbackBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
-import me.rhunk.snapenhance.core.util.ktx.setObjectField
 import java.io.File
 import java.lang.reflect.Method
 
@@ -257,29 +256,73 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         durationMs: Double,
         width: Double,
         height: Double
-    ): Any? {
-        val builder = DataClassBuilder(originalItem)
-        builder.set("type", originalItem.getObjectField("type") ?: "VIDEO")
-        builder.set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
-        builder.set("contentUri", contentUri)
-        builder.set("durationMs", durationMs)
-        builder.set("width", width)
-        builder.set("height", height)
-        builder.from("itemId", true) {
-            set("itemId", "${contentUri}_${System.currentTimeMillis()}")
+    ): Any {
+        // Clone the original item by creating a new instance
+        val itemClass = originalItem.javaClass
+        val constructor = itemClass.constructors.firstOrNull() 
+            ?: throw IllegalStateException("No constructor found for item class")
+        
+        // Create empty instance
+        val newInstance = me.rhunk.snapenhance.core.util.CallbackBuilder.createEmptyObject(constructor)
+            ?: throw IllegalStateException("Failed to create empty item instance")
+        
+        // Copy all fields from original
+        itemClass.declaredFields.forEach { field ->
+            field.isAccessible = true
+            try {
+                val value = field.get(originalItem)
+                field.set(newInstance, value)
+            } catch (e: Exception) {
+                // Skip fields that can't be copied
+            }
         }
-        return builder.build()
+        
+        // Set modified fields
+        itemClass.declaredFields.forEach { field ->
+            field.isAccessible = true
+            when (field.name) {
+                "contentUri", "mContentUri" -> field.set(newInstance, contentUri)
+                "durationMs", "mDurationMs" -> field.set(newInstance, durationMs)
+                "width", "mWidth" -> field.set(newInstance, width)
+                "height", "mHeight" -> field.set(newInstance, height)
+            }
+        }
+        
+        return newInstance
     }
 
     private fun createModifiedMediaItem(
         originalMediaItem: Any,
-        newItem: Any?,
+        newItem: Any,
         order: Double
-    ): Any? {
-        val builder = DataClassBuilder(originalMediaItem)
-        builder.set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
-        builder.set("item", newItem)
-        builder.set("order", order)
-        return builder.build()
+    ): Any {
+        val mediaItemClass = originalMediaItem.javaClass
+        val constructor = mediaItemClass.constructors.firstOrNull()
+            ?: throw IllegalStateException("No constructor found for media item class")
+        
+        val newInstance = me.rhunk.snapenhance.core.util.CallbackBuilder.createEmptyObject(constructor)
+            ?: throw IllegalStateException("Failed to create empty media item instance")
+        
+        // Copy all fields from original
+        mediaItemClass.declaredFields.forEach { field ->
+            field.isAccessible = true
+            try {
+                val value = field.get(originalMediaItem)
+                field.set(newInstance, value)
+            } catch (e: Exception) {
+                // Skip fields that can't be copied
+            }
+        }
+        
+        // Set modified fields
+        mediaItemClass.declaredFields.forEach { field ->
+            field.isAccessible = true
+            when (field.name) {
+                "item", "mItem" -> field.set(newInstance, newItem)
+                "order", "mOrder" -> field.set(newInstance, order)
+            }
+        }
+        
+        return newInstance
     }
 }
