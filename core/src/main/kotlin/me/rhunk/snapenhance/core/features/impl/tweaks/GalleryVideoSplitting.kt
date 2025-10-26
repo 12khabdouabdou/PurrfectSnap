@@ -12,7 +12,6 @@ import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import java.io.File
 
@@ -48,12 +47,14 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val isVideo = messageProtoReader.getVarInt(3, 3, 5, 2, 5) == 1L
             if (!isVideo) return@subscribe
 
-            // Get the media URI
-            val externalMetadata = localMessageContent.instanceNonNull()
-                .getObjectField("mExternalContentMetadata") ?: return@subscribe
+            // Get the media URI from external metadata
+            val externalMetadata = runCatching {
+                localMessageContent.instanceNonNull().getObjectField("mExternalContentMetadata")
+            }.getOrNull() ?: return@subscribe
             
-            val contentUri = externalMetadata.getObjectField("contentUri")?.toString()
-                ?: return@subscribe
+            val contentUri = runCatching {
+                externalMetadata.getObjectField("contentUri")?.toString()
+            }.getOrNull() ?: return@subscribe
             
             val mediaUri = Uri.parse(contentUri)
             
@@ -134,7 +135,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                     // Send each chunk
                     for ((index, file) in outputFiles.withIndex()) {
-                        sendVideoChunk(event, file, index)
+                        sendVideoChunk(event, externalMetadata, file, index)
                         delay(800) // Delay between sends
                     }
                     
@@ -161,60 +162,95 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
-    private suspend fun sendVideoChunk(originalEvent: SendMessageWithContentEvent, videoFile: File, index: Int) {
+    private suspend fun sendVideoChunk(
+        originalEvent: SendMessageWithContentEvent, 
+        originalExternalMetadata: Any,
+        videoFile: File, 
+        index: Int
+    ) {
         try {
             val chunkUri = Uri.fromFile(videoFile)
             val retriever = MediaMetadataRetriever()
             
-            val (chunkDuration, width, height, hasAudio) = try {
+            val (chunkDuration, width, height) = try {
                 retriever.setDataSource(context.androidContext, chunkUri)
                 val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
                 val w = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
                 val h = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
-                val audio = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) == "yes"
-                Tuple4(duration, w, h, audio)
+                Triple(duration, w, h)
             } finally {
                 retriever.release()
             }
 
-            context.log.info("Sending chunk $index: ${chunkDuration}ms, ${width}x${height}, audio=$hasAudio")
+            context.log.info("Sending chunk $index: ${chunkDuration}ms, ${width}x${height}")
 
-            // Create new message content for this chunk
+            // Clone the external metadata with updated values
+            val newExternalMetadata = runCatching {
+                val metadataClass = originalExternalMetadata.javaClass
+                val constructor = metadataClass.constructors.firstOrNull()
+                    ?: throw IllegalStateException("No constructor found")
+                
+                val instance = constructor.newInstance()
+                
+                // Copy fields using reflection
+                metadataClass.declaredFields.forEach { field ->
+                    field.isAccessible = true
+                    when (field.name) {
+                        "contentUri", "mContentUri" -> field.set(instance, chunkUri.toString())
+                        "durationMs", "mDurationMs" -> field.set(instance, chunkDuration)
+                        "width", "mWidth" -> field.set(instance, width)
+                        "height", "mHeight" -> field.set(instance, height)
+                        else -> {
+                            // Copy other fields as-is
+                            runCatching { field.set(instance, field.get(originalExternalMetadata)) }
+                        }
+                    }
+                }
+                
+                instance
+            }.getOrElse { e ->
+                context.log.error("Failed to clone metadata", e)
+                throw e
+            }
+
+            // Create new message content with updated metadata
             val originalContent = originalEvent.messageContent
-            val externalMetadata = originalContent.instanceNonNull()
-                .getObjectField("mExternalContentMetadata")!!
-            
-            // Update the external metadata with the chunk URI and metadata
-            val newExternalMetadata = externalMetadata.javaClass.dataBuilder {
-                set("contentUri", chunkUri.toString())
-                set("durationMs", chunkDuration)
-                set("width", width)
-                set("height", height)
+            val newMessageContent = runCatching {
+                val contentClass = originalContent.javaClass
+                val instance = contentClass.newInstance()
+                
+                // Copy all fields from original
+                contentClass.declaredFields.forEach { field ->
+                    field.isAccessible = true
+                    if (field.name == "mExternalContentMetadata") {
+                        field.set(instance, newExternalMetadata)
+                    } else {
+                        runCatching { field.set(instance, field.get(originalContent.instanceNonNull())) }
+                    }
+                }
+                
+                instance
+            }.getOrElse { e ->
+                context.log.error("Failed to create new message content", e)
+                throw e
             }
 
-            // Create a new message content with updated metadata
-            val newMessageContent = originalContent.instanceNonNull().javaClass.dataBuilder {
-                from(originalContent.instanceNonNull())
-                set("mExternalContentMetadata", newExternalMetadata)
-            }
+            // Wrap in the MessageContent wrapper if needed
+            val wrappedContent = originalContent.javaClass.constructors.firstOrNull()
+                ?.newInstance(newMessageContent) ?: newMessageContent
 
-            // Create a new event with the chunk
+            // Create new event with the chunk
             val chunkEvent = SendMessageWithContentEvent(
                 destinations = originalEvent.destinations,
-                messageContent = newMessageContent.let { 
-                    originalContent.javaClass.getConstructor(originalContent.javaClass)
-                        .newInstance(it)
-                }
+                messageContent = wrappedContent as me.rhunk.snapenhance.common.data.MessageContent
             )
 
-            // Invoke the original send logic with the chunk
+            // Send the chunk
             chunkEvent.invokeOriginal()
             
         } catch (e: Exception) {
             context.log.error("Failed to send chunk $index", e)
-            throw e
+            // Don't rethrow - try to send remaining chunks
         }
     }
-
-    private data class Tuple4<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 }
