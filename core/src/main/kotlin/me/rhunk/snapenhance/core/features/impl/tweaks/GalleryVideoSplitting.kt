@@ -9,10 +9,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.data.ContentType
+import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.util.ktx.getObjectField
+import me.rhunk.snapenhance.core.messaging.MessageSender
 import java.io.File
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
@@ -22,7 +23,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     override fun init() {
         if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) return
 
-        context.log.info("Initializing Gallery Video Splitting using SendMessageWithContentEvent")
+        context.log.info("Initializing Gallery Video Splitting")
 
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
             if (isSplitting) return@subscribe
@@ -43,20 +44,16 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             // Check if it's a video
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
             
-            // Check if media is video type (field 3.3.5.2.5 should be 1 for video)
+            // Check if media is video type
             val isVideo = messageProtoReader.getVarInt(3, 3, 5, 2, 5) == 1L
             if (!isVideo) return@subscribe
 
-            // Get the media URI from external metadata
-            val externalMetadata = runCatching {
-                localMessageContent.instanceNonNull().getObjectField("mExternalContentMetadata")
-            }.getOrNull() ?: return@subscribe
-            
-            val contentUri = runCatching {
-                externalMetadata.getObjectField("contentUri")?.toString()
-            }.getOrNull() ?: return@subscribe
-            
+            // Get video URI from protobuf
+            val contentUriBytes = messageProtoReader.getByteArray(3, 3, 5, 1, 1, 2) ?: return@subscribe
+            val contentUri = String(contentUriBytes)
             val mediaUri = Uri.parse(contentUri)
+            
+            context.log.info("Found gallery video: $contentUri")
             
             // Check video duration
             val retriever = MediaMetadataRetriever()
@@ -70,7 +67,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 retriever.release()
             }
 
-            context.log.info("Gallery video duration: ${durationMs}ms")
+            context.log.info("Video duration: ${durationMs}ms")
 
             // Only split videos longer than 10 seconds
             if (durationMs <= 10000) {
@@ -133,10 +130,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         )
                     }
 
+                    // Get conversations to send to
+                    val conversations = event.destinations.conversations ?: emptyList()
+                    
                     // Send each chunk
                     for ((index, file) in outputFiles.withIndex()) {
-                        sendVideoChunk(event, externalMetadata, file, index)
-                        delay(800) // Delay between sends
+                        sendVideoChunk(conversations, messageProtoReader, file, index)
+                        delay(800)
                     }
                     
                     withContext(Dispatchers.Main) {
@@ -163,94 +163,77 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     }
 
     private suspend fun sendVideoChunk(
-        originalEvent: SendMessageWithContentEvent, 
-        originalExternalMetadata: Any,
-        videoFile: File, 
+        conversations: List<String>,
+        originalProto: ProtoReader,
+        videoFile: File,
         index: Int
     ) {
         try {
             val chunkUri = Uri.fromFile(videoFile)
             val retriever = MediaMetadataRetriever()
             
-            val (chunkDuration, width, height) = try {
+            val (chunkDuration, width, height, hasAudio) = try {
                 retriever.setDataSource(context.androidContext, chunkUri)
                 val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
                 val w = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
                 val h = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
-                Triple(duration, w, h)
+                val audio = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) == "yes"
+                Tuple4(duration, w, h, if (audio) 1L else 0L)
             } finally {
                 retriever.release()
             }
 
             context.log.info("Sending chunk $index: ${chunkDuration}ms, ${width}x${height}")
 
-            // Clone the external metadata with updated values
-            val newExternalMetadata = runCatching {
-                val metadataClass = originalExternalMetadata.javaClass
-                val constructor = metadataClass.constructors.firstOrNull()
-                    ?: throw IllegalStateException("No constructor found")
-                
-                val instance = constructor.newInstance()
-                
-                // Copy fields using reflection
-                metadataClass.declaredFields.forEach { field ->
-                    field.isAccessible = true
-                    when (field.name) {
-                        "contentUri", "mContentUri" -> field.set(instance, chunkUri.toString())
-                        "durationMs", "mDurationMs" -> field.set(instance, chunkDuration)
-                        "width", "mWidth" -> field.set(instance, width)
-                        "height", "mHeight" -> field.set(instance, height)
-                        else -> {
-                            // Copy other fields as-is
-                            runCatching { field.set(instance, field.get(originalExternalMetadata)) }
-                        }
-                    }
+            // Build new protobuf with updated video chunk
+            val newProtoContent = ProtoEditor(originalProto.buffer).apply {
+                // Update the video URI
+                edit(3, 3, 5, 1, 1) {
+                    remove(2)
+                    addString(2, chunkUri.toString())
                 }
                 
-                instance
-            }.getOrElse { e ->
-                context.log.error("Failed to clone metadata", e)
-                throw e
-            }
-
-            // Create new message content with updated metadata
-            val originalContent = originalEvent.messageContent
-            val newMessageContent = runCatching {
-                val contentClass = originalContent.javaClass
-                val instance = contentClass.newInstance()
-                
-                // Copy all fields from original
-                contentClass.declaredFields.forEach { field ->
-                    field.isAccessible = true
-                    if (field.name == "mExternalContentMetadata") {
-                        field.set(instance, newExternalMetadata)
-                    } else {
-                        runCatching { field.set(instance, field.get(originalContent.instanceNonNull())) }
-                    }
+                // Update video metadata (width, height, duration)
+                edit(3, 3, 5, 1, 1) {
+                    remove(15) // duration
+                    addVarInt(15, chunkDuration)
+                    remove(11) // width  
+                    addVarInt(11, width.toLong())
+                    remove(12) // height
+                    addVarInt(12, height.toLong())
                 }
                 
-                instance
-            }.getOrElse { e ->
-                context.log.error("Failed to create new message content", e)
-                throw e
+                // Update has audio flag
+                edit(3, 3, 5, 2) {
+                    remove(5)
+                    addVarInt(5, hasAudio)
+                }
+            }.toByteArray()
+
+            // Send using MessageSender
+            for (conversationId in conversations) {
+                context.log.info("Sending chunk $index to conversation $conversationId")
+                
+                MessageSender.sendContentMessage(
+                    context = context,
+                    conversationId = conversationId,
+                    messageContent = newProtoContent,
+                    contentType = ContentType.EXTERNAL_MEDIA
+                )
+                
+                delay(200) // Small delay between conversations
             }
-
-            // Wrap in the MessageContent wrapper if needed
-            val wrappedContent = originalContent.javaClass.constructors.firstOrNull()
-                ?.newInstance(newMessageContent) ?: newMessageContent
-
-            // Create new event with the chunk
-            val chunkEvent = SendMessageWithContentEvent(
-                destinations = originalEvent.destinations,
-                messageContent = wrappedContent as me.rhunk.snapenhance.common.data.MessageContent
-            )
-
-            // Send the chunk
-            chunkEvent.invokeOriginal()
             
         } catch (e: Exception) {
             context.log.error("Failed to send chunk $index", e)
             // Don't rethrow - try to send remaining chunks
         }
     }
+
+    private data class Tuple4<A, B, C, D>(
+        val first: A, 
+        val second: B, 
+        val third: C, 
+        val fourth: D
+    )
 }
