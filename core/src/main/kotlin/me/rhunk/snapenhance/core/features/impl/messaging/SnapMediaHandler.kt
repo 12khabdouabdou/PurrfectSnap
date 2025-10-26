@@ -2,15 +2,17 @@ package me.rhunk.snapenhance.core.features.impl.messaging
 
 import android.graphics.Bitmap
 import android.net.Uri
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.ModContext
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * Gère la capture et l'envoi de médias Snap (photos et vidéos) pour le système de batch
@@ -50,14 +52,17 @@ class SnapMediaHandler(private val context: ModContext) {
         hookMediaCapture()
     }
 
-    /** Hook le système de capture de média de Snapchat */
+    /**
+     * Hook le système de capture de média de Snapchat
+     */
     private fun hookMediaCapture() {
         try {
-            // Hook CameraController pour capturer les médias
+            // Hook la classe de capture de caméra
             findClass("com.snapchat.client.camera.CameraController")?.apply {
                 hook("capturePhoto", HookStage.AFTER) { param ->
                     try {
-                        val photoData = param.getResult<Any>()
+                        // FIX: Removed generic parameter for Xposed compatibility
+                        val photoData = param.getResult()
                         context.log.info("Photo captured, extracting data...")
                         if (photoData != null) extractPhotoData(photoData)
                     } catch (e: Exception) {
@@ -67,7 +72,8 @@ class SnapMediaHandler(private val context: ModContext) {
 
                 hook("captureVideo", HookStage.AFTER) { param ->
                     try {
-                        val videoData = param.getResult<Any>()
+                        // FIX: Removed generic parameter for Xposed compatibility
+                        val videoData = param.getResult()
                         context.log.info("Video captured, extracting data...")
                         if (videoData != null) extractVideoData(videoData)
                     } catch (e: Exception) {
@@ -76,7 +82,7 @@ class SnapMediaHandler(private val context: ModContext) {
                 }
             }
 
-            // Hook SnapCreationController pour différents types de médias
+            // Hook le SnapCreationController pour capturer tous les types de médias
             findClass("com.snapchat.client.messaging.SnapCreationController")?.apply {
                 hook("onMediaReady", HookStage.AFTER) { param ->
                     try {
@@ -89,7 +95,7 @@ class SnapMediaHandler(private val context: ModContext) {
                 }
             }
 
-            // Hook SendToViewModel pour intercepter les envois batch
+            // Hook SendToViewModel pour intercepter avant l'envoi
             findClass("com.snapchat.client.messaging.SendToViewModel")?.apply {
                 hook("prepareMediaForSend", HookStage.BEFORE) { param ->
                     try {
@@ -98,7 +104,9 @@ class SnapMediaHandler(private val context: ModContext) {
 
                         context.log.info("Preparing media for send to ${recipients.size} recipients")
 
+                        // Si c'est un batch send, on intercepte
                         if (recipients.size > context.config.messaging.batchFriendSelector.batchSize.get()) {
+                            // Sauvegarder les données média
                             storeMediaForBatch(mediaData)
                         }
                     } catch (e: Exception) {
@@ -114,20 +122,31 @@ class SnapMediaHandler(private val context: ModContext) {
 
     private fun findClass(className: String) = try {
         context.androidContext.classLoader.loadClass(className)
-    } catch (_: Exception) {
+    } catch (e: Exception) {
         null
     }
 
-    /** Extrait les données d'une photo capturée */
+    /**
+     * Extrait les données d'une photo capturée
+     */
     private fun extractPhotoData(photoData: Any) {
         try {
-            val cls = photoData.javaClass
-            val bitmap = cls.methods.find { it.name == "getBitmap" }?.invoke(photoData) as? Bitmap
-            val filePath = cls.methods.find { it.name == "getFilePath" || it.name == "getPath" }?.invoke(photoData)?.toString()
-            val width = cls.methods.find { it.name == "getWidth" }?.invoke(photoData) as? Int
-            val height = cls.methods.find { it.name == "getHeight" }?.invoke(photoData) as? Int
+            val photoClass = photoData.javaClass
+
+            // Extraire le bitmap ou le chemin du fichier
+            val bitmap = photoClass.methods.find {
+                it.name == "getBitmap" || it.returnType == Bitmap::class.java
+            }?.invoke(photoData) as? Bitmap
+
+            val filePath = photoClass.methods.find {
+                it.name == "getFilePath" || it.name == "getPath"
+            }?.invoke(photoData)?.toString()
+
+            val width = photoClass.methods.find { it.name == "getWidth" }?.invoke(photoData) as? Int
+            val height = photoClass.methods.find { it.name == "getHeight" }?.invoke(photoData) as? Int
 
             if (bitmap != null) {
+                // Sauvegarder le bitmap dans un fichier temporaire
                 val tempFile = saveBitmapToTemp(bitmap)
                 capturedMedia = SnapMediaData(
                     mediaPath = tempFile.absolutePath,
@@ -153,18 +172,30 @@ class SnapMediaHandler(private val context: ModContext) {
         }
     }
 
-    /** Extrait les données d'une vidéo capturée */
+    /**
+     * Extrait les données d'une vidéo capturée
+     */
     private fun extractVideoData(videoData: Any) {
         try {
-            val cls = videoData.javaClass
-            val filePath = cls.methods.find { it.name.contains("Path", ignoreCase = true) }?.invoke(videoData)?.toString()
-            val duration = cls.methods.find { it.name.contains("Duration", ignoreCase = true) }?.invoke(videoData) as? Long
-            val width = cls.methods.find { it.name == "getWidth" }?.invoke(videoData) as? Int
-            val height = cls.methods.find { it.name == "getHeight" }?.invoke(videoData) as? Int
+            val videoClass = videoData.javaClass
+
+            val filePath = videoClass.methods.find {
+                it.name == "getVideoPath" || it.name == "getFilePath" || it.name == "getPath"
+            }?.invoke(videoData)?.toString()
+
+            val duration = videoClass.methods.find {
+                it.name == "getDuration" || it.name == "getDurationMs"
+            }?.invoke(videoData) as? Long
+
+            val width = videoClass.methods.find { it.name == "getWidth" }?.invoke(videoData) as? Int
+            val height = videoClass.methods.find { it.name == "getHeight" }?.invoke(videoData) as? Int
 
             if (filePath != null) {
                 val file = File(filePath)
+
+                // Générer une miniature pour la vidéo
                 val thumbnailPath = generateVideoThumbnail(filePath)
+
                 capturedMedia = SnapMediaData(
                     mediaPath = filePath,
                     mediaType = MediaType.VIDEO,
@@ -182,176 +213,381 @@ class SnapMediaHandler(private val context: ModContext) {
         }
     }
 
-    /** Gère les objets média génériques */
+    /**
+     * Traite un objet média générique de Snapchat
+     */
     private fun processMediaObject(mediaObject: Any) {
         try {
-            val cls = mediaObject.javaClass
-            val mediaTypeName = cls.methods.find { it.name.contains("Type", ignoreCase = true) }
-                ?.invoke(mediaObject)?.toString() ?: "UNKNOWN"
+            val mediaClass = mediaObject.javaClass
+
+            // Déterminer le type de média
+            val mediaTypeField = mediaClass.methods.find {
+                it.name == "getMediaType" || it.name == "getType"
+            }?.invoke(mediaObject)
+
+            val mediaTypeName = mediaTypeField?.toString() ?: "UNKNOWN"
 
             when {
-                mediaTypeName.contains("VIDEO", true) -> extractVideoData(mediaObject)
-                mediaTypeName.contains("PHOTO", true) || mediaTypeName.contains("IMAGE", true) -> extractPhotoData(mediaObject)
-                mediaTypeName.contains("BOOMERANG", true) -> extractBoomerangData(mediaObject)
-                mediaTypeName.contains("DUAL", true) -> extractDualCameraData(mediaObject)
-                else -> context.log.warn("Unknown media type: $mediaTypeName")
+                mediaTypeName.contains("VIDEO", ignoreCase = true) -> {
+                    extractVideoData(mediaObject)
+                }
+                mediaTypeName.contains("PHOTO", ignoreCase = true) ||
+                mediaTypeName.contains("IMAGE", ignoreCase = true) -> {
+                    extractPhotoData(mediaObject)
+                }
+                mediaTypeName.contains("BOOMERANG", ignoreCase = true) -> {
+                    extractBoomerangData(mediaObject)
+                }
+                mediaTypeName.contains("DUAL", ignoreCase = true) -> {
+                    extractDualCameraData(mediaObject)
+                }
+                else -> {
+                    context.log.warn("Unknown media type: $mediaTypeName")
+                }
             }
         } catch (e: Exception) {
             context.log.error("Failed to process media object", e)
         }
     }
 
-    private fun extractBoomerangData(data: Any) = extractSimpleMedia(data, MediaType.BOOMERANG)
-    private fun extractDualCameraData(data: Any) = extractSimpleMedia(data, MediaType.DUAL_CAMERA)
-
-    private fun extractSimpleMedia(data: Any, type: MediaType) {
+    /**
+     * Extrait les données d'un Boomerang
+     */
+    private fun extractBoomerangData(boomerangData: Any) {
         try {
-            val filePath = data.javaClass.methods.find { it.name.contains("Path", true) }?.invoke(data)?.toString()
+            val boomerangClass = boomerangData.javaClass
+
+            val filePath = boomerangClass.methods.find {
+                it.name.contains("Path", ignoreCase = true)
+            }?.invoke(boomerangData)?.toString()
+
             if (filePath != null) {
                 val file = File(filePath)
-                capturedMedia = SnapMediaData(filePath, type, fileSize = file.length())
-                context.log.info("$type data extracted: $capturedMedia")
+                capturedMedia = SnapMediaData(
+                    mediaPath = filePath,
+                    mediaType = MediaType.BOOMERANG,
+                    fileSize = file.length()
+                )
             }
+
+            context.log.info("Boomerang data extracted: $capturedMedia")
         } catch (e: Exception) {
-            context.log.error("Failed to extract $type data", e)
+            context.log.error("Failed to extract boomerang data", e)
         }
     }
 
+    /**
+     * Extrait les données d'une capture dual camera
+     */
+    private fun extractDualCameraData(dualData: Any) {
+        try {
+            val dualClass = dualData.javaClass
+
+            val filePath = dualClass.methods.find {
+                it.name.contains("Path", ignoreCase = true)
+            }?.invoke(dualData)?.toString()
+
+            if (filePath != null) {
+                val file = File(filePath)
+                capturedMedia = SnapMediaData(
+                    mediaPath = filePath,
+                    mediaType = MediaType.DUAL_CAMERA,
+                    fileSize = file.length()
+                )
+            }
+
+            context.log.info("Dual camera data extracted: $capturedMedia")
+        } catch (e: Exception) {
+            context.log.error("Failed to extract dual camera data", e)
+        }
+    }
+
+    /**
+     * Sauvegarde un bitmap dans un fichier temporaire
+     */
     private fun saveBitmapToTemp(bitmap: Bitmap): File {
-        val file = File(tempMediaDir, "snap_${System.currentTimeMillis()}.jpg")
-        FileOutputStream(file).use { out -> bitmap.compress(Bitmap.CompressFormat.JPEG, 95, out) }
-        return file
+        val tempFile = File(tempMediaDir, "snap_${System.currentTimeMillis()}.jpg")
+        FileOutputStream(tempFile).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, out)
+        }
+        return tempFile
     }
 
-    private fun generateVideoThumbnail(videoPath: String): String? = try {
-        val retriever = android.media.MediaMetadataRetriever()
-        retriever.setDataSource(videoPath)
-        val bitmap = retriever.getFrameAtTime(0)
-        retriever.release()
+    /**
+     * Génère une miniature pour une vidéo
+     */
+    private fun generateVideoThumbnail(videoPath: String): String? {
+        return try {
+            val retriever = android.media.MediaMetadataRetriever()
+            retriever.setDataSource(videoPath)
+            val bitmap = retriever.getFrameAtTime(0)
+            retriever.release()
 
-        if (bitmap != null) {
-            val thumbFile = File(tempMediaDir, "thumb_${System.currentTimeMillis()}.jpg")
-            FileOutputStream(thumbFile).use { out -> bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out) }
-            thumbFile.absolutePath
-        } else null
-    } catch (e: Exception) {
-        context.log.error("Failed to generate video thumbnail", e)
-        null
+            if (bitmap != null) {
+                val thumbFile = File(tempMediaDir, "thumb_${System.currentTimeMillis()}.jpg")
+                FileOutputStream(thumbFile).use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                }
+                thumbFile.absolutePath
+            } else null
+        } catch (e: Exception) {
+            context.log.error("Failed to generate video thumbnail", e)
+            null
+        }
     }
 
+    /**
+     * Stocke les données média pour une session de batch
+     */
     private fun storeMediaForBatch(mediaData: Any) {
         try {
-            capturedMedia?.let {
-                val source = File(it.mediaPath)
-                val dest = File(tempMediaDir, "batch_${System.currentTimeMillis()}_${source.name}")
-                copyFile(source, dest)
-                capturedMedia = it.copy(mediaPath = dest.absolutePath)
-                context.log.info("Media stored for batch: ${dest.absolutePath}")
+            // Copier le fichier média vers un emplacement permanent pour la session
+            if (capturedMedia != null) {
+                val sourceFile = File(capturedMedia!!.mediaPath)
+                val destFile = File(tempMediaDir, "batch_${System.currentTimeMillis()}_${sourceFile.name}")
+
+                copyFile(sourceFile, destFile)
+
+                capturedMedia = capturedMedia!!.copy(mediaPath = destFile.absolutePath)
+                context.log.info("Media stored for batch: ${destFile.absolutePath}")
             }
         } catch (e: Exception) {
             context.log.error("Failed to store media for batch", e)
         }
     }
 
+    /**
+     * Copie un fichier
+     */
     private fun copyFile(source: File, dest: File) {
         FileInputStream(source).use { input ->
-            FileOutputStream(dest).use { output -> input.copyTo(output) }
+            FileOutputStream(dest).use { output ->
+                input.copyTo(output)
+            }
         }
     }
 
+    /**
+     * Récupère les données du média capturé
+     */
     fun getCapturedMedia(): SnapMediaData? = capturedMedia
-    fun clearCapturedMedia() { capturedMedia = null }
 
-    /** Envoie un snap (photo ou vidéo) */
+    /**
+     * Réinitialise les données du média capturé
+     */
+    fun clearCapturedMedia() {
+        capturedMedia = null
+    }
+
+    /**
+     * Envoie un snap (photo ou vidéo) à une liste de conversations
+     * FIX: Must be a suspend function to call the suspend sendPhotoSnap/sendVideoSnap methods.
+     */
     suspend fun sendSnapToConversations(
         conversationIds: List<SnapUUID>,
         mediaData: SnapMediaData,
         onProgress: ((Int, Int) -> Unit)? = null
-    ): SendResult = withContext(Dispatchers.IO) {
-        try {
+    ): SendResult {
+        return try {
             context.log.info("Sending ${mediaData.mediaType} snap to ${conversationIds.size} conversations")
 
-            when (mediaData.mediaType) {
-                MediaType.VIDEO, MediaType.BOOMERANG -> sendVideoSnap(conversationIds, mediaData, onProgress)
-                MediaType.PHOTO, MediaType.DUAL_CAMERA -> sendPhotoSnap(conversationIds, mediaData, onProgress)
+            // Appeler la méthode native de Snapchat pour envoyer le snap
+            val sendClass = findClass("com.snapchat.client.messaging.SendController")
+            val sendMethod = sendClass?.methods?.find { method ->
+                method.name == "sendSnap" ||
+                method.name == "sendMedia" ||
+                method.name == "sendSnapToConversations"
             }
+
+            if (sendMethod == null) {
+                return SendResult.Failure("Send method not found")
+            }
+
+            // Créer l'objet média pour Snapchat
+            val snapMediaObject = createSnapMediaObject(mediaData)
+
+            // Invoquer la méthode d'envoi
+            val result = when (mediaData.mediaType) {
+                MediaType.VIDEO, MediaType.BOOMERANG -> {
+                    sendVideoSnap(conversationIds, mediaData, onProgress)
+                }
+                MediaType.PHOTO, MediaType.DUAL_CAMERA -> {
+                    sendPhotoSnap(conversationIds, mediaData, onProgress)
+                }
+            }
+
+            result
+
         } catch (e: Exception) {
             context.log.error("Failed to send snap", e)
             SendResult.Failure(e.message ?: "Unknown error")
         }
     }
 
+    /**
+     * Envoie un snap photo
+     */
     private suspend fun sendPhotoSnap(
         conversationIds: List<SnapUUID>,
         mediaData: SnapMediaData,
         onProgress: ((Int, Int) -> Unit)?
     ): SendResult = withContext(Dispatchers.IO) {
-        try {
+        return@withContext try {
             val sendClass = findClass("com.snapchat.client.messaging.SendController")
-            val sendInstance = getSendControllerInstance() ?: return@withContext SendResult.Failure("SendController instance not found")
+            val sendInstance = getSendControllerInstance()
+
+            if (sendInstance == null) {
+                return@withContext SendResult.Failure("SendController instance not found")
+            }
+
+            // Préparer les paramètres d'envoi
             val file = File(mediaData.mediaPath)
-            if (!file.exists()) return@withContext SendResult.Failure("Media file not found: ${mediaData.mediaPath}")
+            if (!file.exists()) {
+                return@withContext SendResult.Failure("Media file not found: ${mediaData.mediaPath}")
+            }
 
-            val ids = conversationIds.map { it.toString() }
-            val sendMethod = sendClass?.methods?.find { it.name == "sendPhotoSnap" || it.name == "sendImageSnap" }
-            val result = sendMethod?.invoke(sendInstance, ids, file.absolutePath, mediaData.width, mediaData.height)
+            // Convertir les SnapUUID en format Snapchat natif
+            val nativeConversationIds = conversationIds.map { it.toString() }
 
-            if (result != null && isSuccessResult(result)) SendResult.Success(ids.size)
-            else SendResult.Failure("Send returned unsuccessful result")
+            // Appeler l'API native de Snapchat
+            val sendMethod = sendClass?.methods?.find {
+                it.name == "sendPhotoSnap" || it.name == "sendImageSnap"
+            }
+
+            val result = sendMethod?.invoke(
+                sendInstance,
+                nativeConversationIds,
+                file.absolutePath,
+                mediaData.width,
+                mediaData.height
+            )
+
+            if (result != null && isSuccessResult(result)) {
+                SendResult.Success(conversationIds.size)
+            } else {
+                SendResult.Failure("Send returned unsuccessful result")
+            }
+
         } catch (e: Exception) {
             context.log.error("Failed to send photo snap", e)
             SendResult.Failure(e.message ?: "Unknown error")
         }
     }
 
+    /**
+     * Envoie un snap vidéo
+     */
     private suspend fun sendVideoSnap(
         conversationIds: List<SnapUUID>,
         mediaData: SnapMediaData,
         onProgress: ((Int, Int) -> Unit)?
     ): SendResult = withContext(Dispatchers.IO) {
-        try {
+        return@withContext try {
             val sendClass = findClass("com.snapchat.client.messaging.SendController")
-            val sendInstance = getSendControllerInstance() ?: return@withContext SendResult.Failure("SendController instance not found")
+            val sendInstance = getSendControllerInstance()
+
+            if (sendInstance == null) {
+                return@withContext SendResult.Failure("SendController instance not found")
+            }
+
             val file = File(mediaData.mediaPath)
-            if (!file.exists()) return@withContext SendResult.Failure("Media file not found: ${mediaData.mediaPath}")
+            if (!file.exists()) {
+                return@withContext SendResult.Failure("Media file not found: ${mediaData.mediaPath}")
+            }
 
-            val ids = conversationIds.map { it.toString() }
-            val sendMethod = sendClass?.methods?.find { it.name == "sendVideoSnap" || it.name == "sendVideo" }
-            val result = sendMethod?.invoke(sendInstance, ids, file.absolutePath, mediaData.duration, mediaData.width, mediaData.height)
+            val nativeConversationIds = conversationIds.map { it.toString() }
 
-            if (result != null && isSuccessResult(result)) SendResult.Success(ids.size)
-            else SendResult.Failure("Send returned unsuccessful result")
+            val sendMethod = sendClass?.methods?.find {
+                it.name == "sendVideoSnap" || it.name == "sendVideo"
+            }
+
+            val result = sendMethod?.invoke(
+                sendInstance,
+                nativeConversationIds,
+                file.absolutePath,
+                mediaData.duration,
+                mediaData.width,
+                mediaData.height
+            )
+
+            if (result != null && isSuccessResult(result)) {
+                SendResult.Success(conversationIds.size)
+            } else {
+                SendResult.Failure("Send returned unsuccessful result")
+            }
+
         } catch (e: Exception) {
             context.log.error("Failed to send video snap", e)
             SendResult.Failure(e.message ?: "Unknown error")
         }
     }
 
-    private fun getSendControllerInstance(): Any? = try {
-        val cls = findClass("com.snapchat.client.messaging.SendController")
-        val method = cls?.methods?.find { it.name == "getInstance" || it.name == "get" }
-        method?.invoke(null)
-    } catch (e: Exception) {
-        context.log.error("Failed to get SendController instance", e)
-        null
-    }
+    /**
+     * Crée un objet média Snapchat à partir de SnapMediaData
+     */
+    private fun createSnapMediaObject(mediaData: SnapMediaData): Any? {
+        return try {
+            val mediaClass = findClass("com.snapchat.client.messaging.SnapMedia")
+            val constructor = mediaClass?.constructors?.firstOrNull()
 
-    private fun isSuccessResult(result: Any): Boolean = try {
-        when (result) {
-            is Boolean -> result
-            is Number -> result.toInt() >= 0
-            else -> result.javaClass.methods.find { it.name == "isSuccess" || it.name == "isSuccessful" }
-                ?.invoke(result) as? Boolean ?: false
+            constructor?.newInstance(
+                mediaData.mediaPath,
+                mediaData.mediaType.name,
+                mediaData.duration,
+                mediaData.width,
+                mediaData.height
+            )
+        } catch (e: Exception) {
+            context.log.error("Failed to create snap media object", e)
+            null
         }
-    } catch (_: Exception) {
-        false
     }
 
+    /**
+     * Récupère l'instance du SendController
+     */
+    private fun getSendControllerInstance(): Any? {
+        return try {
+            val sendClass = findClass("com.snapchat.client.messaging.SendController")
+            val instanceMethod = sendClass?.methods?.find {
+                it.name == "getInstance" || it.name == "get"
+            }
+            instanceMethod?.invoke(null)
+        } catch (e: Exception) {
+            context.log.error("Failed to get SendController instance", e)
+            null
+        }
+    }
+
+    /**
+     * Vérifie si le résultat est un succès
+     */
+    private fun isSuccessResult(result: Any): Boolean {
+        return try {
+            when (result) {
+                is Boolean -> result
+                is Number -> result.toInt() == 0 || result.toInt() > 0
+                else -> {
+                    // Essayer de trouver une méthode isSuccess()
+                    val method = result.javaClass.methods.find {
+                        it.name == "isSuccess" || it.name == "isSuccessful"
+                    }
+                    method?.invoke(result) as? Boolean ?: false
+                }
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Nettoie les fichiers temporaires
+     */
     fun cleanupTempFiles(olderThanMs: Long = 24 * 60 * 60 * 1000L) {
         try {
-            val cutoff = System.currentTimeMillis() - olderThanMs
+            val cutoffTime = System.currentTimeMillis() - olderThanMs
             tempMediaDir.listFiles()?.forEach { file ->
-                if (file.lastModified() < cutoff) {
+                if (file.lastModified() < cutoffTime) {
                     file.delete()
                     context.log.verbose("Deleted old temp file: ${file.name}")
                 }
