@@ -10,10 +10,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.util.dataBuilder
+import me.rhunk.snapenhance.core.util.DataClassBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
+import me.rhunk.snapenhance.core.util.ktx.setObjectField
 import java.io.File
 import java.lang.reflect.Method
 
@@ -41,7 +42,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@hook
             }
 
-            // Check if already splitting to prevent concurrent operations
             if (!splittingMutex.tryLock()) {
                 context.log.verbose("GalleryVideoSplitting: Already processing a video, skipping")
                 return@hook
@@ -67,15 +67,14 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 val itemType = item.getObjectField("type")?.toString()
 
                 if (itemType == "VIDEO") {
-                    // Check video duration first before cancelling
                     val durationMs = (item.getObjectField("durationMs") as? Number)?.toLong() ?: 0L
                     
                     if (durationMs <= maxSegmentDurationMs) {
                         splittingMutex.unlock()
-                        return@hook // Video is already short enough
+                        return@hook
                     }
 
-                    param.setResult(null) // Cancel original send
+                    param.setResult(null)
 
                     context.coroutineScope.launch {
                         try {
@@ -116,7 +115,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val mediaUri = Uri.parse(contentUriStr)
             val cachedVideo = File(tempDir, "input.mp4")
 
-            // Copy video to cache
             withContext(Dispatchers.IO) {
                 context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
                     cachedVideo.outputStream().use { output ->
@@ -125,7 +123,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 } ?: throw IllegalStateException("Failed to open input stream")
             }
 
-            // Check if FFmpegKit is available
             val outputFiles = try {
                 splitVideoWithFFmpeg(cachedVideo, tempDir)
             } catch (e: ClassNotFoundException) {
@@ -196,8 +193,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     }
 
     private fun splitVideoManually(input: File, outputDir: File): List<File> {
-        // Fallback: Just return the original file if FFmpeg is not available
-        // In a real implementation, you might use MediaCodec/MediaMuxer
         context.log.warn("GalleryVideoSplitting: Manual splitting not implemented, returning original")
         return emptyList()
     }
@@ -231,7 +226,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
                 )?.toDoubleOrNull() ?: 1920.0
 
-                // Create new item - using reflection to copy and modify fields
                 val newItem = createModifiedItem(
                     originalItem,
                     chunkUri.toString(),
@@ -240,7 +234,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     chunkHeight
                 )
 
-                // Create new media item
                 val newMediaItem = createModifiedMediaItem(
                     originalMediaItem,
                     newItem,
@@ -251,7 +244,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     sendMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
                 }
 
-                delay(500) // Delay between sends
+                delay(500)
             } finally {
                 retriever.release()
             }
@@ -264,29 +257,29 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         durationMs: Double,
         width: Double,
         height: Double
-    ): Any {
-        return originalItem.dataBuilder {
-            this.set("type", originalItem.getObjectField("type") ?: "VIDEO")
-            this.set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
-            this.set("contentUri", contentUri)
-            this.set("durationMs", durationMs)
-            this.set("width", width)
-            this.set("height", height)
-            this.from("itemId", new = true) {
-                this.set("itemId", "${contentUri}_${System.currentTimeMillis()}")
-            }
-        } ?: throw IllegalStateException("Failed to create modified item")
+    ): Any? {
+        val builder = DataClassBuilder(originalItem)
+        builder.set("type", originalItem.getObjectField("type") ?: "VIDEO")
+        builder.set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
+        builder.set("contentUri", contentUri)
+        builder.set("durationMs", durationMs)
+        builder.set("width", width)
+        builder.set("height", height)
+        builder.from("itemId", new = true) { itemIdBuilder ->
+            itemIdBuilder.set("itemId", "${contentUri}_${System.currentTimeMillis()}")
+        }
+        return builder.build()
     }
 
     private fun createModifiedMediaItem(
         originalMediaItem: Any,
-        newItem: Any,
+        newItem: Any?,
         order: Double
-    ): Any {
-        return originalMediaItem.dataBuilder {
-            this.set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
-            this.set("item", newItem)
-            this.set("order", order)
-        } ?: throw IllegalStateException("Failed to create modified media item")
+    ): Any? {
+        val builder = DataClassBuilder(originalMediaItem)
+        builder.set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
+        builder.set("item", newItem)
+        builder.set("order", order)
+        return builder.build()
     }
 }
