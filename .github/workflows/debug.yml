@@ -20,14 +20,14 @@ jobs:
       - name: Generate Keystore
         run: |
           keytool -genkeypair \
-            -alias purrfectsnap \
+            -alias abdenour \
             -keyalg RSA \
             -keysize 2048 \
             -validity 10000 \
             -storetype JKS \
             -keystore purrfectsnap.jks \
-            -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
-            -keypass "${{ secrets.KEY_PASSWORD }}" \
+            -storepass abdenour \
+            -keypass abdenour \
             -dname "CN=PurrfectSnap, OU=Dev, O=PurrfectSnap, L=Internet, S=NA, C=US"
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
