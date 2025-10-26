@@ -243,24 +243,21 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
                 )?.toDoubleOrNull() ?: 1920.0
 
-                // Create new item using dataBuilder with proper syntax
-                val newItem = dataBuilder(originalItem.javaClass) {
-                    set("type", originalItem.getObjectField("type"))
-                    set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
-                    set("contentUri", chunkUri.toString())
-                    set("durationMs", chunkDuration.toDouble())
-                    set("width", chunkWidth)
-                    set("height", chunkHeight)
-                    from("itemId", new = true) {
-                        set("itemId", "${chunkUri}_${System.currentTimeMillis()}")
-                    }
-                }
+                // Create new item - using reflection to copy and modify fields
+                val newItem = createModifiedItem(
+                    originalItem,
+                    chunkUri.toString(),
+                    chunkDuration.toDouble(),
+                    chunkWidth,
+                    chunkHeight
+                )
 
-                val newMediaItem = dataBuilder(originalMediaItem.javaClass) {
-                    set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
-                    set("item", newItem)
-                    set("order", index.toDouble())
-                }
+                // Create new media item
+                val newMediaItem = createModifiedMediaItem(
+                    originalMediaItem,
+                    newItem,
+                    index.toDouble()
+                )
 
                 withContext(Dispatchers.Main) {
                     sendMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
@@ -271,5 +268,37 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 retriever.release()
             }
         }
+    }
+
+    private fun createModifiedItem(
+        originalItem: Any,
+        contentUri: String,
+        durationMs: Double,
+        width: Double,
+        height: Double
+    ): Any {
+        return originalItem.dataBuilder {
+            set("type", originalItem.getObjectField("type"))
+            set("encryptionInfo", originalItem.getObjectField("encryptionInfo"))
+            set("contentUri", contentUri)
+            set("durationMs", durationMs)
+            set("width", width)
+            set("height", height)
+            from("itemId", new = true) {
+                set("itemId", "${contentUri}_${System.currentTimeMillis()}")
+            }
+        }!!
+    }
+
+    private fun createModifiedMediaItem(
+        originalMediaItem: Any,
+        newItem: Any,
+        order: Double
+    ): Any {
+        return originalMediaItem.dataBuilder {
+            set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
+            set("item", newItem)
+            set("order", order)
+        }!!
     }
 }
