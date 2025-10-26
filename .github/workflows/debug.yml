@@ -1,10 +1,10 @@
 name: Build & Publish Release APK
-workflow_dispatch:
+
 on:
   push:
     tags:
       - '*'
-
+workflow_dispatch:
 jobs:
   Gradle:
     runs-on: ubuntu-latest
