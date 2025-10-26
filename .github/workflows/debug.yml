@@ -1,5 +1,5 @@
 name: Build & Publish Release APK
-
+workflow_dispatch:
 on:
   push:
     tags:
