@@ -29,6 +29,9 @@ jobs:
             -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
             -keypass "${{ secrets.KEY_PASSWORD }}" \
             -dname "CN=PurrfectSnap, OU=Dev, O=PurrfectSnap, L=Internet, S=NA, C=US"
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
       - name: Convert Keystore to Base64
         run: |
