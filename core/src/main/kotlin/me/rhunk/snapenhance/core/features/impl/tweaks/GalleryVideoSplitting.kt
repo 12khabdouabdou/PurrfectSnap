@@ -13,14 +13,9 @@ import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
-import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.features.impl.messaging.Messaging
-import me.rhunk.snapenhance.core.util.CallbackBuilder
-import me.rhunk.snapenhance.core.util.ktx.getObjectField
-import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
-import me.rhunk.snapenhance.mapper.impl.CallbackMapper
+import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
 import java.io.File
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
@@ -35,7 +30,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
             if (isSplitting) return@subscribe
             
-            // Skip if sending to stories only
+            // Skip if sending to stories only (same as SendOverride)
             if (event.destinations.stories?.isNotEmpty() == true && 
                 event.destinations.conversations?.isEmpty() == true) {
                 return@subscribe
@@ -43,47 +38,53 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             val localMessageContent = event.messageContent
             
-            // Only process EXTERNAL_MEDIA (gallery videos)
-            if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA) {
+            // Only process EXTERNAL_MEDIA (same as SendOverride)
+            if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
+                localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) {
                 return@subscribe
             }
 
+            // Prevent story replies (same as SendOverride)
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
-            
-            // Skip story replies
             if (messageProtoReader.contains(7)) return@subscribe
 
-            // Check if it's a video by looking at the media type
+            // Check if it's a video
             val mediaType = messageProtoReader.getVarInt(3, 3, 5, 2, 5)
-            val hasVideo = mediaType == 1L // 1 = video with sound or video only
+            if (mediaType != 1L) return@subscribe // 1 = video
 
-            if (!hasVideo) return@subscribe
-
-            // Get video duration to check if splitting is needed
+            // Get video duration
             val videoDurationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: return@subscribe
             
-            context.log.verbose("Video duration: ${videoDurationMs}ms")
-            
             // Only split if longer than 10 seconds
-            if (videoDurationMs <= 10000) {
-                context.log.verbose("Video is under 10 seconds, no splitting needed")
+            if (videoDurationMs <= 10000) return@subscribe
+
+            // Check for multiple media items (same check as SendOverride)
+            if ((messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
                 return@subscribe
             }
 
-            // Cancel the original send
+            // Cancel the original send (same as SendOverride)
             event.canceled = true
 
             context.coroutineScope.launch {
                 isSplitting = true
                 try {
-                    splitAndSendVideo(event, messageProtoReader, videoDurationMs)
+                    if (splitAndSendVideo(event, messageProtoReader, videoDurationMs)) {
+                        // Successfully split and sent
+                    } else {
+                        // Failed, send original
+                        withContext(Dispatchers.Main) {
+                            event.invokeOriginal()
+                        }
+                    }
                 } catch (e: Exception) {
-                    context.log.error("Failed to split and send video", e)
+                    context.log.error("Failed to split video", e)
                     withContext(Dispatchers.Main) {
                         context.inAppOverlay.showStatusToast(
                             Icons.Default.Info,
-                            "Failed to split video: ${e.message}"
+                            "Failed to split video, sending original"
                         )
+                        event.invokeOriginal()
                     }
                 } finally {
                     isSplitting = false
@@ -96,7 +97,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         event: SendMessageWithContentEvent,
         messageProtoReader: ProtoReader,
         videoDurationMs: Long
-    ) {
+    ): Boolean {
         val tempDir = File(
             context.mainActivity!!.cacheDir,
             "split_video_${System.currentTimeMillis()}"
@@ -110,26 +111,18 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 )
             }
 
-            // Get the local media references to access the file
+            // Get the actual video file from local media references
             val localMediaReferences = event.messageContent.instanceNonNull()
-                .getObjectField("mLocalMediaReferences") as? List<*>
-                ?: throw IllegalStateException("No local media references found")
+                .getObjectFieldOrNull("mLocalMediaReferences") as? List<*>
+                ?: return false
 
-            if (localMediaReferences.isEmpty()) {
-                throw IllegalStateException("Empty media references")
-            }
+            if (localMediaReferences.isEmpty()) return false
 
-            val mediaReference = localMediaReferences.first() 
-                ?: throw IllegalStateException("Null media reference")
-            
-            val mediaId = mediaReference.getObjectField("mId") as? ByteArray
-                ?: throw IllegalStateException("No media ID found")
+            val mediaReference = localMediaReferences.first() ?: return false
+            val mediaId = mediaReference.getObjectFieldOrNull("mId") as? ByteArray ?: return false
 
             // Try to resolve the actual file path
-            val mediaPath = resolveMediaPath(mediaId)
-                ?: throw IllegalStateException("Could not resolve media path")
-
-            context.log.verbose("Found media at: $mediaPath")
+            val mediaPath = resolveMediaPath(mediaId) ?: return false
 
             val cachedVideo = File(tempDir, "input.mp4")
             
@@ -141,38 +134,68 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val outputPattern = File(tempDir, "split_%03d.mp4").absolutePath
             val command = "-i \"${cachedVideo.absolutePath}\" -c copy -f segment -segment_time 10 -reset_timestamps 1 \"$outputPattern\""
 
-            context.log.verbose("FFmpeg command: $command")
-
             val session = withContext(Dispatchers.IO) {
                 FFmpegKit.execute(command)
             }
 
             if (!ReturnCode.isSuccess(session.returnCode)) {
-                val errorMsg = session.failStackTrace ?: "Unknown error"
-                throw IllegalStateException("FFmpeg failed: $errorMsg")
+                return false
             }
 
             val outputFiles = tempDir.listFiles()
                 ?.filter { it.name.startsWith("split_") && it.extension == "mp4" }
                 ?.sortedBy { it.name }
-                ?: emptyList()
+                ?: return false
 
-            if (outputFiles.isEmpty()) {
-                throw IllegalStateException("No output files created")
-            }
+            if (outputFiles.isEmpty()) return false
 
             context.log.verbose("Split video into ${outputFiles.size} chunks")
 
-            // Send each chunk
+            // Store original content
+            val originalContent = event.messageContent.content!!
+
+            // Send each chunk by modifying the event and calling invokeOriginal
             for ((index, file) in outputFiles.withIndex()) {
-                sendVideoChunk(
-                    file = file,
-                    destinations = event.destinations,
-                    originalContent = event.messageContent.content!!,
-                    messageProtoReader = messageProtoReader,
-                    index = index,
-                    totalChunks = outputFiles.size
-                )
+                // Get chunk duration
+                val chunkDuration = withContext(Dispatchers.IO) {
+                    MediaMetadataRetriever().use { retriever ->
+                        retriever.setDataSource(file.absolutePath)
+                        retriever.extractMetadata(
+                            MediaMetadataRetriever.METADATA_KEY_DURATION
+                        )?.toLongOrNull() ?: 0L
+                    }
+                }
+
+                // Update the message content duration to match the chunk
+                event.messageContent.content = ProtoEditor(originalContent).apply {
+                    edit(3, 3, 5, 1, 1) {
+                        remove(15)
+                        addVarInt(15, chunkDuration)
+                    }
+                }.toByteArray()
+
+                // Update the local media reference to point to the chunk file
+                // This is tricky - we need to update the media reference
+                val chunkUri = Uri.fromFile(file)
+                
+                // Create new media reference ID for this chunk
+                val chunkMediaId = "chunk_${index}_${System.currentTimeMillis()}".toByteArray()
+                
+                // Try to update the media reference
+                runCatching {
+                    val mediaRef = localMediaReferences.first()
+                    mediaRef?.javaClass?.getDeclaredField("mId")?.let { field ->
+                        field.isAccessible = true
+                        field.set(mediaRef, chunkMediaId)
+                    }
+                }
+
+                // Send this chunk
+                withContext(Dispatchers.Main) {
+                    event.invokeOriginal()
+                }
+
+                context.log.verbose("Sent chunk ${index + 1}/${outputFiles.size}")
 
                 if (index < outputFiles.size - 1) {
                     delay(800)
@@ -186,6 +209,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 )
             }
 
+            return true
+
         } finally {
             withContext(Dispatchers.IO) {
                 tempDir.deleteRecursively()
@@ -193,103 +218,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
-    private suspend fun sendVideoChunk(
-        file: File,
-        destinations: MessageDestinations,
-        originalContent: ByteArray,
-        messageProtoReader: ProtoReader,
-        index: Int,
-        totalChunks: Int
-    ) {
-        val chunkDuration = withContext(Dispatchers.IO) {
-            MediaMetadataRetriever().use { retriever ->
-                retriever.setDataSource(file.absolutePath)
-                retriever.extractMetadata(
-                    MediaMetadataRetriever.METADATA_KEY_DURATION
-                )?.toLongOrNull() ?: 0L
-            }
-        }
-
-        context.log.verbose("Chunk ${index + 1}/$totalChunks duration: ${chunkDuration}ms")
-
-        // Create new message content with updated chunk duration
-        val newContent = ProtoEditor(originalContent).apply {
-            edit(3, 3, 5, 1, 1) {
-                remove(15)
-                addVarInt(15, chunkDuration)
-            }
-        }.toByteArray()
-
-        // Get a media reference by uploading the chunk file temporarily
-        val chunkUri = Uri.fromFile(file)
-        
-        // Create the local media reference for this chunk
-        val chunkMediaRefId = "split_${System.currentTimeMillis()}_$index".toByteArray()
-        
-        val localMediaRefJson = """{"mId": [${chunkMediaRefId.joinToString(",")}]}"""
-        
-        // Create new message content JSON
-        val messageContentJson = """
-        {
-            "mAllowsTranscription": false,
-            "mBotMention": false,
-            "mContent": [${newContent.joinToString(",")}],
-            "mContentType": "EXTERNAL_MEDIA",
-            "mIncidentalAttachments": [],
-            "mLocalMediaReferences": [$localMediaRefJson],
-            "mPlatformAnalytics": {
-                "mAttemptId": null,
-                "mContent": null,
-                "mMetricsMessageMediaType": "VIDEO",
-                "mMetricsMessageType": "SNAP",
-                "mReactionSource": "NONE"
-            },
-            "mSavePolicy": "LIFETIME"
-        }
-        """.trimIndent()
-
-        val localMessageContent = context.gson.fromJson(
-            messageContentJson,
-            context.classCache.localMessageContent
-        )
-
-        // Get the sendMessageWithContent method
-        val sendMessageWithContentMethod = context.classCache.conversationManager
-            .declaredMethods.first { it.name == "sendMessageWithContent" }
-
-        // Create callback
-        lateinit var callbackClass: Class<*>
-        
-        context.mappings.useMapper(CallbackMapper::class) {
-            callbackClass = callbacks.getClass("SendMessageCallback") ?: return@useMapper
-        }
-
-        val callback = CallbackBuilder(callbackClass)
-            .override("onSuccess") {
-                context.log.verbose("Sent chunk ${index + 1}/$totalChunks successfully")
-            }
-            .override("onError") { param ->
-                context.log.error("Failed to send chunk ${index + 1}/$totalChunks: ${param.arg<Any>(0)}")
-            }
-            .build()
-
-        // Send the message on Main thread
-        withContext(Dispatchers.Main) {
-            sendMessageWithContentMethod.invoke(
-                context.feature(Messaging::class).conversationManager?.instanceNonNull(),
-                destinations.instanceNonNull(),
-                localMessageContent,
-                callback
-            )
-        }
-    }
-
     private fun resolveMediaPath(mediaId: ByteArray): String? {
-        // Try multiple approaches to resolve the media path
         return runCatching {
             val hexId = mediaId.joinToString("") { "%02x".format(it) }
             
-            // Common cache directories
             val baseDirs = listOf(
                 context.androidContext.cacheDir,
                 context.androidContext.filesDir,
@@ -299,7 +231,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             val possibleSubPaths = listOf(
                 "media",
-                "tmp",
+                "tmp", 
                 "media_cache",
                 "external_media",
                 ""
@@ -313,16 +245,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         val dir = if (subPath.isEmpty()) baseDir else File(baseDir, subPath)
                         val file = File(dir, "$hexId$ext")
                         if (file.exists() && file.isFile) {
-                            context.log.verbose("Found media file: ${file.absolutePath}")
                             return@runCatching file.absolutePath
                         }
                     }
                 }
             }
-            
-            // If not found, log what directories exist
-            context.log.verbose("Media ID hex: $hexId")
-            context.log.verbose("Searched directories but couldn't find file")
             
             null
         }.getOrNull()
