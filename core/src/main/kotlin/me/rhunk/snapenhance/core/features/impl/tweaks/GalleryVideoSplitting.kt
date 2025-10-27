@@ -44,16 +44,38 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             // Check if it's a video by reading the protobuf
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
+            
+            // Log the entire protobuf structure for debugging
+            context.log.verbose("GalleryVideoSplitting: Protobuf structure:\n${messageProtoReader.toString()}")
+            
             val hasSound = messageProtoReader.getVarInt(3, 3, 5, 2, 5)
+            context.log.verbose("GalleryVideoSplitting: hasSound at [3,3,5,2,5] = $hasSound")
             
             if (hasSound == null || hasSound == 0L) {
                 context.log.verbose("GalleryVideoSplitting: Not a video (hasSound=$hasSound)")
                 return@subscribe
             }
 
-            // Get duration
-            val durationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong() ?: 0L
-            context.log.verbose("GalleryVideoSplitting: Video duration: ${durationMs}ms")
+            // Try multiple possible paths for duration
+            var durationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
+            context.log.verbose("GalleryVideoSplitting: Duration at [3,3,5,1,1,15] = $durationMs")
+            
+            if (durationMs == null || durationMs == 0L) {
+                // Try alternative path
+                durationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 15)?.toLong()
+                context.log.verbose("GalleryVideoSplitting: Duration at [3,3,5,1,15] = $durationMs")
+            }
+            
+            if (durationMs == null || durationMs == 0L) {
+                // Try getting from external metadata object
+                val contentInstance = localMessageContent.instanceNonNull()
+                val externalMetadata = contentInstance.getObjectField("mExternalContentMetadata")
+                val durationField = externalMetadata?.getObjectField("mDuration")
+                context.log.verbose("GalleryVideoSplitting: Duration from mDuration field = $durationField")
+                durationMs = (durationField as? Long) ?: 0L
+            }
+            
+            context.log.verbose("GalleryVideoSplitting: Final video duration: ${durationMs}ms")
 
             if (durationMs <= 10000) {
                 context.log.verbose("GalleryVideoSplitting: Video ≤10s, no split needed")
