@@ -53,48 +53,58 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
 
-            // Get the content URI to read duration from the actual file
+            // Get the content URI from LocalMediaReferences
             val contentInstance = localMessageContent.instanceNonNull()
             
-            // Debug: Log all fields in the content instance
-            context.log.verbose("GalleryVideoSplitting: Content instance class: ${contentInstance.javaClass.name}")
-            contentInstance.javaClass.declaredFields.forEach { field ->
-                field.isAccessible = true
-                try {
-                    val value = field.get(contentInstance)
-                    context.log.verbose("GalleryVideoSplitting: Field ${field.name} = ${value?.javaClass?.simpleName} : ${if (value.toString().length > 100) value.toString().take(100) + "..." else value}")
-                } catch (e: Exception) {
-                    context.log.verbose("GalleryVideoSplitting: Field ${field.name} - error: ${e.message}")
-                }
-            }
-            
-            val externalMetadata = contentInstance.getObjectField("mExternalContentMetadata") ?: run {
-                context.log.error("GalleryVideoSplitting: mExternalContentMetadata is null, trying alternative fields")
-                
-                // Try alternative field names
-                val alternativeMetadata = contentInstance.getObjectField("mMediaMetadata") 
-                    ?: contentInstance.getObjectField("mMetadata")
-                    ?: contentInstance.getObjectField("externalContentMetadata")
-                
-                if (alternativeMetadata == null) {
-                    context.log.error("GalleryVideoSplitting: No metadata field found")
-                    return@subscribe
-                }
-                
-                context.log.verbose("GalleryVideoSplitting: Found alternative metadata field")
-                alternativeMetadata
-            }
-            
-            val contentUriObj = externalMetadata.getObjectField("mContentUri") ?: run {
-                context.log.error("GalleryVideoSplitting: mContentUri is null")
+            val localMediaReferences = contentInstance.getObjectField("mLocalMediaReferences") as? ArrayList<*> ?: run {
+                context.log.error("GalleryVideoSplitting: mLocalMediaReferences is null or not ArrayList")
                 return@subscribe
             }
             
-            val contentUriStr = contentUriObj.toString()
-            context.log.verbose("GalleryVideoSplitting: Video URI: $contentUriStr")
-
-            // Read duration directly from the video file
-            val mediaUri = Uri.parse(contentUriStr)
+            if (localMediaReferences.isEmpty()) {
+                context.log.error("GalleryVideoSplitting: mLocalMediaReferences is empty")
+                return@subscribe
+            }
+            
+            val localMediaRef = localMediaReferences.first() ?: run {
+                context.log.error("GalleryVideoSplitting: First media reference is null")
+                return@subscribe
+            }
+            
+            context.log.verbose("GalleryVideoSplitting: LocalMediaReference class: ${localMediaRef.javaClass.name}")
+            
+            // The URI should be in the LocalMediaReference object
+            // Let's find it by inspecting all fields
+            val mediaRefFields = localMediaRef.javaClass.declaredFields
+            var contentUri: Uri? = null
+            
+            for (field in mediaRefFields) {
+                field.isAccessible = true
+                try {
+                    val value = field.get(localMediaRef)
+                    context.log.verbose("GalleryVideoSplitting: MediaRef field ${field.name} = ${value?.javaClass?.simpleName}")
+                    
+                    if (value is Uri) {
+                        contentUri = value
+                        context.log.verbose("GalleryVideoSplitting: Found URI in field ${field.name}: $value")
+                        break
+                    } else if (value?.javaClass?.simpleName == "Uri") {
+                        contentUri = value as Uri
+                        context.log.verbose("GalleryVideoSplitting: Found URI in field ${field.name}: $value")
+                        break
+                    }
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: MediaRef field ${field.name} error: ${e.message}")
+                }
+            }
+            
+            if (contentUri == null) {
+                context.log.error("GalleryVideoSplitting: Could not find URI in LocalMediaReference")
+                return@subscribe
+            }
+            
+            val mediaUri = contentUri
+            context.log.verbose("GalleryVideoSplitting: Video URI: $mediaUri")
             val retriever = MediaMetadataRetriever()
             val durationMs: Long
             
