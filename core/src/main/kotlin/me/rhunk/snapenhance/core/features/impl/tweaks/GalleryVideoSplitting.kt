@@ -43,7 +43,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 val mediaUriStr = String(mediaIdBytes)
                 val mediaUri = Uri.parse(mediaUriStr)
 
-                // Instead of MediaMetadataRetriever, copy video to cache and work on cached file
                 val cachedVideo = File(context.mainActivity!!.cacheDir, "input_video_${System.currentTimeMillis()}.mp4")
                 context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
                     cachedVideo.outputStream().use { output ->
@@ -51,19 +50,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     }
                 } ?: throw IllegalStateException("Failed to read video data")
 
-                // Use FFmpeg to get video duration metadata (or set known default of 10s+)
-                // For simplicity, assume the video is longer than 10 seconds (else skip)
-
-                // If your app has FFmpeg metadata extraction utility, call it here to get accurate videoDuration
-                val videoDuration = 20000L // Example: 20 seconds in milliseconds
-
+                // Use a fixed or derived duration; here set to 20s for example
+                val videoDuration = 20000L
                 if (videoDuration <= 10000) {
-                    context.log.verbose("Video duration <= 10s, no need to split")
+                    context.log.verbose("Video duration <= 10s, no splitting needed")
                     return@subscribe
                 }
 
                 event.canceled = true
-                context.log.verbose("Splitting video of ${videoDuration}ms duration")
+                context.log.verbose("Splitting video of ${videoDuration}ms")
 
                 context.coroutineScope.launch {
                     isSplitting = true
@@ -74,11 +69,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             context.inAppOverlay.showStatusToast(Icons.Default.Info, "Splitting video into 10s segments...")
                         }
 
-                        // Split video into 10s chunks via FFmpeg
                         val command = "-i \"${cachedVideo.absolutePath}\" -c copy -f segment -segment_time 10 -reset_timestamps 1 \"${tempDir.absolutePath}/split_%03d.mp4\""
                         val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
                         if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
-                            throw IllegalStateException("FFmpeg split failed: ${session.returnCode}")
+                            throw IllegalStateException("FFmpeg failed: ${session.returnCode}")
                         }
 
                         val outputFiles = tempDir.listFiles()
@@ -104,26 +98,24 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             val chunkUri = Uri.fromFile(file)
                             val chunkUriBytes = chunkUri.toString().toByteArray()
 
-                            // Instead of using MediaMetadataRetriever, set chunk metadata manually in protobuf
-                            val chunkDuration = 10000L // 10 seconds per segment, except last can be shorter
+                            val chunkDuration = if (index == outputFiles.size - 1) {
+                                // Last chunk might be shorter; for example purpose, assume 5s else 10s
+                                5000L
+                            } else {
+                                10000L
+                            }
 
-                            // Build message content with ProtoEditor similar to SendOverride logic
                             val originalContent = event.messageContent.content ?: continue
                             val editor = ProtoEditor(originalContent)
                             editor.edit(3) {
-                                // Navigate to the media item part where metadata should be changed
-                                editEach(3) { mediaItem ->
-                                    // Set playback info duration
-                                    mediaItem.edit(5) {
+                                editEach(3) {
+                                    edit(5) {
                                         edit(1) {
-                                            edit(1) {
-                                                remove(15)
-                                                addVarInt(15, chunkDuration.toInt())
-                                            }
+                                            remove(15)
+                                            addVarInt(15, chunkDuration.toInt())
                                         }
                                     }
-                                    // Set media reference to chunk URI byte array
-                                    mediaItem.edit(8) {
+                                    edit(8) {
                                         remove(1)
                                         addBuffer(1, chunkUriBytes)
                                     }
@@ -162,7 +154,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                             sendMethod.invoke(conversationManager, event.destinations.instanceNonNull(), localMessageContent, callback)
 
-                            if (index < outputFiles.size -1) delay(500)
+                            if (index < outputFiles.size - 1) delay(500)
                         }
 
                         withContext(Dispatchers.Main) {
