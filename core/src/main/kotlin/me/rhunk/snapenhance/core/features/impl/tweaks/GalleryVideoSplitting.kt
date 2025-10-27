@@ -135,13 +135,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             )
                         }
 
-                        // Send each segment
-                        val sendMessageCallback by lazy {
-                            context.mappings.useMapper(CallbackMapper::class) {
-                                callbacks.getClass("SendMessageCallback")
-                            } ?: throw IllegalStateException("SendMessageCallback not found")
-                        }
+                        // Get callback class
+                        val sendMessageCallback = context.mappings.useMapper(CallbackMapper::class) {
+                            callbacks.getClass("SendMessageCallback")
+                        } ?: throw IllegalStateException("SendMessageCallback not found")
 
+                        // Send each segment
                         for ((index, file) in outputFiles.withIndex()) {
                             val chunkUri = Uri.fromFile(file)
                             val chunkUriBytes = chunkUri.toString().toByteArray()
@@ -216,14 +215,14 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                 context.classCache.localMessageContent
                             )
 
-                            // Create callback for this message
+                            // Create callback for this message - FIX: Use callback parameter
                             val callback = CallbackBuilder(sendMessageCallback)
-                                .override("onSuccess") {
+                                .override("onSuccess", callback = {
                                     context.log.verbose("Segment ${index + 1} sent successfully")
-                                }
-                                .override("onError") { param ->
+                                })
+                                .override("onError", callback = { param ->
                                     context.log.error("Failed to send segment ${index + 1}: ${param.arg<Any>(0)}")
-                                }
+                                })
                                 .build()
 
                             // Send the message
