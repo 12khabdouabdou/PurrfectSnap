@@ -13,10 +13,13 @@ import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
-import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
+import me.rhunk.snapenhance.core.features.impl.messaging.Messaging
+import me.rhunk.snapenhance.core.util.CallbackBuilder
+import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
+import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import java.io.File
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
@@ -50,9 +53,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             if (messageProtoReader.contains(7)) return@subscribe
 
             // Check if it's a video by looking at the media type
-            val hasVideo = messageProtoReader.followPath(3, 3, 5, 2, 5)?.let { 
-                it == 1L // 1 = video with sound or video only
-            } ?: false
+            val mediaType = messageProtoReader.getVarInt(3, 3, 5, 2, 5)
+            val hasVideo = mediaType == 1L // 1 = video with sound or video only
 
             if (!hasVideo) return@subscribe
 
@@ -153,7 +155,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 sendVideoChunk(
                     file = file,
                     destinations = event.destinations,
-                    originalContent = event.messageContent,
+                    originalContent = event.messageContent.content!!,
                     messageProtoReader = messageProtoReader,
                     index = index,
                     totalChunks = outputFiles.size
@@ -181,7 +183,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private suspend fun sendVideoChunk(
         file: File,
         destinations: MessageDestinations,
-        originalContent: Any,
+        originalContent: ByteArray,
         messageProtoReader: ProtoReader,
         index: Int,
         totalChunks: Int
@@ -201,7 +203,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val mediaUri = Uri.fromFile(file)
             
             // Create new message content with the chunk
-            val newContent = ProtoEditor(originalContent.content!!).apply {
+            val newContent = ProtoEditor(originalContent).apply {
                 edit(3, 3, 5, 1, 1) {
                     remove(15)
                     addVarInt(15, chunkDuration)
@@ -275,16 +277,18 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     }
 
     private fun createSendCallback(chunkNumber: Int, totalChunks: Int): Any {
-        val callbackClass = context.mappings.useMapper(CallbackMapper::class) {
-            callbacks.getClass("SendMessageCallback")
-        } ?: throw IllegalStateException("SendMessageCallback not found")
+        lateinit var callbackClass: Class<*>
+        
+        context.mappings.useMapper(CallbackMapper::class) {
+            callbackClass = callbacks.getClass("SendMessageCallback") ?: return@useMapper
+        }
 
-        return context.util.callbackBuilder(callbackClass)
+        return CallbackBuilder(callbackClass)
             .override("onSuccess") {
                 context.log.verbose("Sent chunk $chunkNumber/$totalChunks successfully")
             }
             .override("onError") { param ->
-                context.log.error("Failed to send chunk $chunkNumber/$totalChunks: ${param.arg(0)}")
+                context.log.error("Failed to send chunk $chunkNumber/$totalChunks: ${param.arg<Any>(0)}")
             }
             .build()
     }
