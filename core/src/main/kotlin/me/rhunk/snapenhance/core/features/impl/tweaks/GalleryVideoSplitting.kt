@@ -176,12 +176,26 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             newExternalMetadata.setObjectField("mContentUri", chunkUri)
                             chunkMessageContent.setObjectField("mExternalContentMetadata", newExternalMetadata)
 
+                            // Create a callback for this chunk
+                            val chunkCallback = context.mappings.useMapper(me.rhunk.snapenhance.mapper.impl.CallbackMapper::class) {
+                                callbacks.getClass("SendMessageCallback")
+                            }?.let { callbackClass ->
+                                me.rhunk.snapenhance.core.util.CallbackBuilder(callbackClass)
+                                    .override("onSuccess") { 
+                                        context.log.verbose("GalleryVideoSplitting: Chunk ${index + 1} uploaded successfully")
+                                    }
+                                    .override("onError") { param ->
+                                        context.log.error("GalleryVideoSplitting: Chunk ${index + 1} upload failed: ${param.arg<Any>(0)}")
+                                    }
+                                    .build()
+                            }
+
                             // Send the chunk
                             sendMessageMethod.invoke(
                                 conversationManager,
                                 event.destinations.instanceNonNull(),
                                 chunkMessageContent,
-                                event.callback
+                                chunkCallback
                             )
 
                             context.log.verbose("GalleryVideoSplitting: Chunk ${index + 1} sent")
