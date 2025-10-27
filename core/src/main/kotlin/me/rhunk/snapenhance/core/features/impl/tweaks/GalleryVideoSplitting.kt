@@ -136,9 +136,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         }
 
                         // Get callback class
-                        val sendMessageCallback = context.mappings.useMapper(CallbackMapper::class) {
-                            callbacks.getClass("SendMessageCallback")
-                        } ?: throw IllegalStateException("SendMessageCallback not found")
+                        var sendMessageCallback: Class<*>? = null
+                        context.mappings.useMapper(CallbackMapper::class) {
+                            sendMessageCallback = callbacks.getClass("SendMessageCallback")
+                        }
+                        if (sendMessageCallback == null) {
+                            throw IllegalStateException("SendMessageCallback not found")
+                        }
 
                         // Send each segment
                         for ((index, file) in outputFiles.withIndex()) {
