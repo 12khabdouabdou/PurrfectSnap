@@ -55,9 +55,34 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             // Get the content URI to read duration from the actual file
             val contentInstance = localMessageContent.instanceNonNull()
+            
+            // Debug: Log all fields in the content instance
+            context.log.verbose("GalleryVideoSplitting: Content instance class: ${contentInstance.javaClass.name}")
+            contentInstance.javaClass.declaredFields.forEach { field ->
+                field.isAccessible = true
+                try {
+                    val value = field.get(contentInstance)
+                    context.log.verbose("GalleryVideoSplitting: Field ${field.name} = ${value?.javaClass?.simpleName} : ${if (value.toString().length > 100) value.toString().take(100) + "..." else value}")
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: Field ${field.name} - error: ${e.message}")
+                }
+            }
+            
             val externalMetadata = contentInstance.getObjectField("mExternalContentMetadata") ?: run {
-                context.log.error("GalleryVideoSplitting: mExternalContentMetadata is null")
-                return@subscribe
+                context.log.error("GalleryVideoSplitting: mExternalContentMetadata is null, trying alternative fields")
+                
+                // Try alternative field names
+                val alternativeMetadata = contentInstance.getObjectField("mMediaMetadata") 
+                    ?: contentInstance.getObjectField("mMetadata")
+                    ?: contentInstance.getObjectField("externalContentMetadata")
+                
+                if (alternativeMetadata == null) {
+                    context.log.error("GalleryVideoSplitting: No metadata field found")
+                    return@subscribe
+                }
+                
+                context.log.verbose("GalleryVideoSplitting: Found alternative metadata field")
+                alternativeMetadata
             }
             
             val contentUriObj = externalMetadata.getObjectField("mContentUri") ?: run {
