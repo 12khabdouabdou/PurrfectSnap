@@ -71,7 +71,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             // Read duration directly from the video file
             val mediaUri = Uri.parse(contentUriStr)
             val retriever = MediaMetadataRetriever()
-            var durationMs: Long
+            val durationMs: Long
             
             try {
                 retriever.setDataSource(context.androidContext, mediaUri)
@@ -85,24 +85,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             }
 
             if (durationMs <= 10000) {
-                context.log.verbose("GalleryVideoSplitting: Video ≤10s, no split needed")
+                context.log.verbose("GalleryVideoSplitting: Video duration ${durationMs}ms is ≤10s, no split needed")
                 return@subscribe
             }
 
-            // Get the content URI from the message content instance
-            val contentInstance = localMessageContent.instanceNonNull()
-            val externalMetadata = contentInstance.getObjectField("mExternalContentMetadata") ?: run {
-                context.log.error("GalleryVideoSplitting: mExternalContentMetadata is null")
-                return@subscribe
-            }
-            
-            val contentUriObj = externalMetadata.getObjectField("mContentUri") ?: run {
-                context.log.error("GalleryVideoSplitting: mContentUri is null")
-                return@subscribe
-            }
-            
-            val contentUriStr = contentUriObj.toString()
-            context.log.verbose("GalleryVideoSplitting: Video needs splitting! Duration: ${durationMs}ms, URI: $contentUriStr")
+            context.log.verbose("GalleryVideoSplitting: Video needs splitting! Duration: ${durationMs}ms")
 
             // Cancel the original send
             event.canceled = true
@@ -117,7 +104,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         context.inAppOverlay.showStatusToast(Icons.Default.Info, "Splitting video into 10s snaps...")
                     }
 
-                    val mediaUri = Uri.parse(contentUriStr)
                     val cachedVideo = File(tempDir, "input.mp4")
 
                     // Copy video to cache
@@ -162,13 +148,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         context.log.verbose("GalleryVideoSplitting: Processing chunk ${index + 1}/${outputFiles.size}")
 
                         val chunkUri = Uri.fromFile(chunkFile)
-                        val retriever = MediaMetadataRetriever()
+                        val chunkRetriever = MediaMetadataRetriever()
 
                         try {
-                            retriever.setDataSource(context.androidContext, chunkUri)
-                            val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
-                            val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
-                            val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
+                            chunkRetriever.setDataSource(context.androidContext, chunkUri)
+                            val chunkDuration = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                            val chunkWidth = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
+                            val chunkHeight = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
 
                             context.log.verbose("GalleryVideoSplitting: Chunk ${index + 1} - duration: ${chunkDuration}ms, size: ${chunkWidth}x${chunkHeight}")
 
@@ -236,7 +222,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             delay(800)
 
                         } finally {
-                            retriever.release()
+                            chunkRetriever.release()
                         }
                     }
 
