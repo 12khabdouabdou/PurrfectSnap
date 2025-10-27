@@ -10,15 +10,26 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
+import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.util.ktx.getObjectField
-import me.rhunk.snapenhance.core.wrapper.impl.MessageContent
+import me.rhunk.snapenhance.core.messaging.MessageSender
+import me.rhunk.snapenhance.core.util.CallbackBuilder
+import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
+import me.rhunk.snapenhance.mapper.impl.CallbackMapper
 import java.io.File
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
     private var isSplitting = false
+
+    private val sendMessageCallback by lazy {
+        lateinit var result: Class<*>
+        context.mappings.useMapper(CallbackMapper::class) {
+            result = callbacks.getClass("SendMessageCallback") ?: return@useMapper
+        }
+        result
+    }
 
     override fun init() {
         context.log.verbose("GalleryVideoSplitting: Initializing...")
@@ -38,12 +49,19 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             return
         }
 
-        // Subscribe to SendMessageWithContentEvent - this runs BEFORE SendOverride
+        // Subscribe to SendMessageWithContentEvent
+        // This runs at the same priority as SendOverride
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
             context.log.verbose("GalleryVideoSplitting: SendMessageWithContentEvent triggered")
             
             if (isSplitting) {
                 context.log.verbose("GalleryVideoSplitting: Already splitting, ignoring")
+                return@subscribe
+            }
+
+            // Prevent story replies
+            if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) {
+                context.log.verbose("GalleryVideoSplitting: Story reply, skipping")
                 return@subscribe
             }
 
@@ -56,10 +74,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     return@subscribe
                 }
 
-                // Check if it's a video
+                // Parse message content
                 val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
-                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
                 
+                // Check if it's a single media item
+                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
                 context.log.verbose("GalleryVideoSplitting: EXTERNAL_MEDIA with $mediaCount media items")
                 
                 if (mediaCount != 1) {
@@ -67,11 +86,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     return@subscribe
                 }
 
-                // Get media type (check if it's video)
-                val hasAudio = messageProtoReader.getVarInt(3, 3, 5, 2, 5) != null
+                // Get video duration
                 val videoDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: 0
-                
-                context.log.verbose("GalleryVideoSplitting: hasAudio=$hasAudio, duration=$videoDuration")
+                context.log.verbose("GalleryVideoSplitting: Video duration: ${videoDuration}ms")
                 
                 if (videoDuration <= 0) {
                     context.log.verbose("GalleryVideoSplitting: Not a video or no duration")
@@ -80,36 +97,33 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                 // If video is <= 10 seconds, no need to split
                 if (videoDuration <= 10000) {
-                    context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms, no split needed")
+                    context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (<= 10s), no split needed")
                     return@subscribe
                 }
 
                 context.log.verbose("GalleryVideoSplitting: VIDEO detected! Duration: ${videoDuration}ms - Starting split process...")
                 
-                // Cancel the original send
+                // Cancel the original send - we'll send chunks instead
                 event.canceled = true
 
-                // Get the content URI from localMessageContent
-                val localMediaRefs = localMessageContent.instanceNonNull().getObjectField("mLocalMediaReferences") as? List<*>
-                if (localMediaRefs.isNullOrEmpty()) {
-                    context.log.error("GalleryVideoSplitting: No local media references found")
+                // Extract media URI from the proto
+                val contentUriStr = messageProtoReader.getString(3, 3, 2)
+                if (contentUriStr == null) {
+                    context.log.error("GalleryVideoSplitting: Could not extract content URI from proto")
                     return@subscribe
                 }
 
-                val mediaRefId = (localMediaRefs.first() as? Any)?.getObjectField("mId") as? ByteArray
-                if (mediaRefId == null) {
-                    context.log.error("GalleryVideoSplitting: Could not get media reference ID")
-                    return@subscribe
-                }
-
-                // Get URI from media reference
-                val mediaUri = getMediaUriFromReference(mediaRefId)
-                if (mediaUri == null) {
-                    context.log.error("GalleryVideoSplitting: Could not resolve media URI")
-                    return@subscribe
-                }
-
+                val mediaUri = Uri.parse(contentUriStr)
                 context.log.verbose("GalleryVideoSplitting: Media URI: $mediaUri")
+
+                val conversations = event.destinations.conversations?.map { 
+                    SnapUUID(it) 
+                } ?: emptyList()
+
+                if (conversations.isEmpty()) {
+                    context.log.error("GalleryVideoSplitting: No conversations to send to")
+                    return@subscribe
+                }
 
                 // Start async splitting process
                 context.coroutineScope.launch {
@@ -160,7 +174,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sending ${outputFiles.size} video chunks...")
                         }
 
-                        // Send each chunk as a separate message
+                        // Send each chunk using MessageSender
+                        // This will go through SendOverride if it's enabled
                         for ((index, file) in outputFiles.withIndex()) {
                             context.log.verbose("GalleryVideoSplitting: Sending chunk ${index + 1}/${outputFiles.size}")
                             
@@ -170,27 +185,38 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             try {
                                 retriever.setDataSource(context.androidContext, chunkUri)
                                 val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                                val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
+                                val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
+                                val hasSound = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO)?.toIntOrNull() ?: 1
                                 
-                                context.log.verbose("GalleryVideoSplitting: Chunk $index duration: $chunkDuration ms")
+                                context.log.verbose("GalleryVideoSplitting: Chunk $index - Duration: $chunkDuration ms, Size: ${chunkWidth}x${chunkHeight}")
 
-                                // Create new MessageContent for this chunk
-                                val chunkContent = createChunkMessageContent(
-                                    chunkUri, 
-                                    chunkDuration,
-                                    localMessageContent
-                                )
+                                // Create EXTERNAL_MEDIA content for this chunk
+                                // SendOverride will handle the conversion to SNAP/NOTE if enabled
+                                val chunkContent = ProtoWriter().apply {
+                                    from(3) {
+                                        from(3) {
+                                            addString(2, chunkUri.toString())
+                                            from(5) {
+                                                from(1) {
+                                                    from(1) {
+                                                        addVarInt(15, chunkDuration)
+                                                        addVarInt(16, chunkWidth)
+                                                        addVarInt(17, chunkHeight)
+                                                    }
+                                                }
+                                                from(2) {
+                                                    addVarInt(5, hasSound)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }.toByteArray()
 
-                                // Trigger a new send event for this chunk (SendOverride will handle it)
-                                val chunkEvent = SendMessageWithContentEvent(
-                                    event.destinations,
-                                    chunkContent,
-                                    event.callback
-                                )
+                                // Use the internal sendMessage method to send this chunk
+                                sendChunkMessage(conversations, chunkContent)
                                 
-                                // Invoke the original send for this chunk
-                                chunkEvent.invokeOriginal()
-                                
-                                delay(1000) // Wait between sends
+                                delay(1500) // Wait between sends to avoid rate limiting
                                 
                             } finally {
                                 retriever.release()
@@ -222,40 +248,63 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         context.log.verbose("GalleryVideoSplitting: Initialization complete")
     }
 
-    private fun getMediaUriFromReference(mediaRefId: ByteArray): Uri? {
-        return try {
-            // Try to get URI from media store using the reference ID
-            val idString = String(mediaRefId, Charsets.UTF_8)
-            context.log.verbose("GalleryVideoSplitting: Media ref ID: $idString")
-            
-            // The mediaRefId might be a content URI already
-            if (idString.startsWith("content://")) {
-                Uri.parse(idString)
-            } else {
-                // Fallback: try to construct URI
-                Uri.parse("content://media/external/video/media/$idString")
-            }
-        } catch (e: Exception) {
-            context.log.error("GalleryVideoSplitting: Error parsing media URI", e)
-            null
+    private fun sendChunkMessage(conversations: List<SnapUUID>, messageContent: ByteArray) {
+        val sendMessageWithContentMethod = context.classCache.conversationManager.declaredMethods.first { 
+            it.name == "sendMessageWithContent" 
         }
-    }
 
-    private fun createChunkMessageContent(
-        chunkUri: Uri,
-        durationMs: Long,
-        originalContent: MessageContent
-    ): MessageContent {
-        // Create a new MessageContent instance for the chunk
-        val newContent = MessageContent(originalContent.instanceNonNull())
-        
-        // Update the local media reference to point to the chunk file
-        val chunkUriString = chunkUri.toString()
-        val mediaRefId = chunkUriString.toByteArray()
-        
-        // Update content proto with new URI and duration
-        // This will be processed by SendOverride
-        
-        return newContent
+        val localMessageContentTemplate = """
+        {
+            "mAllowsTranscription": false,
+            "mBotMention": false,
+            "mContent": [${messageContent.joinToString(",")}],
+            "mContentType": "EXTERNAL_MEDIA",
+            "mIncidentalAttachments": [],
+            "mLocalMediaReferences": [],
+            "mPlatformAnalytics": {
+                "mAttemptId": null,
+                "mContent": null,
+                "mMetricsMessageMediaType": "VIDEO",
+                "mMetricsMessageType": "SNAP",
+                "mReactionSource": "NONE"
+            },
+            "mSavePolicy": "LIFETIME"
+        }
+        """.trimIndent()
+
+        val localMessageContent = context.gson.fromJson(
+            localMessageContentTemplate, 
+            context.classCache.localMessageContent
+        )
+
+        val messageDestinations = me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations(
+            me.rhunk.snapenhance.core.wrapper.AbstractWrapper.newEmptyInstance(
+                context.classCache.messageDestinations
+            )
+        ).also {
+            it.conversations = conversations.toCollection(ArrayList())
+            it.mPhoneNumbers = arrayListOf()
+            it.stories = arrayListOf()
+        }
+
+        val callback = CallbackBuilder(sendMessageCallback)
+            .override("onSuccess") {
+                context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
+            }
+            .override("onError") { param ->
+                context.log.error("GalleryVideoSplitting: Failed to send chunk: ${param.arg<Any>(0)}")
+            }
+            .build()
+
+        val conversationManager = context.feature(
+            me.rhunk.snapenhance.core.features.impl.messaging.Messaging::class
+        ).conversationManager?.instanceNonNull()
+
+        sendMessageWithContentMethod.invoke(
+            conversationManager,
+            messageDestinations.instanceNonNull(),
+            localMessageContent,
+            callback
+        )
     }
 }
