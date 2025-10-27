@@ -23,11 +23,20 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private var isSplitting = false
 
     override fun init() {
-        if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
+        context.log.verbose("GalleryVideoSplitting: Initializing...")
+        
+        val isEnabled = context.config.messaging.splitVideoIntoTenSecondSnaps.get()
+        context.log.verbose("GalleryVideoSplitting: Config enabled = $isEnabled")
+        
+        if (!isEnabled) {
+            context.log.verbose("GalleryVideoSplitting: Feature disabled in config, aborting init")
             return
         }
 
+        context.log.verbose("GalleryVideoSplitting: Subscribing to SendMessageWithContentEvent")
+
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
+            context.log.verbose("GalleryVideoSplitting: Event received!")
             if (isSplitting) return@subscribe
             
             // Skip if sending to stories only (same as SendOverride)
