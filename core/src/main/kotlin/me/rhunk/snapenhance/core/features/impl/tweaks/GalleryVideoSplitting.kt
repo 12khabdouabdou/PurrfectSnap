@@ -9,7 +9,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.data.ContentType
-import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
 import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
@@ -37,7 +36,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             try {
                 val messageContent = event.messageContent
                 val contentType = messageContent.contentType
-                
+
                 // Only process EXTERNAL_MEDIA (gallery videos)
                 if (contentType != ContentType.EXTERNAL_MEDIA) {
                     return@subscribe
@@ -46,9 +45,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 // Get local media references
                 val localMediaRefs = messageContent.instanceNonNull()
                     .getObjectField("mLocalMediaReferences") as? List<*> ?: return@subscribe
-                
+
                 if (localMediaRefs.isEmpty()) return@subscribe
-                
+
                 val mediaRef = localMediaRefs.firstOrNull() ?: return@subscribe
                 val mediaIdBytes = mediaRef.getObjectField("mId") as? ByteArray ?: return@subscribe
                 val mediaUriStr = String(mediaIdBytes)
@@ -58,18 +57,25 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 val retriever = MediaMetadataRetriever()
                 val videoDuration: Long
                 val isVideo: Boolean
-                
+
                 try {
-                    retriever.setDataSource(context.androidContext, mediaUri)
+                    val pfd = context.androidContext.contentResolver.openFileDescriptor(mediaUri, "r")
+                    if (pfd != null) {
+                        retriever.setDataSource(pfd.fileDescriptor)
+                        pfd.close()
+                    } else {
+                        throw IllegalArgumentException("Unable to open file descriptor for URI")
+                    }
+
                     val mimeType = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
                     isVideo = mimeType?.startsWith("video/") == true
-                    
+
                     if (!isVideo) {
                         return@subscribe
                     }
-                    
+
                     videoDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
-                    
+
                     // If video is 10 seconds or less, let it proceed normally
                     if (videoDuration <= 10000) {
                         context.log.verbose("Video duration ${videoDuration}ms is <= 10s, not splitting")
@@ -84,7 +90,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                 // Cancel the original send - we'll handle it
                 event.canceled = true
-                
+
                 context.log.verbose("Splitting video of ${videoDuration}ms duration")
 
                 // Process video splitting asynchronously
@@ -92,7 +98,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     isSplitting = true
                     val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}")
                         .apply { mkdirs() }
-                    
+
                     try {
                         withContext(Dispatchers.Main) {
                             context.inAppOverlay.showStatusToast(
@@ -121,7 +127,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             ?.filter { it.name.startsWith("split_") && it.extension == "mp4" }
                             ?.sortedBy { it.name }
                             ?: emptyList()
-                            
+
                         if (outputFiles.isEmpty()) {
                             throw IllegalStateException("No output files generated")
                         }
@@ -148,7 +154,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         for ((index, file) in outputFiles.withIndex()) {
                             val chunkUri = Uri.fromFile(file)
                             val chunkUriBytes = chunkUri.toString().toByteArray()
-                            
+
                             context.log.verbose("Sending segment ${index + 1}/${outputFiles.size}")
 
                             // Get video metadata for this chunk
@@ -156,9 +162,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             val chunkDuration: Long
                             val chunkWidth: Int
                             val chunkHeight: Int
-                            
+
                             try {
-                                chunkRetriever.setDataSource(context.androidContext, chunkUri)
+                                val pfd = context.androidContext.contentResolver.openFileDescriptor(chunkUri, "r")
+                                if (pfd != null) {
+                                    chunkRetriever.setDataSource(pfd.fileDescriptor)
+                                    pfd.close()
+                                } else {
+                                    throw IllegalArgumentException("Unable to open file descriptor for chunk URI")
+                                }
                                 chunkDuration = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 10000L
                                 chunkWidth = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
                                 chunkHeight = chunkRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
@@ -233,7 +245,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             val sendMessageMethod = context.classCache.conversationManager
                                 .declaredMethods
                                 .first { it.name == "sendMessageWithContent" }
-                            
+
                             val conversationManager = context.feature(Messaging::class)
                                 .conversationManager?.instanceNonNull()
 
@@ -256,7 +268,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                 "Successfully sent ${outputFiles.size} segments!"
                             )
                         }
-                        
+
                     } catch (e: Exception) {
                         context.log.error("Failed to split and send video", e)
                         withContext(Dispatchers.Main) {
@@ -275,7 +287,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         isSplitting = false
                     }
                 }
-                
+
             } catch (e: Exception) {
                 context.log.error("Error in GalleryVideoSplitting", e)
             }
