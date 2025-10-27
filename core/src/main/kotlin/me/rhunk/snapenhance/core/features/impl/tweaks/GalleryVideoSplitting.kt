@@ -135,13 +135,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             )
                         }
 
-                        // Get callback class
-                        var sendMessageCallback: Class<*>? = null
-                        context.mappings.useMapper(CallbackMapper::class) {
-                            sendMessageCallback = callbacks.getClass("SendMessageCallback")
-                        }
-                        if (sendMessageCallback == null) {
-                            throw IllegalStateException("SendMessageCallback not found")
+                        // Get callback class - same pattern as SendOverride
+                        val sendMessageCallback by lazy {
+                            lateinit var result: Class<*>
+                            context.mappings.useMapper(CallbackMapper::class) {
+                                result = callbacks.getClass("SendMessageCallback") ?: return@useMapper
+                            }
+                            result
                         }
 
                         // Send each segment
