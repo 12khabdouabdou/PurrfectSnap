@@ -218,13 +218,29 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             // Update the content
                             chunkMessageContent.setObjectField("mContent", newContent)
                             
-                            // Update the external metadata with new URI
-                            val newExternalMetadata = context.gson.fromJson(
-                                context.gson.toJson(externalMetadata),
-                                externalMetadata.javaClass
+                            // Update the LocalMediaReference with new URI
+                            val chunkLocalMediaRef = context.gson.fromJson(
+                                context.gson.toJson(localMediaRef),
+                                localMediaRef.javaClass
                             )
-                            newExternalMetadata.setObjectField("mContentUri", chunkUri)
-                            chunkMessageContent.setObjectField("mExternalContentMetadata", newExternalMetadata)
+                            
+                            // Set the new URI in the media reference
+                            chunkLocalMediaRef.javaClass.declaredFields.forEach { field ->
+                                field.isAccessible = true
+                                try {
+                                    val value = field.get(chunkLocalMediaRef)
+                                    if (value is Uri || value?.javaClass?.simpleName == "Uri") {
+                                        field.set(chunkLocalMediaRef, chunkUri)
+                                        context.log.verbose("GalleryVideoSplitting: Updated URI in field ${field.name}")
+                                    }
+                                } catch (e: Exception) {
+                                    // Ignore
+                                }
+                            }
+                            
+                            // Update the mLocalMediaReferences array
+                            val newLocalMediaRefs = arrayListOf<Any>(chunkLocalMediaRef)
+                            chunkMessageContent.setObjectField("mLocalMediaReferences", newLocalMediaRefs)
 
                             // Create a callback for this chunk
                             var callbackClass: Class<*>? = null
