@@ -365,4 +365,69 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             withContext(Dispatchers.Main) {
                 context.inAppOverlay.showStatusToast(Icons.Default.Info, "Successfully sent ${outputFiles.size} chunks!")
             }
-            context.log.verbose("GalleryVideoSplitting: All
+            context.log.verbose("GalleryVideoSplitting: All chunks sent successfully")
+            
+        } catch (e: Exception) {
+            context.log.error("GalleryVideoSplitting: Failed to split and send video", e)
+            withContext(Dispatchers.Main) {
+                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Failed to split video: ${e.message}")
+            }
+        } finally {
+            context.log.verbose("GalleryVideoSplitting: Cleaning up temp dir")
+            tempDir.deleteRecursively()
+        }
+    }
+
+    private fun sendChunk(conversations: List<SnapUUID>, messageContent: ByteArray) {
+        context.log.verbose("GalleryVideoSplitting: sendChunk called")
+        
+        val sendMessageWithContentMethod = context.classCache.conversationManager.declaredMethods.first { 
+            it.name == "sendMessageWithContent" 
+        }
+
+        val localMessageContentTemplate = """
+        {
+            "mAllowsTranscription": false,
+            "mBotMention": false,
+            "mContent": [${messageContent.joinToString(",")}],
+            "mContentType": "EXTERNAL_MEDIA",
+            "mIncidentalAttachments": [],
+            "mLocalMediaReferences": [],
+            "mPlatformAnalytics": {
+                "mAttemptId": null,
+                "mContent": null,
+                "mMetricsMessageMediaType": "VIDEO",
+                "mMetricsMessageType": "SNAP",
+                "mReactionSource": "NONE"
+            },
+            "mSavePolicy": "LIFETIME"
+        }
+        """.trimIndent()
+
+        val localMessageContent = context.gson.fromJson(
+            localMessageContentTemplate, 
+            context.classCache.localMessageContent
+        )
+
+        val messageDestinations = MessageDestinations(
+            AbstractWrapper.newEmptyInstance(context.classCache.messageDestinations)
+        ).also {
+            it.conversations = ArrayList(conversations)
+            it.mPhoneNumbers = ArrayList<Any>()
+            it.stories = ArrayList<Any>()
+        }
+
+        val callback = CallbackBuilder(sendMessageCallback).build()
+
+        val conversationManager = context.feature(Messaging::class).conversationManager?.instanceNonNull()
+
+        sendMessageWithContentMethod.invoke(
+            conversationManager,
+            messageDestinations.instanceNonNull(),
+            localMessageContent,
+            callback
+        )
+
+        context.log.verbose("GalleryVideoSplitting: sendChunk complete")
+    }
+}
