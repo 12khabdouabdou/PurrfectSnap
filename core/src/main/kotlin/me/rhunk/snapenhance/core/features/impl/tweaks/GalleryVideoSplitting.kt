@@ -312,12 +312,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
 
         val callback = CallbackBuilder(sendMessageCallback)
-            .override("onSuccess") {
+            .override("onSuccess", callback = {
                 context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
-            }
-            .override("onError") { param ->
+            })
+            .override("onError", callback = { param ->
                 context.log.error("GalleryVideoSplitting: Failed to send chunk: ${param.arg<Any>(0)}")
-            }
+            })
             .build()
 
         val conversationManager = context.feature(Messaging::class).conversationManager?.instanceNonNull()
