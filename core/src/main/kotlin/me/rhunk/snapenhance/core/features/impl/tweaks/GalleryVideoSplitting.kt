@@ -306,9 +306,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         val messageDestinations = MessageDestinations(
             AbstractWrapper.newEmptyInstance(context.classCache.messageDestinations)
         ).also {
-            it.conversations = conversations.toCollection(ArrayList<Any>())
-            it.mPhoneNumbers = arrayListOf<Any>()
-            it.stories = arrayListOf<Any>()
+            it.conversations = conversations.toCollection(ArrayList<SnapUUID>())
+            it.mPhoneNumbers = arrayListOf<SnapUUID>()
+            it.stories = arrayListOf<SnapUUID>()
         }
 
         val callback = CallbackBuilder(sendMessageCallback).build()
