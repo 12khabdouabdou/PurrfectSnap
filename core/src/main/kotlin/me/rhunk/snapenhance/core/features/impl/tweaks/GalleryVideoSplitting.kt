@@ -97,6 +97,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 // Parse message content (same as SendOverride)
                 val messageProtoReader = ProtoReader(content)
                 
+                // Debug: print full proto structure
+                context.log.verbose("GalleryVideoSplitting: Full message proto structure:\n${messageProtoReader}")
+                
                 // Prevent story replies (same check as SendOverride)
                 if (messageProtoReader.contains(7)) {
                     context.log.verbose("GalleryVideoSplitting: Story reply proto detected, skipping")
@@ -120,12 +123,18 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
                 
                 context.log.verbose("GalleryVideoSplitting: Found snapDocPlayback, checking for video duration")
+                context.log.verbose("GalleryVideoSplitting: snapDocPlayback proto structure:\n${snapDocPlayback}")
                 
                 // Check for duration at path 1,1,15 (same as SendOverride checks)
                 val videoDuration = snapDocPlayback.getVarInt(1, 1, 15)
                 
                 if (videoDuration == null) {
-                    context.log.verbose("GalleryVideoSplitting: No video duration at 1,1,15 - not a video")
+                    context.log.verbose("GalleryVideoSplitting: No video duration at 1,1,15 - not a video or photo")
+                    context.log.verbose("GalleryVideoSplitting: Checking if it's an image...")
+                    // Check if there's image dimensions instead (path 1,1,16 and 1,1,17)
+                    val width = snapDocPlayback.getVarInt(1, 1, 16)
+                    val height = snapDocPlayback.getVarInt(1, 1, 17)
+                    context.log.verbose("GalleryVideoSplitting: Width=$width, Height=$height")
                     return@subscribe
                 }
                 
