@@ -15,6 +15,7 @@ import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.messaging.Messaging
 import me.rhunk.snapenhance.core.util.CallbackBuilder
+import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import me.rhunk.snapenhance.core.wrapper.AbstractWrapper
 import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
 import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
@@ -161,31 +162,36 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         context.log.verbose("GalleryVideoSplitting: No content URI found in proto at 1,2")
                         
                         // Fallback: try mLocalMediaReferences
-                        val localMediaReferences = localMessageContent.instanceNonNull()
-                            .getObjectField("mLocalMediaReferences") as? List<*>
+                        val localMediaReferencesObj = localMessageContent.instanceNonNull()
+                            .getObjectField("mLocalMediaReferences")
                         
-                        if (localMediaReferences != null && localMediaReferences.isNotEmpty()) {
-                            val firstRef = localMediaReferences.first()
-                            val mediaId = firstRef?.getObjectField("mId") as? ByteArray
+                        if (localMediaReferencesObj is List<*>) {
+                            val localMediaReferences = localMediaReferencesObj as List<*>
                             
-                            if (mediaId != null) {
-                                val mediaUriString = String(mediaId)
-                                context.log.verbose("GalleryVideoSplitting: Found URI in mLocalMediaReferences: $mediaUriString")
+                            if (localMediaReferences.isNotEmpty()) {
+                                val firstRef = localMediaReferences.first()
+                                val mediaIdObj = firstRef?.getObjectField("mId")
                                 
-                                val retriever = MediaMetadataRetriever()
-                                try {
-                                    val uri = Uri.parse(mediaUriString)
-                                    retriever.setDataSource(context.androidContext, uri)
+                                if (mediaIdObj is ByteArray) {
+                                    val mediaId = mediaIdObj as ByteArray
+                                    val mediaUriString = String(mediaId)
+                                    context.log.verbose("GalleryVideoSplitting: Found URI in mLocalMediaReferences: $mediaUriString")
                                     
-                                    videoDuration = retriever.extractMetadata(
-                                        MediaMetadataRetriever.METADATA_KEY_DURATION
-                                    )?.toLongOrNull()
-                                    
-                                    context.log.verbose("GalleryVideoSplitting: Extracted duration from mLocalMediaReferences = ${videoDuration}ms")
-                                } catch (e: Exception) {
-                                    context.log.error("GalleryVideoSplitting: Failed to extract from mLocalMediaReferences", e)
-                                } finally {
-                                    retriever.release()
+                                    val retriever = MediaMetadataRetriever()
+                                    try {
+                                        val uri = Uri.parse(mediaUriString)
+                                        retriever.setDataSource(context.androidContext, uri)
+                                        
+                                        videoDuration = retriever.extractMetadata(
+                                            MediaMetadataRetriever.METADATA_KEY_DURATION
+                                        )?.toLongOrNull()
+                                        
+                                        context.log.verbose("GalleryVideoSplitting: Extracted duration from mLocalMediaReferences = ${videoDuration}ms")
+                                    } catch (e: Exception) {
+                                        context.log.error("GalleryVideoSplitting: Failed to extract from mLocalMediaReferences", e)
+                                    } finally {
+                                        retriever.release()
+                                    }
                                 }
                             }
                         }
@@ -334,7 +340,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                 }.toByteArray()
 
                                 context.log.verbose("GalleryVideoSplitting: Sending chunk ${index + 1}")
-                                sendChunkMessage(conversations, chunkContent)
+                                sendChunk(conversations, chunkContent)
                                 
                                 delay(1500)
                                 
@@ -368,8 +374,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         context.log.verbose("GalleryVideoSplitting: Initialization complete")
     }
 
-    private fun sendChunkMessage(conversations: List<SnapUUID>, messageContent: ByteArray) {
-        context.log.verbose("GalleryVideoSplitting: sendChunkMessage called")
+    private fun sendChunk(conversations: List<SnapUUID>, messageContent: ByteArray) {
+        context.log.verbose("GalleryVideoSplitting: sendChunk called")
         
         val sendMessageWithContentMethod = context.classCache.conversationManager.declaredMethods.first { 
             it.name == "sendMessageWithContent" 
@@ -402,9 +408,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         val messageDestinations = MessageDestinations(
             AbstractWrapper.newEmptyInstance(context.classCache.messageDestinations)
         ).also {
-            it.conversations = conversations.toCollection(ArrayList<SnapUUID>())
-            it.mPhoneNumbers = arrayListOf<SnapUUID>()
-            it.stories = arrayListOf<SnapUUID>()
+            it.conversations = conversations.toCollection(ArrayList())
+            it.mPhoneNumbers = arrayListOf()
+            it.stories = arrayListOf()
         }
 
         val callback = CallbackBuilder(sendMessageCallback).build()
@@ -418,6 +424,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             callback
         )
 
-        context.log.verbose("GalleryVideoSplitting: sendChunkMessage complete")
+        context.log.verbose("GalleryVideoSplitting: sendChunk complete")
     }
 }
