@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,7 +25,7 @@ import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.messaging.Messaging
 import me.rhunk.snapenhance.core.util.CallbackBuilder
-import me.rhunk.snapenhance.core.util.ktx.getObjectField
+import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
 import me.rhunk.snapenhance.core.wrapper.AbstractWrapper
 import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
 import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
@@ -50,12 +51,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     override fun init() {
         context.log.verbose("GalleryVideoSplitting: Initializing...")
         
-        // Check if feature is enabled
-        val isEnabled = context.config.messaging.splitVideoIntoTenSecondSnaps.get()
-        context.log.verbose("GalleryVideoSplitting: Config enabled = $isEnabled")
-        
-        if (!isEnabled) {
-            context.log.verbose("GalleryVideoSplitting: Feature disabled in config, aborting init")
+        if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
+            context.log.verbose("GalleryVideoSplitting: Feature disabled in config")
             return
         }
         
@@ -68,329 +65,132 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             return
         }
 
-        context.log.verbose("GalleryVideoSplitting: Subscribing to SendMessageWithContentEvent")
-
-        // Subscribe to SendMessageWithContentEvent
+        // Subscribe to SendMessageWithContentEvent (same as SendOverride)
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
-            context.log.verbose("GalleryVideoSplitting: Event received!")
+            if (isSplitting) return@subscribe
             
-            if (isSplitting) {
-                context.log.verbose("GalleryVideoSplitting: Already splitting, ignoring")
+            // Same checks as SendOverride
+            if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) {
+                return@subscribe
+            }
+            
+            val localMessageContent = event.messageContent
+            
+            // Only process EXTERNAL_MEDIA (same check as SendOverride)
+            if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
+                localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) {
                 return@subscribe
             }
 
-            // Prevent story replies
-            val hasStories = event.destinations.stories?.isNotEmpty() == true
-            val hasConversations = event.destinations.conversations?.isNotEmpty() == true
-            context.log.verbose("GalleryVideoSplitting: hasStories=$hasStories, hasConversations=$hasConversations")
-            
-            if (hasStories && !hasConversations) {
-                context.log.verbose("GalleryVideoSplitting: Story reply detected, skipping")
+            // Prevent story replies (same as SendOverride)
+            val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
+            if (messageProtoReader.contains(7)) return@subscribe
+
+            context.log.verbose("GalleryVideoSplitting: Processing EXTERNAL_MEDIA message")
+            context.log.verbose("GalleryVideoSplitting: Full proto:\n$messageProtoReader")
+
+            // Check for multiple media (same as SendOverride)
+            if ((messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
+                context.log.verbose("GalleryVideoSplitting: Multiple media detected, skipping")
                 return@subscribe
             }
 
-            try {
-                val localMessageContent = event.messageContent
-                val contentType = localMessageContent.contentType
-                context.log.verbose("GalleryVideoSplitting: Content type = $contentType")
-                
-                // Only process EXTERNAL_MEDIA (gallery videos)
-                if (contentType != ContentType.EXTERNAL_MEDIA) {
-                    context.log.verbose("GalleryVideoSplitting: Not EXTERNAL_MEDIA, skipping")
-                    return@subscribe
-                }
+            // Get video duration using SendOverride's method
+            // SendOverride uses: messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)
+            var videoDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)
+            context.log.verbose("GalleryVideoSplitting: Video duration from proto (3,3,5,1,1,15) = $videoDuration ms")
 
-                val content = localMessageContent.content
-                if (content == null) {
-                    context.log.verbose("GalleryVideoSplitting: Content is null, skipping")
-                    return@subscribe
-                }
+            // Cancel the original send (same as SendOverride)
+            event.canceled = true
+            context.log.verbose("GalleryVideoSplitting: Original send CANCELED")
 
-                context.log.verbose("GalleryVideoSplitting: Parsing message proto (${content.size} bytes)")
+            val conversations = event.destinations.conversations?.map { SnapUUID(it) } ?: emptyList()
+            if (conversations.isEmpty()) {
+                context.log.error("GalleryVideoSplitting: No conversations to send to!")
+                return@subscribe
+            }
 
-                // Parse message content (same as SendOverride)
-                val messageProtoReader = ProtoReader(content)
-                
-                // Debug: print full proto structure
-                context.log.verbose("GalleryVideoSplitting: Full message proto structure:\n${messageProtoReader}")
-                
-                // Prevent story replies (same check as SendOverride)
-                if (messageProtoReader.contains(7)) {
-                    context.log.verbose("GalleryVideoSplitting: Story reply proto detected, skipping")
-                    return@subscribe
-                }
-                
-                // Check if multiple media items (same as SendOverride)
-                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
-                context.log.verbose("GalleryVideoSplitting: Media count = $mediaCount")
-                
-                if (mediaCount != 1) {
-                    context.log.verbose("GalleryVideoSplitting: Multiple media not supported ($mediaCount items), skipping")
-                    return@subscribe
-                }
-
-                // Get video duration using snapDocPlayback path (same as SendOverride MediaUploadEvent)
-                val snapDocPlayback = messageProtoReader.followPath(3, 3, 5)
-                if (snapDocPlayback == null) {
-                    context.log.verbose("GalleryVideoSplitting: No snapDocPlayback found at path 3,3,5")
-                    return@subscribe
-                }
-                
-                context.log.verbose("GalleryVideoSplitting: Found snapDocPlayback, checking for video duration")
-                context.log.verbose("GalleryVideoSplitting: snapDocPlayback proto structure:\n${snapDocPlayback}")
-                
-                // ===== DURATION DETECTION FIX =====
-                var videoDuration: Long? = null
-                
-                // Try method 1: Get duration from proto field 1,1,15 (works for videos <=10s)
-                videoDuration = snapDocPlayback.getVarInt(1, 1, 15)
-                context.log.verbose("GalleryVideoSplitting: Duration from proto (1,1,15) = $videoDuration")
-                
-                // Try method 2: Get from field 2 which contains original snap duration (works for all videos)
-                if (videoDuration == null || videoDuration <= 0) {
-                    context.log.verbose("GalleryVideoSplitting: Trying to extract duration from field 2 (original snap duration)")
-                    
-                    snapDocPlayback.getByteArray(2)?.let { originalSnapData ->
-                        try {
-                            val originalSnapReader = ProtoReader(originalSnapData)
-                            context.log.verbose("GalleryVideoSplitting: Original snap data proto:\n${originalSnapReader}")
-                            
-                            // Field 8 contains duration in seconds
-                            val durationSeconds = originalSnapReader.getVarInt(8)
-                            if (durationSeconds != null && durationSeconds > 0) {
-                                videoDuration = durationSeconds * 1000 // Convert to milliseconds
-                                context.log.verbose("GalleryVideoSplitting: Duration from field 2->8 (seconds) = $durationSeconds s = ${videoDuration}ms")
-                            }
-                            
-                            // Field 99 contains duration in milliseconds (for very short videos)
-                            if (videoDuration == null || videoDuration <= 0) {
-                                val durationMs = originalSnapReader.getVarInt(99)
-                                if (durationMs != null && durationMs > 0) {
-                                    videoDuration = durationMs
-                                    context.log.verbose("GalleryVideoSplitting: Duration from field 2->99 (ms) = ${videoDuration}ms")
-                                }
-                            }
-                        } catch (e: Exception) {
-                            context.log.error("GalleryVideoSplitting: Failed to parse field 2 data", e)
-                        }
-                    }
-                }
-                
-                // Try method 3: Extract from actual file if proto methods failed
-                if (videoDuration == null || videoDuration <= 0) {
-                    context.log.verbose("GalleryVideoSplitting: Proto duration missing/invalid, extracting from file...")
-                    
-                    // Get content URI from snapDocPlayback
-                    val contentUriStr = snapDocPlayback.getString(1, 2)
-                    
-                    if (contentUriStr != null) {
-                        context.log.verbose("GalleryVideoSplitting: Found content URI in proto: $contentUriStr")
-                        
-                        val retriever = MediaMetadataRetriever()
-                        try {
-                            val uri = Uri.parse(contentUriStr)
-                            
-                            // Use FileDescriptor for content URIs (safer)
-                            context.mainActivity!!.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                                retriever.setDataSource(pfd.fileDescriptor)
-                                
-                                videoDuration = retriever.extractMetadata(
-                                    MediaMetadataRetriever.METADATA_KEY_DURATION
-                                )?.toLongOrNull()
-                                
-                                context.log.verbose("GalleryVideoSplitting: Extracted duration from file = ${videoDuration}ms")
-                            }
-                        } catch (e: Exception) {
-                            context.log.error("GalleryVideoSplitting: Failed to extract duration from file", e)
-                        } finally {
-                            retriever.release()
-                        }
-                    } else {
-                        context.log.verbose("GalleryVideoSplitting: No content URI found in proto at 1,2")
-                        
-                        // Fallback: try mLocalMediaReferences
-                        val localMediaReferencesObj = localMessageContent.instanceNonNull()
-                            .getObjectField("mLocalMediaReferences")
-                        
-                        if (localMediaReferencesObj is List<*>) {
-                            val localMediaReferences = localMediaReferencesObj
-                            
-                            if (localMediaReferences.isNotEmpty()) {
-                                val firstRef = localMediaReferences.first()
-                                val mediaIdObj = firstRef?.getObjectField("mId")
-                                
-                                if (mediaIdObj is ByteArray) {
-                                    val mediaId = mediaIdObj
-                                    val mediaUriString = String(mediaId)
-                                    context.log.verbose("GalleryVideoSplitting: Found URI in mLocalMediaReferences: $mediaUriString")
-                                    
-                                    val retriever = MediaMetadataRetriever()
-                                    try {
-                                        val uri = Uri.parse(mediaUriString)
-                                        
-                                        // Use FileDescriptor for content URIs (safer)
-                                        context.mainActivity!!.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                                            retriever.setDataSource(pfd.fileDescriptor)
-                                            
-                                            videoDuration = retriever.extractMetadata(
-                                                MediaMetadataRetriever.METADATA_KEY_DURATION
-                                            )?.toLongOrNull()
-                                            
-                                            context.log.verbose("GalleryVideoSplitting: Extracted duration from mLocalMediaReferences = ${videoDuration}ms")
-                                        }
-                                    } catch (e: Exception) {
-                                        context.log.error("GalleryVideoSplitting: Failed to extract from mLocalMediaReferences", e)
-                                    } finally {
-                                        retriever.release()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-               
-                
-                // ===== END DURATION FIX =====
-                
-                // Capture the final duration value for smart casting
-                val finalDuration = videoDuration
-                
-                context.log.verbose("GalleryVideoSplitting: Final video duration = ${finalDuration}ms")
-
-                // Check if we could determine the duration
-                val actualDuration = if (finalDuration == null || finalDuration <= 0) {
-                    context.log.verbose("GalleryVideoSplitting: Could not determine video duration, asking user")
-                    
-                    // Cancel the original send and show dialog to ask user for duration
-                    event.canceled = true
-                    
-                    // Extract media URI
-                    val contentUriStr = snapDocPlayback.getString(1, 2)
-                    if (contentUriStr == null) {
-                        context.log.error("GalleryVideoSplitting: Could not extract content URI")
-                        return@subscribe
-                    }
-                    
-                    val mediaUri = Uri.parse(contentUriStr)
-                    val conversations = event.destinations.conversations?.map { 
-                        SnapUUID(it) 
-                    } ?: emptyList()
-                    
-                    if (conversations.isEmpty()) {
-                        context.log.error("GalleryVideoSplitting: No conversations to send to!")
-                        return@subscribe
-                    }
-                    
-                    // Show dialog to ask user for video duration
-                    context.runOnUiThread {
-                        showDurationInputDialog(mediaUri, conversations)
-                    }
-                    return@subscribe
-                } else {
-                    finalDuration
-                }
-
-                // If video is <= 10 seconds, no need to split
-                if (actualDuration <= 10000) {
-                    context.log.verbose("GalleryVideoSplitting: Video is ${actualDuration}ms (<= 10s), no split needed")
-                    return@subscribe
-                }
-
-                context.log.verbose("GalleryVideoSplitting: VIDEO > 10s detected! Duration: ${actualDuration}ms - Will split")
-                
-                // Extract media URI from proto path 3,3,5,1,2 (same as SendOverride checks)
-                val contentUriStr = snapDocPlayback.getString(1, 2)
-                if (contentUriStr == null) {
-                    context.log.error("GalleryVideoSplitting: Could not extract content URI from snapDocPlayback")
-                    return@subscribe
-                }
-
-                context.log.verbose("GalleryVideoSplitting: Content URI = $contentUriStr")
-                
-                // Cancel the original send - we'll send chunks instead
-                event.canceled = true
-                context.log.verbose("GalleryVideoSplitting: Original send CANCELED")
-
-                val mediaUri = Uri.parse(contentUriStr)
-                
-                val conversations = event.destinations.conversations?.map { 
-                    SnapUUID(it) 
-                } ?: emptyList()
-
-                context.log.verbose("GalleryVideoSplitting: Will send to ${conversations.size} conversations")
-
-                if (conversations.isEmpty()) {
-                    context.log.error("GalleryVideoSplitting: No conversations to send to!")
-                    return@subscribe
-                }
-
-                // Show dialog to choose split duration (like SendOverride)
+            // If duration is null or 0, ask user to input it (same pattern as SendOverride shows dialog)
+            if (videoDuration == null || videoDuration <= 0) {
+                context.log.verbose("GalleryVideoSplitting: No valid duration found, asking user")
                 context.runOnUiThread {
-                    showDurationDialog(mediaUri, conversations, actualDuration)
+                    showDurationInputDialog(event, conversations, messageProtoReader)
                 }
-                
-            } catch (e: Exception) {
-                context.log.error("GalleryVideoSplitting: Error in event handler", e)
+                return@subscribe
+            }
+
+            // Check if video needs splitting (>10 seconds)
+            if (videoDuration <= 10000) {
+                context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (<= 10s), no split needed")
+                // Re-invoke original send since we don't need to split
+                event.invokeOriginal()
+                return@subscribe
+            }
+
+            context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (> 10s), will split")
+
+            // Show duration dialog (same pattern as SendOverride)
+            context.runOnUiThread {
+                showDurationDialog(event, conversations, videoDuration, messageProtoReader)
             }
         }
         
         context.log.verbose("GalleryVideoSplitting: Initialization complete")
     }
 
-    private fun showDurationInputDialog(mediaUri: Uri, conversations: List<SnapUUID>) {
-        var videoDurationInput by mutableStateOf("")
-        var errorMessage by mutableStateOf<String?>(null)
-        
+    private fun showDurationInputDialog(
+        event: SendMessageWithContentEvent,
+        conversations: List<SnapUUID>,
+        messageProtoReader: ProtoReader
+    ) {
         createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = "Video Duration Required",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = "Could not detect video duration automatically. Please enter the video duration in seconds:",
-                    fontSize = 14.sp
-                )
-
-                OutlinedTextField(
-                    value = videoDurationInput,
-                    onValueChange = { 
-                        videoDurationInput = it
-                        errorMessage = null
-                    },
-                    label = { Text("Duration (seconds)") },
-                    placeholder = { Text("e.g., 15") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    isError = errorMessage != null
-                )
-                
-                if (errorMessage != null) {
+            var videoDurationInput by remember { mutableStateOf("") }
+            var errorMessage by remember { mutableStateOf<String?>(null) }
+            
+            AlertDialog(
+                onDismissRequest = { alertDialog.dismiss() },
+                title = {
                     Text(
-                        text = errorMessage!!,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 12.sp
+                        text = "Video Duration Required",
+                        fontWeight = FontWeight.Bold
                     )
-                }
+                },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Could not detect video duration automatically. Please enter the video duration in seconds:",
+                            fontSize = 14.sp
+                        )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedButton(onClick = {
-                        alertDialog.dismiss()
-                    }) {
-                        Text(context.translation["button.cancel"])
+                        OutlinedTextField(
+                            value = videoDurationInput,
+                            onValueChange = { 
+                                videoDurationInput = it
+                                errorMessage = null
+                            },
+                            label = { Text("Duration (seconds)") },
+                            placeholder = { Text("e.g., 15") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            isError = errorMessage != null,
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                            )
+                        )
+                        
+                        errorMessage?.let { error ->
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
+                },
+                confirmButton = {
                     Button(onClick = {
                         val durationSeconds = videoDurationInput.toIntOrNull()
                         if (durationSeconds == null || durationSeconds <= 0) {
@@ -408,16 +208,28 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         
                         alertDialog.dismiss()
                         // Show snap duration dialog
-                        showDurationDialog(mediaUri, conversations, durationMs)
+                        showDurationDialog(event, conversations, durationMs, messageProtoReader)
                     }) {
                         Text("Continue")
                     }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = {
+                        alertDialog.dismiss()
+                    }) {
+                        Text(context.translation["button.cancel"])
+                    }
                 }
-            }
+            )
         }.show()
     }
 
-    private fun showDurationDialog(mediaUri: Uri, conversations: List<SnapUUID>, totalDuration: Long) {
+    private fun showDurationDialog(
+        event: SendMessageWithContentEvent,
+        conversations: List<SnapUUID>,
+        totalDuration: Long,
+        messageProtoReader: ProtoReader
+    ) {
         createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
             val mainTranslation = remember {
                 context.translation.getCategory("send_override_dialog")
@@ -448,6 +260,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 Text(
                     text = "Video duration: ${(totalDuration / 1000.0).toDuration(DurationUnit.SECONDS).toString(DurationUnit.SECONDS, 1)}",
                     fontSize = 14.sp
+                )
+
+                Text(
+                    text = "This video will be split into 10-second chunks and sent separately.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Column(
@@ -495,7 +313,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         // Start async splitting process
                         context.coroutineScope.launch {
                             isSplitting = true
-                            splitAndSendVideo(mediaUri, conversations, snapDuration)
+                            splitAndSendVideo(event, conversations, snapDuration, messageProtoReader)
                             isSplitting = false
                         }
                     }) {
@@ -506,27 +324,56 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }.show()
     }
 
-    private suspend fun splitAndSendVideo(mediaUri: Uri, conversations: List<SnapUUID>, snapDuration: Int?) {
+    private suspend fun splitAndSendVideo(
+        event: SendMessageWithContentEvent,
+        conversations: List<SnapUUID>,
+        snapDuration: Int?,
+        messageProtoReader: ProtoReader
+    ) {
         val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { 
             mkdirs()
-            context.log.verbose("GalleryVideoSplitting: Created temp dir: $absolutePath")
         }
         
         try {
             withContext(Dispatchers.Main) {
-                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Splitting video into 10s chunks...")
+                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Splitting video...")
             }
 
+            // Get the media URI from mLocalMediaReferences (same way SendOverride would access it)
+            val localMessageContent = event.messageContent
+            val localMediaReferencesObj = localMessageContent.instanceNonNull()
+                .getObjectFieldOrNull("mLocalMediaReferences")
+
+            var mediaUriStr: String? = null
+            
+            if (localMediaReferencesObj is List<*> && localMediaReferencesObj.isNotEmpty()) {
+                val firstRef = localMediaReferencesObj.first()
+                val mediaIdObj = firstRef?.let { 
+                    it.javaClass.getDeclaredField("mId").apply { isAccessible = true }.get(it) 
+                }
+                if (mediaIdObj is ByteArray) {
+                    mediaUriStr = String(mediaIdObj)
+                    context.log.verbose("GalleryVideoSplitting: Found URI in mLocalMediaReferences: $mediaUriStr")
+                }
+            }
+
+            if (mediaUriStr == null) {
+                context.log.error("GalleryVideoSplitting: Could not extract media URI")
+                withContext(Dispatchers.Main) {
+                    context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed to get video URI")
+                }
+                return
+            }
+
+            val mediaUri = Uri.parse(mediaUriStr)
             val cachedVideo = File(tempDir, "input.mp4")
 
             // Copy video to cache
-            context.log.verbose("GalleryVideoSplitting: Copying video to cache...")
             context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
                 cachedVideo.outputStream().use { output ->
-                    val bytesWritten = input.copyTo(output)
-                    context.log.verbose("GalleryVideoSplitting: Copied $bytesWritten bytes")
+                    input.copyTo(output)
                 }
-            } ?: throw IllegalStateException("Failed to open input stream for media URI")
+            } ?: throw IllegalStateException("Failed to open input stream")
             
             context.log.verbose("GalleryVideoSplitting: Video cached (${cachedVideo.length()} bytes)")
 
@@ -537,10 +384,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
 
             if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
-                val output = session.output
-                context.log.error("GalleryVideoSplitting: FFmpeg failed with code ${session.returnCode}")
-                context.log.error("GalleryVideoSplitting: FFmpeg output: $output")
-                throw IllegalStateException("FFmpeg failed: $output")
+                throw IllegalStateException("FFmpeg failed: ${session.output}")
             }
 
             val outputFiles = tempDir.listFiles()?.filter { it.name.startsWith("split_") }?.sortedBy { it.name } ?: emptyList()
@@ -551,8 +395,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             }
 
             withContext(Dispatchers.Main) {
-                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sending ${outputFiles.size} video chunks...")
+                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sending ${outputFiles.size} chunks...")
             }
+
+            // Get metadata from original proto (same as SendOverride extracts)
+            val hasSound = messageProtoReader.getVarInt(3, 3, 5, 2, 5) ?: 1
+            context.log.verbose("GalleryVideoSplitting: Original hasSound = $hasSound")
 
             // Send each chunk
             for ((index, file) in outputFiles.withIndex()) {
@@ -564,41 +412,36 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 try {
                     retriever.setDataSource(context.androidContext, chunkUri)
                     
-                    // Get chunk metadata using MediaMetadataRetriever
-                    val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                    val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 10000L
                     val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
                     val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
-                    val hasSound = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO)?.toIntOrNull() ?: 1
                     
-                    context.log.verbose("GalleryVideoSplitting: Chunk metadata - Duration: ${chunkDuration}ms, Size: ${chunkWidth}x${chunkHeight}, Sound: $hasSound")
+                    context.log.verbose("GalleryVideoSplitting: Chunk ${index + 1} - Duration: ${chunkDuration}ms, Size: ${chunkWidth}x${chunkHeight}")
 
-                    // Create EXTERNAL_MEDIA content proto structure for this chunk
+                    // Create message content (EXTERNAL_MEDIA format, same structure as original)
                     val chunkContent = ProtoWriter().apply {
                         from(3) {
                             from(3) {
-                                addString(2, chunkUri.toString())
-                                from(5) {
+                                addString(2, chunkUri.toString()) // Content URI
+                                from(5) { // snapDocPlayback
                                     from(1) {
                                         from(1) {
-                                            // Use custom snap duration if provided
-                                            if (snapDuration != null) {
-                                                addVarInt(15, snapDuration.toLong())
-                                            } else {
-                                                addVarInt(15, chunkDuration)
-                                            }
+                                            addVarInt(2, 0) // overlay type
+                                            addVarInt(12, 0)
+                                            addVarInt(15, snapDuration?.toLong() ?: chunkDuration) // duration
                                             addVarInt(16, chunkWidth)
                                             addVarInt(17, chunkHeight)
                                         }
+                                        addVarInt(6, 1) // media type: video
                                     }
                                     from(2) {
-                                        addVarInt(5, hasSound)
-                                        // Add snap duration in seconds (if provided)
-                                        if (snapDuration != null && snapDuration >= 1000) {
-                                            addVarInt(8, snapDuration / 1000)
-                                        }
-                                        // Add millisecond precision for very short durations
-                                        if (snapDuration != null && snapDuration < 1000) {
-                                            addVarInt(99, snapDuration.toLong())
+                                        addVarInt(5, hasSound) // hasSound from original
+                                        if (snapDuration != null) {
+                                            if (snapDuration >= 1000) {
+                                                addVarInt(8, snapDuration / 1000) // duration in seconds
+                                            } else {
+                                                addVarInt(99, snapDuration.toLong()) // duration in ms
+                                            }
                                         }
                                     }
                                 }
@@ -617,24 +460,21 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             }
 
             withContext(Dispatchers.Main) {
-                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Successfully sent ${outputFiles.size} chunks!")
+                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sent ${outputFiles.size} chunks!")
             }
             context.log.verbose("GalleryVideoSplitting: All chunks sent successfully")
             
         } catch (e: Exception) {
             context.log.error("GalleryVideoSplitting: Failed to split and send video", e)
             withContext(Dispatchers.Main) {
-                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Failed to split video: ${e.message}")
+                context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed: ${e.message}")
             }
         } finally {
-            context.log.verbose("GalleryVideoSplitting: Cleaning up temp dir")
             tempDir.deleteRecursively()
         }
     }
 
     private fun sendChunk(conversations: List<SnapUUID>, messageContent: ByteArray) {
-        context.log.verbose("GalleryVideoSplitting: sendChunk called")
-        
         val sendMessageWithContentMethod = context.classCache.conversationManager.declaredMethods.first { 
             it.name == "sendMessageWithContent" 
         }
@@ -672,7 +512,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
 
         val callback = CallbackBuilder(sendMessageCallback).build()
-
         val conversationManager = context.feature(Messaging::class).conversationManager?.instanceNonNull()
 
         sendMessageWithContentMethod.invoke(
@@ -681,7 +520,5 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             localMessageContent,
             callback
         )
-
-        context.log.verbose("GalleryVideoSplitting: sendChunk complete")
     }
 }
