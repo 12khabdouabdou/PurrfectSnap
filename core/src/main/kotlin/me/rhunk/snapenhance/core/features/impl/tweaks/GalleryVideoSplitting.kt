@@ -131,6 +131,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
 
+            // Check if it's a video
+            val mediaType = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 6)
+            if (mediaType != 1L) { // 1 = VIDEO
+                context.log.verbose("GalleryVideoSplitting: Not a video (type=$mediaType), skipping")
+                return@subscribe
+            }
 
             // Get video duration using the same pattern as SendOverride
             // Try path 3,3,5,1,1,15 first, then 11,5,2,5, then MediaFilePicker
@@ -145,8 +151,18 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 context.log.verbose("GalleryVideoSplitting: Duration from MediaFilePicker = $videoDuration ms")
             }
 
+            // If still no duration, ask user to input manually
+            if (videoDuration == null || videoDuration <= 0) {
+                context.log.verbose("GalleryVideoSplitting: No duration found, asking user for input")
+                event.canceled = true
+                context.runOnUiThread {
+                    showDurationInputDialog(event, messageProtoReader)
+                }
+                return@subscribe
+            }
+
             // Check if video needs splitting (>10 seconds)
-            if (videoDuration == null || videoDuration <= 10000) {
+            if (videoDuration <= 10000) {
                 context.log.verbose("GalleryVideoSplitting: Video too short (${videoDuration}ms), not splitting")
                 return@subscribe
             }
@@ -176,22 +192,21 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         val retriever = MediaMetadataRetriever()
         val chunkWidth: Int
         val chunkHeight: Int
-        val hasSound: Long
         
         try {
             retriever.setDataSource(chunkFile.absolutePath)
             chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
             chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
-            // Check if video has audio
-            val audioTrack = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO)
-            hasSound = if (audioTrack == "yes") 1L else 0L
         } finally {
             retriever.release()
         }
         
-        // Get extras from original proto (if exists)
+        // Get extras and hasSound from original proto (same as SendOverride)
         val originalProtoReader = ProtoReader(localMessageContent.content ?: byteArrayOf())
         val extras = originalProtoReader.followPath(3, 3, 13)?.getBuffer()
+        val hasSound = originalProtoReader.getVarInt(3, 3, 5, 2, 5) 
+            ?: originalProtoReader.getVarInt(11, 5, 2, 5) 
+            ?: 1L
         
         // Build SNAP content (exactly like SendOverride does)
         if (localMessageContent.contentType != ContentType.SNAP) {
@@ -221,11 +236,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         // Change content type to SNAP (like SendOverride)
         localMessageContent.contentType = ContentType.SNAP
         
-        // Use ProtoEditor to set snap duration (same pattern as SendOverride)
+        // Use ProtoEditor to set snap duration (exact same pattern as SendOverride)
         localMessageContent.content = ProtoEditor(localMessageContent.content!!).apply {
             edit(11, 5, 2) {
                 arrayOf(6, 7, 8).forEach { remove(it) }
-                addVarInt(5, hasSound) // hasSound from chunk metadata
+                addVarInt(5, hasSound)
                 // set snap duration
                 if (snapDurationMs != null) {
                     addVarInt(8, snapDurationMs / 1000)
@@ -282,6 +297,81 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             duration >= 11f -> null
             else -> ((duration * 1000).toInt() / 1000) * 1000
         }
+    }
+
+    private fun showDurationInputDialog(
+        event: SendMessageWithContentEvent,
+        messageProtoReader: ProtoReader
+    ) {
+        var durationInput by mutableStateOf("")
+        var errorMessage by mutableStateOf<String?>(null)
+        
+        createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Video Duration Required",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "Could not automatically detect video duration. Please enter the duration in seconds:",
+                    fontSize = 14.sp
+                )
+
+                OutlinedTextField(
+                    value = durationInput,
+                    onValueChange = { 
+                        durationInput = it
+                        errorMessage = null
+                    },
+                    label = { Text("Duration (seconds)") },
+                    placeholder = { Text("e.g., 30") },
+                    isError = errorMessage != null,
+                    supportingText = errorMessage?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(onClick = {
+                        alertDialog.dismiss()
+                    }) {
+                        Text(context.translation["button.cancel"])
+                    }
+                    Button(onClick = {
+                        val duration = durationInput.toIntOrNull()
+                        if (duration == null || duration <= 0) {
+                            errorMessage = "Please enter a valid positive number"
+                            return@Button
+                        }
+                        
+                        if (duration <= 10) {
+                            errorMessage = "Video must be longer than 10 seconds to split"
+                            return@Button
+                        }
+                        
+                        alertDialog.dismiss()
+                        val videoDurationMs = duration * 1000L
+                        context.log.verbose("GalleryVideoSplitting: User input duration = ${videoDurationMs}ms")
+                        
+                        // Show the main duration dialog with the user-provided duration
+                        showDurationDialog(event, videoDurationMs, messageProtoReader)
+                    }) {
+                        Text(context.translation["button.confirm"] ?: "Confirm")
+                    }
+                }
+            }
+        }.show()
     }
 
     private fun showDurationDialog(
