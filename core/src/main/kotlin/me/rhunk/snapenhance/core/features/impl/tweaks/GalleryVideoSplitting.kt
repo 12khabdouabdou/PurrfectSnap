@@ -244,7 +244,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         val chunkUri = Uri.fromFile(chunkFile)
         val retriever = MediaMetadataRetriever()
         
-        return try {
+        try {
             retriever.setDataSource(context.androidContext, chunkUri)
             val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
             val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toDoubleOrNull() ?: 1080.0
@@ -262,7 +262,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
             }
 
-            originalMediaItem.javaClass.dataBuilder {
+            return originalMediaItem.javaClass.dataBuilder {
                 set("thumbnail", originalMediaItem.getObjectField("thumbnail"))
                 set("item", newItem)
                 set("order", index.toDouble())
