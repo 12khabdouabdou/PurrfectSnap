@@ -504,24 +504,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             // Extract content URI from mLocalMediaReferences (Java object field, NOT protobuf)
             val localMessageContent = event.messageContent
             
-            // Log the entire localMessageContent structure
             context.log.verbose("GalleryVideoSplitting: localMessageContent class: ${localMessageContent.instanceNonNull().javaClass.name}")
             
-            // List all fields in localMessageContent
-            val allFields = localMessageContent.instanceNonNull().javaClass.declaredFields
-            context.log.verbose("GalleryVideoSplitting: Available fields in localMessageContent:")
-            allFields.forEach { field ->
-                field.isAccessible = true
-                try {
-                    val value = field.get(localMessageContent.instanceNonNull())
-                    context.log.verbose("  - ${field.name} (${field.type.simpleName}): ${if (value is List<*>) "List[${(value as? List<*>)?.size}]" else value?.javaClass?.simpleName}")
-                } catch (e: Exception) {
-                    context.log.verbose("  - ${field.name}: <error accessing>")
-                }
-            }
-            
-            val messageContentWrapper = MessageContent(localMessageContent.instanceNonNull())
-            val localMediaReferencesObj = messageContentWrapper.getObjectFieldOrNull("mLocalMediaReferences")
+            // Access mLocalMediaReferences directly using reflection (bypassing MessageContent wrapper)
+            val mLocalMediaReferencesField = localMessageContent.instanceNonNull().javaClass.getDeclaredField("mLocalMediaReferences")
+            mLocalMediaReferencesField.isAccessible = true
+            val localMediaReferencesObj = mLocalMediaReferencesField.get(localMessageContent.instanceNonNull())
 
             var mediaUriStr: String? = null
             
@@ -583,7 +571,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             if (mediaUriStr == null) {
                 context.log.error("GalleryVideoSplitting: Could not extract media URI from mLocalMediaReferences")
+                
+                // Dump proto structure for analysis
                 context.log.verbose("GalleryVideoSplitting: Full proto structure:\n$messageProtoReader")
+                
+                // Check if width/height are in proto (which confirms video metadata exists)
+                val width = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 5, 1)
+                val height = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 5, 2)
+                context.log.verbose("GalleryVideoSplitting: Width from proto: $width, Height: $height")
+                
                 withContext(Dispatchers.Main) {
                     context.inAppOverlay.showStatusToast(
                         Icons.Default.WarningAmber, 
