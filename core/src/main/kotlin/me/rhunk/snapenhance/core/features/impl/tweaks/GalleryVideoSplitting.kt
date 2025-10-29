@@ -502,42 +502,92 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             }
 
             // Extract content URI from mLocalMediaReferences (Java object field, NOT protobuf)
-            // This is how SendOverride accesses the media URI
             val localMessageContent = event.messageContent
+            
+            // Log the entire localMessageContent structure
+            context.log.verbose("GalleryVideoSplitting: localMessageContent class: ${localMessageContent.instanceNonNull().javaClass.name}")
+            
+            // List all fields in localMessageContent
+            val allFields = localMessageContent.instanceNonNull().javaClass.declaredFields
+            context.log.verbose("GalleryVideoSplitting: Available fields in localMessageContent:")
+            allFields.forEach { field ->
+                field.isAccessible = true
+                try {
+                    val value = field.get(localMessageContent.instanceNonNull())
+                    context.log.verbose("  - ${field.name} (${field.type.simpleName}): ${if (value is List<*>) "List[${(value as? List<*>)?.size}]" else value?.javaClass?.simpleName}")
+                } catch (e: Exception) {
+                    context.log.verbose("  - ${field.name}: <error accessing>")
+                }
+            }
+            
             val messageContentWrapper = MessageContent(localMessageContent.instanceNonNull())
             val localMediaReferencesObj = messageContentWrapper.getObjectFieldOrNull("mLocalMediaReferences")
 
             var mediaUriStr: String? = null
             
-            context.log.verbose("GalleryVideoSplitting: Accessing mLocalMediaReferences via reflection")
+            context.log.verbose("GalleryVideoSplitting: mLocalMediaReferences = $localMediaReferencesObj")
+            context.log.verbose("GalleryVideoSplitting: mLocalMediaReferences type: ${localMediaReferencesObj?.javaClass?.name}")
             
-            if (localMediaReferencesObj is List<*> && localMediaReferencesObj.isNotEmpty()) {
-                val firstRef = localMediaReferencesObj.first()
-                context.log.verbose("GalleryVideoSplitting: Found ${localMediaReferencesObj.size} media reference(s)")
+            if (localMediaReferencesObj is List<*>) {
+                context.log.verbose("GalleryVideoSplitting: mLocalMediaReferences is a List with ${localMediaReferencesObj.size} items")
                 
-                // Reflectively get the mId field from the reference object
-                val mediaIdObj = firstRef?.let { 
-                    it.javaClass.getDeclaredField("mId").apply { isAccessible = true }.get(it) 
-                }
-                
-                // The mId field holds the URI as a ByteArray
-                if (mediaIdObj is ByteArray) {
-                    mediaUriStr = String(mediaIdObj)
-                    context.log.verbose("GalleryVideoSplitting: Extracted URI from mLocalMediaReferences: $mediaUriStr")
+                if (localMediaReferencesObj.isNotEmpty()) {
+                    val firstRef = localMediaReferencesObj.first()
+                    context.log.verbose("GalleryVideoSplitting: First reference type: ${firstRef?.javaClass?.name}")
+                    
+                    // Log all fields in the reference object
+                    firstRef?.javaClass?.declaredFields?.forEach { field ->
+                        field.isAccessible = true
+                        try {
+                            val value = field.get(firstRef)
+                            context.log.verbose("  Reference field: ${field.name} (${field.type.simpleName}) = ${
+                                if (value is ByteArray) "ByteArray[${value.size}]: ${String(value)}" 
+                                else value
+                            }")
+                        } catch (e: Exception) {
+                            context.log.verbose("  Reference field: ${field.name} - error: ${e.message}")
+                        }
+                    }
+                    
+                    // Try to get mId field
+                    try {
+                        val mIdField = firstRef?.javaClass?.getDeclaredField("mId")
+                        if (mIdField != null) {
+                            mIdField.isAccessible = true
+                            val mediaIdObj = mIdField.get(firstRef)
+                            context.log.verbose("GalleryVideoSplitting: mId type: ${mediaIdObj?.javaClass?.name}")
+                            
+                            if (mediaIdObj is ByteArray) {
+                                mediaUriStr = String(mediaIdObj)
+                                context.log.verbose("GalleryVideoSplitting: Successfully extracted URI: $mediaUriStr")
+                            } else {
+                                context.log.error("GalleryVideoSplitting: mId is not ByteArray, it's ${mediaIdObj?.javaClass?.name}")
+                            }
+                        } else {
+                            context.log.error("GalleryVideoSplitting: mId field not found in reference object")
+                        }
+                    } catch (e: NoSuchFieldException) {
+                        context.log.error("GalleryVideoSplitting: NoSuchFieldException for mId: ${e.message}")
+                    } catch (e: Exception) {
+                        context.log.error("GalleryVideoSplitting: Error accessing mId: ${e.message}", e)
+                    }
                 } else {
-                    context.log.error("GalleryVideoSplitting: mId is not a ByteArray, type: ${mediaIdObj?.javaClass?.name}")
+                    context.log.error("GalleryVideoSplitting: mLocalMediaReferences list is empty!")
                 }
             } else {
-                context.log.error("GalleryVideoSplitting: mLocalMediaReferences is empty or not a List")
-                context.log.verbose("GalleryVideoSplitting: mLocalMediaReferences type: ${localMediaReferencesObj?.javaClass?.name}")
+                context.log.error("GalleryVideoSplitting: mLocalMediaReferences is not a List!")
+                if (localMediaReferencesObj != null) {
+                    context.log.verbose("GalleryVideoSplitting: It's a ${localMediaReferencesObj.javaClass.name}")
+                }
             }
 
             if (mediaUriStr == null) {
                 context.log.error("GalleryVideoSplitting: Could not extract media URI from mLocalMediaReferences")
+                context.log.verbose("GalleryVideoSplitting: Full proto structure:\n$messageProtoReader")
                 withContext(Dispatchers.Main) {
                     context.inAppOverlay.showStatusToast(
                         Icons.Default.WarningAmber, 
-                        "Failed to get video URI from local media references"
+                        "Failed to get video URI. Check logs for details."
                     )
                 }
                 return false
@@ -545,7 +595,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             context.log.verbose("GalleryVideoSplitting: Using media URI: $mediaUriStr")
             
-            // Parse URI and access via ContentResolver (standard Android approach)
+            // Parse URI and access via ContentResolver
             val mediaUri = Uri.parse(mediaUriStr)
             val cachedVideo = File(tempDir!!, "input.mp4")
 
