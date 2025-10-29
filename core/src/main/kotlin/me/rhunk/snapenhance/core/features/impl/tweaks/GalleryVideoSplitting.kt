@@ -249,15 +249,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     }
                 }
                 
-                // Check media type (0=video, 1=photo) to confirm it's actually a video
-                val mediaType = snapDocPlayback.getVarInt(1, 1, 2)
-                context.log.verbose("GalleryVideoSplitting: Media type = $mediaType (0=video, 1=photo)")
-                
-                // Skip if it's a photo (mediaType = 1)
-                if (mediaType == 1L) {
-                    context.log.verbose("GalleryVideoSplitting: This is a photo (mediaType=1), skipping")
-                    return@subscribe
-                }
+               
                 
                 // ===== END DURATION FIX =====
                 
