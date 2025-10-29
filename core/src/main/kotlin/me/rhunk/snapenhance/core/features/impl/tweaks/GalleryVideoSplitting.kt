@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.ui.createComposeAlertDialog
@@ -25,6 +26,7 @@ import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
+import me.rhunk.snapenhance.core.wrapper.impl.MessageContent
 import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -79,7 +81,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 if (currentChunkIndex < pendingChunks.size) {
                     defer {
                         delay(1500)
-                        // Trigger next chunk by modifying and re-invoking
                         withContext(Dispatchers.Main) {
                             context.inAppOverlay.showStatusToast(
                                 Icons.Default.Info,
@@ -117,7 +118,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             
             // Only process EXTERNAL_MEDIA
             if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
-                localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) {
+                MessageContent(localMessageContent.instanceNonNull()).getObjectFieldOrNull("mExternalContentMetadata") == null) {
                 return@subscribe
             }
 
@@ -202,8 +203,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         localMessageContent.contentType = ContentType.SNAP
         
         // Update the local media reference with the chunk URI
-        val localMediaReferencesObj = localMessageContent.instanceNonNull()
-            .getObjectFieldOrNull("mLocalMediaReferences")
+        val messageContentWrapper = MessageContent(localMessageContent.instanceNonNull())
+        val localMediaReferencesObj = messageContentWrapper.getObjectFieldOrNull("mLocalMediaReferences")
         
         if (localMediaReferencesObj is MutableList<*>) {
             localMediaReferencesObj.clear()
@@ -307,7 +308,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     Button(onClick = {
                         alertDialog.dismiss()
                         
-                        // Start async splitting process
+                        // Start async splitting process using defer (SnapEnhance's coroutine helper)
                         context.coroutineScope.launch {
                             isSplitting = true
                             val success = splitAndPrepareChunks(event, messageProtoReader)
@@ -349,8 +350,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             // Get the media URI from mLocalMediaReferences
             val localMessageContent = event.messageContent
-            val localMediaReferencesObj = localMessageContent.instanceNonNull()
-                .getObjectFieldOrNull("mLocalMediaReferences")
+            val messageContentWrapper = MessageContent(localMessageContent.instanceNonNull())
+            val localMediaReferencesObj = messageContentWrapper.getObjectFieldOrNull("mLocalMediaReferences")
 
             var mediaUriStr: String? = null
             
@@ -428,9 +429,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             }
             pendingChunks.clear()
             return false
-        } finally {
-            // Keep temp dir for now, will cleanup after all chunks sent
-            // tempDir.deleteRecursively()
         }
     }
 }
