@@ -216,7 +216,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     return@subscribe
                 }
                 
-                if (videoDuration == null || videoDuration <= 0) {
+                // ===== END DURATION FIX =====
+                
+                // Capture the final duration value for smart casting
+                val finalDuration = videoDuration
+                
+                context.log.verbose("GalleryVideoSplitting: Final video duration = ${finalDuration}ms")
+
+                // Check if we could determine the duration
+                if (finalDuration == null || finalDuration <= 0) {
                     context.log.verbose("GalleryVideoSplitting: Could not determine video duration, skipping")
                     
                     // Check if it's an image instead
@@ -225,17 +233,14 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     context.log.verbose("GalleryVideoSplitting: Width=$width, Height=$height (checking if image)")
                     return@subscribe
                 }
-                // ===== END DURATION FIX =====
-                
-                context.log.verbose("GalleryVideoSplitting: Final video duration = ${videoDuration}ms")
 
                 // If video is <= 10 seconds, no need to split
-                if (videoDuration <= 10000) {
-                    context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (<= 10s), no split needed")
+                if (finalDuration <= 10000) {
+                    context.log.verbose("GalleryVideoSplitting: Video is ${finalDuration}ms (<= 10s), no split needed")
                     return@subscribe
                 }
 
-                context.log.verbose("GalleryVideoSplitting: VIDEO > 10s detected! Duration: ${videoDuration}ms - Will split")
+                context.log.verbose("GalleryVideoSplitting: VIDEO > 10s detected! Duration: ${finalDuration}ms - Will split")
                 
                 // Extract media URI from proto path 3,3,5,1,2 (same as SendOverride checks)
                 val contentUriStr = snapDocPlayback.getString(1, 2)
