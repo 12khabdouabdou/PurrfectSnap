@@ -67,6 +67,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
 
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
+            context.log.verbose("GalleryVideoSplitting: SendMessageWithContentEvent triggered")
+            
             // Handle pending chunks first (same pattern as SendOverride modifies and invokes original)
             if (pendingChunks.isNotEmpty() && currentChunkIndex < pendingChunks.size) {
                 val chunk = pendingChunks[currentChunkIndex]
@@ -107,37 +109,55 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
             
-            if (isSplitting) return@subscribe
+            if (isSplitting) {
+                context.log.verbose("GalleryVideoSplitting: Already splitting, skipping")
+                return@subscribe
+            }
             
             // Same checks as SendOverride
             if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) {
+                context.log.verbose("GalleryVideoSplitting: Story detected, skipping")
                 return@subscribe
             }
             
             val localMessageContent = event.messageContent
+            context.log.verbose("GalleryVideoSplitting: Content type = ${localMessageContent.contentType}")
             
             // Only process EXTERNAL_MEDIA
             if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
                 MessageContent(localMessageContent.instanceNonNull()).getObjectFieldOrNull("mExternalContentMetadata") == null) {
+                context.log.verbose("GalleryVideoSplitting: Not EXTERNAL_MEDIA, skipping")
                 return@subscribe
             }
 
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
-            if (messageProtoReader.contains(7)) return@subscribe
+            context.log.verbose("GalleryVideoSplitting: Proto structure:\n$messageProtoReader")
+            
+            if (messageProtoReader.contains(7)) {
+                context.log.verbose("GalleryVideoSplitting: Story reply detected, skipping")
+                return@subscribe
+            }
 
             // Check for multiple media
-            if ((messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
+            val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
+            context.log.verbose("GalleryVideoSplitting: Media count = $mediaCount")
+            if (mediaCount > 1) {
+                context.log.verbose("GalleryVideoSplitting: Multiple media detected, skipping")
                 return@subscribe
             }
 
             // Get video duration from proto first, then fallback to MediaFilePicker
             var videoDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)
+            context.log.verbose("GalleryVideoSplitting: Duration from proto = $videoDuration ms")
+            
             if (videoDuration == null || videoDuration <= 0) {
                 videoDuration = context.feature(MediaFilePicker::class).lastMediaDuration
+                context.log.verbose("GalleryVideoSplitting: Duration from MediaFilePicker = $videoDuration ms")
             }
 
             // Check if video needs splitting (>10 seconds)
             if (videoDuration == null || videoDuration <= 10000) {
+                context.log.verbose("GalleryVideoSplitting: Video too short (${videoDuration}ms), not splitting")
                 // Video is short enough, let it proceed normally
                 return@subscribe
             }
