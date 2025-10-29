@@ -41,182 +41,126 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     
     private var customDuration by mutableFloatStateOf(10f)
 
+    // Lazily get MediaFilePicker feature for fallback duration
     private val mediaFilePicker by lazy { context.feature(MediaFilePicker::class) }
 
     private val sendMessageCallback by lazy {
         var result: Class<*>? = null
-        context.mappings.useMapper(CallbackMapper::class) {
-            result = callbacks.getClass("SendMessageCallback")
-        }
+        context.mappings.useMapper(CallbackMapper::class) { result = callbacks.getClass("SendMessageCallback") }
         result ?: throw IllegalStateException("SendMessageCallback class not found")
     }
 
     override fun init() {
-        context.log.verbose("GalleryVideoSplitting: Initializing...")
-        
-        if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
-            context.log.verbose("GalleryVideoSplitting: Feature disabled in config")
-            return
-        }
-        
+        // Check if feature enabled
+        if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) return
+
+        // Check FFmpeg presence
         try {
             Class.forName("com.arthenica.ffmpegkit.FFmpegKit")
-            context.log.verbose("GalleryVideoSplitting: FFmpegKit found")
         } catch (e: ClassNotFoundException) {
-            context.log.error("GalleryVideoSplitting: FFmpegKit not found! Feature disabled.", e)
+            context.log.error("FFmpegKit not found! Feature disabled.", e)
             return
         }
 
+        // Subscribe to message send events
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
             if (isSplitting) return@subscribe
-            
-            if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) {
-                return@subscribe
-            }
-            
-            val localMessageContent = event.messageContent
-            
-            if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
-                localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) {
-                return@subscribe
-            }
 
-            val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
-            if (messageProtoReader.contains(7)) return@subscribe
+            // Skip if only story
+            if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
 
-            context.log.verbose("GalleryVideoSplitting: Processing EXTERNAL_MEDIA message")
-            context.log.verbose("GalleryVideoSplitting: Full proto:\n$messageProtoReader")
+            val localMsg = event.messageContent
+            if (localMsg.contentType != ContentType.EXTERNAL_MEDIA && localMsg.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) return@subscribe
 
-            if ((messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
-                context.log.verbose("GalleryVideoSplitting: Multiple media detected, skipping")
-                return@subscribe
-            }
+            val protoReader = ProtoReader(localMsg.content ?: return@subscribe)
+            if (protoReader.contains(7)) return@subscribe
 
-            var videoDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: 0L
-            if (videoDuration <= 0) {
+            // Cancel original send event
+            event.canceled = true
+
+            // Extract or fallback video duration
+            var videoDuration = protoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: 0L
+            if (videoDuration <= 0L) {
                 videoDuration = mediaFilePicker.lastMediaDuration ?: 0L
             }
-
-            context.log.verbose("GalleryVideoSplitting: Video duration = $videoDuration ms")
-
-            event.canceled = true
-            context.log.verbose("GalleryVideoSplitting: Original send CANCELED")
-
             val conversations = event.destinations.conversations?.map { SnapUUID(it) } ?: emptyList()
-            if (conversations.isEmpty()) {
-                context.log.error("GalleryVideoSplitting: No conversations to send to!")
-                return@subscribe
-            }
+            if (conversations.isEmpty()) return@subscribe
 
-            if (videoDuration <= 10000) {
-                context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (<= 10s), no split needed")
+            // Show user dialog if needed
+            if (videoDuration <= 10000L) {
+                // No splitting needed
                 event.invokeOriginal()
                 return@subscribe
             }
 
-            context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (> 10s), will split")
-
             context.runOnUiThread {
-                showDurationDialog(event, conversations, videoDuration, messageProtoReader)
+                showDurationDialog(event, conversations, videoDuration, protoReader)
             }
         }
-        
-        context.log.verbose("GalleryVideoSplitting: Initialization complete")
     }
 
     private fun showDurationDialog(
         event: SendMessageWithContentEvent,
         conversations: List<SnapUUID>,
         totalDuration: Long,
-        messageProtoReader: ProtoReader
+        protoReader: ProtoReader
     ) {
         createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
-            val mainTranslation = remember {
-                context.translation.getCategory("send_override_dialog")
-            }
-
-            fun convertDuration(duration: Float): Int? {
+            val translation = remember { context.translation.getCategory("send_override_dialog") }
+            fun convertDuration(d: Float): Int? {
                 return when {
-                    duration in -2f..-1f -> 100
-                    duration in -1f..-0f -> 250
-                    duration in -0f..1f -> 500
-                    duration >= 11f -> null
-                    else -> ((duration * 1000).toInt() / 1000) * 1000
+                    d in -2f..-1f -> 100
+                    d in -1f..-0f -> 250
+                    d in -0f..1f -> 500
+                    d >= 11f -> null
+                    else -> ((d * 1000).toInt() / 1000) * 1000
                 }
             }
-
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "Split Video",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = "Video duration: ${(totalDuration / 1000.0).toDuration(DurationUnit.SECONDS).toString(DurationUnit.SECONDS, 1)}",
-                    fontSize = 14.sp
-                )
-
-                Text(
-                    text = "This video will be split into 10-second chunks and sent separately.",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
+                Text("Split Video", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("Video duration: ${(totalDuration / 1000.0).toDuration(DurationUnit.SECONDS).toString(DurationUnit.SECONDS, 1)}")
+                Text("This video will be split into 10-second chunks and sent separately.")
                 Column(
                     modifier = Modifier.padding(vertical = 8.dp)
                 ) {
                     Text(
-                        text = mainTranslation.format(
+                        translation.format(
                             "duration",
                             "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)
-                                ?.toString(DurationUnit.SECONDS, 2)
-                                ?: mainTranslation["unlimited_duration"])
-                        ),
-                        fontSize = 14.sp
+                                ?.toString(DurationUnit.SECONDS, 2) ?: translation["unlimited_duration"])
+                        )
                     )
                     Slider(
-                        modifier = Modifier.fillMaxWidth(),
                         value = customDuration,
-                        onValueChange = {
-                            customDuration = it
-                        },
+                        onValueChange = { customDuration = it },
                         valueRange = -2f..11f,
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Text(
-                        text = "Snap duration for each chunk",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text("Snap duration for each chunk")
                 }
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedButton(onClick = {
-                        alertDialog.dismiss()
-                    }) {
-                        Text(context.translation["button.cancel"])
+                    OutlinedButton(onClick = { alertDialog.dismiss() }) {
+                        Text(translation["button.cancel"])
                     }
                     Button(onClick = {
                         alertDialog.dismiss()
                         val snapDuration = convertDuration(customDuration)
-                        context.log.verbose("GalleryVideoSplitting: User selected snap duration: $snapDuration ms")
-                        
+                        context.log.verbose("User selected snap duration: $snapDuration ms")
+                        // Launch split and send in coroutine
                         context.coroutineScope.launch {
                             isSplitting = true
-                            splitAndSendVideo(event, conversations, snapDuration, messageProtoReader)
+                            splitAndSendVideo(event, conversations, snapDuration, protoReader)
                             isSplitting = false
                         }
                     }) {
-                        Text(context.translation["button.send"])
+                        Text(translation["button.send"])
                     }
                 }
             }
@@ -227,36 +171,17 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         event: SendMessageWithContentEvent,
         conversations: List<SnapUUID>,
         snapDuration: Int?,
-        messageProtoReader: ProtoReader
+        protoReader: ProtoReader
     ) {
-        val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { 
-            mkdirs()
-        }
-        
+        val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { mkdirs() }
         try {
             withContext(Dispatchers.Main) {
                 context.inAppOverlay.showStatusToast(Icons.Default.Info, "Splitting video...")
             }
-
-            val localMessageContent = event.messageContent
-            val localMediaReferencesObj = localMessageContent.instanceNonNull()
-                .getObjectFieldOrNull("mLocalMediaReferences")
-
-            var mediaUriStr: String? = null
-            
-            if (localMediaReferencesObj is List<*> && localMediaReferencesObj.isNotEmpty()) {
-                val firstRef = localMediaReferencesObj.first()
-                val mediaIdObj = firstRef?.let { 
-                    it.javaClass.getDeclaredField("mId").apply { isAccessible = true }.get(it) 
-                }
-                if (mediaIdObj is ByteArray) {
-                    mediaUriStr = String(mediaIdObj)
-                    context.log.verbose("GalleryVideoSplitting: Found URI in mLocalMediaReferences: $mediaUriStr")
-                }
-            }
-
+            val localMsg = event.messageContent
+            val mediaUriStr = getMediaUriString(localMsg)
             if (mediaUriStr == null) {
-                context.log.error("GalleryVideoSplitting: Could not extract media URI")
+                context.log.error("Could not extract media URI")
                 withContext(Dispatchers.Main) {
                     context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed to get video URI")
                 }
@@ -265,94 +190,38 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             val mediaUri = Uri.parse(mediaUriStr)
             val cachedVideo = File(tempDir, "input.mp4")
-
             context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
-                cachedVideo.outputStream().use { output ->
-                    input.copyTo(output)
-                }
-            } ?: throw IllegalStateException("Failed to open input stream")
-            
-            context.log.verbose("GalleryVideoSplitting: Video cached (${cachedVideo.length()} bytes)")
-
-            val command = "-i ${cachedVideo.absolutePath} -c copy -f segment -segment_time 10 -reset_timestamps 1 ${tempDir.absolutePath}/split_%03d.mp4"
-            context.log.verbose("GalleryVideoSplitting: FFmpeg command: $command")
-            
-            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
-            if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
-                throw IllegalStateException("FFmpeg failed: ${session.output}")
-            }
-
-            val outputFiles = tempDir.listFiles()?.filter { it.name.startsWith("split_") }?.sortedBy { it.name } ?: emptyList()
-            context.log.verbose("GalleryVideoSplitting: Split into ${outputFiles.size} files")
-            
+                cachedVideo.outputStream().use { output -> input.copyTo(output) }
+            } ?: throw IllegalStateException("Failed to read media URI input stream")
+            // Split with ffmpeg
+            val cmd = "-i ${cachedVideo.absolutePath} -c copy -f segment -segment_time 10 -reset_timestamps 1 ${tempDir.absolutePath}/split_%03d.mp4"
+            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(cmd)
+            if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) throw IllegalStateException("FFmpeg failed: ${session.output}")
+            val files = tempDir.listFiles { it.name.startsWith("split_") }?.sortedBy { it.name } ?: emptyList()
             withContext(Dispatchers.Main) {
-                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sending ${outputFiles.size} chunks...")
+                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sending ${files.size} chunks...")
             }
-
-            val hasSound = messageProtoReader.getVarInt(3, 3, 5, 2, 5) ?: 1
-            context.log.verbose("GalleryVideoSplitting: Original hasSound = $hasSound")
-
-            for ((index, file) in outputFiles.withIndex()) {
-                context.log.verbose("GalleryVideoSplitting: Processing chunk ${index + 1}/${outputFiles.size}")
-                
-                val chunkUri = Uri.fromFile(file)
+            val hasSound = protoReader.getVarInt(3, 3, 5, 2, 5) ?: 1
+            for ((i, file) in files.withIndex()) {
+                val uri = Uri.fromFile(file)
                 val retriever = MediaMetadataRetriever()
-
                 try {
-                    retriever.setDataSource(context.androidContext, chunkUri)
-                    
-                    val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 10000L
-                    val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
-                    val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
-                    
-                    context.log.verbose("GalleryVideoSplitting: Chunk ${index + 1} - Duration: ${chunkDuration}ms, Size: ${chunkWidth}x${chunkHeight}")
-
-                    val chunkContent = ProtoWriter().apply {
-                        from(3) {
-                            from(3) {
-                                addString(2, chunkUri.toString()) // Content URI
-                                from(5) {
-                                    from(1) {
-                                        from(1) {
-                                            addVarInt(2, 0)
-                                            addVarInt(12, 0)
-                                            addVarInt(15, snapDuration?.toLong() ?: chunkDuration)
-                                            addVarInt(16, chunkWidth)
-                                            addVarInt(17, chunkHeight)
-                                        }
-                                        addVarInt(6, 1)
-                                    }
-                                    from(2) {
-                                        addVarInt(5, hasSound)
-                                        if (snapDuration != null) {
-                                            if (snapDuration >= 1000) {
-                                                addVarInt(8, snapDuration / 1000)
-                                            } else {
-                                                addVarInt(99, snapDuration.toLong())
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }.toByteArray()
-
-                    context.log.verbose("GalleryVideoSplitting: Sending chunk ${index + 1} with snap duration: $snapDuration ms")
+                    retriever.setDataSource(context.androidContext, uri)
+                    val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 10000
+                    val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
+                    val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
+                    val chunkContent = buildChunkProto(uri, durationMs, width, height, snapDuration, hasSound)
                     sendChunk(conversations, chunkContent)
                     delay(1500)
-                    
                 } finally {
                     retriever.release()
                 }
             }
-
             withContext(Dispatchers.Main) {
-                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sent ${outputFiles.size} chunks!")
+                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sent ${files.size} chunks!")
             }
-            context.log.verbose("GalleryVideoSplitting: All chunks sent successfully")
-            
         } catch (e: Exception) {
-            context.log.error("GalleryVideoSplitting: Failed to split and send video", e)
+            context.log.error("Failed to split and send video", e)
             withContext(Dispatchers.Main) {
                 context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed: ${e.message}")
             }
@@ -361,11 +230,52 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
+    private fun getMediaUriString(localMsg: ContentType) : String? {
+        val contentBytes = localMsg.content ?: return null
+        val protoReader = ProtoReader(contentBytes)
+        val mediaRefBytes = protoReader.followPath(3)?.getBuffer()
+        val mediaUriStr = mediaRefBytes?.joinToString("") { "%02x".format(it) }
+        return mediaUriStr
+    }
+
+    private fun buildChunkProto(
+        uri: Uri,
+        durationMs: Long,
+        width: Int,
+        height: Int,
+        snapDuration: Int?,
+        hasSound: Long
+    ): ByteArray {
+        return ProtoWriter().apply {
+            from(3) {
+                addString(2, uri.toString())
+                from(5) {
+                    from(1) {
+                        addVarInt(2, 0)
+                        addVarInt(12, 0)
+                        addVarInt(15, snapDuration?.toLong() ?: durationMs)
+                        addVarInt(16, width)
+                        addVarInt(17, height)
+                    }
+                    addVarInt(6, 1)
+                }
+                from(2) {
+                    addVarInt(5, hasSound)
+                    if (snapDuration != null) {
+                        if (snapDuration >= 1000) {
+                            addVarInt(8, snapDuration / 1000)
+                        } else {
+                            addVarInt(99, snapDuration.toLong())
+                        }
+                    }
+                }
+            }
+        }.toByteArray()
+    }
+
     private fun sendChunk(conversations: List<SnapUUID>, messageContent: ByteArray) {
-        val sendMessageWithContentMethod = context.classCache.conversationManager.declaredMethods.first { 
-            it.name == "sendMessageWithContent" 
-        }
-        val localMessageContentTemplate = """
+        val sendMethod = context.classCache.conversationManager.declaredMethods.first { it.name == "sendMessageWithContent" }
+        val messageJson = """
         {
             "mAllowsTranscription": false,
             "mBotMention": false,
@@ -382,29 +292,17 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             },
             "mSavePolicy": "LIFETIME"
         }
-        """.trimIndent()
-
-        val localMessageContent = context.gson.fromJson(
-            localMessageContentTemplate, 
-            context.classCache.localMessageContent
-        )
-
-        val messageDestinations = MessageDestinations(
+        """
+        val localMsg = context.gson.fromJson(messageJson, context.classCache.localMessageContent)
+        val destinations = MessageDestinations(
             AbstractWrapper.newEmptyInstance(context.classCache.messageDestinations)
-        ).also {
-            it.conversations = ArrayList(conversations)
-            it.mPhoneNumbers = ArrayList()
-            it.stories = ArrayList()
+        ).apply {
+            this.conversations = ArrayList(conversations)
+            this.mPhoneNumbers = ArrayList()
+            this.stories = ArrayList()
         }
-
         val callback = CallbackBuilder(sendMessageCallback).build()
-        val conversationManager = context.feature(Messaging::class).conversationManager?.instanceNonNull()
-
-        sendMessageWithContentMethod.invoke(
-            conversationManager,
-            messageDestinations.instanceNonNull(),
-            localMessageContent,
-            callback
-        )
+        val convoManager = context.feature(Messaging::class).conversationManager?.instanceNonNull()
+        sendMethod.invoke(convoManager, destinations.instanceNonNull(), localMsg, callback)
     }
 }
