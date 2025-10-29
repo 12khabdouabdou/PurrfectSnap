@@ -146,13 +146,17 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         val retriever = MediaMetadataRetriever()
                         try {
                             val uri = Uri.parse(contentUriStr)
-                            retriever.setDataSource(context.androidContext, uri)
                             
-                            videoDuration = retriever.extractMetadata(
-                                MediaMetadataRetriever.METADATA_KEY_DURATION
-                            )?.toLongOrNull()
-                            
-                            context.log.verbose("GalleryVideoSplitting: Extracted duration from file = ${videoDuration}ms")
+                            // Use FileDescriptor for content URIs (safer)
+                            context.mainActivity!!.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                                retriever.setDataSource(pfd.fileDescriptor)
+                                
+                                videoDuration = retriever.extractMetadata(
+                                    MediaMetadataRetriever.METADATA_KEY_DURATION
+                                )?.toLongOrNull()
+                                
+                                context.log.verbose("GalleryVideoSplitting: Extracted duration from file = ${videoDuration}ms")
+                            }
                         } catch (e: Exception) {
                             context.log.error("GalleryVideoSplitting: Failed to extract duration from file", e)
                         } finally {
@@ -180,13 +184,17 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                     val retriever = MediaMetadataRetriever()
                                     try {
                                         val uri = Uri.parse(mediaUriString)
-                                        retriever.setDataSource(context.androidContext, uri)
                                         
-                                        videoDuration = retriever.extractMetadata(
-                                            MediaMetadataRetriever.METADATA_KEY_DURATION
-                                        )?.toLongOrNull()
-                                        
-                                        context.log.verbose("GalleryVideoSplitting: Extracted duration from mLocalMediaReferences = ${videoDuration}ms")
+                                        // Use FileDescriptor for content URIs (safer)
+                                        context.mainActivity!!.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                                            retriever.setDataSource(pfd.fileDescriptor)
+                                            
+                                            videoDuration = retriever.extractMetadata(
+                                                MediaMetadataRetriever.METADATA_KEY_DURATION
+                                            )?.toLongOrNull()
+                                            
+                                            context.log.verbose("GalleryVideoSplitting: Extracted duration from mLocalMediaReferences = ${videoDuration}ms")
+                                        }
                                     } catch (e: Exception) {
                                         context.log.error("GalleryVideoSplitting: Failed to extract from mLocalMediaReferences", e)
                                     } finally {
@@ -201,6 +209,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 // Check media type (0=video, 1=photo) to confirm it's actually a video
                 val mediaType = snapDocPlayback.getVarInt(1, 1, 2)
                 context.log.verbose("GalleryVideoSplitting: Media type = $mediaType (0=video, 1=photo)")
+                
+                // Skip if it's a photo (mediaType = 1)
+                if (mediaType == 1L) {
+                    context.log.verbose("GalleryVideoSplitting: This is a photo (mediaType=1), skipping")
+                    return@subscribe
+                }
                 
                 if (videoDuration == null || videoDuration <= 0) {
                     context.log.verbose("GalleryVideoSplitting: Could not determine video duration, skipping")
