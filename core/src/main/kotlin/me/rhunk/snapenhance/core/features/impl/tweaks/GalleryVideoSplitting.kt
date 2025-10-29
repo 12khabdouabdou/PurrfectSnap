@@ -142,11 +142,41 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 // ===== DURATION DETECTION FIX =====
                 var videoDuration: Long? = null
                 
-                // Try to get duration from proto first (works for videos <=10s)
+                // Try method 1: Get duration from proto field 1,1,15 (works for videos <=10s)
                 videoDuration = snapDocPlayback.getVarInt(1, 1, 15)
                 context.log.verbose("GalleryVideoSplitting: Duration from proto (1,1,15) = $videoDuration")
                 
-                // If proto doesn't have duration (videos >10s), extract from actual file
+                // Try method 2: Get from field 2 which contains original snap duration (works for all videos)
+                if (videoDuration == null || videoDuration <= 0) {
+                    context.log.verbose("GalleryVideoSplitting: Trying to extract duration from field 2 (original snap duration)")
+                    
+                    snapDocPlayback.getByteArray(2)?.let { originalSnapData ->
+                        try {
+                            val originalSnapReader = ProtoReader(originalSnapData)
+                            context.log.verbose("GalleryVideoSplitting: Original snap data proto:\n${originalSnapReader}")
+                            
+                            // Field 8 contains duration in seconds
+                            val durationSeconds = originalSnapReader.getVarInt(8)
+                            if (durationSeconds != null && durationSeconds > 0) {
+                                videoDuration = durationSeconds * 1000 // Convert to milliseconds
+                                context.log.verbose("GalleryVideoSplitting: Duration from field 2->8 (seconds) = $durationSeconds s = ${videoDuration}ms")
+                            }
+                            
+                            // Field 99 contains duration in milliseconds (for very short videos)
+                            if (videoDuration == null || videoDuration <= 0) {
+                                val durationMs = originalSnapReader.getVarInt(99)
+                                if (durationMs != null && durationMs > 0) {
+                                    videoDuration = durationMs
+                                    context.log.verbose("GalleryVideoSplitting: Duration from field 2->99 (ms) = ${videoDuration}ms")
+                                }
+                            }
+                        } catch (e: Exception) {
+                            context.log.error("GalleryVideoSplitting: Failed to parse field 2 data", e)
+                        }
+                    }
+                }
+                
+                // Try method 3: Extract from actual file if proto methods failed
                 if (videoDuration == null || videoDuration <= 0) {
                     context.log.verbose("GalleryVideoSplitting: Proto duration missing/invalid, extracting from file...")
                     
@@ -219,7 +249,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     }
                 }
                 
+                // Check media type (0=video, 1=photo) to confirm it's actually a video
+                val mediaType = snapDocPlayback.getVarInt(1, 1, 2)
+                context.log.verbose("GalleryVideoSplitting: Media type = $mediaType (0=video, 1=photo)")
                 
+                // Skip if it's a photo (mediaType = 1)
+                if (mediaType == 1L) {
+                    context.log.verbose("GalleryVideoSplitting: This is a photo (mediaType=1), skipping")
+                    return@subscribe
+                }
                 
                 // ===== END DURATION FIX =====
                 
@@ -309,10 +347,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     }
 
     private fun showDurationInputDialog(mediaUri: Uri, conversations: List<SnapUUID>) {
-        var videoDurationInput by mutableStateOf("")
-        var errorMessage by mutableStateOf<String?>(null)
-        
         createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+            var videoDurationInput by remember { mutableStateOf("") }
+            var errorMessage by remember { mutableStateOf<String?>(null) }
+            
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -343,9 +381,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     isError = errorMessage != null
                 )
                 
-                if (errorMessage != null) {
+                errorMessage?.let { error ->
                     Text(
-                        text = errorMessage!!,
+                        text = error,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
