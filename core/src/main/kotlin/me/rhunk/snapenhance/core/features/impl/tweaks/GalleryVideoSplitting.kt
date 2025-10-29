@@ -131,12 +131,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
 
-            // Check if it's a video
-            val mediaType = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 6)
-            if (mediaType != 1L) { // 1 = VIDEO
-                context.log.verbose("GalleryVideoSplitting: Not a video (type=$mediaType), skipping")
-                return@subscribe
-            }
+            
 
             // Get video duration using the same pattern as SendOverride
             // Try path 3,3,5,1,1,15 first, then 11,5,2,5, then MediaFilePicker
