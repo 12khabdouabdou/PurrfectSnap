@@ -501,59 +501,55 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 videoDuration = 0L // Will be determined by FFmpeg
             }
 
-            // Extract content URI from protobuf (similar to how we extract duration)
-            // EXTERNAL_MEDIA structure: 3 -> 3 (media items) -> ... -> contentUri
+            // Extract content URI from mLocalMediaReferences (Java object field, NOT protobuf)
+            // This is how SendOverride accesses the media URI
+            val localMessageContent = event.messageContent
+            val messageContentWrapper = MessageContent(localMessageContent.instanceNonNull())
+            val localMediaReferencesObj = messageContentWrapper.getObjectFieldOrNull("mLocalMediaReferences")
+
             var mediaUriStr: String? = null
             
-            // Try to get content URI from proto - following the EXTERNAL_MEDIA structure
-            // Path 3, 3 gives us the media item, then we need to find the contentUri field
-            messageProtoReader.followPath(3, 3)?.let { mediaItemReader ->
-                context.log.verbose("GalleryVideoSplitting: Found media item at path 3,3")
+            context.log.verbose("GalleryVideoSplitting: Accessing mLocalMediaReferences via reflection")
+            
+            if (localMediaReferencesObj is List<*> && localMediaReferencesObj.isNotEmpty()) {
+                val firstRef = localMediaReferencesObj.first()
+                context.log.verbose("GalleryVideoSplitting: Found ${localMediaReferencesObj.size} media reference(s)")
                 
-                // Try different field IDs where contentUri might be stored
-                mediaUriStr = mediaItemReader.getString(1) // Common contentUri field
-                    ?: mediaItemReader.getString(3) // Alternative location
-                    ?: mediaItemReader.followPath(5, 1, 1)?.getString(3) // Nested in media details
-                    ?: mediaItemReader.followPath(5, 1, 1)?.getString(4) // Another nested location
-                
-                if (mediaUriStr != null) {
-                    context.log.verbose("GalleryVideoSplitting: Found content URI in proto: $mediaUriStr")
+                // Reflectively get the mId field from the reference object
+                val mediaIdObj = firstRef?.let { 
+                    it.javaClass.getDeclaredField("mId").apply { isAccessible = true }.get(it) 
                 }
-            }
-
-            // Fallback: try mLocalMediaReferences if proto didn't have it
-            if (mediaUriStr == null) {
-                context.log.verbose("GalleryVideoSplitting: Content URI not in proto, trying mLocalMediaReferences")
-                val localMessageContent = event.messageContent
-                val messageContentWrapper = MessageContent(localMessageContent.instanceNonNull())
-                val localMediaReferencesObj = messageContentWrapper.getObjectFieldOrNull("mLocalMediaReferences")
                 
-                if (localMediaReferencesObj is List<*> && localMediaReferencesObj.isNotEmpty()) {
-                    val firstRef = localMediaReferencesObj.first()
-                    val mediaIdObj = firstRef?.let { 
-                        it.javaClass.getDeclaredField("mId").apply { isAccessible = true }.get(it) 
-                    }
-                    if (mediaIdObj is ByteArray) {
-                        mediaUriStr = String(mediaIdObj)
-                        context.log.verbose("GalleryVideoSplitting: Found URI in mLocalMediaReferences: $mediaUriStr")
-                    }
+                // The mId field holds the URI as a ByteArray
+                if (mediaIdObj is ByteArray) {
+                    mediaUriStr = String(mediaIdObj)
+                    context.log.verbose("GalleryVideoSplitting: Extracted URI from mLocalMediaReferences: $mediaUriStr")
+                } else {
+                    context.log.error("GalleryVideoSplitting: mId is not a ByteArray, type: ${mediaIdObj?.javaClass?.name}")
                 }
+            } else {
+                context.log.error("GalleryVideoSplitting: mLocalMediaReferences is empty or not a List")
+                context.log.verbose("GalleryVideoSplitting: mLocalMediaReferences type: ${localMediaReferencesObj?.javaClass?.name}")
             }
 
             if (mediaUriStr == null) {
-                context.log.error("GalleryVideoSplitting: Could not extract media URI")
-                context.log.verbose("GalleryVideoSplitting: Proto structure at 3,3:\n${messageProtoReader.followPath(3, 3)}")
+                context.log.error("GalleryVideoSplitting: Could not extract media URI from mLocalMediaReferences")
                 withContext(Dispatchers.Main) {
-                    context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed to get video URI. Check logs for proto structure.")
+                    context.inAppOverlay.showStatusToast(
+                        Icons.Default.WarningAmber, 
+                        "Failed to get video URI from local media references"
+                    )
                 }
                 return false
             }
 
             context.log.verbose("GalleryVideoSplitting: Using media URI: $mediaUriStr")
+            
+            // Parse URI and access via ContentResolver (standard Android approach)
             val mediaUri = Uri.parse(mediaUriStr)
             val cachedVideo = File(tempDir!!, "input.mp4")
 
-            // Copy video to cache
+            // Copy video to cache using ContentResolver
             context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
                 cachedVideo.outputStream().use { output ->
                     input.copyTo(output)
@@ -562,12 +558,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             context.log.verbose("GalleryVideoSplitting: Video cached (${cachedVideo.length()} bytes), starting FFmpeg split...")
 
-            // Split with FFmpeg
+            // Split with FFmpeg - 10 second segments
             val command = "-i ${cachedVideo.absolutePath} -c copy -f segment -segment_time 10 -reset_timestamps 1 ${tempDir!!.absolutePath}/split_%03d.mp4"
             val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
 
             if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
-                throw IllegalStateException("FFmpeg failed: ${session.output}")
+                throw IllegalStateException("FFmpeg failed with code ${session.returnCode}: ${session.output}")
             }
 
             val outputFiles = tempDir!!.listFiles()?.filter { it.name.startsWith("split_") }?.sortedBy { it.name } ?: emptyList()
@@ -578,11 +574,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             context.log.verbose("GalleryVideoSplitting: FFmpeg created ${outputFiles.size} chunks")
 
-            // Store chunk files
+            // Store chunk files for sequential sending
             pendingChunks.clear()
             pendingChunks.addAll(outputFiles)
 
-            context.log.verbose("GalleryVideoSplitting: Prepared ${pendingChunks.size} chunks")
+            context.log.verbose("GalleryVideoSplitting: Successfully prepared ${pendingChunks.size} chunks")
             return true
             
         } catch (e: Exception) {
