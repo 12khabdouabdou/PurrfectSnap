@@ -87,16 +87,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
 
-            // Check if it's a VIDEO - field 6 in path 3,3,5,1 indicates media type
-            // 0 = photo, 1 = video
-            val mediaType = messageProtoReader.getVarInt(3, 3, 5, 1, 6)
-            context.log.verbose("GalleryVideoSplitting: Media type (field 6) = $mediaType (0=photo, 1=video)")
-            
-            if (mediaType != 1L) {
-                context.log.verbose("GalleryVideoSplitting: Not a video, skipping")
-                return@subscribe
-            }
-
             // Get video duration - try multiple paths
             var videoDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)
             if (videoDuration == null) {
@@ -149,18 +139,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
             }
 
-            // Check if video needs splitting
-            if (videoDuration == null || videoDuration <= 10000) {
-                if (videoDuration == null) {
-                    context.log.verbose("GalleryVideoSplitting: Could not determine duration")
-                } else {
-                    context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (<= 10s), no split needed")
-                }
-                return@subscribe
-            }
-
-            context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (> 10s), will split")
-
             // Cancel the original send
             event.canceled = true
 
@@ -169,6 +147,25 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 context.log.error("GalleryVideoSplitting: No conversations to send to!")
                 return@subscribe
             }
+
+            // If still no duration or <= 0, ask user to input it
+            if (videoDuration == null || videoDuration <= 0) {
+                context.log.verbose("GalleryVideoSplitting: Could not determine duration, asking user")
+                context.runOnUiThread {
+                    showDurationInputDialog(event, conversations, messageProtoReader, mediaUriStr)
+                }
+                return@subscribe
+            }
+
+            // Check if video needs splitting
+            if (videoDuration <= 10000) {
+                context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (<= 10s), no split needed")
+                // Re-invoke original send since we don't need to split
+                event.invokeOriginal()
+                return@subscribe
+            }
+
+            context.log.verbose("GalleryVideoSplitting: Video is ${videoDuration}ms (> 10s), will split")
 
             // Show duration dialog
             context.runOnUiThread {
@@ -256,6 +253,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 ) {
                     OutlinedButton(onClick = {
                         alertDialog.dismiss()
+                        // Re-invoke original send if user cancels
+                        event.invokeOriginal()
                     }) {
                         Text(context.translation["button.cancel"])
                     }
