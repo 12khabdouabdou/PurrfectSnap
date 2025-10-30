@@ -32,19 +32,83 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     override fun init() {
         context.log.info("Initializing GalleryVideoSplitting feature")
         
+        if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
+            context.log.info("Feature is disabled in config, skipping initialization")
+            return
+        }
+        
         // Hook ContentResolver to intercept media access
         setupContentResolverHooks()
         context.log.info("ContentResolver hooks setup complete")
         
-        val actionHandlerClass = findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
+        // Try to find the ChatMediaDrawerActionHandler class
+        val actionHandlerClass = runCatching {
+            findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
+        }.getOrElse { error ->
+            context.log.error("Failed to find ChatMediaDrawerActionHandler class", error)
+            context.log.info("Trying alternative approach using onNextActivityCreate...")
+            
+            // Alternative approach: defer initialization until we can find the class
+            onNextActivityCreate(defer = true) {
+                tryAlternativeInit()
+            }
+            return
+        }
+        
         context.log.info("Found ChatMediaDrawerActionHandler class: ${actionHandlerClass.name}")
         
         val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
             ?: run {
                 context.log.error("Could not find sendItems method, feature disabled.")
+                context.log.info("Available methods: ${actionHandlerClass.methods.joinToString { it.name }}")
                 return
             }
         context.log.info("Found sendItems method: ${sendItemsMethod.name}")
+        
+        hookSendItemsMethod(sendItemsMethod)
+    }
+    
+    private fun tryAlternativeInit() {
+        context.log.info("Attempting alternative initialization approach")
+        
+        // Try to find ChatMediaDrawer and hook its action handler
+        runCatching {
+            val chatMediaDrawerClass = findClass("com.snap.composer.memories.ChatMediaDrawer")
+            context.log.info("Found ChatMediaDrawer class: ${chatMediaDrawerClass.name}")
+            
+            // Find the generic superclass that contains the action handler type
+            val actionHandlerType = chatMediaDrawerClass.genericSuperclass?.let { superType ->
+                context.log.verbose("Generic superclass: $superType")
+                
+                // Extract type arguments to find action handler
+                if (superType is java.lang.reflect.ParameterizedType) {
+                    superType.actualTypeArguments.getOrNull(1) as? Class<*>
+                }
+            }
+            
+            if (actionHandlerType != null) {
+                context.log.info("Found action handler type: ${actionHandlerType.name}")
+                
+                val sendItemsMethod = actionHandlerType.methods.firstOrNull { it.name == "sendItems" }
+                if (sendItemsMethod != null) {
+                    context.log.info("Found sendItems method via alternative approach")
+                    hookSendItemsMethod(sendItemsMethod)
+                } else {
+                    context.log.error("Could not find sendItems method in action handler type")
+                }
+            } else {
+                context.log.error("Could not extract action handler type from ChatMediaDrawer")
+            }
+        }.onFailure { error ->
+            context.log.error("Alternative initialization failed", error)
+        }
+    }
+    
+    private fun hookSendItemsMethod(sendItemsMethod: Method) {
+        context.log.info("Hooking sendItems method: ${sendItemsMethod.declaringClass.name}.${sendItemsMethod.name}")
+
+    private fun hookSendItemsMethod(sendItemsMethod: Method) {
+        context.log.info("Hooking sendItems method: ${sendItemsMethod.declaringClass.name}.${sendItemsMethod.name}")
 
         sendItemsMethod.hook(HookStage.BEFORE) { param ->
             context.log.verbose("sendItems hook triggered - isSplitting: $isSplitting, config enabled: ${context.config.messaging.splitVideoIntoTenSecondSnaps.get()}")
