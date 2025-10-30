@@ -107,9 +107,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private fun hookSendItemsMethod(sendItemsMethod: Method) {
         context.log.info("Hooking sendItems method: ${sendItemsMethod.declaringClass.name}.${sendItemsMethod.name}")
 
-    private fun hookSendItemsMethod(sendItemsMethod: Method) {
-        context.log.info("Hooking sendItems method: ${sendItemsMethod.declaringClass.name}.${sendItemsMethod.name}")
-
         sendItemsMethod.hook(HookStage.BEFORE) { param ->
             context.log.verbose("sendItems hook triggered - isSplitting: $isSplitting, config enabled: ${context.config.messaging.splitVideoIntoTenSecondSnaps.get()}")
             
