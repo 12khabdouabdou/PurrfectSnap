@@ -67,21 +67,20 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 context.log.verbose("Found handler method: ${handlerMethod.name}")
                 context.log.verbose("Handler parameter type: ${handlerMethod.parameterTypes[0].name}")
                 
-                sendItemsMethod = handlerMethod.parameterTypes[0].methods.first { it.name == "sendItems" }
-                context.log.verbose("Found sendItems method: ${sendItemsMethod.name}")
+                val actionHandlerClass = handlerMethod.parameterTypes[0]
+                context.log.verbose("Action handler class: ${actionHandlerClass.name}, is interface: ${actionHandlerClass.isInterface}")
                 
-                handlerMethod.hook(HookStage.AFTER) {
-                    chatMediaDrawerActionHandler = it.arg(0)
+                handlerMethod.hook(HookStage.AFTER) { hookParam ->
+                    chatMediaDrawerActionHandler = hookParam.arg(0)
                     context.log.verbose("Captured chatMediaDrawerActionHandler: ${chatMediaDrawerActionHandler.javaClass.name}")
-                }
-            } ?: run {
-                context.log.error("Could not get type argument [1] from ChatMediaDrawer, feature disabled.")
-                return@onNextActivityCreate
-            }
-
-            context.log.verbose("Setting up sendItems hook")
-
-            sendItemsMethod.hook(HookStage.BEFORE) { param ->
+                    
+                    // Now hook the concrete implementation's sendItems method
+                    val concreteClass = chatMediaDrawerActionHandler.javaClass
+                    sendItemsMethod = concreteClass.methods.first { it.name == "sendItems" }
+                    context.log.verbose("Found concrete sendItems method in: ${concreteClass.name}")
+                    context.log.verbose("Setting up sendItems hook on concrete implementation")
+                    
+                    sendItemsMethod.hook(HookStage.BEFORE) { param ->
                 context.log.verbose("sendItems hook triggered, isSplitting=$isSplitting")
                 
                 if (isSplitting) {
@@ -245,6 +244,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 } catch (e: Exception) {
                     context.log.error("Error in GalleryVideoSplitting hook", e)
                 }
+            }
+                }
+            } ?: run {
+                context.log.error("Could not get type argument [1] from ChatMediaDrawer, feature disabled.")
+                return@onNextActivityCreate
             }
         }
     }
