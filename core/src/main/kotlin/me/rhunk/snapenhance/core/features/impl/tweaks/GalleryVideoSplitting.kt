@@ -110,13 +110,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                         from("itemId", new = true) {
                                             set("itemId", chunkUri.toString())
                                         }
-                                    }
+                                    } ?: throw IllegalStateException("Failed to create new item")
 
                                     newMediaItem = mediaItem.javaClass.dataBuilder {
                                         set("thumbnail", mediaItem.getObjectField("thumbnail"))
                                         set("item", newItem)
                                         set("order", index.toDouble())
-                                    }
+                                    } ?: throw IllegalStateException("Failed to create new media item")
                                 } finally {
                                     retriever.release()
                                 }
