@@ -86,15 +86,16 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
             }
             
-            if (actionHandlerType != null) {
+            if (actionHandlerType != null && actionHandlerType is Class<*>) {
                 context.log.info("Found action handler type: ${actionHandlerType.name}")
                 
-                val sendItemsMethod = actionHandlerType.methods.firstOrNull { it.name == "sendItems" }
+                val sendItemsMethod: Method? = actionHandlerType.methods.firstOrNull { method -> method.name == "sendItems" }
                 if (sendItemsMethod != null) {
                     context.log.info("Found sendItems method via alternative approach")
                     hookSendItemsMethod(sendItemsMethod)
                 } else {
                     context.log.error("Could not find sendItems method in action handler type")
+                    context.log.info("Available methods: ${actionHandlerType.methods.joinToString { method -> method.name }}")
                 }
             } else {
                 context.log.error("Could not extract action handler type from ChatMediaDrawer")
