@@ -30,8 +30,6 @@ import me.rhunk.snapenhance.core.wrapper.impl.MessageContent
 import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
-import me.rhunk.snapenhance.core.util.hook.HookStage
-import me.rhunk.snapenhance.core.util.hook.hook
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
@@ -50,10 +48,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private var currentChunkIndex = 0
     private var tempDir: File? = null
     private var originalVideoFile: File? = null
-    
-    // Cache for intercepted video streams
-    private var interceptedVideoUri: String? = null
-    private var interceptedVideoFile: File? = null
 
     override fun init() {
         context.log.verbose("GalleryVideoSplitting: Initializing...")
@@ -71,9 +65,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             context.log.error("GalleryVideoSplitting: FFmpegKit not found! Feature disabled.", e)
             return
         }
-
-        // Hook ContentResolver to intercept video file access
-        setupContentResolverHook()
 
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
             context.log.verbose("GalleryVideoSplitting: SendMessageWithContentEvent triggered")
@@ -203,90 +194,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         context.log.verbose("GalleryVideoSplitting: Initialization complete")
     }
 
-    private fun setupContentResolverHook() {
-        try {
-            // Hook openInputStream to cache video files when they're first accessed
-            android.content.ContentResolver::class.java.getDeclaredMethod(
-                "openInputStream",
-                Uri::class.java
-            ).hook(me.rhunk.snapenhance.core.util.hook.HookStage.BEFORE) { param ->
-                val uri = param.arg<Uri>(0)
-                val uriStr = uri.toString()
-                
-                // Only intercept content:// URIs from Snapchat's internal provider
-                if (uriStr.startsWith("content://") && uriStr.contains("sendSource=CAMERA_ROLL")) {
-                    context.log.verbose("GalleryVideoSplitting: Intercepting ContentResolver.openInputStream for: $uriStr")
-                    
-                    // Let the original call proceed to get the stream
-                    param.invokeOriginal()
-                    val originalStream = param.getResult() as? java.io.InputStream
-                    
-                    if (originalStream != null) {
-                        // Cache the video to a file
-                        val cachedFile = File(context.mainActivity!!.cacheDir, "intercepted_video_${System.currentTimeMillis()}.mp4")
-                        
-                        try {
-                            // Wrap in a TeeInputStream so we can cache while passing through
-                            val cachedStream = CachingInputStream(originalStream, cachedFile)
-                            
-                            // Store for later use
-                            interceptedVideoUri = uriStr
-                            interceptedVideoFile = cachedFile
-                            
-                            context.log.verbose("GalleryVideoSplitting: Set up caching for video to: ${cachedFile.absolutePath}")
-                            
-                            // Return the caching stream
-                            param.setResult(cachedStream)
-                        } catch (e: Exception) {
-                            context.log.error("GalleryVideoSplitting: Failed to set up video caching", e)
-                        }
-                    }
-                }
-            }
-            
-            context.log.verbose("GalleryVideoSplitting: ContentResolver hook installed")
-        } catch (e: Exception) {
-            context.log.error("GalleryVideoSplitting: Failed to install ContentResolver hook", e)
-        }
-    }
-
-    // Custom InputStream that caches data while passing it through
-    private class CachingInputStream(
-        private val original: java.io.InputStream,
-        private val cacheFile: File
-    ) : java.io.InputStream() {
-        private val cacheStream = cacheFile.outputStream()
-        
-        override fun read(): Int {
-            val byte = original.read()
-            if (byte != -1) {
-                cacheStream.write(byte)
-            } else {
-                cacheStream.close()
-            }
-            return byte
-        }
-        
-        override fun read(b: ByteArray, off: Int, len: Int): Int {
-            val count = original.read(b, off, len)
-            if (count > 0) {
-                cacheStream.write(b, off, count)
-            } else if (count == -1) {
-                cacheStream.close()
-            }
-            return count
-        }
-        
-        override fun close() {
-            try {
-                cacheStream.close()
-            } catch (e: Exception) {
-                // Ignore
-            }
-            original.close()
-        }
-    }
-
     private fun isSameDestination(event1: SendMessageWithContentEvent, event2: SendMessageWithContentEvent): Boolean {
         return event1.destinations.conversations == event2.destinations.conversations &&
                event1.destinations.stories == event2.destinations.stories
@@ -385,15 +292,18 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 
                 val newReference = mediaReferenceClass.newInstance()
                 
+                // Convert URI to string and then to ByteArray (same as SendOverride)
+                val uriString = chunkUri.toString()
+                
                 mediaReferenceClass.getDeclaredField("mId").apply {
                     isAccessible = true
-                    set(newReference, chunkUri.toString().toByteArray())
+                    set(newReference, uriString.toByteArray())
                 }
                 
                 @Suppress("UNCHECKED_CAST")
                 (localMediaReferencesObj as MutableList<Any>).add(newReference)
                 
-                context.log.verbose("GalleryVideoSplitting: Updated mLocalMediaReferences with: $chunkUri")
+                context.log.verbose("GalleryVideoSplitting: Updated mLocalMediaReferences with URI: $uriString")
             }
         } catch (e: Exception) {
             context.log.error("GalleryVideoSplitting: Failed to update media references", e)
