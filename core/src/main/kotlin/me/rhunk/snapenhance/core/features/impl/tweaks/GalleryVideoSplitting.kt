@@ -25,14 +25,21 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     override fun init() {
         if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) return
 
-        val actionHandlerClass = findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
-        val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
-            ?: run {
-                context.log.error("Could not find sendItems method, feature disabled.")
-                return
+        onNextActivityCreate(defer = true) {
+            val actionHandlerClass = runCatching {
+                findClass("com.snap.memories.composer.ChatMediaDrawerActionHandler")
+            }.getOrElse {
+                context.log.error("Could not find ChatMediaDrawerActionHandler class, feature disabled.")
+                return@onNextActivityCreate
             }
 
-        sendItemsMethod.hook(HookStage.BEFORE) { param ->
+            val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
+                ?: run {
+                    context.log.error("Could not find sendItems method, feature disabled.")
+                    return@onNextActivityCreate
+                }
+
+            sendItemsMethod.hook(HookStage.BEFORE) { param ->
             if (isSplitting) {
                 return@hook
             }
