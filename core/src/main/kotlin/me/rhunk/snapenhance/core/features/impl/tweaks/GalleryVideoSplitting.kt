@@ -114,7 +114,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val mediaType = messageProtoReader.getVarInt(3, 3, 5, 2, 5)
             context.log.verbose("Media type from proto path [3,3,5,2,5]: $mediaType (1=VIDEO)")
             
-            if (mediaType != 1) {
+            if (mediaType != 1L) {
                 context.log.verbose("Not a video, skipping")
                 return@subscribe
             }
@@ -139,7 +139,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             }
 
             context.log.verbose("✓ Gallery video detected: URI=$contentUriStr, duration=${videoDurationMs}ms")
-            context.log.verbose("Destinations: conversations=${event.destinations.conversations?.size}, stories=${event.destinations.stories?.size}")
 
             // Cancel the original send
             event.canceled = true
@@ -203,13 +202,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                         if (!isSplitting) {
                                             try {
                                                 val conversationIds = param.arg<List<Any>>(0)
-                                                context.log.verbose("Conversation IDs count: ${conversationIds.size}")
-                                                
-                                                if (conversationIds.isEmpty()) {
-                                                    context.log.verbose("No conversations selected, skipping")
-                                                    return@hookObjectMethod
-                                                }
-                                                
                                                 val mediaItems = param.arg<List<Any?>>(1)
                                                 context.log.verbose("Media items count: ${mediaItems.size}")
                                                 
