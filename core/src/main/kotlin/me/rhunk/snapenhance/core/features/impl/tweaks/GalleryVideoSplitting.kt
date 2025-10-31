@@ -74,13 +74,19 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     chatMediaDrawerActionHandler = hookParam.arg(0)
                     context.log.verbose("Captured chatMediaDrawerActionHandler: ${chatMediaDrawerActionHandler.javaClass.name}")
                     
-                    // Now hook the concrete implementation's sendItems method
+                    // Now hook the concrete implementation's sendItems method using object hook
                     val concreteClass = chatMediaDrawerActionHandler.javaClass
                     sendItemsMethod = concreteClass.methods.first { it.name == "sendItems" }
                     context.log.verbose("Found concrete sendItems method in: ${concreteClass.name}")
-                    context.log.verbose("Setting up sendItems hook on concrete implementation")
+                    context.log.verbose("Setting up sendItems hook on concrete implementation using object hook")
                     
-                    sendItemsMethod.hook(HookStage.BEFORE) { param ->
+                    // Use Hooker.hookObjectMethod to hook this specific instance
+                    me.rhunk.snapenhance.core.util.hook.Hooker.hookObjectMethod(
+                        concreteClass,
+                        chatMediaDrawerActionHandler,
+                        "sendItems",
+                        HookStage.BEFORE
+                    ) { param ->
                 context.log.verbose("sendItems hook triggered, isSplitting=$isSplitting")
                 
                 if (isSplitting) {
@@ -244,7 +250,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 } catch (e: Exception) {
                     context.log.error("Error in GalleryVideoSplitting hook", e)
                 }
-            }
+                    }
                 }
             } ?: run {
                 context.log.error("Could not get type argument [1] from ChatMediaDrawer, feature disabled.")
