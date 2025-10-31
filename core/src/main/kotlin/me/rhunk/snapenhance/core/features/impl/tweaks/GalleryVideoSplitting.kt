@@ -30,6 +30,9 @@ import java.lang.reflect.Method
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
     private var isSplitting = false
+    
+    // Track URIs we're currently sending to allow them through the hook
+    private val allowedUris = mutableSetOf<String>()
 
     override fun init() {
         if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
@@ -58,14 +61,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
 
-            // Check if this has external content metadata
-            val externalMetadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
-            context.log.verbose("External metadata present: ${externalMetadata != null}")
-            
-            if (externalMetadata == null) {
-                context.log.verbose("No external content metadata, skipping")
-                return@subscribe
-            }
+            // Don't check for external metadata - it's not always present
+            // Just check the proto directly
 
             val messageContent = localMessageContent.content
             if (messageContent == null) {
@@ -199,6 +196,30 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                         context.log.verbose("=== Media drawer sendItems triggered ===")
                                         context.log.verbose("isSplitting=$isSplitting")
                                         
+                                        if (isSplitting) {
+                                            // Check if this is one of our split chunks
+                                            val mediaItems = param.arg<List<Any?>>(1)
+                                            if (mediaItems.size == 1) {
+                                                val mediaItem = mediaItems.first()
+                                                if (mediaItem != null) {
+                                                    val item = mediaItem.getObjectField("_item")
+                                                    if (item != null) {
+                                                        val contentUri = item.getObjectField("_contentUri")?.toString()
+                                                        if (contentUri != null) {
+                                                            synchronized(allowedUris) {
+                                                                if (allowedUris.contains(contentUri)) {
+                                                                    context.log.verbose("Allowing split chunk URI: $contentUri")
+                                                                    return@hookObjectMethod
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            context.log.verbose("Already splitting, ignoring")
+                                            return@hookObjectMethod
+                                        }
+                                        
                                         if (!isSplitting) {
                                             try {
                                                 val conversationIds = param.arg<List<Any>>(0)
@@ -256,7 +277,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                                 context.log.error("Error in media drawer hook", e)
                                             }
                                         } else {
-                                            context.log.verbose("Already splitting, ignoring")
+                                            context.log.verbose("isSplitting check bypassed")
                                         }
                                     }
                                 } else {
@@ -551,8 +572,24 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     context.log.verbose("Created newMediaItem")
 
                     context.log.verbose("Invoking sendItemsMethod...")
-                    sendItemsMethod.invoke(handler, conversationIds, listOf(newMediaItem))
-                    context.log.verbose("✓ Clip $index sent")
+                    
+                    // Add this URI to allowed list so our hook lets it through
+                    val chunkUriStr = chunkUri.toString()
+                    synchronized(allowedUris) {
+                        allowedUris.add(chunkUriStr)
+                        context.log.verbose("Added URI to allowed list: $chunkUriStr")
+                    }
+                    
+                    try {
+                        sendItemsMethod.invoke(handler, conversationIds, listOf(newMediaItem))
+                        context.log.verbose("✓ Clip $index sent")
+                    } finally {
+                        // Remove from allowed list after sending
+                        synchronized(allowedUris) {
+                            allowedUris.remove(chunkUriStr)
+                            context.log.verbose("Removed URI from allowed list")
+                        }
+                    }
                     
                     if (index < outputFiles.size - 1) {
                         context.log.verbose("Waiting 800ms...")
@@ -584,6 +621,10 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         } finally {
             val deleted = tempDir.deleteRecursively()
             context.log.verbose("Cleaned up temp directory: $deleted")
+            synchronized(allowedUris) {
+                allowedUris.clear()
+                context.log.verbose("Cleared allowed URIs")
+            }
             isSplitting = false
             context.log.verbose("Set isSplitting=false")
             context.log.verbose("=== splitAndSendViaMediaDrawer END ===")
