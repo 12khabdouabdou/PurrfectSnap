@@ -88,6 +88,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                         
                                         if (!isSplitting) {
                                             try {
+                                                val conversationIds = param.arg<List<Any>>(0)
+                                                context.log.verbose("Conversation IDs count: ${conversationIds.size}")
+                                                
+                                                // Check if user selected conversations
+                                                if (conversationIds.isEmpty()) {
+                                                    context.log.verbose("No conversations selected, skipping split")
+                                                    return@hookObjectMethod
+                                                }
+                                                
                                                 val mediaItems = param.arg<List<Any?>>(1)
                                                 context.log.verbose("Media items count: ${mediaItems.size}")
                                                 
@@ -96,17 +105,24 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                                     if (mediaItem != null) {
                                                         context.log.verbose("Got media item: ${mediaItem.javaClass.name}")
                                                         
-                                                        // Use _item with underscore prefix (dataBuilder pattern)
                                                         val item = mediaItem.getObjectField("_item")
                                                         if (item != null) {
                                                             context.log.verbose("Got item: ${item.javaClass.name}")
                                                             
-                                                            // Use _type with underscore prefix
                                                             val itemId = item.getObjectField("_itemId")
                                                             val itemType = itemId?.getObjectField("_type")?.toString()
                                                             context.log.verbose("Item type: $itemType")
 
                                                             if (itemType == "VIDEO") {
+                                                                // Check video duration before splitting
+                                                                val durationMs = (item.getObjectField("_durationMs") as? Double)?.toLong() ?: 0L
+                                                                context.log.verbose("Video duration: ${durationMs}ms")
+                                                                
+                                                                if (durationMs <= 10000) {
+                                                                    context.log.verbose("Video is 10s or less, no need to split")
+                                                                    return@hookObjectMethod
+                                                                }
+                                                                
                                                                 context.log.verbose("Video detected! Starting split process")
                                                                 param.setResult(null) // Cancel original call
 
@@ -135,7 +151,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                                                                         context.log.verbose("Copied video to cache: ${cachedVideo.absolutePath}, size: ${cachedVideo.length()} bytes")
 
-                                                                        val command = "-i \"${cachedVideo.absolutePath}\" -c copy -f segment -segment_time 10 -reset_timestamps 1 \"${tempDir.absolutePath}/split_%03d.mp4\""
+                                                                        // Improved FFmpeg command with force_key_frames for better splitting
+                                                                        val command = "-i \"${cachedVideo.absolutePath}\" -c copy -f segment -segment_time 10 -reset_timestamps 1 -force_key_frames \"expr:gte(t,n_forced*10)\" \"${tempDir.absolutePath}/split_%03d.mp4\""
                                                                         context.log.verbose("Executing FFmpeg command: $command")
                                                                         
                                                                         val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
@@ -153,10 +170,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                                                             context.log.verbose("Split $index: ${file.name}, size: ${file.length()} bytes")
                                                                         }
                                                                         
-                                                                        if (outputFiles.isEmpty()) throw IllegalStateException("FFmpeg produced no output files.")
-
-                                                                        val conversationIds = param.arg<List<Any>>(0)
-                                                                        context.log.verbose("Conversation IDs count: ${conversationIds.size}")
+                                                                        if (outputFiles.isEmpty()) {
+                                                                            throw IllegalStateException("FFmpeg produced no output files.")
+                                                                        }
 
                                                                         withContext(Dispatchers.Main) {
                                                                             context.inAppOverlay.showStatusToast(
@@ -173,8 +189,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                                                                 
                                                                                 val chunkUri = Uri.fromFile(file)
                                                                                 val retriever = MediaMetadataRetriever()
-                                                                                val newItem: Any
-                                                                                val newMediaItem: Any
 
                                                                                 try {
                                                                                     retriever.setDataSource(context.androidContext, chunkUri)
@@ -184,13 +198,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                                                                                     context.log.verbose("Chunk metadata - duration: ${chunkDuration}ms, size: ${chunkWidth}x${chunkHeight}")
 
-                                                                                    // Use underscore-prefixed field names for dataBuilder
-                                                                                    newItem = item.javaClass.dataBuilder {
-                                                                                        set("_cameraRollSource", item.getObjectField("_cameraRollSource") ?: "Snapchat")
+                                                                                    val newItem = item.javaClass.dataBuilder {
+                                                                                        set("_cameraRollSource", "Snapchat")
                                                                                         set("_contentUri", chunkUri.toString())
                                                                                         set("_durationMs", chunkDuration.toDouble())
                                                                                         set("_disabled", false)
-                                                                                        set("_imageRotation", item.getObjectField("_imageRotation") ?: 0.0)
+                                                                                        set("_imageRotation", 0.0)
                                                                                         set("_width", chunkWidth)
                                                                                         set("_height", chunkHeight)
                                                                                         set("_timestampMs", System.currentTimeMillis().toDouble())
@@ -202,22 +215,30 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                                                                                     context.log.verbose("Created newItem for chunk $index")
 
-                                                                                    newMediaItem = mediaItem.javaClass.dataBuilder {
-                                                                                        set("_thumbnail", mediaItem.getObjectField("_thumbnail"))
+                                                                                    val newMediaItem = mediaItem.javaClass.dataBuilder {
                                                                                         set("_item", newItem)
                                                                                         set("_order", index.toDouble())
                                                                                     } ?: throw IllegalStateException("Failed to create new media item")
 
                                                                                     context.log.verbose("Created newMediaItem for chunk $index")
+
+                                                                                    context.log.verbose("Invoking sendItems for chunk $index with ${conversationIds.size} conversations")
+                                                                                    method.invoke(handler, conversationIds, listOf(newMediaItem))
+                                                                                    context.log.verbose("Sent chunk $index successfully")
+                                                                                    
+                                                                                    // Delay between sends to avoid rate limiting
+                                                                                    if (index < outputFiles.size - 1) {
+                                                                                        delay(800)
+                                                                                    }
+                                                                                } catch (e: Exception) {
+                                                                                    context.log.error("Failed to process chunk $index", e)
+                                                                                    throw e
                                                                                 } finally {
                                                                                     retriever.release()
                                                                                 }
-
-                                                                                context.log.verbose("Invoking sendItems for chunk $index")
-                                                                                method.invoke(handler, conversationIds, listOf(newMediaItem))
-                                                                                context.log.verbose("Sent chunk $index successfully")
-                                                                                delay(500)
                                                                             }
+                                                                        } else {
+                                                                            throw IllegalStateException("sendItemsMethod is null")
                                                                         }
 
                                                                         context.log.verbose("All chunks sent successfully!")
