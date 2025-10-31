@@ -71,7 +71,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             
                             val handler = chatMediaDrawerActionHandler
                             if (handler != null) {
-                                // Now hook the concrete implementation's sendItems method using object hook
                                 val concreteClass = handler.javaClass
                                 sendItemsMethod = concreteClass.methods.firstOrNull { it.name == "sendItems" }
                                 
@@ -79,7 +78,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                     context.log.verbose("Found concrete sendItems method in: ${concreteClass.name}")
                                     context.log.verbose("Setting up sendItems hook on concrete implementation using object hook")
                                     
-                                    // Use Hooker.hookObjectMethod to hook this specific instance
                                     me.rhunk.snapenhance.core.util.hook.Hooker.hookObjectMethod(
                                         concreteClass,
                                         handler,
@@ -98,11 +96,14 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                                     if (mediaItem != null) {
                                                         context.log.verbose("Got media item: ${mediaItem.javaClass.name}")
                                                         
-                                                        val item = mediaItem.getObjectField("item")
+                                                        // Use _item with underscore prefix (dataBuilder pattern)
+                                                        val item = mediaItem.getObjectField("_item")
                                                         if (item != null) {
                                                             context.log.verbose("Got item: ${item.javaClass.name}")
                                                             
-                                                            val itemType = item.getObjectField("type")?.toString()
+                                                            // Use _type with underscore prefix
+                                                            val itemId = item.getObjectField("_itemId")
+                                                            val itemType = itemId?.getObjectField("_type")?.toString()
                                                             context.log.verbose("Item type: $itemType")
 
                                                             if (itemType == "VIDEO") {
@@ -119,7 +120,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                                                             context.inAppOverlay.showStatusToast(Icons.Default.Info, "Processing video...")
                                                                         }
 
-                                                                        val contentUriStr = item.getObjectField("contentUri")?.toString() 
+                                                                        val contentUriStr = item.getObjectField("_contentUri")?.toString() 
                                                                             ?: throw IllegalStateException("Content URI not found")
                                                                         context.log.verbose("Content URI: $contentUriStr")
                                                                         
@@ -183,24 +184,28 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                                                                                     context.log.verbose("Chunk metadata - duration: ${chunkDuration}ms, size: ${chunkWidth}x${chunkHeight}")
 
+                                                                                    // Use underscore-prefixed field names for dataBuilder
                                                                                     newItem = item.javaClass.dataBuilder {
-                                                                                        set("type", item.getObjectField("type"))
-                                                                                        set("encryptionInfo", item.getObjectField("encryptionInfo"))
-                                                                                        set("contentUri", chunkUri.toString())
-                                                                                        set("durationMs", chunkDuration.toDouble())
-                                                                                        set("width", chunkWidth)
-                                                                                        set("height", chunkHeight)
-                                                                                        from("itemId", new = true) {
-                                                                                            set("itemId", chunkUri.toString())
+                                                                                        set("_cameraRollSource", item.getObjectField("_cameraRollSource") ?: "Snapchat")
+                                                                                        set("_contentUri", chunkUri.toString())
+                                                                                        set("_durationMs", chunkDuration.toDouble())
+                                                                                        set("_disabled", false)
+                                                                                        set("_imageRotation", item.getObjectField("_imageRotation") ?: 0.0)
+                                                                                        set("_width", chunkWidth)
+                                                                                        set("_height", chunkHeight)
+                                                                                        set("_timestampMs", System.currentTimeMillis().toDouble())
+                                                                                        from("_itemId") {
+                                                                                            set("_itemId", chunkUri.toString())
+                                                                                            set("_type", "VIDEO")
                                                                                         }
                                                                                     } ?: throw IllegalStateException("Failed to create new item")
 
                                                                                     context.log.verbose("Created newItem for chunk $index")
 
                                                                                     newMediaItem = mediaItem.javaClass.dataBuilder {
-                                                                                        set("thumbnail", mediaItem.getObjectField("thumbnail"))
-                                                                                        set("item", newItem)
-                                                                                        set("order", index.toDouble())
+                                                                                        set("_thumbnail", mediaItem.getObjectField("_thumbnail"))
+                                                                                        set("_item", newItem)
+                                                                                        set("_order", index.toDouble())
                                                                                     } ?: throw IllegalStateException("Failed to create new media item")
 
                                                                                     context.log.verbose("Created newMediaItem for chunk $index")
@@ -241,7 +246,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                                                 context.log.verbose("Not a video, skipping (type: $itemType)")
                                                             }
                                                         } else {
-                                                            context.log.warn("Could not get 'item' field from mediaItem")
+                                                            context.log.warn("Could not get '_item' field from mediaItem")
                                                         }
                                                     } else {
                                                         context.log.verbose("Media item is null")
