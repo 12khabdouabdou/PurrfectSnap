@@ -178,26 +178,42 @@ class SendOverride : Feature("Send Override") {
 
             // Check if video splitting is enabled and video is >10s
             if (enableVideoSplitting) {
-                val videoDurationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)
                 val mediaType = messageProtoReader.getVarInt(3, 3, 5, 2, 5)
                 
-                context.log.verbose("Video splitting check: duration=${videoDurationMs}ms, mediaType=$mediaType")
+                context.log.verbose("Video splitting check: mediaType=$mediaType")
                 
-                if (videoDurationMs != null && videoDurationMs > 10000 && mediaType == 1L) {
-                    context.log.verbose("Video >10s detected, initiating split")
-                    
+                if (mediaType == 1L) { // Is video
                     // Get content URI
                     val contentUriStr = messageProtoReader.getString(3, 3, 3)
-                    if (contentUriStr.isNullOrEmpty()) {
-                        context.log.warn("Could not extract content URI for splitting")
-                    } else {
-                        // Cancel original send and split
-                        event.canceled = true
-                        context.coroutineScope.launch {
-                            isSplitting = true
-                            splitAndSendVideo(contentUriStr, videoDurationMs, event)
+                    context.log.verbose("Content URI: $contentUriStr")
+                    
+                    if (!contentUriStr.isNullOrEmpty()) {
+                        // Get duration directly from the video file
+                        val videoDurationMs = runCatching {
+                            val retriever = MediaMetadataRetriever()
+                            retriever.setDataSource(context.androidContext, Uri.parse(contentUriStr))
+                            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                            retriever.release()
+                            duration
+                        }.getOrNull()
+                        
+                        context.log.verbose("Video duration from file: ${videoDurationMs}ms")
+                        
+                        if (videoDurationMs != null && videoDurationMs > 10000) {
+                            context.log.verbose("Video >10s detected, initiating split")
+                            
+                            // Cancel original send and split
+                            event.canceled = true
+                            context.coroutineScope.launch {
+                                isSplitting = true
+                                splitAndSendVideo(contentUriStr, videoDurationMs, event)
+                            }
+                            return@subscribe
+                        } else {
+                            context.log.verbose("Video ≤10s, no split needed")
                         }
-                        return@subscribe
+                    } else {
+                        context.log.warn("Could not extract content URI for splitting")
                     }
                 }
             }
