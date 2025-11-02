@@ -183,9 +183,36 @@ class SendOverride : Feature("Send Override") {
                 context.log.verbose("Video splitting check: mediaType=$mediaType")
                 
                 if (mediaType == 1L) { // Is video
-                    // Get content URI
-                    val contentUriStr = messageProtoReader.getString(3, 3, 3)
-                    context.log.verbose("Content URI: $contentUriStr")
+                    // Try to get content URI from multiple sources
+                    var contentUriStr: String? = null
+                    
+                    // First try: proto path 3,3,3
+                    contentUriStr = messageProtoReader.getString(3, 3, 3)
+                    context.log.verbose("URI from proto [3,3,3]: $contentUriStr")
+                    
+                    // Second try: from external metadata object
+                    if (contentUriStr.isNullOrEmpty()) {
+                        localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")?.let { metadata ->
+                            runCatching {
+                                val uriField = metadata.javaClass.getDeclaredField("mContentUri")
+                                uriField.isAccessible = true
+                                val uri = uriField.get(metadata) as? Uri
+                                contentUriStr = uri?.toString()
+                                context.log.verbose("URI from mExternalContentMetadata: $contentUriStr")
+                            }.onFailure {
+                                context.log.verbose("Failed to get URI from metadata: ${it.message}")
+                            }
+                        }
+                    }
+                    
+                    // Third try: bytes from proto
+                    if (contentUriStr.isNullOrEmpty()) {
+                        val uriBytes = messageProtoReader.getByteArray(3, 3, 3)
+                        if (uriBytes != null && uriBytes.isNotEmpty()) {
+                            contentUriStr = String(uriBytes)
+                            context.log.verbose("URI from proto bytes: $contentUriStr")
+                        }
+                    }
                     
                     if (!contentUriStr.isNullOrEmpty()) {
                         // Get duration directly from the video file
@@ -213,7 +240,7 @@ class SendOverride : Feature("Send Override") {
                             context.log.verbose("Video ≤10s, no split needed")
                         }
                     } else {
-                        context.log.warn("Could not extract content URI for splitting")
+                        context.log.warn("Could not extract content URI for splitting from any source")
                     }
                 }
             }
