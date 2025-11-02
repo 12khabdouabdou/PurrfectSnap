@@ -1,8 +1,13 @@
 package me.rhunk.snapenhance.core.features.impl.messaging
 
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -16,6 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.ui.createComposeAlertDialog
 import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
@@ -28,6 +37,7 @@ import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.messaging.MessageSender
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
+import java.io.File
 import java.util.Locale
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -36,6 +46,9 @@ import kotlin.time.toDuration
 class SendOverride : Feature("Send Override") {
     private var selectedType by mutableStateOf("SNAP")
     private var customDuration by mutableFloatStateOf(10f)
+    
+    @Volatile
+    private var isSplitting = false
 
     @OptIn(ExperimentalLayoutApi::class)
     override fun init() {
@@ -43,7 +56,9 @@ class SendOverride : Feature("Send Override") {
         var postSavePolicy: Int? = null
 
         val configOverrideType = context.config.messaging.galleryMediaSendOverride.getNullable()
-        if (configOverrideType == null && stripMediaMetadata.isEmpty()) return
+        val enableVideoSplitting = context.config.messaging.splitVideoIntoTenSecondSnaps.get()
+        
+        if (configOverrideType == null && stripMediaMetadata.isEmpty() && !enableVideoSplitting) return
 
         context.event.subscribe(MediaUploadEvent::class) { event ->
             ProtoReader(event.localMessageContent.content!!).followPath(11, 5)?.let { snapDocPlayback ->
@@ -124,7 +139,7 @@ class SendOverride : Feature("Send Override") {
             }
         }
 
-        if (configOverrideType == null) return
+        if (configOverrideType == null && !enableVideoSplitting) return
 
         context.event.subscribe(NativeUnaryCallEvent::class) { event ->
             if (event.uri != "/messagingcoreservice.MessagingCoreService/CreateContentMessage") return@subscribe
@@ -147,6 +162,11 @@ class SendOverride : Feature("Send Override") {
         }
 
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
+            if (isSplitting) {
+                context.log.verbose("Already splitting, allowing send through")
+                return@subscribe
+            }
+            
             postSavePolicy = null
             if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
             val localMessageContent = event.messageContent
@@ -155,6 +175,32 @@ class SendOverride : Feature("Send Override") {
             //prevent story replies
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
             if (messageProtoReader.contains(7)) return@subscribe
+
+            // Check if video splitting is enabled and video is >10s
+            if (enableVideoSplitting) {
+                val videoDurationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)
+                val mediaType = messageProtoReader.getVarInt(3, 3, 5, 2, 5)
+                
+                context.log.verbose("Video splitting check: duration=${videoDurationMs}ms, mediaType=$mediaType")
+                
+                if (videoDurationMs != null && videoDurationMs > 10000 && mediaType == 1L) {
+                    context.log.verbose("Video >10s detected, initiating split")
+                    
+                    // Get content URI
+                    val contentUriStr = messageProtoReader.getString(3, 3, 3)
+                    if (contentUriStr.isNullOrEmpty()) {
+                        context.log.warn("Could not extract content URI for splitting")
+                    } else {
+                        // Cancel original send and split
+                        event.canceled = true
+                        context.coroutineScope.launch {
+                            isSplitting = true
+                            splitAndSendVideo(contentUriStr, videoDurationMs, event)
+                        }
+                        return@subscribe
+                    }
+                }
+            }
 
             event.canceled = true
 
@@ -231,149 +277,275 @@ class SendOverride : Feature("Send Override") {
                 return true
             }
 
-            if (configOverrideType != "always_ask") {
+            if (configOverrideType != null && configOverrideType != "always_ask") {
                 if (sendMedia(configOverrideType, 10)) {
                     event.invokeOriginal()
                 }
                 return@subscribe
             }
 
-            context.runOnUiThread {
-                createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
-                    val mainTranslation = remember {
-                        context.translation.getCategory("send_override_dialog")
-                    }
+            if (configOverrideType == "always_ask") {
+                context.runOnUiThread {
+                    createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+                        val mainTranslation = remember {
+                            context.translation.getCategory("send_override_dialog")
+                        }
 
-                    @Composable
-                    fun ActionTile(
-                        modifier: Modifier = Modifier,
-                        selected: Boolean = false,
-                        icon: ImageVector,
-                        title: String,
-                        onClick: () -> Unit
-                    ) {
-                        Card(
-                            modifier = modifier,
-                            onClick = onClick,
-                            elevation = if (selected) CardDefaults.elevatedCardElevation(disabledElevation = 3.dp) else CardDefaults.cardElevation(),
-                            colors = if (selected) CardDefaults.elevatedCardColors() else CardDefaults.cardColors()
+                        @Composable
+                        fun ActionTile(
+                            modifier: Modifier = Modifier,
+                            selected: Boolean = false,
+                            icon: ImageVector,
+                            title: String,
+                            onClick: () -> Unit
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(75.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
+                            Card(
+                                modifier = modifier,
+                                onClick = onClick,
+                                elevation = if (selected) CardDefaults.elevatedCardElevation(disabledElevation = 3.dp) else CardDefaults.cardElevation(),
+                                colors = if (selected) CardDefaults.elevatedCardColors() else CardDefaults.cardColors()
                             ) {
-                                Icon(icon, contentDescription = title, modifier = Modifier
-                                    .size(32.dp)
-                                    .padding(4.dp))
-                                Text(title, modifier = Modifier.fillMaxWidth(), fontSize = 12.sp, fontWeight = FontWeight.Light, softWrap = true, lineHeight = 14.sp, textAlign = TextAlign.Center)
-                            }
-                        }
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val translation = remember {
-                            context.translation.getCategory("features.options.gallery_media_send_override")
-                        }
-
-                        Text(fontSize = 20.sp, fontWeight = FontWeight.Medium, text = "Send as ${
-                            translation[selectedType]}", modifier = Modifier.padding(5.dp))
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            ActionTile(selected = selectedType == "ORIGINAL", icon = Icons.Filled.Photo, title =
-                            translation["ORIGINAL"]) {
-                                selectedType = "ORIGINAL"
-                            }
-                            ActionTile(selected = selectedType == "SNAP" || selectedType == "SAVEABLE_SNAP", icon = Icons.Filled.PhotoCamera, title = translation["SNAP"]) {
-                                selectedType = "SNAP"
-                            }
-                            ActionTile(selected = selectedType == "NOTE", icon = Icons.Filled.MusicNote, title = translation["NOTE"]) {
-                                selectedType = "NOTE"
-                            }
-                        }
-
-                        fun convertDuration(duration: Float): Int? {
-                            return when  {
-                                duration in -2f..-1f -> 100
-                                duration in -1f..-0f -> 250
-                                duration in -0f..1f -> 500
-                                duration >= 11f -> null
-                                else -> ((duration * 1000).toInt() / 1000) * 1000
-                            }
-                        }
-
-                        when (selectedType) {
-                            "SNAP", "SAVEABLE_SNAP" -> {
-                                fun toggleSaveable() {
-                                    selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
-                                }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().clickable {
-                                        toggleSaveable()
-                                    },
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ){
-                                    Checkbox(
-                                        checked = selectedType == "SAVEABLE_SNAP",
-                                        onCheckedChange = {
-                                            toggleSaveable()
-                                        }
-                                    )
-                                    Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
-                                }
                                 Column(
-                                    modifier = Modifier.padding(start = 8.dp)
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .size(75.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
                                 ) {
-                                    Text(
-                                        text = mainTranslation.format("duration",
-                                            "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
-                                        )
-                                    )
-                                    Slider(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        enabled = selectedType != "SAVEABLE_SNAP",
-                                        value = customDuration,
-                                        onValueChange = {
-                                            customDuration = it
-                                        },
-                                        valueRange = -2f..11f,
-                                    )
+                                    Icon(icon, contentDescription = title, modifier = Modifier
+                                        .size(32.dp)
+                                        .padding(4.dp))
+                                    Text(title, modifier = Modifier.fillMaxWidth(), fontSize = 12.sp, fontWeight = FontWeight.Light, softWrap = true, lineHeight = 14.sp, textAlign = TextAlign.Center)
                                 }
                             }
                         }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            OutlinedButton(onClick = {
-                                alertDialog.dismiss()
-                            }) {
-                                Text(context.translation["button.cancel"])
+                            val translation = remember {
+                                context.translation.getCategory("features.options.gallery_media_send_override")
                             }
-                            Button(onClick = {
-                                alertDialog.dismiss()
-                                if (sendMedia(selectedType, if (selectedType != "SAVEABLE_SNAP" ) convertDuration(customDuration) else null)) {
-                                    event.invokeOriginal()
+
+                            Text(fontSize = 20.sp, fontWeight = FontWeight.Medium, text = "Send as ${
+                                translation[selectedType]}", modifier = Modifier.padding(5.dp))
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                ActionTile(selected = selectedType == "ORIGINAL", icon = Icons.Filled.Photo, title =
+                                translation["ORIGINAL"]) {
+                                    selectedType = "ORIGINAL"
                                 }
-                            }) {
-                                Text(context.translation["button.send"])
+                                ActionTile(selected = selectedType == "SNAP" || selectedType == "SAVEABLE_SNAP", icon = Icons.Filled.PhotoCamera, title = translation["SNAP"]) {
+                                    selectedType = "SNAP"
+                                }
+                                ActionTile(selected = selectedType == "NOTE", icon = Icons.Filled.MusicNote, title = translation["NOTE"]) {
+                                    selectedType = "NOTE"
+                                }
+                            }
+
+                            fun convertDuration(duration: Float): Int? {
+                                return when  {
+                                    duration in -2f..-1f -> 100
+                                    duration in -1f..-0f -> 250
+                                    duration in -0f..1f -> 500
+                                    duration >= 11f -> null
+                                    else -> ((duration * 1000).toInt() / 1000) * 1000
+                                }
+                            }
+
+                            when (selectedType) {
+                                "SNAP", "SAVEABLE_SNAP" -> {
+                                    fun toggleSaveable() {
+                                        selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().clickable {
+                                            toggleSaveable()
+                                        },
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ){
+                                        Checkbox(
+                                            checked = selectedType == "SAVEABLE_SNAP",
+                                            onCheckedChange = {
+                                                toggleSaveable()
+                                            }
+                                        )
+                                        Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
+                                    }
+                                    Column(
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = mainTranslation.format("duration",
+                                                "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
+                                            )
+                                        )
+                                        Slider(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            enabled = selectedType != "SAVEABLE_SNAP",
+                                            value = customDuration,
+                                            onValueChange = {
+                                                customDuration = it
+                                            },
+                                            valueRange = -2f..11f,
+                                        )
+                                    }
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedButton(onClick = {
+                                    alertDialog.dismiss()
+                                }) {
+                                    Text(context.translation["button.cancel"])
+                                }
+                                Button(onClick = {
+                                    alertDialog.dismiss()
+                                    if (sendMedia(selectedType, if (selectedType != "SAVEABLE_SNAP" ) convertDuration(customDuration) else null)) {
+                                        event.invokeOriginal()
+                                    }
+                                }) {
+                                    Text(context.translation["button.send"])
+                                }
+                            }
+                        }
+                    }.show()
+                }
+            }
+        }
+    }
+
+    private suspend fun splitAndSendVideo(contentUriStr: String, originalDurationMs: Long, originalEvent: SendMessageWithContentEvent) {
+        context.log.verbose("=== splitAndSendVideo START ===")
+        context.log.verbose("URI: $contentUriStr, Duration: ${originalDurationMs}ms")
+        
+        val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { mkdirs() }
+        
+        try {
+            withContext(Dispatchers.Main) {
+                context.inAppOverlay.showStatusToast(
+                    Icons.Default.Info, 
+                    "Splitting ${originalDurationMs/1000}s video..."
+                )
+            }
+
+            val mediaUri = Uri.parse(contentUriStr)
+            val cachedVideo = File(tempDir, "input.mp4")
+
+            context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
+                cachedVideo.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            } ?: throw IllegalStateException("Failed to open input stream")
+
+            context.log.verbose("Cached video: ${cachedVideo.length()} bytes")
+
+            val command = "-i \"${cachedVideo.absolutePath}\" -c copy -f segment -segment_time 10 -reset_timestamps 1 -break_non_keyframes 1 \"${tempDir.absolutePath}/split_%03d.mp4\""
+            context.log.verbose("Executing FFmpeg: $command")
+            
+            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
+
+            if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
+                throw IllegalStateException("FFmpeg failed: ${session.returnCode}")
+            }
+
+            val outputFiles = tempDir.listFiles()?.filter { it.name.startsWith("split_") }?.sortedBy { it.name } ?: emptyList()
+            context.log.verbose("Generated ${outputFiles.size} split files")
+            
+            if (outputFiles.isEmpty()) {
+                throw IllegalStateException("No output files generated")
+            }
+
+            withContext(Dispatchers.Main) {
+                context.inAppOverlay.showStatusToast(
+                    Icons.Default.Info, 
+                    "Sending ${outputFiles.size} clips...",
+                    durationMs = 2000
+                )
+            }
+
+            // Send each clip
+            for ((index, file) in outputFiles.withIndex()) {
+                context.log.verbose("Sending clip ${index + 1}/${outputFiles.size}")
+                
+                val chunkUri = Uri.fromFile(file)
+                val retriever = MediaMetadataRetriever()
+
+                try {
+                    retriever.setDataSource(context.androidContext, chunkUri)
+                    val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                    val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toLongOrNull() ?: 1080L
+                    val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toLongOrNull() ?: 1920L
+                    
+                    context.log.verbose("Chunk: ${chunkDuration}ms, ${chunkWidth}x${chunkHeight}")
+
+                    // Rebuild proto with new chunk data
+                    originalEvent.messageContent.content = ProtoEditor(originalEvent.messageContent.content!!).apply {
+                        edit(3, 3) {
+                            remove(3)
+                            addString(3, chunkUri.toString())
+                        }
+                        
+                        edit(3, 3, 5, 1, 1) {
+                            remove(15)
+                            addVarInt(15, chunkDuration)
+                            remove(12)
+                            addVarInt(12, chunkWidth)
+                            remove(13)
+                            addVarInt(13, chunkHeight)
+                        }
+                    }.toByteArray()
+
+                    // Update external metadata URI
+                    originalEvent.messageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")?.let { metadata ->
+                        runCatching {
+                            metadata.javaClass.getDeclaredField("mContentUri").apply {
+                                isAccessible = true
+                                set(metadata, chunkUri)
                             }
                         }
                     }
-                }.show()
+
+                    // Send this chunk
+                    originalEvent.invokeOriginal()
+                    context.log.verbose("✓ Sent clip ${index + 1}")
+                    
+                    if (index < outputFiles.size - 1) {
+                        delay(1000)
+                    }
+                } finally {
+                    retriever.release()
+                }
             }
+
+            withContext(Dispatchers.Main) {
+                context.inAppOverlay.showStatusToast(
+                    Icons.Default.CheckCircle, 
+                    "Sent ${outputFiles.size} clips!"
+                )
+            }
+        } catch (e: Exception) {
+            context.log.error("Failed to split video", e)
+            withContext(Dispatchers.Main) {
+                context.inAppOverlay.showStatusToast(
+                    Icons.Default.Error, 
+                    "Failed: ${e.message}"
+                )
+            }
+        } finally {
+            tempDir.deleteRecursively()
+            isSplitting = false
+            context.log.verbose("=== splitAndSendVideo END ===")
         }
     }
 }
