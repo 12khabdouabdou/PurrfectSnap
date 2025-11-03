@@ -178,48 +178,114 @@ class SendOverride : Feature("Send Override") {
 
             // Check if video splitting is enabled and video is >10s
             if (enableVideoSplitting && localMessageContent.contentType == ContentType.EXTERNAL_MEDIA) {
-                // Try to get content URI from proto - use path [3,3,10] for gallery videos
-                var contentUriStr: String? = null
+                var videoUri: Uri? = null
                 
-                // Try proto path 3,3,10 (gallery video URI)
-                contentUriStr = messageProtoReader.getString(3, 3, 10)
-                context.log.verbose("URI from proto [3,3,10]: $contentUriStr")
+                context.log.verbose("=== Attempting to extract video URI ===")
                 
-                // Fallback to path 3,3,3
-                if (contentUriStr.isNullOrEmpty()) {
-                    contentUriStr = messageProtoReader.getString(3, 3, 3)
-                    context.log.verbose("URI from proto [3,3,3]: $contentUriStr")
+                // Method 1: Check all proto paths
+                val protoPaths = listOf(
+                    intArrayOf(3, 3, 3),
+                    intArrayOf(3, 3, 10),
+                    intArrayOf(3, 3, 1),
+                    intArrayOf(3, 1),
+                )
+                
+                for (path in protoPaths) {
+                    val uriStr = messageProtoReader.getString(*path)
+                    context.log.verbose("Proto path ${path.contentToString()}: $uriStr")
+                    if (!uriStr.isNullOrEmpty() && uriStr.startsWith("content://")) {
+                        videoUri = Uri.parse(uriStr)
+                        context.log.verbose("✓ Found URI via proto path ${path.contentToString()}")
+                        break
+                    }
                 }
                 
-                if (!contentUriStr.isNullOrEmpty()) {
-                    // Get duration directly from the video file
-                    val videoDurationMs = runCatching {
+                // Method 2: Inspect external metadata object fields
+                if (videoUri == null) {
+                    localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")?.let { metadata ->
+                        context.log.verbose("Inspecting external metadata object...")
+                        runCatching {
+                            val fields = metadata.javaClass.declaredFields
+                            for (field in fields) {
+                                field.isAccessible = true
+                                val value = field.get(metadata)
+                                
+                                if (value is Uri && value.toString().startsWith("content://")) {
+                                    videoUri = value
+                                    context.log.verbose("✓ Found URI in metadata field: ${field.name} = $videoUri")
+                                    break
+                                } else if (value is String && value.startsWith("content://")) {
+                                    videoUri = Uri.parse(value)
+                                    context.log.verbose("✓ Found URI string in metadata field: ${field.name} = $videoUri")
+                                    break
+                                }
+                            }
+                        }.onFailure {
+                            context.log.error("Failed to inspect external metadata", it)
+                        }
+                    }
+                }
+                
+                // Method 3: Inspect message content instance fields
+                if (videoUri == null) {
+                    context.log.verbose("Inspecting message content object...")
+                    runCatching {
+                        val fields = localMessageContent.instanceNonNull().javaClass.declaredFields
+                        for (field in fields) {
+                            field.isAccessible = true
+                            val value = field.get(localMessageContent.instanceNonNull())
+                            
+                            if (value is Uri && value.toString().startsWith("content://")) {
+                                videoUri = value
+                                context.log.verbose("✓ Found URI in content field: ${field.name} = $videoUri")
+                                break
+                            } else if (value is String && value.startsWith("content://")) {
+                                videoUri = Uri.parse(value)
+                                context.log.verbose("✓ Found URI string in content field: ${field.name} = $videoUri")
+                                break
+                            }
+                        }
+                    }.onFailure {
+                        context.log.error("Failed to inspect message content", it)
+                    }
+                }
+                
+                context.log.verbose("Final video URI: $videoUri")
+                
+                if (videoUri != null) {
+                    // Get video info
+                    val (videoDurationMs, isVideo) = runCatching {
                         val retriever = MediaMetadataRetriever()
-                        retriever.setDataSource(context.androidContext, Uri.parse(contentUriStr))
+                        retriever.setDataSource(context.androidContext, videoUri)
                         val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
                         val mimeType = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
                         retriever.release()
                         
-                        context.log.verbose("Video info: duration=${duration}ms, mimeType=$mimeType")
+                        context.log.verbose("Media info: duration=${duration}ms, mimeType=$mimeType")
                         
-                        if (mimeType?.startsWith("video/") == true) duration else null
-                    }.getOrNull()
+                        Pair(duration, mimeType?.startsWith("video/") == true)
+                    }.getOrElse { 
+                        context.log.error("Failed to read video metadata", it)
+                        Pair(0L, false)
+                    }
                     
-                    if (videoDurationMs != null && videoDurationMs > 10000) {
+                    if (isVideo && videoDurationMs > 10000) {
                         context.log.verbose("✓ Video >10s detected (${videoDurationMs}ms), initiating split")
                         
                         // Cancel original send and split
                         event.canceled = true
                         context.coroutineScope.launch {
                             isSplitting = true
-                            splitAndSendVideo(contentUriStr, videoDurationMs, event)
+                            splitAndSendVideo(videoUri.toString(), videoDurationMs, event)
                         }
                         return@subscribe
                     } else {
-                        context.log.verbose("Video ≤10s or not a video, no split needed")
+                        context.log.verbose("Video ≤10s or not a video (duration=${videoDurationMs}ms, isVideo=$isVideo)")
                     }
                 } else {
-                    context.log.warn("Could not extract content URI from proto paths [3,3,10] or [3,3,3]")
+                    context.log.warn("✗ Could not extract video URI from any source")
+                    context.log.verbose("Proto structure dump:")
+                    context.log.verbose(messageProtoReader.toString())
                 }
             }
 
