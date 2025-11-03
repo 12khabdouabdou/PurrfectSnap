@@ -55,17 +55,17 @@ class FileImportsRoot: Routes.Route() {
                 onClick = {
                 context.coroutineScope.launch {
                     activityLauncherHelper.openFile { filePath ->
+                        if (filePath == null) return@openFile
                         val fileUri = Uri.parse(filePath)
                         runCatching {
-                            DocumentFile.fromSingleUri(context.activity!!, fileUri)?.let { file ->
-                                if (!file.exists()) {
-                                    context.shortToast(translation["file_not_found"])
-                                    return@openFile
-                                }
-                                context.fileHandleManager.importFile(file.name!!) {
-                                    context.androidContext.contentResolver.openInputStream(fileUri)?.use { inputStream ->
-                                        inputStream.copyTo(this)
-                                    }
+                            val documentFile = DocumentFile.fromSingleUri(context.activity!!, fileUri)
+                            val fileName = documentFile?.name ?: fileUri.path?.substringAfterLast('/')
+                            requireNotNull(fileName) { "File name could not be determined from URI" }
+                            context.fileHandleManager.importFile(fileName) {
+                                val inputStream = context.androidContext.contentResolver.openInputStream(fileUri)
+                                requireNotNull(inputStream) { "Failed to open input stream from URI" }
+                                inputStream.use { stream ->
+                                    stream.copyTo(this)
                                 }
                             }
                         }.onFailure {
