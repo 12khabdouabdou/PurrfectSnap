@@ -178,60 +178,24 @@ class SendOverride : Feature("Send Override") {
 
             // Check if video splitting is enabled and video is >10s
             if (enableVideoSplitting && localMessageContent.contentType == ContentType.EXTERNAL_MEDIA) {
-                // Try to get the original URI before Snapchat processes it
-                var videoUri: Uri? = null
+                // Try to get content URI from proto - use path [3,3,10] for gallery videos
+                var contentUriStr: String? = null
                 
-                // Method 1: From external metadata
-                localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")?.let { metadata ->
-                    runCatching {
-                        // Try mContentUri field
-                        val fields = metadata.javaClass.declaredFields
-                        context.log.verbose("External metadata fields: ${fields.joinToString { it.name }}")
-                        
-                        for (field in fields) {
-                            field.isAccessible = true
-                            val value = field.get(metadata)
-                            context.log.verbose("Field ${field.name}: ${value?.javaClass?.simpleName} = $value")
-                            
-                            if (value is Uri) {
-                                videoUri = value
-                                context.log.verbose("Found URI in field ${field.name}: $videoUri")
-                                break
-                            }
-                        }
-                    }.onFailure {
-                        context.log.error("Failed to inspect metadata", it)
-                    }
+                // Try proto path 3,3,10 (gallery video URI)
+                contentUriStr = messageProtoReader.getString(3, 3, 10)
+                context.log.verbose("URI from proto [3,3,10]: $contentUriStr")
+                
+                // Fallback to path 3,3,3
+                if (contentUriStr.isNullOrEmpty()) {
+                    contentUriStr = messageProtoReader.getString(3, 3, 3)
+                    context.log.verbose("URI from proto [3,3,3]: $contentUriStr")
                 }
                 
-                // Method 2: From message content instance fields
-                if (videoUri == null) {
-                    runCatching {
-                        val fields = localMessageContent.instanceNonNull().javaClass.declaredFields
-                        context.log.verbose("Message content fields: ${fields.joinToString { it.name }}")
-                        
-                        for (field in fields) {
-                            field.isAccessible = true
-                            val value = field.get(localMessageContent.instanceNonNull())
-                            
-                            if (value is Uri) {
-                                context.log.verbose("Found URI in message field ${field.name}: $value")
-                                videoUri = value
-                                break
-                            }
-                        }
-                    }.onFailure {
-                        context.log.error("Failed to inspect message content", it)
-                    }
-                }
-                
-                context.log.verbose("Video URI result: $videoUri")
-                
-                if (videoUri != null) {
-                    // Check if it's a video and get duration
+                if (!contentUriStr.isNullOrEmpty()) {
+                    // Get duration directly from the video file
                     val videoDurationMs = runCatching {
                         val retriever = MediaMetadataRetriever()
-                        retriever.setDataSource(context.androidContext, videoUri)
+                        retriever.setDataSource(context.androidContext, Uri.parse(contentUriStr))
                         val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
                         val mimeType = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE)
                         retriever.release()
@@ -248,14 +212,14 @@ class SendOverride : Feature("Send Override") {
                         event.canceled = true
                         context.coroutineScope.launch {
                             isSplitting = true
-                            splitAndSendVideo(videoUri.toString(), videoDurationMs, event)
+                            splitAndSendVideo(contentUriStr, videoDurationMs, event)
                         }
                         return@subscribe
                     } else {
                         context.log.verbose("Video ≤10s or not a video, no split needed")
                     }
                 } else {
-                    context.log.warn("Could not extract video URI from any source")
+                    context.log.warn("Could not extract content URI from proto paths [3,3,10] or [3,3,3]")
                 }
             }
 
