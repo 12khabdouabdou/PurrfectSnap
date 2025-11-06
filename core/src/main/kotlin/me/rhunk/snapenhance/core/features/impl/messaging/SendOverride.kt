@@ -168,6 +168,7 @@ class SendOverride : Feature("Send Override") {
             }
             
             postSavePolicy = null
+            if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
             
             // === EXTENSIVE DEBUG LOGGING ===
             context.log.verbose("\n" + "=".repeat(80))
@@ -176,7 +177,7 @@ class SendOverride : Feature("Send Override") {
             
             val localMessageContent = event.messageContent
             context.log.verbose("Content Type: ${localMessageContent.contentType}")
-            context.log.verbose("Content Type Name: ${localMessageContent.contentType.name}")
+            context.log.verbose("Content Type Name: ${localMessageContent.contentType?.name}")
             
             // Log ALL instance fields
             context.log.verbose("\n--- Message Content Instance Fields ---")
@@ -216,8 +217,6 @@ class SendOverride : Feature("Send Override") {
             context.log.verbose("Conversations: ${event.destinations.conversations?.size ?: 0}")
             context.log.verbose("Stories: ${event.destinations.stories?.size ?: 0}")
             
-            if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
-            val localMessageContent = event.messageContent
             if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) return@subscribe
 
             //prevent story replies
