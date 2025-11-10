@@ -146,6 +146,7 @@ class FeatureManager(
             DisableSnapModeRestrictions(),
             PreventForcedKeyboard(),
             CustomTheming(),
+            PresenceIndicatorDebug(),
         )
 
         features.values.toList().forEach { feature ->
