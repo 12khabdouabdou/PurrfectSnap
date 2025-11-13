@@ -564,11 +564,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                     withContext(Dispatchers.Main) {
                                         context.inAppOverlay.showStatusToast(
                                             Icons.Default.Info,
-                                            "Sending chunk 1/${pendingChunks.size}..."
+                                            "Sending ${pendingChunks.size} chunks..."
                                         )
+                                        // Trigger the first chunk send by re-firing SendMessageWithContentEvent
+                                        context.event.invokeClass(SendMessageWithContentEvent::class, event)
                                     }
-                                    // Trigger the first send by invoking original
-                                    event.invokeOriginal()
                                 }
                             }
                         }
@@ -615,7 +615,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             context.log.verbose("GalleryVideoSplitting: Picked video cached (${cachedVideo.length()} bytes), starting FFmpeg split...")
 
-            val command = "-i ${cachedVideo.absolutePath} -c copy -f segment -segment_time 10 -reset_timestamps 1 ${tempDir!!.absolutePath}/split_%03d.mp4"
+            // Use re-encode (libx264) to ensure correct GOP splitting; stream copy often produces single file on GOP boundaries
+            val command = "-i ${cachedVideo.absolutePath} -c:v libx264 -preset ultrafast -c:a aac -f segment -segment_time 10 -reset_timestamps 1 ${tempDir!!.absolutePath}/split_%03d.mp4"
             val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
             if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
                 context.log.error("GalleryVideoSplitting: FFmpeg failed: ${session.output}")
@@ -785,8 +786,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             context.log.verbose("GalleryVideoSplitting: Video cached (${cachedVideo.length()} bytes), starting FFmpeg split...")
 
-            // Split with FFmpeg - 10 second segments
-            val command = "-i ${cachedVideo.absolutePath} -c copy -f segment -segment_time 10 -reset_timestamps 1 ${tempDir!!.absolutePath}/split_%03d.mp4"
+            // Split with FFmpeg - 10 second segments using re-encode to ensure correct GOP splitting
+            val command = "-i ${cachedVideo.absolutePath} -c:v libx264 -preset ultrafast -c:a aac -f segment -segment_time 10 -reset_timestamps 1 ${tempDir!!.absolutePath}/split_%03d.mp4"
             val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
 
             if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
