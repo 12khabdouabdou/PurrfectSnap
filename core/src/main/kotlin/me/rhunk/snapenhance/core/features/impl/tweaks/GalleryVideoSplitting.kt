@@ -566,8 +566,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                             Icons.Default.Info,
                                             "Sending ${pendingChunks.size} chunks..."
                                         )
-                                        // Trigger the first chunk send by re-firing SendMessageWithContentEvent
-                                        context.event.invokeClass(SendMessageWithContentEvent::class, event)
+                                        // Trigger the first chunk send by posting SendMessageWithContentEvent
+                                        // This will go through all subscriptions (including our chunk-handler above)
+                                        context.event.post(event)
                                     }
                                 }
                             }
