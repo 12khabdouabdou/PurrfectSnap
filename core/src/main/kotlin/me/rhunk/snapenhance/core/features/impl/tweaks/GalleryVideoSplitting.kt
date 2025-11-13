@@ -25,7 +25,6 @@ import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
 import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
-import me.rhunk.snapenhance.core.event.events.impl.MediaUploadEvent
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
@@ -67,6 +66,39 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
         context.event.subscribe(SendMessageWithContentEvent::class) { event ->
             context.log.verbose("GalleryVideoSplitting: SendMessageWithContentEvent triggered")
+            
+            // Early check: if this is an EXTERNAL_MEDIA video, try to split it BEFORE SendOverride processes it
+            // This ensures we have access to the original gallery URI in Snapchat's process context
+            val localMessageContent = event.messageContent
+            if (localMessageContent.contentType == ContentType.EXTERNAL_MEDIA &&
+                !event.canceled &&
+                event.destinations.stories?.isNotEmpty() != true) {
+                try {
+                    val messageProtoReader = ProtoReader(localMessageContent.content ?: byteArrayOf())
+                    if (!messageProtoReader.contains(7)) { // not a story reply
+                        val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
+                        if (mediaCount == 1) {
+                            val mediaType = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 6)
+                            if (mediaType == null || mediaType == 1L) { // video or unknown type (might be video)
+                                var videoDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) 
+                                    ?: messageProtoReader.getVarInt(11, 5, 2, 5)?.let { it * 1000 }
+                                    ?: context.feature(MediaFilePicker::class).lastMediaDuration
+                                
+                                if (videoDuration != null && videoDuration > 10000) {
+                                    context.log.verbose("GalleryVideoSplitting: Early interception: found video ${videoDuration}ms > 10s, attempting early split")
+                                    event.canceled = true
+                                    context.runOnUiThread {
+                                        showDurationDialog(event, videoDuration, messageProtoReader)
+                                    }
+                                    return@subscribe
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: Early interception check failed: ${e.message}")
+                }
+            }
             
             // Handle pending chunks first (modify and let it send like SendOverride does)
             if (isSplitting && pendingChunks.isNotEmpty() && currentChunkIndex < pendingChunks.size) {
@@ -112,7 +144,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 return@subscribe
             }
             
-            val localMessageContent = event.messageContent
             context.log.verbose("GalleryVideoSplitting: Content type = ${localMessageContent.contentType}")
             
             // Only process EXTERNAL_MEDIA (same check as SendOverride)
@@ -185,71 +216,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             // Show duration dialog
             context.runOnUiThread {
                 showDurationDialog(event, videoDuration, messageProtoReader)
-            }
-        }
-
-        // Subscribe earlier at upload stage to split before upload (same stage SendOverride hooks into)
-        context.event.subscribe(MediaUploadEvent::class) { event ->
-            context.log.verbose("GalleryVideoSplitting: MediaUploadEvent triggered")
-
-            // Only process EXTERNAL_MEDIA or SNAPs that still reference external/local media (to support SendOverride)
-            val localMessageContent = event.localMessageContent
-            context.log.verbose("GalleryVideoSplitting: MediaUpload content type = ${localMessageContent.contentType}")
-
-            val hasExternalMetadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") != null
-            val hasLocalMediaRefs = localMessageContent.instanceNonNull().getObjectFieldOrNull("mLocalMediaReferences") != null
-            val shouldProcess = (localMessageContent.contentType == ContentType.EXTERNAL_MEDIA) ||
-                    (localMessageContent.contentType == ContentType.SNAP && hasLocalMediaRefs) ||
-                    hasExternalMetadata
-
-            if (!shouldProcess) {
-                context.log.verbose("GalleryVideoSplitting: MediaUpload not EXTERNAL_MEDIA/SNAP-with-refs, skipping")
-                return@subscribe
-            }
-
-            val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
-            if (messageProtoReader.contains(7)) {
-                context.log.verbose("GalleryVideoSplitting: Story reply detected in MediaUpload, skipping")
-                return@subscribe
-            }
-
-            val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
-            context.log.verbose("GalleryVideoSplitting: MediaUpload media count = $mediaCount")
-            if (mediaCount != 1) return@subscribe
-
-            val mediaType = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 6)
-            if (mediaType != null && mediaType != 1L) return@subscribe
-
-            var videoDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)
-                ?: messageProtoReader.getVarInt(11, 5, 2, 5)?.let { it * 1000 }
-                ?: context.feature(MediaFilePicker::class).lastMediaDuration
-
-            context.log.verbose("GalleryVideoSplitting: MediaUpload duration = $videoDuration ms")
-
-            if (videoDuration == null || videoDuration <= 0) {
-                // Let UI ask for duration, similar to SendMessage path
-                event.adapter.setResult(null)
-                context.runOnUiThread {
-                    showDurationInputDialogFromUpload(event, messageProtoReader)
-                }
-                return@subscribe
-            }
-
-            if (videoDuration <= 10000) {
-                context.log.verbose("GalleryVideoSplitting: MediaUpload video <=10s, skipping")
-                return@subscribe
-            }
-
-            // Cancel original upload; we'll perform chunked uploads ourselves using the adapter
-            event.canceled = true
-
-            context.coroutineScope.launch {
-                val success = splitAndUploadChunks(event, messageProtoReader)
-                if (!success) {
-                    withContext(Dispatchers.Main) {
-                        context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed to split/upload video")
-                    }
-                }
             }
         }
         
@@ -756,174 +722,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed: ${e.message}")
             }
             cleanupChunks()
-            return false
-        }
-    }
-
-    private fun showDurationInputDialogFromUpload(event: MediaUploadEvent, messageProtoReader: ProtoReader) {
-        // Reuse existing dialog logic but call splitAndUploadChunks after confirmation
-        var durationInput by mutableStateOf("")
-        var errorMessage by mutableStateOf<String?>(null)
-
-        createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(text = "Video Duration Required", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(text = "Could not automatically detect video duration. Please enter the duration in seconds:", fontSize = 14.sp)
-                OutlinedTextField(
-                    value = durationInput,
-                    onValueChange = { durationInput = it; errorMessage = null },
-                    label = { Text("Duration (seconds)") },
-                    placeholder = { Text("e.g., 30") },
-                    isError = errorMessage != null,
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedButton(onClick = { alertDialog.dismiss() }) { Text(context.translation["button.cancel"]) }
-                    Button(onClick = {
-                        val duration = durationInput.toIntOrNull()
-                        if (duration == null || duration <= 0) { errorMessage = "Please enter a valid positive number"; return@Button }
-                        if (duration <= 10) { errorMessage = "Video must be longer than 10 seconds to split"; return@Button }
-                        alertDialog.dismiss()
-                        context.coroutineScope.launch {
-                            val fakeReader = messageProtoReader
-                            // set duration ms
-                            val durationMs = duration * 1000L
-                            val success = splitAndUploadChunks(event, fakeReader)
-                            if (!success) withContext(Dispatchers.Main) {
-                                context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Failed to split/upload video")
-                            }
-                        }
-                    }) { Text(context.translation["button.confirm"] ?: "Confirm") }
-                }
-            }
-        }.show()
-    }
-
-    private suspend fun splitAndUploadChunks(event: MediaUploadEvent, messageProtoReader: ProtoReader): Boolean {
-        // Similar to splitAndPrepareChunks but performs uploads by invoking the original upload method via the adapter
-        tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { mkdirs() }
-
-        try {
-            withContext(Dispatchers.Main) { context.inAppOverlay.showStatusToast(Icons.Default.Info, "Splitting video for upload...") }
-
-            // Extract media URI same as before
-            val localMessageContent = event.localMessageContent
-            val mLocalMediaReferencesField = localMessageContent.instanceNonNull().javaClass.getDeclaredField("mLocalMediaReferences")
-            mLocalMediaReferencesField.isAccessible = true
-            val localMediaReferencesObj = mLocalMediaReferencesField.get(localMessageContent.instanceNonNull())
-
-            var mediaUriStr: String? = null
-            if (localMediaReferencesObj is List<*>) {
-                val firstRef = localMediaReferencesObj.firstOrNull()
-                try {
-                    val mIdField = firstRef?.javaClass?.getDeclaredField("mId")
-                    mIdField?.isAccessible = true
-                    val mediaIdObj = mIdField?.get(firstRef)
-                    if (mediaIdObj is ByteArray) {
-                        mediaUriStr = extractUriFromByteArray(mediaIdObj)
-                        if (mediaUriStr != null) {
-                            context.log.verbose("GalleryVideoSplitting: Successfully extracted upload URI from mId byte array: $mediaUriStr")
-                        } else {
-                            val raw = try { String(mediaIdObj, Charsets.UTF_8) } catch (_: Exception) { "<binary>" }
-                            context.log.verbose("GalleryVideoSplitting: Could not find URI in upload mId byte array, raw: $raw")
-                        }
-                    }
-                } catch (e: Exception) {
-                    context.log.error("GalleryVideoSplitting: Error extracting mId for upload split", e)
-                }
-            }
-
-            if (mediaUriStr == null) {
-                context.log.error("GalleryVideoSplitting: Could not extract media URI for upload split")
-                dumpProtoToCache("full_proto_upload", localMessageContent.content)
-                return false
-            }
-
-            val mediaUri = Uri.parse(mediaUriStr)
-            val cachedVideo = File(tempDir!!, "input.mp4")
-
-            // Copy to cache (try resolvers)
-            val triedResolversUpload = mutableListOf<String>()
-            val copiedUpload = tryCopyUriToFile(mediaUri, cachedVideo, triedResolversUpload)
-            if (!copiedUpload) {
-                dumpLocalMediaReferenceToCache("localref_upload", (localMediaReferencesObj as? List<*>)?.firstOrNull() ?: return false)
-                context.log.error("GalleryVideoSplitting: Tried resolvers: $triedResolversUpload but failed to copy media for upload split")
-                return false
-            }
-
-            // Run ffmpeg split (same command)
-            val command = "-i ${cachedVideo.absolutePath} -c copy -f segment -segment_time 10 -reset_timestamps 1 ${tempDir!!.absolutePath}/split_%03d.mp4"
-            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
-            if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) throw IllegalStateException("FFmpeg failed: ${session.output}")
-
-            val outputFiles = tempDir!!.listFiles()?.filter { it.name.startsWith("split_") }?.sortedBy { it.name } ?: emptyList()
-            if (outputFiles.isEmpty()) throw IllegalStateException("FFmpeg produced no output files")
-
-            context.log.verbose("GalleryVideoSplitting: Prepared ${outputFiles.size} chunks for upload")
-
-            // For each chunk, update localMessageContent's mLocalMediaReferences to point to chunk and invoke original upload
-            val originalArgs = event.adapter.args()
-            for ((index, chunk) in outputFiles.withIndex()) {
-                // create chunk URI via FileProvider or file://
-                val chunkUri = try {
-                    FileProvider.getUriForFile(context.androidContext, "me.rhunk.snapenhance.fileprovider", chunk)
-                } catch (e: Exception) {
-                    Uri.fromFile(chunk)
-                }
-
-                // Update the mLocalMediaReferences in-place to point to chunk
-                try {
-                    val messageContentWrapper = MessageContent(localMessageContent.instanceNonNull())
-                    val localMediaReferencesObjMutable = messageContentWrapper.getObjectFieldOrNull("mLocalMediaReferences")
-                    if (localMediaReferencesObjMutable is MutableList<*>) {
-                        @Suppress("UNCHECKED_CAST")
-                        (localMediaReferencesObjMutable as MutableList<Any>).clear()
-                        val mediaReferenceClass = context.androidContext.classLoader.loadClass("com.snapchat.client.messaging.LocalMediaReference")
-                        val newRef = mediaReferenceClass.newInstance()
-                        mediaReferenceClass.getDeclaredField("mId").apply { isAccessible = true; set(newRef, chunkUri.toString().toByteArray()) }
-                        (localMediaReferencesObjMutable as MutableList<Any>).add(newRef)
-                    }
-                } catch (e: Exception) {
-                    context.log.error("GalleryVideoSplitting: Failed to set chunk reference", e)
-                }
-
-                // Prepare args for original upload call (replace first arg)
-                val argsCopy = originalArgs.copyOf()
-                argsCopy[0] = localMessageContent.instanceNonNull()
-
-                // Invoke original upload for this chunk
-                try {
-                    event.adapter.invokeOriginal(argsCopy)
-                    withContext(Dispatchers.Main) {
-                        context.inAppOverlay.showStatusToast(Icons.Default.Info, "Uploaded chunk ${index + 1}/${outputFiles.size}...")
-                    }
-                } catch (e: Exception) {
-                    context.log.error("GalleryVideoSplitting: upload failed for chunk ${chunk.name}", e)
-                }
-
-                // small delay between uploads
-                delay(1200)
-            }
-
-            // cleanup
-            pendingChunks.clear()
-            tempDir?.deleteRecursively()
-            tempDir = null
-            withContext(Dispatchers.Main) {
-                context.inAppOverlay.showStatusToast(Icons.Default.Info, "All chunks uploaded")
-            }
-
-            return true
-        } catch (e: Exception) {
-            context.log.error("GalleryVideoSplitting: splitAndUploadChunks failed", e)
-            tempDir?.deleteRecursively()
-            tempDir = null
             return false
         }
     }
