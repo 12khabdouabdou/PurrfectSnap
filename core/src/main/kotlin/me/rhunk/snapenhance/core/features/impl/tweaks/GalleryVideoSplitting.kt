@@ -192,13 +192,18 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         context.event.subscribe(MediaUploadEvent::class) { event ->
             context.log.verbose("GalleryVideoSplitting: MediaUploadEvent triggered")
 
-            // Only process EXTERNAL_MEDIA (similar checks)
+            // Only process EXTERNAL_MEDIA or SNAPs that still reference external/local media (to support SendOverride)
             val localMessageContent = event.localMessageContent
             context.log.verbose("GalleryVideoSplitting: MediaUpload content type = ${localMessageContent.contentType}")
 
-            if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA &&
-                localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) {
-                context.log.verbose("GalleryVideoSplitting: MediaUpload not EXTERNAL_MEDIA, skipping")
+            val hasExternalMetadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") != null
+            val hasLocalMediaRefs = localMessageContent.instanceNonNull().getObjectFieldOrNull("mLocalMediaReferences") != null
+            val shouldProcess = (localMessageContent.contentType == ContentType.EXTERNAL_MEDIA) ||
+                    (localMessageContent.contentType == ContentType.SNAP && hasLocalMediaRefs) ||
+                    hasExternalMetadata
+
+            if (!shouldProcess) {
+                context.log.verbose("GalleryVideoSplitting: MediaUpload not EXTERNAL_MEDIA/SNAP-with-refs, skipping")
                 return@subscribe
             }
 
@@ -646,12 +651,18 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             val mediaIdObj = mIdField.get(firstRef)
                             context.log.verbose("GalleryVideoSplitting: mId type: ${mediaIdObj?.javaClass?.name}")
                             
-                            if (mediaIdObj is ByteArray) {
-                                mediaUriStr = String(mediaIdObj)
-                                context.log.verbose("GalleryVideoSplitting: Successfully extracted URI: $mediaUriStr")
-                            } else {
-                                context.log.error("GalleryVideoSplitting: mId is not ByteArray, it's ${mediaIdObj?.javaClass?.name}")
-                            }
+                                if (mediaIdObj is ByteArray) {
+                                    mediaUriStr = extractUriFromByteArray(mediaIdObj)
+                                    if (mediaUriStr != null) {
+                                        context.log.verbose("GalleryVideoSplitting: Successfully extracted URI from mId byte array: $mediaUriStr")
+                                    } else {
+                                        // fallback to raw string for logging/diagnostics
+                                        val raw = try { String(mediaIdObj, Charsets.UTF_8) } catch (_: Exception) { "<binary>" }
+                                        context.log.verbose("GalleryVideoSplitting: Could not find URI in mId byte array, raw: $raw")
+                                    }
+                                } else {
+                                    context.log.error("GalleryVideoSplitting: mId is not ByteArray, it's ${mediaIdObj?.javaClass?.name}")
+                                }
                         } else {
                             context.log.error("GalleryVideoSplitting: mId field not found in reference object")
                         }
@@ -831,7 +842,15 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     val mIdField = firstRef?.javaClass?.getDeclaredField("mId")
                     mIdField?.isAccessible = true
                     val mediaIdObj = mIdField?.get(firstRef)
-                    if (mediaIdObj is ByteArray) mediaUriStr = String(mediaIdObj)
+                    if (mediaIdObj is ByteArray) {
+                        mediaUriStr = extractUriFromByteArray(mediaIdObj)
+                        if (mediaUriStr != null) {
+                            context.log.verbose("GalleryVideoSplitting: Successfully extracted upload URI from mId byte array: $mediaUriStr")
+                        } else {
+                            val raw = try { String(mediaIdObj, Charsets.UTF_8) } catch (_: Exception) { "<binary>" }
+                            context.log.verbose("GalleryVideoSplitting: Could not find URI in upload mId byte array, raw: $raw")
+                        }
+                    }
                 } catch (e: Exception) {
                     context.log.error("GalleryVideoSplitting: Error extracting mId for upload split", e)
                 }
@@ -970,6 +989,39 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             try {
                 context.log.verbose("$prefix: (failed to log large content: ${e.message})")
             } catch (_: Exception) { }
+        }
+    }
+
+    // Try to extract a usable URI string from a possibly-prefixed or binary mId byte array.
+    private fun extractUriFromByteArray(bytes: ByteArray?): String? {
+        if (bytes == null || bytes.isEmpty()) return null
+        try {
+            // Try UTF-8 interpretation first
+            val s = String(bytes, Charsets.UTF_8)
+            // Look for the common URI schemes we care about
+            val schemes = listOf("content://", "file://", "http://", "https://", "/")
+            for (scheme in schemes) {
+                val idx = s.indexOf(scheme)
+                if (idx >= 0) {
+                    // Trim off any trailing non-printable/control characters
+                    var end = s.length
+                    for (i in idx until s.length) {
+                        val c = s[i]
+                        if (c < ' ' && c != '\t') { end = i; break }
+                    }
+                    val candidate = s.substring(idx, end)
+                    if (candidate.isNotBlank()) return candidate
+                }
+            }
+
+            // As a fallback, try trimming surrounding control chars and return if it looks like a path
+            val trimmed = s.trim { it <= ' ' }
+            return if (trimmed.startsWith("content://") || trimmed.startsWith("file://") || trimmed.startsWith("/")) trimmed else null
+        } catch (e: Exception) {
+            try {
+                context.log.verbose("GalleryVideoSplitting: extractUriFromByteArray failed: ${e.message}")
+            } catch (_: Exception) { }
+            return null
         }
     }
 
