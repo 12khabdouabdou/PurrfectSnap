@@ -25,6 +25,7 @@ import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
 import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
 import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
+import me.rhunk.snapenhance.core.event.events.impl.ActivityResultEvent
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
@@ -35,6 +36,7 @@ import java.io.FileOutputStream
 import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+import kotlin.random.Random
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
@@ -46,6 +48,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private val pendingChunks = mutableListOf<File>()
     private var currentChunkIndex = 0
     private var tempDir: File? = null
+    private var pendingPickerRequest: Pair<Int, (data: Uri) -> Unit>? = null
 
     override fun init() {
         context.log.verbose("GalleryVideoSplitting: Initializing...")
@@ -216,6 +219,34 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             // Show duration dialog
             context.runOnUiThread {
                 showDurationDialog(event, videoDuration, messageProtoReader)
+            }
+        }
+
+        // Listen for ActivityResultEvent to handle re-pick results
+        context.event.subscribe(ActivityResultEvent::class) { ev ->
+            val pending = pendingPickerRequest
+            if (pending == null) return@subscribe
+            if (ev.requestCode != pending.first) return@subscribe
+            val handler = pending.second
+            pendingPickerRequest = null
+            ev.canceled = true
+            val data = ev.intent?.data
+            if (data != null) {
+                try {
+                    // For OPEN_DOCUMENT we may want to persist permission
+                    try {
+                        val flags = (ev.intent?.flags ?: 0) and (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                        if (flags != 0) {
+                            context.mainActivity?.contentResolver?.takePersistableUriPermission(data, flags)
+                        }
+                    } catch (_: Exception) {}
+
+                    handler(data)
+                } catch (e: Exception) {
+                    context.log.error("GalleryVideoSplitting: Error handling picker result", e)
+                }
+            } else {
+                context.log.verbose("GalleryVideoSplitting: Picker returned no data")
             }
         }
         
@@ -522,22 +553,23 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     }
                     Button(onClick = {
                         alertDialog.dismiss()
-                        
-                        // Start async splitting process
-                        context.coroutineScope.launch {
-                            val success = splitAndPrepareChunks(event, messageProtoReader)
-                            
-                            if (success && pendingChunks.isNotEmpty()) {
-                                isSplitting = true
-                                currentChunkIndex = 0
-                                withContext(Dispatchers.Main) {
-                                    context.inAppOverlay.showStatusToast(
-                                        Icons.Default.Info,
-                                        "Sending chunk 1/${pendingChunks.size}..."
-                                    )
+
+                        // Launch the re-pick file flow (ACTION_OPEN_DOCUMENT) so we get a usable URI permission
+                        launchRepickPicker { pickedUri ->
+                            context.coroutineScope.launch {
+                                val success = splitFromPickedUri(pickedUri, event, messageProtoReader)
+                                if (success && pendingChunks.isNotEmpty()) {
+                                    isSplitting = true
+                                    currentChunkIndex = 0
+                                    withContext(Dispatchers.Main) {
+                                        context.inAppOverlay.showStatusToast(
+                                            Icons.Default.Info,
+                                            "Sending chunk 1/${pendingChunks.size}..."
+                                        )
+                                    }
+                                    // Trigger the first send by invoking original
+                                    event.invokeOriginal()
                                 }
-                                // Trigger the first send by invoking original
-                                event.invokeOriginal()
                             }
                         }
                     }) {
@@ -546,6 +578,66 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 }
             }
         }.show()
+    }
+
+    private fun launchRepickPicker(onPicked: (Uri) -> Unit) {
+        val requestCode = Random.nextInt(1, 65535)
+        pendingPickerRequest = requestCode to onPicked
+        try {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "video/*"
+                putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("video/*"))
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            }
+            context.mainActivity?.startActivityForResult(Intent.createChooser(intent, context.translation["pick_media"] ?: "Select video"), requestCode)
+        } catch (e: Exception) {
+            context.log.error("GalleryVideoSplitting: Failed to launch picker", e)
+        }
+    }
+
+    private suspend fun splitFromPickedUri(pickedUri: Uri, event: SendMessageWithContentEvent, messageProtoReader: ProtoReader): Boolean {
+        tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { mkdirs() }
+        val cachedVideo = File(tempDir!!, "input.mp4")
+        try {
+            withContext(Dispatchers.Main) {
+                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Preparing video for split...")
+            }
+
+            // Copy using the activity's resolver (should have permission because picker granted it)
+            val resolver = context.mainActivity!!.contentResolver
+            resolver.openInputStream(pickedUri)?.use { input ->
+                cachedVideo.outputStream().use { out -> input.copyTo(out) }
+            } ?: run {
+                context.log.error("GalleryVideoSplitting: Picker returned URI but could not open input stream: $pickedUri")
+                return false
+            }
+
+            context.log.verbose("GalleryVideoSplitting: Picked video cached (${cachedVideo.length()} bytes), starting FFmpeg split...")
+
+            val command = "-i ${cachedVideo.absolutePath} -c copy -f segment -segment_time 10 -reset_timestamps 1 ${tempDir!!.absolutePath}/split_%03d.mp4"
+            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
+            if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
+                context.log.error("GalleryVideoSplitting: FFmpeg failed: ${session.output}")
+                return false
+            }
+
+            val outputFiles = tempDir!!.listFiles()?.filter { it.name.startsWith("split_") }?.sortedBy { it.name } ?: emptyList()
+            if (outputFiles.isEmpty()) {
+                context.log.error("GalleryVideoSplitting: FFmpeg produced no output files")
+                return false
+            }
+
+            pendingChunks.clear()
+            pendingChunks.addAll(outputFiles)
+            context.log.verbose("GalleryVideoSplitting: Prepared ${pendingChunks.size} chunks from picked video")
+            return true
+        } catch (e: Exception) {
+            context.log.error("GalleryVideoSplitting: splitFromPickedUri failed", e)
+            tempDir?.deleteRecursively()
+            tempDir = null
+            return false
+        }
     }
 
     private suspend fun splitAndPrepareChunks(
@@ -873,14 +965,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private fun tryCopyUriToFile(mediaUri: Uri, destFile: File, triedResolvers: MutableList<String>): Boolean {
         val resolvers = listOfNotNull(context.mainActivity?.contentResolver, context.androidContext.contentResolver).distinct()
 
-        // Try with the original URI first
+        // Primary attempts: prefer mainActivity's ContentResolver (may have ephemeral URI permissions)
         for (resolver in resolvers) {
             triedResolvers.add(resolver.toString())
+            // 1) normal openInputStream
             try {
                 resolver.openInputStream(mediaUri)?.use { input ->
-                    destFile.outputStream().use { output ->
-                        input.copyTo(output)
-                    }
+                    destFile.outputStream().use { output -> input.copyTo(output) }
                 }
                 context.log.verbose("GalleryVideoSplitting: Copied media using openInputStream with resolver $resolver")
                 return true
@@ -888,15 +979,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 context.log.verbose("GalleryVideoSplitting: openInputStream failed on $resolver: ${e.message}")
             }
 
+            // 2) openFileDescriptor
             try {
                 val pfd = resolver.openFileDescriptor(mediaUri, "r")
                 if (pfd != null) {
                     pfd.use { parcel ->
-                        java.io.FileInputStream(parcel.fileDescriptor).use { fis ->
-                            destFile.outputStream().use { fos ->
-                                fis.copyTo(fos)
-                            }
-                        }
+                        java.io.FileInputStream(parcel.fileDescriptor).use { fis -> destFile.outputStream().use { fos -> fis.copyTo(fos) } }
                     }
                     context.log.verbose("GalleryVideoSplitting: Copied media using openFileDescriptor with resolver $resolver")
                     return true
@@ -904,17 +992,64 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             } catch (e: Exception) {
                 context.log.verbose("GalleryVideoSplitting: openFileDescriptor failed on $resolver: ${e.message}")
             }
+
+            // 3) try AssetFileDescriptor
+            try {
+                val afd = resolver.openAssetFileDescriptor(mediaUri, "r")
+                if (afd != null) {
+                    afd.use { asset ->
+                        asset.createInputStream().use { input -> destFile.outputStream().use { out -> input.copyTo(out) } }
+                    }
+                    context.log.verbose("GalleryVideoSplitting: Copied media using openAssetFileDescriptor with resolver $resolver")
+                    return true
+                }
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: openAssetFileDescriptor failed on $resolver: ${e.message}")
+            }
+
+            // 4) try typed asset descriptor (some providers require a MIME hint)
+            try {
+                val typed = resolver.openTypedAssetFileDescriptor(mediaUri, "*/*", null)
+                if (typed != null) {
+                    typed.use { t -> t.createInputStream().use { i -> destFile.outputStream().use { o -> i.copyTo(o) } } }
+                    context.log.verbose("GalleryVideoSplitting: Copied media using openTypedAssetFileDescriptor with resolver $resolver")
+                    return true
+                }
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: openTypedAssetFileDescriptor failed on $resolver: ${e.message}")
+            }
+
+            // 5) try acquiring provider client and use its file APIs as a last direct provider attempt
+            try {
+                val client = resolver.acquireContentProviderClient(mediaUri)
+                if (client != null) {
+                    triedResolvers.add("contentProviderClient:${client.toString()}")
+                    try {
+                        // attempt to open a ParcelFileDescriptor via the client
+                        val pfd = client.openFile(mediaUri, "r")
+                        if (pfd != null) {
+                            pfd.use { parcel -> java.io.FileInputStream(parcel.fileDescriptor).use { fis -> destFile.outputStream().use { fos -> fis.copyTo(fos) } } }
+                            context.log.verbose("GalleryVideoSplitting: Copied media via ContentProviderClient.openFile")
+                            client.release()
+                            return true
+                        }
+                    } catch (e: Exception) {
+                        context.log.verbose("GalleryVideoSplitting: ContentProviderClient.openFile failed: ${e.message}")
+                    }
+                    try { client.release() } catch (_: Exception) {}
+                }
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: acquireContentProviderClient failed: ${e.message}")
+            }
         }
 
-        // Try stripping query parameters (some providers don't like them)
+        // Try stripping query parameters (some providers reject queries)
         try {
             val stripped = Uri.parse(mediaUri.toString().substringBefore('?'))
             for (resolver in resolvers) {
                 triedResolvers.add("stripped:${resolver}")
                 try {
-                    resolver.openInputStream(stripped)?.use { input ->
-                        destFile.outputStream().use { output -> input.copyTo(output) }
-                    }
+                    resolver.openInputStream(stripped)?.use { input -> destFile.outputStream().use { output -> input.copyTo(output) } }
                     context.log.verbose("GalleryVideoSplitting: Copied media using stripped URI with resolver $resolver")
                     return true
                 } catch (e: Exception) {
@@ -923,11 +1058,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 try {
                     val pfd = resolver.openFileDescriptor(stripped, "r")
                     if (pfd != null) {
-                        pfd.use { parcel ->
-                            java.io.FileInputStream(parcel.fileDescriptor).use { fis ->
-                                destFile.outputStream().use { fos -> fis.copyTo(fos) }
-                            }
-                        }
+                        pfd.use { parcel -> java.io.FileInputStream(parcel.fileDescriptor).use { fis -> destFile.outputStream().use { fos -> fis.copyTo(fos) } } }
                         context.log.verbose("GalleryVideoSplitting: Copied media using stripped openFileDescriptor with resolver $resolver")
                         return true
                     }
