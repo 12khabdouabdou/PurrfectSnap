@@ -709,24 +709,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val cachedVideo = File(tempDir!!, "input.mp4")
 
             // Copy video to cache using ContentResolver. Try multiple resolvers (mainActivity then androidContext).
-            var copied = false
             val triedResolvers = mutableListOf<String>()
-            val resolvers = listOfNotNull(context.mainActivity?.contentResolver, context.androidContext.contentResolver).distinct()
-            for (resolver in resolvers) {
-                try {
-                    triedResolvers.add(resolver.toString())
-                    resolver.openInputStream(mediaUri)?.use { input ->
-                        cachedVideo.outputStream().use { output ->
-                            input.copyTo(output)
-                        }
-                    }
-                    copied = true
-                    break
-                } catch (e: Exception) {
-                    context.log.verbose("GalleryVideoSplitting: resolver ${resolver} failed to open URI: ${e.message}")
-                }
-            }
-
+            val copied = tryCopyUriToFile(mediaUri, cachedVideo, triedResolvers)
             if (!copied) {
                 // Attempt to dump the LocalMediaReference for analysis and provide helpful logs
                 try {
@@ -737,7 +721,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 } catch (e: Exception) {
                     context.log.verbose("GalleryVideoSplitting: Failed to dump LocalMediaReference: ${e.message}")
                 }
-
                 context.log.error("GalleryVideoSplitting: Tried resolvers: $triedResolvers but couldn't open URI: $mediaUri")
                 throw IllegalStateException("Failed to open input stream for URI: $mediaUri")
             }
@@ -866,25 +849,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val cachedVideo = File(tempDir!!, "input.mp4")
 
             // Copy to cache (try resolvers)
-            var copied = false
-            val resolvers = listOfNotNull(context.mainActivity?.contentResolver, context.androidContext.contentResolver).distinct()
-            for (resolver in resolvers) {
-                try {
-                    resolver.openInputStream(mediaUri)?.use { input ->
-                        cachedVideo.outputStream().use { output ->
-                            input.copyTo(output)
-                        }
-                    }
-                    copied = true
-                    break
-                } catch (e: Exception) {
-                    context.log.verbose("GalleryVideoSplitting: resolver failed during upload copy: ${e.message}")
-                }
-            }
-
-            if (!copied) {
+            val triedResolversUpload = mutableListOf<String>()
+            val copiedUpload = tryCopyUriToFile(mediaUri, cachedVideo, triedResolversUpload)
+            if (!copiedUpload) {
                 dumpLocalMediaReferenceToCache("localref_upload", (localMediaReferencesObj as? List<*>)?.firstOrNull() ?: return false)
-                context.log.error("GalleryVideoSplitting: Failed to copy media for upload split")
+                context.log.error("GalleryVideoSplitting: Tried resolvers: $triedResolversUpload but failed to copy media for upload split")
                 return false
             }
 
@@ -1100,5 +1069,107 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         } catch (e: Exception) {
             context.log.error("GalleryVideoSplitting: Failed to write LocalMediaReference dump", e)
         }
+    }
+
+    // Attempt several strategies to copy a content/file URI to a local destination file.
+    private fun tryCopyUriToFile(mediaUri: Uri, destFile: File, triedResolvers: MutableList<String>): Boolean {
+        val resolvers = listOfNotNull(context.mainActivity?.contentResolver, context.androidContext.contentResolver).distinct()
+
+        // Try with the original URI first
+        for (resolver in resolvers) {
+            triedResolvers.add(resolver.toString())
+            try {
+                resolver.openInputStream(mediaUri)?.use { input ->
+                    destFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                context.log.verbose("GalleryVideoSplitting: Copied media using openInputStream with resolver $resolver")
+                return true
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: openInputStream failed on $resolver: ${e.message}")
+            }
+
+            try {
+                val pfd = resolver.openFileDescriptor(mediaUri, "r")
+                if (pfd != null) {
+                    pfd.use { parcel ->
+                        java.io.FileInputStream(parcel.fileDescriptor).use { fis ->
+                            destFile.outputStream().use { fos ->
+                                fis.copyTo(fos)
+                            }
+                        }
+                    }
+                    context.log.verbose("GalleryVideoSplitting: Copied media using openFileDescriptor with resolver $resolver")
+                    return true
+                }
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: openFileDescriptor failed on $resolver: ${e.message}")
+            }
+        }
+
+        // Try stripping query parameters (some providers don't like them)
+        try {
+            val stripped = Uri.parse(mediaUri.toString().substringBefore('?'))
+            for (resolver in resolvers) {
+                triedResolvers.add("stripped:${resolver}")
+                try {
+                    resolver.openInputStream(stripped)?.use { input ->
+                        destFile.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    context.log.verbose("GalleryVideoSplitting: Copied media using stripped URI with resolver $resolver")
+                    return true
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: stripped openInputStream failed on $resolver: ${e.message}")
+                }
+                try {
+                    val pfd = resolver.openFileDescriptor(stripped, "r")
+                    if (pfd != null) {
+                        pfd.use { parcel ->
+                            java.io.FileInputStream(parcel.fileDescriptor).use { fis ->
+                                destFile.outputStream().use { fos -> fis.copyTo(fos) }
+                            }
+                        }
+                        context.log.verbose("GalleryVideoSplitting: Copied media using stripped openFileDescriptor with resolver $resolver")
+                        return true
+                    }
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: stripped openFileDescriptor failed on $resolver: ${e.message}")
+                }
+            }
+        } catch (e: Exception) {
+            context.log.verbose("GalleryVideoSplitting: failed to build stripped URI: ${e.message}")
+        }
+
+        // Try querying for a file path (MediaStore/_data style) as last resort
+        try {
+            for (resolver in resolvers) {
+                triedResolvers.add("query:${resolver}")
+                try {
+                    resolver.query(mediaUri, arrayOf("_data"), null, null, null)?.use { cursor ->
+                        if (cursor.moveToFirst()) {
+                            val idx = cursor.getColumnIndex("_data")
+                            if (idx >= 0) {
+                                val path = cursor.getString(idx)
+                                if (!path.isNullOrBlank()) {
+                                    val f = File(path)
+                                    if (f.exists()) {
+                                        f.inputStream().use { fis -> destFile.outputStream().use { fos -> fis.copyTo(fos) } }
+                                        context.log.verbose("GalleryVideoSplitting: Copied media using _data path from resolver $resolver: $path")
+                                        return true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: query for _data failed on $resolver: ${e.message}")
+                }
+            }
+        } catch (e: Exception) {
+            context.log.verbose("GalleryVideoSplitting: _data query attempt failed: ${e.message}")
+        }
+
+        return false
     }
 }
