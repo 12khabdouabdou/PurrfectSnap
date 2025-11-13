@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.suspendCoroutine
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.ui.createComposeAlertDialog
 import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
@@ -33,6 +33,8 @@ import me.rhunk.snapenhance.core.features.impl.messaging.Messaging
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
 import me.rhunk.snapenhance.core.wrapper.impl.MessageContent
 import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
+import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
+import me.rhunk.snapenhance.core.messaging.MessageSender
 import android.util.Base64
 import android.os.Environment
 import java.io.FileOutputStream
@@ -222,12 +224,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             return
         }
         
-        val messaging = context.feature(Messaging::class)
-        val messageSender = messaging.messageSender
-        if (messageSender == null) {
-            context.log.error("GalleryVideoSplitting: MessageSender not available")
-            return
-        }
+        val messageSender = MessageSender(context)
         
         context.log.verbose("GalleryVideoSplitting: Starting to send ${chunks.size} chunks to ${conversationUUIDs.size} conversation(s)")
         
@@ -276,53 +273,103 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
-    private suspend fun sendSnapChunk(messageSender: Any, conversations: List<SnapUUID>, snapProto: ByteArray, chunkFile: File): Boolean {
-        return suspendCancellableCoroutine { continuation ->
-            try {
-                // Get URI for the chunk file
-                val chunkUri = Uri.fromFile(chunkFile)
-                context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
-                
-                // Build SNAP message with the proto and file reference
-                val method = messageSender.javaClass.getMethod(
-                    "sendCustomChatMessage",
-                    List::class.java,
-                    ContentType::class.java,
-                    kotlin.reflect.KFunction1::class.java
-                )
-                
-                // Create the proto builder lambda
-                val protoBuilder: (ProtoWriter) -> Unit = { writer ->
-                    writer.from(11) {
-                        // Add the SNAP proto content
-                        val pb = ProtoWriter()
-                        val protoBytes = snapProto
-                        // Directly set the bytes (this is a simplified approach)
-                        writer.addBuffer(5, protoBytes)
-                    }
+    private suspend fun sendSnapChunk(messageSender: MessageSender, conversations: List<SnapUUID>, snapProto: ByteArray, chunkFile: File): Boolean {
+        return try {
+            suspendCoroutine<Boolean> { continuation ->
+                try {
+                    val chunkUri = Uri.fromFile(chunkFile)
+                    context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
+
+                    // Use MessageSender.sendCustomChatMessage to send the prebuilt proto bytes.
+                    // The lambda builds the ProtoWriter content for MessageSender; here we insert the
+                    // Instead of injecting raw bytes, rebuild the SNAP proto inside the lambda
+                    // so the MessageSender's ProtoWriter constructs the exact expected structure.
+                    messageSender.sendCustomChatMessage(
+                        conversations,
+                        ContentType.SNAP,
+                        {
+                            try {
+                                // Build inner SNAP proto based on chunk metadata
+                                val retriever = MediaMetadataRetriever()
+                                val chunkWidth: Int
+                                val chunkHeight: Int
+                                try {
+                                    retriever.setDataSource(chunkFile.absolutePath)
+                                    chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
+                                    chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
+                                } finally {
+                                    retriever.release()
+                                }
+
+                                val snapDurationMs = convertDuration(customDuration)
+                                val hasSound = 1L
+
+                                // Build the inner SNAP proto using a temporary ProtoWriter, then insert
+                                // it into the outgoing message as buffer field 1.
+                                val inner = ProtoWriter().apply {
+                                    from(11) {
+                                        from(5) {
+                                            from(1) {
+                                                from(1) {
+                                                    addVarInt(2, 0)
+                                                    addVarInt(12, 0)
+                                                    addVarInt(15, 0)
+                                                    addVarInt(16, chunkWidth)
+                                                    addVarInt(17, chunkHeight)
+                                                }
+                                                addVarInt(6, 1)
+                                            }
+                                            from(2) {}
+                                        }
+                                        from(22) {}
+                                    }
+                                }.toByteArray()
+
+                                val finalInner = ProtoEditor(inner).apply {
+                                    edit(11, 5, 2) {
+                                        arrayOf(6, 7, 8).forEach { remove(it) }
+                                        addVarInt(5, hasSound)
+                                        if (snapDurationMs != null) {
+                                            addVarInt(8, snapDurationMs / 1000)
+                                            if (snapDurationMs / 1000 <= 0) {
+                                                addVarInt(99, snapDurationMs.toLong())
+                                            }
+                                        } else {
+                                            addBuffer(6, byteArrayOf())
+                                        }
+                                    }
+
+                                    edit(11, 22) {
+                                        remove(4)
+                                        addVarInt(4, 5)
+                                    }
+                                }.toByteArray()
+
+                                // Insert the rebuilt inner SNAP proto into the message writer
+                                addBuffer(1, finalInner)
+                            } catch (e: Exception) {
+                                // If building failed, log and rethrow so onError path runs
+                                context.log.error("GalleryVideoSplitting: Failed while constructing inner SNAP proto", e)
+                                throw e
+                            }
+                        },
+                        onError = { err ->
+                            context.log.error("GalleryVideoSplitting: Failed to send chunk: $err")
+                            try { continuation.resume(false) } catch (_: Exception) {}
+                        },
+                        onSuccess = {
+                            context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
+                            try { continuation.resume(true) } catch (_: Exception) {}
+                        }
+                    )
+                } catch (e: Exception) {
+                    context.log.error("GalleryVideoSplitting: Exception while sending snap chunk", e)
+                    try { continuation.resume(false) } catch (_: Exception) {}
                 }
-                
-                // Use reflection to call sendCustomChatMessage with ContentType.SNAP
-                // For now, just call it with the proto
-                val callback = object {
-                    fun onSuccess() {
-                        context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
-                        continuation.resume(true)
-                    }
-                    
-                    fun onError(error: Any) {
-                        context.log.error("GalleryVideoSplitting: Failed to send chunk: $error")
-                        continuation.resume(false)
-                    }
-                }
-                
-                // For now, use a simpler approach: just try to send and log
-                context.log.verbose("GalleryVideoSplitting: SNAP chunk proto built successfully, attempting to send...")
-                continuation.resume(true)
-            } catch (e: Exception) {
-                context.log.error("GalleryVideoSplitting: Exception while sending snap chunk", e)
-                continuation.resume(false)
             }
+        } catch (e: Exception) {
+            context.log.error("GalleryVideoSplitting: sendSnapChunk outer exception", e)
+            false
         }
     }
 
