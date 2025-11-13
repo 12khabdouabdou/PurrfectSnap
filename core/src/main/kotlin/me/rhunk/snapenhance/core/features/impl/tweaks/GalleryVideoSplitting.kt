@@ -1,7 +1,9 @@
 package me.rhunk.snapenhance.core.features.impl.tweaks
 
+import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import androidx.core.content.FileProvider
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -27,6 +29,8 @@ import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
 import me.rhunk.snapenhance.core.wrapper.impl.MessageContent
+import android.util.Base64
+import java.io.FileOutputStream
 import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -189,8 +193,43 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         val localMessageContent = event.messageContent
         val snapDurationMs = convertDuration(customDuration)
         
-        // Get the chunk URI
-        val chunkUri = Uri.fromFile(chunkFile)
+        // Get the chunk URI. Prefer a content:// URI via FileProvider for better compatibility.
+        val authoritiesToTry = listOf(
+            "me.rhunk.snapenhance.fileprovider",
+            "me.rhunk.snapenhance.manager.provider"
+        )
+
+        var chunkUri: Uri? = null
+        for (auth in authoritiesToTry) {
+            try {
+                val candidate = FileProvider.getUriForFile(context.androidContext, auth, chunkFile)
+                if (candidate != null) {
+                    chunkUri = candidate
+                    context.log.verbose("GalleryVideoSplitting: Obtained content URI via FileProvider ($auth): $chunkUri")
+                    break
+                }
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: FileProvider with authority $auth not available: ${e.message}")
+            }
+        }
+
+        if (chunkUri == null) {
+            // Fallback to file:// URI
+            chunkUri = Uri.fromFile(chunkFile)
+            context.log.verbose("GalleryVideoSplitting: Falling back to file URI for chunk: $chunkUri")
+        } else {
+            // Grant read permission to Snapchat package in case it's required
+            try {
+                context.mainActivity?.grantUriPermission(
+                    "com.snapchat.android",
+                    chunkUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+                context.log.verbose("GalleryVideoSplitting: Granted URI permissions for $chunkUri to com.snapchat.android")
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: Failed to grant URI permission: ${e.message}")
+            }
+        }
         
         // Extract metadata from chunk
         val retriever = MediaMetadataRetriever()
@@ -573,7 +612,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 context.log.error("GalleryVideoSplitting: Could not extract media URI from mLocalMediaReferences")
                 
                 // Dump proto structure for analysis
-                context.log.verbose("GalleryVideoSplitting: Full proto structure:\n$messageProtoReader")
+                context.log.verbose("GalleryVideoSplitting: Full proto structure dumped to cache for analysis")
+                dumpProtoToCache("full_proto", localMessageContent.content)
                 
                 // Check if width/height are in proto (which confirms video metadata exists)
                 val width = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 5, 1)
@@ -649,6 +689,23 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 Icons.Default.Info,
                 "All chunks sent successfully!"
             )
+        }
+    }
+
+    private fun dumpProtoToCache(prefix: String, bytes: ByteArray?) {
+        if (bytes == null || bytes.isEmpty()) return
+        try {
+            val cacheDir = context.mainActivity?.cacheDir ?: return
+            val safePrefix = prefix.replace(Regex("[^a-zA-Z0-9_\\-]"), "_")
+            val fileName = "${safePrefix}_${System.currentTimeMillis()}.b64"
+            val outFile = File(cacheDir, fileName)
+            val b64 = Base64.encodeToString(bytes, Base64.NO_WRAP)
+            FileOutputStream(outFile).use { fos ->
+                fos.write(b64.toByteArray(Charsets.UTF_8))
+            }
+            context.log.verbose("GalleryVideoSplitting: Wrote proto dump to ${outFile.absolutePath}")
+        } catch (e: Exception) {
+            context.log.error("GalleryVideoSplitting: Failed to write proto dump", e)
         }
     }
 }
