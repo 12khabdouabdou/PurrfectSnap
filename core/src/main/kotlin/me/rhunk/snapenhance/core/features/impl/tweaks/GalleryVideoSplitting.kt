@@ -30,6 +30,7 @@ import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
 import me.rhunk.snapenhance.core.wrapper.impl.MessageContent
 import android.util.Base64
+import android.os.Environment
 import java.io.FileOutputStream
 import java.io.File
 import kotlin.time.DurationUnit
@@ -635,12 +636,39 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             val mediaUri = Uri.parse(mediaUriStr)
             val cachedVideo = File(tempDir!!, "input.mp4")
 
-            // Copy video to cache using ContentResolver
-            context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
-                cachedVideo.outputStream().use { output ->
-                    input.copyTo(output)
+            // Copy video to cache using ContentResolver. Try multiple resolvers (mainActivity then androidContext).
+            var copied = false
+            val triedResolvers = mutableListOf<String>()
+            val resolvers = listOfNotNull(context.mainActivity?.contentResolver, context.androidContext.contentResolver).distinct()
+            for (resolver in resolvers) {
+                try {
+                    triedResolvers.add(resolver.toString())
+                    resolver.openInputStream(mediaUri)?.use { input ->
+                        cachedVideo.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    copied = true
+                    break
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: resolver ${resolver} failed to open URI: ${e.message}")
                 }
-            } ?: throw IllegalStateException("Failed to open input stream for URI: $mediaUri")
+            }
+
+            if (!copied) {
+                // Attempt to dump the LocalMediaReference for analysis and provide helpful logs
+                try {
+                    val firstRef = (localMediaReferencesObj as? List<*>)?.firstOrNull()
+                    if (firstRef != null) {
+                        dumpLocalMediaReferenceToCache("localref", firstRef)
+                    }
+                } catch (e: Exception) {
+                    context.log.verbose("GalleryVideoSplitting: Failed to dump LocalMediaReference: ${e.message}")
+                }
+
+                context.log.error("GalleryVideoSplitting: Tried resolvers: $triedResolvers but couldn't open URI: $mediaUri")
+                throw IllegalStateException("Failed to open input stream for URI: $mediaUri")
+            }
 
             context.log.verbose("GalleryVideoSplitting: Video cached (${cachedVideo.length()} bytes), starting FFmpeg split...")
 
@@ -704,8 +732,62 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 fos.write(b64.toByteArray(Charsets.UTF_8))
             }
             context.log.verbose("GalleryVideoSplitting: Wrote proto dump to ${outFile.absolutePath}")
+
+            // Also try to write a copy to external storage for easier adb access (/sdcard/PurrfectSnapDumps)
+            try {
+                val externalDir = File(Environment.getExternalStorageDirectory(), "PurrfectSnapDumps")
+                externalDir.mkdirs()
+                val externalFile = File(externalDir, fileName)
+                FileOutputStream(externalFile).use { fos -> fos.write(b64.toByteArray(Charsets.UTF_8)) }
+                context.log.verbose("GalleryVideoSplitting: Also wrote proto dump to ${externalFile.absolutePath}")
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: Failed to write proto dump to external storage: ${e.message}")
+            }
         } catch (e: Exception) {
             context.log.error("GalleryVideoSplitting: Failed to write proto dump", e)
+        }
+    }
+
+    private fun dumpLocalMediaReferenceToCache(prefix: String, refObj: Any) {
+        try {
+            val cacheDir = context.mainActivity?.cacheDir ?: return
+            val safePrefix = prefix.replace(Regex("[^a-zA-Z0-9_\\-]"), "_")
+            val fileName = "${safePrefix}_${System.currentTimeMillis()}.txt"
+            val outFile = File(cacheDir, fileName)
+            val sb = StringBuilder()
+            sb.append("LocalMediaReference dump:\n")
+            sb.append("Class: ${refObj.javaClass.name}\n")
+            refObj.javaClass.declaredFields.forEach { field ->
+                field.isAccessible = true
+                try {
+                    val value = field.get(refObj)
+                    val repr = when (value) {
+                        is ByteArray -> "ByteArray[${value.size}]: ${String(value)}"
+                        null -> "null"
+                        else -> value.toString()
+                    }
+                    sb.append("${field.name} (${field.type.simpleName}) = $repr\n")
+                } catch (e: Exception) {
+                    sb.append("${field.name} - error: ${e.message}\n")
+                }
+            }
+            FileOutputStream(outFile).use { fos ->
+                fos.write(sb.toString().toByteArray(Charsets.UTF_8))
+            }
+            context.log.verbose("GalleryVideoSplitting: Wrote LocalMediaReference dump to ${outFile.absolutePath}")
+
+            // Also try writing to external storage for adb pull convenience
+            try {
+                val externalDir = File(Environment.getExternalStorageDirectory(), "PurrfectSnapDumps")
+                externalDir.mkdirs()
+                val externalFile = File(externalDir, fileName)
+                FileOutputStream(externalFile).use { fos -> fos.write(sb.toString().toByteArray(Charsets.UTF_8)) }
+                context.log.verbose("GalleryVideoSplitting: Also wrote LocalMediaReference dump to ${externalFile.absolutePath}")
+            } catch (e: Exception) {
+                context.log.verbose("GalleryVideoSplitting: Failed to write LocalMediaReference dump to external storage: ${e.message}")
+            }
+        } catch (e: Exception) {
+            context.log.error("GalleryVideoSplitting: Failed to write LocalMediaReference dump", e)
         }
     }
 }
