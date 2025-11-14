@@ -280,6 +280,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     val chunkUri = Uri.fromFile(chunkFile)
                     context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
 
+                    // Capture continuation in a val for access in nested lambdas
+                    val cont = continuation
+
                     // Use MessageSender.sendCustomChatMessage to send the prebuilt proto bytes.
                     // The lambda builds the ProtoWriter content for MessageSender; here we insert the
                     // Instead of injecting raw bytes, rebuild the SNAP proto inside the lambda
@@ -355,11 +358,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                         },
                         onError = { err ->
                             context.log.error("GalleryVideoSplitting: Failed to send chunk: $err")
-                            try { continuation.resume(false) } catch (_: Exception) {}
+                            try { cont.resume(false) } catch (_: Exception) {}
                         },
                         onSuccess = {
                             context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
-                            try { continuation.resume(true) } catch (_: Exception) {}
+                            try { cont.resume(true) } catch (_: Exception) {}
                         }
                     )
                 } catch (e: Exception) {
