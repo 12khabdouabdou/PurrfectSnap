@@ -211,12 +211,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     private suspend fun sendSnapChunk(messageSender: MessageSender, conversations: List<SnapUUID>, chunkFile: File): Boolean {
         return try {
             suspendCoroutine<Boolean> { continuation ->
+                // Capture continuation in a val for access in nested lambdas
+                val cont = continuation
                 try {
                     val chunkUri = Uri.fromFile(chunkFile)
                     context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
-
-                    // Capture continuation in a val for access in nested lambdas
-                    val cont = continuation
 
                     // Build the message inside the lambda to ensure proper proto structure
                     messageSender.sendCustomChatMessage(
@@ -563,9 +562,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
             // Validate all chunks exist and have content
             val allValid = outputFiles.all { file ->
-                file.exists() && file.length() > 0L.also { valid ->
-                    if (!valid) context.log.warn("GalleryVideoSplitting: Chunk ${file.name} is invalid (missing or empty)")
-                }
+                val isValid = file.exists() && file.length() > 0L
+                if (!isValid) context.log.warn("GalleryVideoSplitting: Chunk ${file.name} is invalid (missing or empty)")
+                isValid
             }
             
             if (!allValid) {
@@ -597,7 +596,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
     private fun cleanupChunks() {
         pendingChunks.clear()
-        currentChunkIndex = 0
         isSplitting = false
         tempDir?.deleteRecursively()
         tempDir = null
