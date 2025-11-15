@@ -213,6 +213,16 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 val chunkUri = Uri.fromFile(chunkFile)
                 context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
 
+                val onError: (String) -> Unit = { err ->
+                    context.log.error("GalleryVideoSplitting: Failed to send chunk: $err")
+                    try { continuation.resume(false) } catch (_: Exception) {}
+                }
+                
+                val onSuccess: () -> Unit = {
+                    context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
+                    try { continuation.resume(true) } catch (_: Exception) {}
+                }
+
                 // Build the message inside the lambda to ensure proper proto structure
                 messageSender.sendCustomChatMessage(
                     conversations,
@@ -274,14 +284,8 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             throw e
                         }
                     },
-                    onError = { err ->
-                        context.log.error("GalleryVideoSplitting: Failed to send chunk: $err")
-                        try { continuation.resume(false) } catch (_: Exception) {}
-                    },
-                    onSuccess = {
-                        context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
-                        try { continuation.resume(true) } catch (_: Exception) {}
-                    }
+                    onError = onError,
+                    onSuccess = onSuccess
                 )
             } catch (e: Exception) {
                 context.log.error("GalleryVideoSplitting: Exception while sending snap chunk", e)
