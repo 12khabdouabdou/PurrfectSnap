@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PersonOutline
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.ui.graphics.vector.ImageVector
 
 
@@ -17,6 +18,7 @@ enum class EnumAction(
     EXPORT_CHAT_MESSAGES("export_chat_messages", Icons.AutoMirrored.Default.Chat),
     EXPORT_MEMORIES("export_memories", Icons.Default.Image),
     BULK_MESSAGING_ACTION("bulk_messaging_action", Icons.Default.DeleteOutline),
+    BATCH_SNAP_SENDING_ACTION("batch_snap_sending_action", Icons.Default.Send),
     CLEAN_CACHE("clean_snapchat_cache", Icons.Default.CleaningServices, exitOnFinish = true),
     MANAGE_FRIEND_LIST("manage_friend_list", Icons.Default.PersonOutline);
 
