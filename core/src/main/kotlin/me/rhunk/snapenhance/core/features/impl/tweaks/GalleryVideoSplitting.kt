@@ -208,92 +208,85 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     }
 
     private suspend fun sendSnapChunk(messageSender: MessageSender, conversations: List<SnapUUID>, chunkFile: File): Boolean {
-        return try {
-            suspendCoroutine { continuation ->
-                // Capture continuation in a val for access in nested lambdas
-                val cont = continuation
-                try {
-                    val chunkUri = Uri.fromFile(chunkFile)
-                    context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
+        return suspendCoroutine { continuation ->
+            try {
+                val chunkUri = Uri.fromFile(chunkFile)
+                context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
 
-                    // Build the message inside the lambda to ensure proper proto structure
-                    messageSender.sendCustomChatMessage(
-                        conversations,
-                        ContentType.SNAP,
-                        {
+                // Build the message inside the lambda to ensure proper proto structure
+                messageSender.sendCustomChatMessage(
+                    conversations,
+                    ContentType.SNAP,
+                    {
+                        try {
+                            // Extract width/height from chunk
+                            val retriever = MediaMetadataRetriever()
+                            val chunkWidth: Int
+                            val chunkHeight: Int
                             try {
-                                // Extract width/height from chunk
-                                val retriever = MediaMetadataRetriever()
-                                val chunkWidth: Int
-                                val chunkHeight: Int
-                                try {
-                                    retriever.setDataSource(chunkFile.absolutePath)
-                                    chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
-                                    chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
-                                } finally {
-                                    retriever.release()
-                                }
-
-                                val snapDurationMs = convertDuration(customDuration)
-                                val hasSound = 1L
-
-                                // Build SNAP message structure directly in the proto writer
-                                // Path 11 = snap metadata container
-                                from(11) {
-                                    // Path 11, 5 = media attributes
-                                    from(5) {
-                                        // Path 11, 5, 1 = media info (dimensions, type)
-                                        from(1) {
-                                            from(1) {
-                                                addVarInt(2, 0)      // overlay type
-                                                addVarInt(12, 0)
-                                                addVarInt(15, 0)
-                                                addVarInt(16, chunkWidth)
-                                                addVarInt(17, chunkHeight)
-                                            }
-                                            addVarInt(6, 1)  // media type: video
-                                        }
-                                        // Path 11, 5, 2 = duration and playback info
-                                        from(2) {
-                                            addVarInt(5, hasSound)
-                                            if (snapDurationMs != null) {
-                                                addVarInt(8, snapDurationMs / 1000)
-                                                if (snapDurationMs / 1000 <= 0) {
-                                                    addVarInt(99, snapDurationMs.toLong())
-                                                }
-                                            } else {
-                                                addBuffer(6, byteArrayOf())
-                                            }
-                                        }
-                                    }
-                                    // Path 11, 22 = app source
-                                    from(22) {
-                                        addVarInt(4, 5)  // APP_SOURCE_CAMERA
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                // If building failed, log and rethrow so onError path runs
-                                context.log.error("GalleryVideoSplitting: Failed while constructing SNAP proto in lambda", e)
-                                throw e
+                                retriever.setDataSource(chunkFile.absolutePath)
+                                chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toIntOrNull() ?: 1080
+                                chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toIntOrNull() ?: 1920
+                            } finally {
+                                retriever.release()
                             }
-                        },
-                        onError = { err ->
-                            context.log.error("GalleryVideoSplitting: Failed to send chunk: $err")
-                            try { cont.resume(false) } catch (_: Exception) {}
-                        },
-                        onSuccess = {
-                            context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
-                            try { cont.resume(true) } catch (_: Exception) {}
+
+                            val snapDurationMs = convertDuration(customDuration)
+                            val hasSound = 1L
+
+                            // Build SNAP message structure directly in the proto writer
+                            // Path 11 = snap metadata container
+                            from(11) {
+                                // Path 11, 5 = media attributes
+                                from(5) {
+                                    // Path 11, 5, 1 = media info (dimensions, type)
+                                    from(1) {
+                                        from(1) {
+                                            addVarInt(2, 0)      // overlay type
+                                            addVarInt(12, 0)
+                                            addVarInt(15, 0)
+                                            addVarInt(16, chunkWidth)
+                                            addVarInt(17, chunkHeight)
+                                        }
+                                        addVarInt(6, 1)  // media type: video
+                                    }
+                                    // Path 11, 5, 2 = duration and playback info
+                                    from(2) {
+                                        addVarInt(5, hasSound)
+                                        if (snapDurationMs != null) {
+                                            addVarInt(8, snapDurationMs / 1000)
+                                            if (snapDurationMs / 1000 <= 0) {
+                                                addVarInt(99, snapDurationMs.toLong())
+                                            }
+                                        } else {
+                                            addBuffer(6, byteArrayOf())
+                                        }
+                                    }
+                                }
+                                // Path 11, 22 = app source
+                                from(22) {
+                                    addVarInt(4, 5)  // APP_SOURCE_CAMERA
+                                }
+                            }
+                        } catch (e: Exception) {
+                            // If building failed, log and rethrow so onError path runs
+                            context.log.error("GalleryVideoSplitting: Failed while constructing SNAP proto in lambda", e)
+                            throw e
                         }
-                    )
-                } catch (e: Exception) {
-                    context.log.error("GalleryVideoSplitting: Exception while sending snap chunk", e)
-                    try { cont.resume(false) } catch (_: Exception) {}
-                }
+                    },
+                    onError = { err ->
+                        context.log.error("GalleryVideoSplitting: Failed to send chunk: $err")
+                        try { continuation.resume(false) } catch (_: Exception) {}
+                    },
+                    onSuccess = {
+                        context.log.verbose("GalleryVideoSplitting: Chunk sent successfully")
+                        try { continuation.resume(true) } catch (_: Exception) {}
+                    }
+                )
+            } catch (e: Exception) {
+                context.log.error("GalleryVideoSplitting: Exception while sending snap chunk", e)
+                try { continuation.resume(false) } catch (_: Exception) {}
             }
-        } catch (e: Exception) {
-            context.log.error("GalleryVideoSplitting: sendSnapChunk outer exception", e)
-            false
         }
     }
 
