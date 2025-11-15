@@ -213,7 +213,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                 val chunkUri = Uri.fromFile(chunkFile)
                 context.log.verbose("GalleryVideoSplitting: Sending chunk as SNAP with URI: $chunkUri")
 
-                val onError: (String) -> Unit = { err ->
+                val onError: (Any) -> Unit = { err ->
                     context.log.error("GalleryVideoSplitting: Failed to send chunk: $err")
                     try { continuation.resume(false) } catch (_: Exception) {}
                 }
