@@ -209,7 +209,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
     private suspend fun sendSnapChunk(messageSender: MessageSender, conversations: List<SnapUUID>, chunkFile: File): Boolean {
         return try {
-            suspendCoroutine<Boolean> { continuation ->
+            suspendCoroutine { continuation ->
                 // Capture continuation in a val for access in nested lambdas
                 val cont = continuation
                 try {
