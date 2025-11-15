@@ -234,13 +234,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         for ((index, chunkFile) in chunks.withIndex()) {
             context.log.verbose("GalleryVideoSplitting: Sending chunk ${index + 1}/${chunks.size}")
             
-            val snapProto = buildSnapProtoForChunk(chunkFile) ?: run {
-                context.log.error("GalleryVideoSplitting: Failed to build SNAP proto for chunk ${index + 1}")
-                failureCount++
-                continue
-            }
-            
-            val sentSuccessfully = sendSnapChunk(messageSender, conversationUUIDs, snapProto, chunkFile)
+            val sentSuccessfully = sendSnapChunk(messageSender, conversationUUIDs, chunkFile)
             if (sentSuccessfully) {
                 successCount++
                 context.log.verbose("GalleryVideoSplitting: Chunk ${index + 1} sent successfully")
@@ -273,7 +267,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
-    private suspend fun sendSnapChunk(messageSender: MessageSender, conversations: List<SnapUUID>, snapProto: ByteArray, chunkFile: File): Boolean {
+    private suspend fun sendSnapChunk(messageSender: MessageSender, conversations: List<SnapUUID>, chunkFile: File): Boolean {
         return try {
             suspendCoroutine<Boolean> { continuation ->
                 try {
@@ -283,16 +277,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     // Capture continuation in a val for access in nested lambdas
                     val cont = continuation
 
-                    // Use MessageSender.sendCustomChatMessage to send the prebuilt proto bytes.
-                    // The lambda builds the ProtoWriter content for MessageSender; here we insert the
-                    // Instead of injecting raw bytes, rebuild the SNAP proto inside the lambda
-                    // so the MessageSender's ProtoWriter constructs the exact expected structure.
+                    // Build the message inside the lambda to ensure proper proto structure
                     messageSender.sendCustomChatMessage(
                         conversations,
                         ContentType.SNAP,
                         {
                             try {
-                                // Build inner SNAP proto based on chunk metadata
+                                // Extract width/height from chunk
                                 val retriever = MediaMetadataRetriever()
                                 val chunkWidth: Int
                                 val chunkHeight: Int
@@ -307,52 +298,43 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                 val snapDurationMs = convertDuration(customDuration)
                                 val hasSound = 1L
 
-                                // Build the inner SNAP proto using a temporary ProtoWriter, then insert
-                                // it into the outgoing message as buffer field 1.
-                                val inner = ProtoWriter().apply {
-                                    from(11) {
-                                        from(5) {
+                                // Build SNAP message structure directly in the proto writer
+                                // Path 11 = snap metadata container
+                                from(11) {
+                                    // Path 11, 5 = media attributes
+                                    from(5) {
+                                        // Path 11, 5, 1 = media info (dimensions, type)
+                                        from(1) {
                                             from(1) {
-                                                from(1) {
-                                                    addVarInt(2, 0)
-                                                    addVarInt(12, 0)
-                                                    addVarInt(15, 0)
-                                                    addVarInt(16, chunkWidth)
-                                                    addVarInt(17, chunkHeight)
+                                                addVarInt(2, 0)      // overlay type
+                                                addVarInt(12, 0)
+                                                addVarInt(15, 0)
+                                                addVarInt(16, chunkWidth)
+                                                addVarInt(17, chunkHeight)
+                                            }
+                                            addVarInt(6, 1)  // media type: video
+                                        }
+                                        // Path 11, 5, 2 = duration and playback info
+                                        from(2) {
+                                            addVarInt(5, hasSound)
+                                            if (snapDurationMs != null) {
+                                                addVarInt(8, snapDurationMs / 1000)
+                                                if (snapDurationMs / 1000 <= 0) {
+                                                    addVarInt(99, snapDurationMs.toLong())
                                                 }
-                                                addVarInt(6, 1)
+                                            } else {
+                                                addBuffer(6, byteArrayOf())
                                             }
-                                            from(2) {}
-                                        }
-                                        from(22) {}
-                                    }
-                                }.toByteArray()
-
-                                val finalInner = ProtoEditor(inner).apply {
-                                    edit(11, 5, 2) {
-                                        arrayOf(6, 7, 8).forEach { remove(it) }
-                                        addVarInt(5, hasSound)
-                                        if (snapDurationMs != null) {
-                                            addVarInt(8, snapDurationMs / 1000)
-                                            if (snapDurationMs / 1000 <= 0) {
-                                                addVarInt(99, snapDurationMs.toLong())
-                                            }
-                                        } else {
-                                            addBuffer(6, byteArrayOf())
                                         }
                                     }
-
-                                    edit(11, 22) {
-                                        remove(4)
-                                        addVarInt(4, 5)
+                                    // Path 11, 22 = app source
+                                    from(22) {
+                                        addVarInt(4, 5)  // APP_SOURCE_CAMERA
                                     }
-                                }.toByteArray()
-
-                                // Insert the rebuilt inner SNAP proto into the message writer
-                                addBuffer(1, finalInner)
+                                }
                             } catch (e: Exception) {
                                 // If building failed, log and rethrow so onError path runs
-                                context.log.error("GalleryVideoSplitting: Failed while constructing inner SNAP proto", e)
+                                context.log.error("GalleryVideoSplitting: Failed while constructing SNAP proto in lambda", e)
                                 throw e
                             }
                         },
@@ -367,7 +349,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     )
                 } catch (e: Exception) {
                     context.log.error("GalleryVideoSplitting: Exception while sending snap chunk", e)
-                    try { continuation.resume(false) } catch (_: Exception) {}
+                    try { cont.resume(false) } catch (_: Exception) {}
                 }
             }
         } catch (e: Exception) {
