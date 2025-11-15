@@ -30,7 +30,6 @@ import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
 import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
 import me.rhunk.snapenhance.core.messaging.MessageSender
-import android.os.Environment
 import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -301,11 +300,11 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
     private fun convertDuration(duration: Float): Int? {
         return when {
-            duration in -2f..-1f -> 100
-            duration in -1f..-0f -> 250
-            duration in -0f..1f -> 500
-            duration >= 11f -> null
-            else -> ((duration * 1000).toInt() / 1000) * 1000
+            duration <= -2f -> 100       // ≤ -2: 100ms (quick snap)
+            duration <= -1f -> 250       // -2 to -1: 250ms
+            duration <= 0f -> 500        // -1 to 0: 500ms
+            duration >= 11f -> null      // ≥ 11: unlimited (video duration)
+            else -> (duration * 1000).toInt()  // 0 to 11: duration in ms
         }
     }
 
@@ -467,9 +466,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                             Icons.Default.Info,
                                             "Sending ${pendingChunks.size} chunks as snaps..."
                                         )
-                                        // Send all chunks directly via MessageSender
-                                        sendChunksAsSnaps(event.destinations, pendingChunks)
                                     }
+                                    // Send all chunks directly via MessageSender (await completion)
+                                    sendChunksAsSnaps(event.destinations, pendingChunks.toList())
                                 }
                             }
                         }
@@ -584,16 +583,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
         }
     }
 
-    private suspend fun splitAndPrepareChunks(
-        event: SendMessageWithContentEvent,
-        messageProtoReader: ProtoReader
-    ): Boolean {
-        // DEPRECATED: This method was used for direct video extraction from message proto.
-        // Current approach: Use file picker instead (simpler, more reliable)
-        // Kept for reference only - can be removed in future refactoring
-        return false
-    }
-
     private fun cleanupChunks() {
         pendingChunks.clear()
         isSplitting = false
@@ -607,12 +596,4 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
             )
         }
     }
-
-    // Removed helper methods that were only used for direct proto URI extraction:
-    // - extractUriFromByteArray
-    // - dumpProtoToCache  
-    // - dumpLocalMediaReferenceToCache
-    // 
-    // These were fallbacks for complex reflection-based URI extraction.
-    // Current approach uses file picker which is simpler and more reliable.
 }
