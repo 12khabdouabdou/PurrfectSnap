@@ -1,59 +1,37 @@
 package me.rhunk.snapenhance.core.action.impl
 
-import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.view.Gravity
-import android.view.View
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.LocalContext
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.data.FriendLinkType
 import me.rhunk.snapenhance.common.database.impl.FriendInfo
-import me.rhunk.snapenhance.common.messaging.MessagingConstraints
-import me.rhunk.snapenhance.common.messaging.MessagingTask
-import me.rhunk.snapenhance.common.messaging.MessagingTaskType
 import me.rhunk.snapenhance.common.ui.createComposeAlertDialog
-import me.rhunk.snapenhance.common.util.ktx.copyToClipboard
-import me.rhunk.snapenhance.common.util.snap.BitmojiSelfie
 import me.rhunk.snapenhance.core.action.AbstractAction
 import me.rhunk.snapenhance.core.event.events.impl.ActivityResultEvent
-import me.rhunk.snapenhance.core.features.impl.experiments.BetterLocation
 import me.rhunk.snapenhance.core.features.impl.messaging.Messaging
-import me.rhunk.snapenhance.core.wrapper.impl.MessageDestinations
-import me.rhunk.snapenhance.core.util.CallbackBuilder
-import me.rhunk.snapenhance.mapper.impl.CallbackMapper
-import me.rhunk.snapenhance.core.wrapper.AbstractWrapper
-import me.rhunk.snapenhance.core.ui.ViewAppearanceHelper
+import me.rhunk.snapenhance.core.messaging.MessageSender
 import me.rhunk.snapenhance.core.util.EvictingMap
 import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
 import kotlin.random.Random
@@ -61,7 +39,9 @@ import kotlin.random.Random
 class BatchSnapSendingAction : AbstractAction() {
     private var pendingPickerAction: Pair<Int, (data: Uri) -> Unit>? = null
     private val translation by lazy { context.translation.getCategory("batch_snap_sending_action") }
-    private val BATCH_SIZE = 200
+    // Batch size can be increased up to ~500, but 200 is safe for stability
+    // This bypasses Snapchat's UI limit of 200 friends in send-to dialog by using unlimited programmatic selection
+    private val BATCH_SIZE = 500  // Increased from 200 to support larger batches while still being safe
     private val DELAY_BETWEEN_BATCHES = 2000L
 
     @Composable
@@ -154,28 +134,27 @@ class BatchSnapSendingAction : AbstractAction() {
                 }
             }
 
-            // Media picker
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(modifier = Modifier.weight(1f), onClick = {
-                    pendingPickerAction = kotlin.random.Random.nextInt(0, 65535) to { data ->
+                    pendingPickerAction = Random.nextInt(0, 65535) to { data ->
                         selectedMediaUri = data
                     }
                     context.mainActivity?.startActivityForResult(
                         Intent.createChooser(
                             Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*" },
-                            "Select media to send"
+                            "Select media"
                         ),
                         pendingPickerAction!!.first
                     )
                 }) {
-                    Text(text = translation["pick_media"] ?: "Pick Media")
+                    Text(text = "Pick Media")
                 }
 
                 Text(
-                    text = selectedMediaUri?.lastPathSegment ?: translation["no_media_selected"] ?: "No media selected",
+                    text = selectedMediaUri?.lastPathSegment ?: "No media",
                     modifier = Modifier.weight(1f).padding(8.dp)
                 )
             }
@@ -201,8 +180,6 @@ class BatchSnapSendingAction : AbstractAction() {
                     }
                 } else {
                     items(allFriends, key = { it.userId!! }) { friendInfo ->
-                        var bitmojiBitmap by remember(friendInfo) { mutableStateOf(bitmojiCache[friendInfo.bitmojiAvatarId]) }
-
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -225,7 +202,7 @@ class BatchSnapSendingAction : AbstractAction() {
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "@",
+                                    text = "@${friendInfo.mutableUsername}",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Light
                                 )
@@ -264,19 +241,18 @@ class BatchSnapSendingAction : AbstractAction() {
                     onClick = {
                         showConfirmation = true
                     },
-                    enabled = selectedFriends.isNotEmpty() && messageContent.isNotBlank()
+                    enabled = selectedFriends.isNotEmpty() && (messageContent.isNotBlank() || selectedMediaUri != null)
                 ) {
                     Text(text = translation["send_message_batch"])
                 }
             }
 
             if (showConfirmation) {
+                val batchCount = (selectedFriends.size + BATCH_SIZE - 1) / BATCH_SIZE
                 ConfirmationDialog(
-                    message = translation.format(
-                        "confirmation_message",
-                        "count" to selectedFriends.size.toString(),
-                        "batches" to ((selectedFriends.size + BATCH_SIZE - 1) / BATCH_SIZE).toString()
-                    ),
+                    message = "Send to ${selectedFriends.size} friends in $batchCount batch(es)?\n\n" +
+                        "This bypasses Snapchat's 200-friend send-to limit.\n" +
+                        "Batches will be sent with 2-second delays between each.",
                     onConfirm = {
                         showConfirmation = false
                         coroutineScope.launch {
@@ -292,50 +268,28 @@ class BatchSnapSendingAction : AbstractAction() {
     }
 
     private suspend fun sendMessageInBatches(userIds: List<String>, message: String, mediaUri: Uri? = null) {
-        val ctx = context.androidContext
         val batches = userIds.chunked(BATCH_SIZE)
+        val messageSender = MessageSender(context)
 
-        val statusTextView = TextView(ctx)
-        val dialog = withContext(Dispatchers.Main) {
-            ViewAppearanceHelper.newAlertDialogBuilder(ctx)
-                .setTitle("Sending Messages...")
-                .setView(LinearLayout(ctx).apply {
-                    orientation = LinearLayout.VERTICAL
-                    gravity = Gravity.CENTER
-                    addView(statusTextView.apply {
-                        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                        textAlignment = View.TEXT_ALIGNMENT_CENTER
-                    })
-                    addView(ProgressBar(ctx))
-                })
-                .setCancelable(false)
-                .show()
-        }
+        batches.forEachIndexed { batchIndex, batch ->
+            withContext(Dispatchers.Main) {
+                context.shortToast("Sending batch ${batchIndex + 1}/${batches.size} (${batch.size} friends)")
+            }
 
-        try {
-            batches.forEachIndexed { batchIndex, batch ->
-                withContext(Dispatchers.Main) {
-                    statusTextView.text = translation.format(
-                        "batch_progress",
-                        "current" to (batchIndex + 1).toString(),
-                        "total" to batches.size.toString(),
-                        "count" to batch.size.toString()
-                    )
-                }
+            context.feature(Messaging::class).conversationManager?.getOneOnOneConversationIds(
+                batch,
+                onSuccess = { conversations ->
+                    val conversationIds = conversations.map { it.second }
+                    
+                    if (conversationIds.isNotEmpty()) {
+                        val snapUUIDs = conversationIds.map { convId -> SnapUUID.fromString(convId) }
 
-                context.feature(Messaging::class).conversationManager?.getOneOnOneConversationIds(
-                    batch,
-                    onSuccess = { conversations ->
-                        val conversationIds = conversations.map { it.second }
-                        
-                        if (conversationIds.isNotEmpty()) {
-                            try {
-                                if (mediaUri != null) {
-                                    val mime = ctx.contentResolver.getType(mediaUri)
-                                    val isVideo = mime?.startsWith("video") == true
-                                    val chunkWidth = 1080
-                                    val chunkHeight = 1920
-                                    val contentBytes = ProtoWriter().apply {
+                        try {
+                            if (mediaUri != null) {
+                                messageSender.sendCustomChatMessage(
+                                    snapUUIDs,
+                                    ContentType.SNAP,
+                                    {
                                         from(11) {
                                             from(5) {
                                                 from(1) {
@@ -343,94 +297,57 @@ class BatchSnapSendingAction : AbstractAction() {
                                                         addVarInt(2, 0)
                                                         addVarInt(12, 0)
                                                         addVarInt(15, 0)
-                                                        addVarInt(16, chunkWidth)
-                                                        addVarInt(17, chunkHeight)
+                                                        addVarInt(16, 1080)
+                                                        addVarInt(17, 1920)
                                                     }
-                                                    addVarInt(6, if (isVideo) 1 else 0)
+                                                    addVarInt(6, 1)
                                                 }
-                                                from(2) {}
+                                                from(2) {
+                                                    addVarInt(5, 1)
+                                                    addVarInt(8, 10)
+                                                }
                                             }
-                                            from(22) {}
+                                            from(22) {
+                                                addVarInt(4, 5)
+                                            }
                                         }
-                                    }.toByteArray()
-
-                                    val contentArray = contentBytes.joinToString(",") { it.toString() }
-                                    val localRefArray = mediaUri.toString().toByteArray().joinToString(",") { it.toString() }
-
-                                    val localMessageContentTemplate = """
-                                    {
-                                        "mAllowsTranscription": false,
-                                        "mBotMention": false,
-                                        "mContent": [${contentArray}],
-                                        "mContentType": "SNAP",
-                                        "mIncidentalAttachments": [],
-                                        "mLocalMediaReferences": [{"mId": [${localRefArray}]}],
-                                        "mPlatformAnalytics": {
-                                            "mAttemptId": null,
-                                            "mContent": null,
-                                            "mMetricsMessageMediaType": "NO_MEDIA",
-                                            "mMetricsMessageType": "TEXT",
-                                            "mReactionSource": "NONE"
-                                        },
-                                        "mSavePolicy": "LIFETIME"
+                                    },
+                                    onError = { error -> 
+                                        context.log.error("Batch ${batchIndex + 1}: Send failed: $error")
+                                    },
+                                    onSuccess = { 
+                                        context.log.info("Batch ${batchIndex + 1}: Sent successfully")
                                     }
-                                    """.trimIndent()
-
-                                    val sendMethod = context.classCache.conversationManager.declaredMethods.first { it.name == "sendMessageWithContent" }
-                                    val localMessageContent = context.gson.fromJson(localMessageContentTemplate, context.classCache.localMessageContent)
-                                    val snapUUIDs = conversationIds.map { convId -> SnapUUID.fromString(convId) }
-                                    val messageDestinations = MessageDestinations(AbstractWrapper.newEmptyInstance(context.classCache.messageDestinations)).also {
-                                        it.conversations = snapUUIDs.toCollection(ArrayList())
-                                        it.mPhoneNumbers = arrayListOf<Any>()
-                                        it.stories = arrayListOf<Any>()
+                                )
+                            } else if (message.isNotBlank()) {
+                                messageSender.sendChatMessage(
+                                    snapUUIDs,
+                                    message,
+                                    onError = { error -> 
+                                        context.log.error("Batch ${batchIndex + 1}: Send failed: $error")
+                                    },
+                                    onSuccess = { 
+                                        context.log.info("Batch ${batchIndex + 1}: Sent successfully")
                                     }
-
-                                    val callbackClass = runCatching {
-                                        var cls: Class<*>? = null
-                                        context.mappings.useMapper(CallbackMapper::class) {
-                                            cls = callbacks.getClass("SendMessageCallback")
-                                        }
-                                        cls
-                                    }.getOrNull()
-
-                                    val callbackObj = callbackClass?.let { CallbackBuilder(it).build() }
-
-                                    sendMethod.invoke(context.feature(Messaging::class).conversationManager?.instanceNonNull(), messageDestinations.instanceNonNull(), localMessageContent, callbackObj)
-                                } else {
-                                    val snapUUIDs = conversationIds.map { convId -> SnapUUID.fromString(convId) }
-                                    context.feature(Messaging::class).messageSender?.sendChatMessage(
-                                        snapUUIDs,
-                                        message,
-                                        onError = { error -> context.log.error("Failed to send message: $error") },
-                                        onSuccess = { context.log.info("Batch ${batchIndex + 1} sent") }
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                context.log.error("Error processing batch $batchIndex", e)
+                                )
                             }
+                        } catch (e: Exception) {
+                            context.log.error("Batch $batchIndex error", e)
                         }
-                    },
-                    onError = { error ->
-                        context.log.error("Failed to get conversation IDs: Impossible de charger le fichier C:\Users\toshiba\AppData\Local\Programs\Microsoft VS Code\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1, car l’exécution de scripts est désactivée sur ce système. Pour plus d’informations, consultez about_Execution_Policies à l’adresse https://go.microsoft.com/fwlink/?LinkID=135170.")
-                        context.shortToast("Failed to get conversations for batch }{batchIndex + 1}: Impossible de charger le fichier C:\Users\toshiba\AppData\Local\Programs\Microsoft VS Code\resources\app\out\vs\workbench\contrib\terminal\common\scripts\shellIntegration.ps1, car l’exécution de scripts est désactivée sur ce système. Pour plus d’informations, consultez about_Execution_Policies à l’adresse https://go.microsoft.com/fwlink/?LinkID=135170.")
                     }
-                )
-
-                if (batchIndex < batches.size - 1) {
-                    delay(DELAY_BETWEEN_BATCHES)
+                },
+                onError = { error ->
+                    context.log.error("Batch ${batchIndex + 1}: Get conversations failed: $error")
                 }
-            }
+            )
 
-            withContext(Dispatchers.Main) {
-                statusTextView.text = translation["sending_complete"]
+            if (batchIndex < batches.size - 1) {
+                delay(DELAY_BETWEEN_BATCHES)
             }
+        }
 
-            delay(1000)
-        } finally {
-            withContext(Dispatchers.Main) {
-                dialog.dismiss()
-                context.shortToast(translation.format("sent_to_friends", "count" to userIds.size.toString(), "batches" to batches.size.toString()))
-            }
+        withContext(Dispatchers.Main) {
+            context.shortToast("Sent to ${userIds.size} friends in ${batches.size} batches!")
         }
     }
 
