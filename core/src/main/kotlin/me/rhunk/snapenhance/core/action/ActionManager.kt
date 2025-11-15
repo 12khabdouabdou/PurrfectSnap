@@ -3,6 +3,7 @@ package me.rhunk.snapenhance.core.action
 import android.content.Intent
 import me.rhunk.snapenhance.common.action.EnumAction
 import me.rhunk.snapenhance.core.ModContext
+import me.rhunk.snapenhance.core.action.impl.BatchSnapSendingAction
 import me.rhunk.snapenhance.core.action.impl.BulkMessagingAction
 import me.rhunk.snapenhance.core.action.impl.CleanCache
 import me.rhunk.snapenhance.core.action.impl.ExportChatMessages
@@ -18,6 +19,7 @@ class ActionManager(
             EnumAction.CLEAN_CACHE to CleanCache(),
             EnumAction.EXPORT_CHAT_MESSAGES to ExportChatMessages(),
             EnumAction.BULK_MESSAGING_ACTION to BulkMessagingAction(),
+            EnumAction.BATCH_SNAP_SENDING_ACTION to BatchSnapSendingAction(),
             EnumAction.MANAGE_FRIEND_LIST to ManageFriendList(),
             EnumAction.EXPORT_MEMORIES to ExportMemories(),
         ).map {
