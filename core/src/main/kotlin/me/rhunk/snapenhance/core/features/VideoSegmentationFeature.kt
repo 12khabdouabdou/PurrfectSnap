@@ -1,4 +1,4 @@
-kotlin
+
 package me.rhunk.snapenhance.feature
 
 import android.media.MediaMetadataRetriever
