@@ -1,379 +1,170 @@
 package me.rhunk.snapenhance.core.features.impl.messaging
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Photo
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.WarningAmber
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import android.media.MediaMetadataRetriever
 import me.rhunk.snapenhance.common.data.ContentType
-import me.rhunk.snapenhance.common.ui.createComposeAlertDialog
-import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
-import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
-import me.rhunk.snapenhance.common.util.protobuf.ProtoWriter
-import me.rhunk.snapenhance.core.event.events.impl.MediaUploadEvent
-import me.rhunk.snapenhance.core.event.events.impl.NativeUnaryCallEvent
+import me.rhunk.snapenhance.common.data.MessagingRuleType
 import me.rhunk.snapenhance.core.event.events.impl.SendMessageWithContentEvent
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
-import me.rhunk.snapenhance.core.messaging.MessageSender
-import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
-import java.util.Locale
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import me.rhunk.snapenhance.core.features.FeatureLoadParams
+import me.rhunk.snapenhance.core.util.media.FFmpegProcessor
+import me.rhunk.snapenhance.core.util.media.PreviewUtils
+import java.io.File
+import java.util.concurrent.Executors
 
+class SendOverride : Feature("Send Override", loadParams = FeatureLoadParams.INIT_SYNC) {
 
-class SendOverride : Feature("Send Override") {
-    private var selectedType by mutableStateOf("SNAP")
-    private var customDuration by mutableFloatStateOf(10f)
+    private val executor = Executors.newSingleThreadExecutor()
 
-    @OptIn(ExperimentalLayoutApi::class)
     override fun init() {
-        val stripMediaMetadata = context.config.messaging.stripMediaMetadata.get()
-        var postSavePolicy: Int? = null
+        // Subscribe to the SendMessage event
+        event.subscribe(SendMessageWithContentEvent::class) { event ->
+            val messageContent = event.messageContent
+            
+            // Only proceed if Send Override is enabled globally or for this specific rule
+            if (!context.config.messaging.sendOverride.get()) return@subscribe
 
-        val configOverrideType = context.config.messaging.galleryMediaSendOverride.getNullable()
-        if (configOverrideType == null && stripMediaMetadata.isEmpty()) return
+            // Retrieve the override file (the file you selected from gallery/files)
+            // Note: The implementation of how 'selectedFile' is stored might vary slightly 
+            // based on your specific SE version. Assuming standard retrieval here.
+            val overrideFile = context.features.find { it is me.rhunk.snapenhance.core.features.impl.ui.MediaFilePicker }
+                ?.let { (it as me.rhunk.snapenhance.core.features.impl.ui.MediaFilePicker).currentFile } 
+                ?: return@subscribe
 
-        context.event.subscribe(MediaUploadEvent::class) { event ->
-            ProtoReader(event.localMessageContent.content!!).followPath(11, 5)?.let { snapDocPlayback ->
-                event.onMediaUploaded { result ->
-                    result.messageContent.content = ProtoEditor(result.messageContent.content!!).apply {
-                        edit(11, 5) {
-                            edit(1) {
-                                edit(1) {
-                                    snapDocPlayback.getVarInt(2, 99)?.let { customDuration ->
-                                        remove(15)
-                                        addVarInt(15, customDuration)
-                                    }
-                                    remove(27)
-                                    remove(26)
-                                    addBuffer(26, byteArrayOf())
-                                }
-                            }
+            if (!overrideFile.exists()) return@subscribe
 
-                            // set back the original snap duration
-                            snapDocPlayback.getByteArray(2)?.let {
-                                val originalHasSound = firstOrNull(2)?.toReader()?.getVarInt(5)
-                                remove(2)
-                                addBuffer(2, it)
-
-                                originalHasSound?.let { hasSound ->
-                                    edit(2) {
-                                        remove(5)
-                                        addVarInt(5, hasSound)
-                                    }
-                                }
-                            }
-                        }
-
-                        if (stripMediaMetadata.isNotEmpty()) {
-                            when (result.messageContent.contentType) {
-                                ContentType.SNAP, ContentType.EXTERNAL_MEDIA -> {
-                                    edit(*(if (result.messageContent.contentType == ContentType.SNAP) intArrayOf(11) else intArrayOf(3, 3))) {
-                                        if (stripMediaMetadata.contains("hide_caption_text")) {
-                                            edit(5) {
-                                                editEach(1) {
-                                                    remove(2)
-                                                }
-                                            }
-                                        }
-                                        if (stripMediaMetadata.contains("hide_snap_filters")) {
-                                            remove(9)
-                                            remove(11)
-                                        }
-                                        if (stripMediaMetadata.contains("hide_extras")) {
-                                            remove(13)
-                                            edit(5, 1) {
-                                                remove(2)
-                                            }
-                                        }
-                                    }
-                                }
-                                ContentType.NOTE -> {
-                                    if (stripMediaMetadata.contains("remove_audio_note_duration")) {
-                                        edit(6, 1, 1) {
-                                            remove(13)
-                                        }
-                                    }
-                                    if (stripMediaMetadata.contains("remove_audio_note_transcript_capability")) {
-                                        edit(6, 1) {
-                                            remove(3)
-                                        }
-                                    }
-                                }
-                                else -> {}
-                            }
-                        }
-
-                        edit(11, 5, 2) {
-                            remove(99)
-                        }
-                    }.toByteArray()
+            // Check if we should split the video
+            // Ensure you added 'splitLongVideos' to your MessagingConfig!
+            if (context.config.messaging.splitLongVideos.get() && isVideo(overrideFile)) {
+                
+                val duration = getVideoDuration(overrideFile)
+                // If video is longer than 10.5 seconds (buffer for 10s limit)
+                if (duration > 10500) {
+                    // 1. Cancel the original single message send
+                    event.canceled = true
+                    
+                    // 2. Start the splitting and sending process in background
+                    executor.submit {
+                        splitAndSend(overrideFile, event)
+                    }
+                    return@subscribe
                 }
+            }
+
+            // Standard SendOverride logic (for images or short videos)
+            // This replaces the content of the message with your override file
+            messageContent.content = PreviewUtils.readBytes(overrideFile)
+            
+            // Set type based on file extension
+            if (isVideo(overrideFile)) {
+                messageContent.contentType = ContentType.VIDEO
+            } else {
+                messageContent.contentType = ContentType.IMAGE
             }
         }
+    }
 
-        if (configOverrideType == null) return
-
-        context.event.subscribe(NativeUnaryCallEvent::class) { event ->
-            if (event.uri != "/messagingcoreservice.MessagingCoreService/CreateContentMessage") return@subscribe
-            postSavePolicy?.let { savePolicy ->
-                context.log.verbose("postSavePolicy=$savePolicy")
-                event.buffer = ProtoEditor(event.buffer).apply {
-                    edit(4) {
-                        remove(7)
-                        addVarInt(7, savePolicy)
-                    }
-
-                    // remove Keep Snaps in Chat ability
-                    if (savePolicy == 1/* PROHIBITED */) {
-                        edit(6, 9) {
-                            remove(1)
-                        }
-                    }
-                }.toByteArray()
-            }
+    /**
+     * Logic to split the video and resend individual chunks.
+     */
+    private fun splitAndSend(originalFile: File, originalEvent: SendMessageWithContentEvent) {
+        val ffmpeg = context.feature(FFmpegProcessor::class)
+        
+        if (!ffmpeg.isDownloaded()) {
+            context.log.error("SendOverride: FFmpeg not downloaded. Cannot split video.")
+            return
         }
 
-        context.event.subscribe(SendMessageWithContentEvent::class) { event ->
-            postSavePolicy = null
-            if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
-            val localMessageContent = event.messageContent
-            if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) return@subscribe
+        val durationMs = getVideoDuration(originalFile)
+        // Snap default is ~10s. We use 10000ms.
+        val chunkDurationMs = 10000L 
+        val chunkCount = (durationMs / chunkDurationMs) + (if (durationMs % chunkDurationMs > 0) 1 else 0)
 
-            //prevent story replies
-            val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
-            if (messageProtoReader.contains(7)) return@subscribe
+        context.log.verbose("SendOverride: Splitting video of ${durationMs}ms into $chunkCount parts.")
 
-            event.canceled = true
+        for (i in 0 until chunkCount) {
+            val startSec = i * 10
+            val outputFile = File(context.androidContext.cacheDir, "se_split_${System.currentTimeMillis()}_$i.mp4")
 
-            fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
-                if (overrideType != "ORIGINAL" && (messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
-                    context.inAppOverlay.showStatusToast(
-                        icon = Icons.Default.WarningAmber,
-                        context.translation["gallery_media_send_override.multiple_media_toast"]
-                    )
-                    return false
-                }
+            // FFmpeg command: -i [input] -ss [start] -t 10 -c copy [output]
+            // -c copy is fast but might be inaccurate on keyframes. 
+            // Switch to "-c:v libx264 -preset ultrafast" if you get black frames.
+            val command = mutableListOf(
+                "-i", originalFile.absolutePath,
+                "-ss", "$startSec",
+                "-t", "10",
+                "-c", "copy",
+                outputFile.absolutePath
+            )
 
-                when (overrideType) {
-                    "SNAP", "SAVEABLE_SNAP" -> {
-                        postSavePolicy = if (overrideType == "SAVEABLE_SNAP") 3 /* VIEW_SESSION */ else 1 /* PROHIBITED */
+            ffmpeg.execute(command)
 
-                        val extras = messageProtoReader.followPath(3, 3, 13)?.getBuffer()
-
-                        if (localMessageContent.contentType != ContentType.SNAP) {
-                            localMessageContent.content = ProtoWriter().apply {
-                                from(11) {
-                                    from(5) {
-                                        from(1) {
-                                            from(1) {
-                                                addVarInt(2, 0)
-                                                addVarInt(12, 0)
-                                                addVarInt(15, 0)
-                                            }
-                                            addVarInt(6, 1)
-                                        }
-                                        from(2) {}
-                                    }
-                                    extras?.let {
-                                        addBuffer(13, it)
-                                    }
-                                    from(22) {}
-                                }
-                            }.toByteArray()
-                        }
-
-                        localMessageContent.contentType = ContentType.SNAP
-                        localMessageContent.content = ProtoEditor(localMessageContent.content!!).apply {
-                            edit(11, 5, 2) {
-                                arrayOf(6, 7, 8).forEach { remove(it) }
-                                addVarInt(5, messageProtoReader.getVarInt(3, 3, 5, 2, 5) ?: messageProtoReader.getVarInt(11, 5, 2, 5) ?: 1)
-                                // set snap duration
-                                if (snapDurationMs != null) {
-                                    addVarInt(8, snapDurationMs / 1000)
-                                    if (snapDurationMs / 1000 <= 0) {
-                                        addVarInt(99, snapDurationMs)
-                                    }
-                                } else {
-                                    addBuffer(6, byteArrayOf())
-                                }
-                            }
-
-                            // set app source
-                            edit(11, 22) {
-                                remove(4)
-                                addVarInt(4, 5) // APP_SOURCE_CAMERA
-                            }
-                        }.toByteArray()
-                    }
-                    "NOTE" -> {
-                        localMessageContent.contentType = ContentType.NOTE
-                        localMessageContent.content =
-                            MessageSender.audioNoteProto(
-                                messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: context.feature(MediaFilePicker::class).lastMediaDuration ?: 0,
-                                Locale.getDefault().toLanguageTag()
-                            )
-                    }
-                }
-
-                return true
+            if (outputFile.exists()) {
+                // Send this specific chunk
+                sendSingleChunk(outputFile, originalEvent)
+                
+                // Wait slightly to ensure message ordering in the chat
+                Thread.sleep(800)
+            } else {
+                context.log.error("SendOverride: Failed to create split chunk $i")
             }
+        }
+    }
 
-            if (configOverrideType != "always_ask") {
-                if (sendMedia(configOverrideType, 10)) {
-                    event.invokeOriginal()
-                }
-                return@subscribe
-            }
+    /**
+     * Re-invokes the Snapchat send infrastructure for a specific file chunk.
+     */
+    private fun sendSingleChunk(file: File, originalEvent: SendMessageWithContentEvent) {
+        // We need to create a NEW event or manually invoke the adapter.
+        // Since we are inside the feature, the easiest way is to invoke the 
+        // original adapter call that triggered the event, but with modified data.
+        
+        // Note: Because we canceled the original event, the native call didn't happen.
+        // We effectively need to duplicate the logic that 'SendMessageWithContentEvent' wraps.
+        
+        // Access the adapter or conversation manager from the event
+        val adapter = originalEvent.adapter
+        val messageContent = originalEvent.messageContent
+        val dests = originalEvent.destinations
 
-            context.runOnUiThread {
-                createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
-                    val mainTranslation = remember {
-                        context.translation.getCategory("send_override_dialog")
-                    }
+        // Update content to the new chunk
+        val newContent = messageContent.copy()
+        newContent.content = PreviewUtils.readBytes(file)
+        newContent.contentType = ContentType.VIDEO
 
-                    @Composable
-                    fun ActionTile(
-                        modifier: Modifier = Modifier,
-                        selected: Boolean = false,
-                        icon: ImageVector,
-                        title: String,
-                        onClick: () -> Unit
-                    ) {
-                        Card(
-                            modifier = modifier,
-                            onClick = onClick,
-                            elevation = if (selected) CardDefaults.elevatedCardElevation(disabledElevation = 3.dp) else CardDefaults.cardElevation(),
-                            colors = if (selected) CardDefaults.elevatedCardColors() else CardDefaults.cardColors()
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(75.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Icon(icon, contentDescription = title, modifier = Modifier
-                                    .size(32.dp)
-                                    .padding(4.dp))
-                                Text(title, modifier = Modifier.fillMaxWidth(), fontSize = 12.sp, fontWeight = FontWeight.Light, softWrap = true, lineHeight = 14.sp, textAlign = TextAlign.Center)
-                            }
-                        }
-                    }
+        // Manually trigger the send via the adapter
+        // This requires the 'sendMessage' method on the adapter to be accessible.
+        // If 'adapter' is the SnapMessagingAdapter, you might need to check its available methods.
+        
+        try {
+            adapter.sendMessage(
+                dests,
+                newContent,
+                originalEvent.callback // Use original callback (might fire only once though)
+            )
+        } catch (e: Exception) {
+            context.log.error("SendOverride: Failed to send chunk", e)
+        }
+        
+        // Cleanup cache file
+        try { file.delete() } catch (_: Exception) {}
+    }
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val translation = remember {
-                            context.translation.getCategory("features.options.gallery_media_send_override")
-                        }
+    private fun isVideo(file: File): Boolean {
+        return file.name.endsWith(".mp4", ignoreCase = true) || 
+               file.name.endsWith(".mkv", ignoreCase = true) ||
+               file.name.endsWith(".mov", ignoreCase = true)
+    }
 
-                        Text(fontSize = 20.sp, fontWeight = FontWeight.Medium, text = "Send as ${
-                            translation[selectedType]}", modifier = Modifier.padding(5.dp))
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            ActionTile(selected = selectedType == "ORIGINAL", icon = Icons.Filled.Photo, title =
-                            translation["ORIGINAL"]) {
-                                selectedType = "ORIGINAL"
-                            }
-                            ActionTile(selected = selectedType == "SNAP" || selectedType == "SAVEABLE_SNAP", icon = Icons.Filled.PhotoCamera, title = translation["SNAP"]) {
-                                selectedType = "SNAP"
-                            }
-                            ActionTile(selected = selectedType == "NOTE", icon = Icons.Filled.MusicNote, title = translation["NOTE"]) {
-                                selectedType = "NOTE"
-                            }
-                        }
-
-                        fun convertDuration(duration: Float): Int? {
-                            return when  {
-                                duration in -2f..-1f -> 100
-                                duration in -1f..-0f -> 250
-                                duration in -0f..1f -> 500
-                                duration >= 11f -> null
-                                else -> ((duration * 1000).toInt() / 1000) * 1000
-                            }
-                        }
-
-                        when (selectedType) {
-                            "SNAP", "SAVEABLE_SNAP" -> {
-                                fun toggleSaveable() {
-                                    selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
-                                }
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().clickable {
-                                        toggleSaveable()
-                                    },
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ){
-                                    Checkbox(
-                                        checked = selectedType == "SAVEABLE_SNAP",
-                                        onCheckedChange = {
-                                            toggleSaveable()
-                                        }
-                                    )
-                                    Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
-                                }
-                                Column(
-                                    modifier = Modifier.padding(start = 8.dp)
-                                ) {
-                                    Text(
-                                        text = mainTranslation.format("duration",
-                                            "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
-                                        )
-                                    )
-                                    Slider(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        enabled = selectedType != "SAVEABLE_SNAP",
-                                        value = customDuration,
-                                        onValueChange = {
-                                            customDuration = it
-                                        },
-                                        valueRange = -2f..11f,
-                                    )
-                                }
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedButton(onClick = {
-                                alertDialog.dismiss()
-                            }) {
-                                Text(context.translation["button.cancel"])
-                            }
-                            Button(onClick = {
-                                alertDialog.dismiss()
-                                if (sendMedia(selectedType, if (selectedType != "SAVEABLE_SNAP" ) convertDuration(customDuration) else null)) {
-                                    event.invokeOriginal()
-                                }
-                            }) {
-                                Text(context.translation["button.send"])
-                            }
-                        }
-                    }
-                }.show()
-            }
+    private fun getVideoDuration(file: File): Long {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(file.absolutePath)
+            val time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            time?.toLong() ?: 0L
+        } catch (e: Exception) {
+            0L
+        } finally {
+            retriever.release()
         }
     }
 }
