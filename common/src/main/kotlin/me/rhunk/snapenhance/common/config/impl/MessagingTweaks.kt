@@ -39,6 +39,13 @@ class MessagingTweaks : ConfigContainer() {
         val deletedMessageColor = color("deleted_message_color", DELETED_MESSAGE_COLOR)
     }
 
+    inner class VideoSplittingConfig : ConfigContainer() {
+        val showProgress = boolean("show_progress", defaultValue = true)
+        val chunkLength = integer("chunk_length", defaultValue = 10) {
+            inputCheck = { it.toIntOrNull()?.let { v -> v > 0 } ?: false }
+        }
+    }
+
     class BetterNotifications: ConfigContainer() {
         val groupNotifications = boolean("group_notifications")
         val chatPreview = boolean("chat_preview")
@@ -94,6 +101,7 @@ class MessagingTweaks : ConfigContainer() {
     }
     val messageLogger = container("message_logger", MessageLoggerConfig()) { requireRestart() }
     val galleryMediaSendOverride = unique("gallery_media_send_override", "always_ask", "SNAP", "NOTE", "SAVEABLE_SNAP") { requireRestart() }
+    val videoSplitting = container("video_splitting", VideoSplittingConfig()) { requireRestart() }
     val stripMediaMetadata = multiple("strip_media_metadata", "hide_caption_text", "hide_snap_filters", "hide_extras", "remove_audio_note_duration", "remove_audio_note_transcript_capability") { requireRestart() }
     val bypassMessageRetentionPolicy = boolean("bypass_message_retention_policy") { addNotices(FeatureNotice.UNSTABLE); requireRestart() }
     val bypassMessageActionRestrictions = boolean("bypass_message_action_restrictions") { requireRestart() }
