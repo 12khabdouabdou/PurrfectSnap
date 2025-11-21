@@ -24,11 +24,12 @@ class VideoSplitter(
             val outputDir = File(context.androidContext.cacheDir, "video_chunks_${System.currentTimeMillis()}").apply { mkdirs() }
             val outputPathPattern = File(outputDir, "chunk_%03d.mp4").absolutePath
 
+            val chunkLength = context.config.messaging.videoSplitting.chunkLength.get()
             // -map 0: Select all streams (video, audio)
-            // -segment_time 10: Split every 10 seconds
+            // -segment_time $chunkLength: Split every $chunkLength seconds
             // -f segment: Use segment muxer
             // -reset_timestamps 1: Reset timestamps for each segment so they start at 0
-            val command = "-i \"$inputPath\" -c copy -map 0 -segment_time 10 -f segment -reset_timestamps 1 \"$outputPathPattern\""
+            val command = "-i \"$inputPath\" -c copy -map 0 -segment_time $chunkLength -f segment -reset_timestamps 1 \"$outputPathPattern\""
             
             context.log.verbose("Executing FFmpeg command: $command")
             val session = FFmpegKit.execute(command)
