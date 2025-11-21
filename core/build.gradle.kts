@@ -44,4 +44,5 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.hiddenapibypass)
     implementation(libs.bcprov.jdk18on)
+    implementation(files("../libs/ffmpeg-kit-full-gpl-6.0-2.LTS.aar"))
 }
