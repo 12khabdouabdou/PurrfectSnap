@@ -47,5 +47,4 @@ dependencies {
 
     testImplementation(libs.junit)
 
-    implementation(files("../libs/ffmpeg-kit-full-gpl-6.0-2.LTS.aar"))
 }
