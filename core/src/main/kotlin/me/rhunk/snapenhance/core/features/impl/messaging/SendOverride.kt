@@ -183,20 +183,22 @@ class SendOverride : Feature("Send Override") {
                         // Check if this is a chunk (auto-generated)
                         val isChunk = uriString?.contains("video_chunks_") == true
 
-                        if (!isChunk && mediaDuration > 10000 && overrideType == "SNAP" && uriString != null) {
-                            context.inAppOverlay.showStatusToast("Splitting video...", -1)
+                        val chunkLengthMs = context.config.messaging.videoSplitting.chunkLength.get() * 1000L
+
+                        if (!isChunk && mediaDuration > chunkLengthMs && overrideType == "SNAP" && uriString != null) {
+                            context.inAppOverlay.showStatusToast("Splitting video...", 2000)
                             val chunks = VideoSplitter(context).split(android.net.Uri.parse(uriString))
-                            context.inAppOverlay.hideStatusToast()
+                            // context.inAppOverlay.hideStatusToast() // Removed as it might not exist or be needed if we set a duration
                             
                             if (chunks.isNotEmpty()) {
                                 val messageSender = MessageSender(context)
                                 val conversations = event.destinations.conversations!!.map { SnapUUID(it) }
 
-                                chunks.forEachIndexed { index, file ->
+                                chunks.forEachIndexed { index: Int, file: File ->
                                     val chunkDuration = if (index == chunks.lastIndex) {
-                                        (mediaDuration % 10000).toInt().takeIf { it > 0 } ?: 10000
+                                        (mediaDuration % chunkLengthMs).toInt().takeIf { it > 0 } ?: chunkLengthMs.toInt()
                                     } else {
-                                        10000
+                                        chunkLengthMs.toInt()
                                     }
                                     
                                     messageSender.sendCustomChatMessage(conversations, ContentType.EXTERNAL_MEDIA, {
@@ -284,7 +286,8 @@ class SendOverride : Feature("Send Override") {
             // Auto-detect chunks and force SNAP without asking
             val uriString = messageProtoReader.getString(3, 3, 5, 1, 1, 2)
             if (uriString?.contains("video_chunks_") == true) {
-                if (sendMedia("SNAP", 10000)) { // 10s duration for chunks (or we could pass it?)
+                val chunkLengthMs = context.config.messaging.videoSplitting.chunkLength.get() * 1000
+                if (sendMedia("SNAP", chunkLengthMs)) { // duration for chunks
                     event.invokeOriginal()
                 }
                 return@subscribe
