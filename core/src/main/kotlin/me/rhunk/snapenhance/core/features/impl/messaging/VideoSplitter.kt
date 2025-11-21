@@ -1,8 +1,9 @@
 package me.rhunk.snapenhance.core.features.impl.messaging
 
+import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import com.arthenica.ffmpegkit.FFmpegKit
-import me.rhunk.snapenhance.core.util.local.FileUtil
 import java.io.File
 import me.rhunk.snapenhance.core.ModContext
 
@@ -13,7 +14,7 @@ class VideoSplitter(
         context.log.verbose("Starting video split for URI: $uri")
         
         return try {
-            val inputPath = FileUtil.getRealPathFromURI(context.androidContext, uri)
+            val inputPath = getRealPathFromURI(context.androidContext, uri)
             if (inputPath == null) {
                 context.log.error("Failed to resolve input path for URI: $uri")
                 return emptyList()
@@ -47,5 +48,21 @@ class VideoSplitter(
             context.log.error("Exception during video splitting", e)
             emptyList()
         }
+    }
+
+    private fun getRealPathFromURI(context: Context, uri: Uri): String? {
+        if (uri.scheme == "file") return uri.path
+        
+        var result: String? = null
+        val proj = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = context.contentResolver.query(uri, proj, null, null, null)
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                val column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                result = cursor.getString(column_index)
+            }
+            cursor.close()
+        }
+        return result
     }
 }
