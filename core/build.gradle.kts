@@ -46,8 +46,6 @@ dependencies {
     implementation(libs.bcprov.jdk18on)
 
     testImplementation(libs.junit)
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.inline)
-    testImplementation(libs.mockito.kotlin)
+
     implementation(files("../libs/ffmpeg-kit-full-gpl-6.0-2.LTS.aar"))
 }
