@@ -59,6 +59,6 @@ dependencies {
     compileOnly(libs.androidx.material3)
 
     implementation(project(":mapper"))
-    api(libs.ffmpeg.kit.full.gpl)
+    api("com.arthenica:ffmpeg-kit-full-gpl:6.0")
 }
 
