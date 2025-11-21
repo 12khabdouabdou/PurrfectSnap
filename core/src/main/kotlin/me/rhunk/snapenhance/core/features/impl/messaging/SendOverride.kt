@@ -186,7 +186,7 @@ class SendOverride : Feature("Send Override") {
                         val chunkLengthMs = context.config.messaging.videoSplitting.chunkLength.get() * 1000L
 
                         if (!isChunk && mediaDuration > chunkLengthMs && overrideType == "SNAP" && uriString != null) {
-                            context.inAppOverlay.showStatusToast("Splitting video...", 2000)
+                            context.inAppOverlay.showStatusToast(Icons.Default.WarningAmber, "Splitting video...", 2000)
                             val chunks = VideoSplitter(context).split(android.net.Uri.parse(uriString))
                             // context.inAppOverlay.hideStatusToast() // Removed as it might not exist or be needed if we set a duration
                             
