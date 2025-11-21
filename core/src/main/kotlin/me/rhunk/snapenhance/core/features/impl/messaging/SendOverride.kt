@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arthenica.ffmpegkit.FFmpegKit
 import me.rhunk.snapenhance.common.data.ContentType
 import me.rhunk.snapenhance.common.ui.createComposeAlertDialog
 import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
@@ -28,6 +29,8 @@ import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.features.impl.experiments.MediaFilePicker
 import me.rhunk.snapenhance.core.messaging.MessageSender
 import me.rhunk.snapenhance.core.util.ktx.getObjectFieldOrNull
+import me.rhunk.snapenhance.core.wrapper.impl.SnapUUID
+import java.io.File
 import java.util.Locale
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -36,6 +39,8 @@ import kotlin.time.toDuration
 class SendOverride : Feature("Send Override") {
     private var selectedType by mutableStateOf("SNAP")
     private var customDuration by mutableFloatStateOf(10f)
+
+
 
     @OptIn(ExperimentalLayoutApi::class)
     override fun init() {
@@ -172,6 +177,51 @@ class SendOverride : Feature("Send Override") {
                         postSavePolicy = if (overrideType == "SAVEABLE_SNAP") 3 /* VIEW_SESSION */ else 1 /* PROHIBITED */
 
                         val extras = messageProtoReader.followPath(3, 3, 13)?.getBuffer()
+                        val mediaDuration = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: 0L
+                        val uriString = messageProtoReader.getString(3, 3, 5, 1, 1, 2)
+
+                        // Check if this is a chunk (auto-generated)
+                        val isChunk = uriString?.contains("video_chunks_") == true
+
+                        if (!isChunk && mediaDuration > 10000 && overrideType == "SNAP" && uriString != null) {
+                            context.inAppOverlay.showStatusToast("Splitting video...", -1)
+                            val chunks = VideoSplitter(context).split(android.net.Uri.parse(uriString))
+                            context.inAppOverlay.hideStatusToast()
+                            
+                            if (chunks.isNotEmpty()) {
+                                val messageSender = MessageSender(context)
+                                val conversations = event.destinations.conversations!!.map { SnapUUID(it) }
+
+                                chunks.forEachIndexed { index, file ->
+                                    val chunkDuration = if (index == chunks.lastIndex) {
+                                        (mediaDuration % 10000).toInt().takeIf { it > 0 } ?: 10000
+                                    } else {
+                                        10000
+                                    }
+                                    
+                                    messageSender.sendCustomChatMessage(conversations, ContentType.EXTERNAL_MEDIA, {
+                                        from(3) {
+                                            from(3) {
+                                                from(5) {
+                                                    from(1) {
+                                                        from(1) {
+                                                            addString(2, "file://${file.absolutePath}")
+                                                            addVarInt(15, chunkDuration)
+                                                        }
+                                                    }
+                                                    addVarInt(2, 2) // Video type
+                                                }
+                                                extras?.let {
+                                                    addBuffer(13, it)
+                                                }
+                                            }
+                                        }
+                                    })
+                                }
+                                // Cancel the original event as we sent chunks
+                                return true
+                            }
+                        }
 
                         if (localMessageContent.contentType != ContentType.SNAP) {
                             localMessageContent.content = ProtoWriter().apply {
@@ -229,6 +279,15 @@ class SendOverride : Feature("Send Override") {
                 }
 
                 return true
+            }
+
+            // Auto-detect chunks and force SNAP without asking
+            val uriString = messageProtoReader.getString(3, 3, 5, 1, 1, 2)
+            if (uriString?.contains("video_chunks_") == true) {
+                if (sendMedia("SNAP", 10000)) { // 10s duration for chunks (or we could pass it?)
+                    event.invokeOriginal()
+                }
+                return@subscribe
             }
 
             if (configOverrideType != "always_ask") {
