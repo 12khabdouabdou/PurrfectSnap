@@ -65,7 +65,9 @@ class FFMpegProcessor(
         MERGE_OVERLAY,
         CONVERSION,
         MERGE_MEDIA,
+        MERGE_MEDIA,
         DOWNLOAD_AUDIO_STREAM,
+        SPLIT,
     }
 
     data class Request(
@@ -79,6 +81,7 @@ class FFMpegProcessor(
 
         var videoCodec: String? = null,
         var audioCodec: String? = null,
+        val segmentTime: Int? = null, //only for SPLIT
     )
 
 
@@ -111,9 +114,7 @@ class FFMpegProcessor(
             }, { onStatistics(it) }, Executors.newSingleThreadExecutor())
     }
 
-    suspend fun execute(args: Request) {
-        // load ffmpeg native sync to avoid native crash
-        synchronized(this) { FFmpegKit.listSessions() }
+    fun generateArguments(args: Request): Triple<ArgumentList, ArgumentList, ArgumentList> {
         val globalArguments = ArgumentList().apply {
             this += "-y"
             this += "-threads" to ffmpegOptions.threads.get().toString()
@@ -220,8 +221,28 @@ class FFMpegProcessor(
                 globalArguments += "-ar" to args.audioStreamFormat.sampleRate.toString()
                 globalArguments += "-ac" to args.audioStreamFormat.channels.toString()
             }
+            Action.SPLIT -> {
+                outputArguments.clear()
+                // -c copy -f segment -segment_time 10 -reset_timestamps 1 output_%03d.mp4
+                outputArguments += "-c" to "copy"
+                outputArguments += "-map" to "0"
+                outputArguments += "-f" to "segment"
+                outputArguments += "-segment_time" to (args.segmentTime?.toString() ?: "10")
+                outputArguments += "-reset_timestamps" to "1"
+                outputArguments += "-avoid_negative_ts" to "make_zero"
+                outputArguments += args.output.absolutePath + "/chunk_%03d.mp4"
+            }
         }
-        outputArguments += args.output.absolutePath
+        if (args.action != Action.SPLIT) {
+            outputArguments += args.output.absolutePath
+        }
+        return Triple(globalArguments, inputArguments, outputArguments)
+    }
+
+    suspend fun execute(args: Request) {
+        // load ffmpeg native sync to avoid native crash
+        synchronized(this) { FFmpegKit.listSessions() }
+        val (globalArguments, inputArguments, outputArguments) = generateArguments(args)
         newFFMpegTask(globalArguments, inputArguments, outputArguments)
     }
 }
