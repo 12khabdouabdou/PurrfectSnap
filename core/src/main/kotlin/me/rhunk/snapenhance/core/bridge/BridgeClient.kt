@@ -220,6 +220,14 @@ class BridgeClient(
         service.convertMedia(input, inputExtension, outputExtension, audioCodec, videoCodec)
     }
 
+    fun splitMedia(
+        input: ParcelFileDescriptor,
+        format: String,
+        segmentTime: Int
+    ): List<ParcelFileDescriptor> = safeServiceCall {
+        service.splitMedia(input, format, segmentTime)
+    }
+
     fun sync(callback: SyncCallback) {
         if (!context.database.hasMain()) return
         safeServiceCall {
