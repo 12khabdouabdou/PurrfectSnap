@@ -65,7 +65,6 @@ class FFMpegProcessor(
         MERGE_OVERLAY,
         CONVERSION,
         MERGE_MEDIA,
-        MERGE_MEDIA,
         DOWNLOAD_AUDIO_STREAM,
         SPLIT,
     }
