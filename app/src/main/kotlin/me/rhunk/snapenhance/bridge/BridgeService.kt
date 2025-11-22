@@ -147,6 +147,65 @@ class BridgeService : Service() {
             }
         }
 
+        override fun splitMedia(input: ParcelFileDescriptor, format: String, segmentTime: Int): List<ParcelFileDescriptor> {
+            return runBlocking {
+                val taskId = UUID.randomUUID().toString()
+                val inputFile = File.createTempFile(taskId, ".$format", remoteSideContext.androidContext.cacheDir)
+                val outputDir = File(remoteSideContext.androidContext.cacheDir, "split_$taskId").apply { mkdirs() }
+
+                runCatching {
+                    ParcelFileDescriptor.AutoCloseInputStream(input).use { inputStream ->
+                        inputFile.outputStream().use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                }.onFailure {
+                    remoteSideContext.log.error("Failed to copy input file for splitting", it)
+                    inputFile.delete()
+                    outputDir.deleteRecursively()
+                    return@runBlocking emptyList()
+                }
+
+                val pendingTask = remoteSideContext.taskManager.createPendingTask(
+                    Task(
+                        type = TaskType.DOWNLOAD,
+                        title = "Video Splitting",
+                        author = null,
+                        hash = taskId
+                    )
+                )
+
+                runCatching {
+                    FFMpegProcessor.newFFMpegProcessor(remoteSideContext, pendingTask).execute(
+                        FFMpegProcessor.Request(
+                            action = FFMpegProcessor.Action.SPLIT,
+                            inputs = listOf(inputFile.absolutePath),
+                            output = outputDir,
+                            segmentTime = segmentTime
+                        )
+                    )
+                    pendingTask.success()
+                    
+                    val result = outputDir.listFiles()?.sortedBy { it.name }?.map { 
+                        ParcelFileDescriptor.open(it, ParcelFileDescriptor.MODE_READ_ONLY) 
+                    } ?: emptyList()
+                    
+                    inputFile.delete()
+                    // Clean up output directory after opening PFDs
+                    // The OS will keep the files available until PFDs are closed
+                    outputDir.deleteRecursively()
+                    return@runBlocking result
+                }.onFailure {
+                    pendingTask.fail(it.message ?: "Failed to split video")
+                    remoteSideContext.log.error("Failed to split video", it)
+                    inputFile.delete()
+                    outputDir.deleteRecursively()
+                    return@runBlocking emptyList()
+                }
+                return@runBlocking emptyList()
+            }
+        }
+
         override fun getRules(uuid: String): List<String> {
             return remoteSideContext.database.getRules(uuid).map { it.key }
         }
