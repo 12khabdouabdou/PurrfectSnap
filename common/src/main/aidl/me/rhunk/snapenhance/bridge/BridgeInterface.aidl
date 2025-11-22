@@ -35,6 +35,11 @@ interface BridgeInterface {
     @nullable ParcelFileDescriptor convertMedia(in ParcelFileDescriptor input, String inputExtension, String outputExtension, @nullable String audioCodec, @nullable String videoCodec);
 
     /**
+     * Split media into segments
+     */
+    List<ParcelFileDescriptor> splitMedia(in ParcelFileDescriptor input, String format, int segmentTime);
+
+    /**
     * Get rules for a given user or conversation
     * @return list of rules (MessagingRuleType)
     */
