@@ -68,7 +68,7 @@ We're just getting started. Here are some of the exciting features planned for f
 
 ## 🛠️ Installation
 
-**Please** refer to the **[Telegram Channel](https://t.me/purrfectsnap)** .
+**Please** refer to the **[Telegram Channel](https://t.me/purrfectsnap_official)** .
 
 <br>
 
