@@ -72,14 +72,9 @@ class VideoSplitter : Feature("Video Splitter") {
      * Sends the list of files sequentially using the existing ChatMediaDrawer.sendItems method.
      */
     fun sequentialSend(files: List<File>, sendFunction: (File) -> Unit) {
-        // Note: The actual reflection call usually happens in the caller (MediaFilePicker)
-        // or we can pass a lambda code block here.
-        // For this architecture, we'll assume the caller passes a lambda that handles the specific injection,
-        // and we handle the looping and timing here.
-        
-        me.rhunk.snapenhance.core.util.ktx.runOnMainThread {
-             context.mainActivity?.let { activity ->
-                 me.rhunk.snapenhance.common.ui.createComposeToast(activity, "Sending ${files.size} parts...")
+        runOnUiThread {
+             context.mainActivity?.let {
+                 context.inAppOverlay.showStatusToast(androidx.compose.material.icons.Icons.Default.Upload, "Sending ${files.size} parts...")
              }
         }
 
@@ -97,8 +92,5 @@ class VideoSplitter : Feature("Video Splitter") {
             }
         }
         
-        // Final cleanup? Maybe delay this until we know they are sent?
-        // best effort cleanup
-        // files.forEach { it.delete() } 
     }
 }
