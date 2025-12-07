@@ -1,19 +1,11 @@
-package me.rhunk.snapenhance.core.features.impl.media
+package me.rhunk.snapenhance.core.features.impl.tweaks
 
 import android.net.Uri
-import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.util.hook.HookStage
-import me.rhunk.snapenhance.core.util.hook.hook
-import me.rhunk.snapenhance.core.util.ktx.getIdentifier
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Upload
-import me.rhunk.snapenhance.core.ModContext
+import me.rhunk.snapenhance.core.features.Feature
 import java.io.File
 import java.io.InputStream
-import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.util.hook.HookStage
-import me.rhunk.snapenhance.core.util.hook.hook
-import me.rhunk.snapenhance.core.util.ktx.getIdentifier
 
 class VideoSplitter : Feature("Video Splitter") {
 
@@ -26,8 +18,8 @@ class VideoSplitter : Feature("Video Splitter") {
      * @return List of split video files (chunk_000.mp4, chunk_001.mp4, ...)
      */
     fun split(sourceUri: Uri): List<File> {
-        val context = context.androidContext
-        val inputStream: InputStream? = context.contentResolver.openInputStream(sourceUri)
+        val androidContext = context.androidContext
+        val inputStream: InputStream? = androidContext.contentResolver.openInputStream(sourceUri)
         
         if (inputStream == null) {
             context.log.error("VideoSplitter: Could not open input stream for URI: $sourceUri")
@@ -35,7 +27,7 @@ class VideoSplitter : Feature("Video Splitter") {
         }
 
         // 1. Copy stream to a temporary source file
-        val tempDir = File(context.cacheDir, "video_splitter").apply { mkdirs() }
+        val tempDir = File(androidContext.cacheDir, "video_splitter").apply { mkdirs() }
         // Clean up old session
         tempDir.listFiles()?.forEach { it.delete() }
         
@@ -81,7 +73,7 @@ class VideoSplitter : Feature("Video Splitter") {
     fun sequentialSend(files: List<File>, sendFunction: (File) -> Unit) {
         runOnUiThread {
              context.mainActivity?.let {
-                 context.inAppOverlay.showStatusToast(androidx.compose.material.icons.Icons.Default.Upload, "Sending ${files.size} parts...")
+                 context.inAppOverlay.showStatusToast(Icons.Default.Upload, "Sending ${files.size} parts...")
              }
         }
 
@@ -98,6 +90,5 @@ class VideoSplitter : Feature("Video Splitter") {
                 context.log.error("VideoSplitter: Failed to send chunk ${file.name}", e)
             }
         }
-        
     }
 }
