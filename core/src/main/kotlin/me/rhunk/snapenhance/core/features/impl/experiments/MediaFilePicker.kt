@@ -176,6 +176,66 @@ class MediaFilePicker : Feature("Media File Picker") {
                 val isAudio = context.androidContext.contentResolver.getType(event.intent.data!!)!!.startsWith("audio/")
 
                 if (isAudio || context.config.messaging.galleryMediaSendOverride.getNullable() == null) {
+                    if (!isAudio && context.config.messaging.autoSplitVideo.get()) {
+                        context.coroutineScope.launch {
+                            val duration = runCatching {
+                                MediaPlayer().run {
+                                    setDataSource(context.androidContext, event.intent.data!!)
+                                    prepare()
+                                    duration.toLong().also { release() }
+                                }
+                            }.getOrDefault(0L)
+
+                            if (duration > 11000) {
+                                context.inAppOverlay.showStatusToast(Icons.Default.Crop, "Splitting video...")
+                                val splitter =
+                                    context.feature(me.rhunk.snapenhance.core.features.impl.tweaks.VideoSplitter::class)
+                                val chunks = splitter.split(event.intent.data!!)
+
+                                if (chunks.isNotEmpty()) {
+                                    splitter.sequentialSend(chunks) { file ->
+                                        mediaInputStream = file.inputStream()
+                                        firstVideoId = System.nanoTime()
+
+                                        sendItemsMethod.invoke(
+                                            chatMediaDrawerActionHandler,
+                                            listOf<Any>(),
+                                            listOf(
+                                                sendItemsMethod.genericParameterTypes[1].getTypeArguments()
+                                                    .first().dataBuilder {
+                                                    from("_item") {
+                                                        set("_cameraRollSource", "Snapchat")
+                                                        set("_contentUri", "")
+                                                        set("_durationMs", 10000.0)
+                                                        set("_disabled", false)
+                                                        set("_imageRotation", 0.0)
+                                                        set("_width", 1080.0)
+                                                        set("_height", 1920.0)
+                                                        set(
+                                                            "_timestampMs",
+                                                            System.currentTimeMillis().toDouble()
+                                                        )
+                                                        from("_itemId") {
+                                                            set("_itemId", firstVideoId.toString())
+                                                            set("_type", "VIDEO")
+                                                        }
+                                                    }
+                                                    set("_order", 0.0)
+                                                }
+                                            ))
+                                    }
+                                    return@launch
+                                } else {
+                                    context.inAppOverlay.showStatusToast(
+                                        Icons.Default.Error,
+                                        "Splitting failed, sending original..."
+                                    )
+                                }
+                            }
+                            startConversion(false)
+                        }
+                        return@subscribe
+                    }
                     startConversion(isAudio)
                     return@subscribe
                 }
