@@ -146,7 +146,8 @@ class FeatureManager(
             DisableSnapModeRestrictions(),
             PreventForcedKeyboard(),
             CustomTheming(),
-            me.rhunk.snapenhance.core.features.impl.media.VideoSplitter(),
+            CustomTheming(),
+            me.rhunk.snapenhance.core.features.impl.tweaks.VideoSplitter(),
         )
 
         features.values.toList().forEach { feature ->
