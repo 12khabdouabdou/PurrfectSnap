@@ -38,6 +38,7 @@ import me.rhunk.snapenhance.core.util.hook.hook
 import java.io.InputStream
 import java.lang.reflect.Method
 import kotlin.random.Random
+import me.rhunk.snapenhance.core.features.impl.tweaks.VideoSplitter
 
 class MediaFilePicker : Feature("Media File Picker") {
     var lastMediaDuration: Long? = null
@@ -189,7 +190,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                             if (duration > 11000) {
                                 context.inAppOverlay.showStatusToast(Icons.Default.Crop, "Splitting video...")
                                 val splitter =
-                                    context.feature(me.rhunk.snapenhance.core.features.impl.tweaks.VideoSplitter::class)
+                                    context.feature(VideoSplitter::class)
                                 val chunks = splitter.split(event.intent.data!!)
 
                                 if (chunks.isNotEmpty()) {
