@@ -11,44 +11,80 @@ import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
-import me.rhunk.snapenhance.core.util.hook.hook
+import me.rhunk.snapenhance.core.util.hook.hookConstructor
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import java.io.File
-import java.lang.reflect.Method
 
 class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
     private var isSplitting = false
+    private var hooked = false
 
     override fun init() {
-        // Find all classes that implement ChatMediaDrawerActionHandler
+        // Hook the interface to catch any implementation being created
         val handlerInterface = findClass("com.snap.composer.memories.ChatMediaDrawerActionHandler")
         
-        // Hook the class that creates/uses the handler
-        // Usually this is the drawer fragment or view model
-        val chatMediaDrawerClass = findClass("com.snap.composer.memories.ChatMediaDrawer")
+        context.log.info("Searching for implementations of ChatMediaDrawerActionHandler...")
         
-        chatMediaDrawerClass.hook("getActionHandler", HookStage.AFTER) { param ->
-            val actionHandler = param.getResult() ?: return@hook
-            
-            // Now hook the actual implementation instance
-            val actionHandlerClass = actionHandler.javaClass
-            context.log.info("Found implementation: ${actionHandlerClass.name}")
-            
-            val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { it.name == "sendItems" }
-                ?: return@hook
+        // Hook all constructors of classes in the composer.memories package
+        context.androidContext.packageManager.getPackageInfo(
+            context.androidContext.packageName, 
+            android.content.pm.PackageManager.GET_META_DATA
+        )
+        
+        // Search for implementation classes
+        val possibleClasses = listOf(
+            "com.snap.composer.memories.ChatMediaDrawerActionHandlerImpl",
+            "com.snap.composer.memories.DefaultChatMediaDrawerActionHandler",
+            "com.snap.composer.memories.ChatMediaDrawerViewModel",
+            "com.snap.composer.memories.ChatMediaDrawerPresenter"
+        )
+        
+        for (className in possibleClasses) {
+            try {
+                val implClass = findClass(className)
+                context.log.info("Found potential implementation: $className")
+                hookImplementation(implClass)
+            } catch (e: Exception) {
+                // Class doesn't exist, continue
+            }
+        }
+        
+        // Fallback: Hook any class that gets cast to the interface
+        handlerInterface.hookConstructor(HookStage.AFTER) { param ->
+            if (!hooked) {
+                context.log.info("Found implementation via constructor: ${param.thisObject.javaClass.name}")
+                hookImplementation(param.thisObject.javaClass)
+            }
+        }
 
-            // Hook the concrete implementation
-            sendItemsMethod.hook(HookStage.BEFORE) { sendParam ->
-                context.log.info("🔵 sendItems called")
+        context.log.info("✅ GalleryVideoSplitting initialized")
+    }
+    
+    private fun hookImplementation(implClass: Class<*>) {
+        if (hooked) return
+        
+        try {
+            val sendItemsMethod = implClass.methods.firstOrNull { 
+                it.name == "sendItems" && it.parameterTypes.size == 2 
+            } ?: run {
+                context.log.warn("sendItems not found in ${implClass.name}")
+                return
+            }
+            
+            context.log.info("Hooking sendItems in ${implClass.name}")
+            
+            sendItemsMethod.hook(HookStage.BEFORE) { param ->
+                context.log.info("🔵 sendItems called in ${implClass.simpleName}")
 
                 if (isSplitting || !context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
+                    context.log.info("  Skipped: isSplitting=$isSplitting, enabled=${context.config.messaging.splitVideoIntoTenSecondSnaps.get()}")
                     return@hook
                 }
 
                 try {
-                    val conversationIds = sendParam.arg<List<Any>>(0)
-                    val mediaItems = sendParam.arg<List<Any?>>(1)
+                    val conversationIds = param.arg<List<Any>>(0)
+                    val mediaItems = param.arg<List<Any?>>(1)
                     
                     context.log.info("  Conversations: ${conversationIds.size}, Media items: ${mediaItems.size}")
 
@@ -62,7 +98,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
 
                     if (itemType == "VIDEO") {
                         context.log.info("  ✅ VIDEO detected! Starting split process...")
-                        sendParam.setResult(null)
+                        param.setResult(null)
 
                         context.coroutineScope.launch {
                             isSplitting = true
@@ -79,7 +115,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                 val contentUriStr = item.getObjectField("contentUri")?.toString()
                                     ?: throw IllegalStateException("Content URI not found")
 
-                                context.log.info("  Content URI: $contentUriStr")
                                 val mediaUri = Uri.parse(contentUriStr)
                                 val cachedVideo = File(tempDir, "input.mp4")
 
@@ -87,15 +122,13 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                     cachedVideo.outputStream().use { output ->
                                         input.copyTo(output)
                                     }
-                                } ?: throw IllegalStateException("Failed to open input stream")
-
-                                context.log.info("  Video cached: ${cachedVideo.length()} bytes")
+                                }
 
                                 val inputPath = cachedVideo.absolutePath
                                 val outputPattern = "${tempDir.absolutePath}/split_%03d.mp4"
                                 val command = "-i $inputPath -c copy -f segment -segment_time 10 -reset_timestamps 1 $outputPattern"
 
-                                context.log.info("  Running FFmpeg: $command")
+                                context.log.info("  FFmpeg: $command")
                                 val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
 
                                 if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
@@ -107,11 +140,9 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                     ?.sortedBy { it.name }
                                     ?: emptyList()
 
-                                if (outputFiles.isEmpty()) {
-                                    throw IllegalStateException("FFmpeg produced no output files")
-                                }
+                                context.log.info("  Created ${outputFiles.size} segments")
 
-                                context.log.info("  Split into ${outputFiles.size} segments")
+                                val actionHandler = param.thisObject<Any>()
 
                                 for ((index, file) in outputFiles.withIndex()) {
                                     val chunkUri = Uri.fromFile(file)
@@ -148,7 +179,6 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                                         }
 
                                         sendItemsMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
-                                        context.log.info("    ✓ Sent segment ${index + 1}")
                                         delay(500)
 
                                     } finally {
@@ -166,10 +196,7 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                             } catch (e: Exception) {
                                 context.log.error("Failed to split video", e)
                                 withContext(Dispatchers.Main) {
-                                    context.inAppOverlay.showStatusToast(
-                                        Icons.Default.Info,
-                                        "Failed: ${e.message}"
-                                    )
+                                    context.inAppOverlay.showStatusToast(Icons.Default.Info, "Failed: ${e.message}")
                                 }
                             } finally {
                                 tempDir.deleteRecursively()
@@ -181,8 +208,12 @@ class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
                     context.log.error("Error in hook", e)
                 }
             }
+            
+            hooked = true
+            context.log.info("✅ Successfully hooked ${implClass.simpleName}.sendItems")
+            
+        } catch (e: Exception) {
+            context.log.error("Failed to hook ${implClass.name}", e)
         }
-
-        context.log.info("✅ GalleryVideoSplitting initialized")
     }
 }
