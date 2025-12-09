@@ -9,7 +9,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
-import me.rhunk.snapenhance.core.features.FeatureLoadParams
 import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
@@ -17,11 +16,11 @@ import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import java.io.File
 import java.lang.reflect.Method
 
-class GalleryVideoSplitting : Feature("Gallery Video Splitting", loadParams = FeatureLoadParams.ACTIVITY_CREATE_SYNC) {
+class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
     @Volatile
     private var isSplitting = false
 
-    override fun onActivityCreate() {
+    override fun init() {
         if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
             context.log.info("GalleryVideoSplitting feature is disabled in config")
             return
