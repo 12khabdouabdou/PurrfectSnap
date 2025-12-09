@@ -9,186 +9,251 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.rhunk.snapenhance.core.features.Feature
+import me.rhunk.snapenhance.core.features.FeatureLoadParams
 import me.rhunk.snapenhance.core.util.dataBuilder
-import me.rhunk.snapenhance.core.util.hook.HookAdapter
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
 import me.rhunk.snapenhance.core.util.ktx.getObjectField
 import java.io.File
 import java.lang.reflect.Method
 
-class GalleryVideoSplitting : Feature("Gallery Video Splitting") {
+class GalleryVideoSplitting : Feature("Gallery Video Splitting", loadParams = FeatureLoadParams.ACTIVITY_CREATE_SYNC) {
     @Volatile
     private var isSplitting = false
 
-    override fun init() {
-        // The class name from your Frida output
-        val actionHandlerClass = context.mappings.getMappedClass(
-            "com.snap.composer.memories", 
-            "ChatMediaDrawerActionHandler"
-        ) ?: run {
-            context.log.error("ChatMediaDrawerActionHandler not found in mappings")
+    override fun onActivityCreate() {
+        if (!context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
+            context.log.info("GalleryVideoSplitting feature is disabled in config")
             return
         }
 
-        // Find the sendItems method with the exact signature from Frida
-        val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { method ->
-            method.name == "sendItems" && 
-            method.parameterTypes.size == 2 &&
-            List::class.java.isAssignableFrom(method.parameterTypes[0]) &&
-            List::class.java.isAssignableFrom(method.parameterTypes[1])
-        } ?: run {
-            context.log.error("sendItems method not found. Available methods:")
-            actionHandlerClass.methods.forEach { 
-                context.log.error("  ${it.name}(${it.parameterTypes.joinToString { p -> p.simpleName }})")
-            }
-            return
-        }
+        try {
+            context.log.info("=== Initializing GalleryVideoSplitting ===")
 
-        context.log.info("✓ Successfully hooked ChatMediaDrawerActionHandler.sendItems")
+            // Find the ChatMediaDrawerActionHandler class
+            val actionHandlerClass = findClass("com.snap.composer.memories.ChatMediaDrawerActionHandler")
+            context.log.info("✓ Found class: ${actionHandlerClass.name}")
 
-        sendItemsMethod.hook(HookStage.BEFORE) { param ->
-            if (isSplitting || !context.config.messaging.splitVideoIntoTenSecondSnaps.get()) {
-                return@hook
+            // List all methods for debugging
+            context.log.info("Available methods in class:")
+            actionHandlerClass.methods.forEach { method ->
+                context.log.info("  - ${method.name}(${method.parameterTypes.joinToString { it.simpleName }})")
             }
 
-            try {
-                // Arguments from Frida: (List<ConversationId>, List<MediaItem>)
-                val conversationIds = param.arg<List<Any>>(0)
-                val mediaItems = param.arg<List<Any?>>(1)
-                
-                context.log.info("sendItems called: convos=${conversationIds.size}, items=${mediaItems.size}")
+            // Find the sendItems method
+            val sendItemsMethod: Method = actionHandlerClass.methods.firstOrNull { method ->
+                method.name == "sendItems" && method.parameterTypes.size == 2
+            } ?: run {
+                context.log.error("❌ sendItems method not found!")
+                return
+            }
 
-                if (mediaItems.size != 1) return@hook
+            context.log.info("✓ Found sendItems method")
 
-                val mediaItem = mediaItems.first() ?: run {
-                    context.log.warn("mediaItem is null")
+            // Hook the sendItems method
+            sendItemsMethod.hook(HookStage.BEFORE) { param ->
+                context.log.info("🔵 sendItems called")
+
+                if (isSplitting) {
+                    context.log.info("  Already splitting, skipping...")
                     return@hook
                 }
 
-                // Try different possible field names (Snapchat obfuscates)
-                val item = try {
-                    mediaItem.getObjectField("item") 
-                        ?: mediaItem.getObjectField("a") 
-                        ?: mediaItem.getObjectField("b")
-                } catch (e: Exception) {
-                    context.log.error("Failed to get item field", e)
-                    return@hook
-                }
+                try {
+                    val conversationIds = param.arg<List<Any>>(0)
+                    val mediaItems = param.arg<List<Any?>>(1)
+                    
+                    context.log.info("  Conversations: ${conversationIds.size}, Media items: ${mediaItems.size}")
 
-                if (item == null) {
-                    context.log.warn("item field is null")
-                    return@hook
-                }
+                    if (mediaItems.size != 1) {
+                        context.log.info("  Multiple items, skipping")
+                        return@hook
+                    }
 
-                // Check item type
-                val itemType = item.getObjectField("type")?.toString()
-                context.log.info("Item type: $itemType")
+                    val mediaItem = mediaItems.first() ?: run {
+                        context.log.warn("  mediaItem is null")
+                        return@hook
+                    }
 
-                if (itemType == "VIDEO") {
-                    param.setResult(null) // Cancel original send
-
-                    context.coroutineScope.launch {
-                        isSplitting = true
-                        val tempDir = File(context.mainActivity!!.cacheDir, "split_video_${System.currentTimeMillis()}").apply { mkdirs() }
-                        
+                    // Get the item field (might be obfuscated)
+                    val item = try {
+                        mediaItem.getObjectField("item")
+                    } catch (e: Exception) {
+                        context.log.error("  Failed to get 'item' field", e)
+                        // Try to list fields for debugging
                         try {
-                            withContext(Dispatchers.Main) {
-                                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Splitting video...")
-                            }
+                            val fields = mediaItem.javaClass.declaredFields
+                            context.log.info("  Available fields: ${fields.joinToString { field -> field.name }}")
+                        } catch (e2: Exception) {
+                            context.log.error("  Can't list fields", e2)
+                        }
+                        return@hook
+                    }
 
-                            val contentUriStr = item.getObjectField("contentUri")?.toString() 
-                                ?: throw IllegalStateException("Content URI not found")
-                            val mediaUri = Uri.parse(contentUriStr)
-                            val cachedVideo = File(tempDir, "input.mp4")
+                    if (item == null) {
+                        context.log.warn("  item is null")
+                        return@hook
+                    }
 
-                            // Copy video to cache
-                            context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
-                                cachedVideo.outputStream().use { output ->
-                                    input.copyTo(output)
+                    // Check if it's a video
+                    val itemType = item.getObjectField("type")?.toString()
+                    context.log.info("  Item type: $itemType")
+
+                    if (itemType == "VIDEO") {
+                        context.log.info("  ✅ VIDEO detected! Starting split process...")
+                        param.setResult(null) // Cancel the original send
+
+                        context.coroutineScope.launch {
+                            isSplitting = true
+                            val tempDir = File(
+                                context.mainActivity!!.cacheDir, 
+                                "split_video_${System.currentTimeMillis()}"
+                            ).apply { mkdirs() }
+
+                            try {
+                                withContext(Dispatchers.Main) {
+                                    context.inAppOverlay.showStatusToast(
+                                        Icons.Default.Info, 
+                                        "Processing video..."
+                                    )
                                 }
-                            } ?: throw IllegalStateException("Failed to open input stream")
 
-                            // FFmpeg split command (fixed for Android)
-                            val inputPath = cachedVideo.absolutePath
-                            val outputPattern = "${tempDir.absolutePath}/split_%03d.mp4"
-                            val command = "-i $inputPath -c copy -f segment -segment_time 10 -reset_timestamps 1 $outputPattern"
-                            
-                            context.log.info("Running FFmpeg: $command")
-                            val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
-
-                            if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
-                                throw IllegalStateException("FFmpeg failed: ${session.output}")
-                            }
-
-                            val outputFiles = tempDir.listFiles()
-                                ?.filter { it.name.startsWith("split_") }
-                                ?.sortedBy { it.name } 
-                                ?: emptyList()
-
-                            if (outputFiles.isEmpty()) {
-                                throw IllegalStateException("No output files produced")
-                            }
-
-                            context.log.info("Split into ${outputFiles.size} segments")
-
-                            val actionHandler = param.thisObject<Any>()
-
-                            // Send each segment
-                            for ((index, file) in outputFiles.withIndex()) {
-                                val chunkUri = Uri.fromFile(file)
-                                val retriever = MediaMetadataRetriever()
+                                // Get the video URI
+                                val contentUriStr = item.getObjectField("contentUri")?.toString() 
+                                    ?: throw IllegalStateException("Content URI not found")
                                 
-                                try {
-                                    retriever.setDataSource(context.androidContext, chunkUri)
-                                    val chunkDuration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
-                                    val chunkWidth = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toDoubleOrNull() ?: 1080.0
-                                    val chunkHeight = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toDoubleOrNull() ?: 1920.0
+                                context.log.info("  Content URI: $contentUriStr")
+                                val mediaUri = Uri.parse(contentUriStr)
+                                val cachedVideo = File(tempDir, "input.mp4")
 
-                                    val newItem = item.javaClass.dataBuilder {
-                                        set("type", item.getObjectField("type"))
-                                        set("encryptionInfo", item.getObjectField("encryptionInfo"))
-                                        set("contentUri", chunkUri.toString())
-                                        set("durationMs", chunkDuration.toDouble())
-                                        set("width", chunkWidth)
-                                        set("height", chunkHeight)
-                                        from("itemId", new = true) {
-                                            set("itemId", chunkUri.toString())
-                                        }
+                                // Copy video to cache
+                                context.log.info("  Copying video to cache...")
+                                context.mainActivity!!.contentResolver.openInputStream(mediaUri)?.use { input ->
+                                    cachedVideo.outputStream().use { output ->
+                                        input.copyTo(output)
                                     }
+                                } ?: throw IllegalStateException("Failed to open input stream for media URI")
 
-                                    val newMediaItem = mediaItem.javaClass.dataBuilder {
-                                        set("thumbnail", mediaItem.getObjectField("thumbnail"))
-                                        set("item", newItem)
-                                        set("order", index.toDouble())
-                                    }
+                                context.log.info("  Video cached: ${cachedVideo.length()} bytes")
 
-                                    sendItemsMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
-                                    delay(500)
-                                    
-                                } finally {
-                                    retriever.release()
+                                // Run FFmpeg to split the video
+                                val inputPath = cachedVideo.absolutePath
+                                val outputPattern = "${tempDir.absolutePath}/split_%03d.mp4"
+                                val command = "-i $inputPath -c copy -f segment -segment_time 10 -reset_timestamps 1 $outputPattern"
+                                
+                                context.log.info("  Running FFmpeg: $command")
+                                val session = com.arthenica.ffmpegkit.FFmpegKit.execute(command)
+
+                                if (!com.arthenica.ffmpegkit.ReturnCode.isSuccess(session.returnCode)) {
+                                    val errorOutput = session.output ?: "No output"
+                                    context.log.error("  FFmpeg failed with code ${session.returnCode}")
+                                    context.log.error("  FFmpeg output: $errorOutput")
+                                    throw IllegalStateException("FFmpeg failed: ${session.returnCode}")
                                 }
-                            }
 
-                            withContext(Dispatchers.Main) {
-                                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Sent ${outputFiles.size} segments!")
-                            }
+                                context.log.info("  FFmpeg completed successfully")
 
-                        } catch (e: Exception) {
-                            context.log.error("Failed to split video", e)
-                            withContext(Dispatchers.Main) {
-                                context.inAppOverlay.showStatusToast(Icons.Default.Info, "Split failed: ${e.message}")
+                                // Get all split files
+                                val outputFiles = tempDir.listFiles()
+                                    ?.filter { it.name.startsWith("split_") }
+                                    ?.sortedBy { it.name } 
+                                    ?: emptyList()
+
+                                if (outputFiles.isEmpty()) {
+                                    throw IllegalStateException("FFmpeg produced no output files")
+                                }
+
+                                context.log.info("  Split into ${outputFiles.size} segments")
+
+                                val actionHandler = param.thisObject<Any>()
+
+                                // Send each segment
+                                for ((index, file) in outputFiles.withIndex()) {
+                                    context.log.info("  Processing segment ${index + 1}/${outputFiles.size}: ${file.name}")
+                                    
+                                    val chunkUri = Uri.fromFile(file)
+                                    val retriever = MediaMetadataRetriever()
+
+                                    try {
+                                        retriever.setDataSource(context.androidContext, chunkUri)
+                                        val chunkDuration = retriever.extractMetadata(
+                                            MediaMetadataRetriever.METADATA_KEY_DURATION
+                                        )?.toLongOrNull() ?: 0L
+                                        val chunkWidth = retriever.extractMetadata(
+                                            MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH
+                                        )?.toDoubleOrNull() ?: 1080.0
+                                        val chunkHeight = retriever.extractMetadata(
+                                            MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT
+                                        )?.toDoubleOrNull() ?: 1920.0
+
+                                        context.log.info("    Duration: ${chunkDuration}ms, Size: ${chunkWidth}x${chunkHeight}")
+
+                                        // Create new item with chunk data
+                                        val newItem = item.javaClass.dataBuilder {
+                                            set("type", item.getObjectField("type"))
+                                            set("encryptionInfo", item.getObjectField("encryptionInfo"))
+                                            set("contentUri", chunkUri.toString())
+                                            set("durationMs", chunkDuration.toDouble())
+                                            set("width", chunkWidth)
+                                            set("height", chunkHeight)
+                                            from("itemId", new = true) {
+                                                set("itemId", chunkUri.toString())
+                                            }
+                                        }
+
+                                        // Create new media item
+                                        val newMediaItem = mediaItem.javaClass.dataBuilder {
+                                            set("thumbnail", mediaItem.getObjectField("thumbnail"))
+                                            set("item", newItem)
+                                            set("order", index.toDouble())
+                                        }
+
+                                        // Send the chunk
+                                        sendItemsMethod.invoke(actionHandler, conversationIds, listOf(newMediaItem))
+                                        context.log.info("    ✓ Sent segment ${index + 1}")
+                                        
+                                        // Small delay between sends
+                                        delay(500)
+
+                                    } finally {
+                                        retriever.release()
+                                    }
+                                }
+
+                                context.log.info("  ✅ All segments sent successfully!")
+
+                                withContext(Dispatchers.Main) {
+                                    context.inAppOverlay.showStatusToast(
+                                        Icons.Default.Info, 
+                                        "Sent ${outputFiles.size} video segments!"
+                                    )
+                                }
+
+                            } catch (e: Exception) {
+                                context.log.error("Failed to split and send video", e)
+                                withContext(Dispatchers.Main) {
+                                    context.inAppOverlay.showStatusToast(
+                                        Icons.Default.Info, 
+                                        "Failed to process video: ${e.message}"
+                                    )
+                                }
+                            } finally {
+                                // Clean up temp files
+                                context.log.info("  Cleaning up temp directory...")
+                                tempDir.deleteRecursively()
+                                isSplitting = false
                             }
-                        } finally {
-                            tempDir.deleteRecursively()
-                            isSplitting = false
                         }
                     }
+                } catch (e: Exception) {
+                    context.log.error("Error in GalleryVideoSplitting hook", e)
                 }
-            } catch (e: Exception) {
-                context.log.error("Error in hook", e)
             }
+
+            context.log.info("✅ GalleryVideoSplitting hook installed successfully")
+
+        } catch (e: Exception) {
+            context.log.error("Failed to initialize GalleryVideoSplitting feature", e)
         }
     }
 }
