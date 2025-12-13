@@ -40,6 +40,27 @@ class MessagingTweaks : ConfigContainer() {
     }
 
     class BetterNotifications: ConfigContainer() {
+        val sendToShortcuts = container("send_to_shortcuts") {
+        val globalState = boolean("enabled") {
+            defaultValue = false
+        }
+        
+        val batchSize = integer("batch_size") {
+            defaultValue = 200
+            minValue = 1
+            maxValue = 10000
+        }
+        
+        val delayBetweenBatches = integer("delay_between_batches_ms") {
+            defaultValue = 5000
+            minValue = 1000
+            maxValue = 60000
+        }
+        
+        val showQuickButtons = boolean("show_quick_buttons") {
+            defaultValue = true
+        }
+    }
         val groupNotifications = boolean("group_notifications")
         val chatPreview = boolean("chat_preview")
         val mediaPreview = multiple("media_preview", "SNAP", "EXTERNAL_MEDIA", "STICKER", "SHARE", "TINY_SNAP", "MAP_REACTION") {
