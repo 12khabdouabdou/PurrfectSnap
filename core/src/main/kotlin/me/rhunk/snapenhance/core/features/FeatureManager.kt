@@ -146,6 +146,7 @@ class FeatureManager(
             DisableSnapModeRestrictions(),
             PreventForcedKeyboard(),
             CustomTheming(),
+            SendToShortcuts::class ,
         )
 
         features.values.toList().forEach { feature ->
