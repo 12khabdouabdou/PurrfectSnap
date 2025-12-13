@@ -40,27 +40,6 @@ class MessagingTweaks : ConfigContainer() {
     }
 
     class BetterNotifications: ConfigContainer() {
-        val sendToShortcuts = container("send_to_shortcuts") {
-        val globalState = boolean("enabled") {
-            defaultValue = false
-        }
-        
-        val batchSize = integer("batch_size") {
-            defaultValue = 200
-            minValue = 1
-            maxValue = 10000
-        }
-        
-        val delayBetweenBatches = integer("delay_between_batches_ms") {
-            defaultValue = 5000
-            minValue = 1000
-            maxValue = 60000
-        }
-        
-        val showQuickButtons = boolean("show_quick_buttons") {
-            defaultValue = true
-        }
-    }
         val groupNotifications = boolean("group_notifications")
         val chatPreview = boolean("chat_preview")
         val mediaPreview = multiple("media_preview", "SNAP", "EXTERNAL_MEDIA", "STICKER", "SHARE", "TINY_SNAP", "MAP_REACTION") {
@@ -113,6 +92,20 @@ class MessagingTweaks : ConfigContainer() {
     val notificationBlacklist = multiple("notification_blacklist", *NotificationType.getIncomingValues().map { it.key }.toTypedArray()) {
         customOptionTranslationPath = "features.options.notifications"
     }
+    val sendToShortcuts = container("send_to_shortcuts") {
+    var globalState by switch("enabled", defaultValue = false)
+    var batchSize by integer("batch_size") {
+        defaultValue = 200
+        min = 1
+        max = 500
+    }
+    var delayBetweenBatches by integer("delay_between_batches") {
+        defaultValue = 5000
+        min = 1000
+        max = 60000
+    }
+}
+
     val messageLogger = container("message_logger", MessageLoggerConfig()) { requireRestart() }
     val galleryMediaSendOverride = unique("gallery_media_send_override", "always_ask", "SNAP", "NOTE", "SAVEABLE_SNAP") { requireRestart() }
     val stripMediaMetadata = multiple("strip_media_metadata", "hide_caption_text", "hide_snap_filters", "hide_extras", "remove_audio_note_duration", "remove_audio_note_transcript_capability") { requireRestart() }
