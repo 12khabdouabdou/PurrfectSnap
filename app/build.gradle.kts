@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
     id("com.google.devtools.ksp") version "2.2.20-2.0.3"
+    kotlin("plugin.serialization") version "2.2.20" // Added for kotlinx-serialization
 }
 
 android {
@@ -121,7 +122,10 @@ dependencies {
             dependencies.add("${flavorName}Implementation", dependencyNotation)
         }
     }
-mplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    
+    // Kotlinx Serialization for JSON (for SendToShortcuts feature)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    
     implementation("androidx.compose.ui:ui:1.5.4")
     implementation("androidx.compose.material3:material3:1.1.2")
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.4")
