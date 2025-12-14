@@ -55,6 +55,17 @@ class MessagingTweaks : ConfigContainer() {
         val markAsReadAndSaveInChat = boolean("mark_as_read_and_save_in_chat") { addNotices(FeatureNotice.UNSTABLE) }
     }
 
+    inner class SendToShortcutsConfig : ConfigContainer(hasGlobalState = true) {
+        val batchSize = integer("batch_size", defaultValue = 200) {
+            min = 1
+            max = 500
+        }
+        val delayBetweenBatches = integer("delay_between_batches", defaultValue = 5000) {
+            min = 1000
+            max = 60000
+        }
+    }
+
     val bypassScreenshotDetection = boolean("bypass_screenshot_detection") { requireRestart() }
     val anonymousStoryViewing = boolean("anonymous_story_viewing")
     val preventStoryRewatchIndicator = boolean("prevent_story_rewatch_indicator") { requireRestart() }
@@ -92,20 +103,7 @@ class MessagingTweaks : ConfigContainer() {
     val notificationBlacklist = multiple("notification_blacklist", *NotificationType.getIncomingValues().map { it.key }.toTypedArray()) {
         customOptionTranslationPath = "features.options.notifications"
     }
-    val sendToShortcuts = container("send_to_shortcuts") {
-    var globalState by switch("enabled", defaultValue = false)
-    var batchSize by integer("batch_size") {
-        defaultValue = 200
-        min = 1
-        max = 500
-    }
-    var delayBetweenBatches by integer("delay_between_batches") {
-        defaultValue = 5000
-        min = 1000
-        max = 60000
-    }
-}
-
+    val sendToShortcuts = container("send_to_shortcuts", SendToShortcutsConfig()) { requireRestart() }
     val messageLogger = container("message_logger", MessageLoggerConfig()) { requireRestart() }
     val galleryMediaSendOverride = unique("gallery_media_send_override", "always_ask", "SNAP", "NOTE", "SAVEABLE_SNAP") { requireRestart() }
     val stripMediaMetadata = multiple("strip_media_metadata", "hide_caption_text", "hide_snap_filters", "hide_extras", "remove_audio_note_duration", "remove_audio_note_transcript_capability") { requireRestart() }
@@ -114,5 +112,6 @@ class MessagingTweaks : ConfigContainer() {
     val removeGroupsLockedStatus = boolean("remove_groups_locked_status") { requireRestart() }
     val doubleTapChatAction = unique("double_tap_chat_action", "like_message", "copy_text", "delete_message", "mark_as_read", "custom_emoji_reaction") { requireRestart() }
     val doubleTapChatActionCustomEmoji = string("double_tap_chat_action_custom_emoji") {
-        inputCheck = { it.length == 2 && it.toByteArray(Charsets.UTF_8).size >= 4 } }
+        inputCheck = { it.length == 2 && it.toByteArray(Charsets.UTF_8).size >= 4 }
+    }
 }
