@@ -27,6 +27,7 @@ import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
 import me.rhunk.snapenhance.core.features.Feature
 import me.rhunk.snapenhance.core.ui.children
 import me.rhunk.snapenhance.core.util.RandomWalking
+import me.rhunk.snapenhance.core.util.RouteEngine
 import me.rhunk.snapenhance.core.util.dataBuilder
 import me.rhunk.snapenhance.core.util.hook.HookStage
 import me.rhunk.snapenhance.core.util.hook.hook
@@ -41,6 +42,7 @@ import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlinx.coroutines.launch
 
 data class FriendLocation(
     val userId: String,
@@ -74,7 +76,13 @@ class BetterLocation : Feature("Better Location") {
         RandomWalking(walkRadius?.toDoubleOrNull())
     }
 
+    private val routeEngine by lazy {
+        RouteEngine()
+    }
+
     private fun getLat() : Double {
+        routeEngine.getCurrentLocation()?.let { return it.latitude }
+        
         var spoofedLatitude = context.config.global.betterLocation.coordinates.get().first
         walkRadius?.let {
             spoofedLatitude += randomWalking.current_x
@@ -83,6 +91,8 @@ class BetterLocation : Feature("Better Location") {
     }
 
     private fun getLong() : Double {
+        routeEngine.getCurrentLocation()?.let { return it.longitude }
+
         var spoofedLongitude = context.config.global.betterLocation.coordinates.get().second
         walkRadius?.let {
             spoofedLongitude += randomWalking.current_y
@@ -199,6 +209,23 @@ class BetterLocation : Feature("Better Location") {
     override fun init() {
         if (context.config.global.betterLocation.globalState != true) return
 
+        context.config.global.betterLocation.routeActive.addLoggerListener("RouteActiveListener") {
+             if (it.toBoolean()) {
+                val startLat = context.config.global.betterLocation.routeStartLat.get()
+                val startLng = context.config.global.betterLocation.routeStartLng.get()
+                val endLat = context.config.global.betterLocation.routeEndLat.get()
+                val endLng = context.config.global.betterLocation.routeEndLng.get()
+                val duration = context.config.global.betterLocation.routeDuration.get()
+                val useRealRoads = context.config.global.betterLocation.routeUseRealRoads.get()
+                
+                context.coroutineScope.launch {
+                    startRoute(startLat.toDouble(), startLng.toDouble(), endLat.toDouble(), endLng.toDouble(), duration, useRealRoads)
+                }
+             } else {
+                 stopRoute()
+             }
+        }
+
         val canSpoofLocation = { context.config.global.betterLocation.spoofLocation.get() }
 
         LocationManager::class.java.apply {
@@ -304,5 +331,16 @@ class BetterLocation : Feature("Better Location") {
                 ByteBuffer.allocateDirect(it.size).put(it).rewind()
             })
         }
+        }
     }
+
+    suspend fun startRoute(startLat: Double, startLng: Double, endLat: Double, endLng: Double, durationMs: Long, useRealRoads: Boolean) {
+        val route = routeEngine.generateRoute(startLat, startLng, endLat, endLng, durationMs, useRealRoads = useRealRoads)
+        routeEngine.startRoute(route)
+    }
+
+    fun pauseRoute() = routeEngine.pauseRoute()
+    fun resumeRoute() = routeEngine.resumeRoute()
+    fun stopRoute() = routeEngine.stopRoute()
+    fun isRouteActive() = routeEngine.isPlaying()
 }
