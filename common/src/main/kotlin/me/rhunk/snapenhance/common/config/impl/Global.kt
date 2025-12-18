@@ -28,6 +28,16 @@ class Global : ConfigContainer() {
         val spoofBatteryLevel = string("spoof_battery_level") { requireRestart(); inputCheck = { it.isEmpty() || it.toIntOrNull() in 0..100 } }
         val spoofHeadphones = boolean("spoof_headphones") { requireRestart() }
         val showBatteryLevel = boolean("show_battery_level") { requireRestart() }
+
+        // Route Mocking Config
+        val routeActive = boolean("route_active") { addFlags(ConfigFlag.HIDDEN) }
+        val routeStartLat = float("route_start_lat", 0.0f) { addFlags(ConfigFlag.HIDDEN) }
+        val routeStartLng = float("route_start_lng", 0.0f) { addFlags(ConfigFlag.HIDDEN) }
+        val routeEndLat = float("route_end_lat", 0.0f) { addFlags(ConfigFlag.HIDDEN) }
+        val routeEndLng = float("route_end_lng", 0.0f) { addFlags(ConfigFlag.HIDDEN) }
+        val routeDuration = long("route_duration", 600000L) { addFlags(ConfigFlag.HIDDEN) } // 10 mins default
+        val routeSmartMode = boolean("route_smart_mode", true) { addFlags(ConfigFlag.HIDDEN) }
+        val routeUseRealRoads = boolean("route_use_real_roads", false) { addFlags(ConfigFlag.HIDDEN) }
     }
 
     inner class MediaUploadQualityConfig : ConfigContainer() {
