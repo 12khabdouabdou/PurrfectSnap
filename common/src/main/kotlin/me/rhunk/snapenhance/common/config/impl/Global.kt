@@ -35,7 +35,7 @@ class Global : ConfigContainer() {
         val routeStartLng = float("route_start_lng", 0.0f) { addFlags(ConfigFlag.HIDDEN) }
         val routeEndLat = float("route_end_lat", 0.0f) { addFlags(ConfigFlag.HIDDEN) }
         val routeEndLng = float("route_end_lng", 0.0f) { addFlags(ConfigFlag.HIDDEN) }
-        val routeDuration = long("route_duration", 600000L) { addFlags(ConfigFlag.HIDDEN) } // 10 mins default
+        val routeDuration = integer("route_duration", 600000) { addFlags(ConfigFlag.HIDDEN) } // 10 mins default
         val routeSmartMode = boolean("route_smart_mode", true) { addFlags(ConfigFlag.HIDDEN) }
         val routeUseRealRoads = boolean("route_use_real_roads", false) { addFlags(ConfigFlag.HIDDEN) }
     }
