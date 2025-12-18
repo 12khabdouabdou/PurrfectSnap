@@ -209,6 +209,7 @@ class BetterLocation : Feature("Better Location") {
     override fun init() {
         if (context.config.global.betterLocation.globalState != true) return
 
+/*
         context.config.global.betterLocation.routeActive.addLoggerListener("RouteActiveListener") {
              if (it.toBoolean()) {
                 val startLat = context.config.global.betterLocation.routeStartLat.get()
@@ -225,6 +226,7 @@ class BetterLocation : Feature("Better Location") {
                  stopRoute()
              }
         }
+*/
 
         val canSpoofLocation = { context.config.global.betterLocation.spoofLocation.get() }
 
@@ -331,8 +333,26 @@ class BetterLocation : Feature("Better Location") {
                 ByteBuffer.allocateDirect(it.size).put(it).rewind()
             })
         }
+    }
 
-
+/*
+        context.config.global.betterLocation.routeActive.addLoggerListener("RouteActiveListener") {
+             if (it.toBoolean()) {
+                val startLat = context.config.global.betterLocation.routeStartLat.get()
+                val startLng = context.config.global.betterLocation.routeStartLng.get()
+                val endLat = context.config.global.betterLocation.routeEndLat.get()
+                val endLng = context.config.global.betterLocation.routeEndLng.get()
+                val duration = context.config.global.betterLocation.routeDuration.get().toLong()
+                val useRealRoads = context.config.global.betterLocation.routeUseRealRoads.get()
+                
+                context.coroutineScope.launch {
+                    startRoute(startLat.toDouble(), startLng.toDouble(), endLat.toDouble(), endLng.toDouble(), duration, useRealRoads)
+                }
+             } else {
+                 stopRoute()
+             }
+        }
+*/
     suspend fun startRoute(startLat: Double, startLng: Double, endLat: Double, endLng: Double, durationMs: Long, useRealRoads: Boolean) {
         val route = routeEngine.generateRoute(startLat, startLng, endLat, endLng, durationMs, useRealRoads = useRealRoads)
         routeEngine.startRoute(route)
