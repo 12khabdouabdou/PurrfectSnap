@@ -1,554 +1,346 @@
-package me.rhunk.snapenhance.ui.manager.pages.location
+package me.rhunk.snapenhance.core.features.impl.experiments
 
-import android.os.Parcel
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import android.location.Location
+import android.location.LocationManager
+import android.view.View
+import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.filled.EditLocation
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavBackStackEntry
-import kotlinx.coroutines.Dispatchers
+import me.rhunk.snapenhance.common.ui.OverlayType
+import me.rhunk.snapenhance.common.ui.createComposeView
+import me.rhunk.snapenhance.common.util.protobuf.EditorContext
+import me.rhunk.snapenhance.common.util.protobuf.ProtoEditor
+import me.rhunk.snapenhance.common.util.protobuf.ProtoReader
+import me.rhunk.snapenhance.core.event.events.impl.AddViewEvent
+import me.rhunk.snapenhance.core.event.events.impl.UnaryCallEvent
+import me.rhunk.snapenhance.core.features.Feature
+import me.rhunk.snapenhance.core.ui.children
+import me.rhunk.snapenhance.core.util.RandomWalking
+import me.rhunk.snapenhance.core.util.RouteEngine
+import me.rhunk.snapenhance.core.util.dataBuilder
+import me.rhunk.snapenhance.core.util.hook.HookStage
+import me.rhunk.snapenhance.core.util.hook.hook
+import me.rhunk.snapenhance.core.util.hook.hookConstructor
+import me.rhunk.snapenhance.core.util.ktx.getId
+import me.rhunk.snapenhance.core.util.ktx.getObjectField
+import me.rhunk.snapenhance.core.util.ktx.isDarkTheme
+import me.rhunk.snapenhance.mapper.impl.CallbackMapper
+import java.nio.ByteBuffer
+import java.util.UUID
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import me.rhunk.snapenhance.bridge.location.FriendLocation
-import me.rhunk.snapenhance.bridge.location.LocationCoordinates
-import me.rhunk.snapenhance.common.ui.rememberAsyncMutableStateList
-import me.rhunk.snapenhance.common.ui.rememberAsyncUpdateDispatcher
-import me.rhunk.snapenhance.common.util.snap.BitmojiSelfie
-import me.rhunk.snapenhance.storage.addOrUpdateLocationCoordinate
-import me.rhunk.snapenhance.storage.getLocationCoordinates
-import me.rhunk.snapenhance.storage.removeLocationCoordinate
-import me.rhunk.snapenhance.ui.manager.Routes
-import me.rhunk.snapenhance.ui.util.AlertDialogs
-import me.rhunk.snapenhance.ui.util.DialogProperties
-import me.rhunk.snapenhance.ui.util.coil.BitmojiImage
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
 
-class BetterLocationRoot : Routes.Route() {
-    private val alertDialogs by lazy { AlertDialogs(context.translation) }
+data class FriendLocation(
+    val userId: String,
+    val latitude: Double,
+    val longitude: Double,
+    val lastUpdated: Long,
+    val locality: String?,
+    val localityPieces: List<String>,
+    val batteryLevel: Float,
+) {
+    fun distanceTo(other: FriendLocation): Double {
+        val deltaLat = Math.toRadians(other.latitude - this.latitude)
+        val deltaLong = Math.toRadians(other.longitude - this.longitude)
 
-    @Composable
-    private fun FriendLocationItem(
-        friendLocation: FriendLocation,
-        dismiss: () -> Unit
-    ) {
-        ElevatedCard(onClick = {
-            context.config.root.global.betterLocation.coordinates.setAny(friendLocation.latitude to friendLocation.longitude)
-            dismiss()
-        }, modifier = Modifier.padding(4.dp)) {
-            Row(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BitmojiImage(
-                    context = context,
-                    url = BitmojiSelfie.getBitmojiSelfie(
-                        friendLocation.bitmojiSelfieId,
-                        friendLocation.bitmojiId,
-                        BitmojiSelfie.BitmojiSelfieType.NEW_THREE_D
-                    ),
-                    size = 48,
-                    modifier = Modifier.padding(6.dp)
-                )
-                Column(
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text(friendLocation.displayName?.let { "$it (${friendLocation.username})" }
-                        ?: friendLocation.username, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text(
-                        text = buildString {
-                            append(friendLocation.localityPieces.joinToString(", "))
-                            append("\n")
-                            append("Lat: ${friendLocation.latitude.toFloat()}, Lng: ${friendLocation.longitude.toFloat()}")
-                        },
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Light,
-                        lineHeight = 15.sp
-                    )
-                }
-            }
-        }
+        val a = sin(deltaLat / 2) * sin(deltaLat / 2) +
+                cos(Math.toRadians(this.latitude)) * cos(Math.toRadians(other.latitude)) *
+                sin(deltaLong / 2) * sin(deltaLong / 2)
+
+        return 6371 * 2 * atan2(sqrt(a), sqrt(1 - a))
+    }
+}
+
+class BetterLocation : Feature("Better Location") {
+    val locationHistory = mutableMapOf<String, FriendLocation>()
+
+    private val walkRadius by lazy {
+        context.config.global.betterLocation.walkRadius.getNullable()
     }
 
-    @Composable
-    private fun FriendLocationsDialogs(
-        friendsLocation: List<FriendLocation>,
-        dismiss: () -> Unit
-    ) {
-        var search by remember { mutableStateOf("") }
-        val filteredFriendsLocation = rememberAsyncMutableStateList(defaultValue = friendsLocation, keys = arrayOf(search)) {
-            search.takeIf { it.isNotBlank() }?.let {
-                friendsLocation.filter {
-                    it.displayName?.contains(search, ignoreCase = true) == true || it.username.contains(search, ignoreCase = true)
-                }
-            }  ?: friendsLocation
-        }
-
-        ElevatedCard(
-            shape = MaterialTheme.shapes.large,
-            modifier = Modifier.padding(top = 32.dp, bottom = 32.dp)
-        ) {
-            Text(
-                translation["teleport_to_friend_title"],
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
-            )
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                value = search,
-                onValueChange = { search = it },
-                label = { Text(translation["search_bar"]) }
-            )
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                item {
-                    if (friendsLocation.isEmpty()) {
-                        Text(
-                            translation["no_friends_map"],
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(16.dp),
-                            fontWeight = FontWeight.Light
-                        )
-                    } else if (filteredFriendsLocation.isEmpty()) {
-                        Text(
-                            translation["no_friends_found"],
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(16.dp),
-                            fontWeight = FontWeight.Light
-                        )
-                    }
-                }
-                items(filteredFriendsLocation) { friendLocation ->
-                    FriendLocationItem(friendLocation, dismiss)
-                }
-            }
-        }
+    private val randomWalking by lazy {
+        RandomWalking(walkRadius?.toDoubleOrNull())
     }
 
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val coordinatesProperty = remember {
-            context.config.root.global.betterLocation.getPropertyPair("coordinates")
-        }
+    private val routeEngine by lazy {
+        RouteEngine()
+    }
 
-        val updateDispatcher = rememberAsyncUpdateDispatcher()
-        val savedCoordinates = rememberAsyncMutableStateList(
-            defaultValue = listOf(),
-            updateDispatcher = updateDispatcher
-        ) {
-            context.database.getLocationCoordinates()
-        }
-        var showMap by remember { mutableStateOf(false) }
-        var addSavedCoordinateDialog by remember { mutableStateOf(false) }
-        var showTeleportDialog by remember { mutableStateOf(false) }
-        var showRouteDialog by remember { mutableStateOf(false) }
+    private fun getLat() : Double {
+        routeEngine.getCurrentLocation()?.let { return it.latitude }
         
-        val routeActive = remember { context.config.root.global.betterLocation.routeActive }
-        val routeStartLat = remember { context.config.root.global.betterLocation.routeStartLat }
-        val routeStartLng = remember { context.config.root.global.betterLocation.routeStartLng }
-        val routeEndLat = remember { context.config.root.global.betterLocation.routeEndLat }
-        val routeEndLng = remember { context.config.root.global.betterLocation.routeEndLng }
-        val routeDuration = remember { context.config.root.global.betterLocation.routeDuration }
-        val routeSmartMode = remember { context.config.root.global.betterLocation.routeSmartMode }
-        val routeUseRealRoads = remember { context.config.root.global.betterLocation.routeUseRealRoads }
-
-        val marker = remember { mutableStateOf<Marker?>(null) }
-        val mapView = remember { mutableStateOf<MapView?>(null) }
-        var spoofedCoordinates by remember(showTeleportDialog, showMap) { mutableStateOf(coordinatesProperty.value.get() as? Pair<*, *>) }
-
-        fun addSavedCoordinate(id: Int?, locationCoordinates: LocationCoordinates, onSuccess: suspend (id: Int) -> Unit = {}) {
-            context.coroutineScope.launch {
-                onSuccess(context.database.addOrUpdateLocationCoordinate(id, locationCoordinates))
-            }
+        var spoofedLatitude = context.config.global.betterLocation.coordinates.get().first
+        walkRadius?.let {
+            spoofedLatitude += randomWalking.current_x
         }
+        return spoofedLatitude
+    }
 
-        if (showTeleportDialog) {
-            me.rhunk.snapenhance.ui.util.Dialog(
-                properties = DialogProperties(usePlatformDefaultWidth = false),
-                onDismissRequest = { showTeleportDialog = false },
-                content = {
-                    FriendLocationsDialogs(remember { context.locationManager.friendsLocation }) {
-                        showTeleportDialog = false
-                        context.coroutineScope.launch {
-                            context.config.writeConfig()
-                        }
-                    }
+    private fun getLong() : Double {
+        routeEngine.getCurrentLocation()?.let { return it.longitude }
+
+        var spoofedLongitude = context.config.global.betterLocation.coordinates.get().second
+        walkRadius?.let {
+            spoofedLongitude += randomWalking.current_y
+        }
+        return spoofedLongitude
+    }
+
+    private fun editClientUpdate(editor: EditorContext) {
+        val config = context.config.global.betterLocation
+
+        editor.apply {
+            // SCVSLocationUpdate
+            edit(1) {
+                if (config.spoofLocation.get()) {
+                    randomWalking.updatePosition()
+                    remove(1)
+                    remove(2)
+                    addFixed32(1, getLat().toFloat()) // lat
+                    addFixed32(2, getLong().toFloat()) // lng
                 }
-            )
-        }
 
-        if (showRouteDialog) {
-            me.rhunk.snapenhance.ui.util.Dialog(
-                onDismissRequest = { showRouteDialog = false },
-                content = {
-                    RouteConfigurationDialog(
-                        alertDialogs = alertDialogs,
-                        translation = context.translation,
-                        startCoords = LocationCoordinates(
-                            latitude = (spoofedCoordinates?.first as? Double) ?: 0.0,
-                            longitude = (spoofedCoordinates?.second as? Double) ?: 0.0
-                        ),
-                        endCoords = LocationCoordinates(), 
-                        smartMode = routeSmartMode.get(),
-                        onSmartModeChange = {
-                            routeSmartMode.set(it)
-                            context.coroutineScope.launch {
-                                context.config.writeConfig()
-                            }
-                        },
-                        useRealRoads = routeUseRealRoads.get(),
-                        onUseRealRoadsChange = {
-                            routeUseRealRoads.set(it)
-                            context.coroutineScope.launch {
-                                context.config.writeConfig()
-                            }
-                        },
-                        onStartRoute = { start, end, duration ->
-                            showRouteDialog = false
-                            routeStartLat.set(start.latitude.toFloat())
-                            routeStartLng.set(start.longitude.toFloat())
-                            routeEndLat.set(end.latitude.toFloat())
-                            routeEndLng.set(end.longitude.toFloat())
-                            routeDuration.set(duration)
-                            routeActive.set(true)
-                            context.coroutineScope.launch {
-                                context.config.writeConfig()
-                            }
-                        },
-                        onDismiss = { showRouteDialog = false }
-                    )
+                if (config.alwaysUpdateLocation.get()) {
+                    remove(7)
+                    addVarInt(7, System.currentTimeMillis()) // timestamp
                 }
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Text(
-                translation.format(
-                    "spoofed_coordinates_title",
-                    "latitude" to ((spoofedCoordinates?.first as? Double)?.toFloat() ?: "0.0").toString(),
-                    "longitude" to ((spoofedCoordinates?.second as? Double)?.toFloat() ?: "0.0").toString()
-                ),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            )
-
-            if (addSavedCoordinateDialog) {
-                me.rhunk.snapenhance.ui.util.Dialog(
-                    onDismissRequest = { addSavedCoordinateDialog = false },
-                    content = {
-                        AddCoordinatesDialog(
-                            alertDialogs,
-                            translation,
-                            LocationCoordinates().apply {
-                                this.latitude = marker.value?.position?.latitude ?: 0.0
-                                this.longitude = marker.value?.position?.longitude ?: 0.0
-                            },
-                        ) { coordinates ->
-                            addSavedCoordinateDialog = false
-                            addSavedCoordinate(null, coordinates) {
-                                withContext(Dispatchers.Main) {
-                                    savedCoordinates.add(0, coordinates.apply { id = it })
-                                }
-                            }
-                        }
-                    }
-                )
             }
 
-            if (showMap) {
-                me.rhunk.snapenhance.ui.util.Dialog(
-                    onDismissRequest = { showMap = false },
-                    content = {
-                        alertDialogs.ChooseLocationDialog(property = coordinatesProperty, marker, mapView, saveCoordinates = {
-                            addSavedCoordinateDialog = true
-                        }) {
-                            showMap = false
-                            context.config.writeConfig()
-                        }
-                        DisposableEffect(Unit) {
-                            onDispose {
-                                marker.value = null
-                            }
-                        }
-                    }
-                )
+            if (context.config.global.betterLocation.suspendLocationUpdates.get()) {
+                remove(1)
             }
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clipToBounds()
-            ) {
-
-                item {
-                    @Composable
-                    fun ConfigToggle(
-                        text: String,
-                        state: MutableState<Boolean>,
-                        onCheckedChange: (Boolean) -> Unit
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = text)
-                            Spacer(modifier = Modifier.weight(1f))
-                            Switch(
-                                checked = state.value,
-                                onCheckedChange = {
-                                    state.value = it
-                                    onCheckedChange(it)
-                                }
-                            )
-                        }
-                    }
-                    ConfigToggle(
-                        translation["spoof_location_toggle"],
-                        remember { mutableStateOf(context.config.root.global.betterLocation.spoofLocation.get()) }
-                    ) {
-                        context.config.root.global.betterLocation.spoofLocation.set(it)
-                    }
-                    ConfigToggle(
-                        translation["suspend_location_updates"],
-                        remember { mutableStateOf(context.config.root.global.betterLocation.suspendLocationUpdates.get()) }
-                    ) {
-                        context.config.root.global.betterLocation.suspendLocationUpdates.set(it)
-                    }
-                }
-                
-                if (routeActive.get()) {
-                    item {
-                        ElevatedCard(
-                            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text("Route Active", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("Destination: ${routeEndLat.get()}, ${routeEndLng.get()}")
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Button(
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                                    onClick = {
-                                        routeActive.set(false)
-                                        context.coroutineScope.launch {
-                                            context.config.writeConfig()
-                                        }
-                                    }
-                                ) {
-                                    Text("Stop Route")
-                                }
-                            }
-                        }
+            // SCVSDeviceData
+            edit(3) {
+                config.spoofBatteryLevel.getNullable()?.takeIf { it.isNotEmpty() }?.let {
+                    val value = it.toIntOrNull()?.toFloat()?.div(100) ?: return@edit
+                    remove(2)
+                    addFixed32(2, value)
+                    if (value == 100F) {
+                        remove(3)
+                        addVarInt(3, 1) // devicePluggedIn
                     }
                 }
 
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(onClick = { showMap = true }) {
-                            Text(translation["choose_location_button"])
-                        }
-                        Button(onClick = { showTeleportDialog = true }) {
-                            Text(translation["teleport_to_friend_button"])
-                        }
-                        Button(onClick = { showRouteDialog = true }) {
-                            Text("Mock Route")
-                        }
-                    }
+                if (config.spoofHeadphones.get()) {
+                    remove(4)
+                    addVarInt(4, 1) // headphoneOutput
+                    remove(6)
+                    addVarInt(6, 1) // isOtherAudioPlaying
                 }
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 12.dp, end = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            translation["saved_coordinates_title"],
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.weight(1f),
-                            lineHeight = 20.sp
-                        )
-                        IconButton(
-                            onClick = {
-                                addSavedCoordinateDialog = true
-                            }
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
-                        }
-                    }
-                }
-                item {
-                    if (savedCoordinates.isEmpty()) {
-                        Text(
-                            translation["no_saved_coordinates_hint"],
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(start = 20.dp),
-                            fontWeight = FontWeight.Light
-                        )
-                    }
-                }
-                items(savedCoordinates, key = { it.id }) { coordinates ->
-                    var mutableCoordinates by remember { mutableStateOf(coordinates) }
-                    val isSelected = spoofedCoordinates == mutableCoordinates.latitude to mutableCoordinates.longitude
-                    var showDeleteDialog by remember { mutableStateOf(false) }
-                    var showEditDialog by remember { mutableStateOf(false) }
 
-                    fun setSpoofedCoordinates() {
-                        spoofedCoordinates = mutableCoordinates.latitude to mutableCoordinates.longitude
-                        coordinatesProperty.value.setAny(spoofedCoordinates)
-                        context.coroutineScope.launch {
-                            context.config.writeConfig()
-                        }
-                    }
-
-                    if (showDeleteDialog) {
-                        me.rhunk.snapenhance.ui.util.Dialog(
-                            onDismissRequest = { showDeleteDialog = false },
-                            content = {
-                                alertDialogs.ConfirmDialog(
-                                    title = translation["delete_dialog_title"],
-                                    message = translation["delete_dialog_message"],
-                                    onConfirm = {
-                                        showDeleteDialog = false
-                                        context.coroutineScope.launch {
-                                            context.database.removeLocationCoordinate(coordinates.id)
-                                            savedCoordinates.remove(coordinates)
-                                        }
-                                    },
-                                    onDismiss = { showDeleteDialog = false }
-                                )
-                            }
-                        )
-                    }
-
-                    if (showEditDialog) {
-                        me.rhunk.snapenhance.ui.util.Dialog(
-                            onDismissRequest = { showEditDialog = false },
-                            content = {
-                                AddCoordinatesDialog(
-                                    alertDialogs,
-                                    translation,
-                                    mutableCoordinates
-                                ) {
-                                    val itemId = coordinates.id
-                                    context.coroutineScope.launch {
-                                        addSavedCoordinate(itemId, it)
-                                    }
-                                    Parcel.obtain().apply {
-                                        it.writeToParcel(this, 0)
-                                        setDataPosition(0)
-                                        coordinates.readFromParcel(this)
-                                        coordinates.id = itemId
-                                        recycle()
-                                    }
-                                    mutableCoordinates = it
-                                    if (isSelected) setSpoofedCoordinates()
-                                    showEditDialog = false
-                                }
-                            }
-                        )
-                    }
-
-                    ElevatedCard(
-                        onClick = {
-                            mutableCoordinates = coordinates
-                            setSpoofedCoordinates()
-                            GeoPoint(coordinates.latitude, coordinates.longitude).also {
-                                marker.value?.position = it
-                                mapView.value?.controller?.apply {
-                                    animateTo(it)
-                                    setZoom(16.0)
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(5.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(2.dp)
-                                    .weight(1f)
-                            ) {
-                                Text(
-                                    text = remember(mutableCoordinates) { mutableCoordinates.name },
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Light,
-                                    fontSize = 16.sp,
-                                    lineHeight = 20.sp,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = remember(mutableCoordinates) { "(${mutableCoordinates.latitude.toFloat()}, ${mutableCoordinates.longitude.toFloat()})" },
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Light,
-                                    fontSize = 12.sp,
-                                    lineHeight = 15.sp,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
-                            FilledIconButton(onClick = {
-                                showEditDialog = true
-                            }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Delete")
-                            }
-                            Spacer(modifier = Modifier.width(4.dp))
-                            FilledIconButton(onClick = {
-                                showDeleteDialog = true
-                            }) {
-                                Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
-                            }
-                        }
-                    }
+                edit(10) {
+                    remove(1)
+                    addVarInt(1, 4) // type = ALWAYS
+                    remove(2)
+                    addVarInt(2, 1) // precise = true
                 }
             }
         }
     }
+
+    private fun onLocationEvent(protoReader: ProtoReader) {
+        protoReader.eachBuffer(3, 1) {
+            val clusterId = UUID(getFixed64(1, 1) ?: return@eachBuffer, getFixed64(1, 2) ?: return@eachBuffer).toString()
+
+            val latitude = getFixed32(4)?.let { Float.fromBits(it) }?.toDouble() ?: return@eachBuffer
+            val longitude = getFixed32(5)?.let { Float.fromBits(it) }?.toDouble() ?: return@eachBuffer
+
+            val locality = getString(10)
+            val localityPieces = mutableListOf<String>().also {
+                forEach { index, wire ->
+                    if (index != 11) return@forEach
+                    it.add((wire.value as ByteArray).toString(Charsets.UTF_8) )
+                }
+            }
+
+            eachBuffer(7) friend@{
+                val userId = if (contains(1)) UUID(getFixed64(1, 1) ?: return@friend, getFixed64(1, 2) ?: return@friend).toString() else clusterId
+                val friendLocation = FriendLocation(
+                    userId = userId,
+                    latitude = latitude,
+                    longitude = longitude,
+                    lastUpdated = getVarInt(2) ?: -1L,
+                    locality = locality,
+                    localityPieces = localityPieces,
+                    batteryLevel = getFixed32(13)?.let { Float.fromBits(it) } ?: -1F,
+                )
+
+                locationHistory[userId] = friendLocation
+            }
+        }
+    }
+
+    private fun openManagementOverlay() {
+        context.bridgeClient.getLocationManager().provideFriendsLocation(
+            locationHistory.values.toList().mapNotNull { locationHistory ->
+                val friendInfo = context.database.getFriendInfo(locationHistory.userId) ?: return@mapNotNull null
+
+                me.rhunk.snapenhance.bridge.location.FriendLocation().also {
+                    it.username = friendInfo.mutableUsername ?: return@mapNotNull null
+                    it.displayName = friendInfo.displayName
+                    it.bitmojiId = friendInfo.bitmojiAvatarId
+                    it.bitmojiSelfieId = friendInfo.bitmojiSelfieId
+                    it.latitude = locationHistory.latitude
+                    it.longitude = locationHistory.longitude
+                    it.lastUpdated = locationHistory.lastUpdated
+                    it.locality = locationHistory.locality
+                    it.localityPieces = locationHistory.localityPieces
+                }
+            }
+        )
+        context.bridgeClient.openOverlay(OverlayType.BETTER_LOCATION)
+    }
+
+    override fun init() {
+        if (context.config.global.betterLocation.globalState != true) return
+
+        context.config.global.betterLocation.routeActive.addLoggerListener("RouteActiveListener") {
+             if (it.toBoolean()) {
+                val startLat = context.config.global.betterLocation.routeStartLat.get()
+                val startLng = context.config.global.betterLocation.routeStartLng.get()
+                val endLat = context.config.global.betterLocation.routeEndLat.get()
+                val endLng = context.config.global.betterLocation.routeEndLng.get()
+                val duration = context.config.global.betterLocation.routeDuration.get().toLong()
+                val useRealRoads = context.config.global.betterLocation.routeUseRealRoads.get()
+                
+                context.coroutineScope.launch {
+                    startRoute(startLat.toDouble(), startLng.toDouble(), endLat.toDouble(), endLng.toDouble(), duration, useRealRoads)
+                }
+             } else {
+                 stopRoute()
+             }
+        }
+
+        val canSpoofLocation = { context.config.global.betterLocation.spoofLocation.get() }
+
+        LocationManager::class.java.apply {
+            hook("isProviderEnabled", HookStage.BEFORE, { canSpoofLocation() }) { it.setResult(true) }
+            hook("isProviderEnabledForUser", HookStage.BEFORE, { canSpoofLocation() }) { it.setResult(true) }
+        }
+        Location::class.java.apply {
+            hook("getLatitude", HookStage.BEFORE, { canSpoofLocation() }) { it.setResult(getLat()) }
+            hook("getLongitude", HookStage.BEFORE, { canSpoofLocation() }) { it.setResult(getLong()) }
+        }
+
+        val mapViewId = context.resources.getId("mapview")
+
+        if (context.config.global.betterLocation.showBatteryLevel.get()) {
+            findClass("snap.snap_maps_sdk.nano.SnapMapsSdk\$PublicUserInfo").hook("setDisplayName", HookStage.BEFORE) { param ->
+                val instance = param.thisObject<Any>()
+                val userId = instance.getObjectField("userId_") as? String ?: return@hook
+                val batteryLevel = locationHistory[userId]?.batteryLevel?.takeIf { it > -1F } ?: return@hook
+                param.setArg(0, param.arg<String>(0) + " (${(batteryLevel * 100).toInt()}%)")
+            }
+
+            findClass("com.snap.map_friend_focus_view.MapFocusViewFriendSectionDataModel").hookConstructor(HookStage.AFTER) { param ->
+                val instance = param.thisObject<Any>()
+                val userId = instance.getObjectField("_userId") as? String ?: return@hookConstructor
+                val batteryLevel = locationHistory[userId]?.batteryLevel?.takeIf { it > -1F } ?: return@hookConstructor
+
+                param.thisObject<Any>().dataBuilder {
+                    val prevText = get<String?>("_lastSeen")?.let { " - $it" } ?: ""
+                    set("_lastSeen", "(${(batteryLevel * 100).toInt()}%)$prevText")
+                }
+            }
+        }
+
+        context.event.subscribe(AddViewEvent::class) { event ->
+            if (!event.viewClassName.endsWith("MapScreenRoot")) return@subscribe
+
+            event.view.addOnAttachStateChangeListener(object: View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    val mapView = event.view.findViewById<View>(mapViewId) ?: throw IllegalStateException("Map view not found")
+                    val view = (mapView.parent as ViewGroup).children().firstOrNull { it is RelativeLayout } as? RelativeLayout ?: throw IllegalStateException("Map view parent not found")
+
+                    view.addView(createComposeView(view.context) {
+                        val darkTheme = remember { context.androidContext.isDarkTheme() }
+                        Box(
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            FilledIconButton(
+                                modifier = Modifier.size(40.dp),
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = if (darkTheme) Color(0xFF1D1D1D) else Color.White,
+                                    contentColor = if (darkTheme) Color.White else Color(0xFF151A1A),
+                                ),
+                                onClick = { openManagementOverlay() }
+                            ) {
+                                Icon(Icons.Default.EditLocation, contentDescription = null)
+                            }
+                        }
+                    }.apply {
+                        layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                            addRule(RelativeLayout.ALIGN_PARENT_LEFT)
+                            setMargins(0, (60 * context.resources.displayMetrics.density).toInt(), 0, 0)
+                        }
+                    })
+                }
+
+                override fun onViewDetachedFromWindow(v: View) {}
+            })
+        }
+
+        context.event.subscribe(UnaryCallEvent::class) { event ->
+            if (event.uri == "/snapchat.valis.Valis/SendClientUpdate") {
+                event.buffer = ProtoEditor(event.buffer).apply {
+                    edit {
+                        editEach(1) {
+                            editClientUpdate(this)
+                        }
+                    }
+                }.toByteArray()
+            }
+        }
+
+        context.mappings.useMapper(CallbackMapper::class) {
+            callbacks.getClass("ServerStreamingEventHandler")?.hook("onEvent", HookStage.BEFORE) { param ->
+                val buffer = param.argNullable<ByteBuffer>(1)?.let {
+                    it.position(0)
+                    ByteArray(it.capacity()).also { buffer -> it.get(buffer); it.position(0) }
+                } ?: return@hook
+                onLocationEvent(ProtoReader(buffer))
+            }
+        }
+
+        findClass("com.snapchat.client.grpc.ClientStreamSendHandler\$CppProxy").hook("send", HookStage.BEFORE) { param ->
+            val array = param.arg<ByteBuffer>(0).let {
+                it.position(0)
+                ByteArray(it.capacity()).also { buffer -> it.get(buffer); it.position(0) }
+            }
+
+            param.setArg(0, ProtoEditor(array).apply {
+                edit {
+                    editClientUpdate(this)
+                }
+            }.toByteArray().let {
+                ByteBuffer.allocateDirect(it.size).put(it).rewind()
+            })
+        }
+        }
+    }
+
+    suspend fun startRoute(startLat: Double, startLng: Double, endLat: Double, endLng: Double, durationMs: Long, useRealRoads: Boolean) {
+        val route = routeEngine.generateRoute(startLat, startLng, endLat, endLng, durationMs, useRealRoads = useRealRoads)
+        routeEngine.startRoute(route)
+    }
+
+    fun pauseRoute() = routeEngine.pauseRoute()
+    fun resumeRoute() = routeEngine.resumeRoute()
+    fun stopRoute() = routeEngine.stopRoute()
+    fun isRouteActive() = routeEngine.isPlaying()
 }
