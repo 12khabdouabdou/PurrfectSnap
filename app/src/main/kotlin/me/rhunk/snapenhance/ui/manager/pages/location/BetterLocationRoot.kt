@@ -207,10 +207,10 @@ class BetterLocationRoot : Routes.Route() {
                     RouteConfigurationDialog(
                         alertDialogs = alertDialogs,
                         translation = context.translation,
-                        startCoords = LocationCoordinates(
-                            latitude = (spoofedCoordinates?.first as? Double) ?: 0.0,
+                        startCoords = LocationCoordinates().apply {
+                            latitude = (spoofedCoordinates?.first as? Double) ?: 0.0
                             longitude = (spoofedCoordinates?.second as? Double) ?: 0.0
-                        ),
+                        },
                         endCoords = LocationCoordinates(), 
                         smartMode = routeSmartMode.get(),
                         onSmartModeChange = {
@@ -251,10 +251,8 @@ class BetterLocationRoot : Routes.Route() {
             Text(
                 translation.format(
                     "spoofed_coordinates_title",
-                    mapOf(
-                        "latitude" to ((spoofedCoordinates?.first as? Double)?.toFloat() ?: "0.0").toString(),
-                        "longitude" to ((spoofedCoordinates?.second as? Double)?.toFloat() ?: "0.0").toString()
-                    )
+                    "latitude" to ((spoofedCoordinates?.first as? Double)?.toFloat() ?: "0.0").toString(),
+                    "longitude" to ((spoofedCoordinates?.second as? Double)?.toFloat() ?: "0.0").toString()
                 ),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -539,7 +537,7 @@ class BetterLocationRoot : Routes.Route() {
                             FilledIconButton(onClick = {
                                 showEditDialog = true
                             }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Delete")
+                                Icon(Icons.Default.Edit, contentDescription = "Edit")
                             }
                             Spacer(modifier = Modifier.width(4.dp))
                             FilledIconButton(onClick = {
