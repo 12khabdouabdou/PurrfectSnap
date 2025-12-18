@@ -3,7 +3,6 @@ package me.rhunk.snapenhance.ui.manager.pages.location
 import android.os.Parcel
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -14,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -151,20 +149,6 @@ class BetterLocationRoot : Routes.Route() {
         }
     }
 
-    @Composable
-    private fun ThemedEditLocationButton(onClick: () -> Unit) {
-        FilledIconButton(
-            modifier = Modifier.size(40.dp),
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = if (isSystemInDarkTheme()) Color.White else Color(0xFF151A1A),
-            ),
-            onClick = onClick
-        ) {
-            Icon(Icons.Default.Edit, contentDescription = translation["edit_location_button_description"])
-        }
-    }
-
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coordinatesProperty = remember {
             context.config.root.global.betterLocation.getPropertyPair("coordinates")
@@ -180,6 +164,16 @@ class BetterLocationRoot : Routes.Route() {
         var showMap by remember { mutableStateOf(false) }
         var addSavedCoordinateDialog by remember { mutableStateOf(false) }
         var showTeleportDialog by remember { mutableStateOf(false) }
+        var showRouteDialog by remember { mutableStateOf(false) }
+        
+        val routeActive = remember { context.config.root.global.betterLocation.routeActive }
+        val routeStartLat = remember { context.config.root.global.betterLocation.routeStartLat }
+        val routeStartLng = remember { context.config.root.global.betterLocation.routeStartLng }
+        val routeEndLat = remember { context.config.root.global.betterLocation.routeEndLat }
+        val routeEndLng = remember { context.config.root.global.betterLocation.routeEndLng }
+        val routeDuration = remember { context.config.root.global.betterLocation.routeDuration }
+        val routeSmartMode = remember { context.config.root.global.betterLocation.routeSmartMode }
+        val routeUseRealRoads = remember { context.config.root.global.betterLocation.routeUseRealRoads }
 
         val marker = remember { mutableStateOf<Marker?>(null) }
         val mapView = remember { mutableStateOf<MapView?>(null) }
@@ -202,6 +196,50 @@ class BetterLocationRoot : Routes.Route() {
                             context.config.writeConfig()
                         }
                     }
+                }
+            )
+        }
+
+        if (showRouteDialog) {
+            me.rhunk.snapenhance.ui.util.Dialog(
+                onDismissRequest = { showRouteDialog = false },
+                content = {
+                    RouteConfigurationDialog(
+                        alertDialogs = alertDialogs,
+                        translation = context.translation,
+                        startCoords = LocationCoordinates(
+                            latitude = (spoofedCoordinates?.first as? Double) ?: 0.0,
+                            longitude = (spoofedCoordinates?.second as? Double) ?: 0.0
+                        ),
+                        endCoords = LocationCoordinates(), 
+                        smartMode = routeSmartMode.get(),
+                        onSmartModeChange = {
+                            routeSmartMode.set(it)
+                            context.coroutineScope.launch {
+                                context.config.writeConfig()
+                            }
+                        },
+                        useRealRoads = routeUseRealRoads.get(),
+                        onUseRealRoadsChange = {
+                            routeUseRealRoads.set(it)
+                            context.coroutineScope.launch {
+                                context.config.writeConfig()
+                            }
+                        },
+                        onStartRoute = { start, end, duration ->
+                            showRouteDialog = false
+                            routeStartLat.set(start.latitude.toFloat())
+                            routeStartLng.set(start.longitude.toFloat())
+                            routeEndLat.set(end.latitude.toFloat())
+                            routeEndLng.set(end.longitude.toFloat())
+                            routeDuration.set(duration)
+                            routeActive.set(true)
+                            context.coroutineScope.launch {
+                                context.config.writeConfig()
+                            }
+                        },
+                        onDismiss = { showRouteDialog = false }
+                    )
                 }
             )
         }
@@ -307,6 +345,39 @@ class BetterLocationRoot : Routes.Route() {
                         context.config.root.global.betterLocation.suspendLocationUpdates.set(it)
                     }
                 }
+                
+                if (routeActive.get()) {
+                    item {
+                        ElevatedCard(
+                            colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Route Active", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Destination: ${routeEndLat.get()}, ${routeEndLng.get()}")
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                    onClick = {
+                                        routeActive.set(false)
+                                        context.coroutineScope.launch {
+                                            context.config.writeConfig()
+                                        }
+                                    }
+                                ) {
+                                    Text("Stop Route")
+                                }
+                            }
+                        }
+                    }
+                }
+
                 item {
                     Row(
                         modifier = Modifier
@@ -320,6 +391,9 @@ class BetterLocationRoot : Routes.Route() {
                         }
                         Button(onClick = { showTeleportDialog = true }) {
                             Text(translation["teleport_to_friend_button"])
+                        }
+                        Button(onClick = { showRouteDialog = true }) {
+                            Text("Mock Route")
                         }
                     }
                 }
@@ -342,7 +416,7 @@ class BetterLocationRoot : Routes.Route() {
                                 addSavedCoordinateDialog = true
                             }
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = translation["add_icon_description"])
+                            Icon(Icons.Default.Add, contentDescription = "Add")
                         }
                     }
                 }
@@ -463,13 +537,13 @@ class BetterLocationRoot : Routes.Route() {
                             FilledIconButton(onClick = {
                                 showEditDialog = true
                             }) {
-                                Icon(Icons.Default.Edit, contentDescription = translation["edit_icon_description"])
+                                Icon(Icons.Default.Edit, contentDescription = "Delete")
                             }
                             Spacer(modifier = Modifier.width(4.dp))
                             FilledIconButton(onClick = {
                                 showDeleteDialog = true
                             }) {
-                                Icon(Icons.Default.DeleteOutline, contentDescription = translation["delete_icon_description"])
+                                Icon(Icons.Default.DeleteOutline, contentDescription = "Delete")
                             }
                         }
                     }
