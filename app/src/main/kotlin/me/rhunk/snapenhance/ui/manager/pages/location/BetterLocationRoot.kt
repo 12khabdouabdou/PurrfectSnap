@@ -251,8 +251,10 @@ class BetterLocationRoot : Routes.Route() {
             Text(
                 translation.format(
                     "spoofed_coordinates_title",
-                    "latitude" to ((spoofedCoordinates?.first as? Double)?.toFloat() ?: "0.0").toString(),
-                    "longitude" to ((spoofedCoordinates?.second as? Double)?.toFloat() ?: "0.0").toString()
+                    mapOf(
+                        "latitude" to ((spoofedCoordinates?.first as? Double)?.toFloat() ?: "0.0").toString(),
+                        "longitude" to ((spoofedCoordinates?.second as? Double)?.toFloat() ?: "0.0").toString()
+                    )
                 ),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
