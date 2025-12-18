@@ -331,7 +331,7 @@ class BetterLocation : Feature("Better Location") {
                 ByteBuffer.allocateDirect(it.size).put(it).rewind()
             })
         }
-    }
+
 
     suspend fun startRoute(startLat: Double, startLng: Double, endLat: Double, endLng: Double, durationMs: Long, useRealRoads: Boolean) {
         val route = routeEngine.generateRoute(startLat, startLng, endLat, endLng, durationMs, useRealRoads = useRealRoads)
