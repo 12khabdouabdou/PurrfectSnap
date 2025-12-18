@@ -209,24 +209,6 @@ class BetterLocation : Feature("Better Location") {
     override fun init() {
         if (context.config.global.betterLocation.globalState != true) return
 
-        // TODO: Implement route listener when RouteEngine API is ready
-        // context.config.global.betterLocation.routeActive.observe { isActive ->
-        //     if (isActive) {
-        //         val startLat = context.config.global.betterLocation.routeStartLat.get().toDouble()
-        //         val startLng = context.config.global.betterLocation.routeStartLng.get().toDouble()
-        //         val endLat = context.config.global.betterLocation.routeEndLat.get().toDouble()
-        //         val endLng = context.config.global.betterLocation.routeEndLng.get().toDouble()
-        //         val duration = context.config.global.betterLocation.routeDuration.get().toLong()
-        //         val useRealRoads = context.config.global.betterLocation.routeUseRealRoads.get()
-        //         
-        //         context.coroutineScope.launch {
-        //             startRoute(startLat, startLng, endLat, endLng, duration, useRealRoads)
-        //         }
-        //     } else {
-        //         stopRoute()
-        //     }
-        // }
-
         val canSpoofLocation = { context.config.global.betterLocation.spoofLocation.get() }
 
         LocationManager::class.java.apply {
