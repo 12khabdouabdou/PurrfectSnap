@@ -7,7 +7,7 @@ plugins {
 }
 
 // Remove these lines:
-// var versionName = "2.1.0"
+// var versionName = "1.0.0"
 // var versionCode = 210
 
 import org.gradle.api.provider.Property
@@ -28,14 +28,14 @@ abstract class GetVersionTask : DefaultTask() {
 }
 
 tasks.register<GetVersionTask>("getVersion") {
-    // Value comes from gradle.properties; falls back to 2.1.0 if not set.
-    versionName.set(providers.gradleProperty("APP_VERSION_NAME").orElse("2.1.0"))
+    // Value comes from gradle.properties; falls back to 1.0.0 if not set.
+    versionName.set(providers.gradleProperty("APP_VERSION_NAME").orElse("1.0.0"))
 }
 
 // You can still set these for legacy use by submodules or scripts:
-rootProject.ext.set("appVersionName", providers.gradleProperty("APP_VERSION_NAME").orElse("2.1.0").get())
+rootProject.ext.set("appVersionName", providers.gradleProperty("APP_VERSION_NAME").orElse("1.0.0").get())
 rootProject.ext.set("appVersionCode", 210)
-rootProject.ext.set("applicationId", "me.rhunk.snapenhance")
+rootProject.ext.set("applicationId", "me.eternal.purrfectsnap")
 rootProject.ext.set(
     "buildHash",
     properties["debug_build_hash"]

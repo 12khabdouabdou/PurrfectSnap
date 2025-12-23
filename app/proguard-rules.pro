@@ -1,3 +1,4 @@
+
 -dontwarn de.robv.android.xposed.**
 -dontwarn org.mozilla.javascript.**
 
@@ -12,7 +13,7 @@
 -keep class androidx.compose.material3.R$* { *; }
 -keep class androidx.compose.ui.R$* { *; }
 -keep class androidx.navigation.** { *; }
--keep class me.rhunk.snapenhance.** { *; }
+-keep class me.eternal.purrfectsnap.** { *; }
 -keep class androidx.core.content.res.ResourcesCompat { *; }
 
 -keepclassmembers class * implements android.os.Parcelable {
@@ -21,4 +22,5 @@
 # Prevent WorkManager from stripping generated Room database constructor
 -keep class androidx.work.impl.WorkDatabase_Impl { *; }
 
-
+-keep class android.support.annotation.** { *; }
+-dontwarn android.support.annotation.**
