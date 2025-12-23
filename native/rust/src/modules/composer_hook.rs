@@ -1,7 +1,7 @@
 #![allow(dead_code, unused_imports)]
 
 use super::util::composer_utils::{ComposerModule, ModuleTag};
-use std::{collections::HashMap, ffi::{c_void, CStr}, sync::Mutex};
+use std::{collections::HashMap, ffi::{c_void, CStr}, sync::{atomic::{AtomicPtr, Ordering}, Mutex}};
 use jni::{objects::JString, sys::jobject, JNIEnv};
 use once_cell::sync::Lazy;
 use crate::{common, config, def_hook, dobby_hook, dobby_hook_sym, sig, util::get_jni_string};
@@ -154,12 +154,12 @@ def_hook!(
 );
     
 #[cfg(target_arch = "aarch64")]
-static mut GLOBAL_INSTANCE: Option<*mut c_void> = None;
+static GLOBAL_INSTANCE: AtomicPtr<c_void> = AtomicPtr::new(std::ptr::null_mut());
 #[cfg(target_arch = "aarch64")]
-static mut GLOBAL_CTX: Option<*mut c_void> = None;
+static GLOBAL_CTX: AtomicPtr<c_void> = AtomicPtr::new(std::ptr::null_mut());
 
 #[cfg(target_arch = "aarch64")]
-static mut JS_EVAL_ORIGINAL2: Option<unsafe extern "C" fn(*mut c_void, *mut c_void, *mut c_void, *mut u8, usize, *const u8, u32) -> JsValue> = None;
+static JS_EVAL_ORIGINAL2: Lazy<Mutex<Option<unsafe extern "C" fn(*mut c_void, *mut c_void, *mut c_void, *mut u8, usize, *const u8, u32) -> JsValue>>> = Lazy::new(|| Mutex::new(None));
 
 def_hook!(
     js_eval,
@@ -167,8 +167,8 @@ def_hook!(
     |arg0: *mut c_void, arg1: *mut c_void, arg2: *mut c_void, arg3: *const u8, arg4: *const u8, arg5: *const u8, arg6: *mut c_void, arg7: u32| {
         #[cfg(target_arch = "aarch64")]
         {
-            GLOBAL_INSTANCE = Some(arg0);
-            GLOBAL_CTX = Some(arg1);
+            GLOBAL_INSTANCE.store(arg0, Ordering::Relaxed);
+            GLOBAL_CTX.store(arg1, Ordering::Relaxed);
         }
         js_eval_original.unwrap()(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
     }
@@ -190,7 +190,7 @@ pub unsafe fn composer_eval(env: JNIEnv, _: *mut c_void, script: JString) -> job
             Err(_) => return std::ptr::null_mut(),
         };
 
-        if JS_EVAL_ORIGINAL2.is_none() || GLOBAL_INSTANCE.is_none() || GLOBAL_CTX.is_none() {
+        if JS_EVAL_ORIGINAL2.lock().unwrap().is_none() || GLOBAL_INSTANCE.load(Ordering::Relaxed).is_null() || GLOBAL_CTX.load(Ordering::Relaxed).is_null() {
             if let Ok(s) = env.new_string("Composer hook not initialized") {
                 return s.into_raw();
             }
@@ -199,15 +199,21 @@ pub unsafe fn composer_eval(env: JNIEnv, _: *mut c_void, script: JString) -> job
 
         let script_length = script_str.len();
     
-        let js_value = JS_EVAL_ORIGINAL2.unwrap()(
-            GLOBAL_INSTANCE.unwrap(),
-            GLOBAL_CTX.unwrap(),
-            std::ptr::null_mut(),
-            (script_str + "\0").as_ptr() as *mut u8, 
-            script_length, 
-            "<eval>\0".as_ptr(), 
-            0
-        );
+        let js_value = {
+            let js_eval_fn = JS_EVAL_ORIGINAL2.lock().unwrap();
+            let global_instance = GLOBAL_INSTANCE.load(Ordering::Relaxed);
+            let global_ctx = GLOBAL_CTX.load(Ordering::Relaxed);
+            
+            js_eval_fn.unwrap()(
+                global_instance,
+                global_ctx,
+                std::ptr::null_mut(),
+                (script_str + "\0").as_ptr() as *mut u8, 
+                script_length, 
+                "<eval>\0".as_ptr(), 
+                0
+            )
+        };
     
         let result: String =  if js_value.tag == JS_TAG_STRING {
             let string = js_value.u.ptr as *mut JsString;
@@ -270,7 +276,7 @@ pub fn init() {
             dobby_hook!(signature as *mut c_void, js_eval);
             
             unsafe { 
-                JS_EVAL_ORIGINAL2 = Some(std::mem::transmute(js_eval_original.unwrap()));
+                *JS_EVAL_ORIGINAL2.lock().unwrap() = Some(std::mem::transmute(js_eval_original.unwrap()));
             }
     
             debug!("js_eval {:#x}", signature);
@@ -279,4 +285,3 @@ pub fn init() {
         }
     }
 }
-

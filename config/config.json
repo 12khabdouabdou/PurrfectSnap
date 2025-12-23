@@ -1,0 +1,23 @@
+{
+  "allowed_eps_active": [
+    "/messagingcoreservice.MessagingCoreService/",
+    "/GetSnapchatterPublicInfo",
+    "/UserRecentlyActive",
+    "/socialsms.SocialSms/UpdateLink",
+    "/com.snapchat.atlas.gw.AtlasGw/SyncFriendData",
+    "/com.snapchat.atlas.gw.AtlasGw/GetFriendsUserScore",
+    "/com.snapchat.atlas.gw.AtlasGw/GetUserRecentlyActive",
+    "/snapchat.friending.server.FriendAction/",
+    "/snapchat.friending.server.FriendRequests/",
+    "/snapchat.music.music_service.MusicService/",
+    "/com.snapchat.ads.notification.ProfileNotificationCRUDService/",
+    "ClientIntegrityService",
+    "/ClientIntegrityService",
+    "/ClientIntegrityService/",
+    "/GetAttestationHeaders",
+    "/AttestationHeaders",
+    "/getAttestationHeaders",
+    "/GetAttestationPayload",
+    "/AttestationPayload"
+  ]
+}

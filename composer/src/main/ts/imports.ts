@@ -1,13 +1,24 @@
 import { Config } from "./types";
 
 declare var _getImportsFunctionName: string;
-declare var _runtimeName: boolean;
+declare var _runtimeName: string;
 export const runtimeName = _runtimeName;
 
-const remoteImports = require(_runtimeName + '_core/DeviceBridge')[_getImportsFunctionName]();
+let remoteImports: any = null;
+try {
+    remoteImports = require(_runtimeName + "_core/DeviceBridge")?.[_getImportsFunctionName]?.();
+} catch {
+    remoteImports = null;
+}
 
 function callRemoteFunction(method: string, ...args: any[]): any | null {
-    return remoteImports[method](...args);
+    try {
+        const fn = remoteImports?.[method];
+        if (typeof fn !== "function") return null;
+        return fn(...args);
+    } catch {
+        return null;
+    }
 }
 
 

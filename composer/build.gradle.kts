@@ -15,26 +15,22 @@ android {
 }
 
 tasks.register("installTypeScript", org.gradle.api.tasks.Exec::class) {
+    val tscScriptPath = layout.projectDirectory.file("node_modules/.bin/tsc").asFile
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         commandLine("npm.cmd", "install", "typescript")
     } else {
         commandLine("npm", "install", "typescript")
     }
     doLast {
-        if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
-            val tscScript = project.file("node_modules/.bin/tsc")
-            if (tscScript.exists()) {
-                tscScript.setExecutable(true)
-            }
+        if (!Os.isFamily(Os.FAMILY_WINDOWS) && tscScriptPath.exists()) {
+            tscScriptPath.setExecutable(true)
         }
     }
 }
 
 tasks.register("compileTsc", org.gradle.api.tasks.Exec::class) {
     dependsOn("installTypeScript")
-    val existingNodeOptions = System.getenv("NODE_OPTIONS")?.takeIf { it.isNotBlank() }
-    val nodeOptions = listOfNotNull(existingNodeOptions, "--max-old-space-size=4096").joinToString(" ")
-    environment("NODE_OPTIONS", nodeOptions)
+    environment("NODE_OPTIONS", "--max-old-space-size=4096")
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         commandLine("npx.cmd", "--yes", "tsc", "--project", "tsconfig.json")
     } else {
@@ -44,9 +40,7 @@ tasks.register("compileTsc", org.gradle.api.tasks.Exec::class) {
 
 tasks.register("compileRollup", org.gradle.api.tasks.Exec::class) {
     dependsOn("compileTsc")
-    val existingNodeOptions = System.getenv("NODE_OPTIONS")?.takeIf { it.isNotBlank() }
-    val nodeOptions = listOfNotNull(existingNodeOptions, "--max-old-space-size=4096").joinToString(" ")
-    environment("NODE_OPTIONS", nodeOptions)
+    environment("NODE_OPTIONS", "--max-old-space-size=4096")
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
         commandLine("npx.cmd", "--yes", "rollup", "--config", "rollup.config.js", "--bundleConfigAsCjs")
     } else {
