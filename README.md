@@ -1,79 +1,410 @@
-<br>
 <div align="center">
-  <img src="https://github.com/particle-box/PurrfectSnap/blob/dev/logo.png" alt="PurrfectSnap Logo" width="150"/>
-  <h1>PurrfectSnap 🐾✨</h1>
-  <h3>A fork of Snapenhance made to <em>meow</em> your Snapchat experience. 😉</h3>
 
-  <p>
-    <a href="https://github.com/particle-box/PurrfectSnap/releases/latest"><img src="https://img.shields.io/github/v/release/particle-box/PurrfectSnap?style=for-the-badge&color=cba6f7&labelColor=302d41&label=Release" alt="Latest Release"></a>
-    <a href="https://github.com/particle-box/PurrfectSnap/releases"><img src="https://img.shields.io/github/downloads/particle-box/PurrfectSnap/total?style=for-the-badge&color=f5bde6&labelColor=302d41&label=Downloads" alt="Downloads"></a>
-    <a href="https://github.com/particle-box/PurrfectSnap/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPL_3.0-f5a97f?style=for-the-badge&labelColor=302d41" alt="License"></a>
-  </p>
+<img src="https://github.com/particle-box/PurrfectSnap/blob/dev/logo.png" alt="PurrfectSnap" width="180"/>
+
+# PurrfectSnap
+
+### An Xposed module meant to redefine your Snapchat experience! Works on both non rooted and rooted devices!
+
+<br>
+
+[![Release](https://img.shields.io/github/v/release/particle-box/PurrfectSnap?include_prereleases&style=for-the-badge&color=cba6f7&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/particle-box/PurrfectSnap/total?style=for-the-badge&color=f5bde6&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/releases)
+[![License](https://img.shields.io/badge/License-GPL_3.0-f5a97f?style=for-the-badge&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/blob/main/LICENSE)
+
+[Installation](#installation) • [Features](#features) • [Changelog](#whats-new) • [Community](#community)
+
 </div>
 
+<br>
+
 ---
 
-## 🐈 What is PurrfectSnap?
+## Overview
 
-**PurrfectSnap** enhances your Snapchat experience by building upon the incredible foundation of the original Snapenhance project. Our goal is to actively develop and integrate powerful, modern features that give you unparalleled control and a truly unique aesthetic.
+PurrfectSnap is built on the foundation of SnapEnhance, pushing boundaries with innovative features and a refined user experience. This isn't just another fork, it's a complete reimagining of what's possible.
 
-<br>
-
-## 🙏 Acknowledgements
-
-This project would not be possible without the monumental effort and dedication of the **original Snapenhance team**. We are immensely grateful for their work. PurrfectSnap is our way of contributing to their vision by exploring new features and ideas that we believe the community will love.
+We're committed to active development, bringing you powerful tools that actually matter. Every feature is designed with real users in mind, not just for the sake of adding to a feature list.
 
 <br>
 
-## 🚀 What's New in the Litterbox?
+## Philosophy
 
-PurrfectSnap isn't just a maintenance fork. It's a complete evolution. Here’s what sets us apart from the upstream project:
+This project exists because we believe in continuous innovation. We're grateful to the original SnapEnhance team for their groundbreaking work, and we're building on that legacy by exploring new possibilities and listening to what the community actually wants.
 
-* ✅ **Revamped Theming Engine**: Theming is back, and it's better than ever! Includes a gorgeous, battery-saving **AMOLED theme** for the Snapenhance menu.
-* ✅ **Dynamic Bottom Bar**: Total control over your navigation. Add or remove tabs to create a layout that works for you, and even set your own default tab.
-* ✅ **Effortless Configuration**: A brand-new interface for importing and exporting your Snapenhance settings.
-* ✅ **Advanced Friend Tracker**: Seamlessly import and export your tracked friends list.
-* ✅ **Built-in Catalogs**: Discover new customizations with integrated catalogs for both **Friend Tracker** and **Scripts**.
-* ✅ **Refined Quick Actions**: We’ve updated the quick actions menu for a smoother, more intuitive workflow.
-* ✅ **Haptic Feedback**: Feel the interface with optional haptic feedback for a more tactile experience.
-* ✅ **Intelligent Auto-Updater**: Get notified about new updates and install them **directly from within the app**. No more hunting for nightly links.
-* ✅ **Fresh Coat of Paint**: Restored icons (like the beloved gear ⚙️) and a polished UI.
-* ✅ **Modern Internals**: All dependencies have been updated to their latest versions for maximum performance and stability.
+No aggressive donation requests. No minimal changes disguised as "major updates." Just genuine development driven by passion for creating something exceptional.
 
 <br>
 
-## 🥊 Claws Out: PurrfectSnap vs. Other Forks
-
-Not all forks are created equal. Some forks offer minimal changes—like basic translation or dependency updates—while aggressively seeking donations. Here’s how PurrfectSnap stacks up.
-
-| Feature & Philosophy                | **PurrfectSnap** 👑                                          | Other "Feature-Rich" Forks |
-| :---------------------------------- | :----------------------------------------------------------: | :------------------------: |
-| **Active Feature Development** | ✅ Constant innovation & new user-facing features            | ❌ Stagnant                  |
-| **UI/UX Innovation** | ✅ Customizable bottom bar, new screens, AMOLED themes       | ❌ Stale, outdated UI        |
-| **User-Centric Tools** | ✅ Built-in catalogs, in-app updater, advanced trackers    | ❌ None                      |
-| **Core Development Focus** | Pushing the boundaries of what's possible                    | Basic dependency bumps     |
-| **Community Respect** | Driven by passion, features are free for everyone            | Aggressive donation appeals for minor updates |
+---
 
 <br>
 
-## 🔮 Future Paws-ibilities (Roadmap)
+## Features
 
-We're just getting started. Here are some of the exciting features planned for future releases:
+<table>
+<tr>
+<td width="50%">
 
-* 💡 **Auto-Reply**: Automatically respond to Snaps and messages with custom rules.
-* 💡 **Auto-Snap Sender**: Schedule and automate sending Snaps to friends.
-* 💡 **Recommended Version Indicator**: Get clear guidance on the best Snapchat version to use with PurrfectSnap for optimal stability.
+### Media Downloader
+Advanced media management with extensive customization options for downloading and organizing content.
+
+**Core Capabilities**
+- Custom save locations and path formatting
+- Automatic downloads from selected sources
+- Profile picture downloads
+- Voice note capture with format control
+- FFmpeg integration for advanced processing
+
+**Smart Features**
+- Duplicate prevention with override option
+- Overlay merging for combined content
+- Custom logging for tracking downloads
+- Context menu integration
+
+</td>
+<td width="50%">
+
+### User Interface
+Complete control over your interface with deep customization options.
+
+**Visual Customization**
+- Custom themes including AMOLED mode
+- Configurable icon styles
+- Message preview customization
+- Bootstrap override for default tabs
+
+**Interface Control**
+- Hide unwanted UI components
+- Enhanced friend map nametags
+- Snap preview options
+- Streak expiration info display
+- Vertical story viewer
+- Message indicators and stealth mode display
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### Messaging
+Privacy-focused messaging features with advanced control over your conversations.
+
+**Privacy Tools**
+- Screenshot bypass
+- Anonymous story viewing
+- Hide typing notifications
+- Hide bitmoji presence
+- Prevent story rewatch indicators
+
+**Enhanced Features**
+- Unlimited snap view time
+- Auto mark as read
+- Conversation pinning (unlimited)
+- Message logger with whitelist/blacklist
+- Better notifications with blacklist support
+- Double tap actions and reactions
+- Message retention policy bypass
+
+</td>
+<td width="50%">
+
+### Global Settings
+System-wide enhancements that improve your overall experience.
+
+**Performance**
+- Better location handling
+- Media upload quality control
+- Custom video playback rates
+- Default volume controls
+
+**Optimization**
+- Ad blocking
+- Metrics disabling
+- Story section control
+- Video length restriction bypass
+- Snap splitting disable
+- Telecom framework control
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### Camera
+Professional-grade camera controls for content creation.
+
+**Recording Options**
+- Custom frame rates (front/back)
+- HEVC recording support
+- Custom resolution override
+- Force camera source encoding
+
+**Creative Control**
+- Immersive preview mode
+- Black photo option
+- Startup default camera selection
+
+</td>
+<td width="50%">
+
+### Rules Engine
+Automation system for complex workflows.
+
+- Stealth mode rules
+- Auto download conditions
+- Auto save parameters
+- Auto open snap rules
+- Unsaveable message settings
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### Experimental
+Cutting-edge features for power users.
+
+**Advanced Tools**
+- Native hooks for deep customization
+- Spoofing capabilities
+- Story logger
+- Call recorder
+- Account switcher
+- App lock
+- End-to-end encryption
+- My Eyes Only passcode bypass
+
+**Developer Features**
+- Better transcript
+- Friend notes
+- COF experiments
+- Custom streaks format
+- Prevent forced logout
+
+</td>
+<td width="50%">
+
+### Scripting
+Extensibility through custom scripts.
+
+- Developer mode
+- Module folder management
+- Auto reload capability
+- Integrated UI
+- Log control options
+- Optimization toggles
+
+</td>
+</tr>
+</table>
 
 <br>
 
-## 🛠️ Installation
+**Additional Features**
 
-**Please** refer to the **[Telegram Channel](https://t.me/purrfectsnap_official)** .
+> **Streaks Reminder** — Configurable interval notifications with remaining time display and group notification support
+
+> **Friend Tracker** — Event recording with background operation and automatic purge management
+
+<br>
+
+---
+
+<br>
+
+## What's New
+
+Here's what makes PurrfectSnap different from upstream SnapEnhance.
+
+<br>
+
+### Aurora Design System
+
+A complete visual language rebuilt from the ground up. Not just a theme, an entire design philosophy.
+
+The interface now flows with purpose. Subtle animations guide your interactions. Every screen has been reconsidered, every transition refined. The result is an experience that feels premium without being ostentatious.
+
+<br>
+
+### PurrAura
+
+The ban problem? Solved.
+
+No more sacrificing features to stay safe. Add friends, block users, attach music; everything works as it should. No workarounds, no compromises, no disadvantages.
+
+<br>
+
+### Auto Patcher
+
+Installation was complicated. Now it isn't.
+
+We've eliminated 90% of the installation friction. No Shizuku. No LSPatch. Just a straightforward process that respects your time.
+
+<br>
+
+### Intelligence Layer
+
+**Auto Reply**  
+Let AI handle routine responses while you focus on what matters. Configure automatic replies for chats, stories, and half-swipes. Essential for creators managing volume. Requires an API key from Google AI Studio, they offer free tier access.
+
+**Scheduled Snaps**  
+Time-shifted communication. Set a snap to send at midnight for a birthday. Queue content for optimal timing. Your schedule, automated.
+
+**Message Translator**  
+Language barriers, eliminated. Incoming messages automatically translate to your preferred language. Set it once, communicate globally.
+
+<br>
+
+### Privacy Enhancements
+
+**Granular Controls**  
+Whitelist and blacklist modes for typing indicators and message logging. Choose exactly who sees what, friend by friend.
+
+**Auto Delete Messages**  
+Set expiration times for your messages. They disappear on your schedule, not Snapchat's.
+
+**Message Logger Viewer**  
+Review exported logs directly in-app. No external tools required.
+
+<br>
+
+### Data Persistence
+
+**Friend Notes Backup**  
+Your notes are valuable. Now they're protected. Export and restore with ease. Never lose context again.
+
+<br>
+
+### Device Management
+
+**ID Spoofing**  
+Device bans happen. Sometimes unjustly. We offer a solution for legitimate cases, approval required with proof of wrongful ban. This feature is restricted to prevent abuse.
+
+**Model Spoofing**  
+Identify as a high-end device. Potential performance improvements, enhanced camera processing, better feature access.
+
+<br>
+
+### Restored Functionality
+
+Features that disappeared? They're back.
+
+Bulk messaging works again. Friend list management is fully operational. These aren't new features, they're restored capabilities that should never have been lost.
+
+<br>
+
+### Discovery
+
+**Friend Tracker Catalog**  
+Browse and install tracking rules without leaving the app. One-tap installation. Always current.
+
+<br>
+
+### Visual Refinements
+
+**AMOLED Theme**  
+True black. Battery-saving. The most requested feature, delivered.
+
+**Haptic Feedback**  
+Subtle tactile responses. Every interaction confirmed through touch.
+
+**Customizable Bottom Bar**  
+Your navigation, your rules. Rearrange tabs, remove what you don't use, set your default view. Complete flexibility.
+
+**Search History**  
+Recently searched features, instantly accessible. No more hunting through menus.
+
+<br>
+
+### Infrastructure
+
+**In-App Updates**  
+New versions install directly from within the app. No GitHub hunting. No manual downloads. Just seamless updates.
+
+**Update Notifications**  
+Stay current automatically. Get notified when new releases are available.
+
+<br>
+
+### Quality
+
+Hundreds of refinements you'll feel but might not see. Smoother animations. Faster response times. Eliminated edge cases. The kind of polish that separates good from exceptional.
+
+<br>
+
+---
+
+<br>
+
+## Installation
+
+The guide is no longer needed! 
+For Non rooted users: Just Download & Install PurrfectSnap from [here](https://github.com/particle-box/PurrfectSnap/releases), and it'll do everything automatically for you!
+For rooted users: Use Snapchat v13.64.0.52 only! Install PurrfectSnap from here: [Link](https://github.com/particle-box/PurrfectSnap/releases)
+
+<br>
+
+---
+
+<br>
+
+## Community
+
+Questions? Ideas? Found a bug? Our community is active and responsive.
+
+**[Telegram Channel](https://t.me/purrfectsnap_official)** — Announcements, discussions, and support
+**For the discussions group link, refer to the description of the channel!**
+
+<br>
+
+---
+
+<br>
+
+## Contributing
+
+We welcome contributions from developers who share our vision. Whether it's code, documentation, or design—quality contributions are always appreciated.
+
+<br>
+
+---
+
+<br>
+
+## Credits
+
+PurrfectSnap is built with exceptional open source tools:
+
+**Core Dependencies**
+- [SnapEnhance](https://github.com/rhunk/SnapEnhance) — The foundation
+- [libxposed](https://github.com/libxposed/api) — Framework integration
+- [Dobby](https://github.com/jmpews/Dobby) — Native hooking
+
+**Media Processing**
+- [ffmpeg-kit-full-gpl](https://github.com/arthenica/ffmpeg-kit) — Media manipulation
+- [coil](https://github.com/coil-kt/coil) — Image loading
+
+**Scripting Engine**
+- [rhino](https://github.com/mozilla/rhino) — JavaScript runtime
+- [rhino-android](https://github.com/F43nd1r/rhino-android) — Android integration
+
+**Utilities**
+- [osmdroid](https://github.com/osmdroid/osmdroid) — Map functionality
+- [libsu](https://github.com/topjohnwu/libsu) — Root operations
+- [colorpicker-compose](https://github.com/skydoves/colorpicker-compose) — Color selection
 
 <br>
 
 ---
 
 <div align="center">
-  <p>Made with ❤️ and a lot of catnip.</p>
+
+<br>
+
+Built with care, maintained with passion
+
+<br>
+<br>
+
 </div>
