@@ -40,6 +40,37 @@ No aggressive donation requests. No minimal changes disguised as "major updates.
 
 <br>
 
+## 🔄 How It Works
+
+```mermaid
+graph TD
+    A[Install PurrfectSnap] --> B{Device Type?}
+    B -->|Non-Rooted| C[Auto Patcher Runs]
+    B -->|Rooted| D[Xposed Framework]
+    C --> E[Snapchat Patched Automatically]
+    D --> E
+    E --> F[Launch Snapchat]
+    F --> G[Access PurrfectSnap Settings]
+    G --> H[Configure Features]
+    H --> I{Enable Features}
+    I --> J[Media Downloader]
+    I --> K[Privacy Controls]
+    I --> L[UI Customization]
+    I --> M[Camera Enhancements]
+    I --> N[AI Intelligence Layer]
+    J --> O[Enhanced Snapchat Experience]
+    K --> O
+    L --> O
+    M --> O
+    N --> O
+```
+
+<br>
+
+---
+
+<br>
+
 ## Features
 
 <table>
@@ -284,6 +315,9 @@ Device bans happen. Sometimes unjustly. We offer a solution for legitimate cases
 **Model Spoofing**  
 Identify as a high-end device. Potential performance improvements, enhanced camera processing, better feature access.
 
+**Network Spoofing**  
+Spoof your network status to Wi-Fi always to prevent several restrictions on mobile data.
+
 <br>
 
 ### Restored Functionality
@@ -296,8 +330,24 @@ Bulk messaging works again. Friend list management is fully operational. These a
 
 ### Discovery
 
+**Scripts Catalog**  
+Browse and install scripts without leaving the app. No more hunting for import links. One-tap installation. Always current.
+
 **Friend Tracker Catalog**  
 Browse and install tracking rules without leaving the app. One-tap installation. Always current.
+
+**Friend Tracker Import/Export**  
+Backup and restore your Friend Tracker configurations with ease.
+
+<br>
+
+### Advanced Tracking
+
+**I Can See You Rule**  
+Track the exact time and duration when a friend enters your chat. Precision visibility tracking for Friend Tracker.
+
+**Auto Open Snaps Enhancement**  
+More granular control with queue size configuration and customizable delays.
 
 <br>
 
@@ -324,6 +374,9 @@ New versions install directly from within the app. No GitHub hunting. No manual 
 
 **Update Notifications**  
 Stay current automatically. Get notified when new releases are available.
+
+**Config Export/Import Summary**  
+See exactly which features a config will enable before importing or exporting. Know what you're getting.
 
 <br>
 
