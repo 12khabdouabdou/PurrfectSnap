@@ -10,7 +10,7 @@
 
 [![Release](https://img.shields.io/github/v/release/particle-box/PurrfectSnap?include_prereleases&style=for-the-badge&color=cba6f7&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/particle-box/PurrfectSnap/total?style=for-the-badge&color=f5bde6&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/releases)
-[![License](https://img.shields.io/badge/License-GPL_3.0-f5a97f?style=for-the-badge&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/License-GPL_3.0-f5a97f?style=for-the-badge&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/blob/dev/LICENSE)
 
 [Installation](#installation) • [Features](#features) • [Changelog](#whats-new) • [Community](#community)
 
