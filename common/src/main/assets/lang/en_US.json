@@ -1,4 +1,4 @@
-{
+﻿{
     "setup": {
         "dialogs": {
             "select_language": "Select Language",
@@ -28,6 +28,7 @@
             "features": "Features",
             "manage_rule_feature": "Manage Rule Feature",
             "home": "Home",
+            "home_about": "About",
             "home_settings": "Settings",
             "home_logs": "Logs",
             "logger_history": "Logger History",
@@ -84,11 +85,14 @@
                 "view_logger_history_button": "View Logger History",
                 "ui_settings_title": "UI Settings",
                 "haptic_feedback_label": "Haptic Feedback",
+                "use_system_toasts_label": "Use System Toasts",
                 "updates_title": "Updates",
                 "auto_update_check": "Auto Update Check",
                 "update_check_frequency_daily": "Daily",
                 "update_check_frequency_weekly": "Weekly",
                 "update_check_frequency_monthly": "Monthly",
+                "update_channel_stable": "Stable",
+                "update_channel_prerelease": "Pre-release",
                 "update_notification_channel_name": "Updates",
                 "update_notification_channel_description": "Get notified when new releases are available",
                 "update_notification_title": "New update available",
@@ -128,22 +132,22 @@
                 "remove_selected_tasks_confirm": "Remove {count} tasks?",
                 "remove_all_tasks_confirm": "Remove all tasks?"
             },
-            "features": {
-                "disabled": "Disabled",
-                "export_option": "Export",
-                "import_option": "Import",
-                "reset_option": "Reset",
-                "config_export_success_toast": "Config exported successfully",
-                "config_import_success_toast": "Config imported successfully",
-                "config_import_failure_toast": "Failed to import config {error}",
-                "config_export_failure_toast": "Failed to export config {error}",
-                "saved_config_snackbar": "Config saved",
-                "older_required": "This feature requires Snapchat v{version} or older to work correctly",
-                "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
-                "search_button": "Search",
-                "clear_history": "Clear search history",
-                "subtitle": "Search and manage features"
-            },
+        "features": {
+            "disabled": "Disabled",
+            "export_option": "Export",
+            "import_option": "Import",
+            "reset_option": "Reset",
+            "config_export_success_toast": "Config exported successfully",
+            "config_import_success_toast": "Config imported successfully",
+            "config_import_failure_toast": "Failed to import config {error}",
+            "config_export_failure_toast": "Failed to export config {error}",
+            "saved_config_snackbar": "Config saved",
+            "older_required": "This feature requires Snapchat v{version} or older to work correctly",
+            "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
+            "search_button": "Search",
+            "clear_history": "Clear search history",
+            "subtitle": "Search and manage features"
+        },
             "manage_rule_feature": {
                 "disable_state_option": "Disabled",
                 "disable_state_subtext": "No friends/groups will be affected",
@@ -169,6 +173,12 @@
             "manage_scope": {
                 "logged_stories_button": "Show Logged Stories",
                 "e2ee_title": "End-to-End Encryption",
+                "e2ee_subtitle": "Manage your shared key for this friend.",
+                "export_base64_button": "Export Base64",
+                "import_base64_button": "Import Base64",
+                "invalid_key_size_32_bytes": "Invalid key size. Provide a 32-byte key.",
+                "successfully_imported_key": "Key imported successfully.",
+                "failed_to_import_key": "Failed to import key: {message}",
                 "rules_title": "Rules",
                 "participants_text": "{count} participants",
                 "not_found": "Not found",
@@ -255,7 +265,8 @@
                 "fetch_error": "Failed to fetch data",
                 "category_groups": "Groups",
                 "category_friends": "Friends",
-                "participants_text": "{count} participants"
+                "participants_text": "{count} participants",
+                "unselect_all_button": "Unselect All"
             },
             "scripting": {
                 "repo_hint": "Paste a repository URL"
@@ -357,6 +368,8 @@
             "search_by_label": "Search by",
             "newest_first_label": "Newest first",
             "since_label": "Since",
+            "until_label": "Until",
+            "unit_label": "Unit",
             "pick_a_date_button": "Pick a date",
             "export_button": "Export",
             "delete_button": "Delete",
@@ -391,11 +404,14 @@
             "add_button": "Add",
             "cannot_save_rule_dialog_title": "Cannot Save Rule",
             "cannot_save_rule_dialog_text": "Fill in the missing fields to save this rule.",
+            "duplicate_rule_name_dialog_title": "Duplicate rule name",
+            "duplicate_rule_name_dialog_text": "A rule with this name already exists. Pick a new name.",
             "discard_changes_dialog_title": "Discard changes?",
             "discard_changes_dialog_text": "You have unsaved changes. Discard them?",
             "rule_subtitle": "Configure triggers and scopes for this rule.",
             "discard_button": "Discard",
             "enabled_label": "Enabled",
+            "disabled_label": "Disabled",
             "delete_rule_dialog_title": "Delete Rule",
             "delete_rule_dialog_text": "Are you sure you want to delete this rule?",
             "no_repos_added": "No repositories added",
@@ -430,7 +446,8 @@
         },
         "friend_tracker_catalog": {
             "title": "Friend Tracker Catalog",
-            "no_repos_added": "No repositories added"
+            "no_repos_added": "No repositories added",
+            "manage_repos_description": "Manage repositories"
         },
         "friend_tracker_repos": {
             "no_repos_added": "No repositories added",
@@ -666,9 +683,48 @@
                 "blacklist": "Blacklist mode",
                 "whitelist": "Whitelist mode",
                 "null": "Disabled"
+            },
+            "update_check_frequency": {
+                "daily": "Daily",
+                "weekly": "Weekly",
+                "monthly": "Monthly"
             }
         },
         "properties": {
+            "global": {
+                "name": "Global",
+                "description": "General module preferences and defaults",
+                "properties": {
+                    "ui_settings": {
+                        "name": "UI Settings",
+                        "description": "Tune feedback and toast behavior",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptic Feedback",
+                                "description": "Vibrate on supported interactions"
+                            },
+                            "use_system_toasts": {
+                                "name": "Use System Toasts",
+                                "description": "Show Android toasts instead of in-app overlays"
+                            }
+                        }
+                    },
+                    "update_settings": {
+                        "name": "Update Settings",
+                        "description": "Control automatic update checks",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Auto Update Check",
+                                "description": "Check for new builds automatically"
+                            },
+                            "update_check_frequency": {
+                                "name": "Update Check Frequency",
+                                "description": "How often to check for updates"
+                            }
+                        }
+                    }
+                }
+            },
             "downloader": {
                 "name": "Downloader",
                 "description": "Download Snapchat Media",
@@ -1053,9 +1109,53 @@
                         "name": "Auto Save Messages",
                         "description": "Automatically saves every message in conversations"
                     },
+                    "unsaveable_messages": {
+                        "name": "Unsaveable Messages",
+                        "description": "Prevents selected message types from being saved in chat",
+                        "properties": {
+                            "chat": {
+                                "name": "Chat Messages",
+                                "description": "Make chat messages unsaveable"
+                            },
+                            "snap": {
+                                "name": "Snaps",
+                                "description": "Make snaps unsaveable"
+                            },
+                            "external_media": {
+                                "name": "External Media",
+                                "description": "Make external media unsaveable"
+                            },
+                            "sticker": {
+                                "name": "Stickers",
+                                "description": "Make stickers unsaveable"
+                            },
+                            "share": {
+                                "name": "Shares",
+                                "description": "Make shared content unsaveable"
+                            },
+                            "note": {
+                                "name": "Audio Notes",
+                                "description": "Make audio notes unsaveable"
+                            },
+                            "story_reply": {
+                                "name": "Story Replies",
+                                "description": "Make story replies unsaveable"
+                            }
+                        }
+                    },
                     "gallery_media_send_override": {
                         "name": "Gallery Media Send Override",
-                        "description": "Spoofs the media source when sending from the Gallery"
+                        "description": "Spoofs the media source when sending from the Gallery",
+                        "properties": {
+                            "mode": {
+                                "name": "Override Mode",
+                                "description": "Choose how gallery media is sent"
+                            },
+                            "include_camera_snaps": {
+                                "name": "Include Camera Snaps",
+                                "description": "Also show the override dialog for camera snaps"
+                            }
+                        }
                     },
                     "strip_media_metadata": {
                         "name": "Strip Media Metadata",
@@ -1678,13 +1778,19 @@
                                 "name": "Force Wi-Fi Transport Flag",
                                 "description": "Force network transport to report Wi-Fi instead of mobile data"
                             },
-                            "spoof_android_id": {
-                                "name": "Spoof Android ID",
-                                "description": "Override the Android ID sent to Snapchat with a custom value"
-                            },
-                            "custom_android_id": {
-                                "name": "Custom Android ID",
-                                "description": "Value to use when spoofing the Android ID"
+                            "spoof_device_id": {
+                                "name": "Spoof Device ID",
+                                "description": "Override the Android ID sent to Snapchat",
+                                "properties": {
+                                    "spoof_android_id": {
+                                        "name": "Spoof Android ID",
+                                        "description": "Override the Android ID sent to Snapchat with a custom value"
+                                    },
+                                    "custom_android_id": {
+                                        "name": "Custom Android ID",
+                                        "description": "Value to use when spoofing the Android ID"
+                                    }
+                                }
                             },
                             "spoof_device": {
                                 "name": "Spoof Device",
@@ -1900,8 +2006,13 @@
                 "auto_read": "\u2705 Auto Read",
                 "hide_typing_indicator": "\ud83d\ude48 Hide Typing Indicator"
             },
-            "schedule_scheduled_for": "Scheduled for {time}",
-            "schedule_sent_to": "Sent to {recipient}",
+            "schedule_scheduled_for": "Scheduled for {name} in {time}",
+            "schedule_sending_in": "Sending in {time}",
+            "schedule_sent_to": "Sent to {name}",
+            "schedule_sent": "Scheduled snap sent",
+            "schedule_failed_to": "Failed to send to {name}",
+            "schedule_failed": "Scheduled snap failed",
+            "schedule_cancelled_for": "Cancelled for {name}",
             "device_model": {
                 "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
                 "google_pixel_10_pro": "Google Pixel 10 Pro",
@@ -2230,7 +2341,8 @@
             "ai_provider": {
                 "gemini": "Gemini",
                 "deepseek": "DeepSeek",
-                "openai": "OpenAI"
+                "openai": "OpenAI",
+                "openrouter": "OpenRouter"
             },
             "ai_personality_traits": {
                 "friendly, casual, helpful, empathetic": "friendly, casual, helpful, empathetic"
@@ -2421,6 +2533,12 @@
         "close": "Close"
     },
     "gallery_media_send_override": {
+        "always_ask": "Always Ask",
+        "ORIGINAL": "Original Media",
+        "NOTE": "Audio Note",
+        "SNAP": "Snap",
+        "SAVEABLE_SNAP": "Saveable Snap",
+        "null": "Snapchat Default",
         "multiple_media_toast": "You can only send one media at a time"
     },
     "mark_as_seen": {
@@ -2432,7 +2550,7 @@
     },
     "conversation_preview": {
         "streak_expiration": "expires in {day} days {hour} hours {minute} minutes",
-        "total_messages": "Total sent/received messages: {count}",
+        "total_messages": "Total sent/received messages: \n{count}",
         "title": "Preview",
         "unknown_user": "Unknown User",
         "no_messages": "No messages found!"
@@ -2452,6 +2570,10 @@
             "subscribed": "Subscribed",
             "not_subscribed": "Not Subscribed"
         }
+    },
+    "snapchat_plus_state": {
+        "subscribed": "Subscribed",
+        "not_subscribed": "Not Subscribed"
     },
     "friendship_link_type": {
         "mutual": "Mutual",
@@ -2586,6 +2708,7 @@
         "snap_screen_record": "Snap Screen Record",
         "i_can_see_you": "I Can See You"
     },
+    "cleared_from_feed": "Cleared from feed",
     "tracker_actions": {
         "log": "Log",
         "in_app_notification": "In-App Notification",
@@ -2822,7 +2945,9 @@
         "unlimited_duration": "Unlimited",
         "schedule": "Schedule",
         "select_time": "Select time",
-        "select": "Select"
+        "select": "Select",
+        "select_date_first": "Please select a date",
+        "invalid_time": "Please select a future time"
     },
     "auto_reply_messages": {
         "dialog": {
@@ -3028,6 +3153,8 @@
     "update_check_frequency_daily": "Daily",
     "update_check_frequency_weekly": "Weekly",
     "update_check_frequency_monthly": "Monthly",
+    "update_channel_stable": "Stable",
+    "update_channel_prerelease": "Pre-release",
     "friend_notes_title": "Friend Notes",
     "friend_notes_description": "Manage and backup your friend notes",
     "app_theme_title": "App Theme",
@@ -3084,8 +3211,14 @@
         "exporting_memories": "Exporting memories... ({failed} failed)"
     },
     "clear_friend_feed": "Clear Friend Feed",
-    "schedule_scheduled_for": "Scheduled for {time}",
-    "schedule_sent_to": "Sent to {recipient}",
+    "select_date": "Select Date",
+    "schedule_scheduled_for": "Scheduled for {name} in {time}",
+    "schedule_sending_in": "Sending in {time}",
+    "schedule_sent_to": "Sent to {name}",
+    "schedule_sent": "Scheduled snap sent",
+    "schedule_failed_to": "Failed to send to {name}",
+    "schedule_failed": "Scheduled snap failed",
+    "schedule_cancelled_for": "Cancelled for {name}",
     "by_author": "by {author}",
     "version": "Version {version}",
     "delete_button": "Delete",
@@ -3165,6 +3298,11 @@
     "ai_provider": {
         "gemini": "Gemini",
         "deepseek": "DeepSeek",
-        "openai": "OpenAI"
+        "openai": "OpenAI",
+        "openrouter": "OpenRouter"
     }
 }
+
+
+
+
