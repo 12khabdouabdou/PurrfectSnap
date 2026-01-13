@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -68,8 +70,28 @@ class HomeSettings : Routes.Route() {
 
     private fun scheduleUpdateCheck() {
         val workManager = WorkManager.getInstance(context.androidContext)
-        if (context.config.root.global.updateSettings.autoUpdateCheck.get()) {
-            val frequency = context.config.root.global.updateSettings.updateCheckFrequency.get()
+        val updateSettings = context.config.root.global.updateSettings
+        var configDirty = false
+        val autoUpdateCheck = updateSettings.autoUpdateCheck.getNullable() ?: run {
+            configDirty = true
+            updateSettings.autoUpdateCheck.set(true)
+            true
+        }
+        val frequency = updateSettings.updateCheckFrequency.getNullable() ?: run {
+            configDirty = true
+            updateSettings.updateCheckFrequency.set("daily")
+            "daily"
+        }
+        val updateChannel = updateSettings.updateChannel.getNullable() ?: run {
+            configDirty = true
+            updateSettings.updateChannel.set("stable")
+            "stable"
+        }
+        if (configDirty) {
+            context.config.writeConfig()
+        }
+
+        if (autoUpdateCheck) {
             val repeatInterval = when (frequency) {
                 "daily" -> 1L
                 "weekly" -> 7L
@@ -86,6 +108,7 @@ class HomeSettings : Routes.Route() {
                 .putString("channel_description", translation["update_notification_channel_description"])
                 .putString("notification_title", translation["update_notification_title"])
                 .putString("notification_text", translation["update_notification_text"])
+                .putString("update_channel", updateChannel)
                 .build()
 
             val workRequest = PeriodicWorkRequestBuilder<UpdateCheckWorker>(repeatInterval, TimeUnit.DAYS)
@@ -255,7 +278,7 @@ class HomeSettings : Routes.Route() {
         ) { content(this) }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
@@ -288,6 +311,29 @@ class HomeSettings : Routes.Route() {
                 ) {
                     content()
                 }
+            }
+        }
+
+        @Composable
+        fun AestheticDropdownField(
+            value: String,
+            expanded: Boolean,
+            modifier: Modifier = Modifier,
+            onClick: () -> Unit
+        ) {
+            val shape = RoundedCornerShape(16.dp)
+            Row(
+                modifier = modifier
+                    .clip(shape)
+                    .background(Color.White.copy(alpha = 0.06f))
+                    .border(1.dp, Color.White.copy(alpha = 0.16f), shape)
+                    .clickable { onClick() }
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = value, color = Color.White)
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             }
         }
 
@@ -374,29 +420,55 @@ class HomeSettings : Routes.Route() {
                     GlassCard {
                         RowTitle(title = translation["ui_settings_title"])
                         ShiftedRow {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 55.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(text = translation["haptic_feedback_label"])
-                                var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
-                                val hapticFeedback = LocalHapticFeedback.current
-                                Switch(
-                                    checked = hapticFeedbackEnabled,
-                                    onCheckedChange = {
-                                        if (it) {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        }
-                                        hapticFeedbackEnabled = it
-                                        context.config.root.global.uiSettings.hapticFeedback.set(it)
-                                        context.config.writeConfig()
-                                    },
-                                    modifier = Modifier.padding(end = 26.dp),
-                                    colors = purrfectSwitchColors()
-                                )
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 55.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = translation["haptic_feedback_label"])
+                                    var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+                                    val hapticFeedback = LocalHapticFeedback.current
+                                    Switch(
+                                        checked = hapticFeedbackEnabled,
+                                        onCheckedChange = {
+                                            if (it) {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                            hapticFeedbackEnabled = it
+                                            context.config.root.global.uiSettings.hapticFeedback.set(it)
+                                            context.config.writeConfig()
+                                        },
+                                        modifier = Modifier.padding(end = 26.dp),
+                                        colors = purrfectSwitchColors()
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 55.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = translation["use_system_toasts_label"])
+                                    var useSystemToasts by remember { mutableStateOf(context.config.root.global.uiSettings.useSystemToasts.getNullable() ?: false) }
+                                    val hapticFeedback = LocalHapticFeedback.current
+                                    Switch(
+                                        checked = useSystemToasts,
+                                        onCheckedChange = {
+                                            if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                            useSystemToasts = it
+                                            context.config.root.global.uiSettings.useSystemToasts.set(it)
+                                            context.config.writeConfig()
+                                        },
+                                        modifier = Modifier.padding(end = 26.dp),
+                                        colors = purrfectSwitchColors()
+                                    )
+                                }
                             }
                         }
                     }
@@ -405,77 +477,115 @@ class HomeSettings : Routes.Route() {
                         RowTitle(title = translation["updates_title"])
                         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
-                            var selectedFrequency by remember { mutableStateOf(context.config.root.global.updateSettings.updateCheckFrequency.getNullable() ?: "weekly") }
-                            var frequencyMenuExpanded by remember { mutableStateOf(false) }
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 55.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(text = translation["auto_update_check"])
-                                val hapticFeedback = LocalHapticFeedback.current
-                                Switch(
-                                    checked = autoUpdateCheck,
-                                    onCheckedChange = {
-                                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                            var selectedChannel by remember { mutableStateOf(context.config.root.global.updateSettings.updateChannel.getNullable() ?: "stable") }
+                            var channelMenuExpanded by remember { mutableStateOf(false) }
+                            ShiftedRow {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 55.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(text = translation["auto_update_check"])
+                                    val hapticFeedback = LocalHapticFeedback.current
+                                    Switch(
+                                        checked = autoUpdateCheck,
+                                        onCheckedChange = {
+                                            if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         }
                                         autoUpdateCheck = it
-                                        if (it && context.config.root.global.updateSettings.updateCheckFrequency.getNullable() == null) {
-                                            selectedFrequency = "weekly"
-                                            context.config.root.global.updateSettings.updateCheckFrequency.set("weekly")
-                                        }
                                         context.config.root.global.updateSettings.autoUpdateCheck.set(it)
                                         context.config.writeConfig()
                                         scheduleUpdateCheck()
                                     },
                                     modifier = Modifier.padding(end = 26.dp),
-                                    colors = purrfectSwitchColors()
-                                )
+                                        colors = purrfectSwitchColors()
+                                    )
+                                }
                             }
                             AnimatedVisibility(visible = autoUpdateCheck) {
+                                val spacingModifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 26.dp)
+
                                 ExposedDropdownMenuBox(
-                                    expanded = frequencyMenuExpanded,
-                                    onExpandedChange = { frequencyMenuExpanded = it },
+                                    expanded = channelMenuExpanded,
+                                    onExpandedChange = { channelMenuExpanded = it },
+                                    modifier = spacingModifier
+                                ) {
+                                AestheticDropdownField(
+                                    value = translation.getOrNull("update_channel_${selectedChannel}") ?: selectedChannel,
+                                    expanded = channelMenuExpanded,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(start = 10.dp, end = 26.dp)
+                                        .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                                    onClick = { channelMenuExpanded = true }
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = channelMenuExpanded,
+                                    onDismissRequest = { channelMenuExpanded = false }
                                 ) {
-                                    TextField(
-                                        value = translation.getOrNull("update_check_frequency_${selectedFrequency}") ?: selectedFrequency,
-                                        onValueChange = {},
-                                        readOnly = true,
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = frequencyMenuExpanded) },
-                                        colors = ExposedDropdownMenuDefaults.textFieldColors(
-                                            focusedContainerColor = Color.White.copy(alpha = 0.08f),
-                                            unfocusedContainerColor = Color.White.copy(alpha = 0.06f),
-                                            focusedIndicatorColor = Color.Transparent,
-                                            unfocusedIndicatorColor = Color.Transparent
+                                    listOf("stable", "prerelease").forEach { channel ->
+                                        DropdownMenuItem(
+                                            text = { Text(text = translation.getOrNull("update_channel_${channel}") ?: channel) },
+                                            onClick = {
+                                                selectedChannel = channel
+                                                channelMenuExpanded = false
+                                                context.config.root.global.updateSettings.updateChannel.set(channel)
+                                                context.config.writeConfig()
+                                                scheduleUpdateCheck()
+                                            }
                                         )
-                                    )
-                                    ExposedDropdownMenu(
-                                        expanded = frequencyMenuExpanded,
-                                        onDismissRequest = { frequencyMenuExpanded = false }
-                                    ) {
-                                        listOf("daily", "weekly", "monthly").forEach { frequency ->
-                                            DropdownMenuItem(
-                                                text = { Text(text = translation.getOrNull("update_check_frequency_${frequency}") ?: frequency) },
-                                                onClick = {
-                                                    selectedFrequency = frequency
-                                                    frequencyMenuExpanded = false
-                                                    context.config.root.global.updateSettings.updateCheckFrequency.set(frequency)
-                                                    context.config.writeConfig()
-                                                    scheduleUpdateCheck()
-                                                }
-                                            )
-                                        }
                                     }
                                 }
                             }
+                            }
+                        }
+                    }
+
+                    GlassCard {
+                        RowTitle(title = "Reset PurrfectSnap")
+                        ShiftedRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 55.dp)
+                                .clickable {
+                                    // Clear setup progress and route back to SetupActivity
+                                    context.sharedPreferences.edit()
+                                        .remove("setup_in_progress")
+                                        .remove("setup_current_route")
+                                        .remove("setup_skip_patch")
+                                        .remove("setup_install_mode")
+                                        .apply()
+
+                                    // Clear config to defaults
+                                    context.config.reset()
+                                    context.config.writeConfig()
+
+                                    // Launch setup activity fresh
+                                    val intent = android.content.Intent(context.androidContext, me.eternal.purrfectsnap.ui.setup.SetupActivity::class.java)
+                                    intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    context.androidContext.startActivity(intent)
+
+                                    // Close current manager activity
+                                    routes.navController.popBackStack()
+                                },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Reset and restart setup",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                lineHeight = 20.sp
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                                contentDescription = "Reset",
+                                modifier = Modifier.padding(end = 14.dp)
+                            )
                         }
                     }
 
@@ -488,6 +598,7 @@ class HomeSettings : Routes.Route() {
                             var storedStoriesCount by rememberAsyncMutableState(defaultValue = 0) {
                                 context.messageLogger.getStoredStoriesCount()
                             }
+                            var showImportDialog by remember { mutableStateOf(false) }
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -507,12 +618,12 @@ class HomeSettings : Routes.Route() {
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.fillMaxWidth()
                                 )
-                                Row(
+                                FlowRow(
                                     modifier = Modifier
-                                        .wrapContentWidth()
+                                        .fillMaxWidth()
                                         .align(Alignment.CenterHorizontally),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     Button(
                                         onClick = {
@@ -576,6 +687,13 @@ class HomeSettings : Routes.Route() {
                                     ) {
                                         Text(text = translation["clear_button"])
                                     }
+                                    Button(
+                                        onClick = { showImportDialog = true },
+                                        colors = sharedButtonColors,
+                                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+                                    ) {
+                                        Text(text = "Import")
+                                    }
                                 }
                             }
                             OutlinedButton(
@@ -587,6 +705,46 @@ class HomeSettings : Routes.Route() {
                                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
                             ) {
                                 Text(translation["view_logger_history_button"])
+                            }
+                            if (showImportDialog) {
+                                AlertDialog(
+                                    onDismissRequest = { showImportDialog = false },
+                                    title = { Text("Import message logger") },
+                                    text = { Text("Importing will override your current message logger database. Continue?") },
+                                    confirmButton = {
+                                        TextButton(onClick = {
+                                            showImportDialog = false
+                                            runCatching {
+                                                activityLauncherHelper.openFile("application/octet-stream") { uri ->
+                                                    runCatching {
+                                                        context.androidContext.contentResolver.openInputStream(uri.toUri())?.use { inputStream ->
+                                                            context.messageLogger.databaseFile.outputStream().use { outputStream ->
+                                                                inputStream.copyTo(outputStream)
+                                                            }
+                                                        } ?: throw IllegalStateException("Unable to open selected file")
+                                                        storedMessagesCount = context.messageLogger.getStoredMessageCount()
+                                                        storedStoriesCount = context.messageLogger.getStoredStoriesCount()
+                                                        context.shortToast(translation["success_toast"])
+                                                        context.log.info("Imported message logger from $uri", "MessageLogger")
+                                                    }.onFailure {
+                                                        context.log.error("Failed to import message logger", it)
+                                                        context.longToast("Import failed: ${it.localizedMessage ?: it.message}")
+                                                    }
+                                                }
+                                            }.onFailure {
+                                                context.log.error("Failed to launch import picker", it)
+                                                context.longToast("Import failed: ${it.localizedMessage ?: it.message}")
+                                            }
+                                        }) {
+                                            Text(translation["button.import"] ?: "Import")
+                                        }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = { showImportDialog = false }) {
+                                            Text(translation["button.cancel"])
+                                        }
+                                    }
+                                )
                             }
                         }
                     }
@@ -665,31 +823,23 @@ class HomeSettings : Routes.Route() {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 26.dp)
                             ) {
                                 var selectedFileType by remember { mutableStateOf(InternalFileHandleType.entries.first()) }
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .padding(start = 26.dp)
-                                ) {
+                                Box(modifier = Modifier.weight(1f)) {
                                     var expanded by remember { mutableStateOf(false) }
                                     ExposedDropdownMenuBox(
                                         expanded = expanded,
                                         onExpandedChange = { expanded = it },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        TextField(
+                                        AestheticDropdownField(
                                             value = translation.getOrNull("debug_file_${selectedFileType.name.lowercase()}") ?: selectedFileType.fileName,
-                                            onValueChange = {},
-                                            readOnly = true,
+                                            expanded = expanded,
                                             modifier = Modifier
-                                                .fillMaxWidth(),
-                                            colors = ExposedDropdownMenuDefaults.textFieldColors(
-                                                focusedContainerColor = Color.White.copy(alpha = 0.08f),
-                                                unfocusedContainerColor = Color.White.copy(alpha = 0.06f),
-                                                focusedIndicatorColor = Color.Transparent,
-                                                unfocusedIndicatorColor = Color.Transparent
-                                            )
+                                                .fillMaxWidth()
+                                                .menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                                            onClick = { expanded = true }
                                         )
                                         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                                             InternalFileHandleType.entries.forEach { fileType ->

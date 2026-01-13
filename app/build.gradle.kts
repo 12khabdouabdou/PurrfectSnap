@@ -110,13 +110,35 @@ android {
         buildConfig = true
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = File(System.getProperty("user.home"), ".android/purrfectsnap-release.keystore")
+            storePassword = providers.gradleProperty("PS_RELEASE_STORE_PASSWORD").orNull
+            keyAlias = providers.gradleProperty("PS_RELEASE_KEY_ALIAS").orNull
+            keyPassword = providers.gradleProperty("PS_RELEASE_KEY_PASSWORD").orNull
+        }
+    }
+
     defaultConfig {
         val autoCertSha = providers.provider {
-            computeKeystoreCertSha256(
-                File(System.getProperty("user.home"), ".android/debug.keystore"),
-                storePass = "android",
-                keyAlias = "androiddebugkey"
-            ).orEmpty()
+            val releaseStore = File(System.getProperty("user.home"), ".android/purrfectsnap-release.keystore")
+            val releaseStorePass = providers.gradleProperty("PS_RELEASE_STORE_PASSWORD").orNull
+            val releaseKeyAlias = providers.gradleProperty("PS_RELEASE_KEY_ALIAS").orNull
+            val releaseKeyPass = providers.gradleProperty("PS_RELEASE_KEY_PASSWORD").orNull
+            if (!releaseStorePass.isNullOrBlank() && !releaseKeyAlias.isNullOrBlank()) {
+                computeKeystoreCertSha256(
+                    releaseStore,
+                    storePass = releaseStorePass,
+                    keyAlias = releaseKeyAlias,
+                    keyPass = releaseKeyPass ?: releaseStorePass
+                )
+            } else {
+                computeKeystoreCertSha256(
+                    File(System.getProperty("user.home"), ".android/debug.keystore"),
+                    storePass = "android",
+                    keyAlias = "androiddebugkey"
+                )
+            }.orEmpty()
         }
         val expectedCertSha256 = providers.gradleProperty("EXPECTED_CERT_SHA256")
             .orElse(providers.gradleProperty("psExpectedCertSha256"))
@@ -135,6 +157,7 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles += file("proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             (properties["debug_flavor"] == null).also {

@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "भाषा चुनें",
@@ -116,7 +116,7 @@
         "reset_button": "रीसेट करें",
         "done_button": "दान",
         "clear_friend_feed": "स्पष्ट मित्र फ़ीड",
-        "test_mode_label": "Enable PurrAura",
+        "test_mode_label": "???????? ????? ????",
         "disable_feature_loading_label": "अक्षम सुविधा लोड हो रहा है",
         "disable_auto_mapper_label": "अक्षम ऑटो मैपर",
         "disable_bypass_indicator_label": "निष्क्रिय सूचक"
@@ -347,9 +347,9 @@
         "no_repos_added": "कोई प्रस्ताव जोड़ा नहीं",
         "add_repo_button": "Repository जोड़ें",
         "add_repo_dialog_title": "Repository जोड़ें",
-        "repo_url_label": "Repository URL",
+        "repo_url_label": "?????????? URL",
         "add_button": "जोड़ें",
-        "invalid_repo_title": "Invalid Repository",
+        "invalid_repo_title": "?????? ??????????",
         "invalid_repo_error": "यह प्रस्ताव डेटा की आवश्यकता नहीं है।.",
         "repo_added_toast": "Repository जोड़ा",
         "add_repo_failed_toast": "प्रस्ताव को जोड़ने में विफल:{message}",
@@ -453,9 +453,9 @@
       "no_repos_added": "कोई प्रस्ताव जोड़ा नहीं",
       "add_repo_button": "Repository जोड़ें",
       "add_repo_dialog_title": "Repository जोड़ें",
-      "repo_url_label": "Repository URL",
+      "repo_url_label": "?????????? URL",
       "add_button": "जोड़ें",
-      "invalid_repo_title": "Invalid Repository",
+      "invalid_repo_title": "?????? ??????????",
       "invalid_repo_error": "यह प्रस्ताव डेटा की आवश्यकता नहीं है।.",
       "repo_added_toast": "Repository जोड़ा",
       "add_repo_failed_toast": "प्रस्ताव को जोड़ने में विफल:{message}",
@@ -910,7 +910,7 @@
         "erase_message": "संदेश",
         "remove_friend": "दोस्त निकालें",
         "block_friend": "ब्लॉक मित्र",
-        "ignore_friend": "Ignore Friend",
+        "ignore_friend": "????? ?? ?????? ????",
         "hide_friend": "मित्र",
         "hide_conversation": "छुपाना",
         "clear_conversation": "फ्रेंड फ़ीड से वार्तालाप साफ़ करें"
@@ -1021,7 +1021,7 @@
         "friendly": "अनुकूल",
         "humorous": "विनम्र",
         "empathetic": "सहानुभूति",
-        "toxic": "Edgy",
+        "toxic": "????",
         "busy": "बुसी"
       },
       "ai_temperature": {
@@ -1429,7 +1429,7 @@
             "description": "मित्र फ़ीड से एक विशिष्ट दोस्त को छुपाएं\nइस सुविधा का प्रबंधन करने के लिए सोशल टैब का उपयोग करें"
           },
           "hide_streak_restore": {
-            "name": "Hide Streak Restore",
+            "name": "??????? ??????? ??????",
             "description": "मित्र फ़ीड में पुनर्स्थापित बटन छुपाएं"
           },
           "hide_quick_add_suggestions": {
@@ -1515,11 +1515,11 @@
             "description": "किसी को यह जानने से रोकता है कि आपने अपनी कहानी फिर से देख ली है"
           },
           "hide_peek_a_peek": {
-            "name": "Hide Peek-a-Peek",
+            "name": "???-?-??? ??????",
             "description": "जब आप एक चैट में आधे स्वाइप करते हैं तो अधिसूचना को भेजे जाने से रोकता है"
           },
           "hide_bitmoji_presence": {
-            "name": "Hide Bitmoji Presence",
+            "name": "??????? ???????? ??????",
             "description": "चैट में अपने बिटमोजी को पॉप अप करने से रोकता है"
           },
           "hide_typing_notifications": {
@@ -1581,7 +1581,7 @@
             "description": "कुछ प्रकार के संदेश भेजने से रोकता है"
           },
           "friend_mutation_notifier": {
-            "name": "Friend Mutation Notifier",
+            "name": "?????? ???????? ????",
             "description": "जब एक दोस्त की प्रोफ़ाइल में कुछ बदलाव आता है तो आपको सूचित करें"
           },
           "better_notifications": {
@@ -1609,7 +1609,7 @@
                 "description": "कई मीडिया संदेशों को एक पाठ अधिसूचना में जोड़ती है जब उन्हें पूर्वावलोकन नहीं किया जा सकता है। चैट पूर्वावलोकन के साथ संयोजन में उपयोग करें"
               },
               "friend_add_source": {
-                "name": "Friend Add Source",
+                "name": "????? ?????? ?? ?????",
                 "description": "अधिसूचना में एक मित्र अनुरोध का स्रोत दिखाता है"
               },
               "reply_button": {
@@ -1911,7 +1911,7 @@
                 "description": "अगर यह विफल रहता है तो एक स्नैप खोलने के लिए समय की संख्या"
               },
               "retry_delay": {
-                "name": "Retry Delay (ms)",
+                "name": "??????? ???? (ms)",
                 "description": "पुनः प्रयास के बीच मिलीसेकंड में विलंब"
               }
             }
@@ -1925,7 +1925,7 @@
                 "description": "ऑटो डिलीट संत संदेश को पृष्ठभूमि में चलाने की अनुमति देता है। ध्यान दें: इससे आपकी बैटरी काफी बढ़ जाएगी"
               },
               "delete_after_value": {
-                "name": "Delete After (value)",
+                "name": "???? ??? ????? (value)",
                 "description": "भेजे गए संदेश को हटाने से पहले समय मूल्य"
               },
               "delete_after_unit": {
@@ -1995,7 +1995,7 @@
                 "description": "पुनः प्रयास की अधिकतम संख्या"
               },
               "retry_delay": {
-                "name": "Retry Delay",
+                "name": "??????? ????",
                 "description": "Retry प्रयासों (milliseconds) के बीच विलंब"
               }
             }
@@ -2090,7 +2090,7 @@
         }
       },
       "streaks_reminder": {
-        "name": "Streaks Reminder",
+        "name": "????????? ????????",
         "description": "समय-समय पर आपको अपने स्ट्रेक्स के बारे में सूचित करता है",
         "properties": {
           "interval": {
@@ -2142,8 +2142,8 @@
                 }
               },
               "disable_bitmoji": {
-                "name": "Disable Bitmoji",
-                "description": "Disables Friends Profile Bitmoji"
+                "name": "??????? ????????? ????",
+                "description": "??????? ?? ????????? ??????? ????????? ???? ??"
               },
               "custom_emoji_font": {
                 "name": "कस्टम इमोजी फ़ॉन्ट",
@@ -2180,7 +2180,7 @@
                 "description": "एंड्रॉइड आईडी को स्नैपचैट में भेजा गया ओवरराइड करें",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Android ID ????? ????",
                     "description": "एक कस्टम मूल्य के साथ स्नैपचैट को भेजे गए एंड्रॉइड आईडी को ओवरराइड करें"
                   },
                   "custom_android_id": {
@@ -2342,7 +2342,7 @@
             "description": "स्क्रिप्ट को स्नैपचैट में कस्टम यूआई घटकों को जोड़ने की अनुमति देता है"
           },
           "disable_log_anonymization": {
-            "name": "Disable Log Anonymization",
+            "name": "??? ?????????? ????????? ????",
             "description": "लॉग का नामकरण अक्षम करें"
           },
           "disable_optimization": {
@@ -2665,7 +2665,7 @@
     },
     "select_attachments_title": "संलग्नक चुनें",
     "download_started_toast": "प्रारंभ करना",
-    "unsupported_content_type_toast": "Unsupported content type!",
+    "unsupported_content_type_toast": "???????? ??????? ??????!",
     "failed_no_longer_available_toast": "मीडिया अब उपलब्ध नहीं",
     "no_attachments_toast": "कोई संलग्नक नहीं मिला!",
     "already_queued_toast": "पहले से ही कतार में मीडिया!",
@@ -2730,7 +2730,7 @@
     "processing_status": "प्रसंस्करण तस्वीरें:{queued}कतार में,{processed}प्रक्रिया",
     "monitor_status": "निगरानी...",
     "recent_snaps": "हाल ही में स्नैप",
-    "action_pause": "Pause",
+    "action_pause": "?????",
     "action_resume": "फिर से शुरू",
     "action_clear": "स्पष्ट कतार",
     "action_reset": "रीसेट करें",
@@ -3078,7 +3078,7 @@
   "theme_mode_system": "प्रणाली",
   "theme_mode_light": "प्रकाश",
   "theme_mode_dark": "अंधेरा",
-  "test_mode_label": "Enable PurrAura",
+  "test_mode_label": "???????? ????? ????",
   "disable_feature_loading_label": "अक्षम सुविधा लोड हो रहा है",
   "disable_auto_mapper_label": "अक्षम ऑटो मैपर",
   "disable_bypass_indicator_label": "निष्क्रिय सूचक",

@@ -481,17 +481,18 @@ class Notifications : Feature("Notifications") {
             if (!config.chatPreview.get() && config.mediaPreview.isEmpty()) return@hook
             if (notificationType.endsWith("typing")) return@hook
 
-            val serverMessageId = extras.getString("message_id") ?: return@hook
+            val serverMessageId = extras.getString("message_id")?.trim().takeIf { !it.isNullOrEmpty() } ?: return@hook
             val conversationId = extras.getString("conversation_id").also { id ->
                 sentNotifications.computeIfAbsent(notificationData.id) { id ?: "" }
             } ?: return@hook
+            val serverMessageIdLong = serverMessageId.toLongOrNull() ?: return@hook
 
             param.setResult(null)
             val conversationManager = context.feature(Messaging::class).conversationManager ?: return@hook
 
             context.coroutineScope.launch(coroutineDispatcher) {
                 suspendCoroutine { continuation ->
-                    conversationManager.fetchMessageByServerId(conversationId, serverMessageId.toLong(), onSuccess = {
+                    conversationManager.fetchMessageByServerId(conversationId, serverMessageIdLong, onSuccess = {
                         continuation.resumeWith(Result.success(Unit))
                         if (it.senderId.toString() == context.database.myUserId) {
                             param.invokeOriginal()

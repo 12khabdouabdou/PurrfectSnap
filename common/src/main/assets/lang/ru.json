@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Выберите язык",
@@ -97,7 +97,7 @@
         "update_notification_channel_description": "Получить уведомление, когда новые релизы доступны",
         "update_notification_title": "Новое обновление доступно",
         "update_notification_text": "Нажмите, чтобы открыть PurrfectSnap и загрузить последнюю сборку.",
-        "app_theme_title": "App Theme",
+        "app_theme_title": "???? ??????????",
         "theme_icon_description": "Выбор открытой темы",
         "theme_mode_system": "Система",
         "theme_mode_light": "Свет",
@@ -532,11 +532,11 @@
         }
       },
       "auto_open_snaps": {
-        "name": "Auto Open Snaps",
+        "name": "???????????? ??????",
         "description": "Автоматически открывает Snaps при их получении",
         "options": {
           "blacklist": "Скачать Auto Open Snaps",
-          "whitelist": "Auto Open Snaps"
+          "whitelist": "???????????? ??????"
         }
       },
       "hide_friend_feed": {
@@ -611,7 +611,7 @@
       "description": "Экспорт памяти в ZIP-файл"
     },
     "bulk_messaging_action": {
-      "name": "Bulk Messaging Action",
+      "name": "???????? ???????? ?????????",
       "description": "Выполняет такие операции, как удаление друзей или массовое удаление разговоров"
     },
     "regen_mappings": {
@@ -833,7 +833,7 @@
         "null": "Кодек по умолчанию"
       },
       "preset": {
-        "null": "Default Preset"
+        "null": "????????????? ?? ?????????"
       },
       "app_appearance_override": {
         "title": "Внешний вид"
@@ -893,7 +893,7 @@
       "snapchat_plus": {
         "not_subscribed": "Не подписывается",
         "basic": "Базовый",
-        "ad_free": "Ad Free",
+        "ad_free": "??? ???????",
         "null": "По умолчанию"
       },
       "bypass_video_length_restriction": {
@@ -1395,7 +1395,7 @@
             }
           },
           "snap_preview": {
-            "name": "Snap Preview",
+            "name": "???????????? ?????",
             "description": "Отображает небольшой предварительный просмотр рядом с невидимыми Snaps в чате"
           },
           "bootstrap_override": {
@@ -1597,7 +1597,7 @@
                 "description": "Показывает предварительный просмотр полученных сообщений в уведомлении"
               },
               "media_preview": {
-                "name": "Media Preview",
+                "name": "???????????? ?????",
                 "description": "Показывает предварительный просмотр выбранных типов медиа в уведомлении"
               },
               "media_caption": {
@@ -1761,7 +1761,7 @@
                     "description": "Используйте ИИ для создания интеллектуальных автоматических реплик вместо шаблонных сообщений"
                   },
                   "ai_provider": {
-                    "name": "AI Provider",
+                    "name": "????????? ??",
                     "description": "Выберите, какой сервис ИИ использовать для генерации ответов"
                   },
                   "ai_endpoint_url": {
@@ -2260,7 +2260,7 @@
             "description": "Попробуйте отремонтировать меню Friend Feed, так как когда устройство отключено, оно не может отображаться правильно"
           },
           "app_lock": {
-            "name": "App Lock",
+            "name": "?????????? ??????????",
             "description": "Предотвращение доступа к Snapchat без пароля",
             "properties": {
               "lock_on_resume": {
@@ -2396,7 +2396,7 @@
     "STATUS_CONVERSATION_CAPTURE_RECORD": "Запись с экрана",
     "STATUS_CALL_MISSED_VIDEO": "Пропущенный видеозвонок",
     "STATUS_CALL_MISSED_AUDIO": "Пропущенный аудиозвонок",
-    "LIVE_LOCATION_SHARE": "Live Location Share",
+    "LIVE_LOCATION_SHARE": "????? ?????? ? ?????????? ? ???????? ???????",
     "CREATIVE_TOOL_ITEM": "Креативный инструмент",
     "FAMILY_CENTER_INVITE": "Семейный центр приглашает",
     "FAMILY_CENTER_ACCEPT": "Семейный центр принимает",
@@ -2720,7 +2720,7 @@
     "incoming_secret_message": "Твой друг только что принял твой открытый ключ. Нажмите ниже, чтобы принять секрет."
   },
   "auto_open_snaps": {
-    "title": "Auto Open Snaps",
+    "title": "???????????? ??????",
     "priority_title": "Auto Open Snaps (приоритет)",
     "error_title": "Auto Open Snaps (ошибки)",
     "channel_description": "Уведомления о статусе очереди после автоматического открытия",
@@ -2842,7 +2842,7 @@
   },
   "material3_strings": {
     "date_range_picker_start_headline": "Из",
-    "date_range_picker_end_headline": "To",
+    "date_range_picker_end_headline": "????",
     "date_range_picker_title": "Выберите диапазон дат",
     "date_picker_switch_to_calendar_mode": "Расписание",
     "date_picker_switch_to_input_mode": "Ввод",
@@ -3051,7 +3051,7 @@
     "clear": "Чисто",
     "files": {
       "config_json": "Конфигурационный файл",
-      "mappings_json": "Mappings File",
+      "mappings_json": "???? ?????????????",
       "message_logger_db": "База данных Message Logger",
       "pinned_best_friend_txt": "Файл лучшего друга",
       "native_sig_cache_txt": "Родная подпись Файл кэша"
@@ -3074,7 +3074,7 @@
   "update_channel_prerelease": "Предварительный выпуск",
   "friend_notes_title": "Записки друзей",
   "friend_notes_description": "Управление и резервное копирование заметок друзей",
-  "app_theme_title": "App Theme",
+  "app_theme_title": "???? ??????????",
   "theme_mode_system": "Система",
   "theme_mode_light": "Свет",
   "theme_mode_dark": "Темный",
@@ -3170,7 +3170,7 @@
   },
   "debug_dialogs": {
     "info": "Информация",
-    "refs": "Refs",
+    "refs": "??????",
     "arroyo": "Арро",
     "message": "Послание",
     "media_references": "Ссылки на СМИ",

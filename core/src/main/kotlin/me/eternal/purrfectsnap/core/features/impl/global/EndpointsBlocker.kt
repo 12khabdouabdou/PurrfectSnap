@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import me.eternal.purrfectsnap.core.features.Feature
+import me.eternal.purrfectsnap.core.event.events.impl.NetworkApiRequestEvent
 import me.eternal.purrfectsnap.core.event.events.impl.UnaryCallEvent
 import me.eternal.purrfectsnap.core.ui.CustomComposable
 import me.eternal.purrfectsnap.core.util.dataBuilder
@@ -105,6 +106,19 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
             context.native.setTestMode(false)
         }
 
+        context.event.subscribe(NetworkApiRequestEvent::class) { event ->
+            val bypassToggleEnabled = context.bridgeClient.getDebugProp("test_mode", "false") == "true"
+            if (!bypassToggleEnabled && context.disablePlugin) {
+                return@subscribe
+            }
+            if (isInLoginSignup) return@subscribe
+
+            val decision = context.native.evaluateNetworkRequest(event.url)
+            if (decision.blocked) {
+                event.canceled = true
+            }
+        }
+
         context.event.subscribe(UnaryCallEvent::class) { event ->
             val bypassToggleEnabled = context.bridgeClient.getDebugProp("test_mode", "false") == "true"
             if (!bypassToggleEnabled && context.disablePlugin) {
@@ -117,7 +131,6 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
             val arg0 = event.adapter.arg<Any>(0).toString()
 
             val decision = context.native.evaluateEndpoint(event.uri, arg0, hasAttestation)
-
             if (decision.blocked) {
                 event.canceled = true
                 val eventHandler = event.adapter.arg<Any>(3)
@@ -139,7 +152,8 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
                 if (isInLoginSignup) return@hook
                 
                 val path = param.arg<String>(0)
-                if (context.native.shouldBlockDuplexClient(path)) {
+                val blocked = context.native.shouldBlockDuplexClient(path)
+                if (blocked) {
                     param.setResult(null)
                     return@hook
                 }
@@ -158,7 +172,6 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
                 val requestPath = authContextRequest.getObjectField("mRequestPath").toString()
                 val attestationRequired = authContextRequest.getObjectField("mAttestationRequired") == true
                 val decision = context.native.evaluateAuthContext(requestPath, attestationRequired)
-
                 if (decision.blocked) {
                     param.setResult(null)
                 }

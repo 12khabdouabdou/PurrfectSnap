@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Izberi jezik",
@@ -546,7 +546,7 @@
         "name": "Uporabi šifriranje E2E"
       },
       "pin_conversation": {
-        "name": "Pin Conversation"
+        "name": "Pripni pogovor"
       },
       "exclude_message_logger": {
         "name": "Izbriši iz dnevnika sporočil"
@@ -659,20 +659,21 @@
         "null": "Uporabi pravo raven baterije"
       },
       "friend_feed_menu_buttons": {
-        "auto_download": "⬇️ Auto Download",
-        "auto_save": "💬 Auto Save Messages",
-        "unsaveable_messages": " Nerešljiva sporočila",
-        "auto_open_snaps": "📷 Auto Open Snaps",
-        "stealth": "👻 Stealth Mode",
-        "auto_reply": "📨 Auto Reply",
-        "auto_delete_sent_messages": "🗑️ Auto Delete Sent Messages",
-        "mark_snaps_as_seen": " Mark Snaps, kot se vidi",
-        "mark_stories_as_seen_locally": " Označite zgodbe, kot jih vidite na lokalni ravni",
-        "conversation_info": "👤 Conversation Info",
-        "e2e_encryption": "🔒 Use E2E Encryption",
-        "message_logger": "📝 Message Logger",
-        "auto_read": "✅ Auto Read",
-        "hide_typing_indicator": "🙈 Hide Typing Indicator"
+        "auto_download": "?? Samodejni prenos",
+        "auto_save": "?? Samodejno shranjevanje sporo?il",
+        "unsaveable_messages": "Nezapisljiva sporo?ila",
+        "auto_open_snaps": "?? Samodejno odpiranje Snapov",
+        "stealth": "?? Prikriti na?in",
+        "auto_reply": "?? Samodejni odgovor",
+        "auto_delete_sent_messages": "??? Samodejno brisanje poslanih sporo?il",
+        "mark_snaps_as_seen": "Ozna?i Snape kot ogledane",
+        "mark_stories_as_seen_locally": "Ozna?i Stories kot ogledane lokalno",
+        "conversation_info": "?? Informacije o pogovoru",
+        "e2e_encryption": "?? Uporabi E2E ?ifriranje",
+        "message_logger": "?? Bele?enje sporo?il",
+        "auto_read": "? Samodejno branje",
+        "hide_typing_indicator": "?? Skrij indikator tipkanja",
+        "auto_save_messages": "?? Samodejno shranjevanje sporo?il"
       },
       "schedule_scheduled_for": "Načrtovano za{name}v{time}",
       "schedule_sending_in": "Pošiljanje noter{time}",
@@ -760,7 +761,8 @@
       "auto_save": {
         "blacklist": "Črna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogočeno",
+        "auto_save": "?? Samodejno shranjevanje sporo?il"
       },
       "message_logger": {
         "blacklist": "Črna lista",
@@ -1777,7 +1779,7 @@
                     "description": "API ključ za preverjanje pristnosti z AI storitev"
                   },
                   "ai_system_prompt": {
-                    "name": "AI System Prompt",
+                    "name": "Poziv sistema AI",
                     "description": "Sistem, ki določa osebnost in vedenje AI"
                   },
                   "ai_max_tokens": {
@@ -1991,7 +1993,7 @@
                 "description": "Prekini prevajanje, ko je storitev blokirana"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Najve? ponovitev",
                 "description": "Največje število poskusov ponovnega preskušanja"
               },
               "retry_delay": {
@@ -2553,7 +2555,7 @@
       "deleted": "Zbrisano",
       "business_accounts": "Poslovni računi",
       "streaks": "Streaks",
-      "non_streaks": "Non Streaks",
+      "non_streaks": "Brez streakov",
       "followed": "Sledi",
       "following": "Sledi",
       "location_on_map": "Lokacija na zemljevidu"
@@ -2562,7 +2564,7 @@
       "none": "Brez",
       "username": "Uporabniško ime",
       "added_timestamp": "Dodan časovni žig",
-      "snap_score": "Snap Score",
+      "snap_score": "Snap to?ke",
       "streak_length": "Dolžina streak",
       "most_messages_sent": "Večina poslanih sporočil",
       "most_recent_message": "Najnovejše sporočilo",

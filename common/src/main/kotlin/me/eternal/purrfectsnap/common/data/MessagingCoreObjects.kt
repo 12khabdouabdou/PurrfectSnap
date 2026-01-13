@@ -57,7 +57,7 @@ enum class MessagingRuleType(
     HIDE_FRIEND_FEED("hide_friend_feed", false, Icons.Outlined.VisibilityOff, showInFriendMenu = false),
     E2E_ENCRYPTION("e2e_encryption", false, Icons.Outlined.Lock),
     PIN_CONVERSATION("pin_conversation", false, Icons.Outlined.PushPin, showInFriendMenu = false),
-    MESSAGE_LOGGER("message_logger", true, Icons.AutoMirrored.Filled.Message, showInFriendMenu = true),
+    MESSAGE_LOGGER("message_logger", true, Icons.AutoMirrored.Filled.Message, showInFriendMenu = true, defaultValue = "blacklist"),
     AUTO_READ("auto_read", true, Icons.Outlined.DoneAll, defaultValue = "whitelist"),
     AUTO_REPLY("auto_reply", true, Icons.AutoMirrored.Outlined.Reply, defaultValue = "blacklist"),
     AUTO_DELETE_SENT_MESSAGES("auto_delete_sent_messages", true, Icons.Outlined.DeleteSweep, defaultValue = "blacklist");

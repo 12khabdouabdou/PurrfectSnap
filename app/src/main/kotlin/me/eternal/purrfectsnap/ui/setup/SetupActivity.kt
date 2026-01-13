@@ -56,12 +56,14 @@ import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -89,6 +91,7 @@ import androidx.navigation.compose.rememberNavController
 import me.eternal.purrfectsnap.RemoteSideContext
 import me.eternal.purrfectsnap.SharedContextHolder
 import me.eternal.purrfectsnap.common.ui.AppMaterialTheme
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.setup.screens.SetupScreen
 import me.eternal.purrfectsnap.ui.setup.screens.impl.InstallModeScreen
@@ -97,8 +100,10 @@ import me.eternal.purrfectsnap.ui.setup.screens.impl.MappingsScreen
 import me.eternal.purrfectsnap.ui.setup.screens.impl.PermissionsScreen
 import me.eternal.purrfectsnap.ui.setup.screens.impl.PickLanguageScreen
 import me.eternal.purrfectsnap.ui.setup.screens.impl.PatchSnapchatScreen
+import me.eternal.purrfectsnap.ui.setup.screens.impl.RootInstallSnapchatScreen
 import me.eternal.purrfectsnap.ui.setup.screens.impl.SaveFolderScreen
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
+import kotlinx.coroutines.delay
 
 private data class SetupStepMeta(
     val route: String,
@@ -125,14 +130,19 @@ class SetupActivity : ComponentActivity() {
         val isFirstRunFlow = hasRequirement(Requirements.FIRST_RUN) || wasInProgress
         val persistedRoute = setupPrefs.getString("setup_current_route", null)
         val persistedSkipPatch = setupPrefs.getBoolean("setup_skip_patch", false)
+        val persistedInstallMode = setupPrefs.getString("setup_install_mode", null)
         val skipPatchChoice = mutableStateOf(persistedSkipPatch)
+        val installModeChoice = mutableStateOf(
+            runCatching { persistedInstallMode?.let { InstallMode.valueOf(it) } }.getOrNull()
+        )
 
-        fun persistProgress(route: String, skipPatch: Boolean, inProgress: Boolean = true) {
+        fun persistProgress(route: String, skipPatch: Boolean, installMode: InstallMode?, inProgress: Boolean = true) {
             if (!isFirstRunFlow) return
             setupPrefs.edit()
                 .putBoolean("setup_in_progress", inProgress)
                 .putString("setup_current_route", route)
                 .putBoolean("setup_skip_patch", skipPatch)
+                .putString("setup_install_mode", installMode?.name)
                 .apply()
         }
 
@@ -141,6 +151,7 @@ class SetupActivity : ComponentActivity() {
                 .remove("setup_in_progress")
                 .remove("setup_current_route")
                 .remove("setup_skip_patch")
+                .remove("setup_install_mode")
                 .apply()
         }
 
@@ -148,11 +159,19 @@ class SetupActivity : ComponentActivity() {
             if (isFirstRunFlow || hasRequirement(Requirements.LANGUAGE)) {
                 add(PickLanguageScreen().apply { route = "language" })
                 if (isFirstRunFlow) {
-                    add(InstallModeScreen { mode ->
-                        skipPatchChoice.value = mode == InstallMode.ROOT
-                    }.apply { route = "installMode" })
+                    add(InstallModeScreen(
+                        onModeChosen = { mode ->
+                            installModeChoice.value = mode
+                            skipPatchChoice.value = false
+                        },
+                        onSkipAutoSetup = {
+                            skipPatchChoice.value = true
+                            installModeChoice.value = null
+                        }
+                    ).apply { route = "installMode" })
                 }
                 if (isFirstRunFlow) {
+                    add(RootInstallSnapchatScreen().apply { route = "rootInstallSnapchat" })
                     add(PatchSnapchatScreen().apply { route = "patchSnapchat" })
                 }
             }
@@ -173,31 +192,46 @@ class SetupActivity : ComponentActivity() {
         }
         requiredScreens.forEach { screen ->
             screen.context = setupContext
+            screen.isFirstRunFlow = isFirstRunFlow
             screen.init()
         }
 
-        if (!isFirstRunFlow) {
-            clearProgress()
-            skipPatchChoice.value = false
-        }
+            if (!isFirstRunFlow) {
+                clearProgress()
+                skipPatchChoice.value = false
+                installModeChoice.value = null
+            }
 
         setContent {
             val navController = rememberNavController()
             var canGoNext by remember { mutableStateOf(false) }
+            var lastRoute by rememberSaveable { mutableStateOf("") }
             var currentRoute by rememberSaveable {
                 mutableStateOf(
-                    when {
-                        requiredScreens.first().route == "language" -> requiredScreens.first().route
-                        persistedRoute?.takeIf { route -> requiredScreens.any { it.route == route } } != null -> persistedRoute
-                        else -> requiredScreens.first().route
-                    }
+                    persistedRoute?.takeIf { route -> requiredScreens.any { it.route == route } }
+                        ?: requiredScreens.first().route
                 )
             }
             val skipPatch by rememberSaveable { skipPatchChoice }
-            val visibleScreens = remember(skipPatch) {
-                requiredScreens.filterNot { skipPatch && it is PatchSnapchatScreen }
+            val installMode by installModeChoice
+            val visibleScreens = remember(skipPatch, installMode) {
+                requiredScreens.filterNot { screen ->
+                    if (skipPatch && (screen is PatchSnapchatScreen || screen is RootInstallSnapchatScreen)) {
+                        return@filterNot true
+                    }
+                    if (installMode == null && (screen is PatchSnapchatScreen || screen is RootInstallSnapchatScreen)) {
+                        return@filterNot true
+                    }
+                    if (installMode == InstallMode.ROOT && screen is PatchSnapchatScreen) {
+                        return@filterNot true
+                    }
+                    if (installMode == InstallMode.NON_ROOT && screen is RootInstallSnapchatScreen) {
+                        return@filterNot true
+                    }
+                    false
+                }
             }
-            val stepMeta = remember(skipPatch) { visibleScreens.map { it.meta(setupContext) } }
+            val stepMeta = remember(skipPatch, installMode) { visibleScreens.map { it.meta(setupContext) } }
             val currentStepIndex = visibleScreens.indexOfFirst { it.route == currentRoute }.let {
                 if (it == -1) 0 else it
             }
@@ -218,15 +252,18 @@ class SetupActivity : ComponentActivity() {
                 }
             }
 
-            LaunchedEffect(currentRoute, skipPatch) {
-                persistProgress(currentRoute, skipPatch, true)
+            LaunchedEffect(currentRoute, skipPatch, installMode) {
+                persistProgress(currentRoute, skipPatch, installMode, true)
                 if (navController.currentDestination?.route != currentRoute) {
                     navController.navigate(currentRoute) {
                         popUpTo(requiredScreens.first().route) { inclusive = false }
                         launchSingleTop = true
                     }
                 }
-                canGoNext = false
+                if (lastRoute != currentRoute) {
+                    canGoNext = false
+                    lastRoute = currentRoute
+                }
             }
 
             fun nextScreen() {
@@ -249,10 +286,25 @@ class SetupActivity : ComponentActivity() {
             AppMaterialTheme {
                 val view = LocalView.current
                 val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                var showImportantDialog by rememberSaveable {
+                    mutableStateOf(!setupPrefs.getBoolean("setup_important_notice_shown", false))
+                }
+                var importantTimeout by remember { mutableIntStateOf(5) }
+                LaunchedEffect(showImportantDialog) {
+                    if (showImportantDialog) {
+                        importantTimeout = 5
+                        while (importantTimeout > 0) {
+                            delay(1000)
+                            importantTimeout--
+                        }
+                    }
+                }
                 SideEffect {
                     val window = (view.context as Activity).window
                     WindowCompat.setDecorFitsSystemWindows(window, false)
+                    @Suppress("DEPRECATION")
                     window.statusBarColor = Color.Transparent.toArgb()
+                    @Suppress("DEPRECATION")
                     window.navigationBarColor = Color.Transparent.toArgb()
                     val insetsController = WindowInsetsControllerCompat(window, window.decorView)
                     insetsController.isAppearanceLightStatusBars = false
@@ -263,6 +315,37 @@ class SetupActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(Color.Transparent)
                 ) {
+                    if (showImportantDialog) {
+                        val confirmLabel = if (importantTimeout > 0) "I understand (${importantTimeout}s)" else "I understand"
+                        AestheticDialog(
+                            onDismissRequest = {
+                                if (importantTimeout == 0) {
+                                    showImportantDialog = false
+                                    setupPrefs.edit().putBoolean("setup_important_notice_shown", true).apply()
+                                }
+                            },
+                            title = "Important!",
+                            text = "",
+                            icon = Icons.Filled.Warning,
+                            confirmButtonText = confirmLabel,
+                            onConfirm = {
+                                if (importantTimeout == 0) {
+                                    showImportantDialog = false
+                                    setupPrefs.edit().putBoolean("setup_important_notice_shown", true).apply()
+                                }
+                            },
+                            confirmEnabled = importantTimeout == 0,
+                            showCloseButton = false,
+                            customContent = {
+                                Text(
+                                    text = "If you have used SnapEnhance or any other mod besides PurrfectSnap, we recommend uninstalling everything and staying on stock Snapchat for one week. Then switch to PurrfectSnap after next Friday.",
+                                    color = PurrfectPalette.textSecondary,
+                                    lineHeight = 18.sp
+                                )
+                            },
+                            opaque = true
+                        )
+                    }
                     SetupAuroraBackground()
                     SetupTopBar()
                     val bottomPadding = 118.dp + navBarPadding
@@ -383,6 +466,13 @@ private fun SetupScreen.meta(context: RemoteSideContext): SetupStepMeta {
             route = route,
             title = "Auto Patcher",
             subtitle = "Streamlined download, patch, and install with a single flow.",
+            icon = Icons.Filled.Download
+        )
+
+        is RootInstallSnapchatScreen -> SetupStepMeta(
+            route = route,
+            title = "Snapchat Installer",
+            subtitle = "Download and install the recommended Snapchat build.",
             icon = Icons.Filled.Download
         )
 

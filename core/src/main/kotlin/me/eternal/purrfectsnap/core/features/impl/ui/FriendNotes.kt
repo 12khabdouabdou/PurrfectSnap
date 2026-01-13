@@ -3,11 +3,7 @@ package me.eternal.purrfectsnap.core.features.impl.ui
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -18,7 +14,7 @@ import me.eternal.purrfectsnap.common.ui.createComposeView
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
-import me.eternal.purrfectsnap.core.ui.getComposerContext
+import me.eternal.purrfectsnap.core.ui.getValdiContext
 import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
 
 class FriendNotes: Feature("Friend Notes") {
@@ -31,7 +27,7 @@ class FriendNotes: Feature("Friend Notes") {
             val viewGroup = (event.view as? ViewGroup) ?: return@subscribe
             viewGroup.post {
                 val composerRootView = viewGroup.getChildAt(0) ?: return@post
-                val composerContext = composerRootView.getComposerContext() ?: return@post
+                val composerContext = composerRootView.getValdiContext() ?: return@post
                 val userId = composerContext.viewModel?.getObjectFieldOrNull("_userId")?.toString() ?: return@post
 
                 if (userId == context.database.myUserId) return@post

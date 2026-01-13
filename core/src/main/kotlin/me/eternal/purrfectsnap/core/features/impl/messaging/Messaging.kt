@@ -60,7 +60,7 @@ class Messaging : Feature("Messaging") {
                 context.messagingBridge.triggerSessionStart()
                 context.mainActivity?.takeIf { it.intent.getBooleanExtra(ReceiversConfig.MESSAGING_PREVIEW_EXTRA, false) }?.run {
                     startActivity(Intent().apply {
-                        setComponent(ComponentName(Constants.SE_PACKAGE_NAME, "me.eternal.purrfectsnap.ui.manager.MainActivity"))
+                        setComponent(ComponentName(Constants.MODULE_PACKAGE_NAME, "me.eternal.purrfectsnap.ui.manager.MainActivity"))
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     })
                 }
@@ -215,3 +215,4 @@ class Messaging : Feature("Messaging") {
         return (future.get() as? List<*>)?.map { Snapchatter(it) } ?: return emptyList()
     }
 }
+

@@ -226,6 +226,12 @@ class HomeLogs : Routes.Route() {
         ) {
             val firstVisibleItem by remember { derivedStateOf { logListState.firstVisibleItemIndex } }
             val layoutInfo by remember { derivedStateOf { logListState.layoutInfo } }
+            val floatingButtonColors = IconButtonDefaults.filledIconButtonColors(
+                containerColor = PurrfectPalette.cardOverlayColor,
+                contentColor = Color.White,
+                disabledContainerColor = Color.White.copy(alpha = 0.08f),
+                disabledContentColor = Color.White.copy(alpha = 0.35f)
+            )
             Surface(
                 shape = RoundedCornerShape(18.dp),
                 color = Color.White.copy(alpha = 0.08f),
@@ -243,7 +249,8 @@ class HomeLogs : Routes.Route() {
                                 logListState.scrollToItem(0)
                             }
                         },
-                        enabled = firstVisibleItem != 0
+                        enabled = firstVisibleItem != 0,
+                        colors = floatingButtonColors
                     ) {
                         Icon(Icons.Filled.KeyboardDoubleArrowUp, contentDescription = null)
                     }
@@ -253,7 +260,8 @@ class HomeLogs : Routes.Route() {
                                 logListState.scrollToItem((logListState.layoutInfo.totalItemsCount - 1).takeIf { it >= 0 } ?: return@launch)
                             }
                         },
-                        enabled = layoutInfo.visibleItemsInfo.lastOrNull()?.index != layoutInfo.totalItemsCount - 1
+                        enabled = layoutInfo.visibleItemsInfo.lastOrNull()?.index != layoutInfo.totalItemsCount - 1,
+                        colors = floatingButtonColors
                     ) {
                         Icon(Icons.Filled.KeyboardDoubleArrowDown, contentDescription = null)
                     }

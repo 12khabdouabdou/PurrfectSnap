@@ -56,6 +56,10 @@ class MessageLogger : MessagingRuleFeature("MessageLogger", MessagingRuleType.ME
         loggerInterface.deleteMessage(conversationId, uniqueMessageId)
     }
 
+    fun isLoggedMessageDeleted(uniqueMessageId: Long): Boolean {
+        return deletedMessageCache.containsKey(uniqueMessageId)
+    }
+
     fun getMessageObject(conversationId: String, clientMessageId: Long): JsonObject? {
         val uniqueMessageId = makeUniqueIdentifier(conversationId, clientMessageId) ?: return null
         if (deletedMessageCache.containsKey(uniqueMessageId)) {

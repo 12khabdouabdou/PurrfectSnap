@@ -431,13 +431,15 @@ class DownloadProcessor (
                             return@let
                         }
                     }
-                    callbackOnFailure(translation["already_downloaded_toast"], null)
+                    callbackOnFailure(translation["already_downloaded_toast"])
+                    return@launch
                 } else {
                     callbackOnFailure(translation["already_queued_toast"], null)
                 }
                 return@launch
             }
 
+            callbackOnProgress(translation["download_started_toast"])
             remoteSideContext.log.debug("downloading media")
             val pendingTask = remoteSideContext.taskManager.createPendingTask(
                 Task(

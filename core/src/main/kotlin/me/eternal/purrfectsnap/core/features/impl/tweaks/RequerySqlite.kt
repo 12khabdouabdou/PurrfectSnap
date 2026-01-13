@@ -15,6 +15,7 @@ class RequerySqlite : Feature("Requery Sqlite") {
 
         findClass("io.requery.android.database.sqlite.SQLiteDatabase").hook("rawQueryWithFactory", HookStage.BEFORE) { param ->
             var sqlRequest = param.argNullable<String>(1) ?: return@hook
+            val sqlUpper = sqlRequest.uppercase().trim()
 
             fun patchRequest(condition: String) {
                 sqlRequest.lastIndexOf("WHERE").takeIf { it != -1 }?.let {
@@ -23,17 +24,32 @@ class RequerySqlite : Feature("Requery Sqlite") {
                 }
             }
 
-            if (hideQuickAddSuggestions && sqlRequest.contains("SuggestedFriendPlacement")) {
-                patchRequest("0 = 1")
+            fun isSuggestionQuery() = sqlRequest.contains("SuggestedFriendPlacement") ||
+                                     sqlRequest.contains("TopSuggestedFriend") ||
+                                     sqlRequest.contains("TopSuggestedFriendV2") ||
+                                     sqlRequest.contains("SuggestedFriend")
+
+            if (hideQuickAddSuggestions && sqlUpper.startsWith("SELECT") && isSuggestionQuery()) {
+                val isDisplayQuery = sqlRequest.contains("FriendWithUsername") ||
+                                    sqlRequest.contains("FROM TopSuggestedFriend") ||
+                                    (sqlRequest.contains("UNION") && sqlRequest.contains("FROM SuggestedFriend"))
+                val isCountQuery = sqlUpper.contains("SELECT 0") || sqlUpper.contains("SELECT COUNT")
+                
+                if (isDisplayQuery || isCountQuery) {
+                    patchRequest("0 = 1")
+                }
             }
 
             if (hideSuggestedStories && sqlRequest.contains("DiscoverFeedFriendStoriesViewV2 AS DFStories")) {
                 patchRequest("DFStories.isFriendOfFriend = 0")
             }
 
-            if (hideFriendFeedEntry && sqlRequest.startsWith("SELECT") && (sqlRequest.contains("FriendWithUsername")) && sqlRequest.contains("userId")) {
+            if (hideFriendFeedEntry && sqlUpper.startsWith("SELECT") && sqlRequest.contains("FriendWithUsername") && sqlRequest.contains("userId")) {
+                if (isSuggestionQuery()) return@hook
+                
                 val ids = context.bridgeClient.getRuleIds(MessagingRuleType.HIDE_FRIEND_FEED).takeIf { it.isNotEmpty() } ?: return@hook
-                patchRequest(ids.joinToString(" AND ") { "${if (sqlRequest.contains("Friend.userId")) "Friend.userId" else "userId "} != '$it'" })
+                val userIdField = if (sqlRequest.contains("Friend.userId")) "Friend.userId" else "userId"
+                patchRequest(ids.joinToString(" AND ") { "$userIdField != '$it'" })
             }
         }
     }

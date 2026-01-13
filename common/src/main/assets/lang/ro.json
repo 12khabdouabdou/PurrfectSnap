@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Alegeți limba",
@@ -115,7 +115,7 @@
         "available_tabs_title": "Taburi disponibile",
         "reset_button": "Reinițializează",
         "done_button": "Gata",
-        "clear_friend_feed": "Clear Friend Feed",
+        "clear_friend_feed": "Cur??? fluxul de prieteni",
         "test_mode_label": "Activează PurrAura",
         "disable_feature_loading_label": "Dezactivează încărcarea caracteristicilor",
         "disable_auto_mapper_label": "Dezactivează Maper automat",
@@ -663,16 +663,17 @@
         "auto_save": "Mesaje de salvare automată",
         "unsaveable_messages": " Mesaje nesalvabile",
         "auto_open_snaps": "Snaps Open Auto",
-        "stealth": "👻 Stealth Mode",
+        "stealth": "?? Mod invizibil",
         "auto_reply": "Răspuns automat",
         "auto_delete_sent_messages": "Sterge automat mesajele trimise",
         "mark_snaps_as_seen": " Mark Snaps așa cum se vede",
         "mark_stories_as_seen_locally": " Mark Stories as seen local",
         "conversation_info": "Informaţii de conversaţie",
         "e2e_encryption": "Utilizați criptarea E2E",
-        "message_logger": "📝 Message Logger",
-        "auto_read": "✅ Auto Read",
-        "hide_typing_indicator": "🙈 Hide Typing Indicator"
+        "message_logger": "?? Jurnal mesaje",
+        "auto_read": "? Citire automat?",
+        "hide_typing_indicator": "?? Ascunde indicatorul de tastare",
+        "stealth_mode": "?? Mod invizibil"
       },
       "schedule_scheduled_for": "Programat pentru{name}în{time}",
       "schedule_sending_in": "Trimit{time}",
@@ -755,7 +756,8 @@
       "stealth": {
         "blacklist": "Lista neagră",
         "whitelist": "Lista albă",
-        "disabled": "Dezactivat"
+        "disabled": "Dezactivat",
+        "stealth": "?? Mod invizibil"
       },
       "auto_save": {
         "blacklist": "Lista neagră",
@@ -892,13 +894,13 @@
       },
       "snapchat_plus": {
         "not_subscribed": "Neabonat",
-        "basic": "Basic",
+        "basic": "De baz?",
         "ad_free": "Ad free",
         "null": "Implicit"
       },
       "bypass_video_length_restriction": {
         "single": "Medii unice",
-        "split": "Split media",
+        "split": "?mparte media",
         "null": "Implicit"
       },
       "old_bitmoji_selfie": {
@@ -909,7 +911,7 @@
       "disable_confirmation_dialogs": {
         "erase_message": "Șterge mesajul",
         "remove_friend": "Elimină prietenul",
-        "block_friend": "Block Friend",
+        "block_friend": "Blocheaz? prieten",
         "ignore_friend": "Ignoră prietenul",
         "hide_friend": "Ascunde prietenul",
         "hide_conversation": "Ascunde conversația",
@@ -969,7 +971,7 @@
       "auto_mark_as_read": {
         "conversation_read": "Marchează conversația ca citită atunci când trimiți un mesaj",
         "snap_reply": "Marca se fixează ca citit atunci când răspunde la ele",
-        "save_snap_in_chat": "Mark plesnește ca citit atunci când le salva în chat în timp ce în Stealth Mode"
+        "save_snap_in_chat": "Marcheaz? snapurile ca v?zute c?nd le salvezi ?n chat ?n timp ce e?ti ?n Modul invizibil"
       },
       "friend_mutation_notifier": {
         "remove_friend": "Anunţă când cineva te elimină ca prieten",
@@ -1016,7 +1018,7 @@
         "friendly, casual, helpful, empathetic": "prietenos, ocazional, util, empatic"
       },
       "ai_response_style": {
-        "casual": "Casual",
+        "casual": "Relaxat",
         "formal": "Formal",
         "friendly": "Prietenos",
         "humorous": "Umor",
@@ -1092,7 +1094,7 @@
         "sticker_messages": "Autocolante",
         "tiny_snap_messages": "Snaps mici",
         "map_reaction_messages": "Hartă Reacţii",
-        "half_swipes": "Half Swipes"
+        "half_swipes": "Glis?ri pe jum?tate"
       },
       "supported_languages": {
         "en": "Engleză",
@@ -1112,7 +1114,7 @@
       "translation_position": {
         "above": "Deasupra textului",
         "below": "Sub text",
-        "inline": "Inline"
+        "inline": "?n linie"
       },
       "source_language": {
         "auto": "Detectează automat"
@@ -1139,7 +1141,7 @@
                 "description": "Setează coordonatele locației spoofed"
               },
               "walk_radius": {
-                "name": "Walk Radius",
+                "name": "Raz? de mers",
                 "description": "Plimbare aleatoare în jurul valorii de pe această rază (ft)"
               },
               "always_update_location": {
@@ -1173,7 +1175,7 @@
             "description": "Suprascrie calitatea de încărcare media",
             "properties": {
               "force_video_upload_source_quality": {
-                "name": "Force Video Upload Source Quality",
+                "name": "For?eaz? calitatea sursei de ?nc?rcare video",
                 "description": "Forţează Snapchat să folosească calitatea sursei la încărcarea videoclipurilor\nVă rugăm să rețineți că acest lucru nu poate elimina metadatele din mass-media"
               },
               "disable_image_compression": {
@@ -1341,7 +1343,7 @@
                 "description": "Cantitatea de fire de utilizat"
               },
               "preset": {
-                "name": "Preset",
+                "name": "Presetare",
                 "description": "Setează viteza de conversie"
               },
               "constant_rate_factor": {
@@ -1349,7 +1351,7 @@
                 "description": "Setează factorul de rată constantă pentru codorul video\nDe la 0 la 51 pentru libx264"
               },
               "video_bitrate": {
-                "name": "Video Bitrate",
+                "name": "Bitrate video",
                 "description": "Setează rata de biți video (kbps)"
               },
               "audio_bitrate": {
@@ -1449,7 +1451,7 @@
             "description": "Arată informații utile ale mass-media, cum ar fi data creării în meniul contextului vizualizatorului operei"
           },
           "old_bitmoji_selfie": {
-            "name": "Old Bitmoji Selfie",
+            "name": "Selfie Bitmoji vechi",
             "description": "Aduce înapoi selfie-urile Bitmoji din versiunile vechi Snapchat"
           },
           "disable_spotlight": {
@@ -1847,11 +1849,11 @@
                     "description": "Mesaje de răspuns automat pentru mesajele de chat text"
                   },
                   "snap_messages": {
-                    "name": "Snap Replies",
+                    "name": "R?spunsuri la Snap",
                     "description": "Mesaje de răspuns automat pentru capturi"
                   },
                   "story_share_messages": {
-                    "name": "Story Share Replies",
+                    "name": "R?spunsuri la partaj?ri de Story",
                     "description": "Mesaje de răspuns automat pentru acțiuni de poveste"
                   },
                   "story_reply_messages": {
@@ -1991,7 +1993,7 @@
                 "description": "Pauză traducere atunci când serviciul este blocat"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Num?r maxim de ?ncerc?ri",
                 "description": "Numărul maxim de încercări de rejudecare"
               },
               "retry_delay": {
@@ -2124,7 +2126,7 @@
                     "description": "Arată primul nume de utilizator creat lângă numele de utilizator curent din pagina de profil"
                   },
                   "bypass_camera_roll_limit": {
-                    "name": "Bypass Camera Roll Limit",
+                    "name": "Ocole?te limita rolei foto",
                     "description": "Crește cantitatea maximă de mass-media pe care o puteți trimite din rola camerei"
                   },
                   "custom_self_destruct_snap_delay": {
@@ -2160,7 +2162,7 @@
             "description": "Spoof diverse informații despre tine",
             "properties": {
               "play_store_installer_package_name": {
-                "name": "Play Store Installer Package Name",
+                "name": "Nume pachet instalator Play Store",
                 "description": "Suprascrie numele pachetului instalatorului la com.android.vending"
               },
               "remove_vpn_transport_flag": {
@@ -2260,7 +2262,7 @@
             "description": "Încercarea de a repara meniul de alimentare Friend ca atunci când dispozitivul este offline nu poate fi afișat corect"
           },
           "app_lock": {
-            "name": "App Lock",
+            "name": "Blocare aplica?ie",
             "description": "Previne accesul la Snapchat fără cod de acces",
             "properties": {
               "lock_on_resume": {
@@ -2380,7 +2382,7 @@
     "preview": "Previzualizare",
     "stealth_mode": "Mod ascuns",
     "auto_download_blacklist": "Descărcare automată Lista neagră",
-    "anti_auto_save": "Anti Auto Save"
+    "anti_auto_save": "Anti salvare automat?"
   },
   "content_type": {
     "CHAT": "Discută",
@@ -2400,7 +2402,7 @@
     "CREATIVE_TOOL_ITEM": "Element instrument creativ",
     "FAMILY_CENTER_INVITE": "Family Center Invită",
     "FAMILY_CENTER_ACCEPT": "Centrul de Familie Acceptă",
-    "FAMILY_CENTER_LEAVE": "Family Center Leave",
+    "FAMILY_CENTER_LEAVE": "P?r?se?te Family Center",
     "STATUS_PLUS_GIFT": "Stare Plus cadou",
     "TINY_SNAP": "Snap mic",
     "STATUS_COUNTDOWN": "Numărătoarea inversă",
@@ -2414,7 +2416,7 @@
     "sticker_messages": "Autocolant",
     "tiny_snap_messages": "Snap mic",
     "map_reaction_messages": "Reacţie pe hartă",
-    "half_swipes": "Half Swipes"
+    "half_swipes": "Glis?ri pe jum?tate"
   },
   "media_download_source": {
     "none": "Niciuna",
@@ -2619,8 +2621,8 @@
     "message_reaction_add": "Reacție mesaj Adaugă",
     "message_reaction_remove": "Elimină reacția mesajului",
     "snap_opened": "Snap Deschis",
-    "snap_replayed": "Snap Replayed",
-    "snap_replayed_twice": "Snap Replayed Twice",
+    "snap_replayed": "Snap reluat",
+    "snap_replayed_twice": "Snap reluat de dou? ori",
     "snap_screenshot": "Captură de ecran",
     "snap_screen_record": "Snap înregistrare ecran",
     "i_can_see_you": "Te pot vedea"
@@ -2650,7 +2652,7 @@
     "dialog_message": "Sigur vrei să începi un apel?"
   },
   "half_swipe_notifier": {
-    "notification_channel_name": "Half Swipe",
+    "notification_channel_name": "Glisare pe jum?tate",
     "notification_content_dm": "{friend}doar pe jumătate băgat în discuţia ta pentru{duration}secunde",
     "notification_content_group": "{friend}doar pe jumătate lovit în{group}pentru{duration}secunde"
   },
@@ -2759,7 +2761,7 @@
     "notification_statistics": "STATISTICI",
     "notification_queue_size": "Mărime coadă",
     "notification_total_opened": "Total capturi deschise",
-    "notification_queue_preview": "QUEUE PREVIEW",
+    "notification_queue_preview": "PREVIZUALIZARE COAD?",
     "notification_processing_continue": "Procesarea va continua automat...",
     "notification_no_snaps_queue": "Fără pocniri la coadă.",
     "notification_queue_cleared_opened": "Coada este închisă ({opened}deschis)",
@@ -2883,7 +2885,7 @@
   "translation_position": {
     "above": "Deasupra",
     "below": "Mai jos",
-    "inline": "Inline"
+    "inline": "?n linie"
   },
   "language_codes": {
     "en": "Engleză",
@@ -3127,7 +3129,7 @@
     "no_friends_found": "Nu am găsit niciun prieten",
     "exporting_memories": "Export amintiri... ({failed}a eșuat)"
   },
-  "clear_friend_feed": "Clear Friend Feed",
+  "clear_friend_feed": "Cur??? fluxul de prieteni",
   "select_date": "Alegeți data",
   "schedule_scheduled_for": "Programat pentru{name}în{time}",
   "schedule_sending_in": "Trimit{time}",
@@ -3182,7 +3184,7 @@
     "failed_to_edit_message": "Eșec la editarea mesajului:{error}"
   },
   "ai_response_style": {
-    "casual": "Casual",
+    "casual": "Relaxat",
     "formal": "Formal",
     "friendly": "Prietenos",
     "humorous": "Umor",

@@ -245,23 +245,25 @@ val syncTasks = cargoTargets.mapIndexed { index, target ->
         dependsOn(cargoTask)
         val outputLibName = nativeLibFileName
         inputs.property("outputLibName", outputLibName)
-        val builtLibProvider = providers.provider {
-            val wslCandidate = File(wslStagingDir, "native/rust/target/${target.triple}/release/libpurrfectsnap.so")
-            val localCandidate = layout.projectDirectory.file("rust/target/${target.triple}/release/libpurrfectsnap.so").asFile
-            when {
-                wslCandidate.exists() -> wslCandidate
-                localCandidate.exists() -> localCandidate
-                else -> error("Native library not found for ${target.abi}. Tried $wslCandidate and $localCandidate")
-            }
+        val wslCandidate = File(wslStagingDir, "native/rust/target/${target.triple}/release/libpurrfectsnap.so")
+        val localCandidate = layout.projectDirectory.file("rust/target/${target.triple}/release/libpurrfectsnap.so").asFile
+        val sourceLibProvider = providers.provider {
+            if (wslCandidate.exists()) wslCandidate else localCandidate
         }
-        from(builtLibProvider) {
+        from(sourceLibProvider) {
             rename { outputLibName }
         }
+        from(sourceLibProvider) {
+            rename { "libpurrfectsnap.so" }
+        }
         into(layout.buildDirectory.dir("rustJniLibs/android/${target.abi}"))
-        inputs.files(builtLibProvider)
+        inputs.files(sourceLibProvider)
         val checksumsDir = layout.buildDirectory.dir("checksums")
         doLast {
             val file = File(destinationDir, outputLibName)
+            if (!file.exists()) {
+                error("Native library not found for ${target.abi}. Expected ${file.absolutePath}")
+            }
             val crc = CRC32()
             crc.update(file.readBytes())
             val checksumsDirFile = checksumsDir.get().asFile
@@ -334,5 +336,6 @@ tasks.matching { it.name.startsWith("pre") && it.name.endsWith("Build") }.config
 }
 
 dependencies {
+    implementation("androidx.annotation:annotation:1.7.1")
     implementation("com.google.code.gson:gson:2.10.1")
 }

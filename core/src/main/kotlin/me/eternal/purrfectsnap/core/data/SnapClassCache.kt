@@ -1,5 +1,7 @@
 package me.eternal.purrfectsnap.core.data
 
+import me.eternal.purrfectsnap.core.util.ClassDetector
+
 class SnapClassCache (
     private val classLoader: ClassLoader
 ) {
@@ -19,10 +21,50 @@ class SnapClassCache (
     val conversation by lazy { findClass("com.snapchat.client.messaging.Conversation") }
     val feedManager by lazy { findClass("com.snapchat.client.messaging.FeedManager\$CppProxy") }
     val nativeBridge by lazy { runCatching { findClass("com.snapchat.client.valdi.NativeBridge") }.getOrNull() ?: findClass("com.snapchat.client.composer.NativeBridge") }
-    val composerView by lazy { runCatching { findClass("com.snap.composer.views.ComposerView") }.getOrNull() }
-    val composerAction by lazy { runCatching { findClass("com.snap.composer.actions.ComposerAction") }.getOrNull() }
-    val composerFunctionActionAdapter by lazy { runCatching { findClass("com.snap.composer.callable.ComposerFunctionActionAdapter") }.getOrNull() }
+    val valdiView by lazy { runCatching { findClass("com.snap.valdi.views.ValdiView") }.getOrNull() ?: runCatching { findClass("com.snap.composer.views.ComposerView") }.getOrNull() }
+    val valdiFunction by lazy {
+        ClassDetector.findClassBySignature(
+            classLoader = classLoader,
+            knownNames = listOf(
+                "com.snap.valdi.callable.ValdiFunction",
+                "com.snap.composer.callable.ComposerFunction"
+            ),
+            methodSignature = { clazz ->
+                clazz.isInterface && clazz.methods.any {
+                    it.name == "perform" && it.parameterTypes.size == 1 &&
+                    it.returnType == Boolean::class.javaPrimitiveType
+                }
+            }
+        )
+    }
     
+    val valdiMarshaller by lazy {
+        ClassDetector.findClassBySignature(
+            classLoader = classLoader,
+            knownNames = listOf(
+                "com.snap.valdi.utils.ValdiMarshaller",
+                "com.snap.composer.utils.ComposerMarshaller"
+            ),
+            methodSignature = { clazz ->
+                !clazz.isInterface && clazz.methods.any { it.name == "getUntyped" }
+            }
+        )
+    }
+
+    val valdiFunctionActionAdapter by lazy {
+        ClassDetector.findClassBySignature(
+            classLoader = classLoader,
+            knownNames = listOf(
+                "com.snap.valdi.callable.ValdiFunctionActionAdapter",
+                "com.snap.composer.callable.ComposerFunctionActionAdapter"
+            ),
+            methodSignature = { clazz ->
+                !clazz.isInterface && clazz.interfaces.isNotEmpty() &&
+                clazz.methods.any { it.name == "perform" && it.parameterTypes.size == 1 }
+            }
+        )
+    }
+
     private fun findClass(className: String): Class<*> {
         return try {
             classLoader.loadClass(className)

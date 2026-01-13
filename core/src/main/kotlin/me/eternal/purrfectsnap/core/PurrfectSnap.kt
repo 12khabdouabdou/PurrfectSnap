@@ -210,7 +210,6 @@ class PurrfectSnap {
         }
     }
 
-    private var safeMode = false
 
     private fun triggerMappingsGeneration() {
         runCatching {
@@ -221,7 +220,7 @@ class PurrfectSnap {
             }
             
             val intent = Intent().apply {
-                setClassName(Constants.SE_PACKAGE_NAME, "${Constants.SE_PACKAGE_NAME}.ui.setup.SetupActivity")
+                setClassName(Constants.MODULE_PACKAGE_NAME, "${Constants.MODULE_PACKAGE_NAME}.ui.setup.SetupActivity")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 putExtra("requirements", 4) // Requirements.MAPPINGS = 4
             }
@@ -233,24 +232,12 @@ class PurrfectSnap {
     }
 
     private fun onActivityCreate(activity: Activity) {
-        if (!appContext.native.verifyKey(BuildConfig.NATIVE_KEY)) {
-            safeMode = true
-        }
         measureTimeMillis {
             with(appContext) {
                 features.onActivityCreate(activity)
                 inAppOverlay.onActivityCreate(activity)
                 scriptRuntime.eachModule { callFunction("module.onSnapMainActivityCreate", activity) }
                 actionManager.onActivityCreate()
-
-                val isTestModeEnabled = appContext.bridgeClient.getDebugProp("test_mode", "false") == "true"
-                if (safeMode && !isTestModeEnabled) {
-                    appContext.inAppOverlay.showStatusToast(
-                        Icons.Outlined.Cancel,
-                        "Failed to load security features! Snapchat may not work properly.",
-                        durationMs = 3000
-                    )
-                }
             }
         }.also { time ->
             appContext.log.verbose("onActivityCreate took $time")
@@ -268,7 +255,6 @@ class PurrfectSnap {
             }
 
         val lateInit = appContext.native.initOnce {
-            verifyKey(BuildConfig.NATIVE_KEY)
             nativeUnaryCallCallback = { request ->
                 appContext.event.post(NativeUnaryCallEvent(request.uri, request.buffer)) {
                     request.buffer = buffer
@@ -453,10 +439,26 @@ class PurrfectSnap {
             }
         }
         val stringResources = strings(androidx.compose.material3.R.string::class, androidx.compose.ui.R.string::class)
+        fun resolveComposeString(key: Int): String? {
+            val name = stringResources[key]?.replaceFirst("m3c_", "") ?: return null
+            return appContext.translation.getOrNull("material3_strings.${name}") ?: ""
+        }
+
+        fun resolveInvalidString(resources: Resources, key: Int): String? {
+            val type = runCatching { resources.getResourceTypeName(key) }.getOrNull() ?: return ""
+            return if (type == "string") null else ""
+        }
+
         Resources::class.java.getMethod("getString", Int::class.javaPrimitiveType).hook(HookStage.BEFORE) { param ->
             val key = param.arg<Int>(0)
-            val name = stringResources[key]?.replaceFirst("m3c_", "") ?: return@hook
-            param.setResult(appContext.translation.getOrNull("material3_strings.${name}") ?: "")
+            resolveComposeString(key)?.let { param.setResult(it); return@hook }
+            resolveInvalidString(param.thisObject() as Resources, key)?.let { param.setResult(it) }
+        }
+
+        Resources::class.java.getMethod("getText", Int::class.javaPrimitiveType).hook(HookStage.BEFORE) { param ->
+            val key = param.arg<Int>(0)
+            resolveComposeString(key)?.let { param.setResult(it); return@hook }
+            resolveInvalidString(param.thisObject() as Resources, key)?.let { param.setResult(it) }
         }
     }
 }

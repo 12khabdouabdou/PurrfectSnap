@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Selecionar idioma",
@@ -182,7 +182,7 @@
         "rules_title": "Regras",
         "participants_text": "{count}participantes",
         "not_found": "Não encontrado",
-        "streaks_title": "Streaks",
+        "streaks_title": "Sequ?ncias",
         "streaks_length_text": "Comprimento:{length}",
         "streaks_expiration_text": "Expira em{eta}",
         "streaks_expiration_text_expired": "Expirado",
@@ -305,7 +305,7 @@
       "clear_module_data_failed": "Falha ao limpar os dados do módulo",
       "delete_module_button": "Apagar",
       "delete_module_failed": "Falha ao remover o módulo",
-      "documentation_button": "Docs",
+      "documentation_button": "Documenta??o",
       "download_script_failed": "Falha ao baixar o script",
       "downloading_script": "A transferir o programa...",
       "edit_module_button": "Editar",
@@ -716,7 +716,7 @@
       "notifications": {
         "chat_screenshot": "Imagem",
         "chat_screen_record": "Ecrã Gravação",
-        "snap_replay": "Snap Replay",
+        "snap_replay": "Reprodu??o de Snap",
         "camera_roll_save": "Gravar o Rolo da Câmara",
         "chat": "Conversar",
         "chat_reply": "Responder à Conversa",
@@ -1021,7 +1021,7 @@
         "friendly": "Amigável",
         "humorous": "Humoroso",
         "empathetic": "Empático",
-        "toxic": "Edgy",
+        "toxic": "Agressivo",
         "busy": "Ocupado"
       },
       "ai_temperature": {
@@ -1773,7 +1773,7 @@
                     "description": "Modelo de IA a usar para gerar respostas (por exemplo, gpt-3.5-turbo, gpt-4)"
                   },
                   "ai_api_key": {
-                    "name": "AI API Key",
+                    "name": "Chave da API de IA",
                     "description": "Chave API para autenticação com o serviço de IA"
                   },
                   "ai_system_prompt": {
@@ -1817,7 +1817,7 @@
                     "description": "Usar mensagens de modelo se IA não gerar uma resposta"
                   },
                   "ai_request_timeout": {
-                    "name": "AI Request Timeout",
+                    "name": "Tempo limite da solicita??o de IA",
                     "description": "Tempo máximo para esperar pela resposta de IA (em segundos)"
                   },
                   "ai_retry_attempts": {
@@ -2156,7 +2156,7 @@
             }
           },
           "spoof": {
-            "name": "Spoof",
+            "name": "Falsificar",
             "description": "Spoof várias informações sobre você",
             "properties": {
               "play_store_installer_package_name": {
@@ -2180,7 +2180,7 @@
                 "description": "Sobrescrever o ID Android enviado para o Snapchat",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Falsificar ID do Android",
                     "description": "Sobrescrever o ID Android enviado para o Snapchat com um valor personalizado"
                   },
                   "custom_android_id": {
@@ -2401,7 +2401,7 @@
     "FAMILY_CENTER_INVITE": "Convidar para o Centro Familiar",
     "FAMILY_CENTER_ACCEPT": "Centro Familiar Aceitar",
     "FAMILY_CENTER_LEAVE": "Centro de Família",
-    "STATUS_PLUS_GIFT": "Status Plus Gift",
+    "STATUS_PLUS_GIFT": "Presente do Status Plus",
     "TINY_SNAP": "Pequeno Snap",
     "STATUS_COUNTDOWN": "Contagem regressiva",
     "MAP_REACTION": "Reacção do Mapa",
@@ -2552,7 +2552,7 @@
       "suggested": "Sugerido",
       "deleted": "Apagado",
       "business_accounts": "Contas de Negócios",
-      "streaks": "Streaks",
+      "streaks": "Sequ?ncias",
       "non_streaks": "Não Streaks",
       "followed": "Seguido",
       "following": "Seguir",
@@ -2562,7 +2562,7 @@
       "none": "Nenhum",
       "username": "Utilizador",
       "added_timestamp": "Marca de tempo adicionada",
-      "snap_score": "Snap Score",
+      "snap_score": "Pontua??o do Snap",
       "streak_length": "Comprimento do Streak",
       "most_messages_sent": "A maioria das mensagens enviadas",
       "most_recent_message": "Mensagem mais recente",
@@ -2685,7 +2685,7 @@
     }
   },
   "streaks_reminder": {
-    "notification_title": "Streaks",
+    "notification_title": "Sequ?ncias",
     "notification_text": "Vais perder o teu Streak com{friend}em{hoursLeft}horas"
   },
   "biometric_auth": {
@@ -2729,7 +2729,7 @@
     "paused_status": "Abrir automaticamente os Snaps pausados",
     "processing_status": "Processamento de encaixes:{queued}na fila,{processed}processado",
     "monitor_status": "A monitorizar...",
-    "recent_snaps": "Recent Snaps",
+    "recent_snaps": "Snaps recentes",
     "action_pause": "Pausa",
     "action_resume": "Continuar",
     "action_clear": "Limpar fila",
@@ -2967,7 +2967,7 @@
         "message_reaction_add": "Reacção adicionada",
         "message_reaction_remove": "Reacção removida",
         "snap_opened": "Abrir o encaixe",
-        "snap_replayed": "Replayed snap",
+        "snap_replayed": "Reproduziu um snap",
         "snap_replayed_twice": "Replayed snap duas vezes",
         "snap_screenshot": "Tirar uma imagem",
         "snap_screen_record": "Tela gravada"

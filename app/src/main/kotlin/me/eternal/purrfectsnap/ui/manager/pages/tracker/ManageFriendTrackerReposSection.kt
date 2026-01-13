@@ -29,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -99,7 +100,14 @@ class ManageFriendTrackerReposSection: Routes.Route() {
         ExtendedFloatingActionButton(
             onClick = { showAddDialog = true },
             containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.34f),
-            contentColor = Color.White
+            contentColor = Color.White,
+            shape = RoundedCornerShape(18.dp),
+            elevation = FloatingActionButtonDefaults.elevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 0.dp,
+                focusedElevation = 0.dp,
+                hoveredElevation = 0.dp
+            )
         ) {
             Icon(Icons.Default.Public, contentDescription = null, tint = Color.White)
             Spacer(modifier = Modifier.width(8.dp))

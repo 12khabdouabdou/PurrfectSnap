@@ -11,26 +11,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import java.util.Date
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.PopupProperties
@@ -328,36 +326,50 @@ fun LogsTab(
         var dropDownExpanded by remember { mutableStateOf(false) }
         var showDatePicker by remember { mutableStateOf(false) }
 
+        LaunchedEffect(selectionExpanded.value) {
+            if (!selectionExpanded.value) {
+                dropDownExpanded = false
+            }
+        }
+
+        LaunchedEffect(showDatePicker) {
+            if (showDatePicker) {
+                sinceDatePickerState.displayMode = DisplayMode.Picker
+            }
+        }
+
         if (showDatePicker) {
-            Dialog(onDismissRequest = { showDatePicker = false }) {
-                val dialogShape = RoundedCornerShape(22.dp)
-                Surface(
-                    shape = dialogShape,
-                    color = Color.Transparent,
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
-                    shadowElevation = 16.dp
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .background(PurrfectPalette.cardOverlay, dialogShape)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+            AestheticDialog(
+                onDismissRequest = { showDatePicker = false },
+                title = "",
+                text = "",
+                icon = Icons.Default.DateRange,
+                confirmButtonText = context.translation["button.ok"],
+                onConfirm = { showDatePicker = false },
+                dismissButtonText = context.translation["button.cancel"],
+                onDismiss = {
+                    showDatePicker = false
+                    sinceDatePickerState.selectedDateMillis = null
+                },
+                customContent = {
+                    Surface(
+                        modifier = Modifier.padding(horizontal = 6.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        color = PurrfectPalette.cardOverlayColor,
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
                     ) {
-                        Text(
-                            translation["pick_a_date_button"],
-                            color = Color.White,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Center
-                        )
                         DatePicker(
                             state = sinceDatePickerState,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color.White.copy(alpha = 0.02f), RoundedCornerShape(18.dp)),
+                                .widthIn(max = 360.dp)
+                                .padding(6.dp)
+                                .background(PurrfectPalette.cardOverlayColor, RoundedCornerShape(14.dp)),
+                            title = null,
+                            headline = null,
+                            showModeToggle = false,
                             colors = DatePickerDefaults.colors(
-                                containerColor = Color.Transparent,
+                                containerColor = PurrfectPalette.cardOverlayColor,
                                 titleContentColor = Color.White,
                                 headlineContentColor = Color.White,
                                 weekdayContentColor = Color.White.copy(alpha = 0.9f),
@@ -368,45 +380,35 @@ fun LogsTab(
                                 todayDateBorderColor = PurrfectPalette.glowSecondary,
                                 dayContentColor = Color.White.copy(alpha = 0.85f),
                                 disabledDayContentColor = Color.White.copy(alpha = 0.35f),
+                                yearContentColor = Color.White,
+                                currentYearContentColor = PurrfectPalette.glowSecondary,
+                                selectedYearContainerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.4f),
+                                selectedYearContentColor = Color.Black,
                                 dividerColor = Color.White.copy(alpha = 0.14f),
-                                navigationContentColor = Color.White
+                                navigationContentColor = Color.White,
+                                dateTextFieldColors = TextFieldDefaults.colors(
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White,
+                                    disabledTextColor = Color.White.copy(alpha = 0.6f),
+                                    focusedContainerColor = Color.White.copy(alpha = 0.08f),
+                                    unfocusedContainerColor = Color.White.copy(alpha = 0.06f),
+                                    disabledContainerColor = Color.White.copy(alpha = 0.04f),
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    disabledIndicatorColor = Color.Transparent,
+                                    cursorColor = PurrfectPalette.glowSecondary,
+                                    focusedLabelColor = PurrfectPalette.textSecondary,
+                                    unfocusedLabelColor = PurrfectPalette.textSecondary
+                                )
                             )
                         )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
-                        ) {
-                            Surface(
-                                onClick = {
-                                    showDatePicker = false
-                                    sinceDatePickerState.selectedDateMillis = null
-                                },
-                                shape = RoundedCornerShape(14.dp),
-                                color = Color.White.copy(alpha = 0.08f),
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
-                            ) {
-                                Text(
-                                    context.translation["button.cancel"],
-                                    color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                            }
-                            Surface(
-                                onClick = { showDatePicker = false },
-                                shape = RoundedCornerShape(14.dp),
-                                color = PurrfectPalette.glowPrimary.copy(alpha = 0.32f),
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f))
-                            ) {
-                                Text(
-                                    context.translation["button.ok"],
-                                    color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                                )
-                            }
-                        }
                     }
-                }
-            }
+                },
+                opaque = true,
+                showCloseButton = false,
+                showIcon = false,
+                showTitle = false
+            )
         }
 
         DropdownMenu(
@@ -443,27 +445,33 @@ fun LogsTab(
                         ExposedDropdownMenuBox(
                             expanded = dropDownExpanded,
                             onExpandedChange = { dropDownExpanded = it },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.wrapContentWidth()
                         ) {
                             Surface(
+                                onClick = { dropDownExpanded = true },
                                 modifier = Modifier
-                                    .menuAnchor()
-                                    .fillMaxWidth()
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                                     .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
                                 shape = RoundedCornerShape(12.dp),
-                                color = Color.White.copy(alpha = 0.06f)
+                                color = Color.White.copy(alpha = 0.06f),
+                                tonalElevation = 0.dp
                             ) {
-                                Text(
-                                    filterType.name,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                                    color = Color.White
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(filterType.name, color = Color.White)
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropDownExpanded)
+                                }
                             }
                             ExposedDropdownMenu(
                                 expanded = dropDownExpanded,
                                 onDismissRequest = { dropDownExpanded = false },
                                 containerColor = Color(0xFF101220),
-                                shape = RoundedCornerShape(14.dp)
+                                shape = RoundedCornerShape(14.dp),
+                                modifier = Modifier.wrapContentWidth()
                             ) {
                                 FriendTrackerManagerRoot.FilterType.entries.forEach { type ->
                                     DropdownMenuItem(
@@ -489,7 +497,6 @@ fun LogsTab(
                             checked = reverseSortOrder,
                             onCheckedChange = {
                                 reverseSortOrder = it
-                                selectionExpanded.value = false
                             },
                             colors = purrfectSwitchColors()
                         )

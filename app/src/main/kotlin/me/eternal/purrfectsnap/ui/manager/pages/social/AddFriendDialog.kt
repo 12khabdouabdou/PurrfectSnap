@@ -27,7 +27,6 @@ import me.eternal.purrfectsnap.RemoteSideContext
 import me.eternal.purrfectsnap.common.ReceiversConfig
 import me.eternal.purrfectsnap.common.data.MessagingFriendInfo
 import me.eternal.purrfectsnap.common.data.MessagingGroupInfo
-import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
 import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
 import me.eternal.purrfectsnap.common.util.snap.SnapWidgetBroadcastReceiverHelper
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
@@ -45,7 +44,7 @@ class AddFriendDialog(
         val getGroupState: (group: MessagingGroupInfo) -> Boolean,
     )
 
-    private val stateCache = mutableMapOf<String, Boolean>()
+    private val stateCache = mutableStateMapOf<String, Boolean>()
     private val translation by lazy { context.translation.getCategory("manager.dialogs.add_friend")}
 
     @Composable
@@ -57,9 +56,13 @@ class AddFriendDialog(
         getCurrentState: () -> Boolean,
         onState: (Boolean) -> Unit = {},
     ) {
-        var currentState by rememberAsyncMutableState(defaultValue = stateCache[id] ?: false) {
-            getCurrentState().also { stateCache[id] = it }
+        val cachedState = stateCache[id]
+        LaunchedEffect(id, cachedState) {
+            if (cachedState == null) {
+                stateCache[id] = getCurrentState()
+            }
         }
+        val currentState = stateCache[id] ?: false
         val coroutineScope = rememberCoroutineScope()
 
         val cardShape = RoundedCornerShape(18.dp)
@@ -68,9 +71,9 @@ class AddFriendDialog(
                 .fillMaxWidth()
                 .padding(vertical = 6.dp)
                 .clickable {
-                    currentState = !currentState
-                    stateCache[id] = currentState
-                    coroutineScope.launch(Dispatchers.IO) { onState(currentState) }
+                    val nextState = !currentState
+                    stateCache[id] = nextState
+                    coroutineScope.launch(Dispatchers.IO) { onState(nextState) }
                 },
             shape = cardShape,
             color = Color.Transparent,
@@ -125,9 +128,8 @@ class AddFriendDialog(
                 Switch(
                     checked = currentState,
                     onCheckedChange = {
-                        currentState = it
-                        stateCache[id] = currentState
-                        coroutineScope.launch(Dispatchers.IO) { onState(currentState) }
+                        stateCache[id] = it
+                        coroutineScope.launch(Dispatchers.IO) { onState(it) }
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = Color.White,
@@ -156,19 +158,12 @@ class AddFriendDialog(
                 )
                 .padding(horizontal = 16.dp, vertical = 18.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = translation["title"],
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-                Text(
-                    text = translation["search_hint"],
-                    fontSize = 13.sp,
-                    color = Color.White.copy(alpha = 0.85f)
-                )
-            }
+            Text(
+                text = translation["title"],
+                fontSize = 22.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White
+            )
         }
 
         Surface(
@@ -185,10 +180,11 @@ class AddFriendDialog(
                 value = searchKeyword.value,
                 onValueChange = { searchKeyword.value = it },
                 placeholder = {
-                    Text(text = translation["search_hint"])
+                    Text(text = translation["search_hint"], color = PurrfectPalette.textSecondary)
                 },
                 modifier = Modifier
                     .fillMaxWidth(),
+                singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Done),
                 leadingIcon = {
                     Icon(Icons.Filled.Search, contentDescription = translation["search_icon_description"])
@@ -198,8 +194,15 @@ class AddFriendDialog(
                     unfocusedContainerColor = PurrfectPalette.cardOverlayColor.copy(alpha = 0.8f),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = Color.White
-                )
+                    cursorColor = Color.White,
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedLeadingIconColor = Color.White,
+                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.85f),
+                    focusedPlaceholderColor = PurrfectPalette.textSecondary,
+                    unfocusedPlaceholderColor = PurrfectPalette.textSecondary
+                ),
+                textStyle = LocalTextStyle.current.copy(color = Color.White)
             )
         }
     }
@@ -302,6 +305,15 @@ class AddFriendDialog(
                         it.mutableUsername.contains(searchKeyword.value, ignoreCase = true) ||
                         it.displayName?.contains(searchKeyword.value, ignoreCase = true) == true
                     } ?: cachedFriends!!
+                    val selectedFriendCount by remember(filteredFriends) {
+                        derivedStateOf {
+                            filteredFriends.count { friend ->
+                                stateCache[friend.userId] ?: actionHandler.getFriendState(friend)
+                            }
+                        }
+                    }
+                    val hasFriendsSelected = selectedFriendCount > 0
+                    val allFriendsSelected = filteredFriends.isNotEmpty() && selectedFriendCount == filteredFriends.size
 
                     DialogHeader(searchKeyword)
 
@@ -337,14 +349,63 @@ class AddFriendDialog(
 
                         item {
                             if (filteredFriends.isNotEmpty()) {
-                                Text(
-                                    text = translation["category_friends"],
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.SemiBold,
+                                Row(
                                     modifier = Modifier
+                                        .fillMaxWidth()
                                         .padding(bottom = 8.dp, top = 14.dp),
-                                    color = Color.White
-                                )
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = translation["category_friends"],
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White
+                                    )
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        TextButton(
+                                            onClick = {
+                                                coroutineScope.launch(Dispatchers.IO) {
+                                                    filteredFriends.forEach { friend ->
+                                                        stateCache[friend.userId] = true
+                                                        actionHandler.onFriendState(friend, true)
+                                                    }
+                                                }
+                                            },
+                                            enabled = !allFriendsSelected
+                                        ) {
+                                            Text(
+                                                text = context.translation["manager.dialogs.messaging_action.select_all_button"]
+                                                    ?: "Select All",
+                                                color = if (allFriendsSelected) {
+                                                    Color.White.copy(alpha = 0.45f)
+                                                } else {
+                                                    PurrfectPalette.glowSecondary
+                                                }
+                                            )
+                                        }
+                                        TextButton(
+                                            onClick = {
+                                                coroutineScope.launch(Dispatchers.IO) {
+                                                    filteredFriends.forEach { friend ->
+                                                        stateCache[friend.userId] = false
+                                                        actionHandler.onFriendState(friend, false)
+                                                    }
+                                                }
+                                            },
+                                            enabled = hasFriendsSelected
+                                        ) {
+                                            Text(
+                                                text = translation["unselect_all_button"],
+                                                color = if (hasFriendsSelected) {
+                                                    PurrfectPalette.glowPrimary
+                                                } else {
+                                                    Color.White.copy(alpha = 0.45f)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
 

@@ -332,8 +332,7 @@ class Navigation(
                             }
                             val horizontalInset = 2.dp
                             val indicatorWidth = (with(density) { itemWidthPx.toDp() } - horizontalInset * 2)
-                                .coerceAtLeast(70.dp)
-                                .coerceAtMost(with(density) { itemWidthPx.toDp() })
+                                .coerceAtLeast(0.dp)
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()

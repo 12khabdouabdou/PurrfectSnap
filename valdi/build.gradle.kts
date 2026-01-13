@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = rootProject.ext["applicationId"].toString() + ".composer"
+    namespace = rootProject.ext["applicationId"].toString() + ".valdi"
     compileSdk = 35
 
     sourceSets {
@@ -51,7 +51,7 @@ tasks.register("compileRollup", org.gradle.api.tasks.Exec::class) {
 tasks.register<org.gradle.api.tasks.Sync>("syncComposerAssets") {
     dependsOn("compileRollup")
     from(layout.projectDirectory.file("build/loader.js"))
-    into(layout.projectDirectory.dir("build/assets/composer"))
+    into(layout.projectDirectory.dir("build/assets/valdi"))
 }
 
 tasks.named("preBuild").configure {

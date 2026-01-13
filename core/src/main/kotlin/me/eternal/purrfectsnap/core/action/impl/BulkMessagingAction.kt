@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -144,13 +147,20 @@ class BulkMessagingAction : AbstractAction() {
             ViewAppearanceHelper.newAlertDialogBuilder(ctx)
                 .setTitle("...")
                 .setView(LinearLayout(ctx).apply {
+                    val padding = (16 * ctx.resources.displayMetrics.density).toInt()
+                    val spacing = (8 * ctx.resources.displayMetrics.density).toInt()
                     orientation = LinearLayout.VERTICAL
                     gravity = Gravity.CENTER
+                    setPadding(padding, padding, padding, padding)
                     addView(statusTextView.apply {
                         layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                         textAlignment = View.TEXT_ALIGNMENT_CENTER
+                        setSingleLine(false)
+                        setPadding(0, 0, 0, spacing)
                     })
-                    addView(ProgressBar(ctx))
+                    addView(ProgressBar(ctx).apply {
+                        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+                    })
                 })
                 .setCancelable(false)
                 .show()
@@ -184,21 +194,71 @@ class BulkMessagingAction : AbstractAction() {
         onConfirm: () -> Unit,
         onCancel: () -> Unit,
     ) {
-        AlertDialog(
-            onDismissRequest = onCancel,
-            title = { Text(text = translation["confirmation_dialog.title"]) },
-            text = { Text(text = translation["confirmation_dialog.message"]) },
-            confirmButton = {
-                TextButton(onClick = onConfirm) {
-                    Text(text = context.translation["button.positive"])
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onCancel) {
-                    Text(text = context.translation["button.negative"])
+        Dialog(onDismissRequest = onCancel) {
+            val shape = RoundedCornerShape(22.dp)
+            Surface(
+                shape = shape,
+                color = Color.Transparent,
+                tonalElevation = 0.dp,
+                shadowElevation = 16.dp,
+                border = BorderStroke(1.dp, BulkMessagingPalette.glowStroke)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(BulkMessagingPalette.cardOverlay, shape)
+                        .padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = BulkMessagingPalette.faintSurface
+                    ) {
+                        Icon(
+                            Icons.Default.WarningAmber,
+                            contentDescription = null,
+                            tint = BulkMessagingPalette.textPrimary,
+                            modifier = Modifier.padding(10.dp)
+                        )
+                    }
+                    Text(
+                        text = translation["confirmation_dialog.title"],
+                        style = MaterialTheme.typography.titleLarge,
+                        color = BulkMessagingPalette.textPrimary,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = translation["confirmation_dialog.message"],
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = BulkMessagingPalette.textSecondary,
+                        textAlign = TextAlign.Center
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally)
+                    ) {
+                        Button(
+                            onClick = onCancel,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White.copy(alpha = 0.08f),
+                                contentColor = BulkMessagingPalette.textPrimary
+                            )
+                        ) {
+                            Text(text = context.translation["button.negative"])
+                        }
+                        Button(
+                            onClick = onConfirm,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BulkMessagingPalette.glowPrimary.copy(alpha = 0.34f),
+                                contentColor = BulkMessagingPalette.textPrimary
+                            )
+                        ) {
+                            Text(text = context.translation["button.positive"])
+                        }
+                    }
                 }
             }
-        )
+        }
     }
 
     private fun filterFriends(friends: List<FriendInfo>, filter: Filter, nameFilter: String): List<FriendInfo> {
@@ -728,7 +788,7 @@ class BulkMessagingAction : AbstractAction() {
                             ConversationType.FRIENDS_ONLY -> translation["no_friends_found"]
                             ConversationType.GROUPS_ONLY -> translation["no_groups_found"]
                             ConversationType.BOTH -> translation["no_friends_or_groups_found"]
-                        }, fontSize = 12.sp, fontWeight = FontWeight.Light, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+                        }, fontSize = 12.sp, fontWeight = FontWeight.Light, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, color = BulkMessagingPalette.textPrimary)
                     }
                 }
                 items(friends, key = { it.userId!! }) { friendInfo ->
@@ -1215,7 +1275,12 @@ class BulkMessagingAction : AbstractAction() {
                     ) {
                         actionsList.forEach { (textBuilder, actionFunction) ->
                             DropdownMenuItem(
-                                text = { Text(text = remember(selectedFriends.size, selectedGroups.size) { textBuilder() }) },
+                                text = {
+                                    Text(
+                                        text = remember(selectedFriends.size, selectedGroups.size) { textBuilder() },
+                                        color = BulkMessagingPalette.textPrimary
+                                    )
+                                },
                                 onClick = {
                                     actionsMenuExpanded = false
                                     showConfirmationDialog = true

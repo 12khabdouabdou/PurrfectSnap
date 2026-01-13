@@ -58,8 +58,8 @@ open class ScriptRuntime(
         val bufferedReader = content.bufferedReader()
         val moduleInfo = bufferedReader.readModuleInfo()
 
-        if (moduleInfo.minSEVersion != null && moduleInfo.minSEVersion > BuildConfig.VERSION_CODE) {
-            throw Exception("Module requires a newer version of PurrfectSnap (min version: ${moduleInfo.minSEVersion})")
+        if (moduleInfo.minPSVersion != null && moduleInfo.minPSVersion > BuildConfig.VERSION_CODE) {
+            throw Exception("Module requires a newer version of PurrfectSnap (min version: ${moduleInfo.minPSVersion})")
         }
 
         return JSModule(

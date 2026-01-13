@@ -281,6 +281,14 @@ class InAppOverlay(
         showDuration: Boolean = true,
         maxLines: Int = 3
     ) {
+        if (context.config.global.uiSettings.useSystemToasts.get()) {
+            if (durationMs > 2500) {
+                context.longToast(text)
+            } else {
+                context.shortToast(text)
+            }
+            return
+        }
         showToast(
             icon = { Icon(icon, contentDescription = "icon", modifier = Modifier.size(32.dp)) },
             text = {

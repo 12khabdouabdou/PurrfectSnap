@@ -16,6 +16,7 @@ import androidx.work.WorkerParameters
 import me.eternal.purrfectsnap.R
 import me.eternal.purrfectsnap.ui.manager.MainActivity
 import me.eternal.purrfectsnap.ui.manager.data.Updater
+import me.eternal.purrfectsnap.ui.manager.data.Updater.Channel
 
 class UpdateCheckWorker(
     private val appContext: Context,
@@ -24,7 +25,11 @@ class UpdateCheckWorker(
 
     override suspend fun doWork(): Result {
         return try {
-            val latestRelease = Updater.latestRelease
+            val channel = when (inputData.getString("update_channel")) {
+                "prerelease" -> Channel.PRERELEASE
+                else -> Channel.STABLE
+            }
+            val latestRelease = Updater.getLatestRelease(channel)
             if (latestRelease != null) {
                 showUpdateNotification(latestRelease.versionName)
             }

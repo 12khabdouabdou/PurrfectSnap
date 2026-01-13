@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -174,7 +175,22 @@ class MainActivity : ComponentActivity() {
                             } else {
                                 PaddingValues(0.dp)
                             }
+                            val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
                             navigation.NavContent(contentPadding, startDestination)
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .fillMaxWidth()
+                                    .height(statusBarHeight + 24.dp)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color(0xFF241F52),
+                                                Color.Transparent
+                                            )
+                                        )
+                                    )
+                            )
                             if (!isFullscreen) {
                                 Box(
                                     modifier = Modifier

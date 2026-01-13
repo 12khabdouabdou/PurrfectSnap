@@ -385,11 +385,12 @@ class LoggerHistoryRoot : Routes.Route() {
                         }
                     }
 
-                    TextField(
+                    OutlinedTextField(
                         value = stringFilter,
                         onValueChange = { stringFilter = it },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
                         placeholder = {
                             Text(
                                 text = context.translation["manager.dialogs.add_friend.search_hint"] ?: "Search",

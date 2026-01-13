@@ -56,7 +56,7 @@ class AppLock : Feature("AppLock") {
     private fun requestUnlock() {
         isUnlockRequested = true
         context.mainActivity!!.startActivityForResult(Intent().apply {
-            component = ComponentName(Constants.SE_PACKAGE_NAME, "me.eternal.purrfectsnap.bridge.BiometricPromptActivity")
+            component = ComponentName(Constants.MODULE_PACKAGE_NAME, "me.eternal.purrfectsnap.bridge.BiometricPromptActivity")
         }, requestCode)
     }
 

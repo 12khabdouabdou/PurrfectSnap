@@ -10,7 +10,7 @@ data class ModuleInfo(
     val updateUrl: String? = null,
     val author: String? = null,
     val minSnapchatVersion: Long? = null,
-    val minSEVersion: Long? = null,
+    val minPSVersion: Long? = null,
     val grantedPermissions: List<String>,
     val executionSides: List<String>? = null,
 ) {
@@ -23,14 +23,14 @@ data class ModuleInfo(
 
 fun BufferedReader.readModuleInfo(): ModuleInfo {
     val header = readLine()
-    if (!header.startsWith("// ==SE_module==")) {
+    if (!header.startsWith("// ==PS_module==") && !header.startsWith("// ==SE_module==")) {
         throw Exception("Invalid module header")
     }
 
     val properties = mutableMapOf<String, String>()
     while (true) {
         val line = readLine()
-        if (line.startsWith("// ==/SE_module==")) {
+        if (line.startsWith("// ==/PS_module==") || line.startsWith("// ==/SE_module==")) {
             break
         }
         val split = line.replaceFirst("//", "").split(":", limit = 2)
@@ -52,7 +52,8 @@ fun BufferedReader.readModuleInfo(): ModuleInfo {
         updateUrl = properties["updateUrl"],
         author = properties["author"],
         minSnapchatVersion = properties["minSnapchatVersion"]?.toLongOrNull(),
-        minSEVersion = properties["minSEVersion"]?.toLongOrNull(),
+        minPSVersion = properties["minPSVersion"]?.toLongOrNull()
+            ?: properties["minSEVersion"]?.toLongOrNull(),
         grantedPermissions = properties["permissions"]?.split(",")?.map { it.trim() } ?: emptyList(),
         executionSides = properties["executionSides"]?.lowercase()?.split(",")?.map { it.trim() },
     )

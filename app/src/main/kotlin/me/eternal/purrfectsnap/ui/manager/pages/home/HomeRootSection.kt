@@ -1,4 +1,4 @@
-﻿package me.eternal.purrfectsnap.ui.manager.pages.home
+package me.eternal.purrfectsnap.ui.manager.pages.home
 
 import android.content.SharedPreferences
 import androidx.compose.animation.AnimatedContent
@@ -6,11 +6,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -19,7 +16,6 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,19 +27,24 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -55,18 +56,21 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
@@ -77,7 +81,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -91,9 +94,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -105,14 +106,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
-import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.eternal.purrfectsnap.R
 import me.eternal.purrfectsnap.action.EnumQuickActions
 import me.eternal.purrfectsnap.common.BuildConfig
@@ -126,9 +127,13 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.manager.data.UpdateDownloader
 import me.eternal.purrfectsnap.ui.manager.data.Updater
+import me.eternal.purrfectsnap.ui.manager.data.Updater.Channel
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
 import me.eternal.purrfectsnap.ui.util.AlertDialogs
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 class HomeRootSection : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.sections.home") }
@@ -143,6 +148,10 @@ class HomeRootSection : Routes.Route() {
             )
         )
     }
+
+    private val changelogClient by lazy { OkHttpClient() }
+    private val changelogStableUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-stable.txt"
+    private val changelogPrereleaseUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-prerelease.txt"
 
     private val heroGradientColors = listOf(
         Color(0xFF5C4B99),
@@ -279,6 +288,26 @@ class HomeRootSection : Routes.Route() {
     }
 
     @Composable
+    private fun InfoCard(content: @Composable ColumnScope.() -> Unit) {
+        OutlinedCard(
+            modifier = Modifier
+                .padding(start = cardMargin, end = cardMargin)
+                .fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = 10.dp),
+                content = content
+            )
+        }
+    }
+
+    @Composable
     private fun RowScope.HomeActionChips() {
         TopBarActionChip(
             icon = Icons.Filled.BugReport,
@@ -373,6 +402,7 @@ class HomeRootSection : Routes.Route() {
         downloadState: UpdateDownloader.DownloadState,
         downloadProgress: Float,
         onUpdateAction: () -> Unit,
+        channelLabel: String,
         isPurrAuraActive: Boolean,
         onWikiClick: () -> Unit,
         onTelegramClick: () -> Unit,
@@ -382,6 +412,7 @@ class HomeRootSection : Routes.Route() {
         avenirNext: FontFamily
     ) {
         val heroShape = RoundedCornerShape(36.dp)
+        val gitHashShort = remember { (context.installationSummary.modInfo?.gitHash ?: BuildConfig.GIT_HASH).take(7) }
         Box(
             modifier = Modifier
                 .padding(horizontal = cardMargin, vertical = 6.dp)
@@ -412,9 +443,10 @@ class HomeRootSection : Routes.Route() {
                         fontFamily = avenirNext
                     )
                     Text(
-                        text = "by $authorName",
+                        text = "By ΞTΞRNAL",
                         color = Color.White.copy(alpha = 0.75f),
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        fontFamily = avenirNext
                     )
                     Text(
                         text = "An Xposed Module meant to enhance your Snapchat experience",
@@ -429,9 +461,118 @@ class HomeRootSection : Routes.Route() {
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            HeroBadge("Codename: Rass Malayi")
-            HeroBadge("Debug Build")
+            HeroBadge("Version: $versionName - $channelLabel")
+            gitHashShort.takeIf { it.isNotBlank() && it.lowercase() != "unknown" }?.let {
+                HeroBadge("Build: $it")
+            }
         }
+
+                if (latestUpdate != null) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color.White.copy(alpha = 0.08f),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
+                        tonalElevation = 0.dp,
+                        shadowElevation = 0.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = translation["update_title"],
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = translation.format(
+                                        "update_content",
+                                        "version" to (latestUpdate.versionName)
+                                    ),
+                                    color = Color.White.copy(alpha = 0.82f),
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            AnimatedContent(
+                                targetState = downloadState,
+                                label = "UpdateDownloadHero"
+                            ) { state ->
+                                when (state) {
+                                    UpdateDownloader.DownloadState.IDLE,
+                                    UpdateDownloader.DownloadState.FAILED -> {
+                                        Button(
+                                            onClick = onUpdateAction,
+                                            shape = RoundedCornerShape(50),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color.White,
+                                                contentColor = Color(0xFF1B152E)
+                                            ),
+                                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
+                                            contentPadding = PaddingValues(12.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Download,
+                                                contentDescription = translation["download_icon_description"],
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+
+                                    UpdateDownloader.DownloadState.DOWNLOADING -> {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            modifier = Modifier.padding(end = 6.dp)
+                                        ) {
+                                            CircularProgressIndicator(
+                                                progress = { downloadProgress },
+                                                modifier = Modifier.size(28.dp),
+                                                strokeWidth = 3.dp,
+                                                color = Color.White
+                                            )
+                                            Text(
+                                                text = "${(downloadProgress * 100).toInt()}%",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+
+                                    UpdateDownloader.DownloadState.COMPLETED -> {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Check,
+                                                contentDescription = translation["completed_icon_description"],
+                                                tint = Color(0xFFA3F0C2)
+                                            )
+                                            Text(
+                                                text = "Ready to install",
+                                                color = Color.White,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
 
                 Surface(
                     color = Color.White.copy(alpha = 0.08f),
@@ -564,23 +705,6 @@ class HomeRootSection : Routes.Route() {
         prefs.edit().remove("quick_tile_size_$key").apply()
     }
 
-    private fun getTileOffset(name: String): Pair<Float, Float> {
-        val prefs = context.sharedPreferences
-        val key = resolveTileKey(name)
-        val raw = prefs.getString("quick_tile_offset_$key", null)
-        if (raw == null) return 0f to 0f
-        val parts = raw.split(',')
-        val x = parts.getOrNull(0)?.toFloatOrNull() ?: 0f
-        val y = parts.getOrNull(1)?.toFloatOrNull() ?: 0f
-        return x to y
-    }
-
-    private fun setTileOffset(name: String, x: Float, y: Float) {
-        val prefs = context.sharedPreferences
-        val key = resolveTileKey(name)
-        prefs.edit().putString("quick_tile_offset_$key", "$x,$y").apply()
-    }
-
     private fun clearTileOffset(name: String) {
         val prefs = context.sharedPreferences
         val key = resolveTileKey(name)
@@ -611,11 +735,22 @@ class HomeRootSection : Routes.Route() {
         val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
             context.database.getQuickTiles().filter { it.isNotBlank() }
         }
-        val latestUpdate by rememberAsyncMutableState(defaultValue = null) { Updater.latestRelease }
+        val updateChannel = context.config.root.global.updateSettings.updateChannel.getNullable() ?: "stable"
+        val channelLabel = if (updateChannel == "prerelease") "Pre-release" else "Stable"
+        val latestUpdate by rememberAsyncMutableState(defaultValue = null, keys = arrayOf(updateChannel)) {
+            val channel = if (updateChannel == "prerelease") Channel.PRERELEASE else Channel.STABLE
+            Updater.getLatestRelease(channel)
+        }
+        val changelogUrl = if (updateChannel == "prerelease") changelogPrereleaseUrl else changelogStableUrl
         val downloadState by UpdateDownloader.downloadState.collectAsState()
         val downloadProgress by UpdateDownloader.downloadProgress.collectAsState()
         val coroutineScope = rememberCoroutineScope()
         val isPurrAuraActive by rememberPreferenceBool("debug_test_mode", true)
+        var showChangelogDialog by remember { mutableStateOf(false) }
+        var changelogLoading by remember { mutableStateOf(false) }
+        var changelogError by remember { mutableStateOf<String?>(null) }
+        var changelogText by remember { mutableStateOf<String?>(null) }
+        var changelogVersion by remember { mutableStateOf<String?>(null) }
 
         val handleUpdateAction: () -> Unit = {
             latestUpdate?.let { latest ->
@@ -624,7 +759,7 @@ class HomeRootSection : Routes.Route() {
                 for (abi in supportedAbis) {
                     when (abi) {
                         "arm64-v8a" -> {
-                            abiName = "armv8"
+                            abiName = "arm64"
                             break
                         }
                         "armeabi-v7a" -> {
@@ -633,29 +768,79 @@ class HomeRootSection : Routes.Route() {
                         }
                     }
                 }
+                context.log.info(
+                    "Update request: device ABIs=${supportedAbis.joinToString()} resolvedArch=${abiName ?: "unknown"}",
+                    "HomeRoot"
+                )
 
-                if (latest.workflowId == null) {
-                    context.androidContext.openLink(latest.releaseUrl)
-                } else if (abiName == null) {
-                    android.widget.Toast.makeText(
-                        context.androidContext,
-                        "Your device architecture is not supported for automatic updates.",
-                        android.widget.Toast.LENGTH_LONG
-                    ).show()
+                if (latest.workflowId != null) {
+                    if (abiName == null) {
+                        android.widget.Toast.makeText(
+                            context.androidContext,
+                            "Your device architecture is not supported for automatic updates.",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        val artifactName = "purrfectsnap-${abiName}-debug"
+                        val downloadUrl = "https://nightly.link/particle-box/PurrfectSnap/actions/runs/${latest.workflowId}/$artifactName.zip"
+                        context.log.info("Debug update -> downloading $artifactName from $downloadUrl", "HomeRoot")
+                        UpdateDownloader.downloadAndInstall(context, downloadUrl, "$artifactName.zip", coroutineScope)
+                    }
+                    return@let
+                }
+
+                val releaseDownload = abiName?.let { arch -> latest.assetDownloads[arch] }
+                if (releaseDownload != null) {
+                    val fileName = releaseDownload.substringAfterLast('/')
+                    context.log.info("Release update -> arch=$abiName url=$releaseDownload file=$fileName", "HomeRoot")
+                    UpdateDownloader.downloadAndInstall(context, releaseDownload, fileName, coroutineScope)
                 } else {
-                    val artifactName = "purrfectsnap-${abiName}-debug"
-                    val downloadUrl = "https://nightly.link/particle-box/PurrfectSnap/actions/runs/${latest.workflowId}/$artifactName.zip"
-                    UpdateDownloader.downloadAndInstall(context.androidContext, downloadUrl, "$artifactName.zip", coroutineScope)
+                    context.log.warn(
+                        "No matching update asset for arch=$abiName (available: ${latest.assetDownloads.keys})",
+                        "HomeRoot"
+                    )
+                    context.androidContext.openLink(latest.releaseUrl)
                 }
             }
         }
 
+        fun loadChangelog(targetVersion: String, url: String) {
+            if (changelogVersion == targetVersion && changelogText != null) return
+            changelogLoading = true
+            changelogError = null
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching {
+                    changelogClient.newCall(Request.Builder().url(url).build()).execute().use { response ->
+                        if (!response.isSuccessful) throw IllegalStateException("Failed to fetch changelog (${response.code})")
+                        val body = response.body?.string() ?: throw IllegalStateException("Empty changelog body")
+                        extractChangelogForVersion(body, targetVersion).ifBlank { body.trim() }
+                    }
+                }.onSuccess { text ->
+                    withContext(Dispatchers.Main) {
+                        changelogText = text
+                        changelogVersion = targetVersion
+                        changelogLoading = false
+                    }
+                }.onFailure { error ->
+                    withContext(Dispatchers.Main) {
+                        changelogError = error.message ?: "Failed to load changelog"
+                        changelogLoading = false
+                    }
+                }
+            }
+        }
+
+        val onUpdateButtonClick: () -> Unit = {
+            latestUpdate?.let {
+                showChangelogDialog = true
+                loadChangelog(it.versionName, changelogUrl)
+            }
+        }
+
         var showQuickActionsMenu by remember { mutableStateOf(false) }
-        var editMode by remember { mutableStateOf(false) }
         val scrollState = rememberScrollState()
         val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navigationBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val density = LocalDensity.current
         val contentBottomPadding = routes.bottomPadding + navigationBarPadding + 96.dp
 
         Box(
@@ -666,7 +851,7 @@ class HomeRootSection : Routes.Route() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(scrollState, enabled = !editMode)
+                    .verticalScroll(scrollState)
                     .padding(bottom = contentBottomPadding)
             ) {
                 Row(
@@ -680,18 +865,19 @@ class HomeRootSection : Routes.Route() {
                     Spacer(modifier = Modifier.weight(1f))
                     HomeActionChips()
                 }
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 HeroSection(
                     versionName = BuildConfig.VERSION_NAME,
                     latestUpdate = latestUpdate,
                     downloadState = downloadState,
                     downloadProgress = downloadProgress,
-                    onUpdateAction = handleUpdateAction,
+                    onUpdateAction = onUpdateButtonClick,
+                    channelLabel = channelLabel,
                     isPurrAuraActive = isPurrAuraActive,
                     onWikiClick = { context.androidContext.openLink("https://github.com/particle-box/PurrfectSnap/wiki") },
                     onTelegramClick = { context.androidContext.openLink("https://t.me/purrfectsnap_official") },
                     onGithubClick = { context.androidContext.openLink("https://github.com/particle-box/PurrfectSnap") },
-                    authorName = "ΞTΞRNAL",
+                    authorName = "ETERNAL",
                     onManageClick = { routes.settings.navigate() },
                     avenirNext = avenirNext,
                 )
@@ -723,7 +909,8 @@ class HomeRootSection : Routes.Route() {
                                     color = Color.White.copy(alpha = 0.85f),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = TextAlign.Center
                                 )
                                 Spacer(modifier = Modifier.height(24.dp))
                                 Column(
@@ -809,184 +996,27 @@ class HomeRootSection : Routes.Route() {
                                             Spacer(modifier = Modifier.width(6.dp))
                                             Text(text = "Manage")
                                         }
-                                        Button(
-                                            onClick = { editMode = !editMode },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (editMode) Color.White else Color.White.copy(alpha = 0.12f),
-                                                contentColor = if (editMode) Color(0xFF1B152E) else Color.White
-                                            )
-                                        ) {
-                                            Icon(
-                                                imageVector = if (editMode) Icons.Default.Check else Icons.Filled.DragHandle,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(if (editMode) "Done" else "Reorder")
-                                        }
                                     }
                                 }
-                            val spacing = 12.dp
-                            var spanTick by remember { mutableIntStateOf(0) }
-
-                            BoxWithConstraints(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                            val density = LocalDensity.current
-                            val baseCell = remember { (maxWidth - (spacing * 2)) / 3f }
-                            val baseCellPx = with(density) { baseCell.toPx() }
-
-                            val (tilePositions, totalHeight) = remember(selectedTiles.size, spanTick) {
-                                val positions = mutableMapOf<String, Offset>()
-                                var currentX = 0f
-                                var currentY = 0f
-                                var rowMaxHeight = 0f
-                                val screenWidthPx = with(density) { maxWidth.toPx() }
-
-                                selectedTiles.forEach { tileName ->
-                                    cards.entries.find { entry -> entry.key.first == tileName }?.let {
-                                        val card = it.key
-                                        val (wSpan, hSpan) = getTileSpan(card.first)
-                                        val tileWidthPx = with(density) { (baseCell * wSpan + spacing * (wSpan - 1)).toPx() }
-                                        val tileHeightPx = with(density) { (baseCell * hSpan + spacing * (hSpan - 1)).toPx() }
-
-                                        if (currentX + tileWidthPx > screenWidthPx) {
-                                            currentX = 0f
-                                            currentY += rowMaxHeight
-                                            rowMaxHeight = 0f
-                                        }
-
-                                        positions[tileName] = Offset(currentX, currentY)
-                                        currentX += tileWidthPx + with(density) { spacing.toPx() }
-                                        if (tileHeightPx > rowMaxHeight) {
-                                            rowMaxHeight = tileHeightPx
-                                        }
-                                    }
-                                }
-                                positions to (currentY + rowMaxHeight)
-                            }
-
-                            Box(modifier = Modifier.height(with(density) { totalHeight.toDp() })) {
-                                remember(selectedTiles.size, context.translation.loadedLocale) {
-                                    selectedTiles.mapNotNull {
-                                        cards.entries.find { entry -> entry.key.first == it }
-                                    }
-                                }.forEach { (card, action) ->
-                                    val interactionSource = remember { MutableInteractionSource() }
-                                    val _tick = spanTick
-                                    val (wSpan, hSpan) = getTileSpan(card.first)
-                                    val tileWidth = baseCell * wSpan + spacing * (wSpan - 1)
-                                    val tileHeight = baseCell * hSpan + spacing * (hSpan - 1)
-                                    val tileWidthPx = with(density) { tileWidth.toPx() }
-                                    val tileHeightPx = with(density) { tileHeight.toPx() }
-
-                                    var offsetX by remember(card.first) { mutableStateOf(0f) }
-                                    var offsetY by remember(card.first) { mutableStateOf(0f) }
-                                    var isDragging by remember { mutableStateOf(false) }
-
-                                    LaunchedEffect(card.first, spanTick) {
-                                        val (x, y) = getTileOffset(card.first)
-                                        if (x != 0f || y != 0f) {
-                                            offsetX = x
-                                            offsetY = y
-                                        } else {
-                                            val pos = tilePositions[card.first]
-                                            if (pos != null) {
-                                                offsetX = pos.x
-                                                offsetY = pos.y
-                                                setTileOffset(card.first, offsetX, offsetY)
-                                            }
-                                        }
-                                    }
-
-                                    val animatedOffsetX by animateFloatAsState(
-                                        targetValue = offsetX,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        ),
-                                        label = "offsetX"
-                                    )
-                                    val animatedOffsetY by animateFloatAsState(
-                                        targetValue = offsetY,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        ),
-                                        label = "offsetY"
-                                    )
-
-                                    val currentOffsetX = if (isDragging) offsetX else animatedOffsetX
-                                    val currentOffsetY = if (isDragging) offsetY else animatedOffsetY
-
-                                    val baseModifier = Modifier
-                                        .offset { IntOffset(currentOffsetX.roundToInt(), currentOffsetY.roundToInt()) }
-                                        .width(tileWidth)
-                                        .height(tileHeight)
-                                        .padding(all = 6.dp)
-
-                                    val editModifier = baseModifier.then(
-                                        Modifier.pointerInput(card.first, tileWidthPx, tileHeightPx) {
-                                            var originalOffsetX = 0f
-                                            var originalOffsetY = 0f
-                                            detectDragGestures(
-                                                onDragStart = {
-                                                    isDragging = true
-                                                    originalOffsetX = offsetX
-                                                    originalOffsetY = offsetY
-                                                },
-                                                onDrag = { change, dragAmount ->
-                                                    change.consume()
-                                                    offsetX += dragAmount.x
-                                                    offsetY += dragAmount.y
-                                                },
-                                                onDragEnd = {
-                                                    isDragging = false
-                                                    var targetTile: String? = null
-                                                    var maxOverlap = 0f
-                                                    val tileRect = Rect(Offset(offsetX, offsetY), Size(tileWidthPx, tileHeightPx))
-
-                                                    for (otherTileName in selectedTiles) {
-                                                        if (otherTileName == card.first) continue
-                                                        val (otherOffsetX, otherOffsetY) = getTileOffset(otherTileName)
-                                                        val (otherWSpan, otherHSpan) = getTileSpan(otherTileName)
-                                                        val otherTileWidth = baseCell * otherWSpan + spacing * (otherWSpan - 1)
-                                                        val otherTileHeight = baseCell * otherHSpan + spacing * (otherHSpan - 1)
-                                                        val otherRect = Rect(Offset(otherOffsetX, otherOffsetY), Size(with(density) { otherTileWidth.toPx() }, with(density) { otherTileHeight.toPx() }))
-                                                        val intersectRect = tileRect.intersect(otherRect)
-                                                        val overlapArea = intersectRect.width * intersectRect.height
-                                                        if (overlapArea > maxOverlap) {
-                                                            maxOverlap = overlapArea
-                                                            targetTile = otherTileName
-                                                        }
-                                                    }
-
-                                                    if (targetTile != null) {
-                                                        val (wSpan, hSpan) = getTileSpan(card.first)
-                                                        val (targetWSpan, targetHSpan) = getTileSpan(targetTile!!)
-                                                        if (wSpan == targetWSpan && hSpan == targetHSpan) {
-                                                            // swap
-                                                            val (targetOffsetX, targetOffsetY) = getTileOffset(targetTile!!)
-                                                            setTileOffset(card.first, targetOffsetX, targetOffsetY)
-                                                            setTileOffset(targetTile!!, originalOffsetX, originalOffsetY)
-                                                            spanTick++ // this will trigger recomposition for all tiles
-                                                        } else {
-                                                            // revert
-                                                            offsetX = originalOffsetX
-                                                            offsetY = originalOffsetY
-                                                        }
-                                                    } else {
-                                                        setTileOffset(card.first, offsetX, offsetY)
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    )
-                                    val viewModifier = baseModifier.then(Modifier.scaleOnPress(interactionSource))
-
-                                    val tileContent: @Composable (Modifier, Boolean) -> Unit = { tileModifier, isEdit ->
+                                val spacing = 12.dp
+                                val gridPadding = 8.dp
+                                LazyVerticalGrid(
+                                    columns = GridCells.Adaptive(minSize = 120.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(spacing),
+                                    verticalArrangement = Arrangement.spacedBy(spacing),
+                                    contentPadding = PaddingValues(gridPadding)
+                                ) {
+                                    items(selectedTiles, key = { it }) { tileName ->
+                                        val cardEntry = cards.entries.find { entry -> entry.key.first == tileName } ?: return@items
+                                        val (card, action) = cardEntry
+                                        val interactionSource = remember { MutableInteractionSource() }
                                         Surface(
-                                            modifier = tileModifier,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .aspectRatio(1.05f)
+                                                .scaleOnPress(interactionSource)
+                                                .clickable { action(routes) },
                                             shape = RoundedCornerShape(18.dp),
                                             color = Color.White.copy(alpha = 0.06f),
                                             tonalElevation = 0.dp,
@@ -1011,91 +1041,99 @@ class HomeRootSection : Routes.Route() {
                                                         .fillMaxSize()
                                                         .padding(all = 10.dp),
                                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                                    verticalArrangement = Arrangement.SpaceEvenly,
+                                                    verticalArrangement = Arrangement.Center,
                                                 ) {
                                                     Icon(
                                                         imageVector = card.second, contentDescription = null,
                                                         tint = Color.White,
-                                                        modifier = Modifier.size(50.dp)
+                                                        modifier = Modifier.size(44.dp)
                                                     )
+                                                    Spacer(modifier = Modifier.height(8.dp))
                                                     Text(
                                                         text = card.first,
                                                         lineHeight = 16.sp,
-                                                        fontSize = 14.sp,
+                                                        fontSize = 13.sp,
                                                         fontWeight = FontWeight.Bold,
                                                         textAlign = TextAlign.Center,
                                                         color = Color.White,
                                                         overflow = TextOverflow.Ellipsis,
+                                                        maxLines = 2,
                                                     )
-                                                }
-                                                if (isEdit) {
-                                                    var dxAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
-                                                    var dyAccResize by remember(card.first, spanTick) { mutableStateOf(0f) }
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .align(Alignment.BottomEnd)
-                                                            .size(28.dp)
-                                                            .pointerInput(card.first, spanTick) {
-                                                                detectDragGestures(
-                                                                    onDragStart = {
-                                                                        dxAccResize = 0f
-                                                                        dyAccResize = 0f
-                                                                    },
-                                                                    onDrag = { change, dragAmount ->
-                                                                        change.consume()
-                                                                        dxAccResize += dragAmount.x
-                                                                        dyAccResize += dragAmount.y
-
-                                                                        var newW = wSpan
-                                                                        var newH = hSpan
-                                                                        val step = baseCellPx / 2f
-
-                                                                        while (dxAccResize > step) {
-                                                                            newW = (wSpan + 1).coerceIn(1, 3)
-                                                                            dxAccResize -= step
-                                                                        }
-                                                                        while (dxAccResize < -step) {
-                                                                            newW = (wSpan - 1).coerceIn(1, 3)
-                                                                            dxAccResize += step
-                                                                        }
-                                                                        while (dyAccResize > step) {
-                                                                            newH = (hSpan + 1).coerceIn(1, 3)
-                                                                            dyAccResize -= step
-                                                                        }
-                                                                        while (dyAccResize < -step) {
-                                                                            newH = (hSpan - 1).coerceIn(1, 3)
-                                                                            dyAccResize += step
-                                                                        }
-
-                                                                        if (newW != wSpan || newH != hSpan) {
-                                                                            setTileSpan(card.first, newW, newH)
-                                                                            spanTick++
-                                                                            selectedTiles.forEach { clearTileOffset(it) }
-                                                                        }
-                                                                    }
-                                                                )
-                                                            },
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        Icon(Icons.Filled.DragHandle, contentDescription = null, tint = Color.White)
-                                                    }
                                                 }
                                             }
                                         }
                                     }
-
-                                    if (editMode) {
-                                        tileContent(editModifier, true)
-                                    } else {
-                                        tileContent(viewModifier.then(Modifier.clickable { action(routes) }), false)
-                                    }
                                 }
-                            }
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
             }
+        }
+
+        if (showChangelogDialog && latestUpdate != null) {
+            AestheticDialog(
+                onDismissRequest = { showChangelogDialog = false },
+                title = "Changelog",
+                text = "",
+                icon = Icons.Filled.Info,
+                confirmButtonText = "Update",
+                onConfirm = {
+                    showChangelogDialog = false
+                    handleUpdateAction()
+                },
+                dismissButtonText = "Cancel",
+                onDismiss = { showChangelogDialog = false },
+                confirmEnabled = !changelogLoading,
+                customContent = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 120.dp, max = 340.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                    when {
+                        changelogLoading -> {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    strokeWidth = 3.dp,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Loading changelog…",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+
+                        changelogError != null -> {
+                            Text(
+                                text = changelogError ?: "Failed to load changelog",
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        else -> {
+                            Text(
+                                text = changelogText ?: "Changelog not available",
+                                color = PurrfectPalette.textPrimary,
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
+                }
+                }
+            )
         }
 
         if (showQuickActionsMenu) {
@@ -1110,9 +1148,6 @@ class HomeRootSection : Routes.Route() {
                     newList.forEach { clearTileOffset(it) }
                     selectedTiles.clear()
                     selectedTiles.addAll(newList)
-                    if (newList.isEmpty()) {
-                        editMode = false
-                    }
                     context.coroutineScope.launch {
                         context.database.setQuickTiles(selectedTiles)
                     }
@@ -1123,5 +1158,21 @@ class HomeRootSection : Routes.Route() {
         }
     }
 }
+
+private fun extractChangelogForVersion(raw: String, version: String): String {
+    val lines = raw.lines()
+    val headerRegex = Regex("^\\s*#+\\s*v?${Regex.escape(version)}\\b", RegexOption.IGNORE_CASE)
+    var collecting = false
+    val collected = mutableListOf<String>()
+    lines.forEach { line ->
+        if (headerRegex.containsMatchIn(line)) {
+            collecting = true
+            return@forEach
+        }
+        if (collecting && line.startsWith("#")) return@forEach
+        if (collecting) collected.add(line)
+    }
+    return collected.joinToString("\n").trim()
 }
 }
+

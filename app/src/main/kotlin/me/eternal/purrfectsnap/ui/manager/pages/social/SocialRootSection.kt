@@ -10,18 +10,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,8 +59,16 @@ class SocialRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun ScopeList(scope: SocialScope) {
+    private fun ScopeList(
+        scope: SocialScope,
+        friends: List<MessagingFriendInfo>,
+        groups: List<MessagingGroupInfo>
+    ) {
         val remainingHours = remember { context.config.root.streaksReminder.remainingHours.get() }
+        val list = when (scope) {
+            SocialScope.GROUP -> groups
+            SocialScope.FRIEND -> friends
+        }
 
         LazyColumn(
             modifier = Modifier
@@ -64,10 +77,7 @@ class SocialRootSection : Routes.Route() {
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             //check if scope list is empty
-            val listSize = when (scope) {
-                SocialScope.GROUP -> groupList.size
-                SocialScope.FRIEND -> friendList.size
-            }
+            val listSize = list.size
 
             if (listSize == 0) {
                 item {
@@ -76,14 +86,14 @@ class SocialRootSection : Routes.Route() {
             }
 
             items(listSize) { index ->
-                val id = when (scope) {
-                    SocialScope.GROUP -> groupList[index].conversationId
-                    SocialScope.FRIEND -> friendList[index].userId
-                }
+                val friend = if (scope == SocialScope.FRIEND) list[index] as MessagingFriendInfo else null
+                val group = if (scope == SocialScope.GROUP) list[index] as MessagingGroupInfo else null
+                val id = friend?.userId ?: group?.conversationId.orEmpty()
 
                 SocialCard(
                     scope = scope,
-                    index = index,
+                    friend = friend,
+                    group = group,
                     onManage = {
                         routes.manageScope.navigate {
                             put("id", id)
@@ -182,9 +192,29 @@ class SocialRootSection : Routes.Route() {
         }
         val coroutineScope = rememberCoroutineScope()
         val pagerState = rememberPagerState { titles.size }
+        var searchQuery by rememberSaveable { mutableStateOf("") }
+        var searchActive by rememberSaveable { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             updateScopeLists()
+        }
+        val normalizedQuery = remember(searchQuery) { searchQuery.trim() }
+        val filteredFriends = remember(friendList, normalizedQuery) {
+            if (normalizedQuery.isBlank()) {
+                friendList
+            } else {
+                friendList.filter {
+                    it.mutableUsername.contains(normalizedQuery, ignoreCase = true) ||
+                        it.displayName?.contains(normalizedQuery, ignoreCase = true) == true
+                }
+            }
+        }
+        val filteredGroups = remember(groupList, normalizedQuery) {
+            if (normalizedQuery.isBlank()) {
+                groupList
+            } else {
+                groupList.filter { it.name.contains(normalizedQuery, ignoreCase = true) }
+            }
         }
 
         Column(
@@ -199,8 +229,78 @@ class SocialRootSection : Routes.Route() {
                     coroutineScope.launch { pagerState.animateScrollToPage(index) }
                 },
                 friendCount = friendList.size,
-                groupCount = groupList.size
+                groupCount = groupList.size,
+                searchActive = searchActive,
+                onSearchToggle = {
+                    searchActive = !searchActive
+                    if (!searchActive) searchQuery = ""
+                }
             )
+            if (searchActive) {
+                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"] ?: "Search"
+                val searchShape = RoundedCornerShape(18.dp)
+                val searchBorder = Brush.linearGradient(
+                    listOf(
+                        PurrfectPalette.glowPrimary.copy(alpha = 0.45f),
+                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
+                    )
+                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                    shape = searchShape,
+                    color = Color.White.copy(alpha = 0.05f),
+                    border = BorderStroke(1.dp, searchBorder),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(PurrfectPalette.cardOverlay, searchShape)
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = searchHint,
+                            tint = PurrfectPalette.textSecondary
+                        )
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color.White,
+                                fontSize = 15.sp
+                            ),
+                            cursorBrush = SolidColor(PurrfectPalette.glowSecondary),
+                            modifier = Modifier.weight(1f)
+                        ) { innerTextField ->
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    text = searchHint,
+                                    color = PurrfectPalette.textSecondary,
+                                    fontSize = 14.sp
+                                )
+                            }
+                            innerTextField()
+                        }
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = context.translation["close_button_description"]
+                                        ?: "Clear search",
+                                    tint = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            }
             Spacer(Modifier.height(12.dp))
             HorizontalPager(
                 modifier = Modifier
@@ -208,8 +308,8 @@ class SocialRootSection : Routes.Route() {
                 state = pagerState
             ) { page ->
                 when (page) {
-                    0 -> ScopeList(SocialScope.FRIEND)
-                    1 -> ScopeList(SocialScope.GROUP)
+                    0 -> ScopeList(SocialScope.FRIEND, filteredFriends, filteredGroups)
+                    1 -> ScopeList(SocialScope.GROUP, filteredFriends, filteredGroups)
                 }
             }
         }
@@ -218,7 +318,8 @@ class SocialRootSection : Routes.Route() {
     @Composable
     private fun SocialCard(
         scope: SocialScope,
-        index: Int,
+        friend: MessagingFriendInfo?,
+        group: MessagingGroupInfo?,
         onManage: () -> Unit,
         onPreview: () -> Unit,
         remainingHours: Int
@@ -249,7 +350,7 @@ class SocialRootSection : Routes.Route() {
             ) {
                 when (scope) {
                     SocialScope.GROUP -> {
-                        val group = groupList[index]
+                        val groupInfo = group ?: return@Row
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = Color.White.copy(alpha = 0.08f),
@@ -267,7 +368,7 @@ class SocialRootSection : Routes.Route() {
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = group.name,
+                                text = groupInfo.name,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = FontWeight.SemiBold,
@@ -283,16 +384,16 @@ class SocialRootSection : Routes.Route() {
                     }
 
                     SocialScope.FRIEND -> {
-                        val friend = friendList[index]
-                        val streaks by rememberAsyncMutableState(defaultValue = friend.streaks) {
-                            context.database.getFriendStreaks(friend.userId)
+                        val friendInfo = friend ?: return@Row
+                        val streaks by rememberAsyncMutableState(defaultValue = friendInfo.streaks) {
+                            context.database.getFriendStreaks(friendInfo.userId)
                         }
 
                         BitmojiImage(
                             context = context,
                             url = BitmojiSelfie.getBitmojiSelfie(
-                                friend.selfieId,
-                                friend.bitmojiId,
+                                friendInfo.selfieId,
+                                friendInfo.bitmojiId,
                                 BitmojiSelfie.BitmojiSelfieType.NEW_THREE_D
                             )
                         )
@@ -302,7 +403,7 @@ class SocialRootSection : Routes.Route() {
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = friend.displayName ?: friend.mutableUsername,
+                                text = friendInfo.displayName ?: friendInfo.mutableUsername,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = FontWeight.SemiBold,
@@ -310,7 +411,7 @@ class SocialRootSection : Routes.Route() {
                                 fontSize = 15.sp
                             )
                             Text(
-                                text = friend.mutableUsername,
+                                text = friendInfo.mutableUsername,
                                 maxLines = 1,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Light,
@@ -383,7 +484,9 @@ class SocialRootSection : Routes.Route() {
         pagerState: androidx.compose.foundation.pager.PagerState,
         onTabSelected: (Int) -> Unit,
         friendCount: Int,
-        groupCount: Int
+        groupCount: Int,
+        searchActive: Boolean,
+        onSearchToggle: () -> Unit
     ) {
         Surface(
             modifier = Modifier
@@ -431,6 +534,13 @@ class SocialRootSection : Routes.Route() {
                     ) {
                         StatPill(label = "Friends", value = friendCount)
                         StatPill(label = "Groups", value = groupCount)
+                        IconButton(onClick = onSearchToggle) {
+                            Icon(
+                                imageVector = if (searchActive) Icons.Filled.Close else Icons.Filled.Search,
+                                contentDescription = if (searchActive) "Close search" else "Search",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
                 SocialTabSwitcher(

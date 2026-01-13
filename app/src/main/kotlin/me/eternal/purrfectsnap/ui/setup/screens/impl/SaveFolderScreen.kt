@@ -142,6 +142,28 @@ class SaveFolderScreen : SetupScreen() {
             ) {
                 Text(text = context.translation["setup.dialogs.select_save_folder_button"])
             }
+            Spacer(modifier = Modifier.height(10.dp))
+            val defaultSrc = remember { MutableInteractionSource() }
+            OutlinedButton(
+                onClick = {
+                    currentFolder = ""
+                    context.config.root.downloader.saveFolder.set("")
+                    context.sharedPreferences.edit().putBoolean("downloader_use_default_save_folder", true).apply()
+                    context.config.writeConfig()
+                    goNext()
+                },
+                interactionSource = defaultSrc,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .scaleOnPress(defaultSrc),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color.White
+                ),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f))
+            ) {
+                Text(text = "Use default location")
+            }
 
             if (showNoPickerDialog) {
                 Dialog(onDismissRequest = { showNoPickerDialog = false }) {

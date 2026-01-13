@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Välj språk",
@@ -31,10 +31,10 @@
       "home_about": "Om",
       "home_settings": "Inställningar",
       "home_logs": "Loggar",
-      "logger_history": "Logger History",
+      "logger_history": "Logghistorik",
       "logged_stories": "Loggade berättelser",
       "friend_tracker": "Vän Tracker",
-      "friend_tracker_catalog": "Friend Tracker Catalog",
+      "friend_tracker_catalog": "Friend Tracker-katalog",
       "manage_friend_tracker_repos": "Hantera Friend Tracker Repositories",
       "edit_rule": "Redigera regel",
       "file_imports": "Fil Importerar",
@@ -44,7 +44,7 @@
       "messaging_preview": "Förhandsgranskning",
       "scripts": "Skript",
       "manage_script_repos": "Hantera Script Repositories",
-      "view_logger_history": "Logger History",
+      "view_logger_history": "Logghistorik",
       "better_location": "Bättre plats"
     },
     "navigation": {
@@ -53,7 +53,7 @@
       "available_tabs_title": "Tillgängliga flikar",
       "shown_tabs_title": "Visade flikar",
       "reset_button": "Återställ",
-      "done_button": "Done"
+      "done_button": "Klar"
     },
     "sections": {
       "home": {
@@ -68,7 +68,7 @@
       },
       "home_logs": {
         "no_logs_hint": "Inga loggar tillgängliga",
-        "clear_logs_button": "Clear Logs",
+        "clear_logs_button": "Rensa loggar",
         "export_logs_button": "Exportloggar",
         "saving_logs_toast": "Spara stockar, detta kan ta ett tag ...",
         "saved_logs_success_toast": "Loggar sparade framgångsrikt",
@@ -77,22 +77,22 @@
       "home_settings": {
         "actions_title": "Aktiviteter",
         "message_logger_title": "Meddelande Logger",
-        "debug_title": "Debug",
+        "debug_title": "Fels?kning",
         "success_toast": "Gjort!",
         "message_logger_summary": "{messageCount}meddelanden\n{storyCount}historier",
-        "export_button": "Export",
-        "clear_button": "Clear",
+        "export_button": "Exportera",
+        "clear_button": "Rensa",
         "view_logger_history_button": "Visa Logger History",
         "ui_settings_title": "UI Inställningar",
-        "haptic_feedback_label": "Haptic Feedback",
+        "haptic_feedback_label": "Haptisk feedback",
         "use_system_toasts_label": "Använd System Toasts",
         "updates_title": "Uppdateringar",
-        "auto_update_check": "Auto Update Check",
+        "auto_update_check": "Automatisk uppdateringskontroll",
         "update_check_frequency_daily": "Dagligen",
-        "update_check_frequency_weekly": "Weekly",
+        "update_check_frequency_weekly": "Veckovis",
         "update_check_frequency_monthly": "Månadsvis",
         "update_channel_stable": "Stabilt",
-        "update_channel_prerelease": "Pre-release",
+        "update_channel_prerelease": "F?rhandsversion",
         "update_notification_channel_name": "Uppdateringar",
         "update_notification_channel_description": "Få meddelande när nya releaser finns tillgängliga",
         "update_notification_title": "Ny uppdatering tillgänglig",
@@ -102,20 +102,20 @@
         "theme_mode_system": "Systemsystem",
         "theme_mode_light": "Ljus ljus",
         "theme_mode_dark": "Mörk",
-        "friend_notes_title": "Friend Notes",
+        "friend_notes_title": "V?nanteckningar",
         "friend_notes_description": "Hantera och säkerhetskopiera dina vännoter",
         "friend_notes_no_notes_to_backup": "Inga anteckningar att backa upp ännu",
         "friend_notes_backup_success": "Friend Notes backade upp",
         "friend_notes_restore_success": "Vän noter återställda",
-        "backup_button": "Backup",
+        "backup_button": "S?kerhetskopia",
         "restore_button": "Återställ",
         "view_button": "Utsikt",
         "customize_bottom_bar_title": "Anpassa Bottom Bar",
         "customize_bottom_bar_subtitle": "Välj vilka flikar som visas på din hemskärm",
         "available_tabs_title": "Tillgängliga flikar",
         "reset_button": "Återställ",
-        "done_button": "Done",
-        "clear_friend_feed": "Clear Friend Feed",
+        "done_button": "Klar",
+        "clear_friend_feed": "Rensa v?nfl?de",
         "test_mode_label": "Aktivera PurrAura",
         "disable_feature_loading_label": "Inaktivera funktionen laddar",
         "disable_auto_mapper_label": "Inaktivera Auto Mapper",
@@ -123,7 +123,7 @@
       },
       "tasks": {
         "no_tasks": "Inga uppgifter",
-        "merge_button": "Merge",
+        "merge_button": "Sammanfoga",
         "failed_to_open_file": "Underlåten att öppna filen",
         "merge_files_toast": "Merging{count}filer",
         "remove_selected_tasks_title": "Är du säker på att du vill ta bort utvalda uppgifter?",
@@ -134,7 +134,7 @@
       },
       "features": {
         "disabled": "Inaktiverad",
-        "export_option": "Export",
+        "export_option": "Exportera",
         "import_option": "Importera import",
         "reset_option": "Återställ",
         "config_export_success_toast": "Config exporterade framgångsrikt",
@@ -172,10 +172,10 @@
       },
       "manage_scope": {
         "logged_stories_button": "Visa inloggade berättelser",
-        "e2ee_title": "End-to-End Encryption",
+        "e2ee_title": "End-to-end-kryptering",
         "e2ee_subtitle": "Hantera din delade nyckel för denna vän.",
-        "export_base64_button": "Export Base64",
-        "import_base64_button": "Import Base64",
+        "export_base64_button": "Exportera Base64",
+        "import_base64_button": "Importera Base64",
         "invalid_key_size_32_bytes": "Ogiltig nyckelstorlek. Ge en 32-byte nyckel.",
         "successfully_imported_key": "Viktig importerad framgångsrikt.",
         "failed_to_import_key": "Underlåten att importera nyckeln:{message}",
@@ -202,14 +202,14 @@
         "message_fetch_failed": "Misslyckades med att hämta meddelanden",
         "no_message_hint": "Inget meddelande",
         "subtitle": "Håll att välja",
-        "actions_title": "Conversation Actions",
+        "actions_title": "Samtals?tg?rder",
         "save_selection_option": "Spara urval",
         "save_all_option": "Spara alla",
-        "unsave_selection_option": "Unsave Selection",
-        "unsave_all_option": "Unsave All",
+        "unsave_selection_option": "Spara inte urval",
+        "unsave_all_option": "Spara inte alla",
         "mark_selection_as_seen_option": "Mark valde Snap som sett",
         "mark_all_as_seen_option": "Markera alla snaps som sett",
-        "delete_selection_option": "Delete Selection",
+        "delete_selection_option": "Radera urval",
         "delete_all_option": "Ta bort alla",
         "processed_message_toast": "Bearbetad{count}meddelanden",
         "processed_messages_toast": "Bearbetad{count}meddelanden",
@@ -248,7 +248,7 @@
         "teleport_to_friend_button": "Teleport till vän",
         "spoof_location_toggle": "Spoof plats",
         "suspend_location_updates": "Avbryta platsuppdateringar",
-        "saved_coordinates_title": "Saved Coordinates",
+        "saved_coordinates_title": "Sparade koordinater",
         "no_saved_coordinates_hint": "Inga sparade koordinater",
         "delete_dialog_title": "Radera sparad koordinat",
         "delete_dialog_message": "Är du säker på att du vill ta bort denna sparade koordinat?",
@@ -266,7 +266,7 @@
         "category_groups": "Grupper",
         "category_friends": "Vänner",
         "participants_text": "{count}deltagare",
-        "unselect_all_button": "Unselect All"
+        "unselect_all_button": "Avmarkera alla"
       },
       "scripting": {
         "repo_hint": "Klistra en repository URL"
@@ -303,12 +303,12 @@
       "catalog_tab": "Katalog",
       "clear_module_data_button": "Tydliga data",
       "clear_module_data_failed": "Misslyckades med tydliga moduldata",
-      "delete_module_button": "Delete",
+      "delete_module_button": "Radera",
       "delete_module_failed": "Underlåten att ta bort modulen",
-      "documentation_button": "Docs",
+      "documentation_button": "Dokumentation",
       "download_script_failed": "Misslyckades med att ladda ner script",
       "downloading_script": "Ladda ner script...",
-      "edit_module_button": "Edit",
+      "edit_module_button": "Redigera",
       "enter_url_label": "Ange URL",
       "import_button": "Importera import",
       "import_from_url_button": "Importera från URL",
@@ -347,9 +347,9 @@
         "no_repos_added": "Inga repositorier tillagda",
         "add_repo_button": "Lägg till Repository",
         "add_repo_dialog_title": "Lägg till Repository",
-        "repo_url_label": "Repository URL",
+        "repo_url_label": "Repository-URL",
         "add_button": "Lägg till",
-        "invalid_repo_title": "Invalid Repository",
+        "invalid_repo_title": "Ogiltigt repository",
         "invalid_repo_error": "Detta förvar saknas nödvändiga data.",
         "repo_added_toast": "Repository tillagd",
         "add_repo_failed_toast": "Underlåten att lägga till förvar:{message}",
@@ -371,8 +371,8 @@
       "until_label": "Fram till",
       "unit_label": "Enhet",
       "pick_a_date_button": "Välj ett datum",
-      "export_button": "Export",
-      "delete_button": "Delete",
+      "export_button": "Exportera",
+      "delete_button": "Radera",
       "search_placeholder": "Sök efter Sök",
       "no_logs_found": "Inga loggar hittades",
       "no_rules_found": "Inga regler hittades",
@@ -385,7 +385,7 @@
       "rule_name_label": "Regelnamn",
       "default_rule_name": "Ny regel",
       "author_name_label": "Författare",
-      "scope_section_title": "Scope",
+      "scope_section_title": "Omfattning",
       "scope_all": "Alla vänner/grupper",
       "scope_whitelist": "Ingen utom",
       "scope_blacklist": "Alla utom",
@@ -393,8 +393,8 @@
       "events_suffix": "händelser",
       "no_events_text": "Inga händelser till ännu",
       "add_event_dialog_title": "Lägg till evenemang",
-      "event_type_label": "Event Type",
-      "triggers_title": "Triggers",
+      "event_type_label": "H?ndelsetyp",
+      "triggers_title": "Utl?sare",
       "conditions_title": "Villkor",
       "condition_only_inside_conversation": "Först när jag är inne i konversation",
       "condition_only_outside_conversation": "Först när jag är utanför konversation",
@@ -409,27 +409,27 @@
       "discard_changes_dialog_title": "Kassera förändringar?",
       "discard_changes_dialog_text": "Du har osparade förändringar. Kassera dem?",
       "rule_subtitle": "Konfigurera triggers och omfattningar för denna regel.",
-      "discard_button": "Discard",
-      "enabled_label": "Enabled",
+      "discard_button": "F?rkasta",
+      "enabled_label": "Aktiverad",
       "disabled_label": "Inaktiverad",
       "delete_rule_dialog_title": "Radera regel",
       "delete_rule_dialog_text": "Är du säker på att du vill ta bort denna regel?",
       "no_repos_added": "Inga repositorier tillagda",
       "import_dialog_title": "Importera regler",
-      "bulk_import_button": "Bulk import",
+      "bulk_import_button": "Massimport",
       "individual_import_button": "Enskild import",
       "invalid_import_type_dialog_title": "Ogiltig import",
       "invalid_import_type_dialog_text": "Den valda filtypen matchar inte importläget.",
       "export_dialog_title": "Exportregler",
-      "bulk_export_button": "Bulk export",
+      "bulk_export_button": "Massexport",
       "individual_export_button": "Ensam export",
       "reverse_order_checkbox": "Omvänd order",
-      "delete_logs_dialog_title": "Delete Logs",
+      "delete_logs_dialog_title": "Radera loggar",
       "delete_logs_dialog_confirm_text": "Ta bort alla loggar som matchar de aktuella filtren?",
       "select_friends_groups_button": "Välj vänner/grupper"
     },
     "friend_tracker_export": {
-      "title": "Export Friend Tracker",
+      "title": "Exportera Friend Tracker",
       "save_button": "Spara",
       "back_button_description": "Gå tillbaka",
       "expand_button_description": "Expandera eller kollapsa kategori",
@@ -445,7 +445,7 @@
       "import_failed_toast": "Underlåtenhet att importera tracker:{message}"
     },
     "friend_tracker_catalog": {
-      "title": "Friend Tracker Catalog",
+      "title": "Friend Tracker-katalog",
       "no_repos_added": "Inga repositorier tillagda",
       "manage_repos_description": "Hantera repositorier"
     },
@@ -453,9 +453,9 @@
       "no_repos_added": "Inga repositorier tillagda",
       "add_repo_button": "Lägg till Repository",
       "add_repo_dialog_title": "Lägg till Repository",
-      "repo_url_label": "Repository URL",
+      "repo_url_label": "Repository-URL",
       "add_button": "Lägg till",
-      "invalid_repo_title": "Invalid Repository",
+      "invalid_repo_title": "Ogiltigt repository",
       "invalid_repo_error": "Detta förvar saknas nödvändiga data.",
       "repo_added_toast": "Repository tillagd",
       "add_repo_failed_toast": "Underlåten att lägga till förvar:{message}",
@@ -472,7 +472,7 @@
         "back_button_description": "Gå tillbaka",
         "save_button": "Spara",
         "expand_button_description": "Expandera eller kollapsa kategori",
-        "enabled": "Enabled",
+        "enabled": "Aktiverad",
         "disabled": "Inaktiverad",
         "enable_feature": "Aktivera funktionen"
       },
@@ -481,7 +481,7 @@
         "back_button_description": "Gå tillbaka",
         "confirm_button": "Importera import",
         "expand_button_description": "Expandera eller kollapsa kategori",
-        "enabled": "Enabled",
+        "enabled": "Aktiverad",
         "disabled": "Inaktiverad",
         "enable_feature": "Aktivera funktionen",
         "config_imported_toast": "Config importerade framgångsrikt",
@@ -504,15 +504,15 @@
         "description": "Automatiskt ladda ner Snappar när man tittar på dem",
         "options": {
           "blacklist": "Exkludera från Auto Download",
-          "whitelist": "Auto Download"
+          "whitelist": "Automatisk nedladdning"
         }
       },
       "stealth": {
-        "name": "Stealth Mode",
+        "name": "Smygl?ge",
         "description": "Förhindrar någon från att veta att du har öppnat sina Snaps/Chats och samtal",
         "options": {
           "blacklist": "Exkludera från Stealth Mode",
-          "whitelist": "Stealth mode"
+          "whitelist": "Smygl?ge"
         }
       },
       "auto_save": {
@@ -532,11 +532,11 @@
         }
       },
       "auto_open_snaps": {
-        "name": "Auto Open Snaps",
+        "name": "?ppna Snaps automatiskt",
         "description": "Automatiskt öppnar Snaps när du tar emot dem",
         "options": {
           "blacklist": "Exkludera från Auto Open Snaps",
-          "whitelist": "Auto Open Snaps"
+          "whitelist": "?ppna Snaps automatiskt"
         }
       },
       "hide_friend_feed": {
@@ -546,7 +546,7 @@
         "name": "Använd E2E-kryptering"
       },
       "pin_conversation": {
-        "name": "Pin Conversation"
+        "name": "F?st konversation"
       },
       "exclude_message_logger": {
         "name": "Exkludera från Message Logger"
@@ -611,7 +611,7 @@
       "description": "Exportera minnen till en ZIP-fil"
     },
     "bulk_messaging_action": {
-      "name": "Bulk Messaging Action",
+      "name": "Massmeddelande?tg?rd",
       "description": "Utför operationer som att ta bort vänner eller mass radera samtal"
     },
     "regen_mappings": {
@@ -631,7 +631,7 @@
       "description": "Spåra dina vänner på Snapchat"
     },
     "logger_history": {
-      "name": "Logger History",
+      "name": "Logghistorik",
       "description": "Se historien om loggade meddelanden"
     }
   },
@@ -703,7 +703,7 @@
       },
       "auto_download_sources": {
         "friend_snaps": "Vän Snaps",
-        "friend_stories": "Friend Stories",
+        "friend_stories": "V?nners stories",
         "public_stories": "Offentliga berättelser",
         "spotlight": "Spotlight"
       },
@@ -714,9 +714,9 @@
         "failure": "Underlåtenhet"
       },
       "notifications": {
-        "chat_screenshot": "Screenshot",
-        "chat_screen_record": "Screen Record",
-        "snap_replay": "Snap Replay",
+        "chat_screenshot": "Sk?rmbild",
+        "chat_screen_record": "Sk?rminspelning",
+        "snap_replay": "Snap-uppspelning",
         "camera_roll_save": "Kamera Roll Spara",
         "chat": "Chatta",
         "chat_reply": "Chatt svar",
@@ -733,43 +733,43 @@
         "map_live_location": "Karta Live Plats"
       },
       "auto_read": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "hide_typing_indicator": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "auto_delete_sent_messages": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "auto_download": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "stealth": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "auto_save": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "message_logger": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "auto_reply": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Svartlista",
+        "whitelist": "Vitlista",
         "disabled": "Inaktiverad"
       },
       "custom_android_id": {
@@ -807,7 +807,7 @@
         "null": "Använd automatisk upplösning"
       },
       "startup_default_camera": {
-        "front": "Front Camera",
+        "front": "Frontkamera",
         "back": "Tillbaka kamera",
         "null": "Kom ihåg senast använda"
       },
@@ -833,7 +833,7 @@
         "null": "Standard Codec"
       },
       "preset": {
-        "null": "Default Preset"
+        "null": "Standardf?rinst?llning"
       },
       "app_appearance_override": {
         "title": "Utseende"
@@ -841,14 +841,14 @@
       "gallery_media_send_override": {
         "always_ask": "Alltid fråga",
         "ORIGINAL": "Originalmedier",
-        "NOTE": "Audio Note",
+        "NOTE": "R?stanteckning",
         "SNAP": "Snap",
         "SAVEABLE_SNAP": "Sparabar Snap",
         "null": "Snapchat standard"
       },
       "strip_media_metadata": {
-        "hide_caption_text": "Hide Caption Text",
-        "hide_snap_filters": "Hide Snap Filters",
+        "hide_caption_text": "D?lj bildtext",
+        "hide_snap_filters": "D?lj Snap-filter",
         "hide_extras": "Hide Extras (t.ex. omnämnanden)",
         "remove_audio_note_duration": "Ta bort Audio Note Duration",
         "remove_audio_note_transcript_capability": "Ta bort Audio Note Transcript Capability"
@@ -857,7 +857,7 @@
         "hide_profile_call_buttons": "Ta bort Profile Call Buttons",
         "hide_chat_call_buttons": "Ta bort Chat Call Buttons",
         "hide_live_location_share_button": "Ta bort Live Location Share Button",
-        "hide_stickers_button": "Remove Stickers Button",
+        "hide_stickers_button": "Ta bort klisterm?rkesknapp",
         "hide_voice_record_button": "Ta bort Voice Record Button",
         "hide_unread_chat_hint": "Ta bort olästa Chat Hint",
         "hide_post_to_story_buttons": "Ta bort Post till Story knappar innan du skickar en Snap",
@@ -888,7 +888,7 @@
         "null": "Automatisk"
       },
       "update_check_frequency": {
-        "null": "Auto"
+        "null": "Automatisk"
       },
       "snapchat_plus": {
         "not_subscribed": "Inte prenumererad",
@@ -898,7 +898,7 @@
       },
       "bypass_video_length_restriction": {
         "single": "Ensamstående media",
-        "split": "Split media",
+        "split": "Dela upp media",
         "null": "Standard"
       },
       "old_bitmoji_selfie": {
@@ -909,7 +909,7 @@
       "disable_confirmation_dialogs": {
         "erase_message": "Radera budskap",
         "remove_friend": "Ta bort vän",
-        "block_friend": "Block Friend",
+        "block_friend": "Blockera v?n",
         "ignore_friend": "Ignorera vän",
         "hide_friend": "Hej vän",
         "hide_conversation": "Dölj konversation",
@@ -917,7 +917,7 @@
       },
       "edit_text_override": {
         "multi_line_chat_input": "Multi Line Chatt Input",
-        "bypass_text_input_limit": "Bypass Text Input Limit"
+        "bypass_text_input_limit": "Kringg? textinmatningsgr?ns"
       },
       "auto_purge": {
         "never": "Aldrig aldrig",
@@ -945,7 +945,7 @@
         "discover": "Upptäcka"
       },
       "disable_cameras": {
-        "front": "Front Camera",
+        "front": "Frontkamera",
         "back": "Tillbaka kamera"
       },
       "disable_permission_requests": {
@@ -990,9 +990,9 @@
       "message_types": {
         "CHAT": "Chatta",
         "SNAP": "Snap",
-        "NOTE": "Note",
+        "NOTE": "Anteckning",
         "EXTERNAL_MEDIA": "Externa medier",
-        "STICKER": "Sticker"
+        "STICKER": "Klisterm?rke"
       },
       "double_tap_chat_action_custom_emoji": {
         "Custom emoji reaction": "Anpassad emoji reaktion"
@@ -1016,19 +1016,19 @@
         "friendly, casual, helpful, empathetic": "vänliga, tillfälliga, hjälpsamma, empatiska"
       },
       "ai_response_style": {
-        "casual": "Casual",
+        "casual": "Avslappnad",
         "formal": "Formell",
         "friendly": "Vänlig",
         "humorous": "Humorös",
         "empathetic": "Empatiska",
-        "toxic": "Edgy",
-        "busy": "Busy"
+        "toxic": "Provokativ",
+        "busy": "Upptagen"
       },
       "ai_temperature": {
         "0.7": "Balanserad (0,7)"
       },
       "ai_response_language": {
-        "auto": "Auto",
+        "auto": "Automatisk",
         "en": "Engelska",
         "es": "Spanska spanska",
         "fr": "Franska franska",
@@ -1085,12 +1085,12 @@
       "auto_reply_content_types": {
         "chat_messages": "Chattmeddelanden",
         "snap_messages": "Snaps",
-        "story_share_messages": "Story Shares",
-        "story_reply_messages": "Story Replies",
+        "story_share_messages": "Story-delningar",
+        "story_reply_messages": "Story-svar",
         "external_media_messages": "Externa medier",
-        "voice_note_messages": "Voice Notes",
-        "sticker_messages": "Stickers",
-        "tiny_snap_messages": "Tiny Snaps",
+        "voice_note_messages": "R?stanteckningar",
+        "sticker_messages": "Klisterm?rken",
+        "tiny_snap_messages": "Mini-Snaps",
         "map_reaction_messages": "Karta reaktioner",
         "half_swipes": "Hälften Swipes"
       },
@@ -1139,7 +1139,7 @@
                 "description": "Ange koordinaterna för den bortskämda platsen"
               },
               "walk_radius": {
-                "name": "Walk Radius",
+                "name": "G?ngradie",
                 "description": "Slumpmässigt gå runt i denna radie (ft)"
               },
               "always_update_location": {
@@ -1191,7 +1191,7 @@
             "description": "Automatiskt bekräftar valda åtgärder"
           },
           "auto_updater": {
-            "name": "Auto Updater",
+            "name": "Auto-uppdaterare",
             "description": "Kontrollera automatiskt för nya uppdateringar"
           },
           "update_settings": {
@@ -1199,7 +1199,7 @@
             "description": "Kontrollera hur PurrfectSnap kontrollerar för uppdateringar",
             "properties": {
               "auto_update_check": {
-                "name": "Auto Update Check"
+                "name": "Automatisk uppdateringskontroll"
               },
               "update_check_frequency": {
                 "name": "Uppdatera kontrollfrekvens"
@@ -1210,7 +1210,7 @@
             "name": "UI Inställningar",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptic Feedback"
+                "name": "Haptisk feedback"
               }
             }
           },
@@ -1223,7 +1223,7 @@
             "description": "Ta bort avsnitt från sidan Berättelser\nKan kräva en uppfriskning för att fungera ordentligt"
           },
           "block_ads": {
-            "name": "Block Ads",
+            "name": "Blockera annonser",
             "description": "Förhindrar annonser från att visas"
           },
           "disable_custom_tabs": {
@@ -1243,7 +1243,7 @@
             "description": "Visar författarens användarnamn i Spotlight kommentarer"
           },
           "spotlight_comments_username_icon": {
-            "name": "Spotlight Comments Username Icon",
+            "name": "Anv?ndarnamnsikon f?r Spotlight-kommentarer",
             "description": "Välj vilken ikon som visas bredvid användarnamn i Spotlight-kommentarer"
           },
           "bypass_video_length_restriction": {
@@ -1255,7 +1255,7 @@
             "description": "Anger standardhastigheten för uppspelningen av videor\nVärdet måste vara mellan 0,1 och 4,0"
           },
           "video_playback_rate_slider": {
-            "name": "Video Playback Rate Slider",
+            "name": "Reglage f?r videouppspelningshastighet",
             "description": "Lägger till en reglage i operakontextmenyn för att ändra videouppspelningsfrekvensen\nObs!: Ändringar gäller endast för efterföljande videor"
           },
           "disable_google_play_dialogs": {
@@ -1281,7 +1281,7 @@
         }
       },
       "downloader": {
-        "name": "Downloader",
+        "name": "Nedladdare",
         "description": "Ladda ner Snapchat Media",
         "properties": {
           "save_folder": {
@@ -1297,7 +1297,7 @@
             "description": "Förhindrar dina egna snaps från att laddas ner automatiskt"
           },
           "path_format": {
-            "name": "Path Format",
+            "name": "S?kv?gsformat",
             "description": "Ange filvägsformatet"
           },
           "allow_duplicate": {
@@ -1305,19 +1305,19 @@
             "description": "Tillåter samma media att laddas ner flera gånger"
           },
           "merge_overlays": {
-            "name": "Merge Overlays",
+            "name": "Sammanfoga ?verl?gg",
             "description": "Kombinerar texten och media av en Snap i en enda fil"
           },
           "force_image_format": {
-            "name": "Force Image Format",
+            "name": "Tvinga bildformat",
             "description": "Kraftbilder som ska sparas i ett specificerat format"
           },
           "force_voice_note_format": {
-            "name": "Force Voice Note Format",
+            "name": "Tvinga r?stanteckningsformat",
             "description": "Forces Voice Anteckningar som ska sparas i ett specificerat format"
           },
           "auto_download_voice_notes": {
-            "name": "Auto Download Voice Notes",
+            "name": "Auto-nedladda r?stanteckningar",
             "description": "Automatiskt laddar ner röstanteckningar när du spelar dem"
           },
           "download_profile_pictures": {
@@ -1325,7 +1325,7 @@
             "description": "Låter dig ladda ner Profilbilder från profilsidan"
           },
           "opera_download_button": {
-            "name": "Opera Download Button",
+            "name": "Opera nedladdningsknapp",
             "description": "Lägger till en nedladdningsknapp på det övre högra hörnet när du tittar på en Snap.\nLång tryck på knappar kommer att tvinga nedladdning"
           },
           "download_context_menu": {
@@ -1341,7 +1341,7 @@
                 "description": "Mängden trådar att använda"
               },
               "preset": {
-                "name": "Preset",
+                "name": "F?rinst?llning",
                 "description": "Ställ hastigheten på omvandlingen"
               },
               "constant_rate_factor": {
@@ -1349,11 +1349,11 @@
                 "description": "Ställ in den ständiga hastighetsfaktorn för videokodaren\nFrån 0 till 51 för libx264"
               },
               "video_bitrate": {
-                "name": "Video Bitrate",
+                "name": "Videobitrate",
                 "description": "Ställ in video bitrate (kbps)"
               },
               "audio_bitrate": {
-                "name": "Audio Bitrate",
+                "name": "Ljudbitrate",
                 "description": "Ställ in ljudbitrate (kbps)"
               },
               "custom_video_codec": {
@@ -1367,7 +1367,7 @@
             }
           },
           "logging": {
-            "name": "Logging",
+            "name": "Loggning",
             "description": "Visar skålar när media laddar ner"
           },
           "custom_path_format": {
@@ -1385,7 +1385,7 @@
             "description": "Möjliggör den dolda Appearance Setting\nKan inte krävas på nyare Snapchat-versioner"
           },
           "friend_feed_message_preview": {
-            "name": "Friend Feed Message Preview",
+            "name": "Meddelandef?rhandsvisning i v?nfl?det",
             "description": "Visar en förhandsvisning av de sista meddelandena i Friend Feed",
             "properties": {
               "amount": {
@@ -1395,11 +1395,11 @@
             }
           },
           "snap_preview": {
-            "name": "Snap Preview",
+            "name": "Snap-f?rhandsvisning",
             "description": "Visar en liten förhandsvisning bredvid osynliga snaps i chatt"
           },
           "bootstrap_override": {
-            "name": "Bootstrap Override",
+            "name": "Bootstrap-override",
             "description": "Overrides användargränssnitt bootstrap inställningar",
             "properties": {
               "app_appearance": {
@@ -1407,7 +1407,7 @@
                 "description": "Ställ en ihållande App Appearance"
               },
               "home_tab": {
-                "name": "Home Tab",
+                "name": "Hemflik",
                 "description": "Överskrider startfliken när du öppnar Snapchat"
               }
             }
@@ -1421,15 +1421,15 @@
             "description": "Förhindrar meddelandelistan från rullning till botten när du skickar / tar emot ett meddelande"
           },
           "streak_expiration_info": {
-            "name": "Show Streak Expiration Info",
+            "name": "Visa info om streaks utg?ng",
             "description": "Visar en Streak Expiration timer bredvid Streaks counter"
           },
           "hide_friend_feed_entry": {
-            "name": "Hide Friend Feed Entry",
+            "name": "D?lj post i v?nfl?det",
             "description": "Döljer en specifik vän från Friend Feed\nAnvänd den sociala fliken för att hantera den här funktionen"
           },
           "hide_streak_restore": {
-            "name": "Hide Streak Restore",
+            "name": "D?lj ?terst?llning av streak",
             "description": "Döljer återställningsknappen i vänflödet"
           },
           "hide_quick_add_suggestions": {
@@ -1437,7 +1437,7 @@
             "description": "Ta bort snabba tillägg vän förslag"
           },
           "hide_story_suggestions": {
-            "name": "Hide Story Suggestions",
+            "name": "D?lj storyf?rslag",
             "description": "Ta bort förslag från sidan Berättelser"
           },
           "hide_ui_components": {
@@ -1469,7 +1469,7 @@
             "description": "Möjliggör den vertikala historiens tittare för alla berättelser"
           },
           "enable_friend_feed_menu_bar": {
-            "name": "Friend Feed Menu Bar",
+            "name": "Menyrad f?r v?nfl?de",
             "description": "Möjliggör den nya Friend Feed Menu Bar"
           },
           "message_indicators": {
@@ -1481,7 +1481,7 @@
             "description": "Lägger till en emoji bredvid konversationer i stealth mode"
           },
           "edit_text_override": {
-            "name": "Edit Text Override",
+            "name": "?sidos?tt redigeringstext",
             "description": "Overrides textfält beteende"
           },
           "prevent_forced_keyboard": {
@@ -1499,11 +1499,11 @@
         }
       },
       "messaging": {
-        "name": "Messaging",
+        "name": "Meddelanden",
         "description": "Ändra hur du interagerar med vänner",
         "properties": {
           "bypass_screenshot_detection": {
-            "name": "Bypass Screenshot Detection",
+            "name": "Kringg? sk?rmbildsdetektering",
             "description": "Förhindrar Snapchat från att upptäcka när du tar en skärmdump"
           },
           "anonymous_story_viewing": {
@@ -1523,7 +1523,7 @@
             "description": "Förhindrar din Bitmoji från att dyka upp medan du är i Chat"
           },
           "hide_typing_notifications": {
-            "name": "Hide Typing Notifications",
+            "name": "D?lj skrivnotiser",
             "description": "Förhindrar någon från att veta att du skriver ett meddelande"
           },
           "unlimited_snap_view_time": {
@@ -1543,7 +1543,7 @@
             "description": "Automatiskt hoppar över till nästa Snap när du markerar en Snap som sett.\nAnvänd i kombination med Mark Snap som Seen Button"
           },
           "loop_media_playback": {
-            "name": "Loop Media Playback",
+            "name": "Loopad medieuppspelning",
             "description": "Loops media uppspelning när du tittar på Snaps / Stories"
           },
           "disable_replay_in_ff": {
@@ -1551,7 +1551,7 @@
             "description": "Inaktiverar förmågan att spela med en lång press från Friend Feed"
           },
           "half_swipe_notifier": {
-            "name": "Half Swipe Notifier",
+            "name": "Halv-svep-avisering",
             "description": "Meddelar dig när någon halv sveper in i en konversation",
             "properties": {
               "min_duration": {
@@ -1565,7 +1565,7 @@
             }
           },
           "call_start_confirmation": {
-            "name": "Call Start Confirmation",
+            "name": "Bekr?ftelse vid samtalsstart",
             "description": "Visar en bekräftelsedialog när du startar ett samtal"
           },
           "unlimited_conversation_pinning": {
@@ -1581,7 +1581,7 @@
             "description": "Förhindrar att skicka vissa typer av meddelanden"
           },
           "friend_mutation_notifier": {
-            "name": "Friend Mutation Notifier",
+            "name": "Avisering om v?n?ndring",
             "description": "Meddelar dig när något ändras i en väns profil"
           },
           "better_notifications": {
@@ -1593,15 +1593,15 @@
                 "description": "Gruppmeddelanden till en enda"
               },
               "chat_preview": {
-                "name": "Chat Preview",
+                "name": "Chattf?rhandsvisning",
                 "description": "Visar en förhandsvisning av mottagna meddelanden i meddelandet"
               },
               "media_preview": {
-                "name": "Media Preview",
+                "name": "Mediaf?rhandsvisning",
                 "description": "Visar en förhandsvisning av de valda medietyperna i meddelandet"
               },
               "media_caption": {
-                "name": "Media Caption",
+                "name": "Mediatext",
                 "description": "Visar den bifogade bildtexten av media i meddelandet"
               },
               "stacked_media_messages": {
@@ -1647,7 +1647,7 @@
                 "description": "Förhindrar dina egna meddelanden från att raderas"
               },
               "auto_purge": {
-                "name": "Auto Purge",
+                "name": "Automatisk rensning",
                 "description": "Automatiskt raderar cachade meddelanden som är äldre än den angivna tiden"
               },
               "message_filter": {
@@ -1681,7 +1681,7 @@
                 "description": "Gör externa medier osaveable"
               },
               "sticker": {
-                "name": "Stickers",
+                "name": "Klisterm?rken",
                 "description": "Gör klistermärken osaveable"
               },
               "share": {
@@ -1689,11 +1689,11 @@
                 "description": "Gör delat innehåll osparabart"
               },
               "note": {
-                "name": "Audio Notes",
+                "name": "R?stanteckningar",
                 "description": "Gör ljudanteckningar osaveable"
               },
               "story_reply": {
-                "name": "Story Replies",
+                "name": "Story-svar",
                 "description": "Gör story svar osaveable"
               }
             }
@@ -1703,7 +1703,7 @@
             "description": "Spoofs mediakällan när du skickar från Galleriet",
             "properties": {
               "mode": {
-                "name": "Override Mode",
+                "name": "?sidos?ttningsl?ge",
                 "description": "Välj hur gallerimedia skickas"
               },
               "include_camera_snaps": {
@@ -1713,15 +1713,15 @@
             }
           },
           "strip_media_metadata": {
-            "name": "Strip Media Metadata",
+            "name": "Ta bort mediametadata",
             "description": "Ta bort metadata från media innan du skickar som ett meddelande"
           },
           "bypass_message_retention_policy": {
-            "name": "Bypass Message Retention Policy",
+            "name": "Kringg? policy f?r meddelandelagring",
             "description": "Förhindrar meddelanden från att raderas efter att ha visat dem"
           },
           "bypass_message_action_restrictions": {
-            "name": "Bypass Message Action Restrictions",
+            "name": "Kringg? begr?nsningar f?r meddelande?tg?rder",
             "description": "Låter dig reagera på en snap utan att ha öppnat den eller spara ett osäkert meddelande"
           },
           "remove_groups_locked_status": {
@@ -1729,11 +1729,11 @@
             "description": "Tillåter dig att visa gruppinformation efter att ha blivit sparkad"
           },
           "double_tap_chat_action": {
-            "name": "Double Tap Chat Action",
+            "name": "Dubbeltrycks?tg?rd i chatt",
             "description": "Utför en anpassad åtgärd när dubbla knacka på ett meddelande i chatt"
           },
           "double_tap_chat_action_custom_emoji": {
-            "name": "Double Tap Chat Action Custom Emoji Reaction",
+            "name": "Dubbeltrycks?tg?rd i chatt f?r anpassad emoji-reaktion",
             "description": "Ställ en anpassad emoji reaktion för dubbel kranchatt åtgärd"
           },
           "auto_reply": {
@@ -1745,11 +1745,11 @@
                 "description": "Tillåter Auto svar att köra i bakgrunden. Notera: Detta kommer att avsevärt dränera ditt batteri"
               },
               "cooldown_seconds": {
-                "name": "Cooldown Seconds",
+                "name": "Nedkylningssekunder",
                 "description": "Minsta tid mellan auto-replies till samma konversation (i sekunder)"
               },
               "message_age_threshold": {
-                "name": "Message Age Threshold",
+                "name": "Tr?skel f?r meddelandets ?lder",
                 "description": "Svara bara på meddelanden som tagits emot inom denna tidsram (på några sekunder)"
               },
               "ai_config": {
@@ -1765,23 +1765,23 @@
                     "description": "Välj vilken AI-tjänst som ska användas för att generera svar"
                   },
                   "ai_endpoint_url": {
-                    "name": "AI Endpoint URL",
+                    "name": "URL f?r AI-endpunkt",
                     "description": "API endpoint URL för AI-tjänsten (t.ex. OpenAI, lokal AI-server)"
                   },
                   "ai_model": {
-                    "name": "AI Model",
+                    "name": "AI-modell",
                     "description": "AI-modell för att använda för att generera svar (t.ex. gpt-3.5-turbo, gpt-4)"
                   },
                   "ai_api_key": {
-                    "name": "AI API Key",
+                    "name": "AI-API-nyckel",
                     "description": "API nyckel för autentisering med AI-tjänsten"
                   },
                   "ai_system_prompt": {
-                    "name": "AI System Prompt",
+                    "name": "AI-systemprompt",
                     "description": "Systemprompt som definierar AI: s personlighet och beteende"
                   },
                   "ai_max_tokens": {
-                    "name": "AI Max Tokens",
+                    "name": "AI max tokens",
                     "description": "Maximalt antal tokens (ord) AI kan använda som svar"
                   },
                   "ai_temperature": {
@@ -1827,7 +1827,7 @@
                 }
               },
               "auto_trigger_config": {
-                "name": "Auto Trigger Configuration",
+                "name": "Konfiguration f?r automatiska utl?sare",
                 "description": "Inställningar för auto-reply triggers och meddelandemallar",
                 "properties": {
                   "friendSpecificGreeting": {
@@ -1835,11 +1835,11 @@
                     "description": "Lägg till väns namn till auto-replies för personalisering"
                   },
                   "friendGreeting": {
-                    "name": "Friend Greeting",
+                    "name": "H?lsning till v?n",
                     "description": "Hälsning text att använda när vän specifik hälsning är aktiverad"
                   },
                   "auto_reply_content_types": {
-                    "name": "Auto Reply Triggers",
+                    "name": "Auto-svarstriggers",
                     "description": "Välj vilka meddelandetyper som ska utlösa auto-replies"
                   },
                   "chat_messages": {
@@ -1851,7 +1851,7 @@
                     "description": "Auto-reply meddelanden för snaps"
                   },
                   "story_share_messages": {
-                    "name": "Story Share Replies",
+                    "name": "Svar p? storydelningar",
                     "description": "Auto-reply-meddelanden för berättelseaktier"
                   },
                   "story_reply_messages": {
@@ -1899,11 +1899,11 @@
                 "description": "Minsta fördröjning i millisekunder innan du öppnar ett snap"
               },
               "max_delay_ms": {
-                "name": "Max Delay (ms)",
+                "name": "Max f?rdr?jning (ms)",
                 "description": "Maximal fördröjning i millisekunder innan du öppnar ett snap"
               },
               "queue_size": {
-                "name": "Queue Size",
+                "name": "K?storlek",
                 "description": "Maximalt antal snaps för att hålla i kö"
               },
               "retry_attempts": {
@@ -1911,7 +1911,7 @@
                 "description": "Antal gånger för att försöka öppna ett snap om det misslyckas"
               },
               "retry_delay": {
-                "name": "Retry Delay (ms)",
+                "name": "?terf?rs?ksf?rdr?jning (ms)",
                 "description": "Fördröjning i millisekunder mellan försök till retry"
               }
             }
@@ -1929,7 +1929,7 @@
                 "description": "Tidsvärde innan du raderar det skickade meddelandet"
               },
               "delete_after_unit": {
-                "name": "Time Unit",
+                "name": "Tidsenhet",
                 "description": "Välj tidsenheten för raderingsfördröjning"
               },
               "message_types": {
@@ -1937,7 +1937,7 @@
                 "description": "Välj vilka meddelandetyper som ska tas bort automatiskt"
               },
               "show_countdown": {
-                "name": "Show Countdown",
+                "name": "Visa nedr?kning",
                 "description": "Visa nedräkning innan du tar bort meddelandet"
               },
               "show_notification": {
@@ -1991,11 +1991,11 @@
                 "description": "Paus översättning när tjänsten blockeras"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Max antal f?rs?k",
                 "description": "Maximalt antal retry försök"
               },
               "retry_delay": {
-                "name": "Retry Delay",
+                "name": "?terf?rs?ksf?rdr?jning",
                 "description": "Fördröjning mellan försök (milliseconds)"
               }
             }
@@ -2023,10 +2023,10 @@
             "name": "Auto Delete Sent meddelanden"
           },
           "auto_download": {
-            "name": "Auto Download"
+            "name": "Automatisk nedladdning"
           },
           "stealth": {
-            "name": "Stealth Mode"
+            "name": "Smygl?ge"
           },
           "auto_save": {
             "name": "Auto Spara"
@@ -2052,11 +2052,11 @@
             "description": "Ersätter fångade bilder med en svart bakgrund\nVideor påverkas inte"
           },
           "immersive_camera_preview": {
-            "name": "Immersive Preview",
+            "name": "Uppslukande f?rhandsvisning",
             "description": "Förhindrar Snapchat från Cropping the Camera förhandsvisning\nDetta kan leda till att kameran flimrar på vissa enheter"
           },
           "override_front_resolution": {
-            "name": "Override Front Resolution",
+            "name": "?sidos?tt frontuppl?sning",
             "description": "Överskrider kameraupplösningen för främre kameran"
           },
           "override_back_resolution": {
@@ -2068,7 +2068,7 @@
             "description": "Anger en anpassad kameraupplösning, bredd x höjd (t.ex. 1920x1080).\nDen anpassade resolutionen måste stödjas av din enhet"
           },
           "front_custom_frame_rate": {
-            "name": "Front Custom Frame Rate",
+            "name": "Anpassad bildfrekvens fram",
             "description": "Åsidosätter frontkameraramhastigheten"
           },
           "back_custom_frame_rate": {
@@ -2076,7 +2076,7 @@
             "description": "Åsidosätter ryggkamerans ramhastighet"
           },
           "force_camera_source_encoding": {
-            "name": "Force Camera Source Encoding",
+            "name": "Tvinga kodning f?r kamerak?lla",
             "description": "Tvingar kamerakällan kodning"
           },
           "startup_default_camera": {
@@ -2112,7 +2112,7 @@
         "description": "Experimentella funktioner",
         "properties": {
           "native_hooks": {
-            "name": "Native Hooks",
+            "name": "Native hooks",
             "description": "Unsafe Funktioner som krokar i Snapchats ursprungliga kod",
             "properties": {
               "composer_hooks": {
@@ -2124,11 +2124,11 @@
                     "description": "Visar det första skapade användarnamnet bredvid det aktuella användarnamnet på profilsidan"
                   },
                   "bypass_camera_roll_limit": {
-                    "name": "Bypass Camera Roll Limit",
+                    "name": "Kringg? kamerarolllimit",
                     "description": "Ökar den maximala mängden media du kan skicka från kamerarullen"
                   },
                   "custom_self_destruct_snap_delay": {
-                    "name": "Custom Self Destruct Snap Delay",
+                    "name": "Anpassad sj?lvdestruktionsf?rdr?jning f?r Snap",
                     "description": "Ger fler alternativ för självförstörande timer när du skickar en Snap"
                   },
                   "composer_console": {
@@ -2160,7 +2160,7 @@
             "description": "Spoof olika information om dig",
             "properties": {
               "play_store_installer_package_name": {
-                "name": "Play Store Installer Package Name",
+                "name": "Paketnamn f?r Play Store-installerare",
                 "description": "Överskrider installationspaketnamnet till com.android.vending"
               },
               "remove_vpn_transport_flag": {
@@ -2176,11 +2176,11 @@
                 "description": "Tvinga nättransporter att rapportera Wi-Fi istället för mobildata"
               },
               "spoof_device_id": {
-                "name": "Spoof Device ID",
+                "name": "Spoofa enhets-ID",
                 "description": "Överrid Android-ID skickas till Snapchat",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Spoofa Android-ID",
                     "description": "Överrid Android-ID skickas till Snapchat med ett anpassat värde"
                   },
                   "custom_android_id": {
@@ -2190,7 +2190,7 @@
                 }
               },
               "spoof_device": {
-                "name": "Spoof Device",
+                "name": "Spoofa enhet",
                 "description": "Presentera Snapchat som körs på en annan enhetsmodell"
               },
               "device_model": {
@@ -2204,15 +2204,15 @@
             "description": "Konverterar snaps för att chatta externa medier lokalt. Detta visas i chattnedladdning kontextmenyn"
           },
           "media_file_picker": {
-            "name": "Media File Picker",
+            "name": "Mediefilv?ljare",
             "description": "Låter dig välja någon video / ljudfil från galleriet"
           },
           "story_logger": {
-            "name": "Story Logger",
+            "name": "Story-logg",
             "description": "Ger en historia av vänner berättelser"
           },
           "call_recorder": {
-            "name": "Call Recorder",
+            "name": "Samtalsinspelare",
             "description": "Automatiskt registrerar ljudsamtal"
           },
           "account_switcher": {
@@ -2220,7 +2220,7 @@
             "description": "Låter dig växla mellan konton utan att logga ut\nLångt tryck på sökikonen bredvid din Bitmoji-profil för att öppna menyn\nNotera: Den här funktionen är experimentell och kommer sannolikt att förändras i framtiden",
             "properties": {
               "auto_backup_current_account": {
-                "name": "Auto Backup Current Account",
+                "name": "Automatisk s?kerhetskopiering av aktuellt konto",
                 "description": "Automatiskt säkerhetskopierar det aktuella kontot när du loggar ut eller byter konton"
               }
             }
@@ -2244,11 +2244,11 @@
             }
           },
           "voice_note_auto_play": {
-            "name": "Voice Note Auto Play",
+            "name": "Automatisk uppspelning av r?stanteckningar",
             "description": "Spelar automatiskt nästa röstnot efter att den nuvarande slutar"
           },
           "friend_notes": {
-            "name": "Friend Notes",
+            "name": "V?nanteckningar",
             "description": "Låter dig lägga till anteckningar till vänner profiler"
           },
           "cof_experiments": {
@@ -2256,11 +2256,11 @@
             "description": "Möjligheter outgivna/beta Snapchat-funktioner"
           },
           "context_menu_fix": {
-            "name": "Context Menu Fix",
+            "name": "Korrigering av kontextmeny",
             "description": "Försök att reparera Friend Feed-menyn som när enheten är offline kan den inte visas korrekt"
           },
           "app_lock": {
-            "name": "App Lock",
+            "name": "App-l?s",
             "description": "Förhindrar tillgång till Snapchat utan lösenord",
             "properties": {
               "lock_on_resume": {
@@ -2270,7 +2270,7 @@
             }
           },
           "infinite_story_boost": {
-            "name": "Infinite Story Boost",
+            "name": "O?ndlig Story-boost",
             "description": "Bypass Story Boost Limit försening"
           },
           "meo_passcode_bypass": {
@@ -2334,7 +2334,7 @@
             "description": "Den mapp där skripten finns"
           },
           "auto_reload": {
-            "name": "Auto Reload",
+            "name": "Automatisk omladdning",
             "description": "Reloader automatiskt skript när de ändras"
           },
           "integrated_ui": {
@@ -2356,7 +2356,7 @@
         "description": "Records väns aktivitet på Snapchat",
         "properties": {
           "record_messaging_events": {
-            "name": "Record Messaging Events",
+            "name": "Spela in meddelandeh?ndelser",
             "description": "Records meddelandehändelser som att öppna en snap, läsa ett meddelande etc."
           },
           "allow_running_in_background": {
@@ -2364,7 +2364,7 @@
             "description": "Tillåter trackern att köra i bakgrunden. Notera: Detta kommer att avsevärt dränera ditt batteri"
           },
           "auto_purge": {
-            "name": "Auto Purge",
+            "name": "Automatisk rensning",
             "description": "Automatiskt tar bort cachade händelser som är äldre än den angivna tiden"
           }
         }
@@ -2378,56 +2378,56 @@
     "mark_snaps_as_seen": "Mark Snaps sett",
     "mark_stories_as_seen_locally": "Mark Stories som ses lokalt",
     "preview": "Förhandsgranskning",
-    "stealth_mode": "Stealth Mode",
-    "auto_download_blacklist": "Auto Download Blacklist",
+    "stealth_mode": "Smygl?ge",
+    "auto_download_blacklist": "Svartlista f?r automatisk nedladdning",
     "anti_auto_save": "Anti Auto Spara"
   },
   "content_type": {
     "CHAT": "Chatta",
     "SNAP": "Snap",
     "EXTERNAL_MEDIA": "Externa medier",
-    "NOTE": "Audio Note",
-    "STICKER": "Sticker",
+    "NOTE": "R?stanteckning",
+    "STICKER": "Klisterm?rke",
     "SHARE": "Dela",
     "STATUS": "Status",
     "LOCATION": "Plats",
     "STATUS_SAVE_TO_CAMERA_ROLL": "Sparad till Camera Roll",
-    "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "Screenshot",
-    "STATUS_CONVERSATION_CAPTURE_RECORD": "Screen Record",
+    "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "Sk?rmbild",
+    "STATUS_CONVERSATION_CAPTURE_RECORD": "Sk?rminspelning",
     "STATUS_CALL_MISSED_VIDEO": "Missat videosamtal",
     "STATUS_CALL_MISSED_AUDIO": "Saknade Audio Call",
-    "LIVE_LOCATION_SHARE": "Live Location Share",
-    "CREATIVE_TOOL_ITEM": "Creative Tool Item",
+    "LIVE_LOCATION_SHARE": "Dela liveplats",
+    "CREATIVE_TOOL_ITEM": "Kreativt verktygsobjekt",
     "FAMILY_CENTER_INVITE": "Hotell nära Family Center Invite",
     "FAMILY_CENTER_ACCEPT": "Familjecentrum Acceptera",
     "FAMILY_CENTER_LEAVE": "Hotell nära Family Center Leave",
-    "STATUS_PLUS_GIFT": "Status Plus Gift",
-    "TINY_SNAP": "Tiny Snap",
-    "STATUS_COUNTDOWN": "Countdown",
+    "STATUS_PLUS_GIFT": "Status Plus-g?va",
+    "TINY_SNAP": "Mini-Snap",
+    "STATUS_COUNTDOWN": "Nedr?kning",
     "MAP_REACTION": "Karta Reaktion",
     "chat_messages": "Chattmeddelanden",
     "snap_messages": "Snaps",
-    "story_share_messages": "Story Shares",
-    "story_reply_messages": "Story Replies",
+    "story_share_messages": "Story-delningar",
+    "story_reply_messages": "Story-svar",
     "external_media_messages": "Externa medier",
-    "voice_note_messages": "Voice Note",
-    "sticker_messages": "Sticker",
-    "tiny_snap_messages": "Tiny Snap",
+    "voice_note_messages": "R?stanteckning",
+    "sticker_messages": "Klisterm?rke",
+    "tiny_snap_messages": "Mini-Snap",
     "map_reaction_messages": "Karta Reaktion",
     "half_swipes": "Hälften Swipes"
   },
   "media_download_source": {
     "none": "Ingen",
     "pending": "I väntan",
-    "chat_media": "Chat Media",
+    "chat_media": "Chattmedia",
     "story": "Berättelse",
     "public_story": "Offentlig berättelse",
     "spotlight": "Spotlight",
     "profile_picture": "Profilbild",
-    "story_logger": "Story Logger",
+    "story_logger": "Story-logg",
     "message_logger": "Meddelande Logger",
     "merged": "Sammanslagna",
-    "voice_call": "Voice Call"
+    "voice_call": "R?stsamtal"
   },
   "chat_action_menu": {
     "preview_button": "Förhandsgranskning",
@@ -2452,7 +2452,7 @@
   "gallery_media_send_override": {
     "always_ask": "Alltid fråga",
     "ORIGINAL": "Originalmedier",
-    "NOTE": "Audio Note",
+    "NOTE": "R?stanteckning",
     "SNAP": "Snap",
     "SAVEABLE_SNAP": "Sparabar Snap",
     "null": "Snapchat standard",
@@ -2475,7 +2475,7 @@
   "profile_info": {
     "title": "Profil Info",
     "first_created_username": "Första Skapat Användarnamn",
-    "mutable_username": "Mutable Username",
+    "mutable_username": "?ndringsbart anv?ndarnamn",
     "display_name": "Visa namn",
     "added_date": "Tillagd datum",
     "birthday": "Födelsedag:{month}{day}",
@@ -2494,7 +2494,7 @@
   },
   "friendship_link_type": {
     "mutual": "Ömsesidig",
-    "outgoing": "Outgoing",
+    "outgoing": "Utg?ende",
     "blocked": "Blockerad",
     "deleted": "Raderad",
     "following": "Följer",
@@ -2526,7 +2526,7 @@
       "groups_only": "Grupper Endast",
       "both": "Vänner och grupper"
     },
-    "sort_by": "Sort by",
+    "sort_by": "Sortera efter",
     "reverse_order": "Omvänd order",
     "search_by_name": "Sök efter namn",
     "no_friends_found": "Inga vänner hittade",
@@ -2562,7 +2562,7 @@
       "none": "Ingen",
       "username": "Användarnamn",
       "added_timestamp": "Tillagd Timestamp",
-      "snap_score": "Snap Score",
+      "snap_score": "Snap-po?ng",
       "streak_length": "Streak Längd",
       "most_messages_sent": "De flesta meddelanden skickas",
       "most_recent_message": "De senaste meddelandena",
@@ -2580,7 +2580,7 @@
       "download_medias_title": "Ladda ner media"
     },
     "dialog_negative_button": "Avbokning",
-    "dialog_positive_button": "Export",
+    "dialog_positive_button": "Exportera",
     "exported_to": "Exporterad till{path}",
     "exporting_chats": "Exportera chattar...",
     "processing_chats": "Bearbetning{amount}samtal...",
@@ -2603,8 +2603,8 @@
     "convert_external_media": "Konvertera externa medier"
   },
   "tracker_events": {
-    "conversation_enter": "Conversation Enter",
-    "conversation_exit": "Conversation Exit",
+    "conversation_enter": "Gick in i konversation",
+    "conversation_exit": "L?mnade konversation",
     "started_typing": "Startad Typing",
     "stopped_typing": "Stoppad Typing",
     "started_speaking": "Började tala",
@@ -2614,22 +2614,22 @@
     "message_read": "Meddelande Läs",
     "message_deleted": "Meddelande raderad",
     "message_saved": "Meddelande sparat",
-    "message_unsaved": "Message Unsaved",
-    "message_edited": "Message Edited",
+    "message_unsaved": "Meddelande sparades inte",
+    "message_edited": "Meddelande redigerat",
     "message_reaction_add": "Meddelande Reaktion Lägg till",
-    "message_reaction_remove": "Message Reaction Remove",
+    "message_reaction_remove": "Ta bort meddelandereaktion",
     "snap_opened": "Snap öppnad",
-    "snap_replayed": "Snap Replayed",
+    "snap_replayed": "Snap spelad igen",
     "snap_replayed_twice": "Snap spelade två gånger",
-    "snap_screenshot": "Snap Screenshot",
-    "snap_screen_record": "Snap Screen Record",
+    "snap_screenshot": "Snap-sk?rmbild",
+    "snap_screen_record": "Snap-sk?rminspelning",
     "i_can_see_you": "Jag kan se dig"
   },
   "cleared_from_feed": "Cleared från feed",
   "tracker_actions": {
     "log": "Logga in",
     "in_app_notification": "In-App-meddelande",
-    "push_notification": "Push Notification",
+    "push_notification": "Pushnotis",
     "custom": "Anpassad"
   },
   "better_notifications": {
@@ -2646,26 +2646,26 @@
     "background_option": "Bakgrund"
   },
   "call_start_confirmation": {
-    "dialog_title": "Start Call",
+    "dialog_title": "Starta samtal",
     "dialog_message": "Är du säker på att du vill starta ett samtal?"
   },
   "half_swipe_notifier": {
-    "notification_channel_name": "Half Swipe",
+    "notification_channel_name": "Halv-svep",
     "notification_content_dm": "{friend}bara halvswiped in i din chatt för{duration}sekunder",
     "notification_content_group": "{friend}bara halvswiped in{group}för{duration}sekunder"
   },
   "download_processor": {
     "attachment_type": {
       "snap": "Snap",
-      "sticker": "Sticker",
+      "sticker": "Klisterm?rke",
       "gif": "GIF",
       "external_media": "Externa medier",
-      "note": "Note",
-      "original_story": "Original Story"
+      "note": "Anteckning",
+      "original_story": "Original-story"
     },
     "select_attachments_title": "Välja bilagor",
     "download_started_toast": "Ladda ner start",
-    "unsupported_content_type_toast": "Unsupported content type!",
+    "unsupported_content_type_toast": "Inneh?llstyp st?ds inte!",
     "failed_no_longer_available_toast": "Media är inte längre tillgängligt",
     "no_attachments_toast": "Inga bilagor hittades!",
     "already_queued_toast": "Media redan i kö!",
@@ -2720,7 +2720,7 @@
     "incoming_secret_message": "Din vän accepterade bara din offentliga nyckel. Klicka nedan för att acceptera hemligheten."
   },
   "auto_open_snaps": {
-    "title": "Auto Open Snaps",
+    "title": "?ppna Snaps automatiskt",
     "priority_title": "Auto Open Snaps (prioritet)",
     "error_title": "Auto Open Snaps (fel)",
     "channel_description": "Meddelanden för automatiska snaps köstatus",
@@ -2732,19 +2732,19 @@
     "recent_snaps": "Nya Snaps",
     "action_pause": "Paus",
     "action_resume": "Återkomma",
-    "action_clear": "Clear Queue",
+    "action_clear": "Rensa k?",
     "action_reset": "Återställ greve",
     "error_content": "Misslyckades med att öppna snap från{sender}Från:{error}",
     "resumed_feedback": "Auto Open återkallad",
-    "paused_feedback": "Auto Open Paused",
+    "paused_feedback": "Automatisk ?ppning pausad",
     "resumed_message": "Processing kommer att fortsätta automatiskt för köade snaps",
     "paused_message": "Processing paused. Queue bevarad (bevarad){count}snaps)",
-    "status_paused": "Paused",
+    "status_paused": "Pausad",
     "status_monitoring": "Övervakning",
     "status_active": "Aktiv",
     "queue_cleared": "Queue cleared och statistikåterställning",
-    "queue_cleared_title": "Queue cleared",
-    "queue_cleared_reset": "Queue Cleared & Reset",
+    "queue_cleared_title": "K? rensad",
+    "queue_cleared_reset": "K? rensad och ?terst?lld",
     "queue_cleared_feedback": "Tydlig{count}kö snaps • Återställ{processed}processed count",
     "queue_cleared_feedback_simple": "Återställ{processed}processed count",
     "unknown_sender": "Okänd",
@@ -2756,10 +2756,10 @@
     "conversation_type_group_chat": "Gruppchatt",
     "conversation_type_chat": "Chatta",
     "notification_status": "Status",
-    "notification_statistics": "STATISTICS",
-    "notification_queue_size": "Queue Size",
+    "notification_statistics": "STATISTIK",
+    "notification_queue_size": "K?storlek",
     "notification_total_opened": "Totala Snaps öppnade",
-    "notification_queue_preview": "QUEUE PREVIEW",
+    "notification_queue_preview": "K?F?RHANDSVISNING",
     "notification_processing_continue": "Processing kommer att fortsätta automatiskt...",
     "notification_no_snaps_queue": "Inga snaps i kö.",
     "notification_queue_cleared_opened": "Queue cleared (förklarad){opened}öppnas)",
@@ -2845,7 +2845,7 @@
     "date_range_picker_end_headline": "För att",
     "date_range_picker_title": "Välj datumintervallet",
     "date_picker_switch_to_calendar_mode": "Kalender",
-    "date_picker_switch_to_input_mode": "Input",
+    "date_picker_switch_to_input_mode": "Inmatning",
     "date_range_picker_scroll_to_previous_month": "Föregående månad",
     "date_range_picker_scroll_to_next_month": "Nästa månad",
     "date_picker_today_description": "Idag idag idag",
@@ -2853,7 +2853,7 @@
     "date_input_invalid_for_pattern": "Invalid datum",
     "date_input_invalid_year_range": "Invalid år",
     "date_input_invalid_not_allowed": "Invalid datum",
-    "date_range_input_invalid_range_input": "Invalid date range"
+    "date_range_input_invalid_range_input": "Ogiltigt datumintervall"
   },
   "send_override_dialog": {
     "title": "Skicka media som",
@@ -2917,7 +2917,7 @@
     "lt": "Litauen",
     "mt": "Maltesiska",
     "ga": "Irländska",
-    "cy": "Welsh"
+    "cy": "Walesiska"
   },
   "tracker": {
     "tabs": {
@@ -2925,8 +2925,8 @@
       "rules": "Regler"
     },
     "actions": {
-      "export": "Export",
-      "delete": "Delete",
+      "export": "Exportera",
+      "delete": "Radera",
       "add_rule": "Lägga till regel",
       "save_rule": "Spara regel"
     },
@@ -2948,7 +2948,7 @@
       "types": {
         "username": "Användarnamn",
         "conversation": "Konversation",
-        "event": "Event"
+        "event": "H?ndelse"
       },
       "event_types": {
         "conversation_enter": "Inmatad konversation",
@@ -2967,9 +2967,9 @@
         "message_reaction_add": "Tillagd reaktion",
         "message_reaction_remove": "Removed reaktion",
         "snap_opened": "Öppna snap",
-        "snap_replayed": "Replayed snap",
+        "snap_replayed": "Spelade upp en snap igen",
         "snap_replayed_twice": "Replayed snap två gånger",
-        "snap_screenshot": "Took screenshot",
+        "snap_screenshot": "Tog sk?rmbild",
         "snap_screen_record": "Screen inspelad"
       }
     },
@@ -2983,7 +2983,7 @@
         "format_csv": "CSV"
       },
       "delete_dialog": {
-        "title": "Delete Logs",
+        "title": "Radera loggar",
         "message": "Är du säker på att du vill ta bort alla loggar? Denna åtgärd kan inte ångras.",
         "confirm": "Ta bort alla",
         "cancel": "Avbokning",
@@ -2993,7 +2993,7 @@
         "in_conversation": "in i{conversation}",
         "unknown_user": "Okänd",
         "unknown_conversation": "DMs",
-        "i_can_see_you_entered": "Entered",
+        "i_can_see_you_entered": "Gick in",
         "i_can_see_you_left": "Vänster",
         "i_can_see_you_duration": "Varaktighet",
         "i_can_see_you_not_available": "N/A",
@@ -3028,11 +3028,11 @@
     },
     "edit_rule": {
       "custom_rule": "Anpassad regel",
-      "scope": "Scope",
+      "scope": "Omfattning",
       "events": "Händelser",
       "add_event": "Lägg till evenemang",
       "type": "Typ",
-      "triggers": "Triggers",
+      "triggers": "Utl?sare",
       "conditions": "Villkor",
       "only_inside_conversation": "Först när jag är inne i konversation",
       "only_outside_conversation": "Först när jag är utanför konversation",
@@ -3047,13 +3047,13 @@
     }
   },
   "debug": {
-    "title": "Debug",
-    "clear": "Clear",
+    "title": "Fels?kning",
+    "clear": "Rensa",
     "files": {
       "config_json": "Konfigurationsfil",
       "mappings_json": "Kartläggningsfil",
       "message_logger_db": "Meddelande Logger Database",
-      "pinned_best_friend_txt": "Pinned Best Friend File",
+      "pinned_best_friend_txt": "Fil f?r f?st b?sta v?n",
       "native_sig_cache_txt": "Native signatur Cache File"
     },
     "settings": {
@@ -3064,15 +3064,15 @@
     }
   },
   "ui_settings_title": "UI Inställningar",
-  "haptic_feedback_label": "Haptic Feedback",
+  "haptic_feedback_label": "Haptisk feedback",
   "updates_title": "Uppdateringar",
-  "auto_update_check": "Auto Update Check",
+  "auto_update_check": "Automatisk uppdateringskontroll",
   "update_check_frequency_daily": "Dagligen",
-  "update_check_frequency_weekly": "Weekly",
+  "update_check_frequency_weekly": "Veckovis",
   "update_check_frequency_monthly": "Månadsvis",
   "update_channel_stable": "Stabilt",
-  "update_channel_prerelease": "Pre-release",
-  "friend_notes_title": "Friend Notes",
+  "update_channel_prerelease": "F?rhandsversion",
+  "friend_notes_title": "V?nanteckningar",
   "friend_notes_description": "Hantera och säkerhetskopiera dina vännoter",
   "app_theme_title": "App tema",
   "theme_mode_system": "Systemsystem",
@@ -3097,9 +3097,9 @@
     "sort_by_folder": "Sortera efter mapp",
     "include_my_eyes_only": "Inkludera mina ögon",
     "cancel": "Avbokning",
-    "export": "Export",
-    "quit": "Quit",
-    "done": "Done",
+    "export": "Exportera",
+    "quit": "Avsluta",
+    "done": "Klar",
     "ok": "OK",
     "exporting_memories": "Exportera minnen... (b){failed}misslyckats)"
   },
@@ -3119,15 +3119,15 @@
     "cancel": "Avbokning",
     "add": "Lägg till",
     "ok": "OK",
-    "quit": "Quit",
-    "done": "Done",
+    "quit": "Avsluta",
+    "done": "Klar",
     "back": "Tillbaka",
     "unknown": "Okänd",
     "added": "Tillagd",
     "no_friends_found": "Inga vänner hittade",
     "exporting_memories": "Exportera minnen... (b){failed}misslyckats)"
   },
-  "clear_friend_feed": "Clear Friend Feed",
+  "clear_friend_feed": "Rensa v?nfl?de",
   "select_date": "Välj datum",
   "schedule_scheduled_for": "Schemalagt för{name}in i{time}",
   "schedule_sending_in": "Skicka in{time}",
@@ -3138,7 +3138,7 @@
   "schedule_cancelled_for": "Avbokad för{name}",
   "by_author": "av{author}",
   "version": "Version{version}",
-  "delete_button": "Delete",
+  "delete_button": "Radera",
   "logger_history": {
     "download_started": "Ladda ner start!",
     "downloaded_to": "Nedladdad till{path}",
@@ -3182,12 +3182,12 @@
     "failed_to_edit_message": "Underlåten att redigera meddelande:{error}"
   },
   "ai_response_style": {
-    "casual": "Casual",
+    "casual": "Avslappnad",
     "formal": "Formell",
     "friendly": "Vänlig",
     "humorous": "Humorös",
     "empathetic": "Empatiska",
-    "busy": "Busy",
+    "busy": "Upptagen",
     "toxic": "Toxisk"
   },
   "ai_response_language": {

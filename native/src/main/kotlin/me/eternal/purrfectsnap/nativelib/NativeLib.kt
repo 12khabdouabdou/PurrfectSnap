@@ -2,6 +2,7 @@ package me.eternal.purrfectsnap.nativelib
 
 import android.annotation.SuppressLint
 import android.util.Log
+import java.io.File
 import kotlin.math.absoluteValue
 import kotlin.random.Random
 
@@ -13,6 +14,44 @@ class NativeLib {
         var initialized = false
             private set
         private var libraryLoaded = false
+
+        private fun findNativeLibraryDir(): File? {
+            val app = runCatching {
+                val cls = Class.forName("android.app.ActivityThread")
+                val method = cls.getMethod("currentApplication")
+                method.invoke(null) as? android.app.Application
+            }.getOrNull() ?: return null
+            val dir = app.applicationInfo.nativeLibraryDir ?: return null
+            return File(dir)
+        }
+
+        private fun tryLoadFromNativeDir(): Boolean {
+            val dir = findNativeLibraryDir() ?: return false
+            if (!dir.isDirectory) return false
+
+            val candidates = listOf(
+                "lib${BuildConfig.NATIVE_NAME}.so",
+                "libpurrfectsnap.so"
+            ).map { File(dir, it) }
+
+            val fallback = dir.listFiles()?.firstOrNull { it.name.startsWith("lib") && it.name.endsWith(".so") && it.name.contains("purrfectsnap") }
+
+            val ordered = buildList<File> {
+                addAll(candidates)
+                fallback?.let { if (!contains(it)) add(it) }
+            }
+
+            for (file in ordered) {
+                if (!file.exists()) continue
+                val ok = runCatching {
+                    System.load(file.absolutePath)
+                    libraryLoaded = true
+                    true
+                }.getOrDefault(false)
+                if (ok) return true
+            }
+            return false
+        }
 
         fun tryEnsureLibraryLoaded(): Boolean {
             if (libraryLoaded) return true
@@ -32,6 +71,8 @@ class NativeLib {
                 }.onFailure { lastError = it }.getOrDefault(false)
                 if (ok) return true
             }
+
+            if (tryLoadFromNativeDir()) return true
 
             Log.e(
                 "PurrfectSnap",
@@ -104,12 +145,11 @@ class NativeLib {
     private external fun preInit()
     private external fun init(signatureCache: String?): String?
     private external fun loadConfig(config: NativeConfig)
-    external fun verifyKey(key: String): Boolean
     private external fun lockDatabase(name: String, callback: Runnable)
-    external fun setComposerLoader(code: String)
-    external fun composerEval(code: String): String?
+    external fun setValdiLoader(code: String)
     private external fun addLinkerSharedLibrary(path: String, content: ByteArray)
     private external fun evaluateEndpointNative(uri: String, arg0: String, hasAttestation: Boolean, outDecision: NativeDecision)
+    private external fun evaluateNetworkRequestNative(url: String, outDecision: NativeDecision)
     external fun shouldBlockDuplexClient(path: String): Boolean
     private external fun evaluateAuthContextNative(requestPath: String, attestationRequired: Boolean, outDecision: NativeDecision)
     private external fun evaluateApiInvocationNative(methodId: String, annotations: String, outDecision: NativeDecision)
@@ -121,6 +161,10 @@ class NativeLib {
 
     fun evaluateEndpoint(uri: String, arg0: String, hasAttestation: Boolean): NativeDecision {
         return NativeDecision().also { evaluateEndpointNative(uri, arg0, hasAttestation, it) }
+    }
+
+    fun evaluateNetworkRequest(url: String): NativeDecision {
+        return NativeDecision().also { evaluateNetworkRequestNative(url, it) }
     }
 
     fun evaluateAuthContext(requestPath: String, attestationRequired: Boolean): NativeDecision {

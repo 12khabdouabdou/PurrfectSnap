@@ -84,14 +84,14 @@ class BridgeClient(
                             //ensure the remote process is running
                             runCatching {
                                 startActivity(Intent()
-                                    .setClassName(Constants.SE_PACKAGE_NAME, "me.eternal.purrfectsnap.bridge.ForceStartActivity")
+                                    .setClassName(Constants.MODULE_PACKAGE_NAME, "me.eternal.purrfectsnap.bridge.ForceStartActivity")
                                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                                 )
                             }
 
                             runCatching {
                                 val intent = Intent()
-                                    .setClassName(Constants.SE_PACKAGE_NAME, "me.eternal.purrfectsnap.bridge.BridgeService")
+                                    .setClassName(Constants.MODULE_PACKAGE_NAME, "me.eternal.purrfectsnap.bridge.BridgeService")
                                 runCatching {
                                     if (this@BridgeClient::service.isInitialized) {
                                         unbindService(this@BridgeClient)
@@ -285,3 +285,4 @@ class BridgeClient(
 
     fun getDebugProp(name: String, defaultValue: String? = null): String? = safeServiceCall { service.getDebugProp(name, defaultValue) }
 }
+

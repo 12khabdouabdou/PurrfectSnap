@@ -12,8 +12,9 @@ import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import me.eternal.purrfectsnap.core.wrapper.impl.composer.ComposerContext
-import me.eternal.purrfectsnap.core.wrapper.impl.composer.ComposerViewNode
+import me.eternal.purrfectsnap.core.PurrfectSnap
+import me.eternal.purrfectsnap.core.wrapper.impl.valdi.ValdiContext
+import me.eternal.purrfectsnap.core.wrapper.impl.valdi.ValdiViewNode
 
 private val foregroundDrawableListTag = randomTag()
 
@@ -135,32 +136,24 @@ fun View.hideViewCompletely() {
     onLayoutChange { hide() }
 }
 
-fun View.getComposerViewNode(): ComposerViewNode? {
-    // Prefer Composer API if present
-    this::class.java.methods.firstOrNull { it.name == "getComposerViewNode" }?.let { method ->
-        val node = method.invoke(this) ?: return null
-        return ComposerViewNode.fromNode(node)
-    }
-    // Fallback to Valdi API
-    this::class.java.methods.firstOrNull { it.name == "getValdiViewNode" && it.parameterTypes.isEmpty() }?.let { method ->
-        val node = method.invoke(this) ?: return null
-        return ComposerViewNode.fromNode(node)
-    }
-    return null
+fun View.getValdiViewNode(): ValdiViewNode? {
+    val valdiView = PurrfectSnap.classCache.valdiView ?: return null
+    if (!valdiView.isInstance(this)) return null
+
+    val viewNode = this::class.java.methods.firstOrNull {
+        it.name == "getComposerViewNode" || it.name == "getValdiViewNode"
+    }?.invoke(this) ?: return null
+
+    return ValdiViewNode.fromNode(viewNode)
 }
 
-fun View.getComposerContext(): ComposerContext? {
-    // Prefer Composer API if present
-    this::class.java.methods.firstOrNull { it.name == "getComposerContext" }?.let { method ->
-        val ctx = method.invoke(this) ?: return null
-        return ComposerContext(ctx)
-    }
-    // Fallback to Valdi API
-    this::class.java.methods.firstOrNull { it.name == "getValdiContext" && it.parameterTypes.isEmpty() }?.let { method ->
-        val ctx = method.invoke(this) ?: return null
-        return ComposerContext(ctx)
-    }
-    return null
+fun View.getValdiContext(): ValdiContext? {
+    val valdiView = PurrfectSnap.classCache.valdiView ?: return null
+    if (!valdiView.isInstance(this)) return null
+
+    return ValdiContext(this::class.java.methods.firstOrNull {
+        it.name == "getComposerContext" || it.name == "getValdiContext"
+    }?.invoke(this) ?: return null)
 }
 
 object ViewAppearanceHelper {

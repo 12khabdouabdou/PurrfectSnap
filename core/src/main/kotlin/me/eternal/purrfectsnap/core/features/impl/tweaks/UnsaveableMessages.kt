@@ -36,9 +36,26 @@ class UnsaveableMessages : MessagingRuleFeature(
 
             if (!shouldApply) return@subscribe
 
+            val messageContentBytes = localMessageContent.content ?: return@subscribe
+
+            val config = context.config.messaging.unsaveableMessages
+            val enabledFields = mutableListOf<Int>()
+            if (config.chat.get()) enabledFields.add(2)
+            if (config.snap.get()) enabledFields.add(11)
+            if (config.externalMedia.get()) enabledFields.add(3)
+            if (config.sticker.get()) enabledFields.add(4)
+            if (config.share.get()) enabledFields.add(5)
+            if (config.note.get()) enabledFields.add(6)
+            if (config.storyReply.get()) enabledFields.add(7)
+
+            val protoReader = ProtoReader(messageContentBytes)
+
+            val fieldPath = enabledFields.firstOrNull { fieldId ->
+                protoReader.followPath(fieldId) != null
+            } ?: return@subscribe
+
             shouldModifySavePolicy = true
             
-            // Modify mSavePolicy directly using XposedHelpers
             try {
                 val savePolicyEnumClass = runCatching {
                     XposedHelpers.findClass("com.snapchat.client.messaging.SavePolicy", 
@@ -46,17 +63,19 @@ class UnsaveableMessages : MessagingRuleFeature(
                 }.getOrNull()
                 
                 if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
-                    val enumConstants = savePolicyEnumClass.enumConstants
-                    if (enumConstants != null && enumConstants.size > 2) {
-                        val viewSessionEnum = enumConstants[2] as Enum<*>
+                    @Suppress("UNCHECKED_CAST")
+                    val enumClass = savePolicyEnumClass as Class<out Enum<*>>
+                    val prohibitedEnum = runCatching {
+                        java.lang.Enum.valueOf(enumClass, "PROHIBITED")
+                    }.getOrNull()
+                    
+                    if (prohibitedEnum != null) {
                         val savePolicyField = localMessageContent.instanceNonNull().javaClass.declaredFields
                             .find { it.name == "mSavePolicy" }
                         
                         if (savePolicyField != null) {
-                            @Suppress("UNCHECKED_CAST")
-                            val fieldType = savePolicyField.type as Class<out Enum<*>>
-                            val enumValue = java.lang.Enum.valueOf(fieldType, viewSessionEnum.name)
-                            XposedHelpers.setObjectField(localMessageContent.instanceNonNull(), "mSavePolicy", enumValue)
+                            savePolicyField.isAccessible = true
+                            XposedHelpers.setObjectField(localMessageContent.instanceNonNull(), "mSavePolicy", prohibitedEnum)
                         }
                     }
                 }
@@ -64,25 +83,13 @@ class UnsaveableMessages : MessagingRuleFeature(
                 context.log.warn("UnsaveableMessages: Failed to set mSavePolicy: ${e.message}")
             }
             
-            // Modify proto
-            val messageContentBytes = localMessageContent.content ?: return@subscribe
-            
             try {
-                val protoReader = ProtoReader(messageContentBytes)
-                val messageContentProto4 = protoReader.followPath(4)
-                val messageContentProto2 = protoReader.followPath(2)
-                
-                val targetProto = messageContentProto4 ?: messageContentProto2
-                if (targetProto == null) return@subscribe
-                
-                val fieldPath = if (messageContentProto4 != null) 4 else 2
-                
                 val modifiedContent = ProtoEditor(messageContentBytes).apply {
                     edit(fieldPath) {
                         if (getOrNull(7) != null) {
                             remove(7)
                         }
-                        addVarInt(7, 3)
+                        addVarInt(7, 1)
                     }
                 }.toByteArray()
                 
@@ -99,32 +106,37 @@ class UnsaveableMessages : MessagingRuleFeature(
             if (!shouldModifySavePolicy) return@subscribe
             
             try {
-                event.buffer = ProtoEditor(event.buffer).apply {
-                    edit(4) {
-                        if (getOrNull(7) != null) {
-                            remove(7)
-                        }
-                        addVarInt(7, 3)
-                    }
-                }.toByteArray()
-                shouldModifySavePolicy = false
-            } catch (e: Exception) {
-                // Try field 2 as fallback
+                val config = context.config.messaging.unsaveableMessages
+                val enabledFields = mutableListOf<Int>()
+                if (config.chat.get()) enabledFields.add(2)
+                if (config.snap.get()) enabledFields.add(11)
+                if (config.externalMedia.get()) enabledFields.add(3)
+                if (config.sticker.get()) enabledFields.add(4)
+                if (config.share.get()) enabledFields.add(5)
+                if (config.note.get()) enabledFields.add(6)
+                if (config.storyReply.get()) enabledFields.add(7)
+
+                val protoReader = ProtoReader(event.buffer)
+                val fieldPath = enabledFields.firstOrNull { fieldId ->
+                    protoReader.followPath(fieldId) != null
+                } ?: return@subscribe
+
                 try {
                     event.buffer = ProtoEditor(event.buffer).apply {
-                        edit(2) {
+                        edit(fieldPath) {
                             if (getOrNull(7) != null) {
                                 remove(7)
                             }
-                            addVarInt(7, 3)
+                            addVarInt(7, 1)
                         }
                     }.toByteArray()
-                    shouldModifySavePolicy = false
-                } catch (e2: Exception) {
-                    context.log.error("UnsaveableMessages: NativeUnaryCallEvent modification failed: ${e2.message}")
+                } catch (e: Exception) {
+                    context.log.error("UnsaveableMessages: NativeUnaryCallEvent proto modification failed for field $fieldPath: ${e.message}")
                 }
+                shouldModifySavePolicy = false
+            } catch (e: Exception) {
+                context.log.error("UnsaveableMessages: NativeUnaryCallEvent modification failed: ${e.message}")
             }
         }
-
     }
 }

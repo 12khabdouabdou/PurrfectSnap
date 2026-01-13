@@ -35,16 +35,19 @@ class ModConfig(
 
     fun load() {
         wasPresent = fileWrapper.exists()
-        root = createRootConfig().apply {
-            if (!wasPresent) {
-                writeConfigObject(this)
-                return@apply
-            }
-            runCatching {
-                loadConfig(this)
-            }.onFailure {
-                writeConfigObject(this)
-            }
+        val targetRoot = if (::root.isInitialized) {
+            root
+        } else {
+            createRootConfig().also { root = it }
+        }
+        if (!wasPresent) {
+            writeConfigObject(targetRoot)
+            return
+        }
+        runCatching {
+            loadConfig(targetRoot)
+        }.onFailure {
+            writeConfigObject(targetRoot)
         }
     }
 

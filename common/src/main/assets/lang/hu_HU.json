@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Nyelv kiválasztása",
@@ -80,11 +80,11 @@
         "debug_title": "Hibaelhárítás",
         "success_toast": "Kész!",
         "message_logger_summary": "{messageCount}üzenetek\n{storyCount}történetek",
-        "export_button": "Export",
+        "export_button": "Export?l?s",
         "clear_button": "Tiszta",
         "view_logger_history_button": "A bejelentkezési előzmény megtekintése",
         "ui_settings_title": "UI beállítások",
-        "haptic_feedback_label": "Haptic Feedback",
+        "haptic_feedback_label": "Haptikus visszajelz?s",
         "use_system_toasts_label": "Rendszerköszöntők használata",
         "updates_title": "Frissítések",
         "auto_update_check": "Automatikus frissítés ellenőrzése",
@@ -134,8 +134,8 @@
       },
       "features": {
         "disabled": "Fogyatékos",
-        "export_option": "Export",
-        "import_option": "Import",
+        "export_option": "Export?l?s",
+        "import_option": "Import?l?s",
         "reset_option": "Újraindítás",
         "config_export_success_toast": "Config sikeresen exportált",
         "config_import_success_toast": "Sikeresen importált konfig",
@@ -310,7 +310,7 @@
       "downloading_script": "Szkript letöltése...",
       "edit_module_button": "Szerkesztés",
       "enter_url_label": "Adja meg az URL- t",
-      "import_button": "Import",
+      "import_button": "Import?l?s",
       "import_from_url_button": "Importálás URL-ből",
       "import_script_from_url_title": "Szkript importálása URL-ből",
       "import_script_warning": "Csak a megbízható forrásból származó szkriptek telepítése.",
@@ -363,7 +363,7 @@
       "logs_tab": "Bejelentkezés",
       "catalog_button": "Katalógus",
       "add_rule_button": "Cikk hozzáadása",
-      "import_button": "Import",
+      "import_button": "Import?l?s",
       "filters_title": "Szűrők",
       "search_by_label": "Keresés",
       "newest_first_label": "A következő",
@@ -371,7 +371,7 @@
       "until_label": "Amíg",
       "unit_label": "Egység",
       "pick_a_date_button": "Válasszon időpontot",
-      "export_button": "Export",
+      "export_button": "Export?l?s",
       "delete_button": "Törlés",
       "search_placeholder": "Keresés",
       "no_logs_found": "Nem található napló",
@@ -438,7 +438,7 @@
     },
     "friend_tracker_import": {
       "title": "Barát nyomkövető importálása",
-      "confirm_button": "Import",
+      "confirm_button": "Import?l?s",
       "back_button_description": "Menj vissza",
       "expand_button_description": "Kiterjesztés vagy összeomlás kategóriája",
       "imported_toast": "Behozott nyomkövető",
@@ -479,7 +479,7 @@
       "config_import": {
         "title": "Config összefoglaló importálása",
         "back_button_description": "Menj vissza",
-        "confirm_button": "Import",
+        "confirm_button": "Import?l?s",
         "expand_button_description": "Kiterjesztés vagy összeomlás kategóriája",
         "enabled": "Engedélyezve",
         "disabled": "Fogyatékos",
@@ -702,7 +702,7 @@
         "append_type": "A médiatípus hozzáadása a fájlnévhez"
       },
       "auto_download_sources": {
-        "friend_snaps": "Friend Snaps",
+        "friend_snaps": "Bar?t Snaps",
         "friend_stories": "Barát történetek",
         "public_stories": "Nyilvános történetek",
         "spotlight": "Spotlight"
@@ -719,7 +719,7 @@
         "snap_replay": "Snap ismétlés",
         "camera_roll_save": "Kamera Roll Mentés",
         "chat": "Chat",
-        "chat_reply": "Chat Reply",
+        "chat_reply": "Chat v?lasz",
         "snap": "Snap",
         "typing": "Gépelés",
         "stories": "Történetek",
@@ -843,7 +843,7 @@
         "ORIGINAL": "Eredeti média",
         "NOTE": "Hangjegyzet",
         "SNAP": "Snap",
-        "SAVEABLE_SNAP": "Saveable Snap",
+        "SAVEABLE_SNAP": "Menthet? Snap",
         "null": "Snapchat alapértelmezés"
       },
       "strip_media_metadata": {
@@ -893,12 +893,12 @@
       "snapchat_plus": {
         "not_subscribed": "Nincs előfizetve",
         "basic": "Alap",
-        "ad_free": "Ad Free",
+        "ad_free": "Rekl?mmentes",
         "null": "Alapértelmezés"
       },
       "bypass_video_length_restriction": {
         "single": "Egységes média",
-        "split": "Split media",
+        "split": "M?dia feloszt?sa",
         "null": "Alapértelmezés"
       },
       "old_bitmoji_selfie": {
@@ -909,7 +909,7 @@
       "disable_confirmation_dialogs": {
         "erase_message": "Üzenet törlése",
         "remove_friend": "Barát eltávolítása",
-        "block_friend": "Block Friend",
+        "block_friend": "Ismer?s blokkol?sa",
         "ignore_friend": "A barát figyelmen kívül hagyása",
         "hide_friend": "A barát elrejtése",
         "hide_conversation": "A beszélgetés elrejtése",
@@ -1021,7 +1021,7 @@
         "friendly": "Barátságos",
         "humorous": "Humoros",
         "empathetic": "Empatikus",
-        "toxic": "Edgy",
+        "toxic": "Provokat?v",
         "busy": "Elfoglalt"
       },
       "ai_temperature": {
@@ -1085,7 +1085,7 @@
       "auto_reply_content_types": {
         "chat_messages": "Chat üzenetek",
         "snap_messages": "Snaps",
-        "story_share_messages": "Story Shares",
+        "story_share_messages": "Story megoszt?sok",
         "story_reply_messages": "Történet válaszok",
         "external_media_messages": "Külső média",
         "voice_note_messages": "Hangjegyek",
@@ -1139,7 +1139,7 @@
                 "description": "Állítsák be a hamis hely koordinátáit"
               },
               "walk_radius": {
-                "name": "Walk Radius",
+                "name": "S?t?l?si sug?r",
                 "description": "Véletlenszerűen járkáljon ezen a sugáron belül (ft)"
               },
               "always_update_location": {
@@ -1173,7 +1173,7 @@
             "description": "Felülírja a média feltöltési minőségét",
             "properties": {
               "force_video_upload_source_quality": {
-                "name": "Force Video Upload Source Quality",
+                "name": "Vide?felt?lt?s forr?smin?s?g?nek k?nyszer?t?se",
                 "description": "Forces Snapchat használni a forrás minőségét feltöltésekor videók\nFelhívjuk figyelmét, hogy ez nem távolíthatja el a metaadatokat a médiából"
               },
               "disable_image_compression": {
@@ -1210,7 +1210,7 @@
             "name": "UI beállítások",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptic Feedback"
+                "name": "Haptikus visszajelz?s"
               }
             }
           },
@@ -1223,7 +1223,7 @@
             "description": "Eltávolítja a szakaszokat a Történetek oldaláról\nSzükség lehet egy frissítésre, hogy megfelelően működjön"
           },
           "block_ads": {
-            "name": "Block Ads",
+            "name": "Hirdet?sek blokkol?sa",
             "description": "Megelőzi a hirdetések megjelenését"
           },
           "disable_custom_tabs": {
@@ -1243,7 +1243,7 @@
             "description": "Megjeleníti a szerző felhasználónevét a Spotlight megjegyzésekben"
           },
           "spotlight_comments_username_icon": {
-            "name": "Spotlight Comments Username Icon",
+            "name": "Spotlight megjegyz?sek felhaszn?l?n?v ikon",
             "description": "Válassza ki, melyik ikon jelenik meg a felhasználónevek mellett a Spotlight megjegyzésekben"
           },
           "bypass_video_length_restriction": {
@@ -1313,7 +1313,7 @@
             "description": "A képek elmentése egy megadott formátumban"
           },
           "force_voice_note_format": {
-            "name": "Force Voice Note Format",
+            "name": "Hangjegyzet form?tum k?nyszer?t?se",
             "description": "Forces Voice A megjegyzések elmentése meghatározott formátumban"
           },
           "auto_download_voice_notes": {
@@ -1399,7 +1399,7 @@
             "description": "Megjelenít egy kis preview mellett láthatatlan Snaps a chat"
           },
           "bootstrap_override": {
-            "name": "Bootstrap Override",
+            "name": "Bootstrap fel?lb?r?l?s",
             "description": "A felhasználói felület bootstrap beállításainak felülbírálása",
             "properties": {
               "app_appearance": {
@@ -1407,7 +1407,7 @@
                 "description": "Állandó app megjelenés beállítása"
               },
               "home_tab": {
-                "name": "Home Tab",
+                "name": "Kezd?lap f?l",
                 "description": "Felülírja a startup lapot a Snapchat megnyitásakor"
               }
             }
@@ -1445,11 +1445,11 @@
             "description": "Válassza ki, melyik UI-komponenst rejtse el"
           },
           "opera_media_quick_info": {
-            "name": "Opera Media Quick Info",
+            "name": "Opera Media gyors inf?",
             "description": "Hasznos információkat mutat a médiáról, például a teremtés dátumát az opera nézőinek menüjében"
           },
           "old_bitmoji_selfie": {
-            "name": "Old Bitmoji Selfie",
+            "name": "R?gi Bitmoji szelfi",
             "description": "Visszahozza a Bitmoji selfies régebbi Snapchat verziók"
           },
           "disable_spotlight": {
@@ -1469,7 +1469,7 @@
             "description": "Lehetővé teszi a függőleges történet néző minden történet"
           },
           "enable_friend_feed_menu_bar": {
-            "name": "Friend Feed Menu Bar",
+            "name": "Bar?tfolyam men?sor",
             "description": "Engedélyezi az új Friend Feed menü"
           },
           "message_indicators": {
@@ -1511,7 +1511,7 @@
             "description": "Megelőzi, hogy bárki megtudja, hogy láttad a történetét"
           },
           "prevent_story_rewatch_indicator": {
-            "name": "Prevent Story Rewatch Indicator",
+            "name": "Story ?jran?z?s jelz? letilt?sa",
             "description": "Megelőzi, hogy bárki megtudja, hogy újra megnézted a sztoriját"
           },
           "hide_peek_a_peek": {
@@ -1543,7 +1543,7 @@
             "description": "Automatikusan ugrik a következő Snap, amikor megjelöli a Snap, mint látható.\nAlkalmazása együtt Mark Snap, mint látott gomb"
           },
           "loop_media_playback": {
-            "name": "Loop Media Playback",
+            "name": "M?dia lej?tsz?s ism?tl?se",
             "description": "Loops média lejátszás megtekintésekor Snaps / Stories"
           },
           "disable_replay_in_ff": {
@@ -1593,15 +1593,15 @@
                 "description": "Csoportos értesítések egyetlen példányban"
               },
               "chat_preview": {
-                "name": "Chat Preview",
+                "name": "Chat el?n?zet",
                 "description": "Megjeleníti a kapott üzenetek előnézetét a bejelentésben"
               },
               "media_preview": {
-                "name": "Media Preview",
+                "name": "M?dia el?n?zet",
                 "description": "Megjeleníti a kiválasztott médiatípusok előnézetét a bejelentésben"
               },
               "media_caption": {
-                "name": "Media Caption",
+                "name": "M?dia felirat",
                 "description": "Megjeleníti a média csatolását a bejelentésben"
               },
               "stacked_media_messages": {
@@ -1761,7 +1761,7 @@
                     "description": "Az MI használata intelligens automatikus válaszok generálásához sablon üzenetek helyett"
                   },
                   "ai_provider": {
-                    "name": "AI Provider",
+                    "name": "MI szolg?ltat?",
                     "description": "Válassza ki, melyik MI szolgáltatást kell használni a válaszok generálására"
                   },
                   "ai_endpoint_url": {
@@ -1781,7 +1781,7 @@
                     "description": "System prompt, amely meghatározza a MI személyiségét és viselkedését"
                   },
                   "ai_max_tokens": {
-                    "name": "AI Max Tokens",
+                    "name": "MI max tokenek",
                     "description": "A válaszokban használható MI-k maximális száma (szavak)"
                   },
                   "ai_temperature": {
@@ -1895,7 +1895,7 @@
                 "description": "Lehetővé teszi az Auto Open Snaps futását a háttérben. Megjegyzés: Ez jelentősen lemeríti az akkumulátorát"
               },
               "min_delay": {
-                "name": "Min Delay (ms)",
+                "name": "Min. k?sleltet?s (ms)",
                 "description": "Minimális késleltetés milliszekundumban a felbontás előtt"
               },
               "max_delay_ms": {
@@ -1991,7 +1991,7 @@
                 "description": "A fordítás megszakítása a szolgáltatás blokkolása esetén"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Max. ?jrapr?b?lkoz?s",
                 "description": "Az ismételt kísérletek maximális száma"
               },
               "retry_delay": {
@@ -2094,7 +2094,7 @@
         "description": "Időszakos bejelentés a csíkjaidról",
         "properties": {
           "interval": {
-            "name": "Interval",
+            "name": "Intervallum",
             "description": "Az egyes emlékeztetők közötti időtartam (óra)"
           },
           "remaining_hours": {
@@ -2112,11 +2112,11 @@
         "description": "Kísérleti jellemzők",
         "properties": {
           "native_hooks": {
-            "name": "Native Hooks",
+            "name": "Native hookok",
             "description": "A Snapchat anyavegyületének kódját behálózó biztonsági jellemzők",
             "properties": {
               "composer_hooks": {
-                "name": "Composer Hooks",
+                "name": "Composer hookok",
                 "description": "Injekciós kód a Composer cross-platform UI keretébe",
                 "properties": {
                   "show_first_created_username": {
@@ -2132,7 +2132,7 @@
                     "description": "Több lehetőséget ad az önmegsemmisítő időzítőre a Snap küldésekor"
                   },
                   "composer_console": {
-                    "name": "Composer Console",
+                    "name": "Composer konzol",
                     "description": "Lehetővé teszi, hogy végrehajtsa a JavaScript kódot a Composer (arm64 csak)"
                   },
                   "composer_logs": {
@@ -2204,11 +2204,11 @@
             "description": "Konvertálja pattogó chat külső média helyben. Ez jelenik meg a chat letöltési környezet menü"
           },
           "media_file_picker": {
-            "name": "Media File Picker",
+            "name": "M?diaf?jlv?laszt?",
             "description": "Lehetővé teszi, hogy válasszon bármilyen videó / audio fájlt a galériából"
           },
           "story_logger": {
-            "name": "Story Logger",
+            "name": "Story napl?",
             "description": "A barátok történeteinek története"
           },
           "call_recorder": {
@@ -2230,7 +2230,7 @@
             "description": "Javítja a hangjegy átiratot",
             "properties": {
               "force_transcription": {
-                "name": "Force Voice Note Transcription",
+                "name": "Hangjegyzet-?tirat k?nyszer?t?se",
                 "description": "Lehetővé teszi az összes hangjegy átírását"
               },
               "preferred_transcription_lang": {
@@ -2256,7 +2256,7 @@
             "description": "Nem kiadott / béta Snapchat funkciók engedélyezése"
           },
           "context_menu_fix": {
-            "name": "Context Menu Fix",
+            "name": "Kontextusmen? jav?t?s",
             "description": "A Friend Feed Menü javítása, mint amikor a készülék kikapcsolt, nem jelenik meg helyesen"
           },
           "app_lock": {
@@ -2274,7 +2274,7 @@
             "description": "A Story Boost Limit késleltetése"
           },
           "meo_passcode_bypass": {
-            "name": "My Eyes Only Passcode Bypass",
+            "name": "My Eyes Only jelsz? megker?l?se",
             "description": "A Szemeim megkerülése Csak jelszó\nEz csak akkor fog működni, ha a jelszó helyesen van bejegyezve, mielőtt"
           },
           "no_friend_score_delay": {
@@ -2407,7 +2407,7 @@
     "MAP_REACTION": "Térkép Reakció",
     "chat_messages": "Chat üzenetek",
     "snap_messages": "Snaps",
-    "story_share_messages": "Story Shares",
+    "story_share_messages": "Story megoszt?sok",
     "story_reply_messages": "Történet válaszok",
     "external_media_messages": "Külső média",
     "voice_note_messages": "Hangjegy",
@@ -2419,12 +2419,12 @@
   "media_download_source": {
     "none": "Nincs",
     "pending": "Függőben",
-    "chat_media": "Chat Media",
+    "chat_media": "Chat m?dia",
     "story": "Történet",
     "public_story": "Nyilvános történet",
     "spotlight": "Spotlight",
     "profile_picture": "Profilkép",
-    "story_logger": "Story Logger",
+    "story_logger": "Story napl?",
     "message_logger": "Üzenetjelző",
     "merged": "Egyesülve",
     "voice_call": "Hanghívás"
@@ -2454,7 +2454,7 @@
     "ORIGINAL": "Eredeti média",
     "NOTE": "Hangjegyzet",
     "SNAP": "Snap",
-    "SAVEABLE_SNAP": "Saveable Snap",
+    "SAVEABLE_SNAP": "Menthet? Snap",
     "null": "Snapchat alapértelmezés",
     "multiple_media_toast": "Egyszerre csak egy médiát küldhetsz"
   },
@@ -2514,7 +2514,7 @@
     "actions": {
       "remove_friends": "A barátok eltávolítása",
       "clear_conversations": "Beszélgetések törlése",
-      "clear_friend_feed": "Clear Friend Feed ({count})",
+      "clear_friend_feed": "Bar?tfolyam t?rl?se ({count})",
       "unfollow": "Nem követi",
       "remove": "Eltávolítás"
     },
@@ -2580,7 +2580,7 @@
       "download_medias_title": "Média letöltése"
     },
     "dialog_negative_button": "Törlés",
-    "dialog_positive_button": "Export",
+    "dialog_positive_button": "Export?l?s",
     "exported_to": "Kivitel{path}",
     "exporting_chats": "Chats exportálása...",
     "processing_chats": "Felfeldolgozás{amount}beszélgetések...",
@@ -2627,7 +2627,7 @@
   },
   "cleared_from_feed": "Takarmányból megtisztítva",
   "tracker_actions": {
-    "log": "Log",
+    "log": "Napl?",
     "in_app_notification": "Az alkalmazás bejelentése",
     "push_notification": "Értesítés",
     "custom": "Egyéni"
@@ -2721,7 +2721,7 @@
   },
   "auto_open_snaps": {
     "title": "Automatikus nyitás",
-    "priority_title": "Auto Open Snaps (Priority)",
+    "priority_title": "Snaps automatikus megnyit?sa (priorit?s)",
     "error_title": "Auto Open Snaps (hibák)",
     "channel_description": "Értesítések az automatikus nyitási csatolású csatolások sorban állásáról",
     "priority_channel_description": "Az automatikus nyitásra vonatkozó kiemelt értesítések",
@@ -2751,7 +2751,7 @@
     "unknown_user": "Ismeretlen felhasználó",
     "content_type_external_media": "Külső média",
     "content_type_snap": "Snap",
-    "conversation_type_friend_dm": "Friend DM",
+    "conversation_type_friend_dm": "Bar?t DM",
     "conversation_type_dm": "DM",
     "conversation_type_group_chat": "Csoport",
     "conversation_type_chat": "Chat",
@@ -2925,7 +2925,7 @@
       "rules": "Szabályok"
     },
     "actions": {
-      "export": "Export",
+      "export": "Export?l?s",
       "delete": "Törlés",
       "add_rule": "Cikk hozzáadása",
       "save_rule": "A szabály mentése"
@@ -3053,7 +3053,7 @@
       "config_json": "Konfigurációs fájl",
       "mappings_json": "Mappings fájl",
       "message_logger_db": "Üzenet bejelentkezési adatbázis",
-      "pinned_best_friend_txt": "Pinned Best Friend File",
+      "pinned_best_friend_txt": "Kit?z?tt legjobb bar?t f?jl",
       "native_sig_cache_txt": "Natív aláírás Cache fájl"
     },
     "settings": {
@@ -3064,7 +3064,7 @@
     }
   },
   "ui_settings_title": "UI beállítások",
-  "haptic_feedback_label": "Haptic Feedback",
+  "haptic_feedback_label": "Haptikus visszajelz?s",
   "updates_title": "Frissítések",
   "auto_update_check": "Automatikus frissítés ellenőrzése",
   "update_check_frequency_daily": "Napi",
@@ -3097,7 +3097,7 @@
     "sort_by_folder": "Rendezés mappa szerint",
     "include_my_eyes_only": "Csak a szemeimet tartalmazza",
     "cancel": "Törlés",
-    "export": "Export",
+    "export": "Export?l?s",
     "quit": "Kilépés",
     "done": "Kész",
     "ok": "OKÉ",
@@ -3111,7 +3111,7 @@
     "import_script_from_url": "Szkript importálása URL-ből",
     "warning_imported_scripts": "Figyelem: Az importált szkriptek károsak lehetnek az eszközre. Csak megbízható forrásból származó forgatókönyveket importálunk.",
     "enter_url_here": "Adja meg az URL-t:",
-    "import": "Import",
+    "import": "Import?l?s",
     "cancel": "Törlés",
     "documentation": "Dokumentáció"
   },
@@ -3170,7 +3170,7 @@
   },
   "debug_dialogs": {
     "info": "Információ",
-    "refs": "Refs",
+    "refs": "Referenci?k",
     "arroyo": "Arroyo",
     "message": "Üzenet",
     "media_references": "Médiahivatkozások",

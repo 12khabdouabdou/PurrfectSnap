@@ -40,7 +40,10 @@ class ActivityLauncherHelper(
 
     fun launch(intent: Intent, callback: ActivityLauncherCallback, onFailure: ((Throwable) -> Unit)?) {
         if (this.callback != null) {
-            throw IllegalStateException("Already launching an activity")
+            val error = IllegalStateException("Already launching an activity")
+            AbstractLogger.directError("Ignored concurrent activity launch", error)
+            onFailure?.invoke(error)
+            return
         }
         this.callback = callback
 
@@ -56,7 +59,11 @@ class ActivityLauncherHelper(
 
     fun requestPermission(permission: String, callback: ActivityLauncherCallback) {
         if (this.callback != null) {
-            throw IllegalStateException("Already launching an activity")
+            AbstractLogger.directError(
+                "Ignored concurrent permission request",
+                IllegalStateException("Already launching an activity")
+            )
+            return
         }
         this.callback = callback
         permissionResultLauncher.launch(permission)

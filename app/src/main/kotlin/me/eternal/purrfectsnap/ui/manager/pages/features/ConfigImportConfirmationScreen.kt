@@ -14,7 +14,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -185,13 +190,18 @@ class ConfigImportConfirmationScreen : Routes.Route() {
             routes.configJsonForImport?.let { parser.parse(it) } ?: emptyMap()
         }
         val expandedState = remember { mutableStateMapOf<String, Boolean>() }
+        val importLabel = translation["confirm_button"] ?: "Import"
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            ) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -213,29 +223,34 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                     Row(
                         modifier = Modifier
                             .background(PurrfectPalette.cardOverlay, RoundedCornerShape(24.dp))
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        Button(
+                            onClick = { routes.navController.popBackStack() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.28f),
+                                contentColor = Color.White
+                            )
                         ) {
-                            IconButton(onClick = { routes.navController.popBackStack() }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = translation["back_button_description"],
-                                    tint = Color.White
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = translation["title"],
-                                    color = Color.White,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 18.sp
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.padding(end = 6.dp)
+                            )
+                            Text(context.translation["common.back"] ?: "Back")
+                        }
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Summary",
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 18.sp
+                            )
                         }
                         Button(
                             onClick = {
@@ -261,7 +276,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(translation["confirm_button"])
+                            Text(importLabel)
                         }
                     }
                 }
@@ -276,116 +291,116 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                     ),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(featuresByCategory.toList()) { (category, features) ->
-                        val isExpanded = expandedState[category] ?: false
-                        val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
+                items(featuresByCategory.toList()) { (category, features) ->
+                    val isExpanded = expandedState[category] ?: false
+                    val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
 
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { expandedState[category] = !isExpanded },
-                            shape = RoundedCornerShape(18.dp),
-                            color = PurrfectPalette.cardOverlayColor,
-                            tonalElevation = 0.dp,
-                            shadowElevation = 10.dp,
-                            border = BorderStroke(
-                                1.dp,
-                                Brush.linearGradient(
-                                    listOf(
-                                        PurrfectPalette.glowPrimary.copy(alpha = 0.4f),
-                                        PurrfectPalette.glowSecondary.copy(alpha = 0.32f)
-                                    )
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expandedState[category] = !isExpanded },
+                        shape = RoundedCornerShape(18.dp),
+                        color = PurrfectPalette.cardOverlayColor,
+                        tonalElevation = 0.dp,
+                        shadowElevation = 10.dp,
+                        border = BorderStroke(
+                            1.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    PurrfectPalette.glowPrimary.copy(alpha = 0.4f),
+                                    PurrfectPalette.glowSecondary.copy(alpha = 0.32f)
                                 )
                             )
-                        ) {
-                            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = category,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 17.sp,
-                                            color = Color.White
-                                        )
-                                    }
-                                    IconButton(onClick = { expandedState[category] = !isExpanded }) {
-                                        Icon(
-                                            imageVector = Icons.Default.KeyboardArrowDown,
-                                            contentDescription = translation["expand_button_description"],
-                                            modifier = Modifier.graphicsLayer(rotationZ = rotationState),
-                                            tint = Color.White
-                                        )
-                                    }
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = category,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 17.sp,
+                                        color = Color.White
+                                    )
                                 }
+                                IconButton(onClick = { expandedState[category] = !isExpanded }) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = translation["expand_button_description"],
+                                        modifier = Modifier.graphicsLayer(rotationZ = rotationState),
+                                        tint = Color.White
+                                    )
+                                }
+                            }
 
-                                AnimatedVisibility(visible = isExpanded) {
-                                    Column(
-                                        modifier = Modifier.padding(top = 10.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        features.forEachIndexed { index, feature ->
-                                            when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
-                                                is List<*> -> {
+                            AnimatedVisibility(visible = isExpanded) {
+                                Column(
+                                    modifier = Modifier.padding(top = 10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    features.forEachIndexed { index, feature ->
+                                        when (val parsedValue = parser.parseValue(feature.key, feature.value)) {
+                                            is List<*> -> {
+                                                Column(
+                                                    modifier = Modifier.padding(start = (feature.indentation * 16).dp),
+                                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                                ) {
+                                                    Text(
+                                                        text = feature.name,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Color.White
+                                                    )
                                                     Column(
-                                                        modifier = Modifier.padding(start = (feature.indentation * 16).dp),
+                                                        modifier = Modifier.padding(start = 6.dp),
                                                         verticalArrangement = Arrangement.spacedBy(6.dp)
                                                     ) {
-                                                        Text(
-                                                            text = feature.name,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            color = Color.White
-                                                        )
-                                                        Column(
-                                                            modifier = Modifier.padding(start = 6.dp),
-                                                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                                                        ) {
-                                                            parsedValue.forEachIndexed { itemIndex, item ->
-                                                                Row(
-                                                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                                                    verticalAlignment = Alignment.CenterVertically
-                                                                ) {
-                                                                    NumberBubble(itemIndex + 1)
-                                                                    Text(
-                                                                        text = item.toString(),
-                                                                        color = PurrfectPalette.textSecondary
-                                                                    )
-                                                                }
+                                                        parsedValue.forEachIndexed { itemIndex, item ->
+                                                            Row(
+                                                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                                                verticalAlignment = Alignment.CenterVertically
+                                                            ) {
+                                                                NumberBubble(itemIndex + 1)
+                                                                Text(
+                                                                    text = item.toString(),
+                                                                    color = PurrfectPalette.textSecondary
+                                                                )
                                                             }
                                                         }
                                                     }
                                                 }
+                                            }
 
-                                                is String -> {
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(start = (feature.indentation * 16).dp),
-                                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                                    ) {
-                                                        Text(
-                                                            text = feature.name,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            color = Color.White
-                                                        )
-                                                        Text(
-                                                            text = parsedValue,
-                                                            color = PurrfectPalette.glowSecondary,
-                                                            textAlign = TextAlign.Start,
-                                                        )
-                                                    }
+                                            is String -> {
+                                                Column(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(start = (feature.indentation * 16).dp),
+                                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = feature.name,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Color.White
+                                                    )
+                                                    Text(
+                                                        text = parsedValue,
+                                                        color = PurrfectPalette.glowSecondary,
+                                                        textAlign = TextAlign.Start,
+                                                    )
                                                 }
                                             }
-                                            if (index < features.size - 1) {
-                                                Spacer(modifier = Modifier.height(6.dp))
-                                            }
                                         }
-                                    }
-                                }
+                                        if (index < features.size - 1) {
+                                            Spacer(modifier = Modifier.height(6.dp))
                             }
                         }
                     }
                 }
+                }
             }
+        }
+    }
+}
         }
     }
 

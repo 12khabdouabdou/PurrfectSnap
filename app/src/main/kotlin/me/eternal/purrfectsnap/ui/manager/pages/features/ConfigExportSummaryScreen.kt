@@ -14,7 +14,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +34,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -128,7 +135,8 @@ class ConfigExportSummaryScreen : Routes.Route() {
     }
 
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
-        val exportSensitiveData = it.arguments?.getBoolean("exportSensitiveData") ?: false
+        val exportSensitiveData = it.arguments?.getString("exportSensitiveData")?.toBoolean() ?: false
+        val exportLabel = context.translation["manager.sections.features.export_option"] ?: "Export"
         val parser = remember { ConfigParser() }
         val featuresByCategory = remember {
             parser.parse(context.config.exportToString(exportSensitiveData))
@@ -140,11 +148,15 @@ class ConfigExportSummaryScreen : Routes.Route() {
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom))
+            ) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .statusBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 12.dp),
                     shape = RoundedCornerShape(24.dp),
                     color = Color.Transparent,
@@ -163,46 +175,36 @@ class ConfigExportSummaryScreen : Routes.Route() {
                     Row(
                         modifier = Modifier
                             .background(PurrfectPalette.cardOverlay, RoundedCornerShape(24.dp))
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            IconButton(onClick = { routes.navController.popBackStack() }) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = translation["back_button_description"],
-                                    tint = Color.White
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = translation["title"],
-                                    color = Color.White,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 18.sp
-                                )
-                            }
-                        }
-                        Surface(
-                            shape = CircleShape,
-                            color = PurrfectPalette.glowPrimary.copy(alpha = 0.22f),
-                            tonalElevation = 0.dp,
-                            shadowElevation = 10.dp,
-                            border = BorderStroke(
-                                1.dp,
-                                Brush.linearGradient(
-                                    listOf(
-                                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                                        PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
-                                    )
-                                )
+                        Button(
+                            onClick = { routes.navController.popBackStack() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.28f),
+                                contentColor = Color.White
                             )
                         ) {
-                            IconButton(
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.padding(end = 6.dp)
+                            )
+                            Text(context.translation["common.back"] ?: "Back")
+                        }
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Summary",
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 18.sp
+                            )
+                        }
+                        Button(
                             onClick = {
                                 routes.activityLauncher.saveFile("config.json", "application/json") { uri ->
                                     runCatching {
@@ -220,14 +222,19 @@ class ConfigExportSummaryScreen : Routes.Route() {
                                         )
                                     }
                                 }
-                            }
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.32f),
+                                contentColor = Color.White
+                            )
                         ) {
                             Icon(
                                 imageVector = Icons.Default.ArrowDownward,
-                                contentDescription = translation["save_button"],
-                                tint = Color.White
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.padding(end = 6.dp)
                             )
-                        }
+                            Text(exportLabel)
                         }
                     }
                 }

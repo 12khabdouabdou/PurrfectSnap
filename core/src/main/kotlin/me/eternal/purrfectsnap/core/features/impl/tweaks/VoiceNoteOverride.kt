@@ -3,18 +3,19 @@ package me.eternal.purrfectsnap.core.features.impl.tweaks
 import android.view.ViewGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.core.PurrfectSnap
 import me.eternal.purrfectsnap.core.event.events.impl.BindViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.features.impl.downloader.MediaDownloader
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
-import me.eternal.purrfectsnap.core.ui.getComposerContext
+import me.eternal.purrfectsnap.core.ui.getValdiContext
 import me.eternal.purrfectsnap.core.util.dataBuilder
+import me.eternal.purrfectsnap.core.util.hook.HookAdapter
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.ktx.getId
 import me.eternal.purrfectsnap.core.util.ktx.getObjectField
+import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
 import me.eternal.purrfectsnap.core.util.makeFunctionProxy
 
 class VoiceNoteOverride: Feature("Voice Note Override") {
@@ -24,7 +25,20 @@ class VoiceNoteOverride: Feature("Voice Note Override") {
 
         if (!autoDownloadVoiceNotes && !voiceNoteAutoPlay) return
 
-        val playbackMap = sortedMapOf<Long, MutableList<Any>>()
+        val playbackMap = sortedMapOf<Long, Any>()
+        val classLoader = context.androidContext.classLoader
+
+        fun tryFallbackCreateContext(param: HookAdapter): Any? {
+            val fallbackClass = runCatching {
+                classLoader.loadClass("com.snapchat.client.composer.NativeBridge")
+            }.getOrNull() ?: return null
+            val method = fallbackClass.methods.firstOrNull {
+                it.name == "createContext" && it.parameterTypes.size == param.args().size
+            } ?: return null
+            return runCatching { method.invoke(null, *param.args()) }
+                .onFailure { context.log.error("Composer NativeBridge fallback failed", it) }
+                .getOrNull()
+        }
 
         fun setPlaybackState(componentContext: Any, state: String): Boolean {
             val seek = componentContext.getObjectField("_seek") ?: return false
@@ -42,7 +56,7 @@ class VoiceNoteOverride: Feature("Voice Note Override") {
 
         fun getCurrentContextMessageId(currentContext: Any): Long? {
             return synchronized(playbackMap) {
-                playbackMap.entries.firstOrNull { entry -> entry.value.any { it.hashCode() == currentContext.hashCode() } }?.key
+                playbackMap.entries.lastOrNull { entry -> entry.value.hashCode() == currentContext.hashCode() }?.key
             }
         }
 
@@ -59,7 +73,8 @@ class VoiceNoteOverride: Feature("Voice Note Override") {
                 context.log.verbose("No more voice notes to play")
                 return
             }
-            nextPlayback.value.toList().forEach { setPlaybackState(it, "PLAYING") }
+
+            setPlaybackState(nextPlayback.value, "PLAYING")
         }
 
         context.classCache.conversationManager.apply {
@@ -132,21 +147,30 @@ class VoiceNoteOverride: Feature("Voice Note Override") {
             }
         }
 
+        PurrfectSnap.classCache.nativeBridge.hook("createContext", HookStage.AFTER) { param ->
+            val throwable = param.throwable() as? UnsatisfiedLinkError ?: return@hook
+            context.log.error("NativeBridge.createContext missing native impl; attempting fallback", throwable)
+            val fallback = tryFallbackCreateContext(param)
+            param.setResult(fallback)
+        }
+
         onNextActivityCreate {
             context.event.subscribe(BindViewEvent::class) { event ->
                 event.chatMessage { _, _ ->
                     val messagePluginContentHolder = event.view.findViewById<ViewGroup>(context.resources.getId("plugin_content_holder")) ?: return@subscribe
                     val composerRootView = messagePluginContentHolder.getChildAt(0) ?: return@subscribe
 
-                    val composerContext = composerRootView.getComposerContext() ?: return@subscribe
-                    val playbackViewComponentContext = composerContext.componentContext?.get() ?: return@subscribe
+                    composerRootView.post {
+                        val composerContext = composerRootView.getValdiContext() ?: return@post
+                        val playbackViewComponentContext = composerContext.componentContext?.get() ?: return@post
 
-                    if (event.databaseMessage?.contentType != ContentType.NOTE.id) return@subscribe
+                        if (event.databaseMessage?.serverMessageId == 0 || playbackViewComponentContext.getObjectFieldOrNull("_getSamples") == null) return@post
 
-                    val serverMessageId = event.databaseMessage?.serverMessageId?.toLong() ?: return@subscribe
+                        val serverMessageId = event.databaseMessage?.serverMessageId?.toLong() ?: return@post
 
-                    synchronized(playbackMap) {
-                        playbackMap.computeIfAbsent(serverMessageId) { mutableListOf() }.add(playbackViewComponentContext)
+                        synchronized(playbackMap) {
+                            playbackMap[serverMessageId] = playbackViewComponentContext
+                        }
                     }
                 }
             }

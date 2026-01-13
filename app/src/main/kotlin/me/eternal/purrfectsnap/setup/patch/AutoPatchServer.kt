@@ -2,6 +2,7 @@ package me.eternal.purrfectsnap.setup.patch
 
 import com.google.gson.JsonParser
 import java.util.concurrent.TimeUnit
+import kotlin.random.Random
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -29,7 +30,7 @@ class AutoPatchServer(
 
     fun fetchLatestSnapchatApk(): LatestApk? {
         val request = Request.Builder()
-            .url("https://api.github.com/repos/particle-box/auto-patch-server/releases/latest")
+            .url("https://api.github.com/repos/particle-box/download-snap/releases/latest")
             .build()
 
         okHttpClient.newCall(request).execute().use { response ->
@@ -47,9 +48,9 @@ class AutoPatchServer(
                 name to downloadUrl
             }
 
-            val selected = apkAssets.firstOrNull { it.first.contains("snapchat", ignoreCase = true) }
-                ?: apkAssets.firstOrNull()
-                ?: return null
+            val nonPrimary = apkAssets.filterNot { it.first.contains("snapchat", ignoreCase = true) }
+            val selectionPool = if (nonPrimary.isNotEmpty()) nonPrimary else apkAssets
+            val selected = selectionPool.random(Random.Default)
 
             return LatestApk(
                 tagName = tagName,
@@ -59,4 +60,3 @@ class AutoPatchServer(
         }
     }
 }
-

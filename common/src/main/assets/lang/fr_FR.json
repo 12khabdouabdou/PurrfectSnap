@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Sélectionner la langue",
@@ -182,7 +182,7 @@
         "rules_title": "Règles",
         "participants_text": "{count}participants",
         "not_found": "Non trouvé",
-        "streaks_title": "Streaks",
+        "streaks_title": "S?ries",
         "streaks_length_text": "Longueur:{length}",
         "streaks_expiration_text": "Expire dans{eta}",
         "streaks_expiration_text_expired": "Expiré",
@@ -532,11 +532,11 @@
         }
       },
       "auto_open_snaps": {
-        "name": "Auto Open Snaps",
+        "name": "Ouverture auto des Snaps",
         "description": "Automatiquement ouvre Snaps lors de leur réception",
         "options": {
           "blacklist": "Exclure de Auto Open Snaps",
-          "whitelist": "Auto Open Snaps"
+          "whitelist": "Ouverture auto des Snaps"
         }
       },
       "hide_friend_feed": {
@@ -716,7 +716,7 @@
       "notifications": {
         "chat_screenshot": "Capture d'écran",
         "chat_screen_record": "Enregistrement de l'écran",
-        "snap_replay": "Snap Replay",
+        "snap_replay": "Relecture de Snap",
         "camera_roll_save": "Roule-photo Enregistrer",
         "chat": "Chat",
         "chat_reply": "Répondre au chat",
@@ -909,7 +909,7 @@
       "disable_confirmation_dialogs": {
         "erase_message": "Effacer le message",
         "remove_friend": "Supprimer l'ami",
-        "block_friend": "Block Friend",
+        "block_friend": "Bloquer l'ami",
         "ignore_friend": "Ignorer son ami",
         "hide_friend": "Cacher l'ami",
         "hide_conversation": "Cacher la conversation",
@@ -1021,7 +1021,7 @@
         "friendly": "Amiable",
         "humorous": "Humoreux",
         "empathetic": "Empathie",
-        "toxic": "Edgy",
+        "toxic": "Cinglant",
         "busy": "Occupé"
       },
       "ai_temperature": {
@@ -1543,7 +1543,7 @@
             "description": "Saute automatiquement au prochain Snap lors du marquage d'un Snap tel que vu.\nUtilisation en combinaison avec Mark Snap comme Bouton vu"
           },
           "loop_media_playback": {
-            "name": "Loop Media Playback",
+            "name": "Lecture en boucle des m?dias",
             "description": "Loops media playing lors de l'affichage Snaps / Stories"
           },
           "disable_replay_in_ff": {
@@ -1781,7 +1781,7 @@
                     "description": "Invitation système qui définit la personnalité et le comportement de l'IA"
                   },
                   "ai_max_tokens": {
-                    "name": "AI Max Tokens",
+                    "name": "Nombre max de tokens IA",
                     "description": "Nombre maximal de jetons (mots) que l'IA peut utiliser dans les réponses"
                   },
                   "ai_temperature": {
@@ -1991,7 +1991,7 @@
                 "description": "Pause traduction lorsque le service est bloqué"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Nombre max de tentatives",
                 "description": "Nombre maximal de tentatives de réessayer"
               },
               "retry_delay": {
@@ -2552,7 +2552,7 @@
       "suggested": "Suggestion",
       "deleted": "Supprimé",
       "business_accounts": "Comptes d'entreprise",
-      "streaks": "Streaks",
+      "streaks": "S?ries",
       "non_streaks": "Non streaks",
       "followed": "Suivi",
       "following": "Suivant",
@@ -2685,7 +2685,7 @@
     }
   },
   "streaks_reminder": {
-    "notification_title": "Streaks",
+    "notification_title": "S?ries",
     "notification_text": "Vous allez perdre votre Streak avec{friend}en{hoursLeft}heures"
   },
   "biometric_auth": {
@@ -2720,9 +2720,9 @@
     "incoming_secret_message": "Ton ami a accepté ta clé publique. Cliquez ci-dessous pour accepter le secret."
   },
   "auto_open_snaps": {
-    "title": "Auto Open Snaps",
+    "title": "Ouverture auto des Snaps",
     "priority_title": "Auto Open Snaps (Priorité)",
-    "error_title": "Auto Open Snaps (Errors)",
+    "error_title": "Ouverture auto des Snaps (erreurs)",
     "channel_description": "Notifications pour l'ouverture automatique du statut de file d'attente snaps",
     "priority_channel_description": "Notifications hautement prioritaires pour les snaps d'ouverture automatique",
     "error_channel_description": "Notifications d'erreur lorsque l'ouverture automatique des snaps échoue",

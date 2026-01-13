@@ -2,18 +2,23 @@ package me.eternal.purrfectsnap.core.messaging
 
 import android.util.Base64InputStream
 import android.util.Base64OutputStream
+import com.google.gson.JsonParser
 import com.google.gson.stream.JsonWriter
 import kotlinx.coroutines.runBlocking
 import me.eternal.purrfectsnap.common.BuildConfig
+import me.eternal.purrfectsnap.common.bridge.wrapper.LoggedMessage
 import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.database.impl.FriendFeedEntry
 import me.eternal.purrfectsnap.common.database.impl.FriendInfo
+import me.eternal.purrfectsnap.common.util.protobuf.ProtoReader
 import me.eternal.purrfectsnap.common.util.snap.MediaDownloaderHelper
 import me.eternal.purrfectsnap.core.ModContext
+import me.eternal.purrfectsnap.core.features.impl.spying.MessageLogger
+import me.eternal.purrfectsnap.core.features.impl.downloader.decoder.DecodedAttachment
 import me.eternal.purrfectsnap.core.features.impl.downloader.decoder.MessageDecoder
 import me.eternal.purrfectsnap.core.util.hook.findRestrictedConstructor
 import me.eternal.purrfectsnap.core.wrapper.impl.Message
-import me.eternal.purrfectsnap.core.wrapper.impl.SnapUUID
+import me.eternal.purrfectsnap.core.wrapper.impl.getMessageText
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
@@ -84,6 +89,9 @@ class ConversationExporter(
                 jsonDataWriter.beginObject()
                 jsonDataWriter.name("conversationId").value(friendFeedEntry.key)
                 jsonDataWriter.name("conversationName").value(friendFeedEntry.feedDisplayName)
+                exportParams.colorSeedHex?.let { colorSeed ->
+                    jsonDataWriter.name("colorSeed").value(colorSeed)
+                }
 
                 var index = 0
 
@@ -92,6 +100,7 @@ class ConversationExporter(
                     conversationParticipants.forEach { (userId, friendInfo) ->
                         jsonDataWriter.name(userId).beginObject()
                         jsonDataWriter.name("id").value(index)
+                        jsonDataWriter.name("userId").value(userId)
                         jsonDataWriter.name("displayName").value(friendInfo.displayName)
                         jsonDataWriter.name("username").value(friendInfo.usernameForSorting)
                         jsonDataWriter.name("bitmojiSelfieId").value(friendInfo.bitmojiSelfieId)
@@ -99,6 +108,14 @@ class ConversationExporter(
                         participants[userId] = index++
                     }
                     endObject()
+                }
+
+                exportParams.colorOverrides?.takeIf { it.isNotEmpty() }?.let { overrides ->
+                    jsonDataWriter.name("userColors").beginObject()
+                    overrides.forEach { (userId, color) ->
+                        jsonDataWriter.name(userId).value(color)
+                    }
+                    jsonDataWriter.endObject()
                 }
 
                 jsonDataWriter.name("messages").beginArray()
@@ -125,9 +142,21 @@ class ConversationExporter(
     private val downloadedMediaIdCache = CopyOnWriteArraySet<String>()
     private val pendingDownloadMediaIdCache = CopyOnWriteArraySet<String>()
 
-    private fun downloadMedia(message: Message) {
+    data class LoggedMessageExportData(
+        val orderKey: Long,
+        val senderId: String,
+        val senderUsername: String?,
+        val contentType: ContentType,
+        val contentBytes: ByteArray?,
+        val createdTimestamp: Long,
+        val readTimestamp: Long?,
+        val attachments: List<DecodedAttachment>,
+        val isDeleted: Boolean
+    )
+
+    private fun downloadMedia(attachments: List<DecodedAttachment>) {
         downloadThreadExecutor.execute {
-            MessageDecoder.decode(message.messageContent!!).forEach decode@{ attachment ->
+            attachments.forEach decode@{ attachment ->
                 if (attachment.mediaUniqueId in downloadedMediaIdCache || attachment.mediaUniqueId in pendingDownloadMediaIdCache) return@decode
                 pendingDownloadMediaIdCache.add(attachment.mediaUniqueId!!)
                 for (i in 0..5) {
@@ -176,6 +205,78 @@ class ConversationExporter(
         }
     }
 
+    private fun writeJsonMessage(
+        orderKey: Long?,
+        senderId: String?,
+        contentType: ContentType,
+        savedBy: List<String>,
+        seenBy: List<String>,
+        openedBy: List<String>,
+        reactions: Map<String, Long?>,
+        createdTimestamp: Long?,
+        readTimestamp: Long?,
+        serializedContent: String?,
+        rawContent: ByteArray?,
+        attachments: List<DecodedAttachment>,
+        isDeleted: Boolean
+    ) {
+        jsonDataWriter.apply {
+            beginObject()
+            name("orderKey").value(orderKey)
+            name("senderId").value(participants.getOrDefault(senderId ?: "", -1))
+            name("type").value(contentType.toString())
+
+            fun addUserList(name: String, list: List<String>) {
+                name(name).beginArray()
+                list.map { participants.getOrDefault(it, -1) }.forEach { value(it) }
+                endArray()
+            }
+
+            addUserList("savedBy", savedBy)
+            addUserList("seenBy", seenBy)
+            addUserList("openedBy", openedBy)
+
+            name("reactions").beginObject()
+            reactions.forEach { (userId, reactionId) ->
+                name(participants.getOrDefault(userId, -1).toString()).value(reactionId)
+            }
+            endObject()
+
+            name("createdTimestamp").value(createdTimestamp)
+            name("readTimestamp").value(readTimestamp)
+            name("isDeleted").value(isDeleted)
+            if (serializedContent != null) {
+                name("serializedContent").value(serializedContent)
+            } else {
+                name("serializedContent").nullValue()
+            }
+            if (rawContent != null) {
+                name("rawContent").value(Base64.UrlSafe.encode(rawContent))
+            } else {
+                name("rawContent").nullValue()
+            }
+            name("attachments").beginArray()
+            attachments.forEach attachments@{ attachment ->
+                beginObject()
+                name("url").value(attachment.boltKey ?: attachment.directUrl)
+                name("key").value(attachment.mediaUniqueId)
+                name("type").value(attachment.type.toString())
+                name("encryption").apply {
+                    attachment.attachmentInfo?.encryption?.let { encryption ->
+                        beginObject()
+                        name("key").value(encryption.key)
+                        name("iv").value(encryption.iv)
+                        endObject()
+                    } ?: nullValue()
+                }
+                endObject()
+            }
+            endArray()
+            endObject()
+            flush()
+        }
+    }
+
     fun readMessage(message: Message) {
         if (exportParams.exportFormat == ExportFormat.TEXT) {
             val (displayName, senderUsername) = conversationParticipants[message.senderId.toString()]?.let {
@@ -188,6 +289,7 @@ class ConversationExporter(
         }
         val contentType = message.messageContent?.contentType ?: return
 
+        val attachments = MessageDecoder.decode(message.messageContent!!)
         if (exportParams.downloadMedias && (contentType == ContentType.NOTE ||
                     contentType == ContentType.SNAP ||
                     contentType == ContentType.EXTERNAL_MEDIA ||
@@ -195,56 +297,98 @@ class ConversationExporter(
                     contentType == ContentType.SHARE ||
                     contentType == ContentType.MAP_REACTION)
             ) {
-            downloadMedia(message)
+            downloadMedia(attachments)
         }
 
-        jsonDataWriter.apply {
-            beginObject()
-            name("orderKey").value(message.orderKey)
-            name("senderId").value(participants.getOrDefault(message.senderId.toString(), -1))
-            name("type").value(message.messageContent!!.contentType.toString())
+        writeJsonMessage(
+            orderKey = message.orderKey,
+            senderId = message.senderId.toString(),
+            contentType = contentType,
+            savedBy = message.messageMetadata!!.savedBy!!.map { it.toString() },
+            seenBy = message.messageMetadata!!.seenBy!!.map { it.toString() },
+            openedBy = message.messageMetadata!!.openedBy!!.map { it.toString() },
+            reactions = message.messageMetadata!!.reactions!!.associate { it.userId.toString() to it.reactionId },
+            createdTimestamp = message.messageMetadata!!.createdAt,
+            readTimestamp = message.messageMetadata!!.readAt,
+            serializedContent = message.serialize(),
+            rawContent = message.messageContent!!.content,
+            attachments = attachments,
+            isDeleted = false
+        )
+    }
 
-            fun addUUIDList(name: String, list: List<SnapUUID>) {
-                name(name).beginArray()
-                list.map { participants.getOrDefault(it.toString(), -1) }.forEach { value(it) }
-                endArray()
-            }
+    fun parseLoggedMessage(loggedMessage: LoggedMessage): LoggedMessageExportData? {
+        val messageObject = runCatching {
+            JsonParser.parseString(String(loggedMessage.messageData, Charsets.UTF_8)).asJsonObject
+        }.getOrNull() ?: return null
 
-            addUUIDList("savedBy", message.messageMetadata!!.savedBy!!)
-            addUUIDList("seenBy", message.messageMetadata!!.seenBy!!)
-            addUUIDList("openedBy", message.messageMetadata!!.openedBy!!)
+        val messageContent = messageObject.getAsJsonObject("mMessageContent") ?: return null
+        val contentBytes = messageContent.getAsJsonArray("mContent")?.map { it.asByte }?.toByteArray()
+        val contentType = messageContent.getAsJsonPrimitive("mContentType")?.asString?.let {
+            runCatching { ContentType.valueOf(it) }.getOrNull()
+        } ?: contentBytes?.let { ContentType.fromMessageContainer(ProtoReader(it)) } ?: ContentType.UNKNOWN
 
-            name("reactions").beginObject()
-            message.messageMetadata!!.reactions!!.forEach { reaction ->
-                name(participants.getOrDefault(reaction.userId.toString(), -1L).toString()).value(reaction.reactionId)
-            }
-            endObject()
+        val metadata = messageObject.getAsJsonObject("mMetadata")
+        val createdTimestamp = metadata?.getAsJsonPrimitive("mCreatedAt")?.asLong ?: loggedMessage.sendTimestamp
+        val readTimestamp = metadata?.getAsJsonPrimitive("mReadAt")?.asLong
+        val orderKey = messageObject.getAsJsonPrimitive("mOrderKey")?.asLong ?: loggedMessage.messageId
+        val attachments = runCatching { MessageDecoder.decode(messageContent) }.getOrDefault(emptyList())
+        val isDeleted = runCatching {
+            val messageLogger = context.feature(MessageLogger::class)
+            messageLogger.isEnabled && messageLogger.isLoggedMessageDeleted(loggedMessage.messageId)
+        }.getOrDefault(false)
 
-            name("createdTimestamp").value(message.messageMetadata!!.createdAt)
-            name("readTimestamp").value(message.messageMetadata!!.readAt)
-            name("serializedContent").value(message.serialize())
-            name("rawContent").value(Base64.UrlSafe.encode(message.messageContent!!.content!!))
-            name("attachments").beginArray()
-            MessageDecoder.decode(message.messageContent!!)
-                .forEach attachments@{ attachments ->
-                    beginObject()
-                    name("url").value(attachments.boltKey ?: attachments.directUrl)
-                    name("key").value(attachments.mediaUniqueId)
-                    name("type").value(attachments.type.toString())
-                    name("encryption").apply {
-                        attachments.attachmentInfo?.encryption?.let { encryption ->
-                            beginObject()
-                            name("key").value(encryption.key)
-                            name("iv").value(encryption.iv)
-                            endObject()
-                        } ?: nullValue()
-                    }
-                    endObject()
-                }
-            endArray()
-            endObject()
-            flush()
+        return LoggedMessageExportData(
+            orderKey = orderKey,
+            senderId = loggedMessage.userId,
+            senderUsername = loggedMessage.username,
+            contentType = contentType,
+            contentBytes = contentBytes,
+            createdTimestamp = createdTimestamp,
+            readTimestamp = readTimestamp,
+            attachments = attachments,
+            isDeleted = isDeleted
+        )
+    }
+
+    fun readLoggedMessage(data: LoggedMessageExportData) {
+        val serializedContent = data.contentBytes?.getMessageText(data.contentType)
+
+        if (exportParams.exportFormat == ExportFormat.TEXT) {
+            val (displayName, senderUsername) = conversationParticipants[data.senderId]?.let {
+                it.displayName to it.mutableUsername
+            } ?: (data.senderUsername ?: data.senderId) to (data.senderUsername ?: data.senderId)
+
+            val date = DateFormat.getDateTimeInstance().format(Date(data.createdTimestamp))
+            outputFileStream.write("[$date] - $displayName ($senderUsername): ${serializedContent ?: data.contentType.name}\n".toByteArray(Charsets.UTF_8))
+            return
         }
+
+        if (exportParams.downloadMedias && (data.contentType == ContentType.NOTE ||
+                    data.contentType == ContentType.SNAP ||
+                    data.contentType == ContentType.EXTERNAL_MEDIA ||
+                    data.contentType == ContentType.STICKER ||
+                    data.contentType == ContentType.SHARE ||
+                    data.contentType == ContentType.MAP_REACTION)
+            ) {
+            downloadMedia(data.attachments)
+        }
+
+        writeJsonMessage(
+            orderKey = data.orderKey,
+            senderId = data.senderId,
+            contentType = data.contentType,
+            savedBy = emptyList(),
+            seenBy = emptyList(),
+            openedBy = emptyList(),
+            reactions = emptyMap(),
+            createdTimestamp = data.createdTimestamp,
+            readTimestamp = data.readTimestamp,
+            serializedContent = serializedContent,
+            rawContent = data.contentBytes,
+            attachments = data.attachments,
+            isDeleted = data.isDeleted
+        )
     }
 
     fun awaitDownload() {

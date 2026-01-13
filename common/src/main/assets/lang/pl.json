@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Wybierz język",
@@ -52,7 +52,7 @@
       "customize_bottom_bar_subtitle": "Wybierz, które karty pokazać na ekranie",
       "available_tabs_title": "Dostępne karty",
       "shown_tabs_title": "Pokazane karty",
-      "reset_button": "Reset",
+      "reset_button": "Resetuj",
       "done_button": "Gotowe"
     },
     "sections": {
@@ -84,7 +84,7 @@
         "clear_button": "Czysto",
         "view_logger_history_button": "Widok Historia logowania",
         "ui_settings_title": "Ustawienia interfejsu użytkownika",
-        "haptic_feedback_label": "Haptic Feedback",
+        "haptic_feedback_label": "Haptyczne sprz??enie zwrotne",
         "use_system_toasts_label": "Użyj tostów systemowych",
         "updates_title": "Aktualizacje",
         "auto_update_check": "Automatyczne sprawdzanie aktualizacji",
@@ -113,9 +113,9 @@
         "customize_bottom_bar_title": "Dostosuj pasek dolny",
         "customize_bottom_bar_subtitle": "Wybierz, które karty pokazać na ekranie",
         "available_tabs_title": "Dostępne karty",
-        "reset_button": "Reset",
+        "reset_button": "Resetuj",
         "done_button": "Gotowe",
-        "clear_friend_feed": "Clear Friend Feed",
+        "clear_friend_feed": "Wyczy?? kana? znajomych",
         "test_mode_label": "Włącz PurrAura",
         "disable_feature_loading_label": "Wyłącz ładowanie funkcji",
         "disable_auto_mapper_label": "Wyłącz automapper",
@@ -135,8 +135,8 @@
       "features": {
         "disabled": "Wyłączone",
         "export_option": "Eksport",
-        "import_option": "Import",
-        "reset_option": "Reset",
+        "import_option": "Importuj",
+        "reset_option": "Resetuj",
         "config_export_success_toast": "Konfiguracja eksportowana pomyślnie",
         "config_import_success_toast": "Konfiguracja importowana pomyślnie",
         "config_import_failure_toast": "Nie udało się zaimportować pliku konfiguracyjnego{error}",
@@ -310,7 +310,7 @@
       "downloading_script": "Pobieranie skryptu...",
       "edit_module_button": "Edycja",
       "enter_url_label": "Wprowadź URL",
-      "import_button": "Import",
+      "import_button": "Importuj",
       "import_from_url_button": "Importuj z URL",
       "import_script_from_url_title": "Importuj skrypt z URL",
       "import_script_warning": "Zainstaluj skrypty tylko ze źródeł, którym ufasz.",
@@ -363,10 +363,10 @@
       "logs_tab": "Logi",
       "catalog_button": "Katalog",
       "add_rule_button": "Dodaj zasadę",
-      "import_button": "Import",
+      "import_button": "Importuj",
       "filters_title": "Filtry",
       "search_by_label": "Szukaj",
-      "newest_first_label": "Newest first",
+      "newest_first_label": "Najnowsze najpierw",
       "since_label": "Od",
       "until_label": "Do",
       "unit_label": "Jednostka",
@@ -438,7 +438,7 @@
     },
     "friend_tracker_import": {
       "title": "Importuj śledzenie znajomych",
-      "confirm_button": "Import",
+      "confirm_button": "Importuj",
       "back_button_description": "Wracaj",
       "expand_button_description": "Kategoria rozszerzania lub załamania",
       "imported_toast": "Tracker importowany",
@@ -479,7 +479,7 @@
       "config_import": {
         "title": "Importuj podsumowanie konfiguracji",
         "back_button_description": "Wracaj",
-        "confirm_button": "Import",
+        "confirm_button": "Importuj",
         "expand_button_description": "Kategoria rozszerzania lub załamania",
         "enabled": "Włączone",
         "disabled": "Wyłączone",
@@ -615,7 +615,7 @@
       "description": "Wykonuje operacje takie jak usuwanie przyjaciół lub masowe usuwanie rozmów"
     },
     "regen_mappings": {
-      "name": "Regenerate Mappings",
+      "name": "Regeneruj mapowania",
       "description": "Mappingi regenerowane ręcznie"
     },
     "change_language": {
@@ -734,42 +734,42 @@
       },
       "auto_read": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "hide_typing_indicator": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "auto_delete_sent_messages": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "auto_download": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "stealth": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "auto_save": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "message_logger": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "auto_reply": {
         "blacklist": "Czarna lista",
-        "whitelist": "Whitelist",
+        "whitelist": "Lista dozwolonych",
         "disabled": "Wyłączone"
       },
       "custom_android_id": {
@@ -888,12 +888,12 @@
         "null": "Automatyczne"
       },
       "update_check_frequency": {
-        "null": "Auto"
+        "null": "Automatycznie"
       },
       "snapchat_plus": {
         "not_subscribed": "Nie subskrybowane",
         "basic": "Podstawowe",
-        "ad_free": "Ad Free",
+        "ad_free": "Bez reklam",
         "null": "Domyślne"
       },
       "bypass_video_length_restriction": {
@@ -909,7 +909,7 @@
       "disable_confirmation_dialogs": {
         "erase_message": "Usuń wiadomość",
         "remove_friend": "Usuń przyjaciela",
-        "block_friend": "Block Friend",
+        "block_friend": "Zablokuj znajomego",
         "ignore_friend": "Ignoruj Przyjaciela",
         "hide_friend": "Ukryj przyjaciela",
         "hide_conversation": "Ukryj rozmowę",
@@ -1021,14 +1021,14 @@
         "friendly": "Przyjazny",
         "humorous": "Zabawny",
         "empathetic": "Empatia",
-        "toxic": "Edgy",
+        "toxic": "Ostry",
         "busy": "Zajęty"
       },
       "ai_temperature": {
         "0.7": "Zbalansowany (0,7)"
       },
       "ai_response_language": {
-        "auto": "Auto",
+        "auto": "Automatycznie",
         "en": "Angielski",
         "es": "Hiszpański",
         "fr": "Francuski",
@@ -1092,7 +1092,7 @@
         "sticker_messages": "Naklejki",
         "tiny_snap_messages": "Małe trzaski",
         "map_reaction_messages": "Reakcje mapy",
-        "half_swipes": "Half Swipes"
+        "half_swipes": "Po?owiczne przesuni?cia"
       },
       "supported_languages": {
         "en": "Angielski",
@@ -1112,7 +1112,7 @@
       "translation_position": {
         "above": "Powyższy tekst",
         "below": "Poniżej tekstu",
-        "inline": "Inline"
+        "inline": "W linii"
       },
       "source_language": {
         "auto": "Wykrywanie automatycznie"
@@ -1139,7 +1139,7 @@
                 "description": "Ustaw współrzędne lokalizacji"
               },
               "walk_radius": {
-                "name": "Walk Radius",
+                "name": "Promie? chodzenia",
                 "description": "Losowo chodzić w tym promieniu (ft)"
               },
               "always_update_location": {
@@ -1191,7 +1191,7 @@
             "description": "Automatycznie potwierdza wybrane działania"
           },
           "auto_updater": {
-            "name": "Auto Updater",
+            "name": "Auto-aktualizator",
             "description": "Automatyczne sprawdzanie nowych aktualizacji"
           },
           "update_settings": {
@@ -1210,7 +1210,7 @@
             "name": "Ustawienia interfejsu użytkownika",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptic Feedback"
+                "name": "Haptyczne sprz??enie zwrotne"
               }
             }
           },
@@ -1341,7 +1341,7 @@
                 "description": "Ilość wątków do użycia"
               },
               "preset": {
-                "name": "Preset",
+                "name": "Ustawienie wst?pne",
                 "description": "Ustaw prędkość konwersji"
               },
               "constant_rate_factor": {
@@ -1399,7 +1399,7 @@
             "description": "Wyświetla mały podgląd obok niewidocznych Zatrzasków w czacie"
           },
           "bootstrap_override": {
-            "name": "Bootstrap Override",
+            "name": "Nadpisanie bootstrap",
             "description": "Przekroczenie ustawień interfejsu użytkownika bootstrap",
             "properties": {
               "app_appearance": {
@@ -1449,7 +1449,7 @@
             "description": "Pokazuje użyteczne informacje o mediach, takie jak data utworzenia w menu kontekstowym przeglądarki operowej"
           },
           "old_bitmoji_selfie": {
-            "name": "Old Bitmoji Selfie",
+            "name": "Stare selfie Bitmoji",
             "description": "Przynosi Bitmoji selfie ze starszych wersji snapchat"
           },
           "disable_spotlight": {
@@ -1465,7 +1465,7 @@
             "description": "Automatycznie zamyka menu Friend Feed po naciśnięciu przycisku nastawienia"
           },
           "vertical_story_viewer": {
-            "name": "Vertical Story Viewer",
+            "name": "Pionowy podgl?d Story",
             "description": "Włącza przeglądarkę pionową dla wszystkich historii"
           },
           "enable_friend_feed_menu_bar": {
@@ -1535,11 +1535,11 @@
             "description": "Automatycznie oznacza wiadomości / zatrzaski jako przeczytane nawet wtedy, gdy włączony jest tryb stealth"
           },
           "mark_snap_as_seen_button": {
-            "name": "Mark Snap as Seen Button",
+            "name": "Przycisk oznaczania Snap jako obejrzany",
             "description": "Dodaje przycisk, aby zaznaczyć Snap, jak widać podczas oglądania.\nBędzie to działać nawet wtedy, gdy tryb stealth jest włączony"
           },
           "skip_when_marking_as_seen": {
-            "name": "Skip When Marking as Seen",
+            "name": "Pomijaj przy oznaczaniu jako obejrzane",
             "description": "Automatycznie przeskakuje do następnego Snap przy oznaczaniu Snap jak widać.\nUżyj w połączeniu z Mark Snap jako Seen Button"
           },
           "loop_media_playback": {
@@ -1674,7 +1674,7 @@
               },
               "snap": {
                 "name": "Pstryknięcia",
-                "description": "Make snaps unsaveable"
+                "description": "Uczy? Snaps niezapisywalne"
               },
               "external_media": {
                 "name": "Media zewnętrzne",
@@ -1745,7 +1745,7 @@
                 "description": "Pozwala na automatyczną odpowiedź w tle. Notatka: To znacznie odsączy akumulator"
               },
               "cooldown_seconds": {
-                "name": "Cooldown Seconds",
+                "name": "Sekundy odnowienia",
                 "description": "Minimalny czas między auto- odpowiedzi na tę samą rozmowę (w sekundach)"
               },
               "message_age_threshold": {
@@ -1777,7 +1777,7 @@
                     "description": "Klucz API do uwierzytelniania w serwisie AI"
                   },
                   "ai_system_prompt": {
-                    "name": "AI System Prompt",
+                    "name": "Prompt systemowy AI",
                     "description": "System prompt, który definiuje osobowość i zachowanie AI"
                   },
                   "ai_max_tokens": {
@@ -1847,7 +1847,7 @@
                     "description": "Automatyczne odpowiedzi dla wiadomości czatu tekstowego"
                   },
                   "snap_messages": {
-                    "name": "Snap Replies",
+                    "name": "Odpowiedzi na Snap",
                     "description": "Automatyczne odpowiedzi na zatrzaski"
                   },
                   "story_share_messages": {
@@ -1871,7 +1871,7 @@
                     "description": "Automatyczne odpowiedzi na naklejki"
                   },
                   "tiny_snap_messages": {
-                    "name": "Tiny Snap Replies",
+                    "name": "Odpowiedzi na ma?e Snapy",
                     "description": "Automatyczne odpowiedzi na małe trzaski"
                   },
                   "map_reaction_messages": {
@@ -1895,11 +1895,11 @@
                 "description": "Pozwala Auto Open Pstryknięcia uruchomić w tle. Notatka: To znacznie odsączy akumulator"
               },
               "min_delay": {
-                "name": "Min Delay (ms)",
+                "name": "Min. op??nienie (ms)",
                 "description": "Minimalne opóźnienie w milisekundach przed otwarciem zatrzasku"
               },
               "max_delay_ms": {
-                "name": "Max Delay (ms)",
+                "name": "Maks. op??nienie (ms)",
                 "description": "Maksymalne opóźnienie w milisekundach przed otwarciem zatrzasku"
               },
               "queue_size": {
@@ -1991,7 +1991,7 @@
                 "description": "Zatrzymaj tłumaczenie, gdy usługa jest zablokowana"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Maks. liczba pr?b",
                 "description": "Maksymalna liczba prób powtórnych"
               },
               "retry_delay": {
@@ -2112,7 +2112,7 @@
         "description": "Cechy doświadczalne",
         "properties": {
           "native_hooks": {
-            "name": "Native Hooks",
+            "name": "Native hooks",
             "description": "Niebezpieczne funkcje, które podłączyć do natywnego kodu Snapchat",
             "properties": {
               "composer_hooks": {
@@ -2180,7 +2180,7 @@
                 "description": "Override Android ID wysłany do Snapchat",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Podszyj Android ID",
                     "description": "Przekrocz ID Android wysłany do Snapchat z wartością niestandardową"
                   },
                   "custom_android_id": {
@@ -2402,7 +2402,7 @@
     "FAMILY_CENTER_ACCEPT": "Zaakceptuj Centrum Rodzinne",
     "FAMILY_CENTER_LEAVE": "Centrum Rodzinne",
     "STATUS_PLUS_GIFT": "Status Plus prezent",
-    "TINY_SNAP": "Tiny Snap",
+    "TINY_SNAP": "Ma?y Snap",
     "STATUS_COUNTDOWN": "Odliczanie",
     "MAP_REACTION": "Mapa Reakcja",
     "chat_messages": "Wiadomości czatowe",
@@ -2412,9 +2412,9 @@
     "external_media_messages": "Media zewnętrzne",
     "voice_note_messages": "Notatka głosowa",
     "sticker_messages": "Naklejka",
-    "tiny_snap_messages": "Tiny Snap",
+    "tiny_snap_messages": "Ma?y Snap",
     "map_reaction_messages": "Mapa Reakcja",
-    "half_swipes": "Half Swipes"
+    "half_swipes": "Po?owiczne przesuni?cia"
   },
   "media_download_source": {
     "none": "Brak",
@@ -2514,8 +2514,8 @@
     "actions": {
       "remove_friends": "Usuń znajomych",
       "clear_conversations": "Wyczyść konwersje",
-      "clear_friend_feed": "Clear Friend Feed ({count})",
-      "unfollow": "Unfollow",
+      "clear_friend_feed": "Wyczy?? kana? znajomych ({count})",
+      "unfollow": "Przesta? obserwowa?",
       "remove": "Usuń"
     },
     "leave_groups": "Wyjdź{count}grupy",
@@ -2622,7 +2622,7 @@
     "snap_replayed": "Snap replained",
     "snap_replayed_twice": "Snap ponownie dwukrotnie",
     "snap_screenshot": "Zrzut ekranu",
-    "snap_screen_record": "Snap Screen Record",
+    "snap_screen_record": "Nagranie ekranu Snap",
     "i_can_see_you": "Widzę cię"
   },
   "cleared_from_feed": "Oczyszczone z paszy",
@@ -2650,7 +2650,7 @@
     "dialog_message": "Na pewno chcesz zadzwonić?"
   },
   "half_swipe_notifier": {
-    "notification_channel_name": "Half Swipe",
+    "notification_channel_name": "P??przesuni?cie",
     "notification_content_dm": "{friend}po prostu połowicznie wciśnięty do czatu{duration}sekund",
     "notification_content_group": "{friend}po prostu połowicznie{group}zamiast{duration}sekund"
   },
@@ -2728,7 +2728,7 @@
     "error_channel_description": "Powiadomienia o błędach w przypadku awarii automatycznego otwierania",
     "paused_status": "Automatyczne otwieranie zamków",
     "processing_status": "Przetwarzanie pęknięć:{queued}w kolejce,{processed}przetworzone",
-    "monitor_status": "Monitoring...",
+    "monitor_status": "Monitorowanie...",
     "recent_snaps": "Ostatnie trzaski",
     "action_pause": "Pauza",
     "action_resume": "Wznowienie",
@@ -2739,7 +2739,7 @@
     "paused_feedback": "Automatyczne otwieranie",
     "resumed_message": "Przetwarzanie będzie kontynuowane automatycznie w kolejce zatrzasków",
     "paused_message": "Przetwarzanie przerwane. Konserwacja kolejki ({count})",
-    "status_paused": "Paused",
+    "status_paused": "Wstrzymane",
     "status_monitoring": "Monitorowanie",
     "status_active": "Aktywne",
     "queue_cleared": "Kolejka oczyszczone i statystyki reset",
@@ -2751,7 +2751,7 @@
     "unknown_user": "Nieznany użytkownik",
     "content_type_external_media": "Media zewnętrzne",
     "content_type_snap": "Snap",
-    "conversation_type_friend_dm": "Friend DM",
+    "conversation_type_friend_dm": "DM znajomego",
     "conversation_type_dm": "DM",
     "conversation_type_group_chat": "Grupa czat",
     "conversation_type_chat": "Rozmowa",
@@ -2883,7 +2883,7 @@
   "translation_position": {
     "above": "Powyżej",
     "below": "Poniżej",
-    "inline": "Inline"
+    "inline": "W linii"
   },
   "language_codes": {
     "en": "Angielski",
@@ -2939,7 +2939,7 @@
       "placeholder": "Szukaj"
     },
     "filters": {
-      "newest_first": "Newest first",
+      "newest_first": "Najnowsze najpierw",
       "pick_a_date": "Wybierz datę",
       "title": "Filtry",
       "search_by": "Szukaj",
@@ -3064,7 +3064,7 @@
     }
   },
   "ui_settings_title": "Ustawienia interfejsu użytkownika",
-  "haptic_feedback_label": "Haptic Feedback",
+  "haptic_feedback_label": "Haptyczne sprz??enie zwrotne",
   "updates_title": "Aktualizacje",
   "auto_update_check": "Automatyczne sprawdzanie aktualizacji",
   "update_check_frequency_daily": "Codziennie",
@@ -3111,7 +3111,7 @@
     "import_script_from_url": "Importuj skrypt z URL",
     "warning_imported_scripts": "Ostrzeżenie: Importowane skrypty mogą być szkodliwe dla urządzenia. Import skryptów tylko z zaufanych źródeł.",
     "enter_url_here": "Podaj adres URL tutaj:",
-    "import": "Import",
+    "import": "Importuj",
     "cancel": "Anuluj",
     "documentation": "Dokumentacja"
   },
@@ -3127,7 +3127,7 @@
     "no_friends_found": "Nie znaleziono przyjaciół",
     "exporting_memories": "Eksportowanie wspomnień... ({failed}nieudany)"
   },
-  "clear_friend_feed": "Clear Friend Feed",
+  "clear_friend_feed": "Wyczy?? kana? znajomych",
   "select_date": "Wybierz datę",
   "schedule_scheduled_for": "Planowane{name}w{time}",
   "schedule_sending_in": "Wysyłanie{time}",

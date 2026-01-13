@@ -10,7 +10,7 @@ import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.event.events.impl.BindViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.ui.children
-import me.eternal.purrfectsnap.core.ui.getComposerContext
+import me.eternal.purrfectsnap.core.ui.getValdiContext
 import me.eternal.purrfectsnap.core.ui.hideViewCompletely
 import me.eternal.purrfectsnap.core.ui.onLayoutChange
 import me.eternal.purrfectsnap.core.util.dataBuilder
@@ -136,7 +136,7 @@ class UITweaks : Feature("UITweaks") {
 
             if (hiddenElements.contains("hide_billboard_prompt") && event.parent.javaClass.name.endsWith("BillboardFeedHeaderPromptComponent")) {
                 hideView(event.parent)
-                view.getComposerContext()?.componentContext?.get()?.dataBuilder {
+                view.getValdiContext()?.componentContext?.get()?.dataBuilder {
                     val dismissFunction = get<Any>("_onDismiss") ?: return@subscribe
                     dismissFunction.javaClass.getMethod("invoke").invoke(dismissFunction)
                 }

@@ -207,23 +207,30 @@ class AlertDialogs(
     @Composable
     @Suppress("UNCHECKED_CAST")
     fun UniqueSelectionDialog(property: PropertyPair<*>) {
+        val disabledKey = property.key.params.disabledKey
         val keys = (property.value.defaultValues as List<String>).toMutableList().apply {
-            add(0, "null")
+            val disabledEntry = disabledKey ?: "null"
+            remove(disabledEntry)
+            add(0, disabledEntry)
+            if (disabledKey == null) {
+                remove("null")
+                add(0, "null")
+            }
         }
 
         var selectedValue by remember {
-            mutableStateOf(property.value.getNullable()?.toString() ?: "null")
+            mutableStateOf(property.value.getNullable()?.toString() ?: (disabledKey ?: "null"))
         }
 
         DefaultDialogCard {
             keys.forEachIndexed { index, item ->
                 fun select() {
                     selectedValue = item
-                    property.value.setAny(if (index == 0) {
-                        null
-                    } else {
-                        item
-                    })
+                    if (disabledKey != null && item == disabledKey) {
+                        property.value.setAny(disabledKey)
+                        return
+                    }
+                    property.value.setAny(if (disabledKey == null && index == 0) null else item)
                 }
 
                 Row(
@@ -279,6 +286,7 @@ class AlertDialogs(
                     else -> KeyboardOptions(keyboardType = KeyboardType.Text)
                 },
                 singleLine = true,
+                shape = RoundedCornerShape(14.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White.copy(alpha = 0.08f),
                     unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
@@ -362,6 +370,7 @@ class AlertDialogs(
                     fieldValue.value = it
                 },
                 singleLine = true,
+                shape = RoundedCornerShape(14.dp),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White.copy(alpha = 0.08f),
                     unfocusedContainerColor = Color.White.copy(alpha = 0.05f),

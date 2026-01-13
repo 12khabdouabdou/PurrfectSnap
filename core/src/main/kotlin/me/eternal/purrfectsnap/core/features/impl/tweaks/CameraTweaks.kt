@@ -103,13 +103,15 @@ class CameraTweaks : Feature("Camera Tweaks") {
             findClass("android.media.ImageReader\$SurfaceImage").hook("getPlanes", HookStage.AFTER) { param ->
                 val image = param.thisObject() as? Image ?: return@hook
                 val planes = param.getResult() as? Array<*> ?: return@hook
-                val output = ByteArrayOutputStream()
-                Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888).apply {
-                    compress(Bitmap.CompressFormat.JPEG, 100, output)
-                    recycle()
-                }
                 planes.filterNotNull().forEach { plane ->
-                    plane.setObjectField("mBuffer", ByteBuffer.wrap(output.toByteArray()))
+                    // keep buffer size identical to the original to avoid crashes during copyPixelsFromBuffer
+                    val buffer = runCatching {
+                        plane.javaClass.getMethod("getBuffer").invoke(plane) as? ByteBuffer
+                    }.getOrNull() ?: return@forEach
+                    val zeroes = ByteArray(buffer.capacity())
+                    buffer.clear()
+                    buffer.put(zeroes)
+                    buffer.flip()
                 }
             }
         }

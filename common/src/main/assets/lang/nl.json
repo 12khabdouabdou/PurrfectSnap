@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Taal selecteren",
@@ -30,7 +30,7 @@
       "home": "Begin",
       "home_about": "Info",
       "home_settings": "Instellingen",
-      "home_logs": "Logs",
+      "home_logs": "Logboeken",
       "logger_history": "Loggergeschiedenis",
       "logged_stories": "Gelogde verhalen",
       "friend_tracker": "Vriend Tracker",
@@ -52,13 +52,13 @@
       "customize_bottom_bar_subtitle": "Kies welke tabbladen getoond worden op uw startscherm",
       "available_tabs_title": "Beschikbare tabbladen",
       "shown_tabs_title": "Tabbladen tonen",
-      "reset_button": "Reset",
+      "reset_button": "Resetten",
       "done_button": "Klaar"
     },
     "sections": {
       "home": {
         "version_title": "v{versionName}· door Eternal",
-        "update_title": "PurrfectSnap Update",
+        "update_title": "PurrfectSnap-update",
         "update_content": "Versie{version}is beschikbaar!",
         "update_button": "Downloaden",
         "debug_build_summary_title": "U draait een debug bouw van PurrfectSnap",
@@ -92,7 +92,7 @@
         "update_check_frequency_weekly": "Wekelijks",
         "update_check_frequency_monthly": "Maandelijks",
         "update_channel_stable": "Stabiel",
-        "update_channel_prerelease": "Pre-release",
+        "update_channel_prerelease": "Vooruitgave",
         "update_notification_channel_name": "Bijwerken",
         "update_notification_channel_description": "Waarschuwen wanneer nieuwe releases beschikbaar zijn",
         "update_notification_title": "Nieuwe update beschikbaar",
@@ -113,7 +113,7 @@
         "customize_bottom_bar_title": "Onderbalk aanpassen",
         "customize_bottom_bar_subtitle": "Kies welke tabbladen getoond worden op uw startscherm",
         "available_tabs_title": "Beschikbare tabbladen",
-        "reset_button": "Reset",
+        "reset_button": "Resetten",
         "done_button": "Klaar",
         "clear_friend_feed": "Vriend Feed wissen",
         "test_mode_label": "PurrAura inschakelen",
@@ -136,7 +136,7 @@
         "disabled": "Uitgeschakeld",
         "export_option": "Uitvoer",
         "import_option": "Importeren",
-        "reset_option": "Reset",
+        "reset_option": "Resetten",
         "config_export_success_toast": "Configureren met succes",
         "config_import_success_toast": "Configureren met succes",
         "config_import_failure_toast": "Kon config niet importeren{error}",
@@ -360,7 +360,7 @@
     },
     "friend_tracker": {
       "rules_tab": "Regels",
-      "logs_tab": "Logs",
+      "logs_tab": "Logboeken",
       "catalog_button": "Catalogus",
       "add_rule_button": "Regel toevoegen",
       "import_button": "Importeren",
@@ -711,7 +711,7 @@
         "started": "Gestart",
         "success": "Succes",
         "progress": "Voortgang",
-        "failure": "Failure"
+        "failure": "Mislukking"
       },
       "notifications": {
         "chat_screenshot": "Schermafdruk",
@@ -734,42 +734,42 @@
       },
       "auto_read": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "hide_typing_indicator": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "auto_delete_sent_messages": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "auto_download": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "stealth": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "auto_save": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "message_logger": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "auto_reply": {
         "blacklist": "Zwarte lijst",
-        "whitelist": "Whitelist",
+        "whitelist": "Witte lijst",
         "disabled": "Uitgeschakeld"
       },
       "custom_android_id": {
@@ -888,7 +888,7 @@
         "null": "Automatisch"
       },
       "update_check_frequency": {
-        "null": "Auto"
+        "null": "Automatisch"
       },
       "snapchat_plus": {
         "not_subscribed": "Niet ingeschreven",
@@ -1016,7 +1016,7 @@
         "friendly, casual, helpful, empathetic": "vriendelijk, casual, behulpzaam, empathisch"
       },
       "ai_response_style": {
-        "casual": "Casual",
+        "casual": "Informeel",
         "formal": "Formele",
         "friendly": "Vriendelijk",
         "humorous": "Humoristisch",
@@ -1028,7 +1028,7 @@
         "0.7": "Gebalanceerd (0,7)"
       },
       "ai_response_language": {
-        "auto": "Auto",
+        "auto": "Automatisch",
         "en": "Engels",
         "es": "Spaans",
         "fr": "Frans",
@@ -1050,7 +1050,7 @@
         "fi": "Fins"
       },
       "friendGreeting": {
-        "Hey": "Hey"
+        "Hey": "Hoi"
       },
       "half_swipe_messages": {
         "[\"I noticed you half-swiped! I'll respond soon.\"]": "Ik zag dat je halfgeknipt was. Ik zal snel reageren."
@@ -1445,7 +1445,7 @@
             "description": "Selecteer welke UI-componenten te verbergen zijn"
           },
           "opera_media_quick_info": {
-            "name": "Opera Media Quick Info",
+            "name": "Opera Media snelinfo",
             "description": "Toont nuttige informatie van media zoals aanmaakdatum in het contextmenu van de operaviewer"
           },
           "old_bitmoji_selfie": {
@@ -1713,7 +1713,7 @@
             }
           },
           "strip_media_metadata": {
-            "name": "Strip Media Metadata",
+            "name": "Metadata van media verwijderen",
             "description": "Verwijdert metadata van media voordat u als bericht verstuurt"
           },
           "bypass_message_retention_policy": {
@@ -1761,7 +1761,7 @@
                     "description": "Gebruik AI om intelligente automatische antwoorden te genereren in plaats van sjabloonberichten"
                   },
                   "ai_provider": {
-                    "name": "AI Provider",
+                    "name": "AI-provider",
                     "description": "Selecteer welke AI-service moet worden gebruikt voor het genereren van antwoorden"
                   },
                   "ai_endpoint_url": {
@@ -1781,7 +1781,7 @@
                     "description": "Systeemprompt die de persoonlijkheid en het gedrag van de AI definieert"
                   },
                   "ai_max_tokens": {
-                    "name": "AI Max Tokens",
+                    "name": "AI max tokens",
                     "description": "Maximum aantal tokens (woorden) dat de AI kan gebruiken in antwoorden"
                   },
                   "ai_temperature": {
@@ -1991,7 +1991,7 @@
                 "description": "Vertaling pauzeren bij geblokkeerde dienst"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Max. herhalingen",
                 "description": "Maximum aantal herhalingspogingen"
               },
               "retry_delay": {
@@ -2112,7 +2112,7 @@
         "description": "Experimentele kenmerken",
         "properties": {
           "native_hooks": {
-            "name": "Native Hooks",
+            "name": "Native hooks",
             "description": "Onveilige functies die Snapchat's native code haaken",
             "properties": {
               "composer_hooks": {
@@ -2124,7 +2124,7 @@
                     "description": "Toont de eerste aangemaakte gebruikersnaam naast de huidige gebruikersnaam in de profielpagina"
                   },
                   "bypass_camera_roll_limit": {
-                    "name": "Bypass Camera Roll Limit",
+                    "name": "Camerarol-limiet omzeilen",
                     "description": "Verhoogt de maximale hoeveelheid media die u vanaf de camerarol kunt verzenden"
                   },
                   "custom_self_destruct_snap_delay": {
@@ -2180,7 +2180,7 @@
                 "description": "Android-ID naar Snapchat negeren",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Android-ID spoofen",
                     "description": "De Android-ID die naar Snapchat wordt verzonden met een aangepaste waarde negeren"
                   },
                   "custom_android_id": {
@@ -2208,7 +2208,7 @@
             "description": "Hiermee kunt u een video/audiobestand uit de galerij te kiezen"
           },
           "story_logger": {
-            "name": "Story Logger",
+            "name": "Story-logger",
             "description": "Biedt een geschiedenis van vrienden verhalen"
           },
           "call_recorder": {
@@ -2238,7 +2238,7 @@
                 "description": "De voorkeurstaal voor het voicenote transcript (bv. EN, ES, FR)"
               },
               "notification_transcript": {
-                "name": "Notification Transcript",
+                "name": "Notificatietranscript",
                 "description": "Voice notes overschrijven in meldingen\nDeze functie vereist dat de Chat Preview functie wordt ingeschakeld in betere meldingen"
               }
             }
@@ -2322,7 +2322,7 @@
         }
       },
       "scripting": {
-        "name": "Scripting",
+        "name": "Scripten",
         "description": "Aangepaste scripts uitvoeren om PurrfectSnap te verlengen",
         "properties": {
           "developer_mode": {
@@ -2401,7 +2401,7 @@
     "FAMILY_CENTER_INVITE": "Uitnodiging familiecentrum",
     "FAMILY_CENTER_ACCEPT": "Familiecentrum accepteren",
     "FAMILY_CENTER_LEAVE": "Familiecentrumverlof",
-    "STATUS_PLUS_GIFT": "Status Plus Gift",
+    "STATUS_PLUS_GIFT": "Status Plus-cadeau",
     "TINY_SNAP": "Kleine snap",
     "STATUS_COUNTDOWN": "Aftellen",
     "MAP_REACTION": "Kaartreactie",
@@ -2410,7 +2410,7 @@
     "story_share_messages": "Story-aandelen",
     "story_reply_messages": "Verhaal Antwoorden",
     "external_media_messages": "Externe media",
-    "voice_note_messages": "Voice Note",
+    "voice_note_messages": "Spraakbericht",
     "sticker_messages": "Sticker",
     "tiny_snap_messages": "Kleine snap",
     "map_reaction_messages": "Kaartreactie",
@@ -2424,7 +2424,7 @@
     "public_story": "Publiek verhaal",
     "spotlight": "Spotlight",
     "profile_picture": "Profielafbeelding",
-    "story_logger": "Story Logger",
+    "story_logger": "Story-logger",
     "message_logger": "Berichtlogger",
     "merged": "Samengevoegd",
     "voice_call": "Stemgesprek"
@@ -2596,7 +2596,7 @@
     "negative": "Nee",
     "cancel": "Annuleren",
     "save": "Opslaan",
-    "open": "Open",
+    "open": "Openen",
     "download": "Downloaden",
     "send": "Verzenden",
     "restore_original": "Origineel herstellen",
@@ -2627,7 +2627,7 @@
   },
   "cleared_from_feed": "Ontruimd van voer",
   "tracker_actions": {
-    "log": "Log",
+    "log": "Loggen",
     "in_app_notification": "In-App kennisgeving",
     "push_notification": "Aanmelding pushen",
     "custom": "Aangepast"
@@ -2679,7 +2679,7 @@
     "failed_gallery_toast": "Opslaan in galerij is mislukt{error}",
     "dash_no_chapter": "Geen hoofdstuk gevonden",
     "dash_dialog": {
-      "title": "Download dash media",
+      "title": "Dash-media downloaden",
       "download_all": "Alles downloaden",
       "segment_text": "Segment{from}-{to}"
     }
@@ -2759,7 +2759,7 @@
     "notification_statistics": "STATISTIEK",
     "notification_queue_size": "Wachtrijgrootte",
     "notification_total_opened": "Totaal aantal geopende snaps",
-    "notification_queue_preview": "QUEUE PREVIEW",
+    "notification_queue_preview": "WACHTRIJ-VOORBEELD",
     "notification_processing_continue": "De verwerking gaat automatisch door...",
     "notification_no_snaps_queue": "Geen kiekjes in de rij.",
     "notification_queue_cleared_opened": "Wachtrij is leeg ({opened}geopend)",
@@ -2921,7 +2921,7 @@
   },
   "tracker": {
     "tabs": {
-      "logs": "Logs",
+      "logs": "Logboeken",
       "rules": "Regels"
     },
     "actions": {
@@ -3071,7 +3071,7 @@
   "update_check_frequency_weekly": "Wekelijks",
   "update_check_frequency_monthly": "Maandelijks",
   "update_channel_stable": "Stabiel",
-  "update_channel_prerelease": "Pre-release",
+  "update_channel_prerelease": "Vooruitgave",
   "friend_notes_title": "Vriendelijke opmerkingen",
   "friend_notes_description": "Beheer en backup van uw vriend notities",
   "app_theme_title": "App-thema",
@@ -3170,7 +3170,7 @@
   },
   "debug_dialogs": {
     "info": "Informatie",
-    "refs": "Refs",
+    "refs": "Referenties",
     "arroyo": "Arroyo",
     "message": "Bericht",
     "media_references": "Media Referenties",
@@ -3182,7 +3182,7 @@
     "failed_to_edit_message": "Bewerken van bericht mislukt:{error}"
   },
   "ai_response_style": {
-    "casual": "Casual",
+    "casual": "Informeel",
     "formal": "Formele",
     "friendly": "Vriendelijk",
     "humorous": "Humoristisch",

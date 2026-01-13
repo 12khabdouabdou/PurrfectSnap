@@ -188,7 +188,7 @@ class MediaFilePicker : Feature("Media File Picker") {
 
                 val isAudio = context.androidContext.contentResolver.getType(event.intent.data!!)!!.startsWith("audio/")
 
-                if (isAudio || context.config.messaging.galleryMediaSendOverride.getNullable() == null) {
+                if (isAudio || context.config.messaging.galleryMediaSendOverride.mode.getNullable() == null) {
                     startConversion(isAudio)
                     return@subscribe
                 }

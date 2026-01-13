@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Valitse kieli",
@@ -84,7 +84,7 @@
         "clear_button": "Tyhjennä",
         "view_logger_history_button": "Näytä lokihistoria",
         "ui_settings_title": "Käyttöliittymän asetukset",
-        "haptic_feedback_label": "Haptic Feedback",
+        "haptic_feedback_label": "Haptinen palaute",
         "use_system_toasts_label": "Käytä järjestelmäpaahtoleipää",
         "updates_title": "Päivitykset",
         "auto_update_check": "Automaattipäivityksen tarkistus",
@@ -245,14 +245,14 @@
         "choose_location_button": "Valitse sijainti",
         "manual_coordinates_hint": "Säädä koordinaatit käsin.",
         "saved_coordinates_subtitle": "Hallitse tallennettuja parof-paikkoja",
-        "teleport_to_friend_button": "Teleport to Friend",
+        "teleport_to_friend_button": "Teleportoi yst?v?n luo",
         "spoof_location_toggle": "Spoof- sijainti",
         "suspend_location_updates": "Keskeytä sijaintipäivitykset",
         "saved_coordinates_title": "Tallennetut koordinaatit",
         "no_saved_coordinates_hint": "Ei tallennettuja koordinaatteja",
         "delete_dialog_title": "Poista tallennettu koordinaatti",
         "delete_dialog_message": "Haluatko varmasti poistaa tämän tallennetun koordinaatin?",
-        "teleport_to_friend_title": "Teleport to Friend",
+        "teleport_to_friend_title": "Teleportoi yst?v?n luo",
         "search_bar": "Etsi",
         "no_friends_map": "Ei ystäviä kartalla",
         "no_friends_found": "Ei ystäviä löytynyt"
@@ -595,7 +595,7 @@
   },
   "actions": {
     "clean_snapchat_cache": {
-      "name": "Clean Snapchat Cache",
+      "name": "Tyhjenn? Snapchat-v?limuisti",
       "description": "Puhdistaa Snapchat välimuistin"
     },
     "manage_friend_list": {
@@ -1021,7 +1021,7 @@
         "friendly": "Ystävällinen",
         "humorous": "Huvittavaa",
         "empathetic": "Empaattinen",
-        "toxic": "Edgy",
+        "toxic": "Rohkea",
         "busy": "Kiire"
       },
       "ai_temperature": {
@@ -1112,7 +1112,7 @@
       "translation_position": {
         "above": "Tekstin yläpuolella",
         "below": "Alla oleva teksti",
-        "inline": "Inline"
+        "inline": "Riviss?"
       },
       "source_language": {
         "auto": "Tunnista automaattisesti"
@@ -1139,7 +1139,7 @@
                 "description": "Aseta paroofoidun sijainnin koordinaatit"
               },
               "walk_radius": {
-                "name": "Walk Radius",
+                "name": "K?velys?de",
                 "description": "Satunnaisesti kävellä tämän säteen sisällä (ft)"
               },
               "always_update_location": {
@@ -1173,7 +1173,7 @@
             "description": "Ohittaa median lataamisen laadun",
             "properties": {
               "force_video_upload_source_quality": {
-                "name": "Force Video Upload Source Quality",
+                "name": "Pakota videol?hetyksen l?hdelaatu",
                 "description": "Pakottaa Snapchat käyttämään lähdelaatua ladattaessa videoita\nHuomaa, että tämä ei välttämättä poista metatietoja mediasta"
               },
               "disable_image_compression": {
@@ -1210,7 +1210,7 @@
             "name": "Käyttöliittymän asetukset",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptic Feedback"
+                "name": "Haptinen palaute"
               }
             }
           },
@@ -1777,7 +1777,7 @@
                     "description": "API-avain tekoälypalveluun"
                   },
                   "ai_system_prompt": {
-                    "name": "AI System Prompt",
+                    "name": "AI-j?rjestelm?kehote",
                     "description": "Järjestelmäkehotus, joka määrittelee tekoälyn persoonallisuuden ja käyttäytymisen"
                   },
                   "ai_max_tokens": {
@@ -1991,7 +1991,7 @@
                 "description": "Keskeytä käännös, kun palvelu on estetty"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "Maks. uudelleenyritykset",
                 "description": "Uusintayritysten enimmäismäärä"
               },
               "retry_delay": {
@@ -2090,7 +2090,7 @@
         }
       },
       "streaks_reminder": {
-        "name": "Streaks Reminder",
+        "name": "Streaks-muistutus",
         "description": "Säännöllisesti ilmoittaa Streaks",
         "properties": {
           "interval": {
@@ -2112,7 +2112,7 @@
         "description": "Kokeelliset ominaisuudet",
         "properties": {
           "native_hooks": {
-            "name": "Native Hooks",
+            "name": "Natiivit hookit",
             "description": "Epäturvallisia ominaisuuksia, jotka liittyvät Snapchat'n natiivi-koodiin",
             "properties": {
               "composer_hooks": {
@@ -2180,7 +2180,7 @@
                 "description": "Ohita Snapchatiin lähetetty Android-tunnus",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Spoofaa Android ID",
                     "description": "Ohita Snapchatille lähetetty Android-tunnus omalla arvolla"
                   },
                   "custom_android_id": {
@@ -2260,7 +2260,7 @@
             "description": "Yritä korjata Friend Feed Menu kuin kun laite on offline se ei voi näyttää oikein"
           },
           "app_lock": {
-            "name": "App Lock",
+            "name": "Sovelluslukko",
             "description": "Estää pääsyn Snapchatiin ilman salasanaa",
             "properties": {
               "lock_on_resume": {
@@ -2270,7 +2270,7 @@
             }
           },
           "infinite_story_boost": {
-            "name": "Infinite Story Boost",
+            "name": "Loputon Story-boost",
             "description": "Ohita Story Boost Limit -viive"
           },
           "meo_passcode_bypass": {
@@ -2419,7 +2419,7 @@
   "media_download_source": {
     "none": "Ei ole",
     "pending": "Odotetaan",
-    "chat_media": "Chat Media",
+    "chat_media": "Chat-media",
     "story": "Tarina",
     "public_story": "Julkinen tarina",
     "spotlight": "Valokeila",
@@ -2553,7 +2553,7 @@
       "deleted": "Poistettu",
       "business_accounts": "Yritystilit",
       "streaks": "Streakit",
-      "non_streaks": "Non Streaks",
+      "non_streaks": "Ilman streakseja",
       "followed": "Seuraava",
       "following": "Seuraava",
       "location_on_map": "Sijainti kartalla"
@@ -2883,7 +2883,7 @@
   "translation_position": {
     "above": "Yllä",
     "below": "Alla",
-    "inline": "Inline"
+    "inline": "Riviss?"
   },
   "language_codes": {
     "en": "Englanti",
@@ -3064,7 +3064,7 @@
     }
   },
   "ui_settings_title": "Käyttöliittymän asetukset",
-  "haptic_feedback_label": "Haptic Feedback",
+  "haptic_feedback_label": "Haptinen palaute",
   "updates_title": "Päivitykset",
   "auto_update_check": "Automaattipäivityksen tarkistus",
   "update_check_frequency_daily": "Vuorokausi",

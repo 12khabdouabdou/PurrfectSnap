@@ -61,10 +61,12 @@ class Global : ConfigContainer() {
     inner class UpdateSettings : ConfigContainer() {
         val autoUpdateCheck = boolean("auto_update_check")
         val updateCheckFrequency = unique("update_check_frequency", "daily", "weekly", "monthly")
+        val updateChannel = unique("update_channel", "stable", "prerelease")
     }
 
     inner class UISettings : ConfigContainer() {
         val hapticFeedback = boolean("haptic_feedback", true)
+        val useSystemToasts = boolean("use_system_toasts", false)
     }
 
     val updateSettings = container("update_settings", UpdateSettings()) { addFlags(ConfigFlag.HIDDEN) }

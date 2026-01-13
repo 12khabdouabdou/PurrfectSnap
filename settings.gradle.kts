@@ -124,7 +124,7 @@ dependencyResolutionManagement {
 rootProject.name = "PurrfectSnap"
 include(":common")
 include(":core")
-include(":composer")
+include(":valdi")
 include(":app")
 include(":mapper")
 include(":native")

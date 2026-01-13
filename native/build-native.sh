@@ -101,8 +101,16 @@ ensure_omvll_bundle() {
   fi
 
   if [ ! -f "$OMVLL_PLUGIN_PATH" ]; then
-    echo "Failed to locate O-MVLL plugin under $OMVLL_PLUGIN_PATH" >&2
-    exit 1
+    local found_plugin
+    found_plugin=$(find "$OMVLL_CACHE_DIR" -type f -name 'omvll-ndk.so' | head -n1 || true)
+    if [ -n "$found_plugin" ] && [ -f "$found_plugin" ]; then
+      OMVLL_PLUGIN_PATH="$found_plugin"
+    else
+      echo "Failed to locate O-MVLL plugin under $OMVLL_PLUGIN_PATH" >&2
+      echo "Contents:" >&2
+      ls -la "$OMVLL_CACHE_DIR" >&2 || true
+      exit 1
+    fi
   fi
 
   if [ -z "${OMVLL_PYTHONPATH:-}" ]; then

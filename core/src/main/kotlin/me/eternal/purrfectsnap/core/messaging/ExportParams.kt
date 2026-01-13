@@ -7,4 +7,6 @@ class ExportParams(
     val messageTypeFilter: List<ContentType>? = null,
     val amountOfMessages: Int? = null,
     val downloadMedias: Boolean = false,
+    val colorSeedHex: String? = null,
+    val colorOverrides: Map<String, String>? = null,
 )

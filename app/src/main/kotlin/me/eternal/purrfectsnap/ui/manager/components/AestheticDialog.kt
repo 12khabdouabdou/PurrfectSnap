@@ -62,7 +62,9 @@ fun AestheticDialog(
     loading: Boolean = false,
     opaque: Boolean = false,
     showCloseButton: Boolean = true,
-    confirmEnabled: Boolean = true
+    confirmEnabled: Boolean = true,
+    showIcon: Boolean = true,
+    showTitle: Boolean = true
 ) {
     var visible by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { visible = true }
@@ -94,28 +96,32 @@ fun AestheticDialog(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(62.dp)
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(
-                                            PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
-                                            PurrfectPalette.glowSecondary.copy(alpha = 0.28f)
-                                        )
+                        if (showIcon) {
+                            Box(
+                                modifier = Modifier
+                                    .size(62.dp)
+                                    .background(
+                                        Brush.linearGradient(
+                                            listOf(
+                                                PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
+                                                PurrfectPalette.glowSecondary.copy(alpha = 0.28f)
+                                            )
+                                        ),
+                                        CircleShape
                                     ),
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
+                            }
                         }
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
+                        if (showTitle && title.isNotBlank()) {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                                color = Color.White,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                         if (text.isNotBlank()) {
                             Text(
                                 text = text,
@@ -130,25 +136,27 @@ fun AestheticDialog(
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally)
                         ) {
                             if (dismissButtonText != null && onDismiss != null) {
-                                Button(
-                                    onClick = onDismiss,
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.White.copy(alpha = 0.08f),
-                                        contentColor = Color.White
-                                    )
-                                ) { Text(dismissButtonText) }
-                            }
                             Button(
-                                onClick = onConfirm,
-                                enabled = confirmEnabled && !loading,
+                                onClick = onDismiss,
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.34f),
+                                    containerColor = Color.White.copy(alpha = 0.08f),
                                     contentColor = Color.White
                                 )
-                            ) {
-                                if (loading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(20.dp),
+                            ) { Text(dismissButtonText) }
+                        }
+                        Button(
+                            onClick = onConfirm,
+                            enabled = confirmEnabled && !loading,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.34f),
+                                contentColor = Color.White,
+                                disabledContainerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.22f),
+                                disabledContentColor = Color.White.copy(alpha = 0.75f)
+                            )
+                        ) {
+                            if (loading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
                                         strokeWidth = 2.dp,
                                         color = Color.White
                                     )

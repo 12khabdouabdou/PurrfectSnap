@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -400,6 +401,7 @@ class FeaturesRootSection : Routes.Route() {
         }
 
         val propertyValue = property.value
+        fun persistConfig() = context.config.writeConfig()
 
         if (property.key.params.flags.contains(ConfigFlag.USER_IMPORT)) {
             registerDialogOnClickCallback()
@@ -412,11 +414,13 @@ class FeaturesRootSection : Routes.Route() {
                         isEmpty = it.isEmpty()
                         if (isEmpty) {
                             propertyValue.setAny(null)
+                            persistConfig()
                         }
                     }
                 }
                 var selectedFile by remember(files.size) { mutableStateOf(files.firstOrNull { it.name == propertyValue.getNullable() }.also {
                     if (files.isNotEmpty() && it == null) propertyValue.setAny(null)
+                    if (files.isNotEmpty() && it == null) persistConfig()
                 }?.name) }
 
                 Surface(
@@ -487,6 +491,7 @@ class FeaturesRootSection : Routes.Route() {
                                         .clickable {
                                             selectedFile = if (isSelected) null else file.name
                                             propertyValue.setAny(selectedFile)
+                                            persistConfig()
                                         },
                                     shape = RoundedCornerShape(16.dp),
                                     color = Color.White.copy(alpha = 0.05f),
@@ -555,6 +560,7 @@ class FeaturesRootSection : Routes.Route() {
                 activityLauncher {
                     chooseFolder { uri ->
                         propertyValue.setAny(uri)
+                        persistConfig()
                     }
                 }
             }.let { { it.invoke(true) } }) {
@@ -575,6 +581,7 @@ class FeaturesRootSection : Routes.Route() {
                         }
                         state = state.not()
                         propertyValue.setAny(state)
+                        persistConfig()
                     },
                     colors = purrfectSwitchColors()
                 )
@@ -722,6 +729,7 @@ class FeaturesRootSection : Routes.Route() {
                         }
                         state = state.not()
                         container.globalState = state
+                        persistConfig()
                     },
                     colors = purrfectSwitchColors()
                 )
@@ -1518,6 +1526,7 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         val density = LocalDensity.current
         var controlsHeight by remember { mutableStateOf(96.dp) }
+        val listState = rememberLazyListState()
         val sharedSearchHistory = remember { mutableStateListOf<String>().apply { addAll(loadSearchHistory()) } }
         var liveSearchQuery by rememberSaveable { mutableStateOf(searchKeyword.orEmpty()) }
         val isActiveSearch = isSearchResults || liveSearchQuery.isNotBlank()
@@ -1544,12 +1553,18 @@ class FeaturesRootSection : Routes.Route() {
                 liveSearchQuery = searchKeyword
             }
         }
+        LaunchedEffect(liveSearchQuery) {
+            if (!listState.isScrollInProgress) {
+                listState.scrollToItem(0)
+            }
+        }
 
         Box(modifier = Modifier.fillMaxSize()) {
             FeatureAuroraBackdrop()
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize(),
+                state = listState,
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 contentPadding = PaddingValues(
                     start = 6.dp,

@@ -35,7 +35,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":mapper"))
     implementation(project(":native"))
-    implementation(project(":composer"))
+    implementation(project(":valdi"))
 
     implementation(libs.androidx.activity.ktx)
     implementation(platform(libs.androidx.compose.bom))
@@ -45,4 +45,5 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material3)
     implementation(libs.hiddenapibypass)
+    implementation(libs.colorpicker.compose)
 }

@@ -3,7 +3,7 @@
     "dialogs": {
       "select_language": "اللغة المختارة",
       "save_folder": "اختر أين تنقذ الحمولات",
-      "select_save_folder_button": "Sect Folder"
+      "select_save_folder_button": "???? ??????"
     },
     "mappings": {
       "dialog": "رسم الخرائط...",
@@ -14,7 +14,7 @@
       "dialog": "استكمال هذه العناصر الأساسية لمواصلة:",
       "notification_access": "الوصول إلى المعلومات",
       "battery_optimization": "البطارية",
-      "display_over_other_apps": "Display over Other Apps",
+      "display_over_other_apps": "????? ??? ????????? ??????",
       "request_button": "الطلب"
     }
   },
@@ -35,20 +35,20 @@
       "logged_stories": "قصص مزروعة",
       "friend_tracker": "صديق تراكر",
       "friend_tracker_catalog": "صديق تراكر كاتالوغ",
-      "manage_friend_tracker_repos": "Manage Friend Tracker Repositories",
+      "manage_friend_tracker_repos": "????? ???????? ????? ????????",
       "edit_rule": "القاعدة",
-      "file_imports": "File Imports",
+      "file_imports": "??????? ???????",
       "manage_repos": "مستودعات إدارة",
       "social": "الاجتماعية",
       "manage_scope": "نطاق الولاية",
-      "messaging_preview": "Preview",
-      "scripts": "Scripts",
+      "messaging_preview": "??????",
+      "scripts": "?????????",
       "manage_script_repos": "المستودعات العقارية",
       "view_logger_history": "التاريخ",
       "better_location": "موقع أفضل"
     },
     "navigation": {
-      "customize_bottom_bar_title": "Cuttomize Bottom Bar",
+      "customize_bottom_bar_title": "????? ?????? ??????",
       "customize_bottom_bar_subtitle": "إختر أيّ تمثال يظهر على شاشة منزلك",
       "available_tabs_title": "المتاح",
       "shown_tabs_title": "شون تاب",
@@ -57,13 +57,13 @@
     },
     "sections": {
       "home": {
-        "version_title": "v{versionName}· by Eternal",
-        "update_title": "Purrfectsnap Update",
-        "update_content": "Version{version}متاح!",
+        "version_title": "v{versionName} ? ?????? Eternal",
+        "update_title": "????? PurrfectSnap",
+        "update_content": "??????? {version} ????!",
         "update_button": "تحميل",
-        "debug_build_summary_title": "أنت تُديرُ a بناء ديبوغِ مِنْ PurrfectSnap",
-        "debug_build_summary_content": "Version{versionName})أ({versionCode})",
-        "debug_build_summary_date": "تاريخ البناء:{date})أ({days}منذ أيام",
+        "debug_build_summary_title": "??? ?????? ???? ????? ?? PurrfectSnap",
+        "debug_build_summary_content": "??????? {versionName} ({versionCode})",
+        "debug_build_summary_date": "????? ??????: {date} ({days} ????? ???)",
         "quick_actions_title": "الإجراءات السريعة"
       },
       "home_logs": {
@@ -77,47 +77,47 @@
       "home_settings": {
         "actions_title": "الإجراءات",
         "message_logger_title": "رمز الرسالة",
-        "debug_title": "Debug",
+        "debug_title": "?????",
         "success_toast": "تم!",
-        "message_logger_summary": "{messageCount}رسائل\n{storyCount}القصص",
+        "message_logger_summary": "{messageCount} ?????\n{storyCount} ???",
         "export_button": "الصادرات",
         "clear_button": "آمن",
-        "view_logger_history_button": "View Logger History",
-        "ui_settings_title": "UI Settings",
-        "haptic_feedback_label": "Haptic Feedback",
+        "view_logger_history_button": "??? ??? ??????",
+        "ui_settings_title": "??????? ???????",
+        "haptic_feedback_label": "??????? ?????",
         "use_system_toasts_label": "نظام الاستخدام",
         "updates_title": "المستجدات",
-        "auto_update_check": "Auto Update check",
+        "auto_update_check": "??? ??????? ????????",
         "update_check_frequency_daily": "اليومية",
         "update_check_frequency_weekly": "أسبوعيا",
         "update_check_frequency_monthly": "الشهر",
-        "update_channel_stable": "Stable",
+        "update_channel_stable": "?????",
         "update_channel_prerelease": "ما قبل الإيجار",
         "update_notification_channel_name": "المستجدات",
         "update_notification_channel_description": "تُخطر عند توافر إطلاقات جديدة",
         "update_notification_title": "معلومات مستكملة جديدة",
         "update_notification_text": "تابوت لفتح \"بويرثر سناب\" و تحميل آخر بناء.",
-        "app_theme_title": "App Theme",
+        "app_theme_title": "??? ???????",
         "theme_icon_description": "اختيار الموضوع المفتوح",
         "theme_mode_system": "النظام",
         "theme_mode_light": "الضوء",
         "theme_mode_dark": "الظلام",
-        "friend_notes_title": "Friend Notes",
+        "friend_notes_title": "??????? ????????",
         "friend_notes_description": "إدارة ودعم ملاحظات صديقك",
         "friend_notes_no_notes_to_backup": "لا ملاحظات للتراجع حتى الآن",
         "friend_notes_backup_success": "ملاحظات الأصدقاء",
         "friend_notes_restore_success": "عودة مذكرات الصداقة",
         "backup_button": "الدعم",
-        "restore_button": "Restore",
-        "view_button": "View",
-        "customize_bottom_bar_title": "Cuttomize Bottom Bar",
+        "restore_button": "???????",
+        "view_button": "???",
+        "customize_bottom_bar_title": "????? ?????? ??????",
         "customize_bottom_bar_subtitle": "إختر أيّ تمثال يظهر على شاشة منزلك",
         "available_tabs_title": "المتاح",
         "reset_button": "إعادة التوطين",
         "done_button": "تم",
         "clear_friend_feed": "تغذية صديقة واضحة",
-        "test_mode_label": "Enable PurrAura",
-        "disable_feature_loading_label": "Disable Feading",
+        "test_mode_label": "????? PurrAura",
+        "disable_feature_loading_label": "????? ????? ???????",
         "disable_auto_mapper_label": "جهاز امتصاص",
         "disable_bypass_indicator_label": "مؤشر التجاوزات غير القابلة للتصرف"
       },
@@ -125,11 +125,11 @@
         "no_tasks": "لا مهام",
         "merge_button": "رقيب",
         "failed_to_open_file": "فشل في فتح ملف",
-        "merge_files_toast": "الاندماج{count}الملفات",
+        "merge_files_toast": "???? ??? {count} ???",
         "remove_selected_tasks_title": "هل أنت متأكد أنك تريد إزالة مهام مختارة؟?",
         "remove_all_tasks_title": "هل أنت متأكد أنك تريد إزالة كل المهام؟?",
         "delete_files_option": "تحذف أيضا الملفات",
-        "remove_selected_tasks_confirm": "إزالة الألغام{count}مهام؟?",
+        "remove_selected_tasks_confirm": "????? {count} ?????",
         "remove_all_tasks_confirm": "إزالة كل المهام؟?"
       },
       "features": {
@@ -139,11 +139,11 @@
         "reset_option": "إعادة التوطين",
         "config_export_success_toast": "تم تصديره بنجاح",
         "config_import_success_toast": "تم استيراده بنجاح",
-        "config_import_failure_toast": "غير مؤمنة بالاستيراد{error}",
-        "config_export_failure_toast": "الفشل في فرض قيود على الصادرات{error}",
+        "config_import_failure_toast": "??? ??????? ????????? {error}",
+        "config_export_failure_toast": "??? ????? ????????? {error}",
         "saved_config_snackbar": "تم إنقاذه",
-        "older_required": "This feature requires Snapchat v{version}أو أكبر في العمل بشكل صحيح",
-        "newer_required": "This feature requires Snapchat v{version}أو جديد للعمل بشكل صحيح",
+        "older_required": "??? ?????? ????? Snapchat ??????? {version} ?? ???? ????? ???? ????",
+        "newer_required": "??? ?????? ????? Snapchat ??????? {version} ?? ???? ????? ???? ????",
         "search_button": "البحث",
         "clear_history": "تاريخ البحث",
         "subtitle": "البحث والإدارة"
@@ -152,10 +152,10 @@
         "disable_state_option": "المعوقين",
         "disable_state_subtext": "لن يتأثر أي أصدقاء أو مجموعات",
         "whitelist_state_option": "لا أحد إلا...",
-        "whitelist_state_subtext": "فقط{count}سيتأثر الأصدقاء/المجموعات بهذه القاعدة",
+        "whitelist_state_subtext": "???? ????? ??? ????? ??? {count} ?? ????????/????????? ???",
         "whitelist_state_button": "اختيار الأصدقاء/المجموعات المسموح بها",
         "blacklist_state_option": "الجميع ماعدا...",
-        "blacklist_state_subtext": "الجميع{count}سيتأثر الأصدقاء/المجموعات بهذه القاعدة",
+        "blacklist_state_subtext": "???? ????? ??? ????? ??? ?????? ???????? {count} ?? ????????/?????????",
         "blacklist_state_button": "اختيار الأصدقاء/المجموعات المستبعدة",
         "clear_list_button": "قائمة الأصدقاء/المجموعات",
         "dialog_clear_confirmation_text": "هل أنت متأكد من أنك تريد تصفية القائمة؟?"
@@ -166,7 +166,7 @@
         "empty_hint": "قائمتك فارغة الآن",
         "friends_empty_title": "لم يضاف أي أصدقاء بعد",
         "groups_empty_title": "لا مجموعات متزامنة حتى الآن",
-        "streaks_expiration_short": "{hours}h",
+        "streaks_expiration_short": "{hours}?",
         "social_tagline": ":: إدارة النطاقات، والسلاسل، والاستعراضات الأولية",
         "social_empty_hint": "اضغطي على الزر لزامنة الأصدقاء أو المجموعات."
       },
@@ -178,16 +178,16 @@
         "import_base64_button": "قاعدة الواردات",
         "invalid_key_size_32_bytes": "بحجم المفتاح الغير متوافق وفر مفتاحاً بـ 32 باوند.",
         "successfully_imported_key": "المفتاح المستورد بنجاح.",
-        "failed_to_import_key": "عدم استيراد المفتاح:{message}",
+        "failed_to_import_key": "??? ??????? ???????: {message}",
         "rules_title": "القواعد",
-        "participants_text": "{count}المشاركون",
+        "participants_text": "{count} ???????",
         "not_found": "لم يعثر عليه",
         "streaks_title": "شرائح اللحم",
-        "streaks_length_text": "Length:{length}",
-        "streaks_expiration_text": "المحاولات في{eta}",
+        "streaks_length_text": "?????: {length}",
+        "streaks_expiration_text": "????? ???? {eta}",
         "streaks_expiration_text_expired": "انتهت",
         "reminder_button": "تعيين",
-        "delete_scope_confirm_dialog_title": "هل أنت متأكد أنك تريد حذف{scope}؟?",
+        "delete_scope_confirm_dialog_title": "?? ??? ????? ?? ??? {scope}?",
         "notes_placeholder": "انقر لإضافة ملاحظة"
       },
       "logged_stories": {
@@ -203,25 +203,25 @@
         "no_message_hint": "لا رسالة",
         "subtitle": "عقد الاختيار",
         "actions_title": "إجراءات الاعتراض",
-        "save_selection_option": "Save Selection",
+        "save_selection_option": "??? ???????",
         "save_all_option": "أنقذوا كل شيء",
-        "unsave_selection_option": "Unsave Selection",
+        "unsave_selection_option": "????? ??? ???????",
         "unsave_all_option": "غير مأمون",
         "mark_selection_as_seen_option": "اختار مارك سناب كما شوهد",
         "mark_all_as_seen_option": "تذكروا جميع النوافذ",
         "delete_selection_option": "يحذف الاختيار",
         "delete_all_option": "تحذف الجملة",
-        "processed_message_toast": "المعالجة{count}رسائل",
-        "processed_messages_toast": "المعالجة{count}رسائل",
-        "processed_messages_text": "المعالجة{count}",
+        "processed_message_toast": "??? ?????? {count} ?????",
+        "processed_messages_toast": "??? ?????? {count} ?????",
+        "processed_messages_text": "??? ?????? {count}",
         "close_button_description": "اختيار واضح"
       },
       "logger_history": {
-        "list_friend_format": "صديق{name}",
-        "list_group_format": "المجموعة{name}",
+        "list_friend_format": "???? {name}",
+        "list_group_format": "?????? {name}",
         "no_more_messages": "لا رسائل",
         "reverse_order_checkbox": "النظام العكسي",
-        "chat_attachment": "الملحق{index}",
+        "chat_attachment": "???? {index}",
         "empty_message": "رسالة فارغة",
         "message_parse_failed": "فشل في استئصال الرسالة",
         "unknown_sender": "غير معروف",
@@ -230,13 +230,13 @@
       "file_imports": {
         "import_file_button": "مجموعة الواردات",
         "file_not_found": "الملف لم يعثر عليه",
-        "file_import_failed": "لم يطلع على ملف الاستيراد:{error}",
-        "file_imported": "File imported successfully",
+        "file_import_failed": "??? ??????? ?????: {error}",
+        "file_imported": "?? ??????? ????? ?????",
         "file_delete_failed": "عدم حذف الملف",
         "no_files_hint": "هنا يمكنك استيراد الملفات لاستخدامها في سنابشت اضغط على الزر من الأسفل لاستيراد ملف."
       },
       "better_location": {
-        "spoofed_coordinates_title": "Lat{latitude}Lng{longitude}",
+        "spoofed_coordinates_title": "?? ????? {latitude}? ?? ????? {longitude}",
         "save_coordinates_dialog_title": "توفير التنسيق",
         "saved_name_dialog_hint": "الاسم المنقذ",
         "latitude_dialog_hint": "خط العرض",
@@ -245,14 +245,14 @@
         "choose_location_button": "اختر موقعا",
         "manual_coordinates_hint": "حسناً، الإحداثيات يدوياً.",
         "saved_coordinates_subtitle": "إدارة مواقعكم المنقذة",
-        "teleport_to_friend_button": "Teleport to Friend",
+        "teleport_to_friend_button": "???????? ??? ????",
         "spoof_location_toggle": "الموقع",
         "suspend_location_updates": "تحديث الموقع",
         "saved_coordinates_title": "التنسيقيات المنقذة",
         "no_saved_coordinates_hint": "لا توجد إحداثيات منقذة",
         "delete_dialog_title": "يُحذف التنسيق المنقذ",
         "delete_dialog_message": "هل أنت متأكد من أنك تريد حذف هذا التنسيق المنقذ؟?",
-        "teleport_to_friend_title": "Teleport to Friend",
+        "teleport_to_friend_title": "???????? ??? ????",
         "search_bar": "البحث",
         "no_friends_map": "لا أصدقاء على الخريطة",
         "no_friends_found": "لا يوجد أصدقاء"
@@ -265,8 +265,8 @@
         "fetch_error": "فشل في جلب البيانات",
         "category_groups": "المجموعات",
         "category_friends": "الأصدقاء",
-        "participants_text": "{count}المشاركون",
-        "unselect_all_button": "Unselect All"
+        "participants_text": "{count} ???????",
+        "unselect_all_button": "????? ????? ????"
       },
       "scripting": {
         "repo_hint": "إستعراض مستودع"
@@ -276,7 +276,7 @@
         "content": "التطهير يتضمن أداة للكتابة، مما يسمح بتنفيذ رمز محدد للمستعملين على جهازك. استخدام الحذر الشديد وتركيب الوحدات فقط من المصادر المعروفة الموثوقة الوحدات غير المرخصة أو غير المتحققة قد تشكل مخاطر أمنية على نظامك."
       },
       "reset_config": {
-        "title": "Reset config",
+        "title": "????? ??? ?????????",
         "content": "هل أنت متأكد من أنك تريد إعادة تشكيل الوصية؟?",
         "success_toast": "إعادة تشكيل الإتحاد بنجاح"
       },
@@ -300,21 +300,21 @@
     "scripting": {
       "actions_button": "الإجراءات",
       "actions_title": "الإجراءات",
-      "catalog_tab": "Catalog",
+      "catalog_tab": "????????",
       "clear_module_data_button": "بيانات واضحة",
       "clear_module_data_failed": "فشل في الحصول على بيانات نموذجية واضحة",
       "delete_module_button": "تحذف",
       "delete_module_failed": "لم تحذف الوحدة",
-      "documentation_button": "Docs",
+      "documentation_button": "?????????",
       "download_script_failed": "فشل في تحميل النص",
       "downloading_script": "تحميل النص...",
-      "edit_module_button": "Edit",
+      "edit_module_button": "?????",
       "enter_url_label": "أدخل",
       "import_button": "الواردات",
-      "import_from_url_button": "Import from URL",
-      "import_script_from_url_title": "Import Script from URL",
+      "import_from_url_button": "??????? ?? ????",
+      "import_script_from_url_title": "??????? ????? ?? ????",
       "import_script_warning": "فقط تركيب النصوص من مصادر تثق بها.",
-      "installed_scripts_tab": "Installed",
+      "installed_scripts_tab": "????",
       "manage_repos_button": "إعادة التصرف",
       "module_data_cleared": "تم تطهير البيانات!",
       "module_not_found": "الوحدة لم تعثر عليها",
@@ -325,14 +325,14 @@
       "open_module_failed": "فشل في فتح ملف الوحدة",
       "open_scripts_folder_button": "الملفات المفتوحة",
       "script_already_installed": "تم تركيبها",
-      "select_folder_button": "Choose Folder",
+      "select_folder_button": "???? ??????",
       "select_scripts_folder_toast": "الرجاء اختيار ملف النصوص أولا",
       "update_module_button": "نموذج آخر",
       "update_module_failed": "فشل في تحديث الوحدة",
       "use_catalog_to_add_scripts": "استخدم المدونه لإضافة النصوص",
-      "ok_button_timeout": "حسناً{timeout}",
+      "ok_button_timeout": "????? {timeout}",
       "catalog": {
-        "no_repos_added": "No repositories added",
+        "no_repos_added": "?? ??? ????? ?? ????????",
         "repo_list_info": "ابحث عن مستودعات هنا",
         "link_text": "قائمة المستودعات",
         "script_already_installed": "تم تركيبها",
@@ -340,11 +340,11 @@
         "could_not_create_file": "لا يمكن أن يخلق الملف",
         "no_scripts_folder_selected": "اختيار ملف النصوص أولا",
         "no_scripts_available": "لا توجد نصوص متاحة",
-        "installed_button": "Installed",
+        "installed_button": "????",
         "download_button": "تحميل"
       },
       "repos": {
-        "no_repos_added": "No repositories added",
+        "no_repos_added": "?? ??? ????? ?? ????????",
         "add_repo_button": "مضافا إليها",
         "add_repo_dialog_title": "مضافا إليها",
         "repo_url_label": "المستودع",
@@ -352,7 +352,7 @@
         "invalid_repo_title": "مستودعات غير صالحة",
         "invalid_repo_error": "هذا المستودع مفقود البيانات المطلوبة.",
         "repo_added_toast": "مستودع مضاف",
-        "add_repo_failed_toast": "عدم إضافة مستودع:{message}",
+        "add_repo_failed_toast": "??? ????? ????????: {message}",
         "remove_button": "إزالة الألغام",
         "remove_repo_dialog_title": "مستودع نقل",
         "remove_repo_dialog_text": "هل أنت متأكد أنك تريد إزالة هذا المستودع؟?"
@@ -361,7 +361,7 @@
     "friend_tracker": {
       "rules_tab": "القواعد",
       "logs_tab": "اللوز",
-      "catalog_button": "Catalog",
+      "catalog_button": "????????",
       "add_rule_button": "إضافة",
       "import_button": "الواردات",
       "filters_title": "الأفلام",
@@ -378,7 +378,7 @@
       "no_rules_found": "لا توجد قواعد",
       "export_logs_dialog_title": "قروض التصدير",
       "export_logs_dialog_confirm_text": "سجلات التصدير باستخدام مرشحات حالية؟?",
-      "export_as_button": "الصادرات{type}",
+      "export_as_button": "????? ?? {type}",
       "new_rule_title": "القاعدة الجديدة",
       "edit_rule_title": "القاعدة",
       "general_section_title": "معلومات عامة",
@@ -391,7 +391,7 @@
       "scope_blacklist": "الجميع",
       "events_section_title": "الأحداث",
       "events_suffix": "أحداث",
-      "no_events_text": "No events added yet",
+      "no_events_text": "?? ??? ????? ????? ???",
       "add_event_dialog_title": "الحدث",
       "event_type_label": "الحدث من النوع",
       "triggers_title": "الزنوج",
@@ -409,12 +409,12 @@
       "discard_changes_dialog_title": "تغيرات التخلّص؟?",
       "discard_changes_dialog_text": "لديك تغيرات غير متسامحة تخلص منهم؟?",
       "rule_subtitle": "الفرضيات المؤمنة ونطاقات هذه القاعدة.",
-      "discard_button": "Discard",
-      "enabled_label": "Enabled",
+      "discard_button": "?????",
+      "enabled_label": "????",
       "disabled_label": "المعوقين",
       "delete_rule_dialog_title": "تحذف المادة",
       "delete_rule_dialog_text": "هل أنت متأكد أنك تريد حذف هذه القاعدة؟?",
-      "no_repos_added": "No repositories added",
+      "no_repos_added": "?? ??? ????? ?? ????????",
       "import_dialog_title": "قواعد الاستيراد",
       "bulk_import_button": "الواردات الجماعية",
       "individual_import_button": "الواردات الوحيدة",
@@ -434,7 +434,7 @@
       "back_button_description": "عُد",
       "expand_button_description": "فئة التوسع أو الانهيار",
       "exported_toast": "تشكيلة التراكر المصدرة",
-      "export_failed_toast": "المتخلف عن متعقب التصدير:{message}"
+      "export_failed_toast": "??? ????? ???????: {message}"
     },
     "friend_tracker_import": {
       "title": "صديق الواردات",
@@ -442,15 +442,15 @@
       "back_button_description": "عُد",
       "expand_button_description": "فئة التوسع أو الانهيار",
       "imported_toast": "تاكر مستورد",
-      "import_failed_toast": "غير متجهة إلى متعقب الاستيراد:{message}"
+      "import_failed_toast": "??? ??????? ???????: {message}"
     },
     "friend_tracker_catalog": {
       "title": "صديق تراكر كاتالوغ",
-      "no_repos_added": "No repositories added",
+      "no_repos_added": "?? ??? ????? ?? ????????",
       "manage_repos_description": "مستودعات إدارة"
     },
     "friend_tracker_repos": {
-      "no_repos_added": "No repositories added",
+      "no_repos_added": "?? ??? ????? ?? ????????",
       "add_repo_button": "مضافا إليها",
       "add_repo_dialog_title": "مضافا إليها",
       "repo_url_label": "المستودع",
@@ -458,7 +458,7 @@
       "invalid_repo_title": "مستودعات غير صالحة",
       "invalid_repo_error": "هذا المستودع مفقود البيانات المطلوبة.",
       "repo_added_toast": "مستودع مضاف",
-      "add_repo_failed_toast": "عدم إضافة مستودع:{message}",
+      "add_repo_failed_toast": "??? ????? ????????: {message}",
       "remove_button": "إزالة الألغام",
       "remove_repo_dialog_title": "مستودع نقل",
       "remove_repo_dialog_text": "هل أنت متأكد أنك تريد إزالة هذا المستودع؟?"
@@ -468,31 +468,31 @@
     },
     "features": {
       "config_export": {
-        "title": "Export Config Summary",
+        "title": "???? ????? ?????????",
         "back_button_description": "عُد",
         "save_button": "أنقذ",
         "expand_button_description": "فئة التوسع أو الانهيار",
-        "enabled": "Enabled",
+        "enabled": "????",
         "disabled": "المعوقين",
-        "enable_feature": "Enable Feature"
+        "enable_feature": "????? ??????"
       },
       "config_import": {
         "title": "موجز الواردات",
         "back_button_description": "عُد",
         "confirm_button": "الواردات",
         "expand_button_description": "فئة التوسع أو الانهيار",
-        "enabled": "Enabled",
+        "enabled": "????",
         "disabled": "المعوقين",
-        "enable_feature": "Enable Feature",
+        "enable_feature": "????? ??????",
         "config_imported_toast": "تم استيراده بنجاح",
-        "config_import_failure_toast": "غير مؤمنة بالاستيراد{error}"
+        "config_import_failure_toast": "??? ??????? ????????? {error}"
       }
     }
   },
   "rules": {
     "toasts": {
-      "enabled": "{ruleName}مُتاح",
-      "disabled": "{ruleName}المعوقين"
+      "enabled": "{ruleName} ????",
+      "disabled": "{ruleName} ????"
     },
     "modes": {
       "blacklist": "نموذج القائمة السوداء",
@@ -503,12 +503,12 @@
         "name": "تحميل السيارات",
         "description": "التنزيل الآلي يشاهدونهم",
         "options": {
-          "blacklist": "Exclued from Auto download",
+          "blacklist": "??????? ?? ??????? ????????",
           "whitelist": "الشحن الآلي"
         }
       },
       "stealth": {
-        "name": "Stealth Mode",
+        "name": "??? ??????",
         "description": "يمنع أي شخص من معرفة أنك فتحت سلاسلهم ومحادثاتهم",
         "options": {
           "blacklist": "استثناء من أسلوب البيع",
@@ -516,7 +516,7 @@
         }
       },
       "auto_save": {
-        "name": "Auto Save",
+        "name": "??? ??????",
         "description": "ينقذ الرسائل عندما ينظر إليها",
         "options": {
           "blacklist": "استبعاد من الادخار الآلي",
@@ -532,31 +532,31 @@
         }
       },
       "auto_open_snaps": {
-        "name": "Auto Open Snaps",
+        "name": "??? ???????? ????????",
         "description": "يفتتح (سنابس) تلقائياً عندما يستقبلهم",
         "options": {
-          "blacklist": "Exclued from Auto Open Snaps",
-          "whitelist": "Auto Open Snaps"
+          "blacklist": "??????? ?? ??? ???????? ????????",
+          "whitelist": "??? ???????? ????????"
         }
       },
       "hide_friend_feed": {
         "name": "إخفاء من صديق فيد"
       },
       "e2e_encryption": {
-        "name": "Use E2E Encryption"
+        "name": "??????? ??????? ??????"
       },
       "pin_conversation": {
-        "name": "Pin Conversation"
+        "name": "????? ????????"
       },
       "exclude_message_logger": {
         "name": "استبعاد من رسالة لوغر"
       },
       "auto_reply": {
-        "name": "Auto Reply",
+        "name": "?? ??????",
         "description": "يرسل تلقائياً ردوداً على الرسائل الواردة عندما تكون بعيداً",
         "options": {
-          "blacklist": "Exclude from Auto Reply",
-          "whitelist": "Auto Reply"
+          "blacklist": "??????? ?? ???? ????????",
+          "whitelist": "?? ??????"
         }
       },
       "auto_delete_sent_messages": {
@@ -576,11 +576,11 @@
         }
       },
       "auto_read": {
-        "name": "Auto Read",
+        "name": "????? ???????",
         "description": "علامات ذاتية و دردشة كما يلي:",
         "options": {
-          "blacklist": "Exclude from Auto Read",
-          "whitelist": "Auto Read"
+          "blacklist": "??????? ?? ??????? ?????????",
+          "whitelist": "????? ???????"
         }
       },
       "hide_typing_indicator": {
@@ -595,7 +595,7 @@
   },
   "actions": {
     "clean_snapchat_cache": {
-      "name": "نظيف Snapchat Cache",
+      "name": "????? ????? Snapchat ???????",
       "description": "ينظف خندق \"سنابشات\""
     },
     "manage_friend_list": {
@@ -604,11 +604,11 @@
     },
     "export_chat_messages": {
       "name": "رسائل التصدير",
-      "description": ":: إصدار رسائل حوارية في ملف مشترك بين شركة JSON/HTML/TXT"
+      "description": "????? ????? ???????? ??? ??? JSON/HTML/TXT"
     },
     "export_memories": {
       "name": "ذكريات التصدير",
-      "description": "تصدير الذكريات إلى ملف ZIP"
+      "description": "????? ???????? ??? ??? ZIP"
     },
     "bulk_messaging_action": {
       "name": "رسالة نصية",
@@ -623,7 +623,7 @@
       "description": "تغيير لغة التطهير"
     },
     "file_imports": {
-      "name": "File Imports",
+      "name": "??????? ???????",
       "description": "ملفات استيراد للاستعمال في سنابشات"
     },
     "friend_tracker": {
@@ -648,8 +648,8 @@
         "null": "نظام المطابقة"
       },
       "auto_reload": {
-        "snapchat_only": "Reload Snapchatt only",
-        "all": "Reload Snapchat + Purrfectsnap",
+        "snapchat_only": "????? ????? Snapchat ???",
+        "all": "????? ????? Snapchat + PurrfectSnap",
         "null": "التقصير"
       },
       "walk_radius": {
@@ -659,28 +659,28 @@
         "null": "استخدام مستوى البطاريات الحقيقي"
       },
       "friend_feed_menu_buttons": {
-        "auto_download": "⬇️ Auto download",
-        "auto_save": "💬 Auto Save Messages",
+        "auto_download": "?? ????? ??????",
+        "auto_save": "?? ??? ??????? ????????",
         "unsaveable_messages": "? الرسائل غير القابلة للإنقاذ",
-        "auto_open_snaps": "  Auto Open Snaps",
-        "stealth": "  Stealth Mode",
-        "auto_reply": " Rep Auto Reply",
-        "auto_delete_sent_messages": "ages Auto Delete Sent Messages",
+        "auto_open_snaps": "?? ??? ???????? ????????",
+        "stealth": "?? ??? ??????",
+        "auto_reply": "?? ?? ??????",
+        "auto_delete_sent_messages": "??? ??? ??????? ??????? ????????",
         "mark_snaps_as_seen": "? مارك سنابس",
         "mark_stories_as_seen_locally": "? قصص العلامات كما شوهدت محليا",
-        "conversation_info": "👤 Conversation Info",
-        "e2e_encryption": "🔒 Use E2E Encryption",
-        "message_logger": "📝 Message Logger",
-        "auto_read": "✅ Auto Read",
+        "conversation_info": "?? ??????? ????????",
+        "e2e_encryption": "?? ??????? ??????? ??????",
+        "message_logger": "?? ???? ???????",
+        "auto_read": "? ????? ???????",
         "hide_typing_indicator": "مؤشر الاختباء"
       },
-      "schedule_scheduled_for": "الجدول الزمني{name}في{time}",
-      "schedule_sending_in": "إرسال{time}",
-      "schedule_sent_to": "Sent to{name}",
+      "schedule_scheduled_for": "????? ?? {name} ???? {time}",
+      "schedule_sending_in": "???? ??????? ???? {time}",
+      "schedule_sent_to": "?? ??????? ??? {name}",
       "schedule_sent": "تم إرسالها",
-      "schedule_failed_to": "فشل في إرسال{name}",
+      "schedule_failed_to": "??? ??????? ??? {name}",
       "schedule_failed": "الكسر المبرمج فشل",
-      "schedule_cancelled_for": "ألغيت{name}",
+      "schedule_cancelled_for": "?? ??????? ?? {name}",
       "device_model": {
         "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
         "google_pixel_10_pro": "Google Pixel 10 Pro",
@@ -690,7 +690,7 @@
       },
       "settings_menu": {
         "default": "التقصير",
-        "legacy": "Legacy"
+        "legacy": "????"
       },
       "path_format": {
         "create_author_folder": "إنشاء ملف لكل صاحب",
@@ -714,23 +714,23 @@
         "failure": "الفشل"
       },
       "notifications": {
-        "chat_screenshot": "Screenshot",
+        "chat_screenshot": "???? ????",
         "chat_screen_record": "سجل السيناريوهات",
-        "snap_replay": "Snap Replay",
+        "snap_replay": "????? ????",
         "camera_roll_save": "آلة تصوير",
-        "chat": "Chat",
-        "chat_reply": "Chat Reply",
-        "snap": "Snap",
+        "chat": "?????",
+        "chat_reply": "?? ?????",
+        "snap": "????",
         "typing": "الطباعة",
         "stories": "القصص",
         "speaking": "الحديث",
         "chat_reaction": "رد الفعل",
         "group_chat_reaction": "رد فعل الفريق",
         "initiate_audio": "نداء الصوت",
-        "abandon_audio": "Missed Audio Call",
+        "abandon_audio": "?????? ????? ?????",
         "initiate_video": "نداء الفيديو القادم",
         "abandon_video": "نداء الفيديو المفقود",
-        "map_live_location": "Map Live Location"
+        "map_live_location": "???? ?? ??? ???????"
       },
       "auto_read": {
         "blacklist": "القائمة السوداء",
@@ -778,10 +778,10 @@
       "add_friend_source_spoof": {
         "added_by_username": "مستعمل",
         "added_by_mention": "بالنص",
-        "added_by_group_chat": "By Group Chat",
+        "added_by_group_chat": "?????? ????? ??????",
         "added_by_qr_code": "بموجب قانون الجمهورية التشيكية",
-        "added_by_community": "By Community",
-        "added_by_quick_add": "بـ \" Quick Add \" (خطر كبير بالحظر)",
+        "added_by_community": "?????? ?????",
+        "added_by_quick_add": "?????? Quick Add (??? ???? ?????)",
         "added_by_spotlight": "بواسطة الضوء الساطع",
         "null": "لا تفسد المصدر"
       },
@@ -789,10 +789,10 @@
         "null": "النظام"
       },
       "preferred_transcription_lang": {
-        "null": "Use Snapchat Default"
+        "null": "??????? ????????? ?? Snapchat"
       },
       "custom_emoji_font": {
-        "null": "Default Emoji Font"
+        "null": "?? ???????? ?????????"
       },
       "custom_shared_library": {
         "null": "مكتبة التقصير"
@@ -818,13 +818,13 @@
         "null": "جهاز تحديد المواقع"
       },
       "force_voice_note_format": {
-        "null": "Use Snapchat default"
+        "null": "??????? ????????? ?? Snapchat"
       },
       "custom_path_format": {
         "null": "نمط التقصير المستخدم"
       },
       "force_image_format": {
-        "null": "Use Snapchat default"
+        "null": "??????? ????????? ?? Snapchat"
       },
       "custom_video_codec": {
         "null": "المدونة الافتراضية(ج)"
@@ -842,28 +842,28 @@
         "always_ask": "دائماً ما تسأل",
         "ORIGINAL": "وسائط الإعلام",
         "NOTE": "ملاحظة",
-        "SNAP": "Snap",
-        "SAVEABLE_SNAP": "Snap",
-        "null": "Snapchat Default"
+        "SNAP": "????",
+        "SAVEABLE_SNAP": "???? ???? ?????",
+        "null": "??????? Snapchat"
       },
       "strip_media_metadata": {
-        "hide_caption_text": "Hide Caption Text",
+        "hide_caption_text": "????? ?? ???????",
         "hide_snap_filters": "اختبئوا",
         "hide_extras": "الاختباء الإضافي (على سبيل المثال)",
         "remove_audio_note_duration": "الفترة",
-        "remove_audio_note_transcript_capability": "Remove Audio Note Transcript Capability"
+        "remove_audio_note_transcript_capability": "????? ??????? ?? ???????? ???????"
       },
       "hide_ui_components": {
-        "hide_profile_call_buttons": "Remove Profile Call Buttons",
-        "hide_chat_call_buttons": "Remove Chat Call Buttons",
-        "hide_live_location_share_button": "Remove Live Location Share Button",
-        "hide_stickers_button": "Remove Stickers Button",
-        "hide_voice_record_button": "Remove Record Button",
-        "hide_unread_chat_hint": "إزالة الألغام Chat Hint",
-        "hide_post_to_story_buttons": "نقل البريد إلى أزرار القصة قبل إرسال Snap",
-        "hide_billboard_prompt": "Remove Billboard Prompt in Friends Feed",
-        "hide_snapchat_plus_gift_reminders": "Remove Snapchat بالإضافة إلى تذكير بالهدايا في المحادثات",
-        "hide_map_reactions": "Remove Map Reactions"
+        "hide_profile_call_buttons": "????? ????? ??????? ?????",
+        "hide_chat_call_buttons": "????? ????? ??????? ???????",
+        "hide_live_location_share_button": "????? ?? ?????? ?????? ???????",
+        "hide_stickers_button": "????? ?? ????????",
+        "hide_voice_record_button": "????? ?? ??????? ??????",
+        "hide_unread_chat_hint": "????? ????? ??????? ??? ????????",
+        "hide_post_to_story_buttons": "????? ????? ????? ??? ????? ??? ????? ????",
+        "hide_billboard_prompt": "????? ????? ?????? ?? ???? ????????",
+        "hide_snapchat_plus_gift_reminders": "????? ??????? ????? Snapchat Plus ?? ?????????",
+        "hide_map_reactions": "????? ??????? ???????"
       },
       "hide_story_suggestions": {
         "hide_suggested_friend_stories": "إخفاء قصص الأصدقاء المقترحة",
@@ -871,24 +871,24 @@
       },
       "home_tab": {
         "map": "خريطة",
-        "chat": "Chat",
+        "chat": "?????",
         "camera": "آلة تصوير",
         "discover": "الكشف",
         "spotlight": "Spotlight",
-        "null": "Snapchat Default"
+        "null": "??????? Snapchat"
       },
       "spotlight_comments_username_icon": {
-        "user": "المستعمل Icon",
+        "user": "?????? ??? ????????",
         "👤": "المستعمل Icon",
         "[👤]": "المستعمل Icon",
-        "default": "المستعمل Icon",
-        "no_icon": "No icon"
+        "default": "?????? ??? ????????",
+        "no_icon": "?? ??????"
       },
       "custom_image_upload_format": {
         "null": "الآلية"
       },
       "update_check_frequency": {
-        "null": "Auto"
+        "null": "??????"
       },
       "snapchat_plus": {
         "not_subscribed": "غير مدرجة",
@@ -902,15 +902,15 @@
         "null": "التقصير"
       },
       "old_bitmoji_selfie": {
-        "2d": "2D Bitmoji",
-        "3d": "3D Bitmoji",
-        "null": "Default Bitmoji"
+        "2d": "Bitmoji ????? ???????",
+        "3d": "Bitmoji ????? ???????",
+        "null": "Bitmoji ?????????"
       },
       "disable_confirmation_dialogs": {
-        "erase_message": "Erase Message",
+        "erase_message": "??? ???????",
         "remove_friend": "نقل صديق",
         "block_friend": "صديق",
-        "ignore_friend": "Ignore Friend",
+        "ignore_friend": "????? ??????",
         "hide_friend": "إخفاء صديق",
         "hide_conversation": "الاختباء",
         "clear_conversation": "حوار واضح من شركة الأصدقاء"
@@ -921,7 +921,7 @@
       },
       "auto_purge": {
         "never": "أبداً",
-        "1_hour": "1 Hour",
+        "1_hour": "???? ?????",
         "3_hours": "3 ساعات",
         "6_hours": "6 ساعات",
         "12_hours": "12 ساعة",
@@ -951,9 +951,9 @@
       "disable_permission_requests": {
         "notifications": "الإخطارات",
         "read_media_images": "اقرأ الصور",
-        "read_media_video": "اقرأ Video",
+        "read_media_video": "????? ???????",
         "camera": "آلة تصوير",
-        "microphone": "Microphone",
+        "microphone": "??????????",
         "location": "الموقع",
         "read_contacts": "الاتصالات الجاهزة",
         "nearby_devices": "الأجهزة القريبة",
@@ -988,11 +988,11 @@
         "null": "التقصير"
       },
       "message_types": {
-        "CHAT": "Chat",
-        "SNAP": "Snap",
+        "CHAT": "?????",
+        "SNAP": "????",
         "NOTE": "ملاحظة",
         "EXTERNAL_MEDIA": "وسائط الإعلام الخارجية",
-        "STICKER": "Sticker"
+        "STICKER": "????"
       },
       "double_tap_chat_action_custom_emoji": {
         "Custom emoji reaction": "رد فعل إيموجي العرفي"
@@ -1016,19 +1016,19 @@
         "friendly, casual, helpful, empathetic": "ودود، عفو، مساعد، تعاطف"
       },
       "ai_response_style": {
-        "casual": "Casual",
+        "casual": "??? ????",
         "formal": "الشكل",
         "friendly": "ودود",
         "humorous": "رعب",
         "empathetic": "التعاطف",
-        "toxic": "Edgy",
+        "toxic": "???",
         "busy": "مشغول"
       },
       "ai_temperature": {
         "0.7": "الرصيد (0.7)"
       },
       "ai_response_language": {
-        "auto": "Auto",
+        "auto": "??????",
         "en": "الإنكليزية",
         "es": "الإسبانية",
         "fr": "الفرنسية",
@@ -1040,7 +1040,7 @@
         "ko": "كوريا",
         "zh": "الصينية",
         "ar": "العربية",
-        "hi": "Hindi",
+        "hi": "???????",
         "tr": "تركية",
         "pl": "بولندا",
         "nl": "هولندا",
@@ -1084,7 +1084,7 @@
       },
       "auto_reply_content_types": {
         "chat_messages": "الرسائل الخطية",
-        "snap_messages": "Snaps",
+        "snap_messages": "??????",
         "story_share_messages": "سلسلة القصص",
         "story_reply_messages": "الردود النظرية",
         "external_media_messages": "وسائط الإعلام الخارجية",
@@ -1106,16 +1106,16 @@
         "ko": "كوريا",
         "zh": "الصينية",
         "ar": "العربية",
-        "hi": "Hindi",
+        "hi": "???????",
         "tr": "تركية"
       },
       "translation_position": {
         "above": "فوق النص",
         "below": "النص التالي",
-        "inline": "Inline"
+        "inline": "??? ?????"
       },
       "source_language": {
-        "auto": "Detect automatically"
+        "auto": "??? ??????"
       },
       "target_language": {
         "en": "الإنكليزية"
@@ -1123,12 +1123,12 @@
     },
     "properties": {
       "global": {
-        "name": "Global",
-        "description": "Tweak Global Snapchat Settings",
+        "name": "???",
+        "description": "????? ??????? Snapchat ??????",
         "properties": {
           "better_location": {
             "name": "موقع أفضل",
-            "description": "Enhances the Snapchat Location",
+            "description": "???? ???? Snapchat",
             "properties": {
               "spoof_location": {
                 "name": "الموقع",
@@ -1144,7 +1144,7 @@
               },
               "always_update_location": {
                 "name": "دائما تحديث الموقع",
-                "description": "Force Snapchat to update location even if no GPS data is received"
+                "description": "????? Snapchat ??? ????? ?????? ??? ???? ?????? GPS"
               },
               "suspend_location_updates": {
                 "name": "تحديث الموقع",
@@ -1170,7 +1170,7 @@
           },
           "media_upload_quality": {
             "name": "تحديث وسائط الإعلام",
-            "description": "تجاوز نوعية وسائط الإعلام",
+            "description": "?????? ???? ??? ???????",
             "properties": {
               "force_video_upload_source_quality": {
                 "name": "المصدر:",
@@ -1191,11 +1191,11 @@
             "description": "يؤكد تلقائياً إجراءات مختارة"
           },
           "auto_updater": {
-            "name": "Auto Updater",
+            "name": "???? ??????",
             "description": "إجراء عمليات تحقق آليا من أجل تحديثات جديدة"
           },
           "update_settings": {
-            "name": "Update Settings",
+            "name": "??????? ???????",
             "description": "التحكم في كيفية فحص التطهير للآخرين",
             "properties": {
               "auto_update_check": {
@@ -1207,10 +1207,10 @@
             }
           },
           "ui_settings": {
-            "name": "UI Settings",
+            "name": "??????? ???????",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptic Feedback"
+                "name": "??????? ?????"
               }
             }
           },
@@ -1223,7 +1223,7 @@
             "description": "نقل الأقسام من صفحة القصص\nقد يتطلب تجديداً للعمل بشكل سليم"
           },
           "block_ads": {
-            "name": "Block Ads",
+            "name": "??? ?????????",
             "description": "منع الإعلانات من الظهور"
           },
           "disable_custom_tabs": {
@@ -1235,15 +1235,15 @@
             "description": "منع سنابشت من طلب إذن محدد"
           },
           "disable_memories_snap_feed": {
-            "name": "Disable Memories Snap Feed",
+            "name": "????? ???? ????????",
             "description": "منع (سنابتشات) من إظهار الذكريات الأخيرة عندما ترتجف في الكاميرا"
           },
           "spotlight_comments_username": {
-            "name": "Spotlight Comments Username",
+            "name": "??? ?????? ??????? Spotlight",
             "description": "يُظهر لقب المُستخدمين في تعليقات الكشافة"
           },
           "spotlight_comments_username_icon": {
-            "name": "Spotlight Comments Username Icon",
+            "name": "?????? ??? ?????? ??????? Spotlight",
             "description": "الإختيار الذي يُعرض على أيقونة بجانب أسماء المستخدمين في التعليقات"
           },
           "bypass_video_length_restriction": {
@@ -1255,11 +1255,11 @@
             "description": "يُحدّدُ السرعةَ الافتراضيةَ لعَبْل الفيديو\nالقيمة يجب أن تكون بين 0.1 و 4.0"
           },
           "video_playback_rate_slider": {
-            "name": "Video Playback Rate Slider",
+            "name": "???? ???? ????? ???????",
             "description": "يضيف زلاجة في قائمة أوبرا لتغيير معدل العزف بالفيديو\nملاحظة: لا تنطبق التغييرات إلا على أشرطة الفيديو اللاحقة"
           },
           "disable_google_play_dialogs": {
-            "name": "Disable Google Play Services Dialogs",
+            "name": "????? ?????? Google Play",
             "description": ":: منع توافر أجهزة الهاتف المحمولة في جوجل"
           },
           "default_volume_controls": {
@@ -1267,7 +1267,7 @@
             "description": "القوات Snapchat to use system volume controls"
           },
           "disable_telecom_framework": {
-            "name": "Disable Telecom Framework",
+            "name": "????? ???? ?????????",
             "description": "منع سنابشت من استخدام إطار أندرويد تيليكوم\nهذا يسمح لك بالاستماع للموسيقى أثناء المكالمة"
           },
           "hide_active_music": {
@@ -1297,7 +1297,7 @@
             "description": "منع أن يتم تحميلك تلقائياً"
           },
           "path_format": {
-            "name": "Path Format",
+            "name": "????? ??????",
             "description": "حددوا النموذج"
           },
           "allow_duplicate": {
@@ -1325,7 +1325,7 @@
             "description": "يسمح لك بتحميل الصور من الصفحة"
           },
           "opera_download_button": {
-            "name": "Opera Download Button",
+            "name": "?? ????? ?????",
             "description": "يضيف زر تحميل على الركن الأيمن العلوي عندما ينظر إلى سناب\nضغط طويل على الأزرار سيضغط على الحمولة"
           },
           "download_context_menu": {
@@ -1333,7 +1333,7 @@
             "description": "يسمح لكم بتحميل/استعراض رسائل من محادثة أو قصة باستخدام قائمة السياق.\nضغط طويل على الأزرار سيضغط على الحمولة"
           },
           "ffmpeg_options": {
-            "name": "FFmpeg Options",
+            "name": "?????? FFmpeg",
             "description": "المبلغ الإضافي FFmpeg options",
             "properties": {
               "threads": {
@@ -1341,7 +1341,7 @@
                 "description": "كمية الخيوط المستخدمة"
               },
               "preset": {
-                "name": "Preset",
+                "name": "??????? ??????",
                 "description": "تحديد سرعة التحويل"
               },
               "constant_rate_factor": {
@@ -1349,11 +1349,11 @@
                 "description": "تحديد عامل المعدل المستمر لجهاز تسجيل الفيديو\nمن صفر إلى 51 للرمز libx264"
               },
               "video_bitrate": {
-                "name": "Video Bitrate",
+                "name": "???? ?? ???????",
                 "description": "جهز الفيديو"
               },
               "audio_bitrate": {
-                "name": "Audio Bitrate",
+                "name": "???? ?? ?????",
                 "description": "جهزوا المرارة الصوتية"
               },
               "custom_video_codec": {
@@ -1395,7 +1395,7 @@
             }
           },
           "snap_preview": {
-            "name": "Snap Preview",
+            "name": "?????? ??????",
             "description": "يصور عرضًا بسيطًا إلى جانب النبضات الغير مرئية في الدردشة"
           },
           "bootstrap_override": {
@@ -1407,13 +1407,13 @@
                 "description": "يُحدّدُ التلميح الدائم"
               },
               "home_tab": {
-                "name": "Home Tab",
+                "name": "????? ??????? ????????",
                 "description": "يُتجاوزُ حكايةَ البدءَ عندما يَفْتحُ Snapchat"
               }
             }
           },
           "map_friend_nametags": {
-            "name": "Enhanced Friend Map Nametags",
+            "name": "?????? ????? ???????? ??????? ??? ???????",
             "description": "تحسّن أسماء الأصدقاء في \"سنابماب\""
           },
           "prevent_message_list_auto_scroll": {
@@ -1425,11 +1425,11 @@
             "description": "يُظهرُ a مُوقّع إستعراضِ ستريكِ بجانب مضادِ ستريكز"
           },
           "hide_friend_feed_entry": {
-            "name": "Hide Friend Feed Entry",
+            "name": "????? ???? ???? ????????",
             "description": "يخفي صديقاً محدداً من صديق (فيد)\nاستخدام التابوت الاجتماعي لإدارة هذه السمة"
           },
           "hide_streak_restore": {
-            "name": "Hide Streak Restore",
+            "name": "????? ??????? ???????",
             "description": "يَهْبطُ زرَّ ريستوير في إطعامِ الصديقِ"
           },
           "hide_quick_add_suggestions": {
@@ -1438,14 +1438,14 @@
           },
           "hide_story_suggestions": {
             "name": "اقتراحات الاختباء",
-            "description": "Removes suggestions from the Stories page"
+            "description": "???? ?????????? ?? ???? ?????"
           },
           "hide_ui_components": {
             "name": "إخفاء المكونات UI",
             "description": "اختيار مكونات UI لإخفاء"
           },
           "opera_media_quick_info": {
-            "name": "Opera Media Quick Info",
+            "name": "??????? ????? ?????? ?????",
             "description": "تُظهر معلومات مفيدة لوسائط الإعلام مثل تاريخ الإنشاء في قائمة المشاهدين الأوبرا"
           },
           "old_bitmoji_selfie": {
@@ -1457,7 +1457,7 @@
             "description": "تعطل الصفحة"
           },
           "friend_feed_menu_buttons": {
-            "name": "Friend Feed Menu Buttons",
+            "name": "????? ????? ???? ????????",
             "description": "اختيار أي أزرار تظهر في صديق مينو"
           },
           "auto_close_friend_feed_menu": {
@@ -1493,7 +1493,7 @@
             "description": "اضغط على موضوع أسود حقيقي عبر تطبيق UI"
           },
           "settings_menu": {
-            "name": "Settings Menu",
+            "name": "????? ?????????",
             "description": "الاختيار بين الأماكن الجديدة والميراثية"
           }
         }
@@ -1503,7 +1503,7 @@
         "description": "تغيير كيف تتفاعل مع الأصدقاء",
         "properties": {
           "bypass_screenshot_detection": {
-            "name": "Bypass Screenshot Detection",
+            "name": "????? ??? ???? ??????",
             "description": "تمنع (سنابشات) من الكشف عندما تلتقط الشاشة"
           },
           "anonymous_story_viewing": {
@@ -1515,11 +1515,11 @@
             "description": "منع أي شخص من معرفة كنت قد إعادة مشاهدة قصتهم"
           },
           "hide_peek_a_peek": {
-            "name": "Hide Peek-a-Peek",
+            "name": "????? Peek-a-Peek",
             "description": "منع إرسال الإخطارات عندما تتسلل نصفين إلى الدردشة"
           },
           "hide_bitmoji_presence": {
-            "name": "Hide Bitmoji Presence",
+            "name": "????? ???? Bitmoji",
             "description": "منع بتيموجي الخاص بك من الخروج بينما في تشات"
           },
           "hide_typing_notifications": {
@@ -1539,15 +1539,15 @@
             "description": "يضيف زراً ليضع علامة على \"سناب\" كما شوهد عند رؤيته\nهذا سينجح حتى عندما يُمكن (ستيرث مود)"
           },
           "skip_when_marking_as_seen": {
-            "name": "Skip When Marking as Seen",
+            "name": "???? ??? ??? ????? ??????",
             "description": "يَتخطّى تلقائياً إلى سناب القادمِ عندما يَوْسمُ a سناب كما يَرى.\n(استخدم مع (مارك سناب) كـ(سيون بوتون"
           },
           "loop_media_playback": {
-            "name": "Loop Media Playback",
+            "name": "????? ????? ???????",
             "description": "ردع وسائط الإعلام عند مشاهدة النقاب/القص"
           },
           "disable_replay_in_ff": {
-            "name": "Disable Replay in FF",
+            "name": "????? ????? ??????? ?? ???? ????????",
             "description": "تعطيل القدرة على إعادة اللعب مع صحافة طويلة من صديق التغذية"
           },
           "half_swipe_notifier": {
@@ -1581,7 +1581,7 @@
             "description": "منع إرسال أنواع معينة من الرسائل"
           },
           "friend_mutation_notifier": {
-            "name": "Friend Mutation Notifier",
+            "name": "????? ??????? ????????",
             "description": "يخطرك عندما يتغير شيء في صورة صديق"
           },
           "better_notifications": {
@@ -1593,11 +1593,11 @@
                 "description": "الإخطارات الجماعية إلى واحد"
               },
               "chat_preview": {
-                "name": "Chat Preview",
+                "name": "?????? ???????",
                 "description": "يبيّن استعراضاً مسبقاً للرسائل الواردة في الإخطار"
               },
               "media_preview": {
-                "name": "Media Preview",
+                "name": "?????? ???????",
                 "description": "يُظهر استعراضاً مسبقاً لأنواع مختارة من وسائط الإعلام في الإخطار"
               },
               "media_caption": {
@@ -1613,11 +1613,11 @@
                 "description": "يبين مصدر طلب صديق في الإخطار"
               },
               "reply_button": {
-                "name": "Reply Button",
+                "name": "?? ????",
                 "description": "يضاف زر الرد على الإخطار"
               },
               "smart_replies": {
-                "name": "Smart Replies",
+                "name": "???? ????",
                 "description": "يضاف ردود مقترحة على الإخطارات (أندرويد 10+). Use in combination with Reply Button"
               },
               "download_button": {
@@ -1647,7 +1647,7 @@
                 "description": "منع رسائلك الخاصة من حذفها"
               },
               "auto_purge": {
-                "name": "Auto Purge",
+                "name": "????? ??????",
                 "description": "تحذف تلقائياً الرسائل المخبأة التي تكون أكبر من الوقت المحدد"
               },
               "message_filter": {
@@ -1655,13 +1655,13 @@
                 "description": "اختيار الرسائل التي ينبغي قطعها (مفرغة لجميع الرسائل)"
               },
               "deleted_message_color": {
-                "name": "Deleted Message Color",
+                "name": "??? ??????? ????????",
                 "description": "يضع لون الرسائل المحذوفة"
               }
             }
           },
           "auto_save_messages_in_conversations": {
-            "name": "Auto Save Messages",
+            "name": "??? ??????? ????????",
             "description": "بشكل آلي يحفظ كل رسالة في المحادثات"
           },
           "unsaveable_messages": {
@@ -1673,7 +1673,7 @@
                 "description": "جعل رسائل الدردشة غير قابلة للتحقيق"
               },
               "snap": {
-                "name": "Snaps",
+                "name": "????????",
                 "description": "لا يمكن إنقاذها"
               },
               "external_media": {
@@ -1689,7 +1689,7 @@
                 "description": "جعل المحتوى المشترك غير قابل للتحقيق"
               },
               "note": {
-                "name": "Audio Notes",
+                "name": "????????? ???????",
                 "description": "جعل الملاحظات الصوتية غير قابلة للتحقيق"
               },
               "story_reply": {
@@ -1707,7 +1707,7 @@
                 "description": "اختر كيف يتم ارسال اعلام المعرض"
               },
               "include_camera_snaps": {
-                "name": "Include Camera Snaps",
+                "name": "????? ????? ????????",
                 "description": "أيضاً أظهري لهجة التجاوز لكاميرا"
               }
             }
@@ -1725,7 +1725,7 @@
             "description": "يسمح لك بالرد على ضربة دون فتحها أو حفظ رسالة لا يمكن إنقاذها"
           },
           "remove_groups_locked_status": {
-            "name": "Remove Groups Locked Status",
+            "name": "????? ???? ??? ?????????",
             "description": "يسمح لك برؤية المعلومات الجماعية بعد أن يتم طردك"
           },
           "double_tap_chat_action": {
@@ -1737,7 +1737,7 @@
             "description": "يضع ردة فعل إيموجي للحديث المزدوج"
           },
           "auto_reply": {
-            "name": "Auto Reply",
+            "name": "?? ??????",
             "description": "يرسل تلقائياً ردوداً على الرسائل الواردة عندما تكون بعيداً",
             "properties": {
               "allow_running_in_background": {
@@ -1749,85 +1749,85 @@
                 "description": "الحد الأدنى من الوقت بين عمليات النقل الآلي إلى نفس المحادثة (في ثوان)"
               },
               "message_age_threshold": {
-                "name": "Message Age Threshold",
+                "name": "?? ??? ???????",
                 "description": "الرد فقط على الرسائل الواردة في هذا الإطار الزمني (في ثوان)"
               },
               "ai_config": {
-                "name": "AI Configuration",
-                "description": "Settings for AI-powered auto-replies",
+                "name": "??????? ?????? ?????????",
+                "description": "??????? ?????? ????????? ???????? ??? ?????? ?????????",
                 "properties": {
                   "enable_ai_replies": {
                     "name": "ردود الفعل التمكينية",
-                    "description": "Use AI to generate intelligent auto-replies instead of template messages"
+                    "description": "??????? ?????? ????????? ?????? ???? ??????? ???? ????? ?? ???????"
                   },
                   "ai_provider": {
-                    "name": "AI Provider",
+                    "name": "???? ?????? ?????????",
                     "description": "Select which AI service to use for generating responses"
                   },
                   "ai_endpoint_url": {
-                    "name": "AI Endpoint URL",
-                    "description": "API endpoint URL for the AI service (e.g., OpenAI, local AI server)"
+                    "name": "????? API ?????? ?????????",
+                    "description": "????? ????? API ????? ?????? ????????? (??? OpenAI ?? ???? ????)"
                   },
                   "ai_model": {
-                    "name": "AI Model",
+                    "name": "????? ?????? ?????????",
                     "description": "AI model to use for generating responses (e.g., gpt-3.5-turbo, gpt-4)"
                   },
                   "ai_api_key": {
-                    "name": "AI API Key",
+                    "name": "????? API ?????? ?????????",
                     "description": "مفتاح التوثيق مع دائرة الاستخبارات"
                   },
                   "ai_system_prompt": {
-                    "name": "AI System Prompt",
+                    "name": "???? ???? ?????? ?????????",
                     "description": "النظام يُعرّفُ شخصيةَ و سلوكِ AI"
                   },
                   "ai_max_tokens": {
-                    "name": "AI Max Tokens",
+                    "name": "???? ?????? ??????",
                     "description": "الحد الأقصى لعدد الكسور (الكلمات) التي يمكن أن تستخدمها منظمة العفو الدولية في الردود"
                   },
                   "ai_temperature": {
-                    "name": "درجة الحرارة",
-                    "description": "Controls randomness in AI responses (0.0 = deterministic, 2.0 = very random)"
+                    "name": "????? ?? ??????? ?????? (0.0 ????? 2.0 ?????? ????)",
+                    "description": "????? ?? ??????? ?????? (0.0 ????? 2.0 ?????? ????)"
                   },
                   "ai_context_length": {
-                    "name": "AI Context Length",
-                    "description": "Number of previous messages to include as context for AI responses"
+                    "name": "??? ???? ?????? ?????????",
+                    "description": "??? ??????? ??????? ??????? ????? ????? ?????? ?????????"
                   },
                   "ai_personality_traits": {
-                    "name": "AI Personality Traits",
+                    "name": "???? ????? ?????? ?????????",
                     "description": "سمات الشخصية المنفصلة عن البيانات الخاصة بمنظمة العفو الدولية (مثلاً، الودية، العرضية، المساعدة)"
                   },
                   "ai_response_style": {
-                    "name": "AI Response Style",
+                    "name": "????? ????",
                     "description": "الأسلوب العام لاستجابات التنفيذ الشامل"
                   },
                   "ai_response_language": {
-                    "name": "AI Response Language",
+                    "name": "??? ????",
                     "description": "لغة استجابات AI (auto = نفس الرسالة الواردة)"
                   },
                   "ai_use_conversation_history": {
                     "name": "تاريخ الاعتراض",
-                    "description": "Include previous messages as context for more relevant AI responses"
+                    "description": "????? ??????? ??????? ????? ????? ???? ??????"
                   },
                   "ai_include_friend_info": {
-                    "name": "Include Friend Info",
+                    "name": "????? ??????? ??????",
                     "description": "إدراج اسم الصديق و المعلومات الأخرى المتاحة في سياق AI"
                   },
                   "ai_fallback_to_template": {
                     "name": "التراجع إلى النموذج",
-                    "description": "Use template messages if AI fails to generate a response"
+                    "description": "??????? ????? ???? ??? ??? ?????? ????????? ?? ????? ??"
                   },
                   "ai_request_timeout": {
-                    "name": "AI Request Timeout",
+                    "name": "???? ??? ?????? ?????????",
                     "description": "الحد الأقصى من الوقت للانتظار لاستجابة AI (في ثوان)"
                   },
                   "ai_retry_attempts": {
-                    "name": "AI Retry Attempts",
-                    "description": "عدد مرات إعادة النظر في الطلبات المقدمة من منظمة العفو الدولية إذا فشلت"
+                    "name": "??????? ????? ????????",
+                    "description": "??????? ????? ????????"
                   }
                 }
               },
               "auto_trigger_config": {
-                "name": "Auto Trigger Configuration",
+                "name": "??????? ??????? ????????",
                 "description": "تركيبات للزناد الآلي ونماذج الرسائل",
                 "properties": {
                   "friendSpecificGreeting": {
@@ -1839,7 +1839,7 @@
                     "description": "تحياتي لاستخدامها عندما يُمكّن الأصدقاء من التحية المحددة"
                   },
                   "auto_reply_content_types": {
-                    "name": "Auto Reply Triggers",
+                    "name": "?????? ???? ????????",
                     "description": "اختيار أنواع الرسائل التي ينبغي أن تؤدي إلى إعادة شحن السيارات"
                   },
                   "chat_messages": {
@@ -1847,11 +1847,11 @@
                     "description": "رسائل اعادة إرسال ذاتيّة لرسائل الدردشة النصية"
                   },
                   "snap_messages": {
-                    "name": "Snap Replies",
-                    "description": "رسائل اعادة ترتيب السيارات للقطع"
+                    "name": "???? ????????",
+                    "description": "??????? ????? ???? ??? ??? ?????? ????????? ?? ????? ??"
                   },
                   "story_share_messages": {
-                    "name": "Story Share Replies",
+                    "name": "???? ?????? ?????",
                     "description": "رسائل إعادة فرز السيارات لحصص القصص"
                   },
                   "story_reply_messages": {
@@ -1867,15 +1867,15 @@
                     "description": "رسائل اعادة ترتيب السيارات لمذكرات الصوت"
                   },
                   "sticker_messages": {
-                    "name": "Sticker Replies",
+                    "name": "???? ????????",
                     "description": "رسائل إعادة شحن السيارات للملصقات"
                   },
                   "tiny_snap_messages": {
-                    "name": "Tny Snap Replies",
+                    "name": "???? ???????? ???????",
                     "description": "رسائل اعادة ترتيب السيارات لقطع صغيرة"
                   },
                   "map_reaction_messages": {
-                    "name": "الردود على الخرائط",
+                    "name": "???? ??????? ???????",
                     "description": "رسائل لرد فعل الخرائط"
                   },
                   "half_swipe_messages": {
@@ -1887,7 +1887,7 @@
             }
           },
           "auto_open_snaps": {
-            "name": "Auto Open Snaps Settings",
+            "name": "??????? ??? ???????? ????????",
             "description": "حالات التأخير في فرض القيود والتشكيل",
             "properties": {
               "allow_running_in_background": {
@@ -1895,24 +1895,24 @@
                 "description": "يسمح لـ (أوت سنابس) أن يركض في الخلفية ملاحظة: هذا سيستنزف بطاريتك"
               },
               "min_delay": {
-                "name": "Min Delay (ms)",
+                "name": "???? ????? (???? ?????)",
                 "description": "الحد الأدنى من التأخير في الألف ثانية قبل فتح صفحة"
               },
               "max_delay_ms": {
-                "name": "Max Delay (ms)",
-                "description": "أكبر تأخير في الألف ثانية"
+                "name": "???? ????? (???? ?????)",
+                "description": "???? ????? ??? ??? ???? (??????? ?????)"
               },
               "queue_size": {
-                "name": "الكمية",
-                "description": "الحد الأقصى لعدد المفاجئات للحفاظ على الشك"
+                "name": "??? ???????",
+                "description": "???? ?????? ???? ???????? ?? ???????"
               },
               "retry_attempts": {
-                "name": "المحاولات الاسترجاعية",
-                "description": "عدد المرات لفتح الكسرة إذا فشلت"
+                "name": "??? ??????? ???????",
+                "description": "??? ???? ????? ?????? ??? ???? ??? ?????"
               },
               "retry_delay": {
-                "name": "Retry Delay (ms)",
-                "description": "التأخير في محاولات إعادة التأهيل"
+                "name": "????? ??????? (???? ?????)",
+                "description": "?????? ??? ??????? ??????? (???? ?????)"
               }
             }
           },
@@ -1975,11 +1975,11 @@
                 "description": "مكان عرض الترجمة مقارنة بالنص الأصلي"
               },
               "auto_translate": {
-                "name": "Auto Translate",
+                "name": "????? ???????",
                 "description": "ترجمة تلقائية للرسائل عند تلقيها"
               },
               "translate_on_tap": {
-                "name": "Translate on Tap",
+                "name": "??????? ??? ?????",
                 "description": "الرسائل المترجمة عند تخطيها"
               },
               "supported_languages": {
@@ -1991,7 +1991,7 @@
                 "description": "الترجمة التحريرية عند توقف الخدمة"
               },
               "max_retries": {
-                "name": "Max Retries",
+                "name": "???? ?????? ?????? ????????",
                 "description": "العدد الأقصى لمحاولات إعادة التجريب"
               },
               "retry_delay": {
@@ -2011,13 +2011,13 @@
         "description": "قواعد التشغيل الآلي",
         "properties": {
           "auto_read": {
-            "name": "Auto Read"
+            "name": "????? ???????"
           },
           "hide_typing_indicator": {
             "name": "مؤشر نموذج الاختباء"
           },
           "auto_reply": {
-            "name": "Auto Reply"
+            "name": "?? ??????"
           },
           "auto_delete_sent_messages": {
             "name": "\" أوتوماتيا \""
@@ -2026,10 +2026,10 @@
             "name": "الشحن الآلي"
           },
           "stealth": {
-            "name": "Stealth Mode"
+            "name": "??? ??????"
           },
           "auto_save": {
-            "name": "Auto Save"
+            "name": "??? ??????"
           },
           "message_logger": {
             "name": "رمز الرسالة"
@@ -2056,7 +2056,7 @@
             "description": "منع (سنابشات) من حرق الكاميرا\nهذا قد يجعل الكاميرا تدق على بعض الأجهزة"
           },
           "override_front_resolution": {
-            "name": "Override Front Resolution",
+            "name": "????? ??? ???????? ????????",
             "description": "تخطي قرار الكاميرا للكاميرا الأمامية"
           },
           "override_back_resolution": {
@@ -2112,51 +2112,51 @@
         "description": "السمات التجريبية",
         "properties": {
           "native_hooks": {
-            "name": "Native Hooks",
-            "description": "علامات غير مأمونة التي تدخل في رمز (سنابشات) الأصلي",
+            "name": "?????? ?????",
+            "description": "????? ??? ???? ???? ?????? Snapchat ???????",
             "properties": {
               "composer_hooks": {
-                "name": "Composer Hooks",
-                "description": "Injects code into the Composer cross-platform UI framework",
+                "name": "?????? Composer",
+                "description": "??? ??????? ?? ???? ????? Composer ????? ???????",
                 "properties": {
                   "show_first_created_username": {
-                    "name": "المستعمل المبتكر الأول",
-                    "description": "يُظهر أول اسم مُنشأ للمستخدمين إلى جانب اسم المستخدم الحالي في صفحة الموجز"
+                    "name": "??? ??? ???????? ?????",
+                    "description": "???? ??? ???????? ????? ????? ????? ?????? ?? ???? ????? ??????"
                   },
                   "bypass_camera_roll_limit": {
-                    "name": "Bypass Camera roll Limit",
-                    "description": "زيادة الحد الأقصى من وسائل الإعلام يمكنك إرسالها من لوحة الكاميرا"
+                    "name": "????? ?? ????? ????????",
+                    "description": "???? ???? ?????? ??????? ???? ????? ??????? ?? ????? ????????"
                   },
                   "custom_self_destruct_snap_delay": {
-                    "name": "التدمير الذاتي العرفي",
-                    "description": "يعطي المزيد من الخيارات لجهاز توقيت التدمير الذاتي عند إرسال Snap"
+                    "name": "????? ???? ????? ??????",
+                    "description": "???? ?????? ???? ????? ??????? ?????? ??? ????? ????"
                   },
                   "composer_console": {
-                    "name": "Console",
-                    "description": "يسمح لك بتنفيذ شفرة جافاسكريبت في كومبوسر (السلحفي 64 فقط)"
+                    "name": "?????? Composer",
+                    "description": "???? ?????? JavaScript ?? Composer (arm64 ???)"
                   },
                   "composer_logs": {
-                    "name": "اللوغات المركبة",
-                    "description": "Redirects console logs of Composer to PurrfectSnap"
+                    "name": "????? Composer",
+                    "description": "????? ????? ????? Composer ??? PurrfectSnap"
                   }
                 }
               },
               "disable_bitmoji": {
-                "name": "Disable Bitmoji",
-                "description": "Disables Friends Profile Bitmoji"
+                "name": "????? Bitmoji",
+                "description": "???? Bitmoji ?? ????? ????????"
               },
               "custom_emoji_font": {
-                "name": "Custom Emoji Font",
+                "name": "?? ?????? ????",
                 "description": "مما يسمح لكِ بإستخدام شعار (إيموجي) فقط يعمل مع العفاريت"
               },
               "custom_shared_library": {
-                "name": "المكتبة المشتركة بين العملاء",
-                "description": "يتشارك المكتبة في سنابشت هذه السمة فقط لأغراض الاختبار"
+                "name": "????? ?????? ?????",
+                "description": "????? ????? ?????? ????? ??? Snapchat. ??? ?????? ???????? ???"
               }
             }
           },
           "spoof": {
-            "name": "Spoof",
+            "name": "??????",
             "description": "معلومات مختلفة عنك",
             "properties": {
               "play_store_installer_package_name": {
@@ -2168,11 +2168,11 @@
                 "description": "منع الناخب من الكشف عن شبكات البرامج المواضيعية"
               },
               "remove_mock_location_flag": {
-                "name": "Remove Mock Location Flag",
+                "name": "????? ????? ?????? ??????",
                 "description": "منع شنات من الكشف الموقع الشبكي"
               },
               "force_wifi_transport_flag": {
-                "name": "Force Wi-Fi Transport Flag",
+                "name": "??? ????? ??? Wi-Fi",
                 "description": "النقل الشبكي للقوة Wi-Fi instead of mobile data"
               },
               "spoof_device_id": {
@@ -2190,7 +2190,7 @@
                 }
               },
               "spoof_device": {
-                "name": "Spoof Device",
+                "name": "?????? ??????",
                 "description": "(سنابتشات) الحالي يعمل على نموذج جهاز آخر"
               },
               "device_model": {
@@ -2208,12 +2208,12 @@
             "description": "يسمح لك باختيار أي ملف فيديو أوديو من المعرض"
           },
           "story_logger": {
-            "name": "Story Logger",
-            "description": "يقدم تاريخ من قصص الأصدقاء"
+            "name": "???? ?????",
+            "description": "???? ????? ???? ????????"
           },
           "call_recorder": {
-            "name": "Call Recorder",
-            "description": "التسجيلات الصوتية"
+            "name": "???? ?????????",
+            "description": "???? ????????? ??????? ????????"
           },
           "account_switcher": {
             "name": "تحويل حساب",
@@ -2235,7 +2235,7 @@
               },
               "preferred_transcription_lang": {
                 "name": "لغة التخاطب المفضلة",
-                "description": "اللغة المفضّلة لمدوّن الملاحظات الصوتية (مثل EN، ES، FR)"
+                "description": "????? ??????? ?????? ???????? ??????? (??? EN, ES, FR)"
               },
               "notification_transcript": {
                 "name": "نص الإخطار",
@@ -2244,11 +2244,11 @@
             }
           },
           "voice_note_auto_play": {
-            "name": "Voice Note Auto Play",
+            "name": "????? ????????? ??????? ????????",
             "description": "يَلْعبُ بشكل آلي ملاحظةَ الصوتَ التاليةَ بعد الإنتهاءِ الحاليةِ"
           },
           "friend_notes": {
-            "name": "Friend Notes",
+            "name": "??????? ????????",
             "description": "يسمح لك بإضافة ملاحظات إلى بيانات الأصدقاء"
           },
           "cof_experiments": {
@@ -2256,8 +2256,8 @@
             "description": "الملامح غير المحررة/البيتا"
           },
           "context_menu_fix": {
-            "name": "Context Menu Fix",
-            "description": "محاولة لتصليح مينو الصديق عندما يكون الجهاز خارجاً لا يمكن عرضه بشكل صحيح"
+            "name": "????? ????? ??????",
+            "description": "?????? ????? ????? ???? ???????? ????? ???? ?????? ??? ?????"
           },
           "app_lock": {
             "name": "App lock",
@@ -2304,7 +2304,7 @@
             "description": "يفسد مصدر طلب صديق"
           },
           "hidden_snapchat_plus_features": {
-            "name": "Hidden Snapchat Plus Features",
+            "name": "????? Snapchat Plus ???????",
             "description": "Enables unreleased/beta Snapchat Plus features\nقد لا يعمل على نسخ من سنابشات القديمة"
           },
           "custom_streaks_expiration_format": {
@@ -2322,28 +2322,28 @@
         }
       },
       "scripting": {
-        "name": "Scripting",
-        "description": "تشغيل النصوص العرفية لتوسيع نطاق التطهير",
+        "name": "?????????",
+        "description": "????? ??????? ????? ?????? PurrfectSnap",
         "properties": {
           "developer_mode": {
             "name": "Mode",
             "description": "تظهر معلومات عن (سنابشات)"
           },
           "module_folder": {
-            "name": "Module Folder",
+            "name": "???? ???????",
             "description": "الملف الذي توجد فيه النصوص"
           },
           "auto_reload": {
-            "name": "Auto Reload",
-            "description": "إعادة تحميل النصوص آلياً عند تغييرها"
+            "name": "????? ????? ???????",
+            "description": "???? ????? ????????? ???????? ??? ???????"
           },
           "integrated_ui": {
             "name": "وحدة متكاملة",
             "description": "تسمح النصوص بإضافة مكوّنات UI عادة إلى Snapchat"
           },
           "disable_log_anonymization": {
-            "name": "التسمية المعطلة",
-            "description": "Disables the anonymization of logs"
+            "name": "????? ????? ?????? ?? ???????",
+            "description": "???? ????? ?????? ?? ???????"
           },
           "disable_optimization": {
             "name": "الاستخدام الأمثل",
@@ -2352,8 +2352,8 @@
         }
       },
       "friend_tracker": {
-        "name": "صديق تراكر",
-        "description": "نشاط صديق السجلات في سنابشات",
+        "name": "????? ????????",
+        "description": "???? ???? ???????? ??? Snapchat",
         "properties": {
           "record_messaging_events": {
             "name": "أحداث الرسائل المسجلة",
@@ -2361,57 +2361,57 @@
           },
           "allow_running_in_background": {
             "name": "السماح بالبدء في العمل",
-            "description": "يسمح للمتتبع بالركض في الخلفية ملاحظة: هذا سيستنزف بطاريتك"
+            "description": "???? ??????? ?????? ?? ???????. ??????: ????? ??? ???????? ???????? ???? ????"
           },
           "auto_purge": {
-            "name": "Auto Purge",
-            "description": "تحذف تلقائياً الأحداث المخبأة التي تكون أكبر من الوقت المحدد"
+            "name": "????? ??????",
+            "description": "???? ??????? ??????? ?????? ?? ????? ??????? ????????"
           }
         }
       }
     },
     "friend_notes": {
-      "placeholder": "أضف ملاحظة."
+      "placeholder": "??? ??????..."
     }
   },
   "friend_menu_option": {
     "mark_snaps_as_seen": "مارك سنابس",
     "mark_stories_as_seen_locally": "قصص العلامات كما شوهدت محليا",
-    "preview": "Preview",
-    "stealth_mode": "Stealth Mode",
-    "auto_download_blacklist": "Auto Download Blacklist",
-    "anti_auto_save": "Anti Auto Save"
+    "preview": "??????",
+    "stealth_mode": "??? ??????",
+    "auto_download_blacklist": "??????? ??????? ??????? ????????",
+    "anti_auto_save": "???? ????? ????????"
   },
   "content_type": {
-    "CHAT": "Chat",
-    "SNAP": "Snap",
+    "CHAT": "?????",
+    "SNAP": "????",
     "EXTERNAL_MEDIA": "وسائط الإعلام الخارجية",
     "NOTE": "ملاحظة",
-    "STICKER": "Sticker",
-    "SHARE": "Share",
+    "STICKER": "????",
+    "SHARE": "??????",
     "STATUS": "الحالة",
     "LOCATION": "الموقع",
     "STATUS_SAVE_TO_CAMERA_ROLL": "أنقذ الكاميرا رول",
-    "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "Screenshot",
+    "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "???? ????",
     "STATUS_CONVERSATION_CAPTURE_RECORD": "سجل السيناريوهات",
     "STATUS_CALL_MISSED_VIDEO": "نداء الفيديو المفقود",
-    "STATUS_CALL_MISSED_AUDIO": "Missed Audio Call",
+    "STATUS_CALL_MISSED_AUDIO": "?????? ????? ?????",
     "LIVE_LOCATION_SHARE": "الموقع الحية",
     "CREATIVE_TOOL_ITEM": "بند المواد الخليعة",
     "FAMILY_CENTER_INVITE": "مركز الأسرة",
     "FAMILY_CENTER_ACCEPT": "مركز الأسرة",
     "FAMILY_CENTER_LEAVE": "إجازة مركز الأسرة",
-    "STATUS_PLUS_GIFT": "Status Plus Gift",
+    "STATUS_PLUS_GIFT": "???? ???? ???",
     "TINY_SNAP": "Tny Snap",
     "STATUS_COUNTDOWN": "العد التنازلي",
     "MAP_REACTION": "رد فعل الخرائط",
     "chat_messages": "الرسائل الخطية",
-    "snap_messages": "Snaps",
+    "snap_messages": "??????",
     "story_share_messages": "سلسلة القصص",
     "story_reply_messages": "الردود النظرية",
     "external_media_messages": "وسائط الإعلام الخارجية",
     "voice_note_messages": "ملاحظة صوتية",
-    "sticker_messages": "Sticker",
+    "sticker_messages": "??????",
     "tiny_snap_messages": "Tny Snap",
     "map_reaction_messages": "رد فعل الخرائط",
     "half_swipes": "نصف سوبيز"
@@ -2419,18 +2419,18 @@
   "media_download_source": {
     "none": "لا",
     "pending": "تنتهي",
-    "chat_media": "Chat Media",
+    "chat_media": "????? ???????",
     "story": "قصة",
     "public_story": "قصة عامة",
     "spotlight": "Spotlight",
     "profile_picture": "الصور",
-    "story_logger": "Story Logger",
+    "story_logger": "???? ?????",
     "message_logger": "رمز الرسالة",
-    "merged": "Merged",
-    "voice_call": "Voice Call"
+    "merged": "?????",
+    "voice_call": "?????? ?????"
   },
   "chat_action_menu": {
-    "preview_button": "Preview",
+    "preview_button": "??????",
     "download_button": "تحميل",
     "delete_logged_message_button": "تحذف رسالة مسرعة",
     "show_chat_edit_history": "تبين تاريخ تشات إديت",
@@ -2443,7 +2443,7 @@
     "expires_at": "النفقات في{date}",
     "media_size": "حجم وسائط الإعلام:{size}",
     "media_duration": "مدة وسائط الإعلام:{duration}ms",
-    "show_debug_info": "Show Debug Info"
+    "show_debug_info": "??? ??????? ???????"
   },
   "modal_option": {
     "profile_info": "موجز المعلومات",
@@ -2453,9 +2453,9 @@
     "always_ask": "دائماً ما تسأل",
     "ORIGINAL": "وسائط الإعلام",
     "NOTE": "ملاحظة",
-    "SNAP": "Snap",
+    "SNAP": "????",
     "SAVEABLE_SNAP": "Snap",
-    "null": "Snapchat Default",
+    "null": "??????? Snapchat",
     "multiple_media_toast": "يمكنك فقط أن ترسل وسيلة إعلام واحدة في وقت واحد"
   },
   "mark_as_seen": {
@@ -2468,7 +2468,7 @@
   "conversation_preview": {
     "streak_expiration": "تنتهي{day}أيام{hour}ساعات{minute}دقائق",
     "total_messages": "مجموع الرسائل المرسلة/المستلمة:\n{count}",
-    "title": "Preview",
+    "title": "??????",
     "unknown_user": "مستخدم غير معروف",
     "no_messages": "لا توجد رسائل!"
   },
@@ -2496,7 +2496,7 @@
     "mutual": "المتبادلة",
     "outgoing": "الخروج",
     "blocked": "مقفلة",
-    "deleted": "Deleted",
+    "deleted": "?????",
     "following": "أعقب",
     "suggested": "المقترحة",
     "incoming": "واردة",
@@ -2515,7 +2515,7 @@
       "remove_friends": "نقل الأصدقاء",
       "clear_conversations": "محاور واضحة",
       "clear_friend_feed": "تغذية صديقة واضحة{count})",
-      "unfollow": "Unfollow",
+      "unfollow": "????? ????????",
       "remove": "إزالة الألغام"
     },
     "leave_groups": "ارحل{count}المجموعات",
@@ -2530,11 +2530,11 @@
     "reverse_order": "النظام العكسي",
     "search_by_name": "البحث بالاسم",
     "no_friends_found": "لا يوجد أصدقاء",
-    "no_groups_found": "No groups found",
+    "no_groups_found": "?? ??? ?????? ??? ???????",
     "no_friends_or_groups_found": "لا يوجد أصدقاء أو مجموعات",
     "relationship": "العلاقة:",
     "unknown_group": "المجموعة غير المعروفة",
-    "type_group_chat": "Type: Group Chat",
+    "type_group_chat": "?????: ????? ??????",
     "clean_conversations": "نظيفة{count}المحادثات",
     "remove_friends": "إزالة الألغام{count}أصدقاء",
     "clean_conversations_and_remove_friends": "نظيفة{count}المحادثات وازالة{count}أصدقاء",
@@ -2550,7 +2550,7 @@
       "blocked": "مقفلة",
       "removed_me": "أزلني",
       "suggested": "المقترحة",
-      "deleted": "Deleted",
+      "deleted": "?????",
       "business_accounts": "حسابات الأعمال",
       "streaks": "شرائح اللحم",
       "non_streaks": "غير مقصود",
@@ -2562,8 +2562,8 @@
       "none": "لا",
       "username": "المستعمل",
       "added_timestamp": "مضافا إليه",
-      "snap_score": "Snap Score",
-      "streak_length": "Streak Length",
+      "snap_score": "???? ????",
+      "streak_length": "??? ???????",
       "most_messages_sent": "معظم الرسائل",
       "most_recent_message": "الرسالة الأخيرة",
       "nearest_location": "أقرب موقع"
@@ -2599,8 +2599,8 @@
     "open": "مفتوح",
     "download": "تحميل",
     "send": "أرسل",
-    "restore_original": "Restore Original",
-    "convert_external_media": "Convert External Media"
+    "restore_original": "??????? ?????",
+    "convert_external_media": "????? ??????? ????????"
   },
   "tracker_events": {
     "conversation_enter": "المدخل",
@@ -2612,23 +2612,23 @@
     "started_peeking": "بدأت (بيكينغ)",
     "stopped_peeking": "توقف (بيكينغ)",
     "message_read": "رسالة قراءة",
-    "message_deleted": "Message Deleted",
+    "message_deleted": "?? ??? ???????",
     "message_saved": "الرسالة المحتفظ بها",
     "message_unsaved": "رسالة غير منقّدة",
     "message_edited": "رسالة محررة",
     "message_reaction_add": "رد الفعل مضافا إليها",
     "message_reaction_remove": "رد الفعل",
-    "snap_opened": "Snap Opened",
+    "snap_opened": "?? ??? ??????",
     "snap_replayed": "Snap Replay",
     "snap_replayed_twice": "Snap Replay T twiceice",
-    "snap_screenshot": "Snap Screenshot",
+    "snap_screenshot": "???? ???? ??????",
     "snap_screen_record": "Snap Screen",
     "i_can_see_you": "أستطيع أن أراك"
   },
   "cleared_from_feed": "مؤمنة من التغذية",
   "tracker_actions": {
-    "log": "Log",
-    "in_app_notification": "In-App Notification",
+    "log": "?????",
+    "in_app_notification": "????? ???? ???????",
     "push_notification": "الإخطار بالدفع",
     "custom": "العرف"
   },
@@ -2642,7 +2642,7 @@
   "profile_picture_downloader": {
     "button": "صور التنزيل",
     "title": "جهاز تحميل الصور",
-    "avatar_option": "Avatar",
+    "avatar_option": "?????? ???????",
     "background_option": "معلومات أساسية"
   },
   "call_start_confirmation": {
@@ -2650,17 +2650,17 @@
     "dialog_message": "هل أنت متأكد أنك تريد أن تبدأ مكالمة؟?"
   },
   "half_swipe_notifier": {
-    "notification_channel_name": "نصف Swipe",
+    "notification_channel_name": "??? ?????",
     "notification_content_dm": "{friend}فقط نِصْف دردشِكَ ل{duration}ثانية",
     "notification_content_group": "{friend}فقط نِصْفُ إلى{group}for{duration}ثانية"
   },
   "download_processor": {
     "attachment_type": {
-      "snap": "Snap",
-      "sticker": "Sticker",
+      "snap": "????",
+      "sticker": "????",
       "gif": "GIF",
       "external_media": "وسائط الإعلام الخارجية",
-      "note": "ملاحظة",
+      "note": "??????",
       "original_story": "القصة الأصلية"
     },
     "select_attachments_title": "ملحقات مختارة",
@@ -2685,7 +2685,7 @@
     }
   },
   "streaks_reminder": {
-    "notification_title": "شرائح اللحم",
+    "notification_title": "???????",
     "notification_text": "سوف تخسر ستريك مع{friend}في{hoursLeft}ساعات"
   },
   "biometric_auth": {
@@ -2720,7 +2720,7 @@
     "incoming_secret_message": "صديقتك قبلت مفتاحك العام اضغطي على الأقل لتقبلي السر."
   },
   "auto_open_snaps": {
-    "title": "Auto Open Snaps",
+    "title": "??? ???????? ????????",
     "priority_title": "أوتوماتيكيا مفتوحة (الأولوية)",
     "error_title": "أوتوماتيكياً مفتوحاً",
     "channel_description": "الإخطارات المتعلقة بالفتح الآلي",
@@ -2735,8 +2735,8 @@
     "action_clear": "واضح",
     "action_reset": "إعادة الكونت",
     "error_content": "فشل في فتح صفحة من{sender}:{error}",
-    "resumed_feedback": "Auto Open Resumed",
-    "paused_feedback": "Auto Open Paused",
+    "resumed_feedback": "?? ??????? ????? ????????",
+    "paused_feedback": "?? ????? ????? ????????",
     "resumed_message": "سيستمر التجهيز تلقائياً للقطع المصفورة",
     "paused_message": "التجهيز متوقف Queue preserved (({count}طلقات",
     "status_paused": "مدفوع",
@@ -2750,16 +2750,16 @@
     "unknown_sender": "غير معروف",
     "unknown_user": "مستخدم غير معروف",
     "content_type_external_media": "وسائط الإعلام الخارجية",
-    "content_type_snap": "Snap",
+    "content_type_snap": "????",
     "conversation_type_friend_dm": "صديق DM",
-    "conversation_type_dm": "DM",
-    "conversation_type_group_chat": "Group Chat",
-    "conversation_type_chat": "Chat",
+    "conversation_type_dm": "????? ????",
+    "conversation_type_group_chat": "????? ??????",
+    "conversation_type_chat": "?????",
     "notification_status": "الحالة",
     "notification_statistics": "الإحصاءات",
     "notification_queue_size": "الكمية",
     "notification_total_opened": "المجموع",
-    "notification_queue_preview": "QUEUE PREVIEW",
+    "notification_queue_preview": "?????? ???????",
     "notification_processing_continue": "المعالجة ستستمر تلقائياً.",
     "notification_no_snaps_queue": "لا توجد طلقات في الشوكة.",
     "notification_queue_cleared_opened": "تم تبرئة (كويو){opened}فُتح",
@@ -2796,10 +2796,10 @@
   "script_no_scripts_found": "لا يوجد نص",
   "script_ok_timeout": "حسناً{timeout}",
   "scripting_tagline": "تجهيز النصوص والواردات والملفات",
-  "installed_scripts_tab": "Installed",
-  "catalog_tab": "Catalog",
+  "installed_scripts_tab": "????",
+  "catalog_tab": "????????",
   "no_scripts_folder_selected_title": "إختار ملفك ليبدأ",
-  "select_folder_button": "Choose Folder",
+  "select_folder_button": "???? ??????",
   "select_scripts_folder_toast": "الرجاء اختيار ملف النصوص أولا",
   "delete_rule_title": "تحذف المادة",
   "delete_rule_description": "هل أنت متأكد أنك تريد حذف هذه القاعدة؟?",
@@ -2869,7 +2869,7 @@
   "auto_reply_messages": {
     "dialog": {
       "add_message": "يضاف الرسالة",
-      "edit_message": "Edit Message",
+      "edit_message": "????? ???????",
       "message_label": "الرسالة",
       "no_messages": "لا رسائل بعد أضف رسالتك الأولى!",
       "message_placeholder": "أدخل رسالتك."
@@ -2882,29 +2882,29 @@
   },
   "translation_position": {
     "above": "فوق",
-    "below": "Below",
-    "inline": "Inline"
+    "below": "????",
+    "inline": "??? ?????"
   },
   "language_codes": {
-    "en": "الإنكليزية",
-    "es": "الإسبانية",
-    "fr": "الفرنسية",
-    "de": "ألمانيا",
-    "it": "إيطاليا",
-    "pt": "البرتغال",
-    "ru": "الروسية",
-    "ja": "اليابان",
-    "ko": "كوريا",
-    "zh": "الصينية",
-    "ar": "العربية",
-    "hi": "Hindi",
-    "tr": "تركية",
-    "nl": "هولندا",
-    "pl": "بولندا",
-    "sv": "السويد",
-    "da": "الدانمرك",
-    "no": "النرويج",
-    "fi": "فنلندا",
+    "en": "??????????",
+    "es": "?????????",
+    "fr": "????????",
+    "de": "?????????",
+    "it": "?????????",
+    "pt": "??????????",
+    "ru": "???????",
+    "ja": "?????????",
+    "ko": "???????",
+    "zh": "???????",
+    "ar": "???????",
+    "hi": "???????",
+    "tr": "???????",
+    "nl": "?????????",
+    "pl": "?????????",
+    "sv": "????????",
+    "da": "???????????",
+    "no": "?????????",
+    "fi": "?????????",
     "cs": "التشيكية",
     "hu": "هنغاريا",
     "ro": "رومانيا",
@@ -2970,7 +2970,7 @@
         "snap_replayed": "العزف المكرر",
         "snap_replayed_twice": "مكرر مرتين",
         "snap_screenshot": "الشاشة",
-        "snap_screen_record": "Screen recorded"
+        "snap_screen_record": "????? ??????"
       }
     },
     "logs": {
@@ -2992,14 +2992,14 @@
       "log_entry": {
         "in_conversation": "في{conversation}",
         "unknown_user": "غير معروف",
-        "unknown_conversation": "DMs",
+        "unknown_conversation": "????? ????",
         "i_can_see_you_entered": "أدخل",
         "i_can_see_you_left": "يسار",
         "i_can_see_you_duration": "المدة",
-        "i_can_see_you_not_available": "N/A",
-        "i_can_see_you_unit_hour": "h",
-        "i_can_see_you_unit_minute": "m",
-        "i_can_see_you_unit_second": "s",
+        "i_can_see_you_not_available": "??? ????",
+        "i_can_see_you_unit_hour": "?",
+        "i_can_see_you_unit_minute": "?",
+        "i_can_see_you_unit_second": "?",
         "event_text": "{friend}{event}في{conversation}",
         "events": {
           "conversation_enter": "دخلت",
@@ -3047,7 +3047,7 @@
     }
   },
   "debug": {
-    "title": "Debug",
+    "title": "?????",
     "clear": "آمن",
     "files": {
       "config_json": "مقطورة",
@@ -3063,22 +3063,22 @@
       "disable_bypass_status_indicator": "مؤشر حالة التجاوزات"
     }
   },
-  "ui_settings_title": "UI Settings",
-  "haptic_feedback_label": "Haptic Feedback",
+  "ui_settings_title": "??????? ???????",
+  "haptic_feedback_label": "??????? ?????",
   "updates_title": "المستجدات",
   "auto_update_check": "Auto Update check",
   "update_check_frequency_daily": "اليومية",
   "update_check_frequency_weekly": "أسبوعيا",
   "update_check_frequency_monthly": "الشهر",
-  "update_channel_stable": "Stable",
+  "update_channel_stable": "?????",
   "update_channel_prerelease": "ما قبل الإيجار",
-  "friend_notes_title": "Friend Notes",
+  "friend_notes_title": "??????? ????????",
   "friend_notes_description": "إدارة ودعم ملاحظات صديقك",
-  "app_theme_title": "App Theme",
+  "app_theme_title": "??? ???????",
   "theme_mode_system": "النظام",
   "theme_mode_light": "الضوء",
   "theme_mode_dark": "الظلام",
-  "test_mode_label": "Enable PurrAura",
+  "test_mode_label": "????? PurrAura",
   "disable_feature_loading_label": "Disable Feading",
   "disable_auto_mapper_label": "جهاز امتصاص",
   "disable_bypass_indicator_label": "مؤشر التجاوزات غير القابلة للتصرف",
@@ -3098,7 +3098,7 @@
     "include_my_eyes_only": "ضم عيناي فقط",
     "cancel": "إلغاء",
     "export": "الصادرات",
-    "quit": "Quit",
+    "quit": "?????",
     "done": "تم",
     "ok": "حسناً",
     "exporting_memories": "تصدير الذكريات... )أ({failed}فشلت)"
@@ -3106,9 +3106,9 @@
   "scripting_ui": {
     "no_scripts_folder_selected": "لا يوجد ملف مختار",
     "select_folder": "الملفات المختارة",
-    "import_from_url": "Import from URL",
+    "import_from_url": "??????? ?? ????",
     "open_scripts_folder": "\"افتحوا \"الشروط",
-    "import_script_from_url": "Import Script from URL",
+    "import_script_from_url": "??????? ????? ?? ????",
     "warning_imported_scripts": "النصوص المستوردة يمكن أن تكون ضارة بجهازك فقط نصوص الاستيراد من مصادر موثوق بها.",
     "enter_url_here": "ادخل هنا",
     "import": "الواردات",
@@ -3119,7 +3119,7 @@
     "cancel": "إلغاء",
     "add": "مضافا إليها",
     "ok": "حسناً",
-    "quit": "Quit",
+    "quit": "?????",
     "done": "تم",
     "back": "العودة",
     "unknown": "غير معروف",
@@ -3151,7 +3151,7 @@
     "empty_message": "رسالة فارغة",
     "no_more_messages": "لا رسائل",
     "reverse_order_checkbox": "النظام العكسي",
-    "view_logger_history_button": "View Logger History",
+    "view_logger_history_button": "??? ??? ??????",
     "posted_at": "الوظائف{date}",
     "created_at": "أنشئت في{date}",
     "failed_to_open_file": "فشلت في فتح ملف سجلات تحقق لمزيد من المعلومات",
@@ -3170,7 +3170,7 @@
   },
   "debug_dialogs": {
     "info": "المعلومات",
-    "refs": "Refs",
+    "refs": "?????",
     "arroyo": "Arroyo",
     "message": "الرسالة",
     "media_references": "المراجع الإعلامية",
@@ -3182,7 +3182,7 @@
     "failed_to_edit_message": "فشل في تحرير الرسالة:{error}"
   },
   "ai_response_style": {
-    "casual": "Casual",
+    "casual": "??? ????",
     "formal": "الشكل",
     "friendly": "ودود",
     "humorous": "رعب",
@@ -3202,8 +3202,8 @@
     "ja": "اليابان",
     "ko": "كوريا",
     "zh": "الصينية",
-    "ar": "Arabic (UAE) and (KSA)",
-    "hi": "Hindi",
+    "ar": "??????? (????????) ?(????????)",
+    "hi": "???????",
     "tr": "تركية",
     "pl": "بولندا",
     "nl": "هولندا",

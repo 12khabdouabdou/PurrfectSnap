@@ -1,12 +1,15 @@
 package me.eternal.purrfectsnap.core.action.impl
 
 import android.app.AlertDialog
-import android.content.DialogInterface
+import android.graphics.Color as AndroidColor
+import android.net.Uri
 import android.os.Environment
+import androidx.documentfile.provider.DocumentFile
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -31,6 +34,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
@@ -45,13 +49,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import com.github.skydoves.colorpicker.compose.BrightnessSlider
+import com.github.skydoves.colorpicker.compose.ColorPickerController
+import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import kotlinx.coroutines.*
 import me.eternal.purrfectsnap.common.data.ContentType
+import me.eternal.purrfectsnap.common.database.impl.FriendInfo
 import me.eternal.purrfectsnap.common.database.impl.FriendFeedEntry
+import me.eternal.purrfectsnap.common.bridge.wrapper.LoggedMessage
+import me.eternal.purrfectsnap.common.bridge.wrapper.LoggerWrapper
 import me.eternal.purrfectsnap.common.ui.createComposeAlertDialog
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
 import me.eternal.purrfectsnap.core.action.AbstractAction
@@ -60,14 +74,21 @@ import me.eternal.purrfectsnap.core.logger.CoreLogger
 import me.eternal.purrfectsnap.core.messaging.ConversationExporter
 import me.eternal.purrfectsnap.core.messaging.ExportFormat
 import me.eternal.purrfectsnap.core.messaging.ExportParams
-import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.wrapper.impl.Message
 import java.io.File
 import kotlin.math.absoluteValue
 
+private data class ExportColorParticipant(
+    val userId: String,
+    val displayName: String,
+    val username: String
+)
+
 class ExportChatMessages : AbstractAction() {
     private val translation by lazy { context.translation.getCategory("chat_export") }
     private val dialogLogs = mutableListOf<String>()
+    private var dialogTitle by mutableStateOf("")
+    private var dialogText by mutableStateOf("")
     private var currentActionDialog: AlertDialog? = null
     private val dialogBackground = Brush.verticalGradient(
         listOf(
@@ -88,18 +109,59 @@ class ExportChatMessages : AbstractAction() {
         )
     )
 
+    private data class ExportTarget(
+        val outputFile: File,
+        val finalize: (File) -> String
+    )
+
+    private fun resolveExportTarget(fileName: String, mimeType: String): ExportTarget {
+        val configuredFolder = context.config.downloader.saveFolder.get()?.trim().orEmpty()
+        val defaultTarget = {
+            val publicFolder = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                "PurrfectSnap"
+            ).also { if (!it.exists()) it.mkdirs() }
+            val outputFile = publicFolder.resolve(fileName).also { if (it.exists()) it.delete() }
+            ExportTarget(outputFile) { file -> file.absolutePath }
+        }
+
+        if (configuredFolder.isBlank()) {
+            return defaultTarget()
+        }
+
+        val outputFolder = runCatching {
+            DocumentFile.fromTreeUri(context.androidContext, Uri.parse(configuredFolder))
+        }.getOrNull()
+
+        if (outputFolder == null || !outputFolder.canWrite()) {
+            return defaultTarget()
+        }
+
+        val tempFile = File(context.androidContext.cacheDir, fileName).also {
+            if (it.exists()) it.delete()
+        }
+        return ExportTarget(tempFile) { file ->
+            val outputFile = outputFolder.createFile(mimeType, fileName)
+                ?: throw IllegalStateException("Failed to create export file")
+            context.androidContext.contentResolver.openOutputStream(outputFile.uri)?.use { out ->
+                file.inputStream().use { it.copyTo(out) }
+            } ?: throw IllegalStateException("Failed to write export file")
+            outputFile.uri.toString()
+        }
+    }
+
     private fun logDialog(message: String) {
         context.runOnUiThread {
             if (dialogLogs.size > 10) dialogLogs.removeAt(0)
             dialogLogs.add(message)
             context.log.debug("dialog: $message", "ExportChatMessages")
-            currentActionDialog!!.setMessage(dialogLogs.joinToString("\n"))
+            dialogText = dialogLogs.joinToString("\n")
         }
     }
 
     private fun setStatus(message: String) {
         context.runOnUiThread {
-            currentActionDialog!!.setTitle(message)
+            dialogTitle = message
         }
     }
 
@@ -119,6 +181,10 @@ class ExportChatMessages : AbstractAction() {
         var showConversationPicker by remember { mutableStateOf(false) }
         var showFormatPicker by remember { mutableStateOf(false) }
         var showMessageTypePicker by remember { mutableStateOf(false) }
+        val colorOverrides = remember { mutableStateMapOf<String, String>() }
+        var colorPickerTarget by remember { mutableStateOf<ExportColorParticipant?>(null) }
+        var colorPickerValue by remember { mutableStateOf<Color?>(null) }
+        var participants by remember { mutableStateOf<List<ExportColorParticipant>>(emptyList()) }
         val allFriends by rememberAsyncMutableState(null) { context.database.getAllFriends().associateBy { it.userId!! } }
         val myUserId = context.database.myUserId
         val focusManager = LocalFocusManager.current
@@ -272,6 +338,66 @@ class ExportChatMessages : AbstractAction() {
                         accent = accent
                     )
 
+                    SectionLabel("Participant colors")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 120.dp, max = 260.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color.White.copy(alpha = 0.06f))
+                            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
+                            .verticalScroll(rememberScrollState())
+                            .padding(12.dp)
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            if (participants.isEmpty()) {
+                                BasicText(
+                                    text = "Select conversations to customize participant colors.",
+                                    style = TextStyle(color = Color(0xFFB1B4D7), fontSize = 12.sp)
+                                )
+                            } else {
+                                participants.forEach { participant ->
+                                    val colorHex = colorOverrides[participant.userId]
+                                    val color = colorHex?.let { Color(AndroidColor.parseColor(it)) }
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(14.dp))
+                                            .background(Color.White.copy(alpha = 0.05f))
+                                            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
+                                            .clickable {
+                                                colorPickerTarget = participant
+                                                colorPickerValue = color
+                                            }
+                                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        ColorSwatch(color = color)
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            BasicText(
+                                                text = participant.displayName,
+                                                style = TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            BasicText(
+                                                text = participant.username,
+                                                style = TextStyle(color = Color(0xFFB1B4D7), fontSize = 12.sp),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                        BasicText(
+                                            text = colorHex ?: "Auto",
+                                            style = TextStyle(color = Color(0xFFB1B4D7), fontSize = 11.sp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -284,15 +410,17 @@ class ExportChatMessages : AbstractAction() {
                     PrimaryButton(
                         text = translation["dialog_positive_button"],
                         modifier = Modifier.weight(1f),
-                        enabled = selectedFeedEntries.isNotEmpty(),
+                        enabled = selectedFeedEntries.isNotEmpty() || feedEntries.isNotEmpty(),
                         onClick = {
+                            val selection = if (selectedFeedEntries.isEmpty()) feedEntries else selectedFeedEntries
                             exportChatForConversations(
-                                selectedFeedEntries,
+                                selection,
                                 ExportParams(
                                     exportFormat = exportType,
                                     messageTypeFilter = messageTypeFilter.takeIf { it.isNotEmpty() },
                                     amountOfMessages = amountOfMessages.takeIf { it != -1 },
-                                    downloadMedias = downloadMedias
+                                    downloadMedias = downloadMedias,
+                                    colorOverrides = colorOverrides.takeIf { it.isNotEmpty() }?.toMap()
                                 )
                             )
                         }
@@ -304,6 +432,56 @@ class ExportChatMessages : AbstractAction() {
                         feedEntries = context.database.getFeedEntries(500)
                         }
                     }
+                }
+            }
+
+            LaunchedEffect(selectedFeedEntries.toList(), allFriends) {
+                withContext(Dispatchers.IO) {
+                    val selection = selectedFeedEntries.toList()
+                    if (selection.isEmpty()) {
+                        withContext(Dispatchers.Main) {
+                            participants = emptyList()
+                        }
+                        return@withContext
+                    }
+                    val participantsMap = linkedMapOf<String, ExportColorParticipant>()
+                    selection.forEach { entry ->
+                        val userIds = context.database.getConversationParticipants(entry.key!!, useCache = false) ?: emptyList()
+                        userIds.forEach { userId ->
+                            if (participantsMap.containsKey(userId)) return@forEach
+                            val friend = allFriends?.get(userId) ?: context.database.getFriendInfo(userId)
+                            val displayName = friend?.displayName ?: friend?.mutableUsername ?: userId
+                            val username = friend?.mutableUsername ?: userId
+                            participantsMap[userId] = ExportColorParticipant(userId, displayName, username)
+                        }
+                    }
+                    withContext(Dispatchers.Main) {
+                        participants = participantsMap.values.toList()
+                    }
+                }
+            }
+
+            colorPickerTarget?.let { target ->
+                Dialog(
+                    onDismissRequest = { colorPickerTarget = null },
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                ) {
+                    ExportColorPickerDialog(
+                        participant = target,
+                        initialColor = colorPickerValue,
+                        onSave = { color ->
+                            if (color == null) {
+                                colorOverrides.remove(target.userId)
+                            } else {
+                                colorOverrides[target.userId] = colorToHex(color)
+                            }
+                            colorPickerTarget = null
+                        },
+                        onClear = {
+                            colorOverrides.remove(target.userId)
+                            colorPickerTarget = null
+                        }
+                    )
                 }
             }
 
@@ -339,6 +517,31 @@ class ExportChatMessages : AbstractAction() {
                                     if (isSelected) selectedFeedEntries -= feedEntry else selectedFeedEntries += feedEntry
                                 }
                             )
+                        }
+
+                        if (feedEntries.isNotEmpty()) {
+                            item {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    SecondaryButton(
+                                        text = t("text_field_selection_all"),
+                                        modifier = Modifier.weight(1f),
+                                        onClick = {
+                                            selectedFeedEntries.clear()
+                                            selectedFeedEntries.addAll(feedEntries)
+                                        }
+                                    )
+                                    SecondaryButton(
+                                        text = translation["dialog_negative_button"],
+                                        modifier = Modifier.weight(1f),
+                                        onClick = { selectedFeedEntries.clear() }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -686,6 +889,190 @@ class ExportChatMessages : AbstractAction() {
         }
     }
 
+    @Composable
+    private fun ExportProgressDialog(
+        onCancel: () -> Unit
+    ) {
+        val scrollState = rememberScrollState()
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(dialogBackground)
+                .padding(12.dp)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.2.dp, accentGradient, RoundedCornerShape(26.dp)),
+                shape = RoundedCornerShape(26.dp),
+                tonalElevation = 0.dp,
+                color = Color.White.copy(alpha = 0.04f)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(panelOverlay)
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Text(
+                        text = dialogTitle,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 120.dp, max = 280.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(Color.White.copy(alpha = 0.06f))
+                            .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(18.dp))
+                            .verticalScroll(scrollState)
+                            .padding(12.dp)
+                    ) {
+                        BasicText(
+                            text = dialogText,
+                            style = TextStyle(color = Color(0xFFD9D3FF), fontSize = 12.sp)
+                        )
+                    }
+                    SecondaryButton(
+                        text = translation["dialog_negative_button"],
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = onCancel
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun ColorSwatch(color: Color?) {
+        Box(
+            modifier = Modifier
+                .size(26.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(color ?: Color.White.copy(alpha = 0.1f))
+                .border(1.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(8.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (color == null) {
+                BasicText(
+                    text = "A",
+                    style = TextStyle(color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                )
+            }
+        }
+    }
+
+    private fun colorToHex(color: Color): String {
+        return String.format("#%06X", 0xFFFFFF and color.toArgb())
+    }
+
+    @Composable
+    private fun ExportColorPickerDialog(
+        participant: ExportColorParticipant,
+        initialColor: Color?,
+        onSave: (Color?) -> Unit,
+        onClear: () -> Unit
+    ) {
+        var currentColor by remember { mutableStateOf(initialColor ?: Color.White) }
+        val controller = remember { ColorPickerController().apply { selectByColor(currentColor, false) } }
+        var colorHexValue by remember { mutableStateOf(colorToHex(currentColor).removePrefix("#")) }
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = Color.White.copy(alpha = 0.06f),
+            tonalElevation = 0.dp,
+            shadowElevation = 16.dp,
+            border = BorderStroke(
+                1.dp,
+                Brush.linearGradient(
+                    listOf(
+                        Color(0xFF8C7BFF).copy(alpha = 0.6f),
+                        Color(0xFF5FD8FF).copy(alpha = 0.5f)
+                    )
+                )
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFF1B1636))
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Color for ${participant.displayName}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                )
+                TextField(
+                    value = colorHexValue,
+                    onValueChange = { value ->
+                        colorHexValue = value
+                        runCatching {
+                            val parsed = Color(AndroidColor.parseColor("#$value"))
+                            currentColor = parsed
+                            controller.selectByColor(parsed, true)
+                        }
+                    },
+                    label = { Text(text = "Hex Color") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White.copy(alpha = 0.08f),
+                        unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = Color(0xFF8EF0F3),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    )
+                )
+                HsvColorPicker(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(240.dp),
+                    controller = controller,
+                    onColorChanged = {
+                        if (!it.fromUser) return@HsvColorPicker
+                        currentColor = it.color
+                        colorHexValue = colorToHex(it.color).removePrefix("#")
+                    }
+                )
+                BrightnessSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(30.dp),
+                    controller = controller
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    SecondaryButton(
+                        text = "Auto",
+                        modifier = Modifier.weight(1f),
+                        onClick = onClear
+                    )
+                    PrimaryButton(
+                        text = "Save",
+                        modifier = Modifier.weight(1f),
+                        onClick = { onSave(currentColor) }
+                    )
+                }
+            }
+        }
+    }
+
     override fun run() {
         context.coroutineScope.launch(Dispatchers.Main) {
             createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
@@ -722,18 +1109,14 @@ class ExportChatMessages : AbstractAction() {
     ) {
         dialogLogs.clear()
         val jobs = mutableListOf<Job>()
+        dialogTitle = translation["exporting_chats"]
+        dialogText = ""
 
-        currentActionDialog = ViewAppearanceHelper.newAlertDialogBuilder(context.mainActivity)
-            .setTitle(translation["exporting_chats"])
-            .setCancelable(false)
-            .setMessage("")
-            .create()
-        
         val conversationSize = translation.format("processing_chats", "amount" to conversations.size.toString())
         
         logDialog(conversationSize)
 
-        context.coroutineScope.launch {
+        val exportJob = context.coroutineScope.launch {
             conversations.forEach { conversation ->
                 launch {
                     runCatching {
@@ -747,17 +1130,33 @@ class ExportChatMessages : AbstractAction() {
             }
             jobs.joinAll()
             logDialog(translation["finished"])
-        }.also {
-            currentActionDialog?.setButton(DialogInterface.BUTTON_POSITIVE, translation["dialog_negative_button"]) { dialog, _ ->
-                it.cancel()
-                jobs.forEach { it.cancel() }
-                dialog.dismiss()
-            }
         }
 
-        currentActionDialog!!.also {
-            it.setCanceledOnTouchOutside(false)
-        }.show()
+        currentActionDialog = createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+            ExportProgressDialog {
+                exportJob.cancel()
+                jobs.forEach { it.cancel() }
+                alertDialog.dismiss()
+            }
+        }.apply {
+            setCanceledOnTouchOutside(false)
+            show()
+        }
+    }
+
+    private fun fetchLoggerMessages(conversationId: String): List<LoggedMessage> {
+        return runCatching {
+            val loggerWrapper = LoggerWrapper(context.androidContext)
+            val messages = mutableListOf<LoggedMessage>()
+            var fromTimestamp = Long.MAX_VALUE
+            while (true) {
+                val batch = loggerWrapper.fetchMessages(conversationId, fromTimestamp, 500, reverseOrder = true)
+                if (batch.isEmpty()) break
+                messages.addAll(batch)
+                fromTimestamp = batch.last().sendTimestamp
+            }
+            messages
+        }.getOrDefault(emptyList())
     }
 
     private suspend fun exportFullConversation(
@@ -771,35 +1170,59 @@ class ExportChatMessages : AbstractAction() {
                 context.database.getFriendInfo(it)
             }?.associateBy { it.userId!! } ?: emptyMap()
 
+        val loggerMessages = fetchLoggerMessages(conversationId)
+        val participantMap = conversationParticipants.toMutableMap().apply {
+            loggerMessages.forEach { message ->
+                if (containsKey(message.userId)) return@forEach
+                this[message.userId] = FriendInfo(
+                    userId = message.userId,
+                    displayName = message.username,
+                    username = message.username,
+                    usernameForSorting = message.username
+                )
+            }
+        }
+
         val conversationName = feedEntry.feedDisplayName ?: conversationParticipants.values.take(3).joinToString("_") { it.mutableUsername ?: "" }
 
-        val publicFolder = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "PurrfectSnap").also { if (!it.exists()) it.mkdirs() }
-        val outputFile = publicFolder.resolve("conversation_${conversationName}_${System.currentTimeMillis()}.${exportParams.exportFormat.extension}")
+        val outputName = "conversation_${conversationName}_${System.currentTimeMillis()}.${exportParams.exportFormat.extension}"
+        val mimeType = when (exportParams.exportFormat) {
+            ExportFormat.JSON -> "application/json"
+            ExportFormat.TEXT -> "text/plain"
+            ExportFormat.HTML -> "text/html"
+        }
+        val outputTarget = resolveExportTarget(outputName, mimeType)
+        val outputFile = outputTarget.outputFile
 
         logDialog(translation.format("exporting_message", "conversation" to conversationName))
 
         val conversationExporter = ConversationExporter(
             context = context,
             friendFeedEntry = feedEntry,
-            conversationParticipants = conversationParticipants,
+            conversationParticipants = participantMap,
             exportParams = exportParams,
-            cacheFolder = publicFolder.resolve("cache").also { if (!it.exists()) it.mkdirs() },
+            cacheFolder = context.androidContext.cacheDir.resolve("chat_export").also { if (!it.exists()) it.mkdirs() },
             outputFile = outputFile,
         ).apply { init(); printLog = {
             logDialog(it.toString())
         } }
 
         var foundMessageCount = 0
+        val exportedOrderKeys = mutableSetOf<Long>()
 
-        var lastMessageId = fetchMessagesPaginated(conversationId, Long.MAX_VALUE, amount = 1).firstOrNull()?.also {
-            conversationExporter.readMessage(it)
+        var lastMessageId: Long? = null
+        fetchMessagesPaginated(conversationId, Long.MAX_VALUE, amount = 1).firstOrNull()?.also { message ->
+            conversationExporter.readMessage(message)
             foundMessageCount++
-        }?.messageDescriptor?.messageId ?: run {
-            logDialog(translation["no_messages_found"])
-            return
+            message.orderKey?.let { exportedOrderKeys.add(it) }
+            lastMessageId = message.messageDescriptor?.messageId
         }
 
-        while (true) {
+        if (lastMessageId == null) {
+            logDialog(translation["no_messages_found"])
+        }
+
+        while (lastMessageId != null) {
             val fetchedMessages = fetchMessagesPaginated(conversationId, lastMessageId, amount = 500).toMutableList()
             if (fetchedMessages.isEmpty()) break
 
@@ -813,28 +1236,49 @@ class ExportChatMessages : AbstractAction() {
                 }
             }
 
-            foundMessageCount += fetchedMessages.size
+            val remainingLimit = exportParams.amountOfMessages?.let { it - foundMessageCount } ?: Int.MAX_VALUE
+            if (remainingLimit <= 0) break
 
-            if (exportParams.amountOfMessages != null && foundMessageCount >= exportParams.amountOfMessages) {
-                fetchedMessages.reversed().subList(0, exportParams.amountOfMessages - (foundMessageCount - fetchedMessages.size)).forEach { message ->
-                    conversationExporter.readMessage(message)
-                }
-                break
+            val messagesToWrite = fetchedMessages.reversed().let { messages ->
+                if (messages.size <= remainingLimit) messages else messages.subList(0, remainingLimit)
             }
 
-            fetchedMessages.reversed().forEach { message ->
+            messagesToWrite.forEach { message ->
                 conversationExporter.readMessage(message)
+                foundMessageCount++
+                message.orderKey?.let { exportedOrderKeys.add(it) }
             }
 
             setStatus("Exporting (found ${foundMessageCount})")
+        }
+
+        if (loggerMessages.isNotEmpty() && (exportParams.amountOfMessages == null || foundMessageCount < exportParams.amountOfMessages)) {
+            val parsedLoggerMessages = loggerMessages.mapNotNull { conversationExporter.parseLoggedMessage(it) }
+            for (loggedMessage in parsedLoggerMessages.asReversed()) {
+                if (exportedOrderKeys.contains(loggedMessage.orderKey)) continue
+                val filter = exportParams.messageTypeFilter
+                if (filter != null && !filter.contains(loggedMessage.contentType)) continue
+                if (exportParams.amountOfMessages != null && foundMessageCount >= exportParams.amountOfMessages) break
+                conversationExporter.readLoggedMessage(loggedMessage)
+                foundMessageCount++
+            }
         }
 
         if (exportParams.exportFormat == ExportFormat.HTML) conversationExporter.awaitDownload()
         conversationExporter.close()
         logDialog(translation["writing_output"])
         dialogLogs.clear()
+        val exportedPath = runCatching { outputTarget.finalize(outputFile) }.getOrElse { error ->
+            logDialog("Failed to write export output")
+            logDialog(error.toString())
+            context.log.error("Failed to finalize chat export", error)
+            return
+        }
+        if (outputFile.parentFile == context.androidContext.cacheDir) {
+            outputFile.delete()
+        }
         logDialog("\n" + translation.format("exported_to",
-            "path" to outputFile.absolutePath.toString()
+            "path" to exportedPath
         ) + "\n")
     }
 }

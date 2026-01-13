@@ -1,8 +1,13 @@
 package me.eternal.purrfectsnap.nativelib
 
+import androidx.annotation.Keep
+
+@Keep
 class NativeDecision {
-    var blocked: Boolean = false
-    var reason: String = "allowed"
-    var keyword: String? = null
-    var keywordContext: String? = null
+    @JvmField var blocked: Boolean = false
+    @JvmField var reason: String = "allowed"
+    @JvmField var keyword: String? = null
+    @JvmField var keywordContext: String? = null
+    @JvmField var matchType: String? = null
+    @JvmField var matchValue: String? = null
 }

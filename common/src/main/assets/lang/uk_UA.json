@@ -702,7 +702,7 @@
         "append_type": "Додавання медіа типу до імені файлу"
       },
       "auto_download_sources": {
-        "friend_snaps": "Friend Snaps",
+        "friend_snaps": "Снепи друзів",
         "friend_stories": "Історія",
         "public_stories": "Громадські історії",
         "spotlight": "Мапа"
@@ -2180,7 +2180,7 @@
                 "description": "Ознайомитися з Android ID, надісланим на Snapchat",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Підмінити Android ID",
                     "description": "На відміну від Android ID, відправленого на Snapchat з індивідуальним значенням"
                   },
                   "custom_android_id": {
@@ -2629,7 +2629,7 @@
   "tracker_actions": {
     "log": "Увійти",
     "in_app_notification": "Повідомлення",
-    "push_notification": "Push Notification",
+    "push_notification": "Push-сповіщення",
     "custom": "Написати"
   },
   "better_notifications": {

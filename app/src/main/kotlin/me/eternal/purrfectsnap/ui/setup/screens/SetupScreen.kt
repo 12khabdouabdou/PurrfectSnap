@@ -28,6 +28,7 @@ abstract class SetupScreen {
     lateinit var allowNext: (canGoNext: Boolean) -> Unit
     lateinit var goNext: () -> Unit
     lateinit var route: String
+    var isFirstRunFlow: Boolean = false
 
     @Composable
     fun DialogText(text: String, modifier: Modifier = Modifier) {

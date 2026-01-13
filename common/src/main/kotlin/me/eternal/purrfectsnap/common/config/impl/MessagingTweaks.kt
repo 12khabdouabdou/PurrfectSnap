@@ -67,7 +67,7 @@ class MessagingTweaks : ConfigContainer() {
         
         inner class AiConfig : ConfigContainer(hasGlobalState = false) {
             val enableAiReplies = boolean("enable_ai_replies", false)
-            val aiProvider = unique("ai_provider", "gemini", "deepseek", "openai") {
+            val aiProvider = unique("ai_provider", "gemini", "deepseek", "openai", "openrouter") {
                 customOptionTranslationPath = "ai_provider"
             }.apply { set("gemini") }
             val aiModel = string("ai_model", defaultValue = "gemini-2.5-flash") {
@@ -159,10 +159,6 @@ class MessagingTweaks : ConfigContainer() {
     }
 
     class AutoOpenSnapsConfig : ConfigContainer(hasGlobalState = true) {
-        init {
-            globalState = false
-        }
-
         val allowRunningInBackground = boolean("allow_running_in_background", false)
         val minDelay = integer("min_delay", defaultValue = 50) {
             inputCheck = { it.toIntOrNull()?.coerceAtLeast(0) != null }
@@ -223,6 +219,19 @@ class MessagingTweaks : ConfigContainer() {
         "EXTERNAL_MEDIA",
         "STICKER"
     ) { requireRestart(); customOptionTranslationPath = "content_type" }
+    
+    class UnsaveableMessagesConfig : ConfigContainer() {
+        val chat = boolean("chat", defaultValue = true)
+        val snap = boolean("snap")
+        val externalMedia = boolean("external_media")
+        val sticker = boolean("sticker")
+        val share = boolean("share")
+        val note = boolean("note")
+        val storyReply = boolean("story_reply")
+    }
+
+    val unsaveableMessages = container("unsaveable_messages", UnsaveableMessagesConfig()) { requireRestart() }
+
     val preventMessageSending = multiple("prevent_message_sending", *NotificationType.getOutgoingValues().map { it.key }.toTypedArray()) {
         customOptionTranslationPath = "features.options.notifications"
     }
@@ -239,7 +248,16 @@ class MessagingTweaks : ConfigContainer() {
         customOptionTranslationPath = "features.options.notifications"
     }
     val messageLogger = container("message_logger", MessageLoggerConfig()) { requireRestart() }
-    val galleryMediaSendOverride = unique("gallery_media_send_override", "always_ask", "SNAP", "NOTE", "SAVEABLE_SNAP") { requireRestart() }
+
+    class GalleryMediaSendOverrideConfig : ConfigContainer() {
+        val mode = unique("mode", "always_ask", "SNAP", "NOTE", "SAVEABLE_SNAP") {
+            requireRestart()
+            customOptionTranslationPath = "gallery_media_send_override"
+        }
+        val includeCameraSnaps = boolean("include_camera_snaps", false) { requireRestart() }
+    }
+
+    val galleryMediaSendOverride = container("gallery_media_send_override", GalleryMediaSendOverrideConfig()) { requireRestart() }
     val scheduledSendAllowRunningInBackground = boolean("scheduled_send_allow_running_in_background", false)
     val stripMediaMetadata = multiple("strip_media_metadata", "hide_caption_text", "hide_snap_filters", "hide_extras", "remove_audio_note_duration", "remove_audio_note_transcript_capability") { requireRestart() }
     val bypassMessageRetentionPolicy = boolean("bypass_message_retention_policy") { addNotices(FeatureNotice.UNSTABLE); requireRestart() }
@@ -286,3 +304,4 @@ class MessagingTweaks : ConfigContainer() {
     
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
 }
+

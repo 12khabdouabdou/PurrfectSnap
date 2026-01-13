@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Vælg sprog",
@@ -42,7 +42,7 @@
       "social": "Sociale",
       "manage_scope": "Håndtér anvendelsesområde",
       "messaging_preview": "Forhåndsvisning",
-      "scripts": "Scripts",
+      "scripts": "Skripter",
       "manage_script_repos": "Håndtér script- referater",
       "view_logger_history": "Loggerhistorik",
       "better_location": "Bedre placering"
@@ -60,7 +60,7 @@
         "version_title": "v{versionName}· af den evige",
         "update_title": "PurrfectSnap opdatering",
         "update_content": "Version{version}er tilgængelig!",
-        "update_button": "Download",
+        "update_button": "Hent",
         "debug_build_summary_title": "Du kører en debug build af PurrfectSnap",
         "debug_build_summary_content": "Version{versionName}({versionCode})",
         "debug_build_summary_date": "Byggedato:{date}({days}dage siden)",
@@ -84,7 +84,7 @@
         "clear_button": "Ryd",
         "view_logger_history_button": "Vis loggerhistorik",
         "ui_settings_title": "Brugerindstillinger",
-        "haptic_feedback_label": "Haptic Feedback",
+        "haptic_feedback_label": "Haptisk feedback",
         "use_system_toasts_label": "Brug systemskåle",
         "updates_title": "Opdateringer",
         "auto_update_check": "Automatisk opdateringstjek",
@@ -107,7 +107,7 @@
         "friend_notes_no_notes_to_backup": "Ingen noter at bakke op endnu",
         "friend_notes_backup_success": "Ven noter bakkes op",
         "friend_notes_restore_success": "Ven noter genoprettet",
-        "backup_button": "Backup",
+        "backup_button": "Sikkerhedskopi",
         "restore_button": "Gendan",
         "view_button": "Vis",
         "customize_bottom_bar_title": "Tilpas underlinjen",
@@ -126,10 +126,10 @@
         "merge_button": "Sammenflet",
         "failed_to_open_file": "Kunne ikke åbne filen",
         "merge_files_toast": "Sammenfletning{count}filer",
-        "remove_selected_tasks_title": "Er du sikker på du ønsker at fjerne valgte opgaver?",
-        "remove_all_tasks_title": "Er du sikker på, du ønsker at fjerne alle opgaver?",
+        "remove_selected_tasks_title": "Er du sikker p?, at du vil fjerne de valgte opgaver?",
+        "remove_all_tasks_title": "Er du sikker p?, at du vil fjerne alle opgaver?",
         "delete_files_option": "Slet også filer",
-        "remove_selected_tasks_confirm": "Fjern{count}opgaver?",
+        "remove_selected_tasks_confirm": "Fjern {count} opgaver?",
         "remove_all_tasks_confirm": "Fjern alle opgaver?"
       },
       "features": {
@@ -187,7 +187,7 @@
         "streaks_expiration_text": "Udløber{eta}",
         "streaks_expiration_text_expired": "Udløb",
         "reminder_button": "Sæt påmindelse",
-        "delete_scope_confirm_dialog_title": "Er du sikker på, at du ønsker at slette en{scope}?",
+        "delete_scope_confirm_dialog_title": "Er du sikker p?, at du ?nsker at slette en {scope}?",
         "notes_placeholder": "Klik for at tilføje en note"
       },
       "logged_stories": {
@@ -305,7 +305,7 @@
       "clear_module_data_failed": "Kunne ikke rydde moduldata",
       "delete_module_button": "Slet",
       "delete_module_failed": "Kunne ikke slette modulet",
-      "documentation_button": "Docs",
+      "documentation_button": "Dokumentation",
       "download_script_failed": "Kunne ikke downloade script",
       "downloading_script": "Downloader script...",
       "edit_module_button": "Redigér",
@@ -341,7 +341,7 @@
         "no_scripts_folder_selected": "Vælg en scripts mappe først",
         "no_scripts_available": "Ingen scripts tilgængelige",
         "installed_button": "Installeret",
-        "download_button": "Download"
+        "download_button": "Hent"
       },
       "repos": {
         "no_repos_added": "Ingen datalagre tilføjet",
@@ -407,7 +407,7 @@
       "duplicate_rule_name_dialog_title": "Duplikeret regelnavn",
       "duplicate_rule_name_dialog_text": "Der findes allerede en regel med dette navn. Vælg et nyt navn.",
       "discard_changes_dialog_title": "Kassér ændringer?",
-      "discard_changes_dialog_text": "Du har ikke gemt ændringer. Kassere dem?",
+      "discard_changes_dialog_text": "Du har ikke gemt ?ndringer. Kass?r dem?",
       "rule_subtitle": "Indstil udløsere og skoper til denne regel.",
       "discard_button": "Kassér",
       "enabled_label": "Aktiveret",
@@ -416,7 +416,7 @@
       "delete_rule_dialog_text": "Er du sikker på, du vil slette denne regel?",
       "no_repos_added": "Ingen datalagre tilføjet",
       "import_dialog_title": "Importregler",
-      "bulk_import_button": "Bulk import",
+      "bulk_import_button": "Masseimport",
       "individual_import_button": "Engangsimport",
       "invalid_import_type_dialog_title": "Ugyldig import",
       "invalid_import_type_dialog_text": "Den valgte filtype matcher ikke importtilstanden.",
@@ -546,7 +546,7 @@
         "name": "Brug E2E kryptering"
       },
       "pin_conversation": {
-        "name": "Pin Conversation"
+        "name": "Fastg?r samtale"
       },
       "exclude_message_logger": {
         "name": "Ekskl. fra brevlogger"
@@ -615,7 +615,7 @@
       "description": "Udfører operationer såsom sletning af venner eller masse sletning af samtaler"
     },
     "regen_mappings": {
-      "name": "Regenerate Mappings",
+      "name": "Gendan mappinger",
       "description": "Manuelt regenerere tilknytninger"
     },
     "change_language": {
@@ -690,7 +690,7 @@
       },
       "settings_menu": {
         "default": "Standard",
-        "legacy": "Legacy"
+        "legacy": "Klassisk"
       },
       "path_format": {
         "create_author_folder": "Opret mappe for hver forfatter",
@@ -708,7 +708,7 @@
         "spotlight": "Spotlight"
       },
       "logging": {
-        "started": "Started",
+        "started": "Startet",
         "success": "Succes",
         "progress": "Fremskridt",
         "failure": "Fejl"
@@ -716,7 +716,7 @@
       "notifications": {
         "chat_screenshot": "Skærmbillede",
         "chat_screen_record": "Skærmoptegnelse",
-        "snap_replay": "Snap Replay",
+        "snap_replay": "Snap-genafspilning",
         "camera_roll_save": "Gem kamerarulle",
         "chat": "Chat",
         "chat_reply": "Chat svar",
@@ -843,7 +843,7 @@
         "ORIGINAL": "Originale medier",
         "NOTE": "Lydnote",
         "SNAP": "Snap",
-        "SAVEABLE_SNAP": "Saveable Snap",
+        "SAVEABLE_SNAP": "Snap der kan gemmes",
         "null": "Snapchat- standard"
       },
       "strip_media_metadata": {
@@ -888,12 +888,12 @@
         "null": "Automatisk"
       },
       "update_check_frequency": {
-        "null": "Auto"
+        "null": "Automatisk"
       },
       "snapchat_plus": {
         "not_subscribed": "Ikke indskrevet",
         "basic": "Grundlæggende",
-        "ad_free": "Ad Free",
+        "ad_free": "Reklamefri",
         "null": "Standard"
       },
       "bypass_video_length_restriction": {
@@ -1016,19 +1016,19 @@
         "friendly, casual, helpful, empathetic": "venlig, afslappet, hjælpsom, empatisk"
       },
       "ai_response_style": {
-        "casual": "Casual",
+        "casual": "Uformel",
         "formal": "Formel",
         "friendly": "Venlig",
         "humorous": "Humoristisk",
         "empathetic": "Empatic",
-        "toxic": "Edgy",
+        "toxic": "Kantet",
         "busy": "Travl"
       },
       "ai_temperature": {
         "0.7": "Afbalanceret (0,7)"
       },
       "ai_response_language": {
-        "auto": "Auto",
+        "auto": "Automatisk",
         "en": "Engelsk",
         "es": "Spansk",
         "fr": "Fransk",
@@ -1112,7 +1112,7 @@
       "translation_position": {
         "above": "Ovenfor tekst",
         "below": "Nedenfor tekst",
-        "inline": "Inline"
+        "inline": "Indlejret"
       },
       "source_language": {
         "auto": "Detektér automatisk"
@@ -1139,7 +1139,7 @@
                 "description": "Indstil koordinaterne for den spoofed placering"
               },
               "walk_radius": {
-                "name": "Walk Radius",
+                "name": "Gangradius",
                 "description": "Tilfældigt gå rundt inden for denne radius (ft)"
               },
               "always_update_location": {
@@ -1191,7 +1191,7 @@
             "description": "Bekræfter automatisk udvalgte handlinger"
           },
           "auto_updater": {
-            "name": "Auto Updater",
+            "name": "Auto-opdatering",
             "description": "Kontrollerer automatisk for nye opdateringer"
           },
           "update_settings": {
@@ -1210,7 +1210,7 @@
             "name": "Brugerindstillinger",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptic Feedback"
+                "name": "Haptisk feedback"
               }
             }
           },
@@ -1282,7 +1282,7 @@
       },
       "downloader": {
         "name": "Downloader",
-        "description": "Download Snapchat Media",
+        "description": "Hent Snapchat-medier",
         "properties": {
           "save_folder": {
             "name": "Gem mappe",
@@ -1399,7 +1399,7 @@
             "description": "Viser en lille forhåndsvisning ved siden af usete snaps i chat"
           },
           "bootstrap_override": {
-            "name": "Bootstrap Override",
+            "name": "Bootstrap-override",
             "description": "Overfører indstillinger for brugergrænseflade bootstrap",
             "properties": {
               "app_appearance": {
@@ -1445,7 +1445,7 @@
             "description": "Vælg hvilke UI- komponenter der skal skjules"
           },
           "opera_media_quick_info": {
-            "name": "Opera Media Quick Info",
+            "name": "Opera Media hurtiginfo",
             "description": "Viser nyttig information om medier såsom oprettelsesdato i opera viewers kontekstmenu"
           },
           "old_bitmoji_selfie": {
@@ -1503,7 +1503,7 @@
         "description": "Ændre hvordan du interagerer med venner",
         "properties": {
           "bypass_screenshot_detection": {
-            "name": "Bypass Screenshot Detection",
+            "name": "Omg? sk?rmbilleddetektering",
             "description": "Forhindrer Snapchat i at opdage når du tager et screenshot"
           },
           "anonymous_story_viewing": {
@@ -1593,7 +1593,7 @@
                 "description": "Gruppemeddelelser til en enkelt"
               },
               "chat_preview": {
-                "name": "Chat Preview",
+                "name": "Chat-forh?ndsvisning",
                 "description": "Viser en forhåndsvisning af modtagne meddelelser i anmeldelsen"
               },
               "media_preview": {
@@ -1765,7 +1765,7 @@
                     "description": "Vælg hvilken AI-tjeneste der skal bruges til at generere svar"
                   },
                   "ai_endpoint_url": {
-                    "name": "AI Endpoint URL",
+                    "name": "AI-endepunkt-URL",
                     "description": "API endpoint URL for AI-tjenesten (fx, OpenAI, lokal AI-server)"
                   },
                   "ai_model": {
@@ -1781,7 +1781,7 @@
                     "description": "System prompt, der definerer AI 's personlighed og adfærd"
                   },
                   "ai_max_tokens": {
-                    "name": "AI Max Tokens",
+                    "name": "AI maks. tokens",
                     "description": "Maksimalt antal tokens (ord) AI kan bruge i svar"
                   },
                   "ai_temperature": {
@@ -1817,7 +1817,7 @@
                     "description": "Brug skabelonbreve hvis AI ikke genererer et svar"
                   },
                   "ai_request_timeout": {
-                    "name": "AI Request Timeout",
+                    "name": "AI-foresp?rgselstimeout",
                     "description": "Maksimal tid til at vente på AI respons (i sekunder)"
                   },
                   "ai_retry_attempts": {
@@ -1899,7 +1899,7 @@
                 "description": "Mindste forsinkelse i millisekunder før et snap åbnes"
               },
               "max_delay_ms": {
-                "name": "Max Delay (ms)",
+                "name": "Maks. forsinkelse (ms)",
                 "description": "Maksimal forsinkelse i millisekunder før et snap åbnes"
               },
               "queue_size": {
@@ -2090,7 +2090,7 @@
         }
       },
       "streaks_reminder": {
-        "name": "Streaks Reminder",
+        "name": "Streaks-p?mindelse",
         "description": "Periodisk fortæller dig om dine Streaks",
         "properties": {
           "interval": {
@@ -2124,11 +2124,11 @@
                     "description": "Viser det første oprettede brugernavn ved siden af det aktuelle brugernavn i profilsiden"
                   },
                   "bypass_camera_roll_limit": {
-                    "name": "Bypass Camera Roll Limit",
+                    "name": "Omg? kamerarullegr?nse",
                     "description": "Øger den maksimale mængde medier, du kan sende fra kameraet roll"
                   },
                   "custom_self_destruct_snap_delay": {
-                    "name": "Custom Self Destruct Snap Delay",
+                    "name": "Brugerdefineret selvdestruktionsforsinkelse for Snap",
                     "description": "Giver flere muligheder for selvdestruere timer, når du sender en Snap"
                   },
                   "composer_console": {
@@ -2156,7 +2156,7 @@
             }
           },
           "spoof": {
-            "name": "Spoof",
+            "name": "Spoofing",
             "description": "Spoof forskellige oplysninger om dig",
             "properties": {
               "play_store_installer_package_name": {
@@ -2208,7 +2208,7 @@
             "description": "Giver dig mulighed for at vælge en video / lydfil fra galleriet"
           },
           "story_logger": {
-            "name": "Story Logger",
+            "name": "Story-logger",
             "description": "Giver en historie om venner historier"
           },
           "call_recorder": {
@@ -2244,7 +2244,7 @@
             }
           },
           "voice_note_auto_play": {
-            "name": "Voice Note Auto Play",
+            "name": "Automatisk afspilning af talenoter",
             "description": "Afspiller automatisk den næste stemme note efter den nuværende er færdig"
           },
           "friend_notes": {
@@ -2260,7 +2260,7 @@
             "description": "Forsøg at reparere Venne Feed Menuen som når enheden er offline kan den ikke vises korrekt"
           },
           "app_lock": {
-            "name": "App Lock",
+            "name": "Appl?s",
             "description": "Forhindrer adgang til Snapchat uden adgangskode",
             "properties": {
               "lock_on_resume": {
@@ -2270,7 +2270,7 @@
             }
           },
           "infinite_story_boost": {
-            "name": "Infinite Story Boost",
+            "name": "Uendelig Story-boost",
             "description": "Bypass Story Boost Limit forsinkelse"
           },
           "meo_passcode_bypass": {
@@ -2399,7 +2399,7 @@
     "LIVE_LOCATION_SHARE": "Live Placering Del",
     "CREATIVE_TOOL_ITEM": "Kreativt værktøjs element",
     "FAMILY_CENTER_INVITE": "Invitation til familiecenter",
-    "FAMILY_CENTER_ACCEPT": "Family Center Accept",
+    "FAMILY_CENTER_ACCEPT": "Family Center accept",
     "FAMILY_CENTER_LEAVE": "Familiecenterorlov",
     "STATUS_PLUS_GIFT": "Status plus gave",
     "TINY_SNAP": "Lille snap",
@@ -2419,19 +2419,19 @@
   "media_download_source": {
     "none": "Ingen",
     "pending": "Afventer",
-    "chat_media": "Chat Media",
+    "chat_media": "Chatmedier",
     "story": "Historie",
     "public_story": "Offentlig historie",
     "spotlight": "Spotlight",
     "profile_picture": "Profilbillede",
-    "story_logger": "Story Logger",
+    "story_logger": "Story-logger",
     "message_logger": "BrevloggerComment",
     "merged": "Sammenflettet",
     "voice_call": "Stemmeopkald"
   },
   "chat_action_menu": {
     "preview_button": "Forhåndsvisning",
-    "download_button": "Download",
+    "download_button": "Hent",
     "delete_logged_message_button": "Slet indlæst brev",
     "show_chat_edit_history": "Vis Chat Redigér historik",
     "convert_message": "Konvertér brev"
@@ -2454,7 +2454,7 @@
     "ORIGINAL": "Originale medier",
     "NOTE": "Lydnote",
     "SNAP": "Snap",
-    "SAVEABLE_SNAP": "Saveable Snap",
+    "SAVEABLE_SNAP": "Snap der kan gemmes",
     "null": "Snapchat- standard",
     "multiple_media_toast": "Du kan kun sende et medie ad gangen"
   },
@@ -2597,7 +2597,7 @@
     "cancel": "Annullér",
     "save": "Gem",
     "open": "Åbn",
-    "download": "Download",
+    "download": "Hent",
     "send": "Send",
     "restore_original": "Gendan original",
     "convert_external_media": "Konverter eksterne medier"
@@ -2622,7 +2622,7 @@
     "snap_replayed": "Snap genspillet",
     "snap_replayed_twice": "Snap genspillet to gange",
     "snap_screenshot": "Snap screenshot",
-    "snap_screen_record": "Snap Screen Record",
+    "snap_screen_record": "Snap-sk?rmoptagelse",
     "i_can_see_you": "Jeg kan se dig"
   },
   "cleared_from_feed": "Renset fra foder",
@@ -2635,7 +2635,7 @@
   "better_notifications": {
     "button": {
       "reply": "Svar",
-      "download": "Download",
+      "download": "Hent",
       "mark_as_read": "Markér som læst"
     }
   },
@@ -2883,7 +2883,7 @@
   "translation_position": {
     "above": "Over",
     "below": "Nedenfor",
-    "inline": "Inline"
+    "inline": "Indlejret"
   },
   "language_codes": {
     "en": "Engelsk",
@@ -2984,7 +2984,7 @@
       },
       "delete_dialog": {
         "title": "Slet log",
-        "message": "Er du sikker på, du vil slette alle logfiler? Denne handling kan ikke bringes til ophør.",
+        "message": "Er du sikker p?, du vil slette alle logfiler? Denne handling kan ikke fortrydes.",
         "confirm": "Slet alle",
         "cancel": "Annullér",
         "progress": "Sletning{count}logfiler..."
@@ -3064,7 +3064,7 @@
     }
   },
   "ui_settings_title": "Brugerindstillinger",
-  "haptic_feedback_label": "Haptic Feedback",
+  "haptic_feedback_label": "Haptisk feedback",
   "updates_title": "Opdateringer",
   "auto_update_check": "Automatisk opdateringstjek",
   "update_check_frequency_daily": "Daglig",
@@ -3156,9 +3156,9 @@
     "created_at": "Oprettet ved{date}",
     "failed_to_open_file": "Kunne ikke åbne filen. Tjek logfiler for mere info",
     "failed_to_get_file": "Kunne ikke få filen",
-    "download_button": "Download",
+    "download_button": "Hent",
     "chat_attachment": "Bilag{index}",
-    "log_header_format": "{username}?{type}?{date}",
+    "log_header_format": "{username} ? {type} ? {date}",
     "edited_at_text": "Edited to \"{message}\"på{date}",
     "list_group_format": "Gruppe{name}",
     "list_friend_format": "Ven{name}",
@@ -3182,7 +3182,7 @@
     "failed_to_edit_message": "Kunne ikke redigere brev:{error}"
   },
   "ai_response_style": {
-    "casual": "Casual",
+    "casual": "Uformel",
     "formal": "Formel",
     "friendly": "Venlig",
     "humorous": "Humoristisk",

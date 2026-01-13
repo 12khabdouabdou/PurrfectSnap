@@ -30,7 +30,7 @@ object LSPatchUpdater {
 
         val embeddedModule = context.androidContext.cacheDir
             .resolve("lspatch")
-            .resolve(Constants.SE_PACKAGE_NAME).let { moduleDir ->
+            .resolve(Constants.MODULE_PACKAGE_NAME).let { moduleDir ->
                 if (!moduleDir.exists()) return@let null
                 moduleDir.listFiles()?.firstOrNull { it.extension == "apk" }
             } ?: obfuscatedModulePath?.let { path ->
@@ -41,7 +41,7 @@ object LSPatchUpdater {
             } ?: return
 
         HAS_LSPATCH = true
-        context.log.verbose("Found embedded SE at ${embeddedModule.absolutePath}", TAG)
+        context.log.verbose("Found embedded PurrfectSnap at ${embeddedModule.absolutePath}", TAG)
 
         val seAppApk = File(context.bridgeClient.getApplicationApkPath()).also {
             if (!it.canRead()) {
@@ -51,7 +51,7 @@ object LSPatchUpdater {
 
         runCatching {
             if (getModuleUniqueHash(ZipFile(embeddedModule)) == getModuleUniqueHash(ZipFile(seAppApk))) {
-                context.log.verbose("Embedded SE is up to date", TAG)
+                context.log.verbose("Embedded PurrfectSnap is up to date", TAG)
                 return
             }
         }.onFailure {
@@ -76,3 +76,4 @@ object LSPatchUpdater {
         context.softRestartApp()
     }
 }
+

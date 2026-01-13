@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Izvēlieties valodu",
@@ -663,16 +663,16 @@
         "auto_save": "י Automātiski saglabāt vēstules",
         "unsaveable_messages": " Nesaglabājamas vēstules",
         "auto_open_snaps": "Snaps automātiska atvēršana",
-        "stealth": "👻 Stealth Mode",
+        "stealth": "?? Slepenais re??ms",
         "auto_reply": "י Automātiska atbilde",
         "auto_delete_sent_messages": "- Automātiski izdzēst nosūtītās vēstules",
         "mark_snaps_as_seen": "י Atzīmēt momentus, kā redzams",
         "mark_stories_as_seen_locally": "י Atzīmēt stāstus, kā redzams uz vietas",
-        "conversation_info": "👤 Conversation Info",
+        "conversation_info": "?? Sarunas inform?cija",
         "e2e_encryption": "E2E šifrēšana",
-        "message_logger": "📝 Message Logger",
+        "message_logger": "?? Zi?ojumu ?urn?ls",
         "auto_read": "י Automātiski lasīt",
-        "hide_typing_indicator": "🙈 Hide Typing Indicator"
+        "hide_typing_indicator": "?? Pasl?pt rakst??anas indikatoru"
       },
       "schedule_scheduled_for": "Plānots{name}skaits{time}",
       "schedule_sending_in": "Sūta{time}",
@@ -1021,7 +1021,7 @@
         "friendly": "Draudzīgi",
         "humorous": "Mitrs",
         "empathetic": "Empātiski",
-        "toxic": "Edgy",
+        "toxic": "Asu",
         "busy": "Aizņemts"
       },
       "ai_temperature": {
@@ -1050,7 +1050,7 @@
         "fi": "Somu"
       },
       "friendGreeting": {
-        "Hey": "Hey"
+        "Hey": "Sveiks"
       },
       "half_swipe_messages": {
         "[\"I noticed you half-swiped! I'll respond soon.\"]": "Es pamanīju, ka tu esi puspeldējis! Es drīz atbildēšu."
@@ -1477,7 +1477,7 @@
             "description": "Pievieno ziņojumiem specifisku rādītāju ikonas\nPiezīme: Rādītāji var nebūt 100% precīzi"
           },
           "stealth_mode_indicator": {
-            "name": "Stealth Mode indikators",
+            "name": "Slepen? re??ma indikators",
             "description": "Papildina emoji blakus sarunām slēptā režīmā"
           },
           "edit_text_override": {
@@ -1536,7 +1536,7 @@
           },
           "mark_snap_as_seen_button": {
             "name": "Atzīmēt kā meklēto pogu",
-            "description": "Pievieno pogu, lai atzīmētu Snap kā redzams, to aplūkojot.\nTas darbosies pat tad, ja Stealth Mode ir ieslēgts"
+            "description": "Pievieno pogu, lai atz?m?tu Snap k? redz?tu, to apl?kojot.\nTas darbosies pat tad, ja slepenais re??ms ir iesl?gts"
           },
           "skip_when_marking_as_seen": {
             "name": "Izlaist, kad iezīmēt kā redzētu",
@@ -2156,7 +2156,7 @@
             }
           },
           "spoof": {
-            "name": "Spoof",
+            "name": "Vilto?ana",
             "description": "Spoof dažādu informāciju par jums",
             "properties": {
               "play_store_installer_package_name": {
@@ -2176,11 +2176,11 @@
                 "description": "Piespiest tīkla transportu ziņot Wi-Fi mobilo datu vietā"
               },
               "spoof_device_id": {
-                "name": "Spoof Device ID",
+                "name": "Viltot ier?ces ID",
                 "description": "Aizstāt uz Snapchat nosūtīto Android ID",
                 "properties": {
                   "spoof_android_id": {
-                    "name": "Spoof Android ID",
+                    "name": "Viltot Android ID",
                     "description": "Aizstāt Android ID nosūtīts uz Snapchat ar pielāgotu vērtību"
                   },
                   "custom_android_id": {
@@ -2553,7 +2553,7 @@
       "deleted": "Dzēsts",
       "business_accounts": "Uzņēmējdarbības konti",
       "streaks": "Streaks",
-      "non_streaks": "Non Streaks",
+      "non_streaks": "Bez streakiem",
       "followed": "Seko",
       "following": "Pēc",
       "location_on_map": "Vieta uz kartes"
@@ -2759,7 +2759,7 @@
     "notification_statistics": "STATISTIKA",
     "notification_queue_size": "Rindas izmērs",
     "notification_total_opened": "Atvērti visi momenti",
-    "notification_queue_preview": "QUEUE PREVIEW",
+    "notification_queue_preview": "RINDAS PRIEK?SKATS",
     "notification_processing_continue": "Apstrāde tiks turpināta automātiski...",
     "notification_no_snaps_queue": "Snaps rindā.",
     "notification_queue_cleared_opened": "Rinda noskaidrota ({opened}atvērts)",

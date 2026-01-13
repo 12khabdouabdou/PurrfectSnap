@@ -386,7 +386,7 @@ class FriendFeedInfoMenu : AbstractMenu() {
                                         fontWeight = if (title) FontWeight.Bold else FontWeight.Normal,
                                         fontSize = if (title) 14.sp else 12.sp,
                                         color = Color.White.copy(alpha = if (title) 0.95f else 0.80f),
-                                        maxLines = 1,
+                                        maxLines = if (title) 1 else 2,
                                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                     )
                                 }

@@ -4,6 +4,8 @@ import android.net.Uri
 import android.text.format.Formatter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,19 +22,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Upload
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +52,7 @@ import me.eternal.purrfectsnap.common.ui.AsyncUpdateDispatcher
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
 import me.eternal.purrfectsnap.ui.util.openFile
@@ -58,44 +66,75 @@ class FileImportsRoot: Routes.Route() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
 
+    @Composable
+    private fun ImportFab(onClick: () -> Unit) {
+        val shape = RoundedCornerShape(18.dp)
+        val border = Brush.linearGradient(
+            listOf(
+                PurrfectPalette.glowPrimary.copy(alpha = 0.7f),
+                PurrfectPalette.glowSecondary.copy(alpha = 0.6f)
+            )
+        )
+        val fill = Brush.linearGradient(
+            listOf(
+                PurrfectPalette.glowPrimary.copy(alpha = 0.35f),
+                PurrfectPalette.glowSecondary.copy(alpha = 0.28f)
+            )
+        )
+        Row(
+            modifier = Modifier
+                .shadow(
+                    elevation = 12.dp,
+                    shape = shape,
+                    ambientColor = PurrfectPalette.glowSecondary.copy(alpha = 0.2f),
+                    spotColor = PurrfectPalette.glowPrimary.copy(alpha = 0.25f)
+                )
+                .clip(shape)
+                .background(fill)
+                .border(1.dp, border, shape)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(Icons.Default.Upload, contentDescription = null, tint = Color.White)
+            Text(
+                text = translation["import_file_button"],
+                color = Color.White,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+
     override val floatingActionButton: @Composable () -> Unit = {
         val coroutineScope = rememberCoroutineScope()
-        Row {
-            ExtendedFloatingActionButton(
-                icon = {
-                    Icon(Icons.Default.Upload, contentDescription = null)
-                },
-                text = {
-                    Text(translation["import_file_button"])
-                },
-                onClick = {
-                context.coroutineScope.launch {
-                    activityLauncherHelper.openFile { filePath ->
-                        val fileUri = Uri.parse(filePath)
-                        runCatching {
-                            DocumentFile.fromSingleUri(context.activity!!, fileUri)?.let { file ->
-                                if (!file.exists()) {
-                                    context.shortToast(translation["file_not_found"])
-                                    return@openFile
-                                }
-                                context.fileHandleManager.importFile(file.name!!) {
-                                    context.androidContext.contentResolver.openInputStream(fileUri)?.use { inputStream ->
-                                        inputStream.copyTo(this)
-                                    }
+        ImportFab {
+            context.coroutineScope.launch {
+                activityLauncherHelper.openFile { filePath ->
+                    val fileUri = Uri.parse(filePath)
+                    runCatching {
+                        DocumentFile.fromSingleUri(context.activity!!, fileUri)?.let { file ->
+                            if (!file.exists()) {
+                                context.shortToast(translation["file_not_found"])
+                                return@openFile
+                            }
+                            context.fileHandleManager.importFile(file.name!!) {
+                                context.androidContext.contentResolver.openInputStream(fileUri)?.use { inputStream ->
+                                    inputStream.copyTo(this)
                                 }
                             }
-                        }.onFailure {
-                            context.log.error("Failed to import file", it)
-                            context.shortToast(translation.format("file_import_failed", "error" to it.message.toString()))
-                        }.onSuccess {
-                            context.shortToast(translation["file_imported"])
-                            coroutineScope.launch {
-                                reloadDispatcher.dispatch()
-                            }
+                        }
+                    }.onFailure {
+                        context.log.error("Failed to import file", it)
+                        context.shortToast(translation.format("file_import_failed", "error" to it.message.toString()))
+                    }.onSuccess {
+                        context.shortToast(translation["file_imported"])
+                        coroutineScope.launch {
+                            reloadDispatcher.dispatch()
                         }
                     }
                 }
-            })
+            }
         }
     }
 
@@ -103,78 +142,25 @@ class FileImportsRoot: Routes.Route() {
         val files = rememberAsyncMutableStateList(defaultValue = listOf(), updateDispatcher = reloadDispatcher) {
             context.fileHandleManager.getStoredFiles()
         }
+        val density = LocalDensity.current
+        val titleText = context.translation["manager.routes.file_imports"]
+        var topBarHeight by remember { mutableStateOf(0.dp) }
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(
+                    top = topBarHeight + 8.dp,
+                    bottom = routes.bottomPadding + 16.dp
+                )
             ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 12.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    color = Color.Transparent,
-                    tonalElevation = 0.dp,
-                    shadowElevation = 12.dp,
-                    border = BorderStroke(
-                        1.dp,
-                        Brush.linearGradient(
-                            listOf(
-                                PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                                PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                            )
-                        )
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .background(PurrfectPalette.cardOverlay, RoundedCornerShape(24.dp))
-                            .padding(horizontal = 18.dp, vertical = 14.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = PurrfectPalette.cardOverlayColor
-                        ) {
-                            Icon(
-                                Icons.Default.AttachFile,
-                                contentDescription = null,
-                                tint = Color.White,
-                                    modifier = Modifier.padding(10.dp)
-                                )
-                            }
-                            Column {
-                                Text(
-                                    text = translation["import_file_button"],
-                                    color = Color.White,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 18.sp
-                                )
-                                Text(
-                                    text = translation["manager.dialogs.file_imports.settings_select_file_hint"],
-                                    color = PurrfectPalette.textSecondary,
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                            }
-                        }
-                    }
-                }
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 10.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = routes.bottomPadding + 16.dp, top = 4.dp)
-                ) {
                     item {
                         if (files.isEmpty()) {
                             Surface(
@@ -279,7 +265,15 @@ class FileImportsRoot: Routes.Route() {
                         }
                     }
                 }
-            }
+
+            FloatingTopBar(
+                title = titleText ?: translation["import_file_button"],
+                subtitle = null,
+                onBack = { routes.navController.popBackStack() },
+                modifier = Modifier.onGloballyPositioned {
+                    topBarHeight = with(density) { it.size.height.toDp() }
+                }
+            )
         }
     }
 }

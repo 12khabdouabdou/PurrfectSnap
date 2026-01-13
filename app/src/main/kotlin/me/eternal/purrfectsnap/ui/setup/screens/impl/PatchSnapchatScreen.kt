@@ -12,6 +12,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,12 +20,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -52,8 +57,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
@@ -66,6 +73,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.eternal.purrfectsnap.setup.patch.AutoPatchServer
 import me.eternal.purrfectsnap.setup.patch.LSPatch
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.setup.screens.SetupScreen
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
@@ -86,6 +94,8 @@ class PatchSnapchatScreen : SetupScreen() {
     override fun Content() {
         val coroutineScope = rememberCoroutineScope()
         val logs = remember { mutableStateListOf("Auto Patcher is ready.") }
+        @Suppress("DEPRECATION")
+        val clipboard = LocalClipboardManager.current
         var progress by remember { mutableFloatStateOf(-1f) }
         var patchedApkPath by rememberSaveable { mutableStateOf<String?>(null) }
         var downloadedApkPath by rememberSaveable { mutableStateOf<String?>(null) }
@@ -98,6 +108,7 @@ class PatchSnapchatScreen : SetupScreen() {
         var installRequested by rememberSaveable { mutableStateOf(false) }
         var installWatcher by remember { mutableStateOf<Job?>(null) }
         var downloadFinished by rememberSaveable { mutableStateOf(false) }
+        var showIssuesDialog by remember { mutableStateOf(false) }
         val logPulse by rememberInfiniteTransition(label = "logPulse").animateFloat(
             initialValue = 0f,
             targetValue = 1f,
@@ -112,7 +123,7 @@ class PatchSnapchatScreen : SetupScreen() {
         LaunchedEffect(installVerified) { allowNext(installVerified) }
 
         fun pushLog(message: String) {
-            if (logs.size > 16) logs.removeFirst()
+            if (logs.size > 120) logs.removeAt(0)
             logs.add(message)
         }
 
@@ -235,6 +246,10 @@ class PatchSnapchatScreen : SetupScreen() {
                     pushStatus("Patched build ready. Install to finish.")
                 }.onFailure {
                     error = it.message ?: it.toString()
+                    it.stackTraceToString()
+                        .lineSequence()
+                        .filter { line -> line.isNotBlank() }
+                        .forEach { line -> pushLog(line) }
                     pushStatus("Failed: ${it.message}")
                 }
                 isRunning = false
@@ -273,6 +288,66 @@ class PatchSnapchatScreen : SetupScreen() {
             )
         }
 
+        if (showIssuesDialog) {
+            AestheticDialog(
+                onDismissRequest = { showIssuesDialog = false },
+                title = "Facing issues?",
+                text = "",
+                icon = Icons.Filled.Info,
+                confirmButtonText = "Got it",
+                onConfirm = { showIssuesDialog = false },
+                showCloseButton = false,
+                customContent = {
+                    val bodyStyle = MaterialTheme.typography.bodyMedium.copy(
+                        color = PurrfectPalette.textSecondary,
+                        lineHeight = 18.sp
+                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 360.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "How to fix installation errors",
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Text(
+                            text = "Issue: App cannot be installed because it conflicts with an existing package.",
+                            style = bodyStyle,
+                            textAlign = TextAlign.Start
+                        )
+                        Text(
+                            text = "Fix: Download Snapchat from the Play Store and uninstall it without keeping data. Run Auto Patcher again. If it still does not work, run:",
+                            style = bodyStyle,
+                            textAlign = TextAlign.Start
+                        )
+                        Text(
+                            text = "adb uninstall com.snapchat.android",
+                            style = bodyStyle,
+                            textAlign = TextAlign.Start,
+                            softWrap = false,
+                            modifier = Modifier.horizontalScroll(rememberScrollState())
+                        )
+                        Text(
+                            text = "Issue: App not installed because the package appears to be invalid.",
+                            style = bodyStyle,
+                            textAlign = TextAlign.Start
+                        )
+                        Text(
+                            text = "Fix: Download and install JingMatrix LSPatch, then patch Snapchat 13.64.0.52 in Integrated mode. Select Embed Modules and embed the PurrfectSnap APK. Then choose Skip auto setup during PurrfectSnap setup to skip Auto Patcher.",
+                            style = bodyStyle,
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                }
+            )
+        }
+
         SetupCard {
             StepTitle(
                 title = "Auto Patcher",
@@ -307,33 +382,48 @@ class PatchSnapchatScreen : SetupScreen() {
                             modifier = Modifier.fillMaxWidth(),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            val isDownloading = progress >= 0f
+                            val isPatching = isRunning && downloadFinished && !isDownloading
                             Text(
-                                text = if (progress >= 0f) {
-                                    "Downloading Snapchat ${(progress * 100).toInt()}%"
-                                } else if (isRunning && downloadFinished) {
-                                    "Patching..."
-                                } else {
-                                    "Initializing..."
+                                text = when {
+                                    isDownloading -> "Downloading Snapchat ${(progress * 100).toInt()}%"
+                                    isPatching -> "Patching..."
+                                    else -> "Initializing..."
                                 },
                                 color = PurrfectPalette.textPrimary,
                                 fontWeight = FontWeight.Medium
                             )
-                            LinearProgressIndicator(
-                                progress = if (progress >= 0f) progress.coerceIn(0f, 1f) else 0f,
-                                color = PurrfectPalette.glowPrimary,
-                                trackColor = Color.White.copy(alpha = 0.12f),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(8.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                            )
+                            if (isDownloading) {
+                                LinearProgressIndicator(
+                                    progress = { progress.coerceIn(0f, 1f) },
+                                    color = PurrfectPalette.glowPrimary,
+                                    trackColor = Color.White.copy(alpha = 0.12f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                )
+                            } else {
+                                LinearProgressIndicator(
+                                    color = PurrfectPalette.glowPrimary,
+                                    trackColor = Color.White.copy(alpha = 0.12f),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(8.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                )
+                            }
                         }
                     }
 
                     LogsPanel(
                         logs = logs,
                         pulse = logPulse,
-                        accent = accent
+                        accent = accent,
+                        onCopy = {
+                            clipboard.setText(AnnotatedString(logs.joinToString("\n")))
+                            pushLog("Logs copied to clipboard.")
+                        }
                     )
 
                     error?.let {
@@ -389,6 +479,36 @@ class PatchSnapchatScreen : SetupScreen() {
                                     onClick = { installPatchedApk() },
                                     enabled = true
                                 )
+                                val issuesInteraction = remember { MutableInteractionSource() }
+                                Surface(
+                                    shape = RoundedCornerShape(14.dp),
+                                    color = Color.White.copy(alpha = 0.04f),
+                                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .scaleOnPress(issuesInteraction)
+                                        .clickable(
+                                            interactionSource = issuesInteraction,
+                                            indication = null
+                                        ) { showIssuesDialog = true }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Info,
+                                            contentDescription = null,
+                                            tint = Color.White.copy(alpha = 0.9f)
+                                        )
+                                        Text(
+                                            text = "Facing issues?",
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
                                 val manualInteraction = remember { MutableInteractionSource() }
                                 Surface(
                                     shape = RoundedCornerShape(14.dp),
@@ -520,7 +640,8 @@ private fun GradientActionButton(
 private fun LogsPanel(
     logs: List<String>,
     pulse: Float,
-    accent: Brush
+    accent: Brush,
+    onCopy: () -> Unit
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val animatedBrush = Brush.linearGradient(
@@ -547,21 +668,54 @@ private fun LogsPanel(
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded },
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Logs",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-                Icon(
-                    imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                    contentDescription = null,
-                    tint = Color.White
-                )
+                Row(
+                    modifier = Modifier
+                        .clickable { expanded = !expanded },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Logs",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(
+                        imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.White.copy(alpha = 0.08f),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f)),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { onCopy() }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ContentCopy,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "Copy",
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
             }
             AnimatedVisibility(visible = expanded) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

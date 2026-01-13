@@ -111,6 +111,11 @@ class FFMpegProcessor(
             }, { onStatistics(it) }, Executors.newSingleThreadExecutor())
     }
 
+    private fun isMediaCodecFailure(output: String): Boolean {
+        val lower = output.lowercase()
+        return lower.contains("mediacodec") || lower.contains("h264_mediacodec") || lower.contains("amediacodec")
+    }
+
     suspend fun execute(args: Request) {
         // load ffmpeg native sync to avoid native crash
         synchronized(this) { FFmpegKit.listSessions() }
@@ -222,6 +227,20 @@ class FFMpegProcessor(
             }
         }
         outputArguments += args.output.absolutePath
-        newFFMpegTask(globalArguments, inputArguments, outputArguments)
+        try {
+            newFFMpegTask(globalArguments, inputArguments, outputArguments)
+        } catch (e: Exception) {
+            val output = e.message.orEmpty()
+            val usingMediaCodec = outputArguments["-c:v"] == "h264_mediacodec"
+            val canRetry = ffmpegOptions.customVideoCodec.get().isEmpty()
+            if (usingMediaCodec && canRetry && isMediaCodecFailure(output)) {
+                logManager.warn("MediaCodec failed, retrying with libx264", TAG)
+                outputArguments -= "-c:v"
+                outputArguments += "-c:v" to "libx264"
+                newFFMpegTask(globalArguments, inputArguments, outputArguments)
+            } else {
+                throw e
+            }
+        }
     }
 }

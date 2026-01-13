@@ -1,4 +1,4 @@
-{
+﻿{
   "setup": {
     "dialogs": {
       "select_language": "Pilih Bahasa",
@@ -52,7 +52,7 @@
       "customize_bottom_bar_subtitle": "Pilih tab mana yang ditampilkan pada layar rumah Anda",
       "available_tabs_title": "Tab Tersedia",
       "shown_tabs_title": "Tab Shown",
-      "reset_button": "Reset",
+      "reset_button": "Atur ulang",
       "done_button": "Selesai"
     },
     "sections": {
@@ -84,13 +84,13 @@
         "clear_button": "Hapus",
         "view_logger_history_button": "Tilik Riwayat Logger",
         "ui_settings_title": "Pengaturan UI",
-        "haptic_feedback_label": "Haptic Feedback",
+        "haptic_feedback_label": "Umpan balik haptik",
         "use_system_toasts_label": "Gunakan Kaus Sistem",
         "updates_title": "Pemutakhiran",
         "auto_update_check": "Periksa Perbarui Otomatis",
         "update_check_frequency_daily": "Harian",
         "update_check_frequency_weekly": "Mingguan",
-        "update_check_frequency_monthly": "Monthly",
+        "update_check_frequency_monthly": "Bulanan",
         "update_channel_stable": "Stabil",
         "update_channel_prerelease": "Lepaskan",
         "update_notification_channel_name": "Pemutakhiran",
@@ -107,13 +107,13 @@
         "friend_notes_no_notes_to_backup": "Belum ada catatan cadangan",
         "friend_notes_backup_success": "Catatan teman didukung",
         "friend_notes_restore_success": "Catatan teman dipulihkan",
-        "backup_button": "Backup",
+        "backup_button": "Cadangan",
         "restore_button": "Pulihkan",
         "view_button": "Tilik",
         "customize_bottom_bar_title": "Ubahan Batang Bawah",
         "customize_bottom_bar_subtitle": "Pilih tab mana yang ditampilkan pada layar rumah Anda",
         "available_tabs_title": "Tab Tersedia",
-        "reset_button": "Reset",
+        "reset_button": "Atur ulang",
         "done_button": "Selesai",
         "clear_friend_feed": "Hapus Pakan Teman",
         "test_mode_label": "Aktifkan PurrAura",
@@ -136,7 +136,7 @@
         "disabled": "Dinonaktifkan",
         "export_option": "Ekspor",
         "import_option": "Impor",
-        "reset_option": "Reset",
+        "reset_option": "Atur ulang",
         "config_export_success_toast": "Konfigurasi diekspor dengan sukses",
         "config_import_success_toast": "Konfigurasi diimpor dengan sukses",
         "config_import_failure_toast": "Gagal mengimpor konfigurasi{error}",
@@ -369,7 +369,7 @@
       "newest_first_label": "Terbaru pertama",
       "since_label": "Sejak",
       "until_label": "Sampai",
-      "unit_label": "Unit",
+      "unit_label": "Satuan",
       "pick_a_date_button": "Pilih tanggal",
       "export_button": "Ekspor",
       "delete_button": "Hapus",
@@ -385,7 +385,7 @@
       "rule_name_label": "Nama Aturan",
       "default_rule_name": "Aturan Baru",
       "author_name_label": "Penulis",
-      "scope_section_title": "Scope",
+      "scope_section_title": "Lingkup",
       "scope_all": "Semua Teman / Grup",
       "scope_whitelist": "Tidak ada kecuali",
       "scope_blacklist": "Semua orang kecuali",
@@ -394,7 +394,7 @@
       "no_events_text": "Belum ada kejadian yang ditambahkan",
       "add_event_dialog_title": "Tambah Peristiwa",
       "event_type_label": "Jenis Kejadian",
-      "triggers_title": "Triggers",
+      "triggers_title": "Pemicu",
       "conditions_title": "Kondisi",
       "condition_only_inside_conversation": "Hanya ketika aku di dalam percakapan",
       "condition_only_outside_conversation": "Hanya ketika aku di luar percakapan",
@@ -511,7 +511,7 @@
         "name": "Mode Stealth",
         "description": "Mencegah siapa pun dari mengetahui Anda telah membuka Snaps mereka / Chats dan percakapan",
         "options": {
-          "blacklist": "Exclude from Stealth Mode",
+          "blacklist": "Kecualikan dari mode siluman",
           "whitelist": "Mode siluman"
         }
       },
@@ -608,7 +608,7 @@
     },
     "export_memories": {
       "name": "Ekspor Kenangan",
-      "description": "Exports memories into a ZIP file"
+      "description": "Ekspor Memories ke file ZIP"
     },
     "bulk_messaging_action": {
       "name": "Aksi Pesan Bolak",
@@ -628,7 +628,7 @@
     },
     "friend_tracker": {
       "name": "Pelacak Teman",
-      "description": "Track your friends on Snapchat"
+      "description": "Lacak teman Anda di Snapchat"
     },
     "logger_history": {
       "name": "Riwayat Logger",
@@ -716,7 +716,7 @@
       "notifications": {
         "chat_screenshot": "Cuplikan layar",
         "chat_screen_record": "Catatan Layar",
-        "snap_replay": "Snap Replay",
+        "snap_replay": "Putar ulang Snap",
         "camera_roll_save": "Kamera Roll Save",
         "chat": "Obrolan",
         "chat_reply": "Balas Percakapan",
@@ -733,43 +733,43 @@
         "map_live_location": "Lokasi Peta Hidup"
       },
       "auto_read": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "hide_typing_indicator": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "auto_delete_sent_messages": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "auto_download": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "stealth": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "auto_save": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "message_logger": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "auto_reply": {
-        "blacklist": "Blacklist",
-        "whitelist": "Whitelist",
+        "blacklist": "Daftar hitam",
+        "whitelist": "Daftar putih",
         "disabled": "Dinonaktifkan"
       },
       "custom_android_id": {
@@ -1021,7 +1021,7 @@
         "friendly": "Ramah",
         "humorous": "Humor",
         "empathetic": "Empatik",
-        "toxic": "Edgy",
+        "toxic": "Kasar",
         "busy": "Sibuk"
       },
       "ai_temperature": {
@@ -1086,7 +1086,7 @@
         "chat_messages": "Pesan Percakapan",
         "snap_messages": "Snaps",
         "story_share_messages": "Tabungan Cerita",
-        "story_reply_messages": "Story Replies",
+        "story_reply_messages": "Balasan Story",
         "external_media_messages": "Media Eksternal",
         "voice_note_messages": "Catatan Suara",
         "sticker_messages": "Stiker",
@@ -1112,7 +1112,7 @@
       "translation_position": {
         "above": "Di atas teks",
         "below": "Di bawah teks",
-        "inline": "Inline"
+        "inline": "Sebaris"
       },
       "source_language": {
         "auto": "Mendeteksi otomatis"
@@ -1210,7 +1210,7 @@
             "name": "Pengaturan UI",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptic Feedback"
+                "name": "Umpan balik haptik"
               }
             }
           },
@@ -1337,11 +1337,11 @@
             "description": "Nyatakan tambahan Pilihan FFmpeg",
             "properties": {
               "threads": {
-                "name": "Threads",
+                "name": "Utas",
                 "description": "Jumlah thread yang dipakai"
               },
               "preset": {
-                "name": "Preset",
+                "name": "Prasetel",
                 "description": "Set kecepatan konversi"
               },
               "constant_rate_factor": {
@@ -1367,7 +1367,7 @@
             }
           },
           "logging": {
-            "name": "Logging",
+            "name": "Pencatatan",
             "description": "Tampilkan toast ketika media mengunduh"
           },
           "custom_path_format": {
@@ -1389,7 +1389,7 @@
             "description": "Tampilkan pratilik pesan terakhir dalam Pangsa Teman",
             "properties": {
               "amount": {
-                "name": "Amount",
+                "name": "Jumlah",
                 "description": "Jumlah pesan yang akan ditampilkan"
               }
             }
@@ -1399,7 +1399,7 @@
             "description": "Tampilkan pratinjau kecil di samping Snaps tak terlihat dalam percakapan"
           },
           "bootstrap_override": {
-            "name": "Bootstrap Override",
+            "name": "Penggantian bootstrap",
             "description": "Timpa pengaturan bootstrap antar muka pengguna",
             "properties": {
               "app_appearance": {
@@ -1507,7 +1507,7 @@
             "description": "Mencegah Snapchat mendeteksi ketika Anda mengambil cuplikan layar"
           },
           "anonymous_story_viewing": {
-            "name": "Anonymous Story Viewing",
+            "name": "Melihat Story secara anonim",
             "description": "Mencegah siapa pun dari mengetahui Anda telah melihat cerita mereka"
           },
           "prevent_story_rewatch_indicator": {
@@ -1617,7 +1617,7 @@
                 "description": "Tambahkan tombol balasan ke pemberitahuan"
               },
               "smart_replies": {
-                "name": "Smart Replies",
+                "name": "Balasan pintar",
                 "description": "Tambahkan balasan yang disarankan ke pemberitahuan (Android 10 +). Gunakan dalam kombinasi dengan Tombol Balas"
               },
               "download_button": {
@@ -1693,7 +1693,7 @@
                 "description": "Membuat catatan audio tidak dapat diselamatkan"
               },
               "story_reply": {
-                "name": "Story Replies",
+                "name": "Balasan Story",
                 "description": "Membuat cerita menjawab tak terbalas"
               }
             }
@@ -1713,7 +1713,7 @@
             }
           },
           "strip_media_metadata": {
-            "name": "Strip Media Metadata",
+            "name": "Hapus metadata media",
             "description": "Hapus metadata media sebelum mengirim pesan"
           },
           "bypass_message_retention_policy": {
@@ -1847,11 +1847,11 @@
                     "description": "Pesan jawaban otomatis untuk pesan obrolan teks"
                   },
                   "snap_messages": {
-                    "name": "Snap Replies",
+                    "name": "Balasan Snap",
                     "description": "Pesan jawaban otomatis untuk terkunci"
                   },
                   "story_share_messages": {
-                    "name": "Story Share Replies",
+                    "name": "Balasan berbagi Story",
                     "description": "Pesan jawaban otomatis untuk berbagi cerita"
                   },
                   "story_reply_messages": {
@@ -1867,11 +1867,11 @@
                     "description": "Pesan jawaban otomatis untuk catatan suara"
                   },
                   "sticker_messages": {
-                    "name": "Sticker Replies",
+                    "name": "Balasan stiker",
                     "description": "Pesan jawaban otomatis bagi stiker"
                   },
                   "tiny_snap_messages": {
-                    "name": "Tiny Snap Replies",
+                    "name": "Balasan Snap kecil",
                     "description": "Pesan jawaban otomatis untuk kecil terkunci"
                   },
                   "map_reaction_messages": {
@@ -2090,7 +2090,7 @@
         }
       },
       "streaks_reminder": {
-        "name": "Streaks Reminder",
+        "name": "Pengingat streak",
         "description": "Secara periodikal memberitahu Anda tentang Streaks Anda",
         "properties": {
           "interval": {
@@ -2128,7 +2128,7 @@
                     "description": "Meningkatkan jumlah media maksimum Anda dapat mengirim dari gulungan kamera"
                   },
                   "custom_self_destruct_snap_delay": {
-                    "name": "Custom Self Destruct Snap Delay",
+                    "name": "Penundaan Snap hancur sendiri khusus",
                     "description": "Memberikan lebih banyak pilihan untuk timer penghancuran diri sendiri ketika mengirim Snap"
                   },
                   "composer_console": {
@@ -2177,7 +2177,7 @@
               },
               "spoof_device_id": {
                 "name": "ID Perangkat Spoof",
-                "description": "Override the Android ID sent to Snapchat",
+                "description": "Ganti ID Android yang dikirim ke Snapchat",
                 "properties": {
                   "spoof_android_id": {
                     "name": "ID Android Spoof",
@@ -2264,7 +2264,7 @@
             "description": "Mencegah akses ke Snapchat tanpa kode akses",
             "properties": {
               "lock_on_resume": {
-                "name": "Lock On Resume",
+                "name": "Kunci saat dilanjutkan",
                 "description": "Kunci aplikasi ketika dibuka kembali"
               }
             }
@@ -2274,7 +2274,7 @@
             "description": "Melewati penundaan Batas Boost Cerita"
           },
           "meo_passcode_bypass": {
-            "name": "My Eyes Only Passcode Bypass",
+            "name": "Lewati kode sandi My Eyes Only",
             "description": "Melewati Mataku Hanya kode sandi\nIni hanya akan bekerja jika kode akses telah dimasukkan dengan benar sebelum"
           },
           "no_friend_score_delay": {
@@ -2282,7 +2282,7 @@
             "description": "Hapus penundaan ketika melihat Skor Teman"
           },
           "best_friend_pinning": {
-            "name": "Best Friend Pinning",
+            "name": "Penyematan teman terbaik",
             "description": "Memungkinkan Anda untuk pin teman sebagai nomor satu teman terbaik Anda. Catatan: Hanya Anda dapat melihat teman terbaik Anda terjepit"
           },
           "e2ee": {
@@ -2401,18 +2401,18 @@
     "FAMILY_CENTER_INVITE": "Undang Pusat Keluarga",
     "FAMILY_CENTER_ACCEPT": "Family Center Terima",
     "FAMILY_CENTER_LEAVE": "Meninggalkan Pusat Keluarga",
-    "STATUS_PLUS_GIFT": "Status Plus Gift",
-    "TINY_SNAP": "Tiny Snap",
+    "STATUS_PLUS_GIFT": "Hadiah Status Plus",
+    "TINY_SNAP": "Snap kecil",
     "STATUS_COUNTDOWN": "Hitung mundur",
     "MAP_REACTION": "Reaksi Peta",
     "chat_messages": "Pesan Percakapan",
     "snap_messages": "Snaps",
     "story_share_messages": "Tabungan Cerita",
-    "story_reply_messages": "Story Replies",
+    "story_reply_messages": "Balasan Story",
     "external_media_messages": "Media Eksternal",
     "voice_note_messages": "Catatan Suara",
     "sticker_messages": "Sticker",
-    "tiny_snap_messages": "Tiny Snap",
+    "tiny_snap_messages": "Snap kecil",
     "map_reaction_messages": "Reaksi Peta",
     "half_swipes": "Setengah Berenang"
   },
@@ -2493,7 +2493,7 @@
     "not_subscribed": "Tidak Berlangganan"
   },
   "friendship_link_type": {
-    "mutual": "Mutual",
+    "mutual": "Saling",
     "outgoing": "Keluar",
     "blocked": "Diblokir",
     "deleted": "Dihapus",
@@ -2553,7 +2553,7 @@
       "deleted": "Dihapus",
       "business_accounts": "Akun Bisnis",
       "streaks": "Streaks",
-      "non_streaks": "Non Streaks",
+      "non_streaks": "Tanpa streak",
       "followed": "Diikuti",
       "following": "Mengikuti",
       "location_on_map": "Lokasi pada Peta"
@@ -2582,7 +2582,7 @@
     "dialog_negative_button": "Batal",
     "dialog_positive_button": "Ekspor",
     "exported_to": "Exported to{path}",
-    "exporting_chats": "Exporting Chats...",
+    "exporting_chats": "Mengekspor chat...",
     "processing_chats": "Proses{amount}percakapan...",
     "export_fail": "Gagal mengekspor percakapan{conversation}",
     "writing_output": "Menulis keluaran...",
@@ -2622,12 +2622,12 @@
     "snap_replayed": "Snap Diputar Ulang",
     "snap_replayed_twice": "Snap Replayed Dua kali",
     "snap_screenshot": "Cuplikan Snap",
-    "snap_screen_record": "Snap Screen Record",
-    "i_can_see_you": "I Can See You"
+    "snap_screen_record": "Rekam layar Snap",
+    "i_can_see_you": "Aku bisa melihatmu"
   },
   "cleared_from_feed": "Dibersihkan dari pakan",
   "tracker_actions": {
-    "log": "Log",
+    "log": "Catat",
     "in_app_notification": "Pemberitahuan In- App",
     "push_notification": "Pemberitahuan Push",
     "custom": "Gubahan"
@@ -2759,7 +2759,7 @@
     "notification_statistics": "STATIK",
     "notification_queue_size": "Ukuran Antrian",
     "notification_total_opened": "Total Snaps dibuka",
-    "notification_queue_preview": "QUEUE PREVIEW",
+    "notification_queue_preview": "PRATINJAU ANTRIAN",
     "notification_processing_continue": "Proses akan dilanjutkan secara otomatis...",
     "notification_no_snaps_queue": "Tidak terkunci dalam antrian.",
     "notification_queue_cleared_opened": "Antrian dibersihkan ({opened}dibuka)",
@@ -2883,7 +2883,7 @@
   "translation_position": {
     "above": "Atas",
     "below": "Bawah",
-    "inline": "Inline"
+    "inline": "Sebaris"
   },
   "language_codes": {
     "en": "Inggris",
@@ -2915,7 +2915,7 @@
     "et": "Estonia",
     "lv": "Latvia",
     "lt": "Lithuania",
-    "mt": "Maltese",
+    "mt": "Malta",
     "ga": "Irlandia",
     "cy": "Welsh"
   },
@@ -3028,11 +3028,11 @@
     },
     "edit_rule": {
       "custom_rule": "Aturan Gubahan",
-      "scope": "Scope",
+      "scope": "Lingkup",
       "events": "Kejadian",
       "add_event": "Tambah Peristiwa",
       "type": "Tipe",
-      "triggers": "Triggers",
+      "triggers": "Pemicu",
       "conditions": "Kondisi",
       "only_inside_conversation": "Hanya ketika aku di dalam percakapan",
       "only_outside_conversation": "Hanya ketika aku di luar percakapan",
@@ -3064,12 +3064,12 @@
     }
   },
   "ui_settings_title": "Pengaturan UI",
-  "haptic_feedback_label": "Haptic Feedback",
+  "haptic_feedback_label": "Umpan balik haptik",
   "updates_title": "Pemutakhiran",
   "auto_update_check": "Periksa Perbarui Otomatis",
   "update_check_frequency_daily": "Harian",
   "update_check_frequency_weekly": "Mingguan",
-  "update_check_frequency_monthly": "Monthly",
+  "update_check_frequency_monthly": "Bulanan",
   "update_channel_stable": "Stabil",
   "update_channel_prerelease": "Lepaskan",
   "friend_notes_title": "Catatan Teman",

@@ -21,7 +21,7 @@ class FoldingLayoutMapper: AbstractClassMapper("FoldingLayoutMapper") {
 
             foldingLayoutManagerClass.methods.firstOrNull {
                 it.parameterTypes.size == 1 && it.returnType == "V" && it.implementation?.instructions?.any {
-                    ((it as? Instruction35c)?.reference as? MethodReference)?.name == "invoke"
+                    ((it as? Instruction35c)?.reference as? MethodReference)?.name == "post"
                 } == true
             }?.let { method ->
                 onLayoutCompletedMethod.set(method.name)

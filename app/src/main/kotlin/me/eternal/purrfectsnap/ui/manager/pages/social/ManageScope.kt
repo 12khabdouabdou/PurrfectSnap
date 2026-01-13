@@ -4,18 +4,23 @@ import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +51,7 @@ import me.eternal.purrfectsnap.ui.util.AlertDialogs
 import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 import me.eternal.purrfectsnap.ui.util.coil.BitmojiImage
+import me.eternal.purrfectsnap.ui.util.scaleOnPress
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -72,7 +78,7 @@ class ManageScope: Routes.Route() {
         var deleteConfirmDialog by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
 
-        val titleText by rememberAsyncMutableState<String?>(null, keys = arrayOf(id, scope)) {
+        val titleText by rememberAsyncMutableState<String?>(null, keys = arrayOf<Any>(id, scope)) {
             when (scope) {
                 SocialScope.FRIEND -> context.database.getFriendInfo(id)?.displayName
                 SocialScope.GROUP -> context.database.getGroupInfo(id)?.name
@@ -304,6 +310,61 @@ class ManageScope: Routes.Route() {
         )
     }
 
+    @Composable
+    private fun RowScope.E2eeActionButton(
+        label: String,
+        icon: ImageVector,
+        accent: Brush,
+        onClick: () -> Unit
+    ) {
+        val interactionSource = remember { MutableInteractionSource() }
+        Surface(
+            modifier = Modifier
+                .weight(1f)
+                .scaleOnPress(interactionSource)
+                .clip(RoundedCornerShape(16.dp))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null
+                ) { onClick() },
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White.copy(alpha = 0.06f),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(accent, RoundedCornerShape(10.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+                Text(
+                    text = label,
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+
     private fun computeStreakETA(timestamp: Long): String? {
         val now = System.currentTimeMillis()
         val stringBuilder = StringBuilder()
@@ -344,7 +405,6 @@ class ManageScope: Routes.Route() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 if (context.config.root.experimental.e2eEncryption.globalState == true) {
-                    SectionTitle(translation["e2ee_title"])
                     var hasSecretKey by rememberAsyncMutableState(defaultValue = false) {
                         context.e2eeImplementation.friendKeyExists(friend.userId)
                     }
@@ -378,40 +438,100 @@ class ManageScope: Routes.Route() {
                     }
 
                     ContentCard {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            if (hasSecretKey) {
-                                OutlinedButton(onClick = {
-                                    context.coroutineScope.launch {
-                                        val secretKey = Base64.encode(context.e2eeImplementation.getSharedSecretKey(friend.userId) ?: return@launch)
-                                        //TODO: fingerprint auth
-                                        context.activity!!.startActivity(Intent.createChooser(Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(Intent.EXTRA_TEXT, secretKey)
-                                            type = "text/plain"
-                                        }, "").apply {
-                                            putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(
-                                                Intent().apply {
-                                                    putExtra(Intent.EXTRA_TEXT, secretKey)
-                                                    putExtra(Intent.EXTRA_SUBJECT, secretKey)
-                                                })
-                                            )
-                                        })
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(14.dp),
+                                    color = Color.White.copy(alpha = 0.08f),
+                                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(44.dp)
+                                            .background(
+                                                Brush.linearGradient(
+                                                    listOf(
+                                                        PurrfectPalette.glowPrimary.copy(alpha = 0.5f),
+                                                        PurrfectPalette.glowSecondary.copy(alpha = 0.4f)
+                                                    )
+                                                ),
+                                                RoundedCornerShape(14.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Lock,
+                                            contentDescription = null,
+                                            tint = Color.White
+                                        )
                                     }
-                                }) {
+                                }
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
                                     Text(
-                                        text = translation["export_base64_button"],
-                                        maxLines = 1
+                                        text = translation["e2ee_title"],
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color.White,
+                                        fontSize = 16.sp
+                                    )
+                                    Text(
+                                        text = translation["e2ee_subtitle"],
+                                        color = PurrfectPalette.textSecondary,
+                                        fontSize = 12.sp
                                     )
                                 }
                             }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                if (hasSecretKey) {
+                                    E2eeActionButton(
+                                        label = translation["export_base64_button"],
+                                        icon = Icons.Filled.Lock,
+                                        accent = Brush.horizontalGradient(
+                                            listOf(
+                                                PurrfectPalette.glowPrimary.copy(alpha = 0.6f),
+                                                PurrfectPalette.glowSecondary.copy(alpha = 0.55f)
+                                            )
+                                        ),
+                                        onClick = {
+                                            context.coroutineScope.launch {
+                                                val secretKey = Base64.encode(context.e2eeImplementation.getSharedSecretKey(friend.userId) ?: return@launch)
+                                                //TODO: fingerprint auth
+                                                context.activity!!.startActivity(Intent.createChooser(Intent().apply {
+                                                    action = Intent.ACTION_SEND
+                                                    putExtra(Intent.EXTRA_TEXT, secretKey)
+                                                    type = "text/plain"
+                                                }, "").apply {
+                                                    putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(
+                                                        Intent().apply {
+                                                            putExtra(Intent.EXTRA_TEXT, secretKey)
+                                                            putExtra(Intent.EXTRA_SUBJECT, secretKey)
+                                                        })
+                                                    )
+                                                })
+                                            }
+                                        }
+                                    )
+                                }
 
-                            OutlinedButton(onClick = { importDialog = true }) {
-                                Text(
-                                    text = translation["import_base64_button"],
-                                    maxLines = 1
+                                E2eeActionButton(
+                                    label = translation["import_base64_button"],
+                                    icon = Icons.Filled.Lock,
+                                    accent = Brush.horizontalGradient(
+                                        listOf(
+                                            Color(0xFF7DD3FC),
+                                            Color(0xFF818CF8)
+                                        )
+                                    ),
+                                    onClick = { importDialog = true }
                                 )
                             }
                         }

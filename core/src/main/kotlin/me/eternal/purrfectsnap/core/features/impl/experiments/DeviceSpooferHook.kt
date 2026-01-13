@@ -21,7 +21,7 @@ class DeviceSpooferHook: Feature("Device Spoofer")  {
 
 	private fun generateAndroidId(): String {
 		if (spoofedAndroidId != null) return spoofedAndroidId!!
-		val customId = context.config.experimental.spoof.customAndroidId.getNullable()
+		val customId = context.config.experimental.spoof.spoofDeviceId.customAndroidId.getNullable()
 		if (!customId.isNullOrEmpty()) {
 			spoofedAndroidId = customId.lowercase()
 			if (!hasLoggedId) {
@@ -242,7 +242,7 @@ class DeviceSpooferHook: Feature("Device Spoofer")  {
 		val overridePlayStoreInstallerPackageName by context.config.experimental.spoof.overridePlayStoreInstallerPackageName
 		val removeVpnTransportFlag by context.config.experimental.spoof.removeVpnTransportFlag
 		val forceWifiTransportFlag by context.config.experimental.spoof.forceWifiTransportFlag
-		val spoofAndroidId by context.config.experimental.spoof.spoofAndroidId
+		val spoofAndroidId by context.config.experimental.spoof.spoofDeviceId.spoofAndroidId
 
 		if(overridePlayStoreInstallerPackageName) {
 			hookInstallerPackageName()

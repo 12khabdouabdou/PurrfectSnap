@@ -82,9 +82,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         val iconUrl = BitmojiSelfie.getBitmojiSelfie(friendInfo?.bitmojiSelfieId, friendInfo?.bitmojiAvatarId, BitmojiSelfie.BitmojiSelfieType.NEW_THREE_D)
 
         val downloadLogging by context.config.downloader.logging
-        if (downloadLogging.contains("started")) {
-            context.shortToast(translations["download_started_toast"])
-        }
 
         val outputPath = createNewFilePath(
             context.config,

@@ -486,6 +486,7 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
         val provider = ai.aiProvider.get()
         val apiKey = ai.aiApiKey.get().trim()
         val model = when (provider) {
+            "openrouter" -> ai.aiModel.get().ifBlank { "deepseek/deepseek-r1-0528:free" }
             "deepseek" -> ai.aiModel.get().ifBlank { "deepseek-chat" }
             "openai" -> ai.aiModel.get().ifBlank { "gpt-4o-mini" }
             else -> ai.aiModel.get().ifBlank { "gemini-2.5-flash" }
@@ -515,7 +516,8 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
         suspend fun makeRequest(): String = withTimeout(timeoutSec * 1000L) {
             withContext(Dispatchers.IO) {
                 when (provider) {
-                    "deepseek", "openai" -> {
+                    "openrouter", "openai", "deepseek" -> {
+
                         val payload = JsonObject().apply {
                             addProperty("model", model)
                             add("messages", JsonArray().apply {
@@ -529,51 +531,46 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
                             if (maxTokens > 0) addProperty("max_tokens", maxTokens)
                             addProperty("temperature", temp)
                         }
-                        val body = payload.toString()
-                        val apiUrl = if (provider == "openai") "https://api.openai.com/v1/chat/completions" else "https://api.deepseek.com/v1/chat/completions"
-                        val req = Request.Builder()
+
+                        val apiUrl = when (provider) {
+                            "openrouter" -> "https://openrouter.ai/api/v1/chat/completions"
+                            "openai" -> "https://api.openai.com/v1/chat/completions"
+                            else -> "https://api.deepseek.com/v1/chat/completions"
+                        }
+
+                        val reqBuilder = Request.Builder()
                             .url(apiUrl)
                             .addHeader("Authorization", "Bearer $apiKey")
                             .addHeader("Content-Type", "application/json")
-                            .post(body.toRequestBody("application/json".toMediaType()))
+
+                        if (provider == "openrouter") {
+                            reqBuilder
+                                .addHeader("HTTP-Referer", "https://purrfectsnap.app")
+                                .addHeader("X-Title", "PurrfectSnap")
+                        }
+
+                        val request = reqBuilder
+                            .post(payload.toString().toRequestBody("application/json".toMediaType()))
                             .build()
-                        httpClient.newCall(req).execute().use { resp ->
-                            val respBody = resp.body?.string().orEmpty()
-                            if (!resp.isSuccessful) throw Throwable(if (resp.code == 401) "$provider HTTP 401 (check API key)" else "$provider HTTP ${resp.code}: ${respBody.take(200)}")
-                            val json = JsonParser.parseString(respBody).asJsonObject
-                            json.getAsJsonArray("choices")?.firstOrNull()?.asJsonObject
-                                ?.getAsJsonObject("message")?.get("content")?.asString?.trim().orEmpty()
+
+                        httpClient.newCall(request).execute().use { resp ->
+                            val body = resp.body?.string().orEmpty()
+                            if (!resp.isSuccessful) {
+                                throw Throwable("AI error ${resp.code}: ${body.take(200)}")
+                            }
+
+                            JsonParser.parseString(body)
+                                .asJsonObject
+                                .getAsJsonArray("choices")
+                                ?.firstOrNull()?.asJsonObject
+                                ?.getAsJsonObject("message")
+                                ?.get("content")
+                                ?.asString
+                                ?.trim()
+                                .orEmpty()
                         }
                     }
-                    else -> {
-                        val systemPrompt = messages.firstOrNull { it.role == "system" }?.content ?: ""
-                        val userMessages = messages.filter { it.role == "user" }.joinToString("\n") { it.content }
-                        val combinedText = "$systemPrompt\n$userMessages"
-                        val payload = JsonObject().apply {
-                            val parts = JsonArray().apply {
-                                add(JsonObject().apply { addProperty("text", combinedText) })
-                            }
-                            val contents = JsonArray().apply {
-                                add(JsonObject().apply { add("parts", parts) })
-                            }
-                            add("contents", contents)
-                        }
-                        val body = payload.toString()
-                        val req = Request.Builder()
-                            .url("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent")
-                            .addHeader("x-goog-api-key", apiKey)
-                            .addHeader("Content-Type", "application/json")
-                            .post(body.toRequestBody("application/json".toMediaType()))
-                            .build()
-                        httpClient.newCall(req).execute().use { resp ->
-                            val respBody = resp.body?.string().orEmpty()
-                            if (!resp.isSuccessful) throw Throwable(if (resp.code == 401) "Gemini HTTP 401 (check API key)" else "Gemini HTTP ${resp.code}: ${respBody.take(200)}")
-                            val json = JsonParser.parseString(respBody).asJsonObject
-                            val candidates = json.getAsJsonArray("candidates")
-                            val content = candidates?.firstOrNull()?.asJsonObject?.getAsJsonObject("content")
-                            content?.getAsJsonArray("parts")?.firstOrNull()?.asJsonObject?.get("text")?.asString?.trim().orEmpty()
-                        }
-                    }
+                    else -> throw IllegalArgumentException("Unsupported AI provider: $provider")
                 }
             }
         }
@@ -650,6 +647,7 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
         val provider = ai.aiProvider.get()
         val apiKey = ai.aiApiKey.get().trim()
         val model = when (provider) {
+            "openrouter" -> ai.aiModel.get().ifBlank { "deepseek/deepseek-r1-0528:free" }
             "deepseek" -> ai.aiModel.get().ifBlank { "deepseek-chat" }
             "openai" -> ai.aiModel.get().ifBlank { "gpt-4o-mini" }
             else -> ai.aiModel.get().ifBlank { "gemini-2.5-flash" }
@@ -692,7 +690,8 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
         suspend fun makeRequest(): String = withTimeout(timeoutSec * 1000L) {
             withContext(Dispatchers.IO) {
                 when (provider) {
-                    "deepseek", "openai" -> {
+                    "openrouter", "openai", "deepseek" -> {
+
                         val payload = JsonObject().apply {
                             addProperty("model", model)
                             add("messages", JsonArray().apply {
@@ -706,51 +705,46 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
                             if (maxTokens > 0) addProperty("max_tokens", maxTokens)
                             addProperty("temperature", temp)
                         }
-                        val body = payload.toString()
-                        val apiUrl = if (provider == "openai") "https://api.openai.com/v1/chat/completions" else "https://api.deepseek.com/v1/chat/completions"
-                        val req = Request.Builder()
+
+                        val apiUrl = when (provider) {
+                            "openrouter" -> "https://openrouter.ai/api/v1/chat/completions"
+                            "openai" -> "https://api.openai.com/v1/chat/completions"
+                            else -> "https://api.deepseek.com/v1/chat/completions"
+                        }
+
+                        val reqBuilder = Request.Builder()
                             .url(apiUrl)
                             .addHeader("Authorization", "Bearer $apiKey")
                             .addHeader("Content-Type", "application/json")
-                            .post(body.toRequestBody("application/json".toMediaType()))
+
+                        if (provider == "openrouter") {
+                            reqBuilder
+                                .addHeader("HTTP-Referer", "https://purrfectsnap.app")
+                                .addHeader("X-Title", "PurrfectSnap")
+                        }
+
+                        val request = reqBuilder
+                            .post(payload.toString().toRequestBody("application/json".toMediaType()))
                             .build()
-                        httpClient.newCall(req).execute().use { resp ->
-                            val respBody = resp.body?.string().orEmpty()
-                            if (!resp.isSuccessful) throw Throwable(if (resp.code == 401) "$provider HTTP 401 (check API key)" else "$provider HTTP ${resp.code}: ${respBody.take(200)}")
-                            val json = JsonParser.parseString(respBody).asJsonObject
-                            json.getAsJsonArray("choices")?.firstOrNull()?.asJsonObject
-                                ?.getAsJsonObject("message")?.get("content")?.asString?.trim().orEmpty()
+
+                        httpClient.newCall(request).execute().use { resp ->
+                            val body = resp.body?.string().orEmpty()
+                            if (!resp.isSuccessful) {
+                                throw Throwable("AI error ${resp.code}: ${body.take(200)}")
+                            }
+
+                            JsonParser.parseString(body)
+                                .asJsonObject
+                                .getAsJsonArray("choices")
+                                ?.firstOrNull()?.asJsonObject
+                                ?.getAsJsonObject("message")
+                                ?.get("content")
+                                ?.asString
+                                ?.trim()
+                                .orEmpty()
                         }
                     }
-                    else -> {
-                        val systemPromptText = messages.firstOrNull { it.role == "system" }?.content ?: ""
-                        val userMessages = messages.filter { it.role == "user" }.joinToString("\n") { it.content }
-                        val combinedText = "$systemPromptText\n$userMessages"
-                        val payload = JsonObject().apply {
-                            val parts = JsonArray().apply {
-                                add(JsonObject().apply { addProperty("text", combinedText) })
-                            }
-                            val contents = JsonArray().apply {
-                                add(JsonObject().apply { add("parts", parts) })
-                            }
-                            add("contents", contents)
-                        }
-                        val body = payload.toString()
-                        val req = Request.Builder()
-                            .url("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent")
-                            .addHeader("x-goog-api-key", apiKey)
-                            .addHeader("Content-Type", "application/json")
-                            .post(body.toRequestBody("application/json".toMediaType()))
-                            .build()
-                        httpClient.newCall(req).execute().use { resp ->
-                            val respBody = resp.body?.string().orEmpty()
-                            if (!resp.isSuccessful) throw Throwable(if (resp.code == 401) "Gemini HTTP 401 (check API key)" else "Gemini HTTP ${resp.code}: ${respBody.take(200)}")
-                            val json = JsonParser.parseString(respBody).asJsonObject
-                            val candidates = json.getAsJsonArray("candidates")
-                            val content = candidates?.firstOrNull()?.asJsonObject?.getAsJsonObject("content")
-                            content?.getAsJsonArray("parts")?.firstOrNull()?.asJsonObject?.get("text")?.asString?.trim().orEmpty()
-                        }
-                    }
+                    else -> throw IllegalArgumentException("Unsupported AI provider: $provider")
                 }
             }
         }

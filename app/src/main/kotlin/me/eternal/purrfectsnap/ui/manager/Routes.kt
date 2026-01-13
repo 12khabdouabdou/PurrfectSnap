@@ -19,8 +19,10 @@ import me.eternal.purrfectsnap.ui.manager.pages.TasksRootSection
 import me.eternal.purrfectsnap.ui.manager.pages.features.FeaturesRootSection
 import me.eternal.purrfectsnap.ui.manager.pages.features.ManageRuleFeature
 import me.eternal.purrfectsnap.ui.manager.pages.home.HomeLogs
+import me.eternal.purrfectsnap.ui.manager.pages.home.HomeAbout
 import me.eternal.purrfectsnap.ui.manager.pages.home.HomeRootSection
 import me.eternal.purrfectsnap.ui.manager.pages.home.HomeSettings
+import me.eternal.purrfectsnap.ui.manager.pages.home.RetroGameScreen
 import me.eternal.purrfectsnap.ui.manager.pages.location.BetterLocationRoot
 import me.eternal.purrfectsnap.ui.manager.pages.scripting.ScriptingRootSection
 import me.eternal.purrfectsnap.ui.manager.pages.social.LoggedStories
@@ -67,8 +69,8 @@ class Routes(
     var friendTrackerConfigJsonForImport: String? = null
     var onRuleImported: (() -> Unit)? = null
 
-    val configImportConfirmation = route(RouteInfo(CONFIG_IMPORT_CONFIRMATION_ROUTE), me.eternal.purrfectsnap.ui.manager.pages.features.ConfigImportConfirmationScreen())
-    val configExportSummary = route(RouteInfo(CONFIG_EXPORT_SUMMARY_ROUTE), me.eternal.purrfectsnap.ui.manager.pages.features.ConfigExportSummaryScreen())
+    val configImportConfirmation = route(RouteInfo(CONFIG_IMPORT_CONFIRMATION_ROUTE, hasOwnTopBar = true), me.eternal.purrfectsnap.ui.manager.pages.features.ConfigImportConfirmationScreen())
+    val configExportSummary = route(RouteInfo(CONFIG_EXPORT_SUMMARY_ROUTE, hasOwnTopBar = true), me.eternal.purrfectsnap.ui.manager.pages.features.ConfigExportSummaryScreen())
 
     val tasks = route(RouteInfo("tasks", icon = Icons.Default.TaskAlt, primary = true, hasOwnTopBar = true), TasksRootSection())
 
@@ -76,6 +78,8 @@ class Routes(
     val manageRuleFeature = route(RouteInfo("manage_rule_feature/?rule_type={rule_type}", hasOwnTopBar = true), ManageRuleFeature()).parent(features)
 
     val home = route(RouteInfo("home", icon = Icons.Default.Home, primary = true, hasOwnTopBar = true), HomeRootSection())
+    val about = route(RouteInfo("home_about", hasOwnTopBar = true), HomeAbout()).parent(home)
+    val retroGame = route(RouteInfo("retro_game", hasOwnTopBar = true), RetroGameScreen()).parent(home)
     val settings = route(RouteInfo("home_settings", hasOwnTopBar = true), HomeSettings()).parent(home)
     val homeLogs = route(RouteInfo("home_logs", hasOwnTopBar = true), HomeLogs()).parent(home)
     val loggerHistory = route(RouteInfo("logger_history", hasOwnTopBar = true), LoggerHistoryRoot()).parent(home)
@@ -87,7 +91,7 @@ class Routes(
     val friendTrackerCatalog = route(RouteInfo("friend_tracker_catalog", hasOwnTopBar = true), FriendTrackerCatalog())
     val manageFriendTrackerRepos = route(RouteInfo("manage_friend_tracker_repos", hasOwnTopBar = true), ManageFriendTrackerReposSection())
 
-    val fileImports = route(RouteInfo("file_imports"), FileImportsRoot()).parent(home)
+    val fileImports = route(RouteInfo("file_imports", hasOwnTopBar = true), FileImportsRoot()).parent(home)
     val manageRepos = route(RouteInfo("manage_repos/?type={type}"), ManageReposSection())
 
     val social = route(RouteInfo("social", icon = Icons.Default.Group, primary = true, hasOwnTopBar = true), SocialRootSection())

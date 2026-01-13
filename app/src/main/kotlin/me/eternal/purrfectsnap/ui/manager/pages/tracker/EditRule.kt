@@ -54,6 +54,14 @@ import me.eternal.purrfectsnap.ui.manager.pages.social.AddFriendDialog
 class EditRule : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.friend_tracker") }
 
+    private data class RuleSnapshot(
+        val name: String,
+        val author: String,
+        val scopes: List<String>,
+        val events: List<TrackerRuleEvent>,
+        val scopeType: TrackerScopeType
+    )
+
     @Composable
     private fun RuleCard(
         modifier: Modifier = Modifier,
@@ -174,11 +182,11 @@ class EditRule : Routes.Route() {
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    ExposedDropdownMenuBox(
-                        expanded = expanded.value,
-                        onExpandedChange = { expanded.value = !expanded.value },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                        ExposedDropdownMenuBox(
+                            expanded = expanded.value,
+                            onExpandedChange = { expanded.value = !expanded.value },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                         val eventLabel = context.translation["tracker_events.${currentEventType.value}"]
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -186,8 +194,8 @@ class EditRule : Routes.Route() {
                         ) {
                             OutlinedTextField(
                                 modifier = Modifier
-                                    .menuAnchor()
-                                    .widthIn(min = 240.dp),
+                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                                    .wrapContentWidth(),
                                 value = eventLabel,
                                 onValueChange = {},
                                 readOnly = true,
@@ -207,7 +215,7 @@ class EditRule : Routes.Route() {
                         ExposedDropdownMenu(
                             expanded = expanded.value,
                             onDismissRequest = { expanded.value = false },
-                            modifier = Modifier.widthIn(min = 240.dp),
+                            modifier = Modifier.wrapContentWidth(),
                             containerColor = Color(0xFF121528),
                             shape = RoundedCornerShape(14.dp)
                         ) {
@@ -295,24 +303,45 @@ class EditRule : Routes.Route() {
         val authorName = rememberAsyncMutableState<String>(defaultValue = "", keys = arrayOf(currentRuleId)) {
             currentRuleId?.let { ruleId -> context.database.getTrackerRule(ruleId)?.author ?: "" } ?: ""
         }
-        val initialRuleState by remember(ruleName.value.isNotBlank() || events.isNotEmpty() || scopes.isNotEmpty()) {
-            mutableStateOf(
-                mapOf(
-                    "name" to ruleName.value,
-                    "author" to authorName.value,
-                    "scopes" to scopes.toList(),
-                    "events" to events.toList(),
-                    "scopeType" to currentScopeType
-                )
-            )
+        fun snapshotEvents() = events.map { event ->
+            event.copy(params = event.params.copy(), actions = event.actions.toList())
+        }
+        fun buildSnapshot() = RuleSnapshot(
+            name = ruleName.value,
+            author = authorName.value,
+            scopes = scopes.toList(),
+            events = snapshotEvents(),
+            scopeType = currentScopeType
+        )
+        val initialSnapshot = remember(currentRuleId) {
+            mutableStateOf<RuleSnapshot?>(if (currentRuleId == null) buildSnapshot() else null)
+        }
+        LaunchedEffect(
+            currentRuleId,
+            ruleName.value,
+            authorName.value,
+            events.size,
+            scopes.size,
+            currentScopeType
+        ) {
+            if (initialSnapshot.value == null) {
+                val hasLoaded = ruleName.value.isNotBlank() ||
+                    authorName.value.isNotBlank() ||
+                    events.isNotEmpty() ||
+                    scopes.isNotEmpty()
+                if (hasLoaded) {
+                    initialSnapshot.value = buildSnapshot()
+                }
+            }
         }
         val isDirty by remember {
             derivedStateOf {
-                initialRuleState["name"] != ruleName.value ||
-                initialRuleState["author"] != authorName.value ||
-                initialRuleState["scopes"] != scopes.toList() ||
-                initialRuleState["events"] != events.toList() ||
-                initialRuleState["scopeType"] != currentScopeType
+                val snapshot = initialSnapshot.value ?: return@derivedStateOf false
+                snapshot.name != ruleName.value ||
+                snapshot.author != authorName.value ||
+                snapshot.scopes != scopes.toList() ||
+                snapshot.events != snapshotEvents() ||
+                snapshot.scopeType != currentScopeType
             }
         }
         var deleteConfirmation by remember { mutableStateOf(false) }
@@ -426,6 +455,12 @@ class EditRule : Routes.Route() {
                                 fontSize = 12.sp
                             )
                         }
+                        if (currentRuleId != null) {
+                            IconButton(onClick = { deleteConfirmation = true }) {
+                                Icon(Icons.Default.DeleteOutline, contentDescription = translation["delete_button_description"], tint = Color.White)
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+                        }
                         IconButton(onClick = {
                             if (events.isEmpty()) {
                                 showEventsEmptyDialog = true
@@ -451,11 +486,6 @@ class EditRule : Routes.Route() {
                             context.database.setRuleTrackerScopes(ruleId, currentScopeType, scopes)
                             routes.navController.popBackStack()
                         }) { Icon(Icons.Filled.Save, contentDescription = translation["save_button_description"], tint = Color.White) }
-                        if (currentRuleId != null) {
-                            IconButton(onClick = { deleteConfirmation = true }) {
-                                Icon(Icons.Default.DeleteOutline, contentDescription = translation["delete_button_description"], tint = Color.White)
-                            }
-                        }
                     }
                 }
             }
@@ -466,9 +496,11 @@ class EditRule : Routes.Route() {
                     .background(PurrfectPalette.backgroundGradient)
                     .padding(padding)
             ) {
+                val contentBottomPadding = routes.bottomPadding + 12.dp
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(bottom = contentBottomPadding)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -477,6 +509,7 @@ class EditRule : Routes.Route() {
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
+                        val textFieldShape = RoundedCornerShape(16.dp)
                         Text(
                             translation["general_section_title"],
                             style = MaterialTheme.typography.titleMedium,
@@ -488,8 +521,11 @@ class EditRule : Routes.Route() {
                             value = ruleName.value,
                             onValueChange = { ruleName.value = it },
                             label = { Text(translation["rule_name_label"], color = PurrfectPalette.textSecondary) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 2.dp),
                             singleLine = true,
+                            shape = textFieldShape,
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.White.copy(alpha = 0.05f),
                                 unfocusedContainerColor = Color.White.copy(alpha = 0.04f),
@@ -506,8 +542,11 @@ class EditRule : Routes.Route() {
                             value = authorName.value,
                             onValueChange = { authorName.value = it },
                             label = { Text(translation["author_name_label"], color = PurrfectPalette.textSecondary) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 2.dp),
                             singleLine = true,
+                            shape = textFieldShape,
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.White.copy(alpha = 0.05f),
                                 unfocusedContainerColor = Color.White.copy(alpha = 0.04f),
@@ -640,12 +679,21 @@ class EditRule : Routes.Route() {
                                 shape = selectorShape,
                                 color = Color.Transparent,
                                 tonalElevation = 0.dp,
-                                shadowElevation = 10.dp,
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f))
+                                shadowElevation = 0.dp,
+                                border = BorderStroke(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        listOf(
+                                            PurrfectPalette.glowPrimary.copy(alpha = 0.45f),
+                                            PurrfectPalette.glowSecondary.copy(alpha = 0.38f)
+                                        )
+                                    )
+                                )
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .background(selectorBrush, selectorShape)
+                                        .clip(selectorShape)
+                                        .background(selectorBrush)
                                         .padding(horizontal = 16.dp, vertical = 12.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.Center
@@ -773,7 +821,6 @@ class EditRule : Routes.Route() {
                             }
                         }
                     }
-                    Spacer(Modifier.height(routes.bottomPadding))
                 }
             }
         }

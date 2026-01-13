@@ -1,6 +1,8 @@
 package me.eternal.purrfectsnap.core.action.impl
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -12,9 +14,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -26,25 +30,48 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import me.eternal.purrfectsnap.common.data.FriendLinkType
 import me.eternal.purrfectsnap.common.ui.createComposeAlertDialog
 import me.eternal.purrfectsnap.core.action.AbstractAction
 import me.eternal.purrfectsnap.core.event.events.impl.ActivityResultEvent
+import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
+import me.eternal.purrfectsnap.common.util.snap.RemoteMediaResolver
 import me.eternal.purrfectsnap.core.features.impl.experiments.AddFriendSourceSpoof
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
 import me.eternal.purrfectsnap.core.wrapper.impl.Snapchatter
 import kotlin.random.Random
 
 class ManageFriendList : AbstractAction() {
+    companion object {
+        private var openSuggestedOnLaunch = false
+
+        @Synchronized
+        fun requestOpenSuggestedOnLaunch() {
+            openSuggestedOnLaunch = true
+        }
+
+        @Synchronized
+        private fun consumeOpenSuggestedOnLaunch(): Boolean {
+            val shouldOpen = openSuggestedOnLaunch
+            openSuggestedOnLaunch = false
+            return shouldOpen
+        }
+    }
+
     private val translation by lazy { context.translation.getCategory("friend_list") }
     private val dialogBackground = Brush.verticalGradient(
         listOf(
@@ -216,6 +243,22 @@ class ManageFriendList : AbstractAction() {
         }
     }
 
+    private fun loadSuggestedFriends(
+        coroutineScope: CoroutineScope,
+        onLoaded: (List<String>) -> Unit
+    ) {
+        coroutineScope.launch(Dispatchers.IO) {
+            val blacklist = getUserIdBlacklist()
+            val suggestedFriends = context.database.getAllFriends()
+                .filter { it.userId !in blacklist && it.friendLinkType == FriendLinkType.SUGGESTED.value }
+                .sortedByDescending { it.addedTimestamp }
+                .mapNotNull { it.userId }
+            withContext(Dispatchers.Main) {
+                onLoaded(suggestedFriends)
+            }
+        }
+    }
+
     override fun onActivityCreate() {
         context.event.subscribe(ActivityResultEvent::class) { event ->
             if (event.requestCode == pendingPickerAction?.first) {
@@ -254,12 +297,27 @@ class ManageFriendList : AbstractAction() {
     }
 
     private val userIdToSnapchatter = mutableMapOf<String, Snapchatter>()
+    
+    private fun getUserIdBlacklist() = arrayOf(
+        context.database.myUserId,
+        "b42f1f70-5a8b-4c53-8c25-34e7ec9e6781",
+        "84ee8839-3911-492d-8b94-72dd80f3713a",
+    )
 
     @Composable
     private fun ManagerDialog() {
         val pendingFriendRequests = remember { mutableStateMapOf<String, Job>() }
         var fetchedFriends by remember { mutableStateOf<List<String>?>(null) }
         val coroutineScope = rememberCoroutineScope()
+        val openSuggestedOnLaunch = remember { consumeOpenSuggestedOnLaunch() }
+        val bitmojiCache = remember { me.eternal.purrfectsnap.core.util.EvictingMap<String, Bitmap>(50) }
+        val noBitmojiBitmap = remember { BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_report_image).asImageBitmap() }
+
+        LaunchedEffect(openSuggestedOnLaunch) {
+            if (openSuggestedOnLaunch) {
+                loadSuggestedFriends(coroutineScope) { fetchedFriends = it }
+            }
+        }
 
         Box(
             modifier = Modifier
@@ -387,8 +445,30 @@ class ManageFriendList : AbstractAction() {
                                 )
                             }
                         }
+                        PrimaryButton(
+                            text = "Load Suggested Friends",
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            loadSuggestedFriends(coroutineScope) { fetchedFriends = it }
+                        }
                     }
                 } else {
+                    var searchQuery by remember { mutableStateOf("") }
+                    
+                    val filteredFriends = remember(fetchedFriends, searchQuery) {
+                        val friends = fetchedFriends ?: emptyList()
+                        if (searchQuery.isBlank()) {
+                            friends.sortedByDescending { context.database.getFriendInfo(it)?.addedTimestamp ?: 0L }
+                        } else {
+                            friends.filter { userId ->
+                                val friendInfo = context.database.getFriendInfo(userId)
+                                friendInfo?.mutableUsername?.contains(searchQuery, ignoreCase = true) == true ||
+                                friendInfo?.displayName?.contains(searchQuery, ignoreCase = true) == true ||
+                                userId.contains(searchQuery, ignoreCase = true)
+                            }.sortedByDescending { context.database.getFriendInfo(it)?.addedTimestamp ?: 0L }
+                        }
+                    }
+                    
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -411,9 +491,10 @@ class ManageFriendList : AbstractAction() {
                                     .clickable { fetchedFriends = null },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Image(
+                                Icon(
                                     imageVector = Icons.AutoMirrored.Default.ArrowBack,
                                     contentDescription = context.translation["common.back"],
+                                    tint = Color.White,
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
@@ -427,16 +508,45 @@ class ManageFriendList : AbstractAction() {
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.ExtraBold
                                 )
-                                Text(
-                                    text = translation.get("export_description"),
-                                    color = Color(0xFFD9D3FF),
-                                    fontSize = 12.sp,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
                             }
                             Spacer(modifier = Modifier.size(46.dp))
                         }
+                        
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White.copy(alpha = 0.06f))
+                                .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            singleLine = true,
+                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 14.sp),
+                            cursorBrush = SolidColor(Color(0xFF8EF0F3)),
+                            decorationBox = { innerTextField ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Search",
+                                        tint = Color(0xFFB1B4D7),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Box(Modifier.weight(1f)) {
+                                        if (searchQuery.isEmpty()) {
+                                            BasicText(
+                                                "Search...",
+                                                style = androidx.compose.ui.text.TextStyle(color = Color(0xFFB1B4D7), fontSize = 14.sp)
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            }
+                        )
 
                         Surface(
                             modifier = Modifier
@@ -453,7 +563,7 @@ class ManageFriendList : AbstractAction() {
                                     .padding(12.dp)
                             ) {
                                 item {
-                                    if (fetchedFriends?.isEmpty() == true) {
+                                    if (filteredFriends.isEmpty()) {
                                         BasicText(
                                             context.translation["common.no_friends_found"],
                                             style = androidx.compose.ui.text.TextStyle(color = Color(0xFFA8B5D1), fontSize = 13.sp),
@@ -461,44 +571,67 @@ class ManageFriendList : AbstractAction() {
                                         )
                                     }
                                 }
-                                items(fetchedFriends ?: emptyList()) { userId ->
-                                    fun fetchLocalLinkType(): FriendLinkType? {
-                                        return context.database.getFriendInfo(userId)?.friendLinkType?.let { FriendLinkType.fromValue(it) }
+                                items(filteredFriends) { userId ->
+                                    val friendInfo = remember(userId) { context.database.getFriendInfo(userId) }
+                                    val linkType = remember(friendInfo) { 
+                                        friendInfo?.friendLinkType?.let { FriendLinkType.fromValue(it) }
                                     }
-
-                                    fun isActuallyAdded(): Boolean {
-                                        val friendInfo = context.database.getFriendInfo(userId)
-                                        return friendInfo != null && 
-                                               (friendInfo.friendLinkType == FriendLinkType.MUTUAL.value || 
-                                                friendInfo.friendLinkType == FriendLinkType.OUTGOING.value) && 
-                                               friendInfo.addedTimestamp > 0L
+                                    val isActuallyAdded = remember(friendInfo, linkType) {
+                                        friendInfo != null && linkType != null && friendInfo.addedTimestamp > 0 &&
+                                        (linkType == FriendLinkType.MUTUAL || linkType == FriendLinkType.OUTGOING)
                                     }
 
                                     var friendSnapchatter by remember(userId) { mutableStateOf<Snapchatter?>(null) }
-                                    var failedToFetch by remember(userId) { mutableStateOf(false) }
-                                    var friendLinkType by remember(userId) { mutableStateOf(fetchLocalLinkType()) }
-                                    var actuallyAdded by remember(userId) { mutableStateOf(isActuallyAdded()) }
+                                    var friendLinkType by remember(userId) { mutableStateOf(linkType) }
+                                    var actuallyAdded by remember(userId) { mutableStateOf(isActuallyAdded) }
+                                    
+                                    var bitmojiBitmap by remember(userId, friendInfo?.bitmojiAvatarId) { 
+                                        mutableStateOf(friendInfo?.bitmojiAvatarId?.let { bitmojiCache[it] }) 
+                                    }
 
                                     LaunchedEffect(userId) {
-                                        launch(Dispatchers.IO) {
-                                            friendSnapchatter = userIdToSnapchatter.getOrPut(userId) {
-                                                context.feature(Messaging::class).fetchSnapchatterInfos(listOf(userId)).firstOrNull() ?: run {
-                                                    failedToFetch = true
-                                                    return@launch
+                                        if (friendSnapchatter == null && !userIdToSnapchatter.containsKey(userId)) {
+                                            withContext(Dispatchers.IO) {
+                                                context.feature(Messaging::class).fetchSnapchatterInfos(listOf(userId)).firstOrNull()?.let {
+                                                    userIdToSnapchatter[userId] = it
+                                                    friendSnapchatter = it
                                                 }
                                             }
+                                        } else {
+                                            friendSnapchatter = userIdToSnapchatter[userId]
                                         }
                                         
-                                        // Polling loop to keep status in sync (like FriendList.kt)
                                         while (true) {
                                             delay(2000)
-                                            val newLinkType = fetchLocalLinkType()
+                                            val newLinkType = friendInfo?.friendLinkType?.let { FriendLinkType.fromValue(it) }
                                             if (newLinkType != friendLinkType) {
                                                 friendLinkType = newLinkType
                                             }
-                                            val newActuallyAdded = isActuallyAdded()
+                                            val newActuallyAdded = friendInfo != null && linkType != null && friendInfo.addedTimestamp > 0 &&
+                                                (linkType == FriendLinkType.MUTUAL || linkType == FriendLinkType.OUTGOING)
                                             if (newActuallyAdded != actuallyAdded) {
                                                 actuallyAdded = newActuallyAdded
+                                            }
+                                        }
+                                    }
+                                    
+                                    LaunchedEffect(userId, friendInfo?.bitmojiAvatarId, friendInfo?.bitmojiSelfieId) {
+                                        if (bitmojiBitmap != null || friendInfo?.bitmojiAvatarId == null || friendInfo?.bitmojiSelfieId == null) return@LaunchedEffect
+                                        
+                                        withContext(Dispatchers.IO) {
+                                            val bitmojiUrl = BitmojiSelfie.getBitmojiSelfie(
+                                                friendInfo.bitmojiSelfieId, 
+                                                friendInfo.bitmojiAvatarId, 
+                                                BitmojiSelfie.BitmojiSelfieType.NEW_THREE_D
+                                            ) ?: return@withContext
+                                            
+                                            runCatching {
+                                                RemoteMediaResolver.downloadMedia(bitmojiUrl) { inputStream, length ->
+                                                    val avatarId = friendInfo.bitmojiAvatarId ?: return@downloadMedia
+                                                    bitmojiCache[avatarId] = BitmapFactory.decodeStream(inputStream).also {
+                                                        bitmojiBitmap = it
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -511,94 +644,84 @@ class ManageFriendList : AbstractAction() {
                                             .background(Color.White.copy(alpha = 0.05f))
                                             .border(1.dp, accentGradient, RoundedCornerShape(14.dp))
                                             .padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                                     ) {
+                                        Image(
+                                            bitmap = remember(bitmojiBitmap) { bitmojiBitmap?.asImageBitmap() ?: noBitmojiBitmap },
+                                            contentDescription = null,
+                                            modifier = Modifier.size(35.dp)
+                                        )
+                                        
                                         Column(
                                             modifier = Modifier.weight(1f),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                            verticalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
-                                            BasicText(
-                                                friendSnapchatter?.let { snapchatter ->
-                                                    snapchatter.displayName?.let { "$it (${snapchatter.username}) " } ?: snapchatter.username ?: context.translation["common.unknown"]
-                                                } ?: userId,
-                                                style = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                            Text(
+                                                text = friendSnapchatter?.let { snapchatter ->
+                                                    snapchatter.displayName?.let { "$it (${snapchatter.username})" }
+                                                        ?: snapchatter.username
+                                                        ?: context.translation["common.unknown"]
+                                                } ?: context.translation["common.unknown"],
+                                                color = Color.White,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis
                                             )
-                                            BasicText(
-                                                userId,
-                                                style = androidx.compose.ui.text.TextStyle(color = Color(0xFFB1B4D7), fontSize = 12.sp)
-                                            )
-                                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
                                                 friendLinkType?.let { type ->
                                                     StatusPill(
                                                         text = type.name.lowercase().replaceFirstChar { it.uppercase() },
                                                         color = if (type == FriendLinkType.MUTUAL) Color(0xFF8EF0F3) else Color(0xFFD9D3FF)
                                                     )
                                                 }
-                                                if (failedToFetch) {
-                                                    StatusPill(
-                                                        text = translation.get("failed_to_fetch") ?: "Fetch failed",
-                                                        color = Color(0xFFF4B4B4)
-                                                    )
-                                                }
-                                            }
-                                        }
+                                                if (friendSnapchatter != null) {
+                                                    val isPending = pendingFriendRequests.containsKey(userId) && pendingFriendRequests[userId]?.isActive != false
+                                                    val isFollowing = friendLinkType == FriendLinkType.FOLLOWING
 
-                                        if (friendSnapchatter != null) {
-                                            val isPending = pendingFriendRequests.containsKey(userId) && pendingFriendRequests[userId]?.isActive != false
-                                            val isFollowing = friendLinkType == FriendLinkType.FOLLOWING
-                                            
-                                            PrimaryButton(
-                                                text = when {
-                                                    isFollowing -> "Following"
-                                                    actuallyAdded -> context.translation["common.added"]
-                                                    isPending -> translation.get("adding") ?: "Adding..."
-                                                    else -> translation.get("add")
-                                                },
-                                                modifier = Modifier.widthIn(min = 110.dp),
-                                                enabled = !actuallyAdded && !isPending && !isFollowing
-                                             ) {
-                                                if (actuallyAdded || isPending || isFollowing) return@PrimaryButton
-                                                
-                                                val job = coroutineScope.launch {
-                                                    try {
+                                                    PrimaryButton(
+                                                        text = when {
+                                                            isFollowing -> "Following"
+                                                            actuallyAdded -> context.translation["common.added"]
+                                                            isPending -> translation.get("adding") ?: "Adding..."
+                                                            else -> translation.get("add")
+                                                        },
+                                                        modifier = Modifier.widthIn(min = 110.dp),
+                                                        enabled = !actuallyAdded && !isPending && !isFollowing
+                                                    ) {
+                                                        if (actuallyAdded || isPending || isFollowing) return@PrimaryButton
+
+                                                        val prevLinkType = friendLinkType
                                                         addFriend(userId)
-                                                        delay(300)
-                                                        actuallyAdded = true
-                                                        withTimeout(3000) {
-                                                            var attempts = 0
-                                                            while (attempts < 12) {
-                                                                val currentLinkType = fetchLocalLinkType()
-                                                                if (currentLinkType == FriendLinkType.MUTUAL || 
-                                                                    currentLinkType == FriendLinkType.FOLLOWING ||
-                                                                    currentLinkType == FriendLinkType.OUTGOING) {
-                                                                    friendLinkType = currentLinkType
-                                                                    actuallyAdded = true
-                                                                    break
+                                                        val job = coroutineScope.launch {
+                                                            withTimeout(10000) {
+                                                                while (friendInfo?.friendLinkType?.let { FriendLinkType.fromValue(it) }?.value == prevLinkType?.value) {
+                                                                    delay(500)
                                                                 }
-                                                                attempts++
-                                                                delay(250)
+                                                            }
+                                                        }.apply {
+                                                            invokeOnCompletion {
+                                                                pendingFriendRequests.remove(userId)
+                                                                friendLinkType = friendInfo?.friendLinkType?.let { FriendLinkType.fromValue(it) }
+                                                                actuallyAdded = isActuallyAdded || (friendInfo != null && linkType != null && friendInfo.addedTimestamp > 0 &&
+                                                                    (linkType == FriendLinkType.MUTUAL || linkType == FriendLinkType.OUTGOING))
                                                             }
                                                         }
-                                                    } catch (e: Exception) {
-                                                        context.log.error("Failed to add friend or verify status: ${e.message}")
-                                                        actuallyAdded = true
+                                                        pendingFriendRequests[userId] = job
                                                     }
-                                                }.apply {
-                                                    invokeOnCompletion {
-                                                        pendingFriendRequests.remove(userId)
-                                                        friendLinkType = fetchLocalLinkType()
-                                                        actuallyAdded = isActuallyAdded() || actuallyAdded
+                                                    if (isPending) {
+                                                        CircularProgressIndicator(
+                                                            modifier = Modifier.size(18.dp),
+                                                            strokeWidth = 2.dp,
+                                                            color = Color(0xFF8EF0F3)
+                                                        )
                                                     }
                                                 }
-                                                pendingFriendRequests[userId] = job
-                                            }
-                                            if (isPending) {
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                CircularProgressIndicator(
-                                                    modifier = Modifier.size(18.dp),
-                                                    strokeWidth = 2.dp,
-                                                    color = Color(0xFF8EF0F3)
-                                                )
                                             }
                                         }
                                     }

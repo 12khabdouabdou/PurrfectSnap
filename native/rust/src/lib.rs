@@ -15,19 +15,17 @@ mod secstrings;
 
 use android_logger::Config;
 use log::LevelFilter;
-use modules::{composer_hook, custom_font_hook, duplex_hook, fstat_hook, linker_hook, sqlite_hook, unary_call_hook};
+use modules::{valdi_hook, custom_font_hook, duplex_hook, fstat_hook, linker_hook, sqlite_hook, unary_call_hook};
 
 use jni::{JNIEnv, JavaVM, NativeMethod};
 use jni::objects::{JObject, JString, JClass, JValue};
 use jni::sys::{jint, jstring, JNI_VERSION_1_6, jboolean, JNI_FALSE, JNI_TRUE};
-use sha2::{Digest, Sha256};
 use std::ffi::c_void;
 use std::sync::atomic::{AtomicBool, Ordering};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-static IS_VERIFIED: AtomicBool = AtomicBool::new(false);
 static TEST_MODE: AtomicBool = AtomicBool::new(false);
 static IN_LOGIN_SIGNUP: AtomicBool = AtomicBool::new(false);
 static CHECKSUMS: Lazy<Mutex<HashMap<String, u32>>> = Lazy::new(|| Mutex::new(HashMap::new()));
@@ -37,6 +35,8 @@ struct BlockerDecision {
     reason: &'static str,
     keyword: Option<String>,
     keyword_context: Option<&'static str>,
+    match_type: Option<&'static str>,
+    match_value: Option<String>,
 }
 
 #[allow(non_snake_case)]
@@ -66,11 +66,6 @@ pub extern "system" fn JNI_OnLoad(_vm: JavaVM, _: *mut c_void) -> jint {
         native_lib_class,
         &[
             NativeMethod {
-                name: "verifyKey".into(),
-                sig: "(Ljava/lang/String;)Z".into(),
-                fn_ptr: verifyKey as *mut c_void,
-            },
-            NativeMethod {
                 name: "preInit".into(),
                 sig: "()V".into(),
                 fn_ptr: pre_init as *mut c_void,
@@ -96,19 +91,19 @@ pub extern "system" fn JNI_OnLoad(_vm: JavaVM, _: *mut c_void) -> jint {
                 fn_ptr: sqlite_hook::lock_database as *mut c_void,
             },
             NativeMethod {
-                name: "setComposerLoader".into(),
+                name: "setValdiLoader".into(),
                 sig: "(Ljava/lang/String;)V".into(),
-                fn_ptr: composer_hook::set_composer_loader as *mut c_void,
-            },
-            NativeMethod {
-                name: "composerEval".into(),
-                sig: "(Ljava/lang/String;)Ljava/lang/String;".into(),
-                fn_ptr: composer_hook::composer_eval as *mut c_void,
+                fn_ptr: valdi_hook::set_valdi_loader as *mut c_void,
             },
             NativeMethod {
                 name: "evaluateEndpointNative".into(),
                 sig: "(Ljava/lang/String;Ljava/lang/String;ZLme/eternal/purrfectsnap/nativelib/NativeDecision;)V".into(),
                 fn_ptr: evaluateEndpoint as *mut c_void,
+            },
+            NativeMethod {
+                name: "evaluateNetworkRequestNative".into(),
+                sig: "(Ljava/lang/String;Lme/eternal/purrfectsnap/nativelib/NativeDecision;)V".into(),
+                fn_ptr: evaluateNetworkRequest as *mut c_void,
             },
             NativeMethod {
                 name: "shouldBlockDuplexClient".into(),
@@ -203,7 +198,7 @@ fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
     async_init!(
         duplex_hook::init(),
         unary_call_hook::init(),
-        composer_hook::init(),
+        valdi_hook::init(),
         sqlite_hook::init()
     );
     
@@ -219,114 +214,6 @@ fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
     }
 }
 
-#[allow(non_snake_case)]
-fn verifyKey(mut env: JNIEnv, _class: JClass, key: JString) -> jboolean {
-    fn bytes_to_hex(bytes: &[u8]) -> String {
-        const LUT: &[u8; 16] = b"0123456789abcdef";
-        let mut out = Vec::with_capacity(bytes.len() * 2);
-        for &b in bytes {
-            out.push(LUT[(b >> 4) as usize]);
-            out.push(LUT[(b & 0x0f) as usize]);
-        }
-        String::from_utf8_lossy(&out).into_owned()
-    }
-
-    fn normalize_hex(s: &str) -> String {
-        s.chars()
-            .filter(|c| c.is_ascii_hexdigit())
-            .map(|c| c.to_ascii_lowercase())
-            .collect()
-    }
-
-    fn get_pkg_cert_sha256_hex(env: &mut JNIEnv, pkg: &str) -> Option<String> {
-        let at = env.find_class("android/app/ActivityThread").ok()?;
-        let app_obj = env
-            .call_static_method(at, "currentApplication", "()Landroid/app/Application;", &[])
-            .ok()?
-            .l()
-            .ok()?;
-        if app_obj.is_null() {
-            return None;
-        }
-
-        let pm = env
-            .call_method(&app_obj, "getPackageManager", "()Landroid/content/pm/PackageManager;", &[])
-            .ok()?
-            .l()
-            .ok()?;
-
-        let pkg_j = env.new_string(pkg).ok()?.into();
-        let flags = 0x08000000i32; // PackageManager.GET_SIGNING_CERTIFICATES (API 28+)
-        let info = env
-            .call_method(
-                &pm,
-                "getPackageInfo",
-                "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;",
-                &[JValue::Object(&pkg_j), JValue::Int(flags)],
-            )
-            .ok()?
-            .l()
-            .ok()?;
-
-        let signing_info = env
-            .get_field(&info, "signingInfo", "Landroid/content/pm/SigningInfo;")
-            .ok()?
-            .l()
-            .ok()?;
-        if signing_info.is_null() {
-            return None;
-        }
-
-        let signers = env
-            .call_method(
-                &signing_info,
-                "getApkContentsSigners",
-                "()[Landroid/content/pm/Signature;",
-                &[],
-            )
-            .ok()?
-            .l()
-            .ok()?;
-        let signers_arr = jni::objects::JObjectArray::from(signers);
-        let first = env.get_object_array_element(&signers_arr, 0).ok()?;
-        let sig_bytes_obj = env
-            .call_method(&first, "toByteArray", "()[B", &[])
-            .ok()?
-            .l()
-            .ok()?;
-        let sig_bytes = env
-            .convert_byte_array(jni::objects::JByteArray::from(sig_bytes_obj))
-            .ok()?;
-        let digest = Sha256::digest(&sig_bytes);
-        Some(bytes_to_hex(&digest))
-    }
-
-    // Harden the check: the provided value must match the module APK signing cert SHA-256.
-    // This prevents trivial re-signing/repacking from passing verification without patching native code.
-    let expected_cert = normalize_hex(
-        &env.get_string(&key)
-            .ok()
-            .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or_default(),
-    );
-    if expected_cert.is_empty() {
-        return JNI_FALSE;
-    }
-
-    let actual_cert = get_pkg_cert_sha256_hex(&mut env, "me.eternal.purrfectsnap")
-        .map(|s| normalize_hex(&s))
-        .unwrap_or_default();
-    if actual_cert.is_empty() {
-        return JNI_FALSE;
-    }
-
-    if expected_cert == actual_cert {
-        IS_VERIFIED.store(true, Ordering::Relaxed);
-        JNI_TRUE
-    } else {
-        JNI_FALSE
-    }
-}
 
 fn find_keyword(paths: &[&str], keywords: &[String]) -> Option<String> {
     for path in paths {
@@ -347,76 +234,76 @@ fn evaluate_endpoint_logic(
     has_attestation: bool,
 ) -> BlockerDecision {
     let targets = [uri, arg0];
-    let detection_keyword = find_keyword(&targets, &config.detection_keywords);
-    let snap_security_block = targets.iter().any(|t| {
-        let lower = t.to_lowercase();
-        lower.starts_with("/snap.security") && !lower.starts_with("/snap.security.argosservice")
-    });
-    let block_convo_safety_prompt = targets.iter().any(|t| {
-        t.eq_ignore_ascii_case("/snapchat.abuse.conversationsafety.conversationsafetyservice/getconvosafetyprompt")
-    });
-    let block_convo_safety_service = targets.iter().any(|t| {
-        t.to_lowercase()
-            .starts_with("/snapchat.abuse.conversationsafety.conversationsafetyservice/")
-    });
-    let block_device_state_report = targets.iter().any(|t| {
-        t.eq_ignore_ascii_case("/snapchat.notif.devicestatereceiver/reportdevicestate")
-    });
-    if snap_security_block {
-        return BlockerDecision {
-            blocked: true,
-            reason: "snap_security_block",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if block_convo_safety_prompt {
-        return BlockerDecision {
-            blocked: true,
-            reason: "conversation_safety_prompt",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if block_convo_safety_service {
-        return BlockerDecision {
-            blocked: true,
-            reason: "conversation_safety_service",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if block_device_state_report {
-        return BlockerDecision {
-            blocked: true,
-            reason: "notif_report_device_state",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if find_keyword(&targets, &config.allowed_eps_active).is_some() {
+    if let Some(matched) = find_keyword(&targets, &config.allowed_eps_active) {
         return BlockerDecision {
             blocked: false,
             reason: "allowed_whitelist",
+            keyword: None,
+            keyword_context: None,
+            match_type: Some("allowed_whitelist"),
+            match_value: Some(matched),
+        };
+    }
+    let detection_keyword = find_keyword(&targets, &config.detection_keywords);
+    if let Some(matched) = find_keyword(&targets, &config.risk_block_list) {
+        return BlockerDecision {
+            blocked: true,
+            reason: "risk_blocklist",
             keyword: detection_keyword,
             keyword_context: None,
+            match_type: Some("risk_blocklist"),
+            match_value: Some(matched),
         };
     }
 
-    let reason = if detection_keyword.is_some() && has_attestation {
-        "allowed_attestation_keyword"
-    } else if detection_keyword.is_some() {
-        "allowed_detection_keyword"
-    } else {
-        "allowed"
-    };
+    if let Some(keyword) = detection_keyword {
+        let reason = if has_attestation {
+            "attestation+keyword"
+        } else {
+            "detection_keyword"
+        };
+        return BlockerDecision {
+            blocked: true,
+            reason,
+            keyword: Some(keyword.clone()),
+            keyword_context: None,
+            match_type: Some("detection_keyword"),
+            match_value: Some(keyword),
+        };
+    }
 
-    let blocked = false;
     BlockerDecision {
-        blocked,
-        reason,
-        keyword: detection_keyword,
+        blocked: false,
+        reason: "allowed",
+        keyword: None,
         keyword_context: None,
+        match_type: None,
+        match_value: None,
+    }
+}
+
+fn evaluate_network_request_logic(
+    config: &config::BlockerConfig,
+    url: &str,
+) -> BlockerDecision {
+    if let Some(keyword) = find_keyword(&[url], &config.detection_keywords) {
+        return BlockerDecision {
+            blocked: true,
+            reason: "detection_keyword",
+            keyword: Some(keyword.clone()),
+            keyword_context: None,
+            match_type: Some("detection_keyword"),
+            match_value: Some(keyword),
+        };
+    }
+
+    BlockerDecision {
+        blocked: false,
+        reason: "allowed",
+        keyword: None,
+        keyword_context: None,
+        match_type: None,
+        match_value: None,
     }
 }
 
@@ -426,114 +313,41 @@ fn evaluate_auth_context_logic(
     attestation_required: bool,
 ) -> BlockerDecision {
     let targets = [request_path];
-    let detection_keyword = find_keyword(&targets, &config.detection_keywords);
-    let snap_security_block = targets.iter().any(|t| {
-        let lower = t.to_lowercase();
-        lower.starts_with("/snap.security") && !lower.starts_with("/snap.security.argosservice")
-    });
-    let block_convo_safety_prompt = targets.iter().any(|t| {
-        t.eq_ignore_ascii_case("/snapchat.abuse.conversationsafety.conversationsafetyservice/getconvosafetyprompt")
-    });
-    let block_convo_safety_service = targets.iter().any(|t| {
-        t.to_lowercase()
-            .starts_with("/snapchat.abuse.conversationsafety.conversationsafetyservice/")
-    });
-    let block_device_state_report = targets.iter().any(|t| {
-        t.eq_ignore_ascii_case("/snapchat.notif.devicestatereceiver/reportdevicestate")
-    });
-    if snap_security_block {
-        return BlockerDecision {
-            blocked: true,
-            reason: "snap_security_block",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if block_convo_safety_prompt {
-        return BlockerDecision {
-            blocked: true,
-            reason: "conversation_safety_prompt",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if block_convo_safety_service {
-        return BlockerDecision {
-            blocked: true,
-            reason: "conversation_safety_service",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if block_device_state_report {
-        return BlockerDecision {
-            blocked: true,
-            reason: "notif_report_device_state",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-    if find_keyword(&targets, &config.allowed_eps_active).is_some() {
+    if let Some(matched) = find_keyword(&targets, &config.allowed_eps_active) {
         return BlockerDecision {
             blocked: false,
             reason: "allowed_whitelist",
-            keyword: detection_keyword,
-            keyword_context: None,
-        };
-    }
-
-    let reason = if detection_keyword.is_some() && attestation_required {
-        "allowed_attestation_keyword"
-    } else if detection_keyword.is_some() {
-        "allowed_detection_keyword"
-    } else {
-        "allowed"
-    };
-
-    let blocked = false;
-    BlockerDecision {
-        blocked,
-        reason,
-        keyword: detection_keyword,
-        keyword_context: None,
-    }
-}
-
-fn evaluate_api_invocation_logic(
-    config: &config::BlockerConfig,
-    method_id: &str,
-    annotations: &str,
-) -> BlockerDecision {
-    // Hard allow specific API calls regardless of keyword matches
-    const API_ALLOWLIST: &[&str] = &[
-        "com.snap.identity.network.suggestion.bqsuggestfriendhttpinterface.fetchhighavailablesuggestedfriend",
-        "com.snap.identity.network.suggestion.bqsuggestfriendhttpinterface.fetchlegacysuggestedfriend",
-    ];
-    let method_lower = method_id.to_lowercase();
-    if API_ALLOWLIST.iter().any(|m| method_lower == *m) {
-        return BlockerDecision {
-            blocked: false,
-            reason: "allowed_api_whitelist",
             keyword: None,
             keyword_context: None,
+            match_type: Some("allowed_whitelist"),
+            match_value: Some(matched),
+        };
+    }
+    let detection_keyword = find_keyword(&targets, &config.detection_keywords);
+    if let Some(matched) = find_keyword(&targets, &config.risk_block_list) {
+        return BlockerDecision {
+            blocked: true,
+            reason: "risk_blocklist",
+            keyword: detection_keyword,
+            keyword_context: None,
+            match_type: Some("risk_blocklist"),
+            match_value: Some(matched),
         };
     }
 
-    if let Some(keyword) = find_keyword(&[method_id], &config.detection_keywords) {
-        return BlockerDecision {
-            blocked: true,
-            reason: "detection_keyword",
-            keyword: Some(keyword),
-            keyword_context: Some("method"),
+    if let Some(keyword) = detection_keyword {
+        let reason = if attestation_required {
+            "attestation+keyword"
+        } else {
+            "detection_keyword"
         };
-    }
-
-    if let Some(keyword) = find_keyword(&[annotations], &config.detection_keywords) {
         return BlockerDecision {
             blocked: true,
-            reason: "detection_keyword",
-            keyword: Some(keyword),
-            keyword_context: Some("annotation"),
+            reason,
+            keyword: Some(keyword.clone()),
+            keyword_context: None,
+            match_type: Some("detection_keyword"),
+            match_value: Some(keyword),
         };
     }
 
@@ -542,6 +356,56 @@ fn evaluate_api_invocation_logic(
         reason: "allowed",
         keyword: None,
         keyword_context: None,
+        match_type: None,
+        match_value: None,
+    }
+}
+
+fn evaluate_api_invocation_logic(
+    config: &config::BlockerConfig,
+    method_id: &str,
+    annotations: &str,
+) -> BlockerDecision {
+    if let Some(matched) = find_keyword(&[method_id], &config.allowed_eps_active) {
+        return BlockerDecision {
+            blocked: false,
+            reason: "allowed_whitelist",
+            keyword: None,
+            keyword_context: None,
+            match_type: Some("allowed_whitelist"),
+            match_value: Some(matched),
+        };
+    }
+
+    if let Some(keyword) = find_keyword(&[method_id], &config.detection_keywords) {
+        return BlockerDecision {
+            blocked: true,
+            reason: "detection_keyword",
+            keyword: Some(keyword.clone()),
+            keyword_context: Some("method"),
+            match_type: Some("detection_keyword"),
+            match_value: Some(keyword),
+        };
+    }
+
+    if let Some(keyword) = find_keyword(&[annotations], &config.detection_keywords) {
+        return BlockerDecision {
+            blocked: true,
+            reason: "detection_keyword",
+            keyword: Some(keyword.clone()),
+            keyword_context: Some("annotation"),
+            match_type: Some("detection_keyword"),
+            match_value: Some(keyword),
+        };
+    }
+
+    BlockerDecision {
+        blocked: false,
+        reason: "allowed",
+        keyword: None,
+        keyword_context: None,
+        match_type: None,
+        match_value: None,
     }
 }
 
@@ -553,27 +417,54 @@ fn write_blocker_decision(env: &mut JNIEnv, decision_obj: JObject, decision: &Bl
         decision.reason,
         decision.keyword.as_deref(),
         decision.keyword_context,
+        decision.match_type,
+        decision.match_value.as_deref(),
     );
 }
 
-fn write_decision(env: &mut JNIEnv, decision: JObject, blocked: bool, reason: &str, keyword: Option<&str>, keyword_context: Option<&str>) {
+fn write_decision(
+    env: &mut JNIEnv,
+    decision: JObject,
+    blocked: bool,
+    reason: &str,
+    keyword: Option<&str>,
+    keyword_context: Option<&str>,
+    match_type: Option<&str>,
+    match_value: Option<&str>,
+) {
     let blocked_value = if blocked { JNI_TRUE } else { JNI_FALSE };
-    env.set_field(&decision, "blocked", "Z", JValue::Bool(blocked_value)).expect("failed to set blocked");
+    if let Err(err) = env.set_field(&decision, "blocked", "Z", JValue::Bool(blocked_value)) {
+        error!("failed to set blocked: {:?}", err);
+    }
 
     set_string_field(env, &decision, "reason", Some(reason));
     set_string_field(env, &decision, "keyword", keyword);
     set_string_field(env, &decision, "keywordContext", keyword_context);
+    set_string_field(env, &decision, "matchType", match_type);
+    set_string_field(env, &decision, "matchValue", match_value);
 }
 
 fn set_string_field(env: &mut JNIEnv, obj: &JObject, field: &str, value: Option<&str>) {
     if let Some(text) = value {
-        let jstring = env.new_string(text).expect("failed to alloc string");
+        let jstring = match env.new_string(text) {
+            Ok(value) => value,
+            Err(err) => {
+                error!("failed to alloc string for {}: {:?}", field, err);
+                return;
+            }
+        };
         let j_obj = JObject::from(jstring);
-        env.set_field(obj, field, "Ljava/lang/String;", JValue::Object(&j_obj)).expect("failed to set string field");
-        env.delete_local_ref(j_obj).expect("failed to delete local ref");
+        if let Err(err) = env.set_field(obj, field, "Ljava/lang/String;", JValue::Object(&j_obj)) {
+            error!("failed to set string field {}: {:?}", field, err);
+        }
+        if let Err(err) = env.delete_local_ref(j_obj) {
+            error!("failed to delete local ref for {}: {:?}", field, err);
+        }
     } else {
         let null_obj = JObject::null();
-        env.set_field(obj, field, "Ljava/lang/String;", JValue::Object(&null_obj)).expect("failed to clear string field");
+        if let Err(err) = env.set_field(obj, field, "Ljava/lang/String;", JValue::Object(&null_obj)) {
+            error!("failed to clear string field {}: {:?}", field, err);
+        }
     }
 }
 
@@ -587,13 +478,7 @@ fn evaluateEndpoint(
     decision: JObject,
 ) {
     if IN_LOGIN_SIGNUP.load(Ordering::Relaxed) {
-        write_decision(&mut env, decision, false, "allowed_login_signup", None, None);
-        return;
-    }
-    let is_verified = IS_VERIFIED.load(Ordering::Relaxed);
-    let test_mode = TEST_MODE.load(Ordering::Relaxed);
-    if !is_verified && !test_mode {
-        write_decision(&mut env, decision, false, "allowed", None, None);
+        write_decision(&mut env, decision, false, "allowed_login_signup", None, None, None, None);
         return;
     }
     let uri_str: String = env.get_string(&uri).unwrap().into();
@@ -605,17 +490,30 @@ fn evaluateEndpoint(
 }
 
 #[allow(non_snake_case)]
+fn evaluateNetworkRequest(
+    mut env: JNIEnv,
+    _class: JClass,
+    url: JString,
+    decision: JObject,
+) {
+    if IN_LOGIN_SIGNUP.load(Ordering::Relaxed) {
+        write_decision(&mut env, decision, false, "allowed_login_signup", None, None, None, None);
+        return;
+    }
+    let url_str: String = env.get_string(&url).unwrap().into();
+
+    let config = config::get_blocker_config();
+    let blocker_decision = evaluate_network_request_logic(&config, &url_str);
+    write_blocker_decision(&mut env, decision, &blocker_decision);
+}
+
+#[allow(non_snake_case)]
 fn shouldBlockDuplexClient(
     mut env: JNIEnv,
     _class: JClass,
     path: JString,
 ) -> jboolean {
     if IN_LOGIN_SIGNUP.load(Ordering::Relaxed) {
-        return JNI_FALSE;
-    }
-    let is_verified = IS_VERIFIED.load(Ordering::Relaxed);
-    let test_mode = TEST_MODE.load(Ordering::Relaxed);
-    if !is_verified && !test_mode {
         return JNI_FALSE;
     }
 
@@ -638,13 +536,7 @@ fn evaluateAuthContext(
     decision: JObject,
 ) {
     if IN_LOGIN_SIGNUP.load(Ordering::Relaxed) {
-        write_decision(&mut env, decision, false, "allowed_login_signup", None, None);
-        return;
-    }
-    let is_verified = IS_VERIFIED.load(Ordering::Relaxed);
-    let test_mode = TEST_MODE.load(Ordering::Relaxed);
-    if !is_verified && !test_mode {
-        write_decision(&mut env, decision, false, "allowed", None, None);
+        write_decision(&mut env, decision, false, "allowed_login_signup", None, None, None, None);
         return;
     }
     let request_path_str: String = env.get_string(&request_path).unwrap().into();
@@ -663,13 +555,7 @@ fn evaluateApiInvocation(
     decision: JObject,
 ) {
     if IN_LOGIN_SIGNUP.load(Ordering::Relaxed) {
-        write_decision(&mut env, decision, false, "allowed_login_signup", None, None);
-        return;
-    }
-    let is_verified = IS_VERIFIED.load(Ordering::Relaxed);
-    let test_mode = TEST_MODE.load(Ordering::Relaxed);
-    if !is_verified && !test_mode {
-        write_decision(&mut env, decision, false, "allowed", None, None);
+        write_decision(&mut env, decision, false, "allowed_login_signup", None, None, None, None);
         return;
     }
     let method_id_str: String = env.get_string(&method_id).unwrap().into();
@@ -681,9 +567,7 @@ fn evaluateApiInvocation(
 }
 
 fn run_blocker_self_test(allow_unverified: bool) -> bool {
-    if !IS_VERIFIED.load(Ordering::Relaxed) && !allow_unverified {
-        return false;
-    }
+    let _ = allow_unverified;
 
     let config = config::get_blocker_config();
     if config.allowed_eps_active.is_empty()
@@ -704,22 +588,22 @@ fn run_blocker_self_test(allow_unverified: bool) -> bool {
 
     let detection_path = format!("/self_test/{}", detection_sample);
     let detection_decision = evaluate_endpoint_logic(&config, &detection_path, "", false);
-    if detection_decision.blocked {
+    if !detection_decision.blocked {
         return false;
     }
 
     let attestation_decision = evaluate_endpoint_logic(&config, &detection_path, "", true);
-    if attestation_decision.blocked {
+    if !attestation_decision.blocked {
         return false;
     }
 
     let risk_decision = evaluate_endpoint_logic(&config, &risk_sample, "", false);
-    if risk_decision.blocked {
+    if !risk_decision.blocked {
         return false;
     }
 
     let auth_detection = evaluate_auth_context_logic(&config, &detection_path, false);
-    if auth_detection.blocked {
+    if !auth_detection.blocked {
         return false;
     }
 

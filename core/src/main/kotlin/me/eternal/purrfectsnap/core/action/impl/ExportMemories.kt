@@ -2,7 +2,9 @@ package me.eternal.purrfectsnap.core.action.impl
 
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.OpenParams
+import android.net.Uri
 import android.os.Environment
+import androidx.documentfile.provider.DocumentFile
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -100,6 +102,49 @@ class ExportMemories : AbstractAction() {
             get() = storyTitle.replace(Regex("[^a-zA-Z0-9\\s]"), "").trim().replace(Regex("\\s+"), "_")
     }
 
+    private data class ExportTarget(
+        val outputFile: File,
+        val finalize: (File) -> String
+    )
+
+    private fun resolveExportTarget(fileName: String, mimeType: String): ExportTarget {
+        val configuredFolder = context.config.downloader.saveFolder.get()?.trim().orEmpty()
+        val defaultTarget = {
+            val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+            val outputDir = documentsDir.takeIf { it.exists() || it.mkdirs() }
+                ?: context.androidContext.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+                ?: context.androidContext.filesDir
+            val outputFile = File(outputDir, fileName).also {
+                if (it.exists()) it.delete()
+            }
+            ExportTarget(outputFile) { file -> file.absolutePath }
+        }
+
+        if (configuredFolder.isBlank()) {
+            return defaultTarget()
+        }
+
+        val outputFolder = runCatching {
+            DocumentFile.fromTreeUri(context.androidContext, Uri.parse(configuredFolder))
+        }.getOrNull()
+
+        if (outputFolder == null || !outputFolder.canWrite()) {
+            return defaultTarget()
+        }
+
+        val tempFile = File(context.androidContext.cacheDir, fileName).also {
+            if (it.exists()) it.delete()
+        }
+        return ExportTarget(tempFile) { file ->
+            val outputFile = outputFolder.createFile(mimeType, fileName)
+                ?: throw IllegalStateException("Failed to create export file")
+            context.androidContext.contentResolver.openOutputStream(outputFile.uri)?.use { out ->
+                file.inputStream().use { it.copyTo(out) }
+            } ?: throw IllegalStateException("Failed to write export file")
+            outputFile.uri.toString()
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class, ExperimentalEncodingApi::class)
     private suspend fun exportMemories(
         scope: CoroutineScope = context.coroutineScope,
@@ -111,9 +156,11 @@ class ExportMemories : AbstractAction() {
     ) {
         val downloadContext = Dispatchers.IO.limitedParallelism(10)
         val writeToZipContext = Dispatchers.IO.limitedParallelism(1)
-        val outputZip = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "memories_" + System.currentTimeMillis() + ".zip").also {
-            if (it.exists()) it.delete()
-        }
+        val outputTarget = resolveExportTarget(
+            "memories_${System.currentTimeMillis()}.zip",
+            "application/zip"
+        )
+        val outputZip = outputTarget.outputFile
         val okHttpClient = OkHttpClient.Builder().build()
         val outputZipFile = withContext(Dispatchers.IO) {
             ZipOutputStream(FileOutputStream(outputZip)).apply {
@@ -249,7 +296,16 @@ class ExportMemories : AbstractAction() {
         withContext(Dispatchers.IO) {
             outputZipFile.close()
         }
-        context.longToast("Exported to ${outputZip.absolutePath}")
+        val exportedPath = runCatching { outputTarget.finalize(outputZip) }
+            .getOrElse { error ->
+                context.log.error("Failed to finalize memories export", error)
+                context.longToast("Failed to export memories")
+                return
+            }
+        if (outputZip.parentFile == context.androidContext.cacheDir) {
+            outputZip.delete()
+        }
+        context.longToast("Exported to $exportedPath")
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
