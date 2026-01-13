@@ -1,3 +1,6 @@
+## v1.1.1
+- Fix: Quick Tiles crash.
+
 ## v1.1.0
 - Fix: message preview overlap in French.
 - Fix: transparent gallery media send override dialog.
