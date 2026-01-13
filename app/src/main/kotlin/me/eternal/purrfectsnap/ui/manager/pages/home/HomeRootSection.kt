@@ -41,9 +41,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -1000,65 +997,75 @@ class HomeRootSection : Routes.Route() {
                                 }
                                 val spacing = 12.dp
                                 val gridPadding = 8.dp
-                                LazyVerticalGrid(
-                                    columns = GridCells.Adaptive(minSize = 120.dp),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(spacing),
-                                    verticalArrangement = Arrangement.spacedBy(spacing),
-                                    contentPadding = PaddingValues(gridPadding)
-                                ) {
-                                    items(selectedTiles, key = { it }) { tileName ->
-                                        val cardEntry = cards.entries.find { entry -> entry.key.first == tileName } ?: return@items
-                                        val (card, action) = cardEntry
-                                        val interactionSource = remember { MutableInteractionSource() }
-                                        Surface(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .aspectRatio(1.05f)
-                                                .scaleOnPress(interactionSource)
-                                                .clickable { action(routes) },
-                                            shape = RoundedCornerShape(18.dp),
-                                            color = Color.White.copy(alpha = 0.06f),
-                                            tonalElevation = 0.dp,
-                                            shadowElevation = 0.dp,
-                                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
-                                        ) {
-                                            Box(
-                                                Modifier
-                                                    .fillMaxSize()
-                                                    .background(
-                                                        Brush.linearGradient(
-                                                            listOf(
-                                                                PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
-                                                                PurrfectPalette.glowSecondary.copy(alpha = 0.22f)
+                                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                                    val preferredTileWidth = 100.dp
+                                    val columns = ((maxWidth + spacing) / (preferredTileWidth + spacing))
+                                        .toInt()
+                                        .coerceAtLeast(2)
+                                        .coerceAtMost(4)
+                                    val computedWidth = (maxWidth - gridPadding * 2 - spacing * (columns - 1)) / columns
+                                    val tileWidth = if (computedWidth < preferredTileWidth) computedWidth else preferredTileWidth
+                                    FlowRow(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(all = gridPadding),
+                                        horizontalArrangement = Arrangement.SpaceEvenly,
+                                        verticalArrangement = Arrangement.spacedBy(spacing),
+                                        maxItemsInEachRow = columns
+                                    ) {
+                                        selectedTiles.forEach { tileName ->
+                                            val cardEntry = cards.entries.find { entry -> entry.key.first == tileName } ?: return@forEach
+                                            val (card, action) = cardEntry
+                                            val interactionSource = remember { MutableInteractionSource() }
+                                            Surface(
+                                                modifier = Modifier
+                                                    .width(tileWidth)
+                                                    .aspectRatio(1.05f)
+                                                    .scaleOnPress(interactionSource)
+                                                    .clickable { action(routes) },
+                                                shape = RoundedCornerShape(18.dp),
+                                                color = Color.White.copy(alpha = 0.06f),
+                                                tonalElevation = 0.dp,
+                                                shadowElevation = 0.dp,
+                                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
+                                            ) {
+                                                Box(
+                                                    Modifier
+                                                        .fillMaxSize()
+                                                        .background(
+                                                            Brush.linearGradient(
+                                                                listOf(
+                                                                    PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
+                                                                    PurrfectPalette.glowSecondary.copy(alpha = 0.22f)
+                                                                )
                                                             )
                                                         )
-                                                    )
-                                                    .clipToBounds()
-                                            ) {
-                                                Column(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .padding(all = 10.dp),
-                                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                                    verticalArrangement = Arrangement.Center,
+                                                        .clipToBounds()
                                                 ) {
-                                                    Icon(
-                                                        imageVector = card.second, contentDescription = null,
-                                                        tint = Color.White,
-                                                        modifier = Modifier.size(44.dp)
-                                                    )
-                                                    Spacer(modifier = Modifier.height(8.dp))
-                                                    Text(
-                                                        text = card.first,
-                                                        lineHeight = 16.sp,
-                                                        fontSize = 13.sp,
-                                                        fontWeight = FontWeight.Bold,
-                                                        textAlign = TextAlign.Center,
-                                                        color = Color.White,
-                                                        overflow = TextOverflow.Ellipsis,
-                                                        maxLines = 2,
-                                                    )
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .fillMaxSize()
+                                                            .padding(all = 10.dp),
+                                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                                        verticalArrangement = Arrangement.Center,
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = card.second, contentDescription = null,
+                                                            tint = Color.White,
+                                                            modifier = Modifier.size(44.dp)
+                                                        )
+                                                        Spacer(modifier = Modifier.height(8.dp))
+                                                        Text(
+                                                            text = card.first,
+                                                            lineHeight = 16.sp,
+                                                            fontSize = 13.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            textAlign = TextAlign.Center,
+                                                            color = Color.White,
+                                                            overflow = TextOverflow.Ellipsis,
+                                                            maxLines = 2,
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
