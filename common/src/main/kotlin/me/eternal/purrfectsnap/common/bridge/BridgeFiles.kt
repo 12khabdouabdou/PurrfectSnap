@@ -5,8 +5,6 @@ import android.os.ParcelFileDescriptor
 import android.os.ParcelFileDescriptor.AutoCloseInputStream
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
 import me.eternal.purrfectsnap.bridge.storage.FileHandle
-import me.eternal.purrfectsnap.common.bridge.FileHandleScope.entries
-import me.eternal.purrfectsnap.common.bridge.InternalFileHandleType.entries
 import me.eternal.purrfectsnap.common.util.LazyBridgeValue
 import me.eternal.purrfectsnap.common.util.lazyBridge
 import java.io.File
@@ -94,6 +92,5 @@ open class FileHandleWrapper(
         }
     }
 }
-
 
 
