@@ -34,16 +34,27 @@ jobs:
         shell: bash
         run: echo "BUILD_TOOL_VERSION=$(ls "$ANDROID_HOME/build-tools/" | tail -n 1)" >> $GITHUB_ENV
       - name: Sign APK
-        id: sign_app
-        uses: SnapEnhance/sign-android-release@master
-        with:
-          releaseDirectory: app/build/outputs/apk/armv8/debug/
-          signingKeyBase64: ${{ secrets.PS_BASE_64 }}
-          alias: ${{ secrets.PS_RELEASE_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.PS_RELEASE_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.PS_RELEASE_KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+          SIGNING_KEY_BASE64: ${{ secrets.PS_BASE_64 }}
+          SIGNING_KEY_ALIAS: ${{ secrets.PS_RELEASE_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.PS_RELEASE_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.PS_RELEASE_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          SIGNING_DIR="app/build/outputs/apk/armv8/debug"
+          KEYSTORE_PATH="${SIGNING_DIR}/signingKey.jks"
+          echo "${SIGNING_KEY_BASE64}" | base64 -d > "${KEYSTORE_PATH}"
+          APK_INPUT=$(ls "${SIGNING_DIR}"/*.apk | head -n 1)
+          "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/zipalign" -v 4 "${APK_INPUT}" "${SIGNING_DIR}/purrfectsnap-armv8Debug-aligned.apk"
+          "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/apksigner" sign \
+            --ks "${KEYSTORE_PATH}" \
+            --ks-key-alias "${SIGNING_KEY_ALIAS}" \
+            --ks-pass "pass:${SIGNING_STORE_PASSWORD}" \
+            --key-pass "pass:${SIGNING_KEY_PASSWORD}" \
+            --ks-type JKS \
+            --out "${SIGNING_DIR}/purrfectsnap-armv8Debug-signed.apk" \
+            "${SIGNING_DIR}/purrfectsnap-armv8Debug-aligned.apk"
       - name: Get current build version
         id: version-env
         run: |
@@ -52,7 +63,7 @@ jobs:
       - name: Delete unsigned APK file and rename the signed one
         run: |
           find app/build/outputs/apk/armv8/debug/ -type f ! -name '*-signed*' -delete
-          mv ${{steps.sign_app.outputs.signedReleaseFile}} app/build/outputs/apk/armv8/debug/purrfectsnap-${{ env.version }}-armv8-${GITHUB_SHA::7}.apk
+          mv app/build/outputs/apk/armv8/debug/purrfectsnap-armv8Debug-signed.apk app/build/outputs/apk/armv8/debug/purrfectsnap-${{ env.version }}-armv8-${GITHUB_SHA::7}.apk
       - name: Upload artifact
         id: upload_apk
         uses: actions/upload-artifact@v4
@@ -86,16 +97,27 @@ jobs:
         shell: bash
         run: echo "BUILD_TOOL_VERSION=$(ls \"$ANDROID_HOME/build-tools/\" | tail -n 1)" >> $GITHUB_ENV
       - name: Sign APK
-        id: sign_app
-        uses: SnapEnhance/sign-android-release@master
-        with:
-          releaseDirectory: app/build/outputs/apk/armv7/debug/
-          signingKeyBase64: ${{ secrets.PS_BASE_64 }}
-          alias: ${{ secrets.PS_RELEASE_KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.PS_RELEASE_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.PS_RELEASE_KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+          SIGNING_KEY_BASE64: ${{ secrets.PS_BASE_64 }}
+          SIGNING_KEY_ALIAS: ${{ secrets.PS_RELEASE_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.PS_RELEASE_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.PS_RELEASE_STORE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          SIGNING_DIR="app/build/outputs/apk/armv7/debug"
+          KEYSTORE_PATH="${SIGNING_DIR}/signingKey.jks"
+          echo "${SIGNING_KEY_BASE64}" | base64 -d > "${KEYSTORE_PATH}"
+          APK_INPUT=$(ls "${SIGNING_DIR}"/*.apk | head -n 1)
+          "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/zipalign" -v 4 "${APK_INPUT}" "${SIGNING_DIR}/purrfectsnap-armv7Debug-aligned.apk"
+          "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/apksigner" sign \
+            --ks "${KEYSTORE_PATH}" \
+            --ks-key-alias "${SIGNING_KEY_ALIAS}" \
+            --ks-pass "pass:${SIGNING_STORE_PASSWORD}" \
+            --key-pass "pass:${SIGNING_KEY_PASSWORD}" \
+            --ks-type JKS \
+            --out "${SIGNING_DIR}/purrfectsnap-armv7Debug-signed.apk" \
+            "${SIGNING_DIR}/purrfectsnap-armv7Debug-aligned.apk"
       - name: Get current build version
         id: version-env
         run: |
@@ -104,7 +126,7 @@ jobs:
       - name: Delete unsigned APK file and rename the signed one
         run: |
           find app/build/outputs/apk/armv7/debug/ -type f ! -name '*-signed*' -delete
-          mv ${{steps.sign_app.outputs.signedReleaseFile}} app/build/outputs/apk/armv7/debug/purrfectsnap-${{ env.version }}-armv7-${GITHUB_SHA::7}.apk
+          mv app/build/outputs/apk/armv7/debug/purrfectsnap-armv7Debug-signed.apk app/build/outputs/apk/armv7/debug/purrfectsnap-${{ env.version }}-armv7-${GITHUB_SHA::7}.apk
       - name: Upload artifact
         id: upload_apk
         uses: actions/upload-artifact@v4
