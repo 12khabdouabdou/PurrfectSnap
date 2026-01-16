@@ -32,7 +32,10 @@ jobs:
         run: ./gradlew --configuration-cache assembleArmv8Debug
       - name: Determine the latest Build Tools version installed
         shell: bash
-        run: echo "BUILD_TOOL_VERSION=$(ls "$ANDROID_HOME/build-tools/" | tail -n 1)" >> $GITHUB_ENV
+        run: |
+          SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          echo "SDK_ROOT=${SDK_ROOT}" >> $GITHUB_ENV
+          echo "BUILD_TOOL_VERSION=$(ls "${SDK_ROOT}/build-tools/" | tail -n 1)" >> $GITHUB_ENV
       - name: Sign APK
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
@@ -103,7 +106,10 @@ jobs:
         run: ./gradlew --configuration-cache assembleArmv7Debug
       - name: Determine the latest Build Tools version installed
         shell: bash
-        run: echo "BUILD_TOOL_VERSION=$(ls \"$ANDROID_HOME/build-tools/\" | tail -n 1)" >> $GITHUB_ENV
+        run: |
+          SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          echo "SDK_ROOT=${SDK_ROOT}" >> $GITHUB_ENV
+          echo "BUILD_TOOL_VERSION=$(ls "${SDK_ROOT}/build-tools/" | tail -n 1)" >> $GITHUB_ENV
       - name: Sign APK
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
