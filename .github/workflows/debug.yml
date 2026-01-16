@@ -38,10 +38,10 @@ jobs:
         uses: SnapEnhance/sign-android-release@master
         with:
           releaseDirectory: app/build/outputs/apk/armv8/debug/
-          signingKeyBase64: ${{ secrets.JAVA_KEYSTORE_DATA }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          signingKeyBase64: ${{ secrets.PS_BASE_64 }}
+          alias: ${{ secrets.PS_RELEASE_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.PS_RELEASE_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.PS_RELEASE_KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
       - name: Get current build version
@@ -90,10 +90,10 @@ jobs:
         uses: SnapEnhance/sign-android-release@master
         with:
           releaseDirectory: app/build/outputs/apk/armv7/debug/
-          signingKeyBase64: ${{ secrets.JAVA_KEYSTORE_DATA }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          signingKeyBase64: ${{ secrets.PS_BASE_64 }}
+          alias: ${{ secrets.PS_RELEASE_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.PS_RELEASE_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.PS_RELEASE_KEY_PASSWORD }}
         env:
           BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
       - name: Get current build version
