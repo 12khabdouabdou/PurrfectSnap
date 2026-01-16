@@ -18,7 +18,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.FolderOpen
-import androidx.compose.material.icons.filled.Rule
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.filled.FileOpen
@@ -466,7 +466,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.Rule, contentDescription = null, tint = Color.White)
+                                    Icon(Icons.AutoMirrored.Filled.Rule, contentDescription = null, tint = Color.White)
                                 }
                             }
                             Column(

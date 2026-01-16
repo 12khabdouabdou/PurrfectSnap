@@ -155,26 +155,3 @@ jobs:
         with:
           name: purrfectsnap-armv7-debug
           path: app/build/outputs/apk/armv7/debug/*.apk
-  make_prerelease:
-    needs: [job_armv7, job_armv8]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./all-apks
-      - name: Display all files for debug
-        run: find ./all-apks
-      - name: Set up GitHub CLI
-        run: |
-          sudo apt-get install -y gh
-      - name: Create Debug Prerelease with all APKs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION="debug-${{ github.run_id }}-${{ github.sha }}"
-          TITLE="Debug CI $VERSION"
-          NOTE="Auto-generated debug prerelease including all APKs from jobs."
-          APKLIST=$(find ./all-apks -type f -name '*.apk' | tr '\n' ' ')
-          echo "APKS: $APKLIST"
-          gh release create "$VERSION" $APKLIST --repo ${{ github.repository }} --title "$TITLE" --notes "$NOTE" --prerelease

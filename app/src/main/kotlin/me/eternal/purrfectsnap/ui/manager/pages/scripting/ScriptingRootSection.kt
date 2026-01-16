@@ -417,7 +417,7 @@ class ScriptingRootSection : Routes.Route() {
                     )
                 }
                 if (openSettings) {
-                    Divider(color = Color.White.copy(alpha = 0.08f))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
                     ScriptSettings(script)
                 }
             }

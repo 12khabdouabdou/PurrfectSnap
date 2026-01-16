@@ -11,10 +11,11 @@ class RefreshFriendSuggestions : Feature("Refresh Friend Suggestions") {
             listOf("m34803a", "mo81d").forEach { methodName ->
                 runCatching {
                     findClass(className).hook(methodName, HookStage.AFTER) { param ->
-                        (param.getResult() as? MutableMap<String, String>)?.apply {
-                            put("_t", System.currentTimeMillis().toString())
-                            put("limit", "100")
-                        }
+                        val result = param.getResult()
+                        val updated = (result as? Map<*, *>)?.toMutableMap() ?: return@hook
+                        updated["_t"] = System.currentTimeMillis().toString()
+                        updated["limit"] = "100"
+                        param.setResult(updated)
                     }
                 }.onFailure {}
             }
