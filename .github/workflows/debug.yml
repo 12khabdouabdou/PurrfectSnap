@@ -44,7 +44,15 @@ jobs:
           set -euo pipefail
           SIGNING_DIR="app/build/outputs/apk/armv8/debug"
           KEYSTORE_PATH="${SIGNING_DIR}/signingKey.jks"
-          echo "${SIGNING_KEY_BASE64}" | base64 -d > "${KEYSTORE_PATH}"
+          if [ -z "${SIGNING_KEY_BASE64}" ] || [ -z "${SIGNING_KEY_ALIAS}" ] || [ -z "${SIGNING_STORE_PASSWORD}" ] || [ -z "${SIGNING_KEY_PASSWORD}" ]; then
+            echo "Signing secrets are missing. Ensure PS_BASE_64, PS_RELEASE_KEY_ALIAS, PS_RELEASE_STORE_PASSWORD, PS_RELEASE_KEY_PASSWORD are set." >&2
+            exit 1
+          fi
+          printf '%s' "${SIGNING_KEY_BASE64}" | base64 --decode > "${KEYSTORE_PATH}"
+          if [ ! -s "${KEYSTORE_PATH}" ]; then
+            echo "Decoded keystore is empty or invalid." >&2
+            exit 1
+          fi
           APK_INPUT=$(ls "${SIGNING_DIR}"/*.apk | head -n 1)
           "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/zipalign" -v 4 "${APK_INPUT}" "${SIGNING_DIR}/purrfectsnap-armv8Debug-aligned.apk"
           "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/apksigner" sign \
@@ -107,7 +115,15 @@ jobs:
           set -euo pipefail
           SIGNING_DIR="app/build/outputs/apk/armv7/debug"
           KEYSTORE_PATH="${SIGNING_DIR}/signingKey.jks"
-          echo "${SIGNING_KEY_BASE64}" | base64 -d > "${KEYSTORE_PATH}"
+          if [ -z "${SIGNING_KEY_BASE64}" ] || [ -z "${SIGNING_KEY_ALIAS}" ] || [ -z "${SIGNING_STORE_PASSWORD}" ] || [ -z "${SIGNING_KEY_PASSWORD}" ]; then
+            echo "Signing secrets are missing. Ensure PS_BASE_64, PS_RELEASE_KEY_ALIAS, PS_RELEASE_STORE_PASSWORD, PS_RELEASE_KEY_PASSWORD are set." >&2
+            exit 1
+          fi
+          printf '%s' "${SIGNING_KEY_BASE64}" | base64 --decode > "${KEYSTORE_PATH}"
+          if [ ! -s "${KEYSTORE_PATH}" ]; then
+            echo "Decoded keystore is empty or invalid." >&2
+            exit 1
+          fi
           APK_INPUT=$(ls "${SIGNING_DIR}"/*.apk | head -n 1)
           "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/zipalign" -v 4 "${APK_INPUT}" "${SIGNING_DIR}/purrfectsnap-armv7Debug-aligned.apk"
           "${ANDROID_HOME}/build-tools/${BUILD_TOOLS_VERSION}/apksigner" sign \
