@@ -185,7 +185,8 @@ class MappingsScreen : SetupScreen() {
                 if (isGenerating) return@launch
                 isGenerating = true
                 runCatching {
-                    if (context.installationSummary.snapchatInfo == null) {
+                    context.mappings.init(context.androidContext)
+                    if (context.mappings.getSnapchatPackageInfo() == null) {
                         throw Exception(context.translation["setup.mappings.generate_failure_no_snapchat"])
                     }
                     val warnings = context.mappings.refresh()
