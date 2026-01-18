@@ -1,4 +1,10 @@
 ## v1.1.2
+- Fix: mappings error
+- Fix: armv7 failed to initialize error
+- New: Feature to record both sides while call recording(upstream commit)
+- Fix: Various Android 9 issues
+
+## v1.1.1
 - Fix: Quick Tiles crash.
 
 ## v1.1.0
