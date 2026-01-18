@@ -7,6 +7,7 @@ import android.content.res.Resources
 import android.os.Build
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
+import java.lang.reflect.Method
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,6 +50,8 @@ class PurrfectSnap {
     }
     private lateinit var appContext: ModContext
     private var isBridgeInitialized = false
+    private var android9ValdiBindDisabled = false
+    private var android9ValdiBindDisableLogged = false
 
     private fun hookMainActivity(methodName: String, stage: HookStage = HookStage.AFTER, block: Activity.(param: HookAdapter) -> Unit) {
         Activity::class.java.hook(methodName, stage, { isBridgeInitialized }) { param ->
@@ -156,6 +159,7 @@ class PurrfectSnap {
             }
 
             reloadConfig()
+            installAndroid9ValdiBindGuard()
             initNative()
             initWidgetListener()
             scope.launch(Dispatchers.IO) {
@@ -241,6 +245,89 @@ class PurrfectSnap {
             }
         }.also { time ->
             appContext.log.verbose("onActivityCreate took $time")
+        }
+    }
+
+    private fun installAndroid9ValdiBindGuard() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return
+        val valdiNativeBridge = runCatching {
+            classLoader.loadClass("com.snapchat.client.valdi.NativeBridge")
+        }.getOrNull()
+        val targetClasses = listOf("AXj", "NZj", "MZj")
+            .mapNotNull { className ->
+                runCatching { classLoader.loadClass(className) }.getOrNull()
+            }
+            .distinct()
+        if (targetClasses.isEmpty()) return
+        fun defaultReturn(type: Class<*>): Any? = when (type) {
+            Boolean::class.javaPrimitiveType -> false
+            Byte::class.javaPrimitiveType -> 0.toByte()
+            Short::class.javaPrimitiveType -> 0.toShort()
+            Int::class.javaPrimitiveType -> 0
+            Long::class.javaPrimitiveType -> 0L
+            Float::class.javaPrimitiveType -> 0f
+            Double::class.javaPrimitiveType -> 0.0
+            Char::class.javaPrimitiveType -> 0.toChar()
+            Void.TYPE -> null
+            else -> null
+        }
+
+        fun installGuard(targetClass: Class<*>, methodName: String) {
+            targetClass.hook(methodName, HookStage.BEFORE) { param ->
+                val method = param.method() as? Method ?: return@hook
+                if (android9ValdiBindDisabled) {
+                    if (!android9ValdiBindDisableLogged) {
+                        android9ValdiBindDisableLogged = true
+                        appContext.log.warn("Skipping Valdi bind on Android 9 due to missing native impl")
+                    }
+                    param.setResult(defaultReturn(method.returnType))
+                    return@hook
+                }
+                runCatching {
+                    param.invokeOriginal()
+                }.onSuccess { result ->
+                    param.setResult(result)
+                }.onFailure { throwable ->
+                    val rootCause = throwable.cause ?: throwable
+                    val message = rootCause.message ?: throwable.message
+                    val isMissingNativeImpl = rootCause is UnsatisfiedLinkError &&
+                        message?.contains("NativeBridge.createContext") == true
+                    val isValdiContextNpe = rootCause is NullPointerException &&
+                        message?.contains("ValdiContext") == true
+                    if (isMissingNativeImpl || isValdiContextNpe) {
+                        android9ValdiBindDisabled = true
+                        if (!android9ValdiBindDisableLogged) {
+                            android9ValdiBindDisableLogged = true
+                            appContext.log.warn("Skipping Valdi bind on Android 9 due to missing native impl")
+                            if (isMissingNativeImpl) {
+                                appContext.log.error("Android 9 Valdi NativeBridge.createContext missing native impl", rootCause)
+                            }
+                        }
+                        param.setResult(defaultReturn(method.returnType))
+                        return@hook
+                    }
+                    appContext.log.error("Android 9 Valdi bind hook failed", throwable)
+                    param.setResult(defaultReturn(method.returnType))
+                }
+            }
+        }
+
+        targetClasses.forEach { targetClass ->
+            installGuard(targetClass, "f")
+            installGuard(targetClass, "g2")
+            installGuard(targetClass, "n2")
+            installGuard(targetClass, "d")
+        }
+
+        valdiNativeBridge?.hook("createContext", HookStage.AFTER) { param ->
+            val throwable = param.throwable() as? UnsatisfiedLinkError ?: return@hook
+            android9ValdiBindDisabled = true
+            if (!android9ValdiBindDisableLogged) {
+                android9ValdiBindDisableLogged = true
+                appContext.log.warn("Skipping Valdi bind on Android 9 due to missing native impl")
+                appContext.log.error("Android 9 Valdi NativeBridge.createContext missing native impl", throwable)
+            }
+            param.setResult(null)
         }
     }
 

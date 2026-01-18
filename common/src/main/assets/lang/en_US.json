@@ -765,6 +765,10 @@
                         "name": "Auto Download Voice Notes",
                         "description": "Automatically downloads voice notes when playing them"
                     },
+                    "call_recorder": {
+                        "name": "Call Recorder",
+                        "description": "Automatically records audio calls"
+                    },
                     "download_profile_pictures": {
                         "name": "Download Profile Pictures",
                         "description": "Allows you to download Profile Pictures from the profile page"
@@ -1814,10 +1818,6 @@
                         "name": "Story Logger",
                         "description": "Provides a history of friends stories"
                     },
-                    "call_recorder": {
-                        "name": "Call Recorder",
-                        "description": "Automatically records audio calls"
-                    },
                     "account_switcher": {
                         "name": "Account Switcher",
                         "description": "Allows you to switch between accounts without logging out\nLong press on the search icon next to your Bitmoji profile to open the menu\nNote: This feature is experimental and will likely change in the future",
@@ -2142,6 +2142,11 @@
                 "front": "Front Camera",
                 "back": "Back Camera",
                 "null": "Remember last used"
+            },
+            "call_recorder": {
+                "only_record_self": "Only Record Self",
+                "only_record_others": "Only Record Others",
+                "record_both": "Record Both Sides"
             },
             "front_custom_frame_rate": {
                 "null": "Device default FPS"

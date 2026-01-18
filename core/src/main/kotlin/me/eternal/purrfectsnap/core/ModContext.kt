@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.Process
@@ -161,7 +162,8 @@ class ModContext(
             NativeConfig(
                 disableBitmoji = config.experimental.nativeHooks.disableBitmoji.get(),
                 disableMetrics = config.global.disableMetrics.get(),
-                valdiHooks = config.experimental.nativeHooks.valdiHooks.globalState == true,
+                valdiHooks = config.experimental.nativeHooks.valdiHooks.globalState == true &&
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
                 customEmojiFontPath = getCustomEmojiFontPath(this)
             )
         )

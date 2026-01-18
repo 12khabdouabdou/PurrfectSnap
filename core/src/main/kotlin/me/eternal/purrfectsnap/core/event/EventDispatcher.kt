@@ -5,6 +5,7 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.os.Build
 import me.eternal.purrfectsnap.common.util.snap.SnapWidgetBroadcastReceiverHelper
 import me.eternal.purrfectsnap.core.ModContext
 import me.eternal.purrfectsnap.core.event.events.impl.*
@@ -27,6 +28,10 @@ class EventDispatcher(
     private val context: ModContext
 ) {
     private fun hookViewBinder() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            context.log.warn("BindViewEvent hooks disabled on Android 9 and below")
+            return
+        }
         context.mappings.useMapper(ViewBinderMapper::class) {
             val cachedHooks = mutableListOf<String>()
             fun cacheHook(clazz: Class<*>, block: Class<*>.() -> Unit) {

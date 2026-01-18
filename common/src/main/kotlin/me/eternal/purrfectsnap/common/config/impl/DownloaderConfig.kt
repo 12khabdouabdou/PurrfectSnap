@@ -50,4 +50,5 @@ class DownloaderConfig : ConfigContainer() {
         set(mutableListOf("success", "progress", "failure"))
     }
     val customPathFormat = string("custom_path_format") { addNotices(FeatureNotice.UNSTABLE) }
+    val callRecorder = unique("call_recorder", "only_record_self", "only_record_others", "record_both") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
 }

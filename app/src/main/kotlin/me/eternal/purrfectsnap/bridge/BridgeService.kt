@@ -7,6 +7,7 @@ import android.os.ParcelFileDescriptor
 import kotlinx.coroutines.runBlocking
 import me.eternal.purrfectsnap.RemoteSideContext
 import me.eternal.purrfectsnap.SharedContextHolder
+import me.eternal.purrfectsnap.bridge.call.CallDownloadSession
 import me.eternal.purrfectsnap.bridge.snapclient.MessagingBridge
 import me.eternal.purrfectsnap.common.data.MessagingFriendInfo
 import me.eternal.purrfectsnap.common.data.MessagingGroupInfo
@@ -16,6 +17,7 @@ import me.eternal.purrfectsnap.common.ui.OverlayType
 import me.eternal.purrfectsnap.common.util.toParcelable
 import me.eternal.purrfectsnap.download.DownloadProcessor
 import me.eternal.purrfectsnap.download.FFMpegProcessor
+import me.eternal.purrfectsnap.download.call.CallDownloadSessionImpl
 import me.eternal.purrfectsnap.storage.*
 import me.eternal.purrfectsnap.task.Task
 import me.eternal.purrfectsnap.task.TaskType
@@ -247,6 +249,17 @@ class BridgeService : Service() {
 
         override fun getDebugProp(key: String, defaultValue: String?): String? {
             return remoteSideContext.sharedPreferences.all["debug_$key"]?.toString() ?: defaultValue
+        }
+
+        override fun startCallDownload(
+            startTimestamp: Long,
+            author: String
+        ): CallDownloadSession {
+            return CallDownloadSessionImpl(
+                context = remoteSideContext,
+                callStartTimestamp = startTimestamp,
+                author = author
+            )
         }
     }
 }

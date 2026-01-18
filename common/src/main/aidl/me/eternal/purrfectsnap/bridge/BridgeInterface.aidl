@@ -12,6 +12,7 @@ import me.eternal.purrfectsnap.bridge.snapclient.MessagingBridge;
 import me.eternal.purrfectsnap.bridge.AccountStorage;
 import me.eternal.purrfectsnap.bridge.storage.FileHandleManager;
 import me.eternal.purrfectsnap.bridge.location.LocationManager;
+import me.eternal.purrfectsnap.bridge.call.CallDownloadSession;
 import me.eternal.purrfectsnap.bridge.task.TaskInterface;
 
 interface BridgeInterface {
@@ -105,4 +106,6 @@ interface BridgeInterface {
     oneway void registerConfigStateListener(in ConfigStateListener listener);
 
     @nullable String getDebugProp(String key, @nullable String defaultValue);
+
+    CallDownloadSession startCallDownload(long startTimestamp, String author);
 }

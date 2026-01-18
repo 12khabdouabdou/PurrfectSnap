@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import android.os.Build
 import me.eternal.purrfectsnap.common.bridge.FileHandleScope
 import me.eternal.purrfectsnap.common.bridge.toWrapper
 import me.eternal.purrfectsnap.common.ui.createComposeAlertDialog
@@ -113,6 +114,10 @@ class ValdiHooks: Feature("ValdiHooks") {
     @Suppress("UNCHECKED_CAST")
     override fun init() {
         if (config.globalState != true) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            context.log.warn("ValdiHooks disabled on Android 9 and below")
+            return
+        }
 
         if (PurrfectSnap.classCache.valdiFunction == null) {
             context.log.warn("ComposerFunction/ValdiFunction class not found, ValdiHooks feature disabled")

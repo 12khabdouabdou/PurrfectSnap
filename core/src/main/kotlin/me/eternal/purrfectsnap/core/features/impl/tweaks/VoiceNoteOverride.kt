@@ -1,5 +1,6 @@
 package me.eternal.purrfectsnap.core.features.impl.tweaks
 
+import android.os.Build
 import android.view.ViewGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ class VoiceNoteOverride: Feature("Voice Note Override") {
 
         val playbackMap = sortedMapOf<Long, Any>()
         val classLoader = context.androidContext.classLoader
+        var valdiCreateContextWarned = false
 
         fun tryFallbackCreateContext(param: HookAdapter): Any? {
             val fallbackClass = runCatching {
@@ -149,6 +151,17 @@ class VoiceNoteOverride: Feature("Voice Note Override") {
 
         PurrfectSnap.classCache.nativeBridge.hook("createContext", HookStage.AFTER) { param ->
             val throwable = param.throwable() as? UnsatisfiedLinkError ?: return@hook
+            val isAndroid9OrBelow = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
+            val isValdiBridge = PurrfectSnap.classCache.nativeBridge.name == "com.snapchat.client.valdi.NativeBridge"
+            if (isAndroid9OrBelow && isValdiBridge) {
+                if (!valdiCreateContextWarned) {
+                    valdiCreateContextWarned = true
+                    context.log.warn("NativeBridge.createContext missing native impl on Android 9; skipping fallback")
+                }
+                param.clearThrowable()
+                param.setResult(null)
+                return@hook
+            }
             context.log.error("NativeBridge.createContext missing native impl; attempting fallback", throwable)
             val fallback = tryFallbackCreateContext(param)
             param.setResult(fallback)

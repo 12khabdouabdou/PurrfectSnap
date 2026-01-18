@@ -1,6 +1,7 @@
 package me.eternal.purrfectsnap.nativelib
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import java.io.File
 import kotlin.math.absoluteValue
@@ -15,40 +16,52 @@ class NativeLib {
             private set
         private var libraryLoaded = false
 
-        private fun findNativeLibraryDir(): File? {
+        private fun findNativeLibraryDirs(): List<File> {
             val app = runCatching {
                 val cls = Class.forName("android.app.ActivityThread")
                 val method = cls.getMethod("currentApplication")
                 method.invoke(null) as? android.app.Application
-            }.getOrNull() ?: return null
-            val dir = app.applicationInfo.nativeLibraryDir ?: return null
-            return File(dir)
+            }.getOrNull() ?: return emptyList()
+
+            val dirs = mutableListOf<File>()
+            val moduleDir = runCatching {
+                app.createPackageContext(BuildConfig.MODULE_PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY)
+                    .applicationInfo.nativeLibraryDir
+            }.getOrNull()
+            moduleDir?.let { dirs.add(File(it)) }
+
+            app.applicationInfo.nativeLibraryDir?.let { dirs.add(File(it)) }
+
+            return dirs.distinctBy { it.absolutePath }
         }
 
         private fun tryLoadFromNativeDir(): Boolean {
-            val dir = findNativeLibraryDir() ?: return false
-            if (!dir.isDirectory) return false
+            val dirs = findNativeLibraryDirs().filter { it.isDirectory }
+            if (dirs.isEmpty()) return false
 
-            val candidates = listOf(
-                "lib${BuildConfig.NATIVE_NAME}.so",
-                "libpurrfectsnap.so"
-            ).map { File(dir, it) }
+            for (dir in dirs) {
+                val candidates = listOf(
+                    "lib${BuildConfig.NATIVE_NAME}.so",
+                    "libpurrfectsnap.so"
+                ).map { File(dir, it) }
 
-            val fallback = dir.listFiles()?.firstOrNull { it.name.startsWith("lib") && it.name.endsWith(".so") && it.name.contains("purrfectsnap") }
+                val fallback = dir.listFiles()
+                    ?.firstOrNull { it.name.startsWith("lib") && it.name.endsWith(".so") && it.name.contains("purrfectsnap") }
 
-            val ordered = buildList<File> {
-                addAll(candidates)
-                fallback?.let { if (!contains(it)) add(it) }
-            }
+                val ordered = buildList<File> {
+                    addAll(candidates)
+                    fallback?.let { if (!contains(it)) add(it) }
+                }
 
-            for (file in ordered) {
-                if (!file.exists()) continue
-                val ok = runCatching {
-                    System.load(file.absolutePath)
-                    libraryLoaded = true
-                    true
-                }.getOrDefault(false)
-                if (ok) return true
+                for (file in ordered) {
+                    if (!file.exists()) continue
+                    val ok = runCatching {
+                        System.load(file.absolutePath)
+                        libraryLoaded = true
+                        true
+                    }.getOrDefault(false)
+                    if (ok) return true
+                }
             }
             return false
         }

@@ -103,12 +103,23 @@ val nativeAbisProp = (findProperty("nativeAbis") as? String)
     ?.takeIf { it.isNotBlank() }
     ?: System.getenv("NATIVE_ABIS")
     ?: "arm64-v8a,armeabi-v7a"
-val enabledNativeAbis = nativeAbisProp
+var enabledNativeAbis = nativeAbisProp
     .split(',', ';')
     .map { it.trim() }
     .filter { it.isNotEmpty() }
     .toSet()
     .ifEmpty { setOf("arm64-v8a", "armeabi-v7a") }
+
+val requestedTasks = gradle.startParameter.taskNames.joinToString(" ")
+val wantsArmv7 = requestedTasks.contains("armv7", ignoreCase = true)
+val wantsArmv8 = requestedTasks.contains("armv8", ignoreCase = true)
+if (wantsArmv7 && !wantsArmv8) {
+    enabledNativeAbis = setOf("armeabi-v7a")
+} else if (wantsArmv8 && !wantsArmv7) {
+    enabledNativeAbis = setOf("arm64-v8a")
+} else if (wantsArmv7 && wantsArmv8) {
+    enabledNativeAbis = enabledNativeAbis + setOf("armeabi-v7a", "arm64-v8a")
+}
 
 val cargoTargets = listOf(
     CargoTarget(
@@ -247,17 +258,16 @@ val syncTasks = cargoTargets.mapIndexed { index, target ->
         inputs.property("outputLibName", outputLibName)
         val wslCandidate = File(wslStagingDir, "native/rust/target/${target.triple}/release/libpurrfectsnap.so")
         val localCandidate = layout.projectDirectory.file("rust/target/${target.triple}/release/libpurrfectsnap.so").asFile
-        val sourceLibProvider = providers.provider {
-            if (wslCandidate.exists()) wslCandidate else localCandidate
-        }
-        from(sourceLibProvider) {
+        val sourceLibs = files(wslCandidate, localCandidate)
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        from(sourceLibs) {
             rename { outputLibName }
         }
-        from(sourceLibProvider) {
+        from(sourceLibs) {
             rename { "libpurrfectsnap.so" }
         }
         into(layout.buildDirectory.dir("rustJniLibs/android/${target.abi}"))
-        inputs.files(sourceLibProvider)
+        inputs.files(sourceLibs)
         val checksumsDir = layout.buildDirectory.dir("checksums")
         doLast {
             val file = File(destinationDir, outputLibName)
@@ -313,6 +323,7 @@ android {
 
     defaultConfig {
         buildConfigField("String", "NATIVE_NAME", "\"$nativeBuildHash\".toString()")
+        buildConfigField("String", "MODULE_PACKAGE_NAME", "\"${rootProject.ext["applicationId"]}\"")
         minSdk = 28
     }
 
