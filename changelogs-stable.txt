@@ -1,4 +1,5 @@
 ## v1.1.2
+- New: Chat Wallpaper Download(upstream commit)
 - Fix: mappings error
 - Fix: armv7 failed to initialize error
 - New: Feature to record both sides while call recording(upstream commit)
