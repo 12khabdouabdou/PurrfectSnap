@@ -33,8 +33,8 @@ tasks.register<GetVersionTask>("getVersion") {
 }
 
 // You can still set these for legacy use by submodules or scripts:
-rootProject.ext.set("appVersionName", providers.gradleProperty("APP_VERSION_NAME").orElse("1.1.0").get())
-rootProject.ext.set("appVersionCode", providers.gradleProperty("APP_VERSION_CODE").orElse("1").get().toInt())
+rootProject.ext.set("appVersionName", providers.gradleProperty("APP_VERSION_NAME").orElse("1.1.2").get())
+rootProject.ext.set("appVersionCode", providers.gradleProperty("APP_VERSION_CODE").orElse("252").get().toInt())
 rootProject.ext.set("applicationId", "me.eternal.purrfectsnap")
 rootProject.ext.set(
     "buildHash",

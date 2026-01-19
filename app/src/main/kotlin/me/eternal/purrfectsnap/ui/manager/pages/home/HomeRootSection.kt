@@ -1169,15 +1169,17 @@ class HomeRootSection : Routes.Route() {
 private fun extractChangelogForVersion(raw: String, version: String): String {
     val lines = raw.lines()
     val headerRegex = Regex("^\\s*#+\\s*v?${Regex.escape(version)}\\b", RegexOption.IGNORE_CASE)
-    var collecting = false
     val collected = mutableListOf<String>()
-    lines.forEach { line ->
-        if (headerRegex.containsMatchIn(line)) {
-            collecting = true
-            return@forEach
+    var collecting = false
+    for (line in lines) {
+        if (!collecting) {
+            if (headerRegex.containsMatchIn(line)) {
+                collecting = true
+            }
+            continue
         }
-        if (collecting && line.startsWith("#")) return@forEach
-        if (collecting) collected.add(line)
+        if (line.trimStart().startsWith("#")) break
+        collected.add(line)
     }
     return collected.joinToString("\n").trim()
 }
