@@ -24,8 +24,6 @@ jobs:
           cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Setup NPM Dependencies
-        run: npm install typescript@5.5.4 -g
       - name: Add Android targets for Rust
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
       - name: Build
@@ -98,8 +96,6 @@ jobs:
           cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Setup NPM Dependencies
-        run: npm install typescript@5.5.4 -g
       - name: Add Android targets for Rust
         run: rustup target add armv7-linux-androideabi aarch64-linux-android
       - name: Build

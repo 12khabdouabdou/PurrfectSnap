@@ -17,3 +17,4 @@ cloudflare/**/allowed-codes.local.*
 cloudflare/**/allowed_codes.local.*
 security/allowed-codes.local.*
 security/allowed_codes.local.*
+valdi/node_modules/
