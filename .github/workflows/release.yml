@@ -98,7 +98,7 @@ jobs:
       - name: Delete unsigned APK file and rename the signed one
         run: |
           find app/build/outputs/apk/armv8/release/ -type f ! -name '*-signed*' -delete
-          mv app/build/outputs/apk/armv8/release/purrfectsnap-armv8Release-signed.apk app/build/outputs/apk/armv8/release/purrfectsnap-${{ env.version }}-armv8-${GITHUB_SHA::7}.apk
+          mv app/build/outputs/apk/armv8/release/purrfectsnap-armv8Release-signed.apk app/build/outputs/apk/armv8/release/purrfectsnap_${{ env.version }}-armv8Release.apk
       - name: Upload artifact
         id: upload_apk
         uses: actions/upload-artifact@v4
@@ -196,7 +196,7 @@ jobs:
       - name: Delete unsigned APK file and rename the signed one
         run: |
           find app/build/outputs/apk/armv7/release/ -type f ! -name '*-signed*' -delete
-          mv app/build/outputs/apk/armv7/release/purrfectsnap-armv7Release-signed.apk app/build/outputs/apk/armv7/release/purrfectsnap-${{ env.version }}-armv7-${GITHUB_SHA::7}.apk
+          mv app/build/outputs/apk/armv7/release/purrfectsnap-armv7Release-signed.apk app/build/outputs/apk/armv7/release/purrfectsnap_${{ env.version }}-armv7Release.apk
       - name: Upload artifact
         id: upload_apk
         uses: actions/upload-artifact@v4
