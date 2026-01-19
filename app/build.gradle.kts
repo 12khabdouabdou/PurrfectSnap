@@ -157,7 +157,12 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles += file("proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+            val releaseStore = File(System.getProperty("user.home"), ".android/purrfectsnap-release.keystore")
+            val releaseStorePass = providers.gradleProperty("PS_RELEASE_STORE_PASSWORD").orNull
+            val releaseKeyAlias = providers.gradleProperty("PS_RELEASE_KEY_ALIAS").orNull
+            if (releaseStore.exists() && !releaseStorePass.isNullOrBlank() && !releaseKeyAlias.isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             (properties["debug_flavor"] == null).also {

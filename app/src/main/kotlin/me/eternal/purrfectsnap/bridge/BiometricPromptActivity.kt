@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.eternal.purrfectsnap.bridge
 
 import android.content.Intent
