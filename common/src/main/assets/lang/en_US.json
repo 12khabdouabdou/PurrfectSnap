@@ -769,6 +769,10 @@
                         "name": "Call Recorder",
                         "description": "Automatically records audio calls"
                     },
+                    "chat_wallpaper_downloader": {
+                        "name": "Chat Wallpaper Downloader",
+                        "description": "Allows you to download chat wallpapers from the profile page"
+                    },
                     "download_profile_pictures": {
                         "name": "Download Profile Pictures",
                         "description": "Allows you to download Profile Pictures from the profile page"
@@ -2515,7 +2519,8 @@
         "story_logger": "Story Logger",
         "message_logger": "Message Logger",
         "merged": "Merged",
-        "voice_call": "Voice Call"
+        "voice_call": "Voice Call",
+        "chat_wallpaper": "Chat Wallpaper"
     },
     "chat_action_menu": {
         "preview_button": "Preview",
@@ -2523,6 +2528,10 @@
         "delete_logged_message_button": "Delete Logged Message",
         "show_chat_edit_history": "Show Chat Edit History",
         "convert_message": "Convert Message"
+    },
+
+    "chat_wallpaper_downloader": {
+        "download_button": "Download Chat Wallpaper"
     },
     "opera_context_menu": {
         "download": "Download Media",

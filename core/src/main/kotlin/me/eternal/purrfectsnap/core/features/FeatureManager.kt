@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import me.eternal.purrfectsnap.core.ModContext
 import me.eternal.purrfectsnap.core.features.impl.*
 import me.eternal.purrfectsnap.core.features.impl.downloader.CallRecorder
+import me.eternal.purrfectsnap.core.features.impl.downloader.ChatWallpaperDownloader
 import me.eternal.purrfectsnap.core.features.impl.downloader.MediaDownloader
 import me.eternal.purrfectsnap.core.features.impl.downloader.ProfilePictureDownloader
 import me.eternal.purrfectsnap.core.features.impl.experiments.*
@@ -128,6 +129,7 @@ class FeatureManager(
             FriendTracker(),
             DefaultVolumeControls(),
             CallRecorder(),
+            ChatWallpaperDownloader(),
             DisableMemoriesSnapFeed(),
             AccountSwitcher(),
             RemoveGroupsLockedStatus(),
