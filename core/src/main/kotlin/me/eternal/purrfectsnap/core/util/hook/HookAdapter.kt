@@ -50,6 +50,10 @@ class HookAdapter(
         methodHookParam.throwable = throwable
     }
 
+    fun clearThrowable() {
+        methodHookParam.throwable = null
+    }
+
     fun throwable(): Throwable? {
         return methodHookParam.throwable
     }
