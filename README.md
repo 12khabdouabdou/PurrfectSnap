@@ -393,8 +393,7 @@ Hundreds of refinements you'll feel but might not see. Smoother animations. Fast
 ## Installation
 
 The guide is no longer needed! 
-For Non rooted users: Just Download & Install PurrfectSnap from [here](https://github.com/particle-box/PurrfectSnap/releases), and it'll do everything automatically for you!
-For rooted users: Use Snapchat v13.64.0.52 only! Install PurrfectSnap from here: [Link](https://github.com/particle-box/PurrfectSnap/releases)
+Just Download & Install PurrfectSnap from [here](https://github.com/particle-box/PurrfectSnap/releases), and it'll do everything automatically for you!
 
 <br>
 
