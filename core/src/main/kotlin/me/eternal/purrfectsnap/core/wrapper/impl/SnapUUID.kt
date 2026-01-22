@@ -1,6 +1,6 @@
 package me.eternal.purrfectsnap.core.wrapper.impl
 
-import me.eternal.purrfectsnap.core.purrfectsnap
+import me.eternal.purrfectsnap.core.PurrfectSnap
 import me.eternal.purrfectsnap.core.util.ktx.getObjectField
 import me.eternal.purrfectsnap.core.wrapper.AbstractWrapper
 import java.nio.ByteBuffer
@@ -29,10 +29,10 @@ class SnapUUID(
                 obj
             }
             obj is UUID -> obj.toBytes()
-            purrfectsnap.classCache.snapUUID.isInstance(obj) -> {
+            PurrfectSnap.classCache.snapUUID.isInstance(obj) -> {
                 obj?.getObjectField("mId") as ByteArray
             }
-            purrfectsnap.classCache.snapShimsUUID?.isInstance(obj) == true -> {
+            PurrfectSnap.classCache.snapShimsUUID?.isInstance(obj) == true -> {
                 val any = obj as Any
                 runCatching { any.javaClass.getMethod("getId").invoke(any) as ByteArray }.getOrElse {
                     any.getObjectField("mId") as ByteArray
@@ -46,7 +46,7 @@ class SnapUUID(
 
     override var instance: Any?
         set(_) {}
-        get() = purrfectsnap.classCache.snapUUID.getConstructor(ByteArray::class.java).newInstance(uuidBytes)
+        get() = PurrfectSnap.classCache.snapUUID.getConstructor(ByteArray::class.java).newInstance(uuidBytes)
 
     override fun toString(): String {
         return uuidString

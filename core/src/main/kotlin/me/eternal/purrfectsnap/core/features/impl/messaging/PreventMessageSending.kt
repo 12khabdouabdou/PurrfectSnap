@@ -47,13 +47,18 @@ class PreventMessageSending : Feature("Prevent message sending") {
 
         arrayOf(NativeUnaryCallEvent::class, UnaryCallEvent::class).forEach { eventClass ->
             context.event.subscribe(eventClass) { event ->
-                val uri = if (event is NativeUnaryCallEvent) event.uri else (event as UnaryCallEvent).uri
+                val unaryEvent = when (event) {
+                    is NativeUnaryCallEvent -> event
+                    is UnaryCallEvent -> event
+                    else -> return@subscribe
+                }
+                val uri = unaryEvent.uri
                 if (!uri.startsWith("/messagingcoreservice.MessagingCoreService/")) return@subscribe
 
-                if (handleCreateContentMessage(uri, event.buffer)) {
-                    event.canceled = true
+                if (handleCreateContentMessage(uri, unaryEvent.buffer)) {
+                    unaryEvent.canceled = true
                 }
-                handleUpdateContentMessage(uri, event.buffer)?.let { event.buffer = it }
+                handleUpdateContentMessage(uri, unaryEvent.buffer)?.let { unaryEvent.buffer = it }
             }
         }
 
