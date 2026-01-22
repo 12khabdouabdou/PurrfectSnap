@@ -279,7 +279,9 @@ class HomeRootSection : Routes.Route() {
                     text = label,
                     color = Color.White,
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -312,9 +314,9 @@ class HomeRootSection : Routes.Route() {
             label = context.translation["manager.routes.home_logs"]
         ) { routes.homeLogs.navigate() }
         TopBarActionChip(
-            icon = Icons.Filled.Settings,
-            label = context.translation["manager.routes.home_settings"]
-        ) { routes.settings.navigate() }
+            icon = Icons.Filled.Info,
+            label = "About"
+        ) { routes.about.navigate() }
     }
 
 
@@ -1188,8 +1190,6 @@ class HomeRootSection : Routes.Route() {
                 icon = Icons.Filled.Info,
                 confirmButtonText = "Close",
                 onConfirm = { showAnnouncementsDialog = false },
-                dismissButtonText = "Dismiss",
-                onDismiss = { showAnnouncementsDialog = false },
                 confirmEnabled = !announcementsLoading,
                 customContent = {
                     Column(

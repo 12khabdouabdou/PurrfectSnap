@@ -1,4 +1,4 @@
-## v1.1.2
+## v1.2.0
 - New: Chat Wallpaper Download(upstream commit) 
 - Fix: mappings error
 - Fix: armv7 failed to initialize error
