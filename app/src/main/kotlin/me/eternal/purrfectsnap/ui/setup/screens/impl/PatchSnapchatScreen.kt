@@ -339,7 +339,7 @@ class PatchSnapchatScreen : SetupScreen() {
                             textAlign = TextAlign.Start
                         )
                         Text(
-                            text = "Fix: Download and install JingMatrix LSPatch, then patch Snapchat 13.64.0.52 in Integrated mode. Select Embed Modules and embed the PurrfectSnap APK. Then choose Skip auto setup during PurrfectSnap setup to skip Auto Patcher.",
+                            text = "Fix: Download and install JingMatrix LSPatch, then patch Snapchat 13.65.1.0 to 13.71.0.51 in Integrated mode. Select Embed Modules and embed the PurrfectSnap APK. Then choose Skip auto setup during PurrfectSnap setup to skip Auto Patcher.",
                             style = bodyStyle,
                             textAlign = TextAlign.Start
                         )

@@ -27,6 +27,7 @@ sha2 = "0.10"
 zip = "0.6.6"
 base64 = "0.22.1"
 ed25519-dalek = { version = "2.1.1", default-features = true, features = ["std"] }
+goblin = "0.10.4"
 
 [build-dependencies]
 cc = "1.0"

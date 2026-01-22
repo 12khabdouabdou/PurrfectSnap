@@ -3,11 +3,11 @@ extern crate log;
 
 mod common;
 
-mod hook;
-mod util;
-mod mapped_lib;
 mod config;
+mod hook;
+mod mapped_lib;
 mod sig;
+mod util;
 
 mod modules;
 mod security;
@@ -15,7 +15,10 @@ mod secstrings;
 
 use android_logger::Config;
 use log::LevelFilter;
-use modules::{valdi_hook, custom_font_hook, duplex_hook, fstat_hook, linker_hook, sqlite_hook, unary_call_hook};
+use modules::{
+    custom_font_hook, duplex_hook, fstat_hook, linker_hook, sqlite_hook, unary_call_hook,
+    valdi_hook,
+};
 
 use jni::{JNIEnv, JavaVM, NativeMethod};
 use jni::objects::{JObject, JString, JClass, JValue};
@@ -166,10 +169,11 @@ fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
     let start_time = std::time::Instant::now();
 
     // load signature cache
-    
+
     if !signature_cache.is_null() {
-        let sig_cache_str = util::get_jni_string(&mut env, signature_cache).expect("Failed to convert mappings to string");
-        
+        let sig_cache_str = util::get_jni_string(&mut env, signature_cache)
+            .expect("Failed to convert mappings to string");
+
         if let Ok(signature_cache) = serde_json::from_str(sig_cache_str.as_str()) {
             sig::add_signatures(signature_cache);
         } else {
@@ -177,7 +181,11 @@ fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
         }
     }
 
-    common::set_native_lib_instance(env.new_global_ref(_class).ok().expect("Failed to create global ref"));
+    common::set_native_lib_instance(
+        env.new_global_ref(_class)
+            .ok()
+            .expect("Failed to create global ref"),
+    );
 
     let _ = common::CLIENT_MODULE;
 

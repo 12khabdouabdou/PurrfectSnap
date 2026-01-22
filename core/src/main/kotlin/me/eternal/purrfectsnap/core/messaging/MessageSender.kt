@@ -94,6 +94,7 @@ class MessageSender(
             it.conversations = conversations.toCollection(ArrayList())
             it.mPhoneNumbers = arrayListOf<Any>()
             it.stories = arrayListOf<Any>()
+            it.massSnaps = arrayListOf<Any>()
         }
 
         sendMessageWithContentMethod.invoke(context.feature(Messaging::class).conversationManager?.instanceNonNull(), messageDestinations.instanceNonNull(), localMessageContent, callback)

@@ -149,6 +149,7 @@ class HomeRootSection : Routes.Route() {
     private val changelogClient by lazy { OkHttpClient() }
     private val changelogStableUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-stable.txt"
     private val changelogPrereleaseUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-prerelease.txt"
+    private val announcementsUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/announcements.txt"
 
     private val heroGradientColors = listOf(
         Color(0xFF5C4B99),
@@ -748,6 +749,10 @@ class HomeRootSection : Routes.Route() {
         var changelogError by remember { mutableStateOf<String?>(null) }
         var changelogText by remember { mutableStateOf<String?>(null) }
         var changelogVersion by remember { mutableStateOf<String?>(null) }
+        var showAnnouncementsDialog by remember { mutableStateOf(false) }
+        var announcementsLoading by remember { mutableStateOf(false) }
+        var announcementsError by remember { mutableStateOf<String?>(null) }
+        var announcementsText by remember { mutableStateOf<String?>(null) }
 
         val handleUpdateAction: () -> Unit = {
             latestUpdate?.let { latest ->
@@ -827,6 +832,31 @@ class HomeRootSection : Routes.Route() {
             }
         }
 
+        fun loadAnnouncements() {
+            if (announcementsText != null) return
+            announcementsLoading = true
+            announcementsError = null
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching {
+                    changelogClient.newCall(Request.Builder().url(announcementsUrl).build()).execute().use { response ->
+                        if (!response.isSuccessful) throw IllegalStateException("Failed to fetch announcements (${response.code})")
+                        val body = response.body?.string() ?: throw IllegalStateException("Empty announcements body")
+                        body.trim()
+                    }
+                }.onSuccess { text ->
+                    withContext(Dispatchers.Main) {
+                        announcementsText = text
+                        announcementsLoading = false
+                    }
+                }.onFailure { error ->
+                    withContext(Dispatchers.Main) {
+                        announcementsError = error.message ?: "Failed to load announcements"
+                        announcementsLoading = false
+                    }
+                }
+            }
+        }
+
         val onUpdateButtonClick: () -> Unit = {
             latestUpdate?.let {
                 showChangelogDialog = true
@@ -859,6 +889,13 @@ class HomeRootSection : Routes.Route() {
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    TopBarActionChip(
+                        icon = Icons.Filled.Info,
+                        label = "Announcements"
+                    ) {
+                        showAnnouncementsDialog = true
+                        loadAnnouncements()
+                    }
                     Spacer(modifier = Modifier.weight(1f))
                     HomeActionChips()
                 }
@@ -1139,6 +1176,68 @@ class HomeRootSection : Routes.Route() {
                         }
                     }
                 }
+                }
+            )
+        }
+
+        if (showAnnouncementsDialog) {
+            AestheticDialog(
+                onDismissRequest = { showAnnouncementsDialog = false },
+                title = "Announcements",
+                text = "",
+                icon = Icons.Filled.Info,
+                confirmButtonText = "Close",
+                onConfirm = { showAnnouncementsDialog = false },
+                dismissButtonText = "Dismiss",
+                onDismiss = { showAnnouncementsDialog = false },
+                confirmEnabled = !announcementsLoading,
+                customContent = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 120.dp, max = 340.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        when {
+                            announcementsLoading -> {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(28.dp),
+                                        strokeWidth = 3.dp,
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "Loading announcements...",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+
+                            announcementsError != null -> {
+                                Text(
+                                    text = announcementsError ?: "Failed to load announcements",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+                            else -> {
+                                Text(
+                                    text = announcementsText ?: "Announcements not available",
+                                    color = PurrfectPalette.textPrimary,
+                                    fontSize = 14.sp,
+                                    lineHeight = 20.sp
+                                )
+                            }
+                        }
+                    }
                 }
             )
         }
