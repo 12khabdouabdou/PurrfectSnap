@@ -45,21 +45,24 @@ class PreventMessageSending : Feature("Prevent message sending") {
             return false
         }
 
-        arrayOf(NativeUnaryCallEvent::class, UnaryCallEvent::class).forEach { eventClass ->
-            context.event.subscribe(eventClass) { event ->
-                val unaryEvent = when (event) {
-                    is NativeUnaryCallEvent -> event
-                    is UnaryCallEvent -> event
-                    else -> return@subscribe
-                }
-                val uri = unaryEvent.uri
-                if (!uri.startsWith("/messagingcoreservice.MessagingCoreService/")) return@subscribe
+        context.event.subscribe(NativeUnaryCallEvent::class) { event ->
+            val uri = event.uri
+            if (!uri.startsWith("/messagingcoreservice.MessagingCoreService/")) return@subscribe
 
-                if (handleCreateContentMessage(uri, unaryEvent.buffer)) {
-                    unaryEvent.canceled = true
-                }
-                handleUpdateContentMessage(uri, unaryEvent.buffer)?.let { unaryEvent.buffer = it }
+            if (handleCreateContentMessage(uri, event.buffer)) {
+                event.canceled = true
             }
+            handleUpdateContentMessage(uri, event.buffer)?.let { event.buffer = it }
+        }
+
+        context.event.subscribe(UnaryCallEvent::class) { event ->
+            val uri = event.uri
+            if (!uri.startsWith("/messagingcoreservice.MessagingCoreService/")) return@subscribe
+
+            if (handleCreateContentMessage(uri, event.buffer)) {
+                event.canceled = true
+            }
+            handleUpdateContentMessage(uri, event.buffer)?.let { event.buffer = it }
         }
 
         context.classCache.conversationManager.hook("updateMessage", HookStage.BEFORE) { param ->
