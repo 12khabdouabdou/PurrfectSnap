@@ -95,6 +95,7 @@ class BiometricPromptActivity: ComponentActivity() {
         setContent {}
     }
 
+    @Deprecated("Overrides deprecated API onActivityResult")
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
