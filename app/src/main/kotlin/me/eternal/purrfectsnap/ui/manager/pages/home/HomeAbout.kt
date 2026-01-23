@@ -31,6 +31,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
@@ -79,6 +80,10 @@ class HomeAbout : Routes.Route() {
         val tapTimeoutMs = 1500L
         val tapCount = remember { mutableIntStateOf(0) }
         val lastTapTime = remember { mutableLongStateOf(0L) }
+
+        LaunchedEffect(Unit) {
+            context.shortToast("Tap 5 times in this screen to see some magic 😉!")
+        }
 
         Box(
             modifier = Modifier

@@ -43,12 +43,7 @@ pub struct ValdiModule {
 impl ValdiModule {
     pub fn parse(buffer: Vec<u8>) -> Result<ValdiModule, Error> {
         let mut offset = 0;
-        let magic = u32::from_be_bytes([
-            buffer[offset],
-            buffer[offset + 1],
-            buffer[offset + 2],
-            buffer[offset + 3],
-        ]);
+        let magic = u32::from_be_bytes([buffer[offset], buffer[offset + 1], buffer[offset + 2], buffer[offset + 3]]);
 
         offset += 4;
 
@@ -90,12 +85,13 @@ impl ValdiModule {
             tags.push(ModuleTag::new(has_padding, tag_buffer));
         }
 
-        let tags = tags
-            .chunks(2)
-            .map(|chunk| (chunk[0].clone(), chunk[1].clone()))
-            .collect();
+        let tags = tags.chunks(2).map(|chunk| {
+            (chunk[0].clone(), chunk[1].clone())
+        }).collect();
 
-        Ok(ValdiModule { tags })
+        Ok(ValdiModule {
+            tags,
+        })
     }
 
     pub fn to_bytes(&self) -> Vec<u8> {

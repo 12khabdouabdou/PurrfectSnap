@@ -61,18 +61,8 @@ pub fn find_signatures(module_base: usize, bytes_buffer: &[u8], pattern: &str, o
     let mut mask = Vec::new();
     let mut i = 0;
 
-    if let Some(cache) = SIGNATURE_CACHE
-        .lock()
-        .unwrap()
-        .iter()
-        .find(|(sig, _)| sig == pattern)
-    {
-        return cache
-            .1
-            .clone()
-            .into_iter()
-            .map(|offset| module_base + offset)
-            .collect();
+    if let Some(cache) = SIGNATURE_CACHE.lock().unwrap().iter().find(|(sig, _)| sig == pattern) {
+        return cache.1.clone().into_iter().map(|offset| module_base + offset).collect();
     }
 
     while i < pattern.len() {
@@ -80,7 +70,7 @@ pub fn find_signatures(module_base: usize, bytes_buffer: &[u8], pattern: &str, o
             bytes.push(0);
             mask.push('?');
         } else {
-            bytes.push(u8::from_str_radix(&pattern[i..i + 2], 16).unwrap());
+            bytes.push(u8::from_str_radix(&pattern[i..i+2], 16).unwrap());
             mask.push('x');
         }
         i += 3;
@@ -102,10 +92,7 @@ pub fn find_signatures(module_base: usize, bytes_buffer: &[u8], pattern: &str, o
         }
         if found {
             if once {
-                SIGNATURE_CACHE
-                    .lock()
-                    .unwrap()
-                    .push((pattern.to_string(), vec![i]));
+                SIGNATURE_CACHE.lock().unwrap().push((pattern.to_string(), vec![i]));
                 return vec![module_base + i];
             }
             results.push(module_base + i);
@@ -113,22 +100,14 @@ pub fn find_signatures(module_base: usize, bytes_buffer: &[u8], pattern: &str, o
         i += 1;
     }
 
-    SIGNATURE_CACHE
-        .lock()
-        .unwrap()
-        .push((pattern.to_string(), results.clone()));
+    SIGNATURE_CACHE.lock().unwrap().push((pattern.to_string(), results.clone()));
     results
 }
 
 pub fn find_signature_executable(mapped_lib: &MappedLib, pattern: &str) -> Option<usize> {
-    let executable_regions = mapped_lib
-        .regions
-        .iter()
-        .filter(|region| {
-            region.perms.contains(MMPermissions::EXECUTE)
-                && region.perms.contains(MMPermissions::READ)
-        })
-        .collect::<Vec<_>>();
+    let executable_regions = mapped_lib.regions.iter().filter(|region| {
+        region.perms.contains(MMPermissions::EXECUTE)
+    }).collect::<Vec<_>>();
 
     for region in executable_regions {
         let size = (region.end - region.start) as usize;
@@ -138,27 +117,16 @@ pub fn find_signature_executable(mapped_lib: &MappedLib, pattern: &str) -> Optio
             let bytes_buffer = match read_region_bytes(module_base, size) {
                 Some(buffer) => buffer,
                 None => {
-                    warn!(
-                        "Unable to read executable region: {:#x} - {:#x}",
-                        region.start, region.end
-                    );
+                    warn!("Unable to read executable region: {:#x} - {:#x}", region.start, region.end);
                     continue;
                 }
             };
             let results = find_signatures(module_base, &bytes_buffer, pattern, true);
 
             if results.is_empty() {
-                warn!(
-                    "Signature not found in region: {:#x} - {:#x}",
-                    region.start, region.end
-                );
+                warn!("Signature not found in region: {:#x} - {:#x}", region.start, region.end);
             } else {
-                debug!(
-                    "Found {} results in region: {:#x} - {:#x}",
-                    results.len(),
-                    region.start,
-                    region.end
-                );
+                debug!("Found {} results in region: {:#x} - {:#x}", results.len(), region.start, region.end);
                 return Some(results[0]);
             }
         }
@@ -167,21 +135,13 @@ pub fn find_signature_executable(mapped_lib: &MappedLib, pattern: &str) -> Optio
     None
 }
 
-pub fn find_signature(
-    mapped_lib: &MappedLib,
-    _arm64_pattern: &str,
-    _arm64_offset: i64,
-    _arm32_pattern: &str,
-    _arm32_offset: i64,
-) -> Option<usize> {
+pub fn find_signature(mapped_lib: &MappedLib, _arm64_pattern: &str, _arm64_offset: i64, _arm32_pattern: &str, _arm32_offset: i64) -> Option<usize> {
     #[cfg(target_arch = "aarch64")]
     {
-        return find_signature_executable(mapped_lib, _arm64_pattern)
-            .map(|address| (address as i64 + _arm64_offset) as usize);
+        return find_signature_executable(mapped_lib, _arm64_pattern).map(|address| (address as i64 + _arm64_offset) as usize);
     }
     #[cfg(target_arch = "arm")]
     {
-        return find_signature_executable(mapped_lib, _arm32_pattern)
-            .map(|address| (address as i64 + _arm32_offset) as usize);
+        return find_signature_executable(mapped_lib, _arm32_pattern).map(|address| (address as i64 + _arm32_offset) as usize);
     }
 }

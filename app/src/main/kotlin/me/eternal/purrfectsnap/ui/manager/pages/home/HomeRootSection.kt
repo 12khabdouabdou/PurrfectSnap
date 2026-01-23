@@ -54,6 +54,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Widgets
@@ -258,7 +259,8 @@ class HomeRootSection : Routes.Route() {
     @Composable
     private fun TopBarActionChip(
         icon: ImageVector,
-        label: String,
+        label: String? = null,
+        contentDescription: String? = label,
         onClick: () -> Unit,
     ) {
         Surface(
@@ -274,15 +276,17 @@ class HomeRootSection : Routes.Route() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(icon, contentDescription = label, tint = Color.White)
-                Text(
-                    text = label,
-                    color = Color.White,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Icon(icon, contentDescription = contentDescription, tint = Color.White)
+                label?.let {
+                    Text(
+                        text = it,
+                        color = Color.White,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
     }
@@ -888,18 +892,29 @@ class HomeRootSection : Routes.Route() {
                         .fillMaxWidth()
                         .padding(WindowInsets.statusBars.asPaddingValues())
                         .padding(horizontal = cardMargin, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TopBarActionChip(
-                        icon = Icons.Filled.Info,
-                        label = "Announcements"
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        showAnnouncementsDialog = true
-                        loadAnnouncements()
+                        TopBarActionChip(
+                            icon = Icons.Filled.Notifications,
+                            label = null,
+                            contentDescription = "Announcements"
+                        ) {
+                            showAnnouncementsDialog = true
+                            loadAnnouncements()
+                        }
                     }
-                    Spacer(modifier = Modifier.weight(1f))
-                    HomeActionChips()
+                    Row(
+                        modifier = Modifier.wrapContentWidth(Alignment.End),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HomeActionChips()
+                    }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 HeroSection(

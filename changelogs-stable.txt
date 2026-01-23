@@ -1,3 +1,10 @@
+## v1.2.0
+- Fix: Prevent snap replay/missed audio voice call(thanks to RSR)
+- Fix: Various messaging fixes for newer snap versions(thanks to RSR)
+- New: Announcements feature(directly view important announcements right through the app!)
+- Fix: Missing about page
+- Fix: incorrect snap version instructions
+
 ## v1.1.2
 - New: Chat Wallpaper Download(upstream commit) 
 - Fix: mappings error
