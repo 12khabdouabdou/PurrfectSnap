@@ -159,6 +159,63 @@ class SendOverride : Feature("Send Override") {
         if (configOverrideType == null && stripMediaMetadata.isEmpty()) return
 
         context.event.subscribe(MediaUploadEvent::class) { event ->
+            // Handle audio notes separately since they don't have path 11, 5
+            if (stripMediaMetadata.isNotEmpty() && 
+                (event.localMessageContent.contentType == ContentType.NOTE || 
+                 stripMediaMetadata.contains("remove_audio_note_duration") || 
+                 stripMediaMetadata.contains("remove_audio_note_transcript_capability"))) {
+                event.onMediaUploaded { result ->
+                    if (result.messageContent.contentType == ContentType.NOTE) {
+                        val contentReader = ProtoReader(result.messageContent.content!!)
+                        result.messageContent.content = ProtoEditor(result.messageContent.content!!).apply {
+                            // Check which path structure exists - try both to be safe
+                            val hasFullPath = contentReader.followPath(4, 4, 6, 1, 1) != null
+                            val hasDirectPath = contentReader.followPath(6, 1, 1) != null
+                            
+                            if (stripMediaMetadata.contains("remove_audio_note_duration")) {
+                                // Audio note duration is at field 13 (confirmed from MessageDecoder line 94 and MessageSender line 27)
+                                if (hasFullPath) {
+                                    edit(4, 4, 6, 1, 1) {
+                                        remove(13)
+                                    }
+                                }
+                                if (hasDirectPath || !hasFullPath) {
+                                    edit(6, 1, 1) {
+                                        remove(13)
+                                    }
+                                }
+                            }
+                            if (stripMediaMetadata.contains("remove_audio_note_transcript_capability")) {
+                                // Remove locale string (field 3) which may be used for transcript capability
+                                // Also try other potential fields
+                                if (hasFullPath) {
+                                    edit(4, 4, 6, 1, 1) {
+                                        remove(2) // potential transcript-related field
+                                        remove(3) // locale string (may affect transcript capability)
+                                        remove(4) // potential transcript-related field
+                                    }
+                                    edit(4, 4, 6, 1) {
+                                        remove(2) // possible transcript capability flag at parent level
+                                        remove(3) // locale at parent level
+                                    }
+                                }
+                                if (hasDirectPath || !hasFullPath) {
+                                    edit(6, 1, 1) {
+                                        remove(2) // potential transcript-related field
+                                        remove(3) // locale string (may affect transcript capability)
+                                        remove(4) // potential transcript-related field
+                                    }
+                                    edit(6, 1) {
+                                        remove(2) // possible transcript capability flag at parent level
+                                        remove(3) // locale at parent level (field 3 at 6,1 is locale per MessageSender)
+                                    }
+                                }
+                            }
+                        }.toByteArray()
+                    }
+                }
+            }
+
             ProtoReader(event.localMessageContent.content!!).followPath(11, 5)?.let { snapDocPlayback ->
                 event.onMediaUploaded { result ->
                     result.messageContent.content = ProtoEditor(result.messageContent.content!!).apply {
@@ -210,18 +267,6 @@ class SendOverride : Feature("Send Override") {
                                             edit(5, 1) {
                                                 remove(2)
                                             }
-                                        }
-                                    }
-                                }
-                                ContentType.NOTE -> {
-                                    if (stripMediaMetadata.contains("remove_audio_note_duration")) {
-                                        edit(6, 1, 1) {
-                                            remove(13)
-                                        }
-                                    }
-                                    if (stripMediaMetadata.contains("remove_audio_note_transcript_capability")) {
-                                        edit(6, 1) {
-                                            remove(3)
                                         }
                                     }
                                 }
