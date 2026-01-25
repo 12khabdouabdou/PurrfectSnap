@@ -22,7 +22,7 @@
 
 ## Overview
 
-PurrfectSnap is built on the foundation of SnapEnhance, pushing boundaries with innovative features and a refined user experience. This isn't just another fork, it's a complete reimagining of what's possible.
+PurrfectSnap is built on the foundation of SnapEnhance, pushing boundaries with innovative features and a refined user experience. This isn't just another fork; it's a complete reimagining of what's possible.
 
 We're committed to active development, bringing you powerful tools that actually matter. Every feature is designed with real users in mind, not just for the sake of adding to a feature list.
 
@@ -74,7 +74,6 @@ graph TD
 ## Features
 
 PurrfectSnap offers deep control across media, privacy, automation, and UI—designed for both casual users and power users.
-
 
 <table>
 <tr>
@@ -128,7 +127,7 @@ Privacy-focused messaging features with advanced control over your conversations
 - Screenshot bypass
 - Anonymous story viewing
 - Hide typing notifications
-- Hide bitmoji presence
+- Hide Bitmoji presence
 - Prevent story rewatch indicators
 
 **Enhanced Features**
