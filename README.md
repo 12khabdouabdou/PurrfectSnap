@@ -4,7 +4,7 @@
 
 # PurrfectSnap
 
-### An Xposed module meant to redefine your Snapchat experience! Works on both non rooted and rooted devices!
+### An Xposed module meant to redefine your Snapchat experience! Works on both non-rooted and rooted devices!
 
 <br>
 
@@ -32,7 +32,7 @@ We're committed to active development, bringing you powerful tools that actually
 
 This project exists because we believe in continuous innovation. We're grateful to the original SnapEnhance team for their groundbreaking work, and we're building on that legacy by exploring new possibilities and listening to what the community actually wants.
 
-No aggressive donation requests. No minimal changes disguised as "major updates." Just genuine development driven by passion for creating something exceptional.
+No aggressive donation requests. No minimal changes disguised as “major updates.” Just genuine development driven by a passion for creating something exceptional.
 
 <br>
 
@@ -72,6 +72,9 @@ graph TD
 <br>
 
 ## Features
+
+PurrfectSnap offers deep control across media, privacy, automation, and UI—designed for both casual users and power users.
+
 
 <table>
 <tr>
@@ -268,7 +271,7 @@ No more sacrificing features to stay safe. Add friends, block users, attach musi
 
 ### Auto Patcher
 
-Installation was complicated. Now it isn't.
+Installation was complicated. Now it isn’t.
 
 We've eliminated 90% of the installation friction. No Shizuku. No LSPatch. Just a straightforward process that respects your time.
 
@@ -280,7 +283,7 @@ We've eliminated 90% of the installation friction. No Shizuku. No LSPatch. Just 
 Let AI handle routine responses while you focus on what matters. Configure automatic replies for chats, stories, and half-swipes. Essential for creators managing volume. Requires an API key from Google AI Studio, they offer free tier access.
 
 **Scheduled Snaps**  
-Time-shifted communication. Set a snap to send at midnight for a birthday. Queue content for optimal timing. Your schedule, automated.
+Time-shifted communication. Set a snap to send at midnight for a birthday. Queue content for optimal timing—your schedule, automated.
 
 **Message Translator**  
 Language barriers, eliminated. Incoming messages automatically translate to your preferred language. Set it once, communicate globally.
@@ -313,7 +316,7 @@ Your notes are valuable. Now they're protected. Export and restore with ease. Ne
 Device bans happen. Sometimes unjustly. We offer a solution for legitimate cases, approval required with proof of wrongful ban. This feature is restricted to prevent abuse.
 
 **Model Spoofing**  
-Identify as a high-end device. Potential performance improvements, enhanced camera processing, better feature access.
+Identify as a high-end device model. Potential performance improvements, enhanced camera processing, and better feature access.
 
 **Network Spoofing**  
 Spoof your network status to Wi-Fi always to prevent several restrictions on mobile data.
@@ -384,6 +387,8 @@ See exactly which features a config will enable before importing or exporting. K
 
 Hundreds of refinements you'll feel but might not see. Smoother animations. Faster response times. Eliminated edge cases. The kind of polish that separates good from exceptional.
 
+> Some features are intended for educational, recovery, or accessibility purposes. Misuse may violate Snapchat’s terms of service.
+
 <br>
 
 ---
@@ -392,8 +397,8 @@ Hundreds of refinements you'll feel but might not see. Smoother animations. Fast
 
 ## Installation
 
-The guide is no longer needed! 
-Just Download & Install PurrfectSnap from [here](https://github.com/particle-box/PurrfectSnap/releases), and it'll do everything automatically for you!
+The guide is no longer needed!  
+Just download and install PurrfectSnap from [here](https://github.com/particle-box/PurrfectSnap/releases). The app automatically detects your device type and applies the appropriate setup.
 
 <br>
 
@@ -455,6 +460,7 @@ PurrfectSnap is built with exceptional open source tools:
 <br>
 
 Built with care, maintained with passion
+© Particle Box — Open source under GPL-3.0
 
 <br>
 <br>
