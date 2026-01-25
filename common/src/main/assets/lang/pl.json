@@ -3087,6 +3087,7 @@
     "export_description": "Eksport znajomych pozwala zapisać listę identyfikatorów znajomych w pliku tekstowym. Importowanie z pliku wyświetla znajomych na liście, gdzie można je dodać.",
     "export_friends": "Eksportuj znajomych",
     "import_from_file": "Importuj z pliku",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Dodaj"
   },
   "memories": {

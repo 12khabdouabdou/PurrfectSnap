@@ -3087,6 +3087,7 @@
     "export_description": "Export Freunde können Sie eine Liste der IDs Ihrer Freunde in einer Textdatei speichern. Importieren aus einer Datei wird die Freunde in einer Liste angezeigt, in der Sie sie hinzufügen können.",
     "export_friends": "Exportfreunde",
     "import_from_file": "Einfuhr aus der Datei",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Hinzufügen"
   },
   "memories": {

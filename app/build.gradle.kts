@@ -100,6 +100,10 @@ fun computeKeystoreCertSha256(storeFile: File, storePass: String, keyAlias: Stri
     }.getOrNull()
 }
 
+fun gradleOrEnv(name: String, providers: org.gradle.api.provider.ProviderFactory): String? {
+    return providers.gradleProperty(name).orNull ?: System.getenv(name)
+}
+
 android {
     namespace = rootProject.ext["applicationId"].toString()
     compileSdk = 36
@@ -113,18 +117,18 @@ android {
     signingConfigs {
         create("release") {
             storeFile = File(System.getProperty("user.home"), ".android/purrfectsnap-release.keystore")
-            storePassword = providers.gradleProperty("PS_RELEASE_STORE_PASSWORD").orNull
-            keyAlias = providers.gradleProperty("PS_RELEASE_KEY_ALIAS").orNull
-            keyPassword = providers.gradleProperty("PS_RELEASE_KEY_PASSWORD").orNull
+            storePassword = gradleOrEnv("PS_RELEASE_STORE_PASSWORD", providers)
+            keyAlias = gradleOrEnv("PS_RELEASE_KEY_ALIAS", providers)
+            keyPassword = gradleOrEnv("PS_RELEASE_KEY_PASSWORD", providers)
         }
     }
 
     defaultConfig {
         val autoCertSha = providers.provider {
             val releaseStore = File(System.getProperty("user.home"), ".android/purrfectsnap-release.keystore")
-            val releaseStorePass = providers.gradleProperty("PS_RELEASE_STORE_PASSWORD").orNull
-            val releaseKeyAlias = providers.gradleProperty("PS_RELEASE_KEY_ALIAS").orNull
-            val releaseKeyPass = providers.gradleProperty("PS_RELEASE_KEY_PASSWORD").orNull
+            val releaseStorePass = gradleOrEnv("PS_RELEASE_STORE_PASSWORD", providers)
+            val releaseKeyAlias = gradleOrEnv("PS_RELEASE_KEY_ALIAS", providers)
+            val releaseKeyPass = gradleOrEnv("PS_RELEASE_KEY_PASSWORD", providers)
             if (!releaseStorePass.isNullOrBlank() && !releaseKeyAlias.isNullOrBlank()) {
                 computeKeystoreCertSha256(
                     releaseStore,
@@ -158,8 +162,8 @@ android {
             isMinifyEnabled = true
             proguardFiles += file("proguard-rules.pro")
             val releaseStore = File(System.getProperty("user.home"), ".android/purrfectsnap-release.keystore")
-            val releaseStorePass = providers.gradleProperty("PS_RELEASE_STORE_PASSWORD").orNull
-            val releaseKeyAlias = providers.gradleProperty("PS_RELEASE_KEY_ALIAS").orNull
+            val releaseStorePass = gradleOrEnv("PS_RELEASE_STORE_PASSWORD", providers)
+            val releaseKeyAlias = gradleOrEnv("PS_RELEASE_KEY_ALIAS", providers)
             if (releaseStore.exists() && !releaseStorePass.isNullOrBlank() && !releaseKeyAlias.isNullOrBlank()) {
                 signingConfig = signingConfigs.getByName("release")
             }

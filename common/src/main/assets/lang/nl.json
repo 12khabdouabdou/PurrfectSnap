@@ -3087,6 +3087,7 @@
     "export_description": "Met vrienden exporteren kunt u een lijst met ID's van uw vrienden opslaan in een tekstbestand. Importeren uit een bestand zal de vrienden tonen in een lijst waar u ze kunt toevoegen.",
     "export_friends": "Vrienden exporteren",
     "import_from_file": "Importeren uit bestand",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Voeg toe"
   },
   "memories": {

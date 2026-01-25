@@ -3088,6 +3088,7 @@
     "export_description": "Arkadaşları dışa aktarmak, arkadaşlarınızın kimliklerinin listesini bir metin dosyasına kaydetmenizi sağlar. Dosyadan içe aktarma, arkadaşları ekleyebileceğiniz bir listede gösterir.",
     "export_friends": "Arkadaşları dışa aktar",
     "import_from_file": "Dosyadan içe aktar",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Ekle"
   },
   "memories": {

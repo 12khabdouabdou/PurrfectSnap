@@ -3087,6 +3087,7 @@
     "export_description": "Export vänner kan du spara en lista över dina vänners ID i en textfil. Importera från en fil visas vännerna i en lista där du kan lägga till dem.",
     "export_friends": "Export vänner",
     "import_from_file": "Importera från fil",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Lägg till"
   },
   "memories": {

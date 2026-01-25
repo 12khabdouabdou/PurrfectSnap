@@ -3087,6 +3087,7 @@
     "export_description": "내보내기 친구는 텍스트 파일에서 친구의 ID 목록을 저장할 수 있습니다. 파일에서 가져가서 친구를 목록에 추가 할 수 있습니다.",
     "export_friends": "수출 친구",
     "import_from_file": "파일에서 가져 오기",
+    "load_suggested_friends": "Load suggested friends",
     "add": "기타"
   },
   "memories": {

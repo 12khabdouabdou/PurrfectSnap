@@ -3087,6 +3087,7 @@
     "export_description": "Eksportér venner tillader dig at gemme en liste over dine venners id 'er i en tekstfil. Importerer fra en fil vil vise vennerne i en liste, hvor du kan tilføje dem.",
     "export_friends": "Eksportér venner",
     "import_from_file": "Importér fra fil",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Tilføj"
   },
   "memories": {

@@ -3089,6 +3089,7 @@
     "export_description": "Izvozni prijatelji vam omogočajo, da shranite seznam osebnih dokumentov svojih prijateljev v besedilni datoteki. Uvoz iz datoteke bo prikazal prijatelje na seznamu, kjer jih lahko dodate.",
     "export_friends": "Izvozi prijatelje",
     "import_from_file": "Uvozi iz datoteke",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Dodaj"
   },
   "memories": {

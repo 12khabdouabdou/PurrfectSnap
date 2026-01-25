@@ -3089,6 +3089,7 @@
     "export_description": "Exportă prietenii îți permite să salvezi o listă cu ID-urile prietenilor tăi într-un fișier text. Importarea dintr-un fișier va afișa prietenii într-o listă în cazul în care le puteți adăuga.",
     "export_friends": "Exportă prieteni",
     "import_from_file": "Importă din fișier",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Adaugă"
   },
   "memories": {

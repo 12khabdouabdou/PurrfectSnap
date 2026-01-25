@@ -3087,6 +3087,7 @@
     "export_description": "Exportar amigos permite salvar uma lista de IDs de seus amigos em um arquivo de texto. A importação de um ficheiro irá mostrar os amigos numa lista onde poderá adicioná- los.",
     "export_friends": "Exportar amigos",
     "import_from_file": "Importar do ficheiro",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Adicionar"
   },
   "memories": {

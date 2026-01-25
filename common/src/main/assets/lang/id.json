@@ -3087,6 +3087,7 @@
     "export_description": "Ekspor teman memungkinkan Anda untuk menyimpan daftar ID teman Anda dalam berkas teks. Mengimpor dari berkas akan menampilkan teman-teman dalam daftar di mana Anda dapat menambahkannya.",
     "export_friends": "Ekspor teman",
     "import_from_file": "Impor dari berkas",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Tambah"
   },
   "memories": {

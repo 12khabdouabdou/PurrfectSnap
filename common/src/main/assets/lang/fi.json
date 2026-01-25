@@ -3087,6 +3087,7 @@
     "export_description": "Vie ystäviesi avulla voit tallentaa listan ystäviesi tunnisteista tekstitiedostoon. Tuominen tiedostosta näyttää ystävät luettelossa, johon voit lisätä ne.",
     "export_friends": "Vie ystävät",
     "import_from_file": "Tuo tiedostosta",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Lisää"
   },
   "memories": {

@@ -3087,6 +3087,7 @@
     "export_description": "友人をエクスポートすると、友人のIDのリストをテキストファイルに保存することができます。 ファイルからインポートすると、追加できるリストに友達が表示されます.",
     "export_friends": "友達をエクスポートする",
     "import_from_file": "ファイルからのインポート",
+    "load_suggested_friends": "Load suggested friends",
     "add": "追加する"
   },
   "memories": {

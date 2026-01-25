@@ -4,7 +4,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,12 +12,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.filled.People
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,6 +50,7 @@ import me.eternal.purrfectsnap.core.util.EvictingMap
 import me.eternal.purrfectsnap.core.wrapper.impl.Snapchatter
 import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
 import me.eternal.purrfectsnap.common.util.snap.RemoteMediaResolver
+import me.eternal.purrfectsnap.mapper.impl.FriendRelationshipChangerMapper
 import kotlin.random.Random
 import java.text.SimpleDateFormat
 import java.util.*
@@ -90,85 +91,70 @@ class ManageFriendList : AbstractAction() {
                 return
             }
 
-        runCatching {
-            val classLoader = context.androidContext.classLoader
-            val friendRelationshipChangerClass = friendRelationshipChangerInstance.javaClass
-            
-            // Helper function to find static field by trying multiple field names
-            fun findStaticField(clazz: Class<*>, fieldNames: List<String>): Any? {
-                fieldNames.forEach { fieldName ->
-                    runCatching {
-                        clazz.getDeclaredField(fieldName).apply { isAccessible = true }.get(null)
-                    }.getOrNull()?.let { return it }
-                }
-                // Fallback: find any static field of the same type
-                return clazz.declaredFields.firstOrNull { field ->
-                    java.lang.reflect.Modifier.isStatic(field.modifiers) && field.type == clazz
-                }?.let { field ->
-                    runCatching {
-                        field.isAccessible = true
-                        field.get(null)?.takeIf { it.javaClass == clazz }
-                    }.getOrNull()
-                }
-            }
-            
-            // Load F9l class
-            val f9lClass = classLoader.loadClass("F9l")
-            
-            // Find the add friend method by matching signature
-            val method = (f9lClass.declaredMethods + f9lClass.methods).firstOrNull { method ->
-                if (!java.lang.reflect.Modifier.isStatic(method.modifiers) || method.parameterTypes.size != 14) return@firstOrNull false
-                
-                val params = method.parameterTypes
-                params[0].isAssignableFrom(friendRelationshipChangerClass) &&
-                params[1] == String::class.java &&
-                params[2].isEnum
-            } ?: return@runCatching context.log.error("Could not find F9l.m8344a method")
-            
-            // Extract classes from method signature
-            val enumClass = method.parameterTypes[2]
-            val tZ7Class = method.parameterTypes[3]
-            val g08Class = method.parameterTypes[4]
-            
-            // Get enum constant for USERNAME
-            val enumConstants = enumClass.enumConstants ?: enumClass.getMethod("values").invoke(null) as? Array<*>
-                ?: return@runCatching context.log.error("Could not get enum constants")
-            val addedByUsername = enumConstants.firstOrNull { it.toString().contains("USERNAME", ignoreCase = true) }
-                ?: return@runCatching context.log.error("Could not find ADDED_BY_USERNAME enum")
+        context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
+            runCatching {
+                val f9lClass = helperClass.getAsClass() ?: return@runCatching context.log.error("Could not find FriendRelationshipChanger helper class")
+                val addFriendMethodName = addFriend14Method.get() ?: return@runCatching context.log.error("Could not find add friend method name")
+                val sourceTypeClass = sourceType.getAsClass() ?: return@runCatching context.log.error("Could not find source type class")
+                val pageTypeClass = pageType.getAsClass() ?: return@runCatching context.log.error("Could not find page type class")
 
-            // Get static field instances
-            val tZ7Default = findStaticField(tZ7Class, listOf("f301161j0", "f301158a", "f301165n0", "f301160c", "f301171t"))
-                ?: return@runCatching context.log.error("Could not find tZ7 static field")
-            
-            val g08Default = findStaticField(g08Class, listOf("f211750K0", "f211807x1", "f211805w1", "f211774f1", "f211775g1", "f211760U0", "f211783l1", "f211785m1", "f211787n1", "f211772d1"))
-                ?: return@runCatching context.log.error("Could not find g08 static field")
+                val method = f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
+                    ?: return@runCatching context.log.error("Could not find $addFriendMethodName method")
 
-            // Invoke method with 14 parameters
-            method.isAccessible = true
-            val result = method.invoke(
-                null,
-                friendRelationshipChangerInstance,
-                userId,
-                addedByUsername,
-                tZ7Default,
-                g08Default,
-                null, null, null, null, null, // String params 6-10
-                null, // InteractionPlacementInfo
-                null, // String str7
-                null, // Integer num
-                4064 // int flags
-            )
-            
-            // Subscribe to the Completable result
-            result?.javaClass?.methods?.firstOrNull { 
-                it.name == "subscribe" && it.parameterCount == 0 
-            }?.let { subscribeMethod ->
-                subscribeMethod.isAccessible = true
-                subscribeMethod.invoke(result)
+                // Helper function to find static field by trying fallback
+                fun findStaticField(clazz: Class<*>): Any? {
+                    // Fallback: find any static field of the same type
+                    return clazz.declaredFields.firstOrNull { field ->
+                        java.lang.reflect.Modifier.isStatic(field.modifiers) && field.type == clazz
+                    }?.let { field ->
+                        runCatching {
+                            field.isAccessible = true
+                            field.get(null)?.takeIf { it.javaClass == clazz }
+                        }.getOrNull()
+                    }
+                }
+
+                // Get enum constant for USERNAME
+                val enumClass = method.parameterTypes[2]
+                val enumConstants = enumClass.enumConstants ?: enumClass.getMethod("values").invoke(null) as? Array<*>
+                    ?: return@runCatching context.log.error("Could not get enum constants")
+                val addedByUsername = enumConstants.firstOrNull { it.toString().contains("USERNAME", ignoreCase = true) }
+                    ?: return@runCatching context.log.error("Could not find ADDED_BY_USERNAME enum")
+
+                // Get static field instances
+                val sourceTypeDefault = findStaticField(sourceTypeClass)
+                    ?: return@runCatching context.log.error("Could not find source type static field")
+
+                val pageTypeDefault = findStaticField(pageTypeClass)
+                    ?: return@runCatching context.log.error("Could not find page type static field")
+
+                // Invoke method with 14 parameters
+                method.isAccessible = true
+                val result = method.invoke(
+                    null,
+                    friendRelationshipChangerInstance,
+                    userId,
+                    addedByUsername,
+                    sourceTypeDefault,
+                    pageTypeDefault,
+                    null, null, null, null, null, // String params 6-10
+                    null, // InteractionPlacementInfo
+                    null, // String str7
+                    null, // Integer num
+                    4064 // int flags
+                )
+
+                // Subscribe to the Completable result
+                result?.javaClass?.methods?.firstOrNull {
+                    it.name == "subscribe" && it.parameterCount == 0
+                }?.let { subscribeMethod ->
+                    subscribeMethod.isAccessible = true
+                    subscribeMethod.invoke(result)
+                }
+            }.onFailure {
+                context.log.error("Failed to add friend $userId", it)
+                context.longToast("Failed to add friend: ${it.message}")
             }
-        }.onFailure {
-            context.log.error("Failed to add friend $userId", it)
-            context.longToast("Failed to add friend: ${it.message}")
         }
     }
 

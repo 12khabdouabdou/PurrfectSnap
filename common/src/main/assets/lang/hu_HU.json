@@ -3087,6 +3087,7 @@
     "export_description": "Export barátok lehetővé teszi, hogy mentse a listát a barátok azonosítóit egy szöveges fájlt. Importálás egy fájlból megjelenik a barátok egy listán, ahol hozzá lehet adni őket.",
     "export_friends": "Barátaexportálás",
     "import_from_file": "Importálás fájlból",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Hozzáadás"
   },
   "memories": {

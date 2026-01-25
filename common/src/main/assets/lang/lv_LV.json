@@ -3087,6 +3087,7 @@
     "export_description": "Eksportēt draugus ļauj saglabāt draugu ID sarakstu teksta failā. Importējot no faila, draugi tiks parādīti sarakstā, kur tos pievienot.",
     "export_friends": "Eksportēt draugus",
     "import_from_file": "Importēt no faila",
+    "load_suggested_friends": "Load suggested friends",
     "add": "Pievienot"
   },
   "memories": {

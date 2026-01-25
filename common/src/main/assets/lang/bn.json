@@ -3087,6 +3087,7 @@
     "export_description": "আপনার বন্ধুদেরকে একটি টেক্সট ফাইলে পরিচয় করিয়ে দিতে অনুমতি দিন । একটি ফাইল থেকে ইম্পোর্ট করা হলে তাদের মধ্যে অন্তর্ভুক্ত করা হবে।.",
     "export_friends": "পরিচিতি সরিয়ে ফেলো",
     "import_from_file": "ফাইল থেকে ইম্পোর্ট করুন",
+    "load_suggested_friends": "Load suggested friends",
     "add": "যোগ করুন"
   },
   "memories": {
