@@ -172,9 +172,15 @@ class RootInstallSnapchatScreen : SetupScreen() {
 
             okHttpClient.newCall(Request.Builder().url(latestApk.downloadUrl).build()).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
-                val cacheDir = context.activity?.externalCacheDir ?: context.androidContext.externalCacheDir
-                    ?: context.androidContext.cacheDir
+                val cacheDir = listOfNotNull(
+                    context.activity?.externalCacheDir,
+                    context.androidContext.externalCacheDir,
+                    context.androidContext.cacheDir
+                ).firstOrNull { it.exists() || it.mkdirs() } ?: return@withContext null
                 val outputFile = File(cacheDir, latestApk.apkName)
+                if (outputFile.parentFile?.exists() == false && outputFile.parentFile?.mkdirs() == false) {
+                    return@withContext null
+                }
                 outputFile.outputStream().use { output ->
                     response.body?.byteStream()?.use { input ->
                         val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
