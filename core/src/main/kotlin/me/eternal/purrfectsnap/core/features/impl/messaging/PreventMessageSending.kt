@@ -1,7 +1,9 @@
 package me.eternal.purrfectsnap.core.features.impl.messaging
 
+import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.data.NotificationType
 import me.eternal.purrfectsnap.common.util.protobuf.ProtoEditor
+import me.eternal.purrfectsnap.common.util.protobuf.ProtoReader
 import me.eternal.purrfectsnap.core.event.events.impl.NativeUnaryCallEvent
 import me.eternal.purrfectsnap.core.event.events.impl.UnaryCallEvent
 import me.eternal.purrfectsnap.core.event.events.impl.SendMessageWithContentEvent
@@ -26,12 +28,41 @@ class PreventMessageSending : Feature("Prevent message sending") {
             }.toByteArray()
         }
 
-        context.event.subscribe(NativeUnaryCallEvent::class, { preventMessageSending.contains("snap_replay") }) { event ->
-            handleUpdateContentMessage(event.uri, event.buffer)?.let { event.buffer = it }
+        fun handleNativeUnaryCall(uri: String, buffer: ByteArray): ByteArray? {
+            if (uri == "/messagingcoreservice.MessagingCoreService/UpdateContentMessage") {
+                return handleUpdateContentMessage(uri, buffer)
+            }
+            return null
         }
 
-        context.event.subscribe(UnaryCallEvent::class, { preventMessageSending.contains("snap_replay") }) { event ->
-            handleUpdateContentMessage(event.uri, event.buffer)?.let { event.buffer = it }
+        context.event.subscribe(NativeUnaryCallEvent::class) { event ->
+            if (event.uri == "/messagingcoreservice.MessagingCoreService/CreateContentMessage") {
+                val contentTypeId = ProtoReader(event.buffer).getVarInt(4, 2)?.toInt() ?: return@subscribe
+                val associatedType = NotificationType.fromContentType(ContentType.fromId(contentTypeId)) ?: return@subscribe
+                if (preventMessageSending.contains(associatedType.key) && associatedType.key != "snap_replay") {
+                    context.log.verbose("Preventing native CreateContentMessage for $associatedType")
+                    event.canceled = true
+                }
+            }
+
+            if (preventMessageSending.contains("snap_replay")) {
+                handleNativeUnaryCall(event.uri, event.buffer)?.let { event.buffer = it }
+            }
+        }
+
+        context.event.subscribe(UnaryCallEvent::class) { event ->
+            if (event.uri == "/messagingcoreservice.MessagingCoreService/CreateContentMessage") {
+                val contentTypeId = ProtoReader(event.buffer).getVarInt(4, 2)?.toInt() ?: return@subscribe
+                val associatedType = NotificationType.fromContentType(ContentType.fromId(contentTypeId)) ?: return@subscribe
+                if (preventMessageSending.contains(associatedType.key) && associatedType.key != "snap_replay") {
+                    context.log.verbose("Preventing CreateContentMessage for $associatedType")
+                    event.canceled = true
+                }
+            }
+
+            if (preventMessageSending.contains("snap_replay")) {
+                handleNativeUnaryCall(event.uri, event.buffer)?.let { event.buffer = it }
+            }
         }
 
         context.classCache.conversationManager.hook("updateMessage", HookStage.BEFORE) { param ->

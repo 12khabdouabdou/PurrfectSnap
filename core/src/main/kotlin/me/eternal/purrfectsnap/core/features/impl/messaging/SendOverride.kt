@@ -3,12 +3,8 @@ package me.eternal.purrfectsnap.core.features.impl.messaging
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,11 +12,9 @@ import androidx.compose.runtime.*
 import androidx.core.app.NotificationCompat
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,10 +32,7 @@ import me.eternal.purrfectsnap.core.event.events.impl.NativeUnaryCallEvent
 import me.eternal.purrfectsnap.core.event.events.impl.SendMessageWithContentEvent
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.features.impl.experiments.MediaFilePicker
-import me.eternal.purrfectsnap.core.features.impl.tweaks.UnsaveableMessages
 import me.eternal.purrfectsnap.core.messaging.MessageSender
-import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
-import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -154,8 +145,7 @@ class SendOverride : Feature("Send Override") {
         val stripMediaMetadata = context.config.messaging.stripMediaMetadata.get()
         var postSavePolicy: Int? = null
 
-        val configOverrideType = context.config.messaging.galleryMediaSendOverride.mode.getNullable()
-        val includeCameraSnaps = context.config.messaging.galleryMediaSendOverride.includeCameraSnaps.get()
+        val configOverrideType = context.config.messaging.galleryMediaSendOverride.mode.getNullable()?.toString()
         if (configOverrideType == null && stripMediaMetadata.isEmpty()) return
 
         context.event.subscribe(MediaUploadEvent::class) { event ->
@@ -186,29 +176,20 @@ class SendOverride : Feature("Send Override") {
                                 }
                             }
                             if (stripMediaMetadata.contains("remove_audio_note_transcript_capability")) {
-                                // Remove locale string (field 3) which may be used for transcript capability
-                                // Also try other potential fields
                                 if (hasFullPath) {
-                                    edit(4, 4, 6, 1, 1) {
-                                        remove(2) // potential transcript-related field
-                                        remove(3) // locale string (may affect transcript capability)
-                                        remove(4) // potential transcript-related field
-                                    }
                                     edit(4, 4, 6, 1) {
-                                        remove(2) // possible transcript capability flag at parent level
-                                        remove(3) // locale at parent level
+                                        remove(3) // locale string
                                     }
                                 }
                                 if (hasDirectPath || !hasFullPath) {
-                                    edit(6, 1, 1) {
-                                        remove(2) // potential transcript-related field
-                                        remove(3) // locale string (may affect transcript capability)
-                                        remove(4) // potential transcript-related field
-                                    }
                                     edit(6, 1) {
-                                        remove(2) // possible transcript capability flag at parent level
-                                        remove(3) // locale at parent level (field 3 at 6,1 is locale per MessageSender)
+                                        remove(3) // locale string
                                     }
+                                }
+                                runCatching {
+                                    val field = result.messageContent.instanceNonNull().javaClass.getDeclaredField("mAllowsTranscription")
+                                    field.isAccessible = true
+                                    field.set(result.messageContent.instanceNonNull(), false)
                                 }
                             }
                         }.toByteArray()
@@ -284,27 +265,71 @@ class SendOverride : Feature("Send Override") {
 
         if (configOverrideType == null) return
 
-        context.event.subscribe(NativeUnaryCallEvent::class) { event ->
+        context.event.subscribe(NativeUnaryCallEvent::class, priority = 100) { event ->
             if (event.uri != "/messagingcoreservice.MessagingCoreService/CreateContentMessage") return@subscribe
             postSavePolicy?.let { savePolicy ->
                 context.log.verbose("postSavePolicy=$savePolicy")
+                val protoReader = ProtoReader(event.buffer)
                 event.buffer = ProtoEditor(event.buffer).apply {
-                    edit(4) {
-                        remove(7)
-                        addVarInt(7, savePolicy)
-                    }
+                    // Handle chat messages (field 4)
+                    if (protoReader.followPath(4) != null) {
+                        edit(4) {
+                            remove(7)
+                            addVarInt(7, savePolicy)
+                        }
 
-                    // remove Keep Snaps in Chat ability
-                    if (savePolicy == 1/* PROHIBITED */) {
-                        edit(6, 9) {
-                            remove(1)
+                        // remove Keep Snaps in Chat ability
+                        if (savePolicy == 1/* PROHIBITED */) {
+                            edit(6, 9) {
+                                remove(1)
+                            }
+                        }
+                    }
+                    
+                    // Handle NOTE messages (field 6) - audio notes
+                    // Check both root level (6) and nested under media (4, 4, 6)
+                    val noteAtRoot = protoReader.followPath(6) != null
+                    val noteNested = protoReader.followPath(4, 4, 6) != null
+                    
+                    if (noteAtRoot || noteNested) {
+                        // Set save policy in the NOTE path
+                        val hasNestedPath = if (noteNested) {
+                            protoReader.followPath(4, 4, 6, 1, 1) != null
+                        } else {
+                            protoReader.followPath(6, 1, 1) != null
+                        }
+                        
+                        if (noteNested) {
+                            if (hasNestedPath) {
+                                edit(4, 4, 6, 1, 1) {
+                                    remove(7)
+                                    addVarInt(7, savePolicy)
+                                }
+                            } else {
+                                edit(4, 4, 6, 1) {
+                                    remove(7)
+                                    addVarInt(7, savePolicy)
+                                }
+                            }
+                        } else {
+                            if (hasNestedPath) {
+                                edit(6, 1, 1) {
+                                    remove(7)
+                                    addVarInt(7, savePolicy)
+                                }
+                            } else {
+                                edit(6, 1) {
+                                    remove(7)
+                                    addVarInt(7, savePolicy)
+                                }
+                            }
                         }
                     }
                 }.toByteArray()
             }
         }
 
-        context.event.subscribe(SendMessageWithContentEvent::class) { event ->
+        context.event.subscribe(SendMessageWithContentEvent::class, priority = -100) { event ->
             postSavePolicy = null
             if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
             val localMessageContent = event.messageContent
@@ -312,9 +337,6 @@ class SendOverride : Feature("Send Override") {
             if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
                 localMessageContent.contentType != ContentType.SNAP &&
                 localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) return@subscribe
-            val isCameraSnap = localMessageContent.contentType == ContentType.SNAP &&
-                localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null
-            if (isCameraSnap && !includeCameraSnaps) return@subscribe
 
             //prevent story replies
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
@@ -339,7 +361,8 @@ class SendOverride : Feature("Send Override") {
             event.canceled = true
 
             fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
-                if (overrideType != "ORIGINAL" && (messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
+                val bypassLimit = context.config.experimental.nativeHooks.valdiHooks.bypassCameraRollLimit.get()
+                if (overrideType != "ORIGINAL" && !bypassLimit && (messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
                     context.inAppOverlay.showStatusToast(
                         icon = Icons.Default.WarningAmber,
                         context.translation["gallery_media_send_override.multiple_media_toast"]
@@ -349,7 +372,7 @@ class SendOverride : Feature("Send Override") {
 
                 when (overrideType) {
                     "SNAP", "SAVEABLE_SNAP" -> {
-                        val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 0 else 1
+                        val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 2 else 1
                         postSavePolicy = savePolicyValue
 
                         val extras = messageProtoReader.followPath(3, 3, 13)?.getBuffer()
@@ -402,6 +425,13 @@ class SendOverride : Feature("Send Override") {
                                 }
                                 addVarInt(7, savePolicyValue)
                             }
+                            // also set at root of snap doc
+                            edit(11) {
+                                if (getOrNull(7) != null) {
+                                    remove(7)
+                                }
+                                addVarInt(7, savePolicyValue)
+                            }
                         }.toByteArray()
 
                         try {
@@ -433,21 +463,78 @@ class SendOverride : Feature("Send Override") {
                         }
                     }
                     "NOTE" -> {
+                        // Check if "prevent audio" is enabled in UnsaveableMessages
+                        val shouldPreventSave = context.config.messaging.unsaveableMessages.note.get()
+                        if (shouldPreventSave) {
+                            postSavePolicy = 1 // PROHIBITED
+                        }
                         localMessageContent.contentType = ContentType.NOTE
-                        localMessageContent.content =
-                            MessageSender.audioNoteProto(
-                                messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: context.feature(MediaFilePicker::class).lastMediaDuration ?: 0,
-                                Locale.getDefault().toLanguageTag()
-                            )
+                        val audioNoteProto = MessageSender.audioNoteProto(
+                            messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: context.feature(MediaFilePicker::class).lastMediaDuration ?: 0,
+                            Locale.getDefault().toLanguageTag()
+                        )
+                        
+                        // Set save policy in the proto if prevent audio is enabled
+                        localMessageContent.content = if (shouldPreventSave) {
+                            // Check which path structure exists in the audio note proto
+                            val protoReader = ProtoReader(audioNoteProto)
+                            val hasNestedPath = protoReader.followPath(6, 1, 1) != null
+                            
+                            ProtoEditor(audioNoteProto).apply {
+                                // Set save policy to PROHIBITED (1) in the NOTE path
+                                if (hasNestedPath) {
+                                    edit(6, 1, 1) {
+                                        remove(7)
+                                        addVarInt(7, 1)
+                                    }
+                                } else {
+                                    edit(6, 1) {
+                                        remove(7)
+                                        addVarInt(7, 1)
+                                    }
+                                }
+                            }.toByteArray()
+                        } else {
+                            audioNoteProto
+                        }
+                        
+                        // Set mSavePolicy on Java object if prevent audio is enabled
+                        if (shouldPreventSave) {
+                            try {
+                                val savePolicyEnumClass = runCatching {
+                                    XposedHelpers.findClass("com.snapchat.client.messaging.SavePolicy", 
+                                        localMessageContent.instanceNonNull().javaClass.classLoader)
+                                }.getOrNull()
+                                
+                                if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
+                                    @Suppress("UNCHECKED_CAST")
+                                    val enumClass = savePolicyEnumClass as Class<out Enum<*>>
+                                    val prohibitedEnum = runCatching {
+                                        java.lang.Enum.valueOf(enumClass, "PROHIBITED")
+                                    }.getOrNull()
+                                    
+                                    if (prohibitedEnum != null) {
+                                        val savePolicyField = localMessageContent.instanceNonNull().javaClass.declaredFields
+                                            .find { it.name == "mSavePolicy" }
+                                        
+                                        if (savePolicyField != null) {
+                                            savePolicyField.isAccessible = true
+                                            XposedHelpers.setObjectField(localMessageContent.instanceNonNull(), "mSavePolicy", prohibitedEnum)
+                                        }
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                context.log.warn("SendOverride: Failed to set mSavePolicy for NOTE: ${e.message}")
+                            }
+                        }
                     }
                 }
 
                 return true
             }
 
-            val overrideType = configOverrideType ?: return@subscribe
-            if (overrideType != "always_ask") {
-                if (sendMedia(overrideType, 10)) {
+            if (configOverrideType != null && configOverrideType != "always_ask") {
+                if (sendMedia(configOverrideType, 10)) {
                     event.invokeOriginal()
                 }
                 return@subscribe
@@ -455,200 +542,154 @@ class SendOverride : Feature("Send Override") {
 
             context.runOnUiThread {
                 val recipientNameForTask = recipientName
+                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
+                
                 createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
-                    PurrfectOverlayTheme {
-                        val mainTranslation = remember {
-                            context.translation.getCategory("send_override_dialog")
+                    val mainTranslation = remember {
+                        context.translation.getCategory("send_override_dialog")
+                    }
+
+                    @Composable
+                    fun ActionTile(
+                        modifier: Modifier = Modifier,
+                        selected: Boolean = false,
+                        icon: ImageVector,
+                        title: String,
+                        enabled: Boolean = true,
+                        onClick: () -> Unit
+                    ) {
+                        Card(
+                            modifier = modifier.then(if (!enabled) Modifier.alpha(0.5f) else Modifier),
+                            onClick = { if (enabled) onClick() },
+                            elevation = if (selected) CardDefaults.elevatedCardElevation(disabledElevation = 3.dp) else CardDefaults.cardElevation(),
+                            colors = if (selected) CardDefaults.elevatedCardColors() else CardDefaults.cardColors()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .size(75.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(icon, contentDescription = title, modifier = Modifier
+                                    .size(32.dp)
+                                    .padding(4.dp))
+                                Text(title, modifier = Modifier.fillMaxWidth(), fontSize = 12.sp, fontWeight = FontWeight.Light, softWrap = true, lineHeight = 14.sp, textAlign = TextAlign.Center)
+                            }
                         }
-                        val dialogShape = RoundedCornerShape(24.dp)
-                        val dialogSurfaceColor = Color(0xFF2A2452)
-                        val border = remember {
-                            Brush.linearGradient(
-                                listOf(
-                                    PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.55f),
-                                    PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.35f)
-                                )
-                            )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val translation = remember {
+                            context.translation.getCategory("features.options.gallery_media_send_override")
                         }
-                        val dialogBackground = remember {
-                            Brush.linearGradient(
-                                listOf(
-                                    Color(0xFF2A2452),
-                                    Color(0xFF1A143A)
-                                )
-                            )
+                        var scheduleEnabled by remember { mutableStateOf(false) }
+
+                        Text(fontSize = 20.sp, fontWeight = FontWeight.Medium, text = "${mainTranslation["send_as"]} ${
+                            translation[selectedType]}", modifier = Modifier.padding(5.dp))
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            ActionTile(selected = selectedType == "ORIGINAL", icon = Icons.Filled.Photo, title = translation["ORIGINAL"], enabled = true) {
+                                selectedType = "ORIGINAL"
+                            }
+                            ActionTile(selected = selectedType == "SNAP" || selectedType == "SAVEABLE_SNAP", icon = Icons.Filled.PhotoCamera, title = translation["SNAP"], enabled = true) {
+                                selectedType = "SNAP"
+                            }
+                            ActionTile(selected = selectedType == "NOTE", icon = Icons.Filled.MusicNote, title = translation["NOTE"], enabled = true) {
+                                selectedType = "NOTE"
+                            }
                         }
 
-                        @Composable
-                        fun ActionTile(
-                            modifier: Modifier = Modifier,
-                            selected: Boolean = false,
-                            icon: ImageVector,
-                            title: String,
-                            onClick: () -> Unit
-                        ) {
-                            Card(
-                                modifier = modifier,
-                                onClick = onClick,
-                                shape = RoundedCornerShape(18.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 4.dp else 1.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (selected) Color(0xFF3E3478) else Color(0xFF2F2A5B),
-                                    contentColor = Color.White
-                                ),
-                                border = if (selected) BorderStroke(1.dp, PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.6f)) else null
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 10.dp, vertical = 12.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Icon(
-                                        icon,
-                                        contentDescription = title,
-                                        modifier = Modifier.size(28.dp),
-                                        tint = if (selected) PurrfectOverlayPalette.glowSecondary else Color.White.copy(alpha = 0.9f)
+                        fun convertDuration(duration: Float) = when {
+                            duration in -2f..-1f -> 100
+                            duration in -1f..-0f -> 250
+                            duration in -0f..1f -> 500
+                            duration >= 11f -> null
+                            else -> ((duration * 1000).toInt() / 1000) * 1000
+                        }
+                        
+                        fun formatTimeText(ms: Long): String {
+                            val days = (ms / (24 * 60 * 60 * 1000)).toInt()
+                            val hours = ((ms / (60 * 60 * 1000)) % 24).toInt()
+                            val minutes = ((ms / (60 * 1000)) % 60).toInt()
+                            val seconds = ((ms / 1000) % 60).toInt()
+                            return buildString {
+                                if (days > 0) append("${days}d ")
+                                if (hours > 0 || days > 0) append("${hours}h ")
+                                if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
+                                append("${seconds}s")
+                            }
+                        }
+
+                        when (selectedType) {
+                            "SNAP", "SAVEABLE_SNAP" -> {
+                                fun toggleSaveable() {
+                                    selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().clickable {
+                                        toggleSaveable()
+                                    },
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ){
+                                    Checkbox(
+                                        checked = selectedType == "SAVEABLE_SNAP",
+                                        onCheckedChange = {
+                                            toggleSaveable()
+                                        }
                                     )
-                                    Spacer(Modifier.height(6.dp))
+                                    Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
+                                }
+                                Column(
+                                    modifier = Modifier.padding(start = 8.dp)
+                                ) {
                                     Text(
-                                        title,
+                                        text = mainTranslation.format("duration",
+                                            "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
+                                        )
+                                    )
+                                    Slider(
                                         modifier = Modifier.fillMaxWidth(),
-                                        fontSize = 12.sp,
-                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                                        softWrap = true,
-                                        lineHeight = 14.sp,
-                                        textAlign = TextAlign.Center
+                                        enabled = selectedType != "SAVEABLE_SNAP",
+                                        value = customDuration,
+                                        onValueChange = {
+                                            customDuration = it
+                                        },
+                                        valueRange = -2f..11f,
                                     )
                                 }
                             }
                         }
 
-                        Surface(
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = dialogShape,
-                            color = dialogSurfaceColor,
-                            tonalElevation = 0.dp,
-                            shadowElevation = 18.dp,
-                            border = BorderStroke(1.dp, border)
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .background(dialogBackground, dialogShape)
-                                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                val translation = remember {
-                                    context.translation.getCategory("features.options.gallery_media_send_override")
+                            Checkbox(
+                                checked = scheduleEnabled,
+                                onCheckedChange = {
+                                    scheduleEnabled = it
+                                    if (!it) scheduledTime = null
                                 }
-                                var scheduleEnabled by remember { mutableStateOf(false) }
-
-                                Text(fontSize = 20.sp, fontWeight = FontWeight.Medium, text = "Send as ${
-                                    translation[selectedType]}", modifier = Modifier.padding(5.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    ActionTile(
-                                        modifier = Modifier.weight(1f).height(92.dp),
-                                        selected = selectedType == "ORIGINAL",
-                                        icon = Icons.Filled.Photo,
-                                        title = translation["ORIGINAL"]
-                                    ) {
-                                        selectedType = "ORIGINAL"
-                                    }
-                                    ActionTile(
-                                        modifier = Modifier.weight(1f).height(92.dp),
-                                        selected = selectedType == "SNAP" || selectedType == "SAVEABLE_SNAP",
-                                        icon = Icons.Filled.PhotoCamera,
-                                        title = translation["SNAP"]
-                                    ) {
-                                        selectedType = "SNAP"
-                                    }
-                                    ActionTile(
-                                        modifier = Modifier.weight(1f).height(92.dp),
-                                        selected = selectedType == "NOTE",
-                                        icon = Icons.Filled.MusicNote,
-                                        title = translation["NOTE"]
-                                    ) {
-                                        selectedType = "NOTE"
-                                    }
+                            )
+                            Text(text = mainTranslation["schedule"], modifier = Modifier.weight(1f))
+                            if (scheduleEnabled) {
+                                Button(onClick = { showClockPicker = true }) {
+                                    scheduledTime?.let { time ->
+                                        Text(text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(time))
+                                    } ?: Text(context.translation["select"])
                                 }
-
-                                fun convertDuration(duration: Float): Int? {
-                                    return when  {
-                                        duration in -2f..-1f -> 100
-                                        duration in -1f..-0f -> 250
-                                        duration in -0f..1f -> 500
-                                        duration >= 11f -> null
-                                        else -> ((duration * 1000).toInt() / 1000) * 1000
-                                    }
-                                }
-
-                                when (selectedType) {
-                                    "SNAP", "SAVEABLE_SNAP" -> {
-                                        fun toggleSaveable() {
-                                            selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
-                                        }
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().clickable {
-                                                toggleSaveable()
-                                            },
-                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ){
-                                            Checkbox(
-                                                checked = selectedType == "SAVEABLE_SNAP",
-                                                onCheckedChange = {
-                                                    toggleSaveable()
-                                                }
-                                            )
-                                            Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
-                                        }
-                                        Column(
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        ) {
-                                            Text(
-                                                text = mainTranslation.format("duration",
-                                                    "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
-                                                )
-                                            )
-                                            Slider(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                enabled = selectedType != "SAVEABLE_SNAP",
-                                                value = customDuration,
-                                                onValueChange = {
-                                                    customDuration = it
-                                                },
-                                                valueRange = -2f..11f,
-                                            )
-                                        }
-                                    }
-                                }
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Checkbox(
-                                        checked = scheduleEnabled,
-                                        onCheckedChange = {
-                                            scheduleEnabled = it
-                                            if (!it) scheduledTime = null
-                                        }
-                                    )
-                                    Text(text = mainTranslation["schedule"], modifier = Modifier.weight(1f))
-                                    if (scheduleEnabled) {
-                                        Button(onClick = { showClockPicker = true }) {
-                                            scheduledTime?.let { time ->
-                                                Text(text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(time))
-                                            } ?: Text(context.translation["select"])
-                                        }
-                                    }
-                                }
+                            }
+                        }
 
                         if (scheduleEnabled && showClockPicker) {
                             val datePickerState = rememberDatePickerState(
@@ -662,7 +703,6 @@ class SendOverride : Feature("Send Override") {
                             var showDatePickerDialog by remember { mutableStateOf(false) }
                             var showTimePickerDialog by remember { mutableStateOf(false) }
                             
-                            // Date Picker Dialog
                             if (showDatePickerDialog) {
                                 DatePickerDialog(
                                     onDismissRequest = { showDatePickerDialog = false },
@@ -681,7 +721,6 @@ class SendOverride : Feature("Send Override") {
                                 }
                             }
                             
-                            // Time Picker Dialog
                             if (showTimePickerDialog) {
                                 AlertDialog(
                                     onDismissRequest = { showTimePickerDialog = false },
@@ -719,7 +758,6 @@ class SendOverride : Feature("Send Override") {
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                     
-                                    // Date Selection Button
                                     OutlinedButton(
                                         onClick = { showDatePickerDialog = true },
                                         modifier = Modifier.fillMaxWidth()
@@ -727,22 +765,19 @@ class SendOverride : Feature("Send Override") {
                                         Icon(Icons.Default.CalendarToday, contentDescription = null)
                                         Spacer(Modifier.width(8.dp))
                                         Text(
-                                            datePickerState.selectedDateMillis?.let { millis ->
-                                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(millis)
+                                            datePickerState.selectedDateMillis?.let {
+                                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it)
                                             } ?: context.translation.getOrNull("select_date") ?: "Select Date"
                                         )
                                     }
                                     
-                                    // Time Selection Button
                                     OutlinedButton(
                                         onClick = { showTimePickerDialog = true },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Icon(Icons.Default.Schedule, contentDescription = null)
                                         Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            String.format("%02d:%02d", clockPickerHour, clockPickerMinute)
-                                        )
+                                        Text(String.format("%02d:%02d", clockPickerHour, clockPickerMinute))
                                     }
                                     
                                     Row(
@@ -799,6 +834,7 @@ class SendOverride : Feature("Send Override") {
                             }
                             Button(onClick = {
                                 alertDialog.dismiss()
+                                val finalSelectedType = selectedType
                                 val delayMs = scheduledTime?.let { it - System.currentTimeMillis() }
                                 if (delayMs != null && delayMs > 0) {
                                     val taskHash = java.util.UUID.randomUUID().toString()
@@ -810,49 +846,42 @@ class SendOverride : Feature("Send Override") {
                                         recipientNameForTask,
                                         taskHash
                                     )
-                                    val days = (delayMs / (24 * 60 * 60 * 1000)).toInt()
-                                    val hours = ((delayMs / (60 * 60 * 1000)) % 24).toInt()
-                                    val minutes = ((delayMs / (60 * 1000)) % 60).toInt()
-                                    val seconds = ((delayMs / 1000) % 60).toInt()
-                                    
-                                    val scheduledTimeText = StringBuilder().apply {
-                                        if (days > 0) append("${days}d ")
-                                        if (hours > 0 || days > 0) append("${hours}h ")
-                                        if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
-                                        append("${seconds}s")
-                                    }.toString()
+                                    val scheduledTimeText = formatTimeText(delayMs)
                                     context.inAppOverlay.showStatusToast(
                                         icon = Icons.Filled.Schedule,
                                         text = context.translation.format("schedule_scheduled_for", "name" to recipientNameForTask, "time" to scheduledTimeText) ?: "Scheduled for $recipientNameForTask in $scheduledTimeText"
                                     )
                                     val releaseBackground = acquireScheduledSendBackground()
+                                    
+                                    event.addCallbackResult("onSuccess") {
+                                        context.bridgeClient.getTaskInterface().successTask(taskHash)
+                                    }
+                                    event.addCallbackResult("onError") { 
+                                        context.bridgeClient.getTaskInterface().failTask(taskHash, it.getOrNull(0)?.toString() ?: "Unknown error")
+                                    }
+
                                     val job = context.coroutineScope.launch {
                                         val startTime = System.currentTimeMillis()
                                         while (true) {
-                                            delay(1000)
                                             val elapsed = System.currentTimeMillis() - startTime
                                             val remaining = delayMs - elapsed
                                             if (remaining <= 0) break
-                                            val days = (remaining / (24 * 60 * 60 * 1000)).toInt()
-                                            val hours = ((remaining / (60 * 60 * 1000)) % 24).toInt()
-                                            val minutes = ((remaining / (60 * 1000)) % 60).toInt()
-                                            val seconds = ((remaining / 1000) % 60).toInt()
                                             
-                                            val timeText = StringBuilder().apply {
-                                                if (days > 0) append("${days}d ")
-                                                if (hours > 0 || days > 0) append("${hours}h ")
-                                                if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
-                                                append("${seconds}s")
-                                            }.toString()
+                                            val timeText = formatTimeText(remaining)
+                                            val progress = (elapsed * 100 / delayMs).toInt().coerceIn(0, 99)
+                                            
                                             context.bridgeClient.getTaskInterface().updateTaskProgress(
                                                 taskHash,
                                                 context.translation.getOrNull("schedule_sending_in")?.replace("{time}", timeText) ?: "Sending in $timeText",
-                                                -1
+                                                progress
                                             )
+                                            delay(1000)
                                         }
-                                        if (sendMedia(selectedType, if (selectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
+
+                                        context.bridgeClient.getTaskInterface().updateTaskProgress(taskHash, "Sending...", 100)
+
+                                        if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
                                             event.invokeOriginal()
-                                            context.bridgeClient.getTaskInterface().successTask(taskHash)
                                             val successText = context.translation.format("schedule_sent_to", "name" to recipientNameForTask) ?: "Sent to $recipientNameForTask"
                                             context.inAppOverlay.showStatusToast(
                                                 icon = Icons.Filled.CheckCircle,
@@ -899,14 +928,12 @@ class SendOverride : Feature("Send Override") {
                                         }
                                     }
                                 } else {
-                                    if (sendMedia(selectedType, if (selectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
+                                    if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
                                         event.invokeOriginal()
                                     }
                                 }
                             }) {
                                 Text(if (scheduledTime != null) mainTranslation["schedule"] else context.translation["button.send"])
-                            }
-                        }
                             }
                         }
                     }

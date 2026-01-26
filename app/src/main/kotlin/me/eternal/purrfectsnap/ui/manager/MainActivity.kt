@@ -3,6 +3,7 @@ package me.eternal.purrfectsnap.ui.manager
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +24,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.background
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -33,11 +36,14 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import me.eternal.purrfectsnap.RemoteSideContext
 import me.eternal.purrfectsnap.SharedContextHolder
 import me.eternal.purrfectsnap.common.ui.AppMaterialTheme
 import me.eternal.purrfectsnap.common.ui.ThemeMode
 import me.eternal.purrfectsnap.common.ui.ThemePreferences
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
 import me.eternal.purrfectsnap.ui.util.ThankYouDialog
@@ -113,6 +119,31 @@ class MainActivity : ComponentActivity() {
                 }
             }
             AppMaterialTheme(themeMode = themeMode) {
+                val shouldShowAbiWarning = remember {
+                    val deviceIsArm64 = Build.SUPPORTED_ABIS.any { it == "arm64-v8a" || it.startsWith("arm64") }
+                    val libDir = context.applicationInfo.nativeLibraryDir.orEmpty()
+                    val appIsArm64 = libDir.contains("arm64")
+                    deviceIsArm64 && !appIsArm64
+                }
+                if (shouldShowAbiWarning) {
+                    AestheticDialog(
+                        onDismissRequest = {},
+                        title = "Wrong APK installed",
+                        text = "",
+                        icon = Icons.Filled.Warning,
+                        confirmButtonText = "Close",
+                        onConfirm = { (context as? Activity)?.finishAffinity() },
+                        showCloseButton = false,
+                        opaque = true,
+                        customContent = {
+                            Text(
+                                text = "Your device is armv8, please download the armv8 apk, not armv7.",
+                                color = PurrfectPalette.textSecondary,
+                                lineHeight = 18.sp
+                            )
+                        }
+                    )
+                }
                 val background = MaterialTheme.colorScheme.background
                 val isLight = background.luminance() > 0.5f
                 val view = LocalView.current

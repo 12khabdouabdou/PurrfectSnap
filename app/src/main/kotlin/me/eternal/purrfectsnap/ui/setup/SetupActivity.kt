@@ -3,6 +3,7 @@
 package me.eternal.purrfectsnap.ui.setup
 
 import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -78,6 +79,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -203,6 +205,7 @@ class SetupActivity : ComponentActivity() {
             }
 
         setContent {
+            val context = LocalContext.current
             val navController = rememberNavController()
             var canGoNext by remember { mutableStateOf(false) }
             var lastRoute by rememberSaveable { mutableStateOf("") }
@@ -214,6 +217,31 @@ class SetupActivity : ComponentActivity() {
             }
             val skipPatch by rememberSaveable { skipPatchChoice }
             val installMode by installModeChoice
+            val shouldShowAbiWarning = remember {
+                val deviceIsArm64 = Build.SUPPORTED_ABIS.any { it == "arm64-v8a" || it.startsWith("arm64") }
+                val libDir = context.applicationInfo.nativeLibraryDir.orEmpty()
+                val appIsArm64 = libDir.contains("arm64")
+                deviceIsArm64 && !appIsArm64
+            }
+            if (shouldShowAbiWarning) {
+                AestheticDialog(
+                    onDismissRequest = {},
+                    title = "Wrong APK installed",
+                    text = "",
+                    icon = Icons.Filled.Warning,
+                    confirmButtonText = "Close",
+                    onConfirm = { (context as? Activity)?.finishAffinity() },
+                    showCloseButton = false,
+                    opaque = true,
+                    customContent = {
+                        Text(
+                            text = "Your device is armv8, please download the armv8 apk, not armv7.",
+                            color = PurrfectPalette.textSecondary,
+                            lineHeight = 18.sp
+                        )
+                    }
+                )
+            }
             val visibleScreens = remember(skipPatch, installMode) {
                 requiredScreens.filterNot { screen ->
                     if (skipPatch && (screen is PatchSnapchatScreen || screen is RootInstallSnapchatScreen)) {
