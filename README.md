@@ -459,7 +459,7 @@ PurrfectSnap is built with exceptional open source tools:
 <br>
 
 Built with care, maintained with passion
-© Particle Box — Open source under GPL-3.0
+Open source under GPL-3.0
 
 <br>
 <br>
