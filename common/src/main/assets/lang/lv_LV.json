@@ -148,6 +148,10 @@
         "clear_history": "Tīrīt meklēšanas vēsturi",
         "subtitle": "Meklēt un pārvaldīt funkcijas"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Atslēgts",
         "disable_state_subtext": "Nekādi draugi/grupas netiks ietekmēti",

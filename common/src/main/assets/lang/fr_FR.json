@@ -148,6 +148,10 @@
         "clear_history": "Effacer l'historique de la recherche",
         "subtitle": "Recherche et gestion des fonctionnalités"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Handicapés",
         "disable_state_subtext": "Aucun ami/groupe ne sera affecté",

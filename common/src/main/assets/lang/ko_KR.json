@@ -148,6 +148,10 @@
         "clear_history": "자주 묻는 질문",
         "subtitle": "검색 및 관리 기능"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "지원하다",
         "disable_state_subtext": "친구 / 그룹은 영향을받지 않습니다",

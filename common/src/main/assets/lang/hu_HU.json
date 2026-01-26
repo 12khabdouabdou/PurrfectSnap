@@ -148,6 +148,10 @@
         "clear_history": "A keresési előzmények törlése",
         "subtitle": "Keresési és kezelési funkciók"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Fogyatékos",
         "disable_state_subtext": "Nem lesz hatással a barátok / csoportok",

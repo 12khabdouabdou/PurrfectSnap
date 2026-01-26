@@ -148,6 +148,10 @@
         "clear_history": "অনুসন্ধানের তথ্য মুছে ফেলুন",
         "subtitle": "অনুসন্ধান ও পরিচালনা করুন"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "নিষ্ক্রিয়",
         "disable_state_subtext": "কোন বন্ধু/ কোরোর প্রভাবিত হবে না",

@@ -148,6 +148,10 @@
         "clear_history": "खोज इतिहास साफ़ करें",
         "subtitle": "सुविधाओं को खोजें और प्रबंधित करें"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "विकलांग",
         "disable_state_subtext": "कोई मित्र/समूह प्रभावित नहीं होंगे",

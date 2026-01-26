@@ -148,6 +148,10 @@
         "clear_history": "Historial de búsqueda clara",
         "subtitle": "Buscar y gestionar características"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Discapacitados",
         "disable_state_subtext": "Ningún amigo/grupos será afectado",

@@ -148,6 +148,10 @@
         "clear_history": "明確な検索履歴",
         "subtitle": "機能の検索と管理"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "バリアフリー",
         "disable_state_subtext": "友だち/グループが影響しません",

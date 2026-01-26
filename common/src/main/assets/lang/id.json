@@ -148,6 +148,10 @@
         "clear_history": "Bersihkan riwayat pencarian",
         "subtitle": "Cari dan kelola fitur"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Dinonaktifkan",
         "disable_state_subtext": "Tidak ada teman / kelompok yang akan terpengaruh",

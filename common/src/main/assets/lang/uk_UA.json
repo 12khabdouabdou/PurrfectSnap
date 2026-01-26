@@ -148,6 +148,10 @@
         "clear_history": "Історія пошуку",
         "subtitle": "Пошук і управління функціями"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Вимкнено",
         "disable_state_subtext": "Ніяких друзів/груп",

@@ -148,6 +148,10 @@
         "clear_history": "Wyczyść historię wyszukiwania",
         "subtitle": "Funkcja wyszukiwania i zarządzania"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Wyłączone",
         "disable_state_subtext": "Nie wpłynie to na przyjaciół / grupy",

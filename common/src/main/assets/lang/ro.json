@@ -148,6 +148,10 @@
         "clear_history": "Șterge istoricul căutării",
         "subtitle": "Caută și gestionează caracteristicile"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Dezactivat",
         "disable_state_subtext": "Niciun prieten/grup nu va fi afectat",

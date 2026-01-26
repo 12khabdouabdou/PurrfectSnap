@@ -6,6 +6,7 @@ import android.widget.FrameLayout
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.BorderStroke
@@ -20,6 +21,8 @@ import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,6 +36,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -377,5 +381,135 @@ class InAppOverlay(
             },
             durationMs = durationMs
         ))
+    }
+
+    private enum class BypassAnimation { SLIDE_DOWN, ZOOM_IN }
+
+    fun showBypassStatusIndicator(isWorking: Boolean) {
+        if (context.bridgeClient.getDebugProp("disable_bypass_indicator", "false") == "true") {
+            return
+        }
+
+        val animationType = BypassAnimation.entries.random()
+        
+        lateinit var composable: CustomComposable
+        composable = {
+            var visible by remember { mutableStateOf(false) }
+            
+            LaunchedEffect(Unit) {
+                visible = true
+                delay(3000)
+                visible = false
+                delay(400)
+                context.inAppOverlay.removeCustomComposable(composable)
+            }
+
+            val progress by animateFloatAsState(
+                targetValue = if (visible) 1f else 0f,
+                animationSpec = spring(
+                    dampingRatio = 0.7f,
+                    stiffness = 70f
+                ),
+                label = "progress"
+            )
+
+            val (offsetX, offsetY, scale) = when (animationType) {
+                BypassAnimation.SLIDE_DOWN -> Triple(0f, -80f * (1f - progress), 1f)
+                BypassAnimation.ZOOM_IN -> Triple(0f, 0f, progress)
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp)
+                    .graphicsLayer {
+                        translationX = offsetX
+                        translationY = offsetY
+                        scaleX = scale
+                        scaleY = scale
+                        alpha = progress
+                    }
+            ) {
+                // Use PurrfectSnap UI colors - gradient for active, red tint for inactive
+                val backgroundColor = if (isWorking) {
+                    Brush.linearGradient(
+                        listOf(
+                            PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.85f),
+                            PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.75f)
+                        )
+                    )
+                } else {
+                    Brush.linearGradient(
+                        listOf(
+                            Color(0xFFB71C1C).copy(alpha = 0.85f),
+                            Color(0xFFD32F2F).copy(alpha = 0.75f)
+                        )
+                    )
+                }
+
+                val shape = RoundedCornerShape(24.dp)
+                Surface(
+                    modifier = Modifier
+                        .shadow(
+                            elevation = 12.dp,
+                            shape = shape,
+                            spotColor = if (isWorking) PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.3f) else Color(0xFFB71C1C).copy(alpha = 0.25f),
+                            ambientColor = if (isWorking) PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.2f) else Color(0xFFD32F2F).copy(alpha = 0.18f)
+                        )
+                        .clip(shape)
+                        .background(backgroundColor, shape)
+                        .border(
+                            BorderStroke(
+                                1.dp,
+                                if (isWorking) {
+                                    Brush.linearGradient(
+                                        listOf(
+                                            PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.7f),
+                                            PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.6f)
+                                        )
+                                    )
+                                } else {
+                                    Brush.linearGradient(
+                                        listOf(
+                                            Color(0xFFB71C1C).copy(alpha = 0.7f),
+                                            Color(0xFFD32F2F).copy(alpha = 0.6f)
+                                        )
+                                    )
+                                }
+                            ),
+                            shape
+                        ),
+                    color = Color.Transparent,
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        
+                        Text(
+                            text = if (isWorking) 
+                                context.translation.getOrNull("manager.sections.bypass_status.active") ?: "Bypass Active"
+                            else 
+                                context.translation.getOrNull("manager.sections.bypass_status.inactive") ?: "Bypass Inactive",
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+
+        context.mainActivity?.let { injectOverlay(it) }
+        customComposables.add(composable)
     }
 }

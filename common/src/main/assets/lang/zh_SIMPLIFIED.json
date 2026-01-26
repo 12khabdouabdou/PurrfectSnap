@@ -148,6 +148,10 @@
         "clear_history": "清除搜索历史",
         "subtitle": "搜索和管理特性"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "已禁用",
         "disable_state_subtext": "没有朋友或团体受到影响",

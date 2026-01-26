@@ -148,6 +148,10 @@
         "clear_history": "Clear search history",
         "subtitle": "Search and manage features"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Disabled",
         "disable_state_subtext": "No friends/groups will be affected",

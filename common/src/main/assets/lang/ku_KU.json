@@ -148,6 +148,10 @@
                 "clear_history": "پاککردنەوەی مێژووی گەڕان",
                 "subtitle": "گەڕان و بەڕێوەبردنی تایبەتمەندییەکان"
             },
+            "bypass_status": {
+                "active": "PurrAura Active",
+                "inactive": "PurrAura Inactive"
+            },
             "manage_rule_feature": {
                 "disable_state_option": "ناچالاک کراوە",
                 "disable_state_subtext": "هیچ هاوڕێ/گرووپێک کاریگەر نابێت",

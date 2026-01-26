@@ -148,6 +148,10 @@
         "clear_history": "Tydlig sökhistoria",
         "subtitle": "Sök och hantera funktioner"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Inaktiverad",
         "disable_state_subtext": "Inga vänner/grupper kommer att påverkas",

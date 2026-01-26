@@ -148,6 +148,10 @@
         "clear_history": "Zoekgeschiedenis wissen",
         "subtitle": "Functies zoeken en beheren"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Uitgeschakeld",
         "disable_state_subtext": "Geen vrienden/groepen worden beïnvloed",

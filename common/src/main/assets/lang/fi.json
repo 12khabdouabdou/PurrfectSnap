@@ -148,6 +148,10 @@
         "clear_history": "Tyhjennä hakuhistoria",
         "subtitle": "Etsi ja hallitse ominaisuuksia"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Ei käytössä",
         "disable_state_subtext": "Ystäviä tai ryhmiä ei muuteta",

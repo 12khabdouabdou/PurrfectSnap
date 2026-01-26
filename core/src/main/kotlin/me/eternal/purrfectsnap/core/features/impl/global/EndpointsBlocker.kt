@@ -1,24 +1,8 @@
 package me.eternal.purrfectsnap.core.features.impl.global
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.event.events.impl.NetworkApiRequestEvent
 import me.eternal.purrfectsnap.core.event.events.impl.UnaryCallEvent
-import me.eternal.purrfectsnap.core.ui.CustomComposable
 import me.eternal.purrfectsnap.core.util.dataBuilder
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -31,47 +15,6 @@ import java.lang.reflect.Method
 class EndpointsBlocker : Feature("EndpointsBlocker") {
     @Volatile
     private var isInLoginSignup = false
-
-    private fun showBypassStatusIndicator(isWorking: Boolean) {
-        if (context.bridgeClient.getDebugProp("disable_bypass_indicator", "false") == "true") {
-            return
-        }
-
-        lateinit var composable: CustomComposable
-        composable = {
-            Row(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.TopCenter)
-                    .background(
-                        color = Color.Black.copy(alpha = 0.8f),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
-                    contentDescription = null,
-                    tint = if (isWorking) Color.Green else Color.Red,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "PurrAura",
-                        color = Color.White,
-                        fontSize = 14.sp
-                    )
-            }
-
-            LaunchedEffect(Unit) {
-                delay(3000)
-                context.inAppOverlay.removeCustomComposable(composable)
-            }
-        }
-
-        context.inAppOverlay.addCustomComposable(composable)
-    }
 
     override fun init() {
         val bypassToggleEnabled = context.bridgeClient.getDebugProp("test_mode", "false") == "true"
@@ -101,7 +44,7 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
                 context.log.warn("EndpointsBlocker: native self-test failed, indicator set to inactive")
                 context.log.warn("EndpointsBlocker: Possible causes - config not loaded or self-test logic failed")
             }
-            showBypassStatusIndicator(healthy)
+            context.inAppOverlay.showBypassStatusIndicator(healthy)
         } else {
             context.native.setTestMode(false)
         }

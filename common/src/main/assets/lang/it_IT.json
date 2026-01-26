@@ -148,6 +148,10 @@
         "clear_history": "Cancella la cronologia di ricerca",
         "subtitle": "Ricerca e gestione delle funzionalità"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Disabili",
         "disable_state_subtext": "Nessun amico/gruppo sarà interessato",

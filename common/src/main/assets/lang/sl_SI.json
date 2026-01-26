@@ -148,6 +148,10 @@
         "clear_history": "Počisti zgodovino iskanja",
         "subtitle": "Iskanje in upravljanje funkcij"
       },
+      "bypass_status": {
+          "active": "PurrAura Active",
+          "inactive": "PurrAura Inactive"
+      },
       "manage_rule_feature": {
         "disable_state_option": "Onemogočeno",
         "disable_state_subtext": "Na prijatelje/skupine ne bo vpliva",
