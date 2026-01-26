@@ -282,7 +282,7 @@ We've eliminated 90% of the installation friction. No Shizuku. No LSPatch. Just 
 Let AI handle routine responses while you focus on what matters. Configure automatic replies for chats, stories, and half-swipes. Essential for creators managing volume. Requires an API key from Google AI Studio, they offer free tier access.
 
 **Scheduled Snaps**  
-Time-shifted communication. Set a snap to send at midnight for a birthday. Queue content for optimal timing—your schedule, automated.
+Time-shifted communication. Set a snap to send at midnight for a birthday. Queue content for optimal timing:your schedule, automated.
 
 **Message Translator**  
 Language barriers, eliminated. Incoming messages automatically translate to your preferred language. Set it once, communicate globally.
@@ -386,7 +386,10 @@ See exactly which features a config will enable before importing or exporting. K
 
 Hundreds of refinements you'll feel but might not see. Smoother animations. Faster response times. Eliminated edge cases. The kind of polish that separates good from exceptional.
 
-> Some features are intended for educational, recovery, or accessibility purposes. Misuse may violate Snapchat’s terms of service.
+
+
+> ⚠️Some features are intended for educational, recovery, or accessibility purposes. Misuse may violate Snapchat’s terms of service. 
+> **We are not affiliated with Snap Inc. and are not responsible for any violations by the user. Our sole purpose is for education purposes only!**
 
 <br>
 
@@ -409,7 +412,7 @@ Just download and install PurrfectSnap from [here](https://github.com/particle-b
 
 Questions? Ideas? Found a bug? Our community is active and responsive.
 
-**[Telegram Channel](https://t.me/purrfectsnap_official)** — Announcements, discussions, and support
+**[Telegram Channel](https://t.me/purrfectsnap_official)** : Announcements, discussions, and support
 **For the discussions group link, refer to the description of the channel!**
 
 <br>
@@ -420,7 +423,7 @@ Questions? Ideas? Found a bug? Our community is active and responsive.
 
 ## Contributing
 
-We welcome contributions from developers who share our vision. Whether it's code, documentation, or design—quality contributions are always appreciated.
+We welcome contributions from developers who share our vision. Whether it's code, documentation, etc., contributions are always appreciated. Feel free to open a PR :)
 
 <br>
 
@@ -430,16 +433,27 @@ We welcome contributions from developers who share our vision. Whether it's code
 
 ## Credits
 
-PurrfectSnap is built with exceptional open source tools:
+PurrfectSnap is built with exceptional open source tools. We do not collect any user information. However, please be aware that third-party libraries may collect data as described in their respective privacy policies.
 
 **Core Dependencies**
 - [SnapEnhance](https://github.com/rhunk/SnapEnhance) — The foundation
 - [libxposed](https://github.com/libxposed/api) — Framework integration
+- [Jingmatrix Lspatch](https://github.com/JingMatrix/LSPatch) — Auto Patcher
 - [Dobby](https://github.com/jmpews/Dobby) — Native hooking
+- [O‑MVLL](https://github.com/open-obfuscator/o-mvll) — Obfuscation
+- [hiddenapibypass](https://github.com/LSPosed/HiddenApiBypass) — Hidden API access
+- [dexlib2 (smali)](https://github.com/JesusFreke/smali) — Dex parsing
+- [Bouncy Castle](https://www.bouncycastle.org/) — Cryptography
+- [apksig](https://android.googlesource.com/platform/tools/apksig/) — APK signing tools
+- [Rust Android Gradle Plugin](https://github.com/mozilla/rust-android-gradle) — Native build tooling
+- [Android Gradle Plugin](https://developer.android.com/build) — Build system
+- [Kotlin](https://kotlinlang.org/) — Language
+- [Compose Compiler](https://developer.android.com/jetpack/compose/compiler) — Compose compiler
 
 **Media Processing**
 - [ffmpeg-kit-full-gpl](https://github.com/arthenica/ffmpeg-kit) — Media manipulation
 - [coil](https://github.com/coil-kt/coil) — Image loading
+- [smart-exception-java](https://github.com/arthenica/ffmpeg-kit) — ffmpeg-kit support lib
 
 **Scripting Engine**
 - [rhino](https://github.com/mozilla/rhino) — JavaScript runtime
@@ -449,6 +463,21 @@ PurrfectSnap is built with exceptional open source tools:
 - [osmdroid](https://github.com/osmdroid/osmdroid) — Map functionality
 - [libsu](https://github.com/topjohnwu/libsu) — Root operations
 - [colorpicker-compose](https://github.com/skydoves/colorpicker-compose) — Color selection
+- [OkHttp](https://github.com/square/okhttp) — Networking
+- [Gson](https://github.com/google/gson) — JSON parsing
+- [jsoup](https://github.com/jhy/jsoup) — HTML parsing
+- [Fetch](https://github.com/tonyofrancis/Fetch) — Download manager
+- [WorkManager](https://developer.android.com/jetpack/androidx/releases/work) — Background tasks
+- [Accompanist](https://github.com/google/accompanist) — Compose utilities
+- [Guava](https://github.com/google/guava) — Core utilities
+- [Kotlin Coroutines](https://github.com/Kotlin/kotlinx.coroutines) — Async
+- [AndroidX DocumentFile](https://developer.android.com/reference/androidx/documentfile/provider/DocumentFile) — File access
+- [AndroidX RecyclerView](https://developer.android.com/jetpack/androidx/releases/recyclerview) — Lists
+- [AndroidX Navigation Compose](https://developer.android.com/jetpack/androidx/releases/navigation) — Navigation
+- [Jetpack Compose / Material3](https://developer.android.com/jetpack/compose) — UI toolkit
+- [AndroidX Activity KTX](https://developer.android.com/jetpack/androidx/releases/activity) — Activity helpers
+- [Compose BOM](https://developer.android.com/jetpack/compose/bom) — Compose version alignment
+- [Material Icons (Compose)](https://developer.android.com/jetpack/compose/designsystems/material#icons) — Icons
 
 <br>
 
@@ -458,9 +487,8 @@ PurrfectSnap is built with exceptional open source tools:
 
 <br>
 
-Built with care, maintained with passion
-Open source under GPL-3.0
-
+Built with care, maintained with passion ❤️
+Open source under GPL-3.0, Apache-2.0
 <br>
 <br>
 
