@@ -1,4 +1,4 @@
-﻿{
+{
   "setup": {
     "dialogs": {
       "select_language": "Izberi jezik",
@@ -8,13 +8,13 @@
     "mappings": {
       "dialog": "Ustvarjanje zemljevidov...",
       "generate_failure_no_snapchat": "PurrfectSnap ni mogel zaznati Snapchata, prosim poskusite ponovno namestiti Snapchat.",
-      "generate_failure": "Prišlo je do napake med poskušanjem ustvarjanja kartografij, poskusite znova."
+      "generate_failure": "Pri�lo je do napake med posku�anjem ustvarjanja kartografij, poskusite znova."
     },
     "permissions": {
       "dialog": "Izpolnite te bistvene elemente za nadaljevanje:",
       "notification_access": "Dostop do obvestil",
       "battery_optimization": "Optimizacija baterije",
-      "display_over_other_apps": "Prikaži nad drugimi aplikacijami",
+      "display_over_other_apps": "Prika�i nad drugimi aplikacijami",
       "request_button": "Zahtevek"
     }
   },
@@ -25,14 +25,14 @@
   "manager": {
     "routes": {
       "tasks": "Naloge",
-      "features": "Značilnosti",
+      "features": "Znacilnosti",
       "manage_rule_feature": "Upravljaj funkcijo pravila",
       "home": "Domov",
       "home_about": "O programu",
       "home_settings": "Nastavitve",
       "home_logs": "Dnevniki",
       "logger_history": "Zgodovina dnevnika",
-      "logged_stories": "Zamašene zgodbe",
+      "logged_stories": "Zama�ene zgodbe",
       "friend_tracker": "Sledilnik prijateljev",
       "friend_tracker_catalog": "Katalog sledilnikov prijateljev",
       "manage_friend_tracker_repos": "Upravljajte repozitorij sledilnikov prijateljev",
@@ -40,112 +40,112 @@
       "file_imports": "Uvoz datotek",
       "manage_repos": "Upravljajte repozitorije",
       "social": "Socialni",
-      "manage_scope": "Upravljaj področje uporabe",
+      "manage_scope": "Upravljaj podrocje uporabe",
       "messaging_preview": "Ogled",
       "scripts": "Skripti",
       "manage_script_repos": "Upravljaj repozitorij skriptov",
       "view_logger_history": "Zgodovina dnevnika",
-      "better_location": "Boljša lokacija"
+      "better_location": "Bolj�a lokacija"
     },
     "navigation": {
       "customize_bottom_bar_title": "Prilagodi spodnjo vrstico",
-      "customize_bottom_bar_subtitle": "Izberite, kateri zavihki kažejo na domačem zaslonu",
-      "available_tabs_title": "Razpoložljivi zavihki",
-      "shown_tabs_title": "Prikaži zavihke",
+      "customize_bottom_bar_subtitle": "Izberite, kateri zavihki ka�ejo na domacem zaslonu",
+      "available_tabs_title": "Razpolo�ljivi zavihki",
+      "shown_tabs_title": "Prika�i zavihke",
       "reset_button": "Ponastavi",
       "done_button": "Opravljeno"
     },
     "sections": {
       "home": {
-        "version_title": "v{versionName}· z večnim",
+        "version_title": "v{versionName}� z vecnim",
         "update_title": "Posodabljanje PurrfectSnap",
-        "update_content": "Različica{version}je na voljo!",
+        "update_content": "Razlicica{version}je na voljo!",
         "update_button": "Prenesi",
-        "debug_build_summary_title": "Zaganjate razhroščevalno zgradbo PurrfectSnap",
-        "debug_build_summary_content": "Različica{versionName}({versionCode})",
+        "debug_build_summary_title": "Zaganjate razhro�cevalno zgradbo PurrfectSnap",
+        "debug_build_summary_content": "Razlicica{versionName}({versionCode})",
         "debug_build_summary_date": "Premakni datum:{date}({days}pred dnevi)",
         "quick_actions_title": "Hitra dejanja"
       },
       "home_logs": {
         "no_logs_hint": "Dnevniki niso na voljo",
-        "clear_logs_button": "Počisti dnevnike",
+        "clear_logs_button": "Pocisti dnevnike",
         "export_logs_button": "Izvozi dnevnike",
-        "saving_logs_toast": "Shranjevanje dnevnikov, to lahko traja nekaj časa ...",
-        "saved_logs_success_toast": "Dnevniki so bili uspešno shranjeni",
+        "saving_logs_toast": "Shranjevanje dnevnikov, to lahko traja nekaj casa ...",
+        "saved_logs_success_toast": "Dnevniki so bili uspe�no shranjeni",
         "saved_logs_failure_toast": "Shranjevanje dnevnikov ni uspelo"
       },
       "home_settings": {
         "actions_title": "Dejanja",
-        "message_logger_title": "Dnevnik sporočil",
-        "debug_title": "Razhrošči",
-        "success_toast": "Končano!",
-        "message_logger_summary": "{messageCount}sporočila\n{storyCount}zgodbe",
+        "message_logger_title": "Dnevnik sporocil",
+        "debug_title": "Razhro�ci",
+        "success_toast": "Koncano!",
+        "message_logger_summary": "{messageCount}sporocila\n{storyCount}zgodbe",
         "export_button": "Izvoz",
-        "clear_button": "Počisti",
+        "clear_button": "Pocisti",
         "view_logger_history_button": "Zgodovina dnevnika",
         "ui_settings_title": "Nastavitve vmesnika",
-        "haptic_feedback_label": "Haptične povratne informacije",
+        "haptic_feedback_label": "Hapticne povratne informacije",
         "use_system_toasts_label": "Uporabi sistemske toaste",
         "updates_title": "Posodobitve",
-        "auto_update_check": "Samodejno osveži",
+        "auto_update_check": "Samodejno osve�i",
         "update_check_frequency_daily": "Dnevno",
         "update_check_frequency_weekly": "Teden",
-        "update_check_frequency_monthly": "Mesečno",
+        "update_check_frequency_monthly": "Mesecno",
         "update_channel_stable": "Stabilno",
-        "update_channel_prerelease": "Pred sproščanjem",
+        "update_channel_prerelease": "Pred spro�canjem",
         "update_notification_channel_name": "Posodobitve",
-        "update_notification_channel_description": "Bodite obveščeni, ko so na voljo nove izdaje",
+        "update_notification_channel_description": "Bodite obve�ceni, ko so na voljo nove izdaje",
         "update_notification_title": "Na voljo je nova posodobitev",
-        "update_notification_text": "Tapnite, da odprete PurrfectSnap in prenesete najnovejšo gradnjo.",
+        "update_notification_text": "Tapnite, da odprete PurrfectSnap in prenesete najnovej�o gradnjo.",
         "app_theme_title": "Tema App",
         "theme_icon_description": "Izbirnik odprtih tem",
         "theme_mode_system": "Sistem",
         "theme_mode_light": "Svetloba",
         "theme_mode_dark": "Temno",
         "friend_notes_title": "Opombe prijateljev",
-        "friend_notes_description": "Upravljajte in varnostno kopiranje zapiskov vašega prijatelja",
-        "friend_notes_no_notes_to_backup": "Nobenih sporočil še ni",
+        "friend_notes_description": "Upravljajte in varnostno kopiranje zapiskov va�ega prijatelja",
+        "friend_notes_no_notes_to_backup": "Nobenih sporocil �e ni",
         "friend_notes_backup_success": "Zapiski prijateljev so podprti",
         "friend_notes_restore_success": "Prijateljski zapiski obnovljeni",
         "backup_button": "Varnostna kopija",
         "restore_button": "Obnovi",
         "view_button": "Pogled",
         "customize_bottom_bar_title": "Prilagodi spodnjo vrstico",
-        "customize_bottom_bar_subtitle": "Izberite, kateri zavihki kažejo na domačem zaslonu",
-        "available_tabs_title": "Razpoložljivi zavihki",
+        "customize_bottom_bar_subtitle": "Izberite, kateri zavihki ka�ejo na domacem zaslonu",
+        "available_tabs_title": "Razpolo�ljivi zavihki",
         "reset_button": "Ponastavi",
         "done_button": "Opravljeno",
-        "clear_friend_feed": "Počisti vir prijateljev",
-        "test_mode_label": "Omogoči PurrAuro",
-        "disable_feature_loading_label": "Onemogoči nalaganje funkcij",
-        "disable_auto_mapper_label": "Onemogoči samodejni zemljevid",
-        "disable_bypass_indicator_label": "Onemogoči kazalnik obvoda"
+        "clear_friend_feed": "Pocisti vir prijateljev",
+        "test_mode_label": "Omogoci PurrAuro",
+        "disable_feature_loading_label": "Onemogoci nalaganje funkcij",
+        "disable_auto_mapper_label": "Onemogoci samodejni zemljevid",
+        "disable_bypass_indicator_label": "Onemogoci kazalnik obvoda"
       },
       "tasks": {
         "no_tasks": "Brez opravil",
-        "merge_button": "Združi",
-        "failed_to_open_file": "Ni moč odpreti datoteke",
-        "merge_files_toast": "Združevanje{count}datoteke",
-        "remove_selected_tasks_title": "Ali res želite odstraniti izbrana opravila?",
-        "remove_all_tasks_title": "Ste prepričani, da želite odstraniti vse naloge?",
-        "delete_files_option": "Zbriši tudi datoteke",
+        "merge_button": "Zdru�i",
+        "failed_to_open_file": "Ni moc odpreti datoteke",
+        "merge_files_toast": "Zdru�evanje{count}datoteke",
+        "remove_selected_tasks_title": "Ali res �elite odstraniti izbrana opravila?",
+        "remove_all_tasks_title": "Ste prepricani, da �elite odstraniti vse naloge?",
+        "delete_files_option": "Zbri�i tudi datoteke",
         "remove_selected_tasks_confirm": "Odstrani{count}naloge?",
         "remove_all_tasks_confirm": "Odstranitev vseh opravil?"
       },
       "features": {
-        "disabled": "Onemogočeno",
+        "disabled": "Onemogoceno",
         "export_option": "Izvoz",
         "import_option": "Uvozi",
         "reset_option": "Ponastavi",
-        "config_export_success_toast": "Nastavitev uspešno izvožene",
-        "config_import_success_toast": "Nastavitev uspešno uvoženih",
+        "config_export_success_toast": "Nastavitev uspe�no izvo�ene",
+        "config_import_success_toast": "Nastavitev uspe�no uvo�enih",
         "config_import_failure_toast": "Uvoz nastavitev ni uspel{error}",
-        "config_export_failure_toast": "Ni moč izvoziti nastavitev{error}",
+        "config_export_failure_toast": "Ni moc izvoziti nastavitev{error}",
         "saved_config_snackbar": "Nastavitev shranjena",
-        "older_required": "Ta funkcija zahteva Snapchat v{version}ali starejši za pravilno delo",
-        "newer_required": "Ta funkcija zahteva Snapchat v{version}ali novejši za pravilno delo",
+        "older_required": "Ta funkcija zahteva Snapchat v{version}ali starej�i za pravilno delo",
+        "newer_required": "Ta funkcija zahteva Snapchat v{version}ali novej�i za pravilno delo",
         "search_button": "Iskanje",
-        "clear_history": "Počisti zgodovino iskanja",
+        "clear_history": "Pocisti zgodovino iskanja",
         "subtitle": "Iskanje in upravljanje funkcij"
       },
       "bypass_status": {
@@ -153,45 +153,45 @@
           "inactive": "PurrAura Inactive"
       },
       "manage_rule_feature": {
-        "disable_state_option": "Onemogočeno",
+        "disable_state_option": "Onemogoceno",
         "disable_state_subtext": "Na prijatelje/skupine ne bo vpliva",
-        "whitelist_state_option": "Nihče razen ...",
+        "whitelist_state_option": "Nihce razen ...",
         "whitelist_state_subtext": "Samo{count}to pravilo vpliva na prijatelje/skupine",
         "whitelist_state_button": "Izberite dovoljene prijatelje/skupine",
         "blacklist_state_option": "Vsi razen ...",
         "blacklist_state_subtext": "Vsi razen{count}to pravilo vpliva na prijatelje/skupine",
-        "blacklist_state_button": "Izberite izključene prijatelje/skupine",
-        "clear_list_button": "Počisti seznam prijateljev/skupin",
-        "dialog_clear_confirmation_text": "Si prepričan, da želiš očistiti seznam?"
+        "blacklist_state_button": "Izberite izkljucene prijatelje/skupine",
+        "clear_list_button": "Pocisti seznam prijateljev/skupin",
+        "dialog_clear_confirmation_text": "Si preprican, da �eli� ocistiti seznam?"
       },
       "social": {
         "friends_tab": "Prijatelji",
         "groups_tab": "Skupine",
         "empty_hint": "Tvoj seznam je zaenkrat prazen",
-        "friends_empty_title": "Ni še dodanih prijateljev",
-        "groups_empty_title": "Nobena skupina še ni usklajena",
+        "friends_empty_title": "Ni �e dodanih prijateljev",
+        "groups_empty_title": "Nobena skupina �e ni usklajena",
         "streaks_expiration_short": "{hours}h",
         "social_tagline": "Upravljajte obsege, proge in oglede",
         "social_empty_hint": "Tapnite gumb + za sinhronizacijo prijateljev ali skupin."
       },
       "manage_scope": {
-        "logged_stories_button": "Prikaži zamašene zgodbe",
-        "e2ee_title": "Šifriranje od konca do konca",
-        "e2ee_subtitle": "Upravljaj svoj skupni ključ za tega prijatelja.",
+        "logged_stories_button": "Prika�i zama�ene zgodbe",
+        "e2ee_title": "�ifriranje od konca do konca",
+        "e2ee_subtitle": "Upravljaj svoj skupni kljuc za tega prijatelja.",
         "export_base64_button": "Izvozna osnova64",
         "import_base64_button": "Uvozna osnova64",
-        "invalid_key_size_32_bytes": "Neveljavna velikost ključa. Priskrbi 32-bajtov ključ.",
-        "successfully_imported_key": "Ključ uspešno uvožen.",
-        "failed_to_import_key": "Uvoz ključa ni uspel:{message}",
+        "invalid_key_size_32_bytes": "Neveljavna velikost kljuca. Priskrbi 32-bajtov kljuc.",
+        "successfully_imported_key": "Kljuc uspe�no uvo�en.",
+        "failed_to_import_key": "Uvoz kljuca ni uspel:{message}",
         "rules_title": "Pravila",
-        "participants_text": "{count}udeleženci",
+        "participants_text": "{count}udele�enci",
         "not_found": "Ni najdeno",
         "streaks_title": "Streaks",
-        "streaks_length_text": "Dolžina:{length}",
-        "streaks_expiration_text": "Preteče{eta}",
+        "streaks_length_text": "Dol�ina:{length}",
+        "streaks_expiration_text": "Pretece{eta}",
         "streaks_expiration_text_expired": "Potekel",
         "reminder_button": "Nastavi opomnik",
-        "delete_scope_confirm_dialog_title": "Ste prepričani, da želite zbrisati{scope}Kaj?",
+        "delete_scope_confirm_dialog_title": "Ste prepricani, da �elite zbrisati{scope}Kaj?",
         "notes_placeholder": "Kliknite za dodajanje opombe"
       },
       "logged_stories": {
@@ -200,62 +200,62 @@
         "save_from_cache_button": "Shrani iz predpomnilnika"
       },
       "messaging_preview": {
-        "bridge_connection_failed": "Povezava z mostom ni uspela. Prepričajte se, da Snapchat teče v ozadju",
-        "bridge_connection_error": "Povezava z mostom ni uspela. Prepričajte se, da Snapchat teče v ozadju",
-        "bridge_init_failed": "Inicializacija sporočilnega mostu ni uspela. Prepričajte se, da Snapchat teče v ozadju",
-        "message_fetch_failed": "Ni moč pridobiti sporočil",
-        "no_message_hint": "Ni sporočila",
+        "bridge_connection_failed": "Povezava z mostom ni uspela. Prepricajte se, da Snapchat tece v ozadju",
+        "bridge_connection_error": "Povezava z mostom ni uspela. Prepricajte se, da Snapchat tece v ozadju",
+        "bridge_init_failed": "Inicializacija sporocilnega mostu ni uspela. Prepricajte se, da Snapchat tece v ozadju",
+        "message_fetch_failed": "Ni moc pridobiti sporocil",
+        "no_message_hint": "Ni sporocila",
         "subtitle": "Izberite",
         "actions_title": "Dejanja pogovora",
         "save_selection_option": "Shrani izbiro",
         "save_all_option": "Shrani vse",
-        "unsave_selection_option": "Odreši izbiro",
-        "unsave_all_option": "Odreši vse",
-        "mark_selection_as_seen_option": "Označi izbrano Snap, kot je prikazano",
-        "mark_all_as_seen_option": "Označi vse Snaps kot videno",
-        "delete_selection_option": "Zbriši izbor",
-        "delete_all_option": "Zbriši vse",
-        "processed_message_toast": "Obdelan{count}sporočila",
-        "processed_messages_toast": "Obdelan{count}sporočila",
+        "unsave_selection_option": "Odre�i izbiro",
+        "unsave_all_option": "Odre�i vse",
+        "mark_selection_as_seen_option": "Oznaci izbrano Snap, kot je prikazano",
+        "mark_all_as_seen_option": "Oznaci vse Snaps kot videno",
+        "delete_selection_option": "Zbri�i izbor",
+        "delete_all_option": "Zbri�i vse",
+        "processed_message_toast": "Obdelan{count}sporocila",
+        "processed_messages_toast": "Obdelan{count}sporocila",
         "processed_messages_text": "Obdelan{count}",
-        "close_button_description": "Počisti izbor"
+        "close_button_description": "Pocisti izbor"
       },
       "logger_history": {
         "list_friend_format": "Prijatelj{name}",
         "list_group_format": "Skupina{name}",
-        "no_more_messages": "Nič več sporočil",
+        "no_more_messages": "Nic vec sporocil",
         "reverse_order_checkbox": "Povratni vrstni red",
         "chat_attachment": "Dodatek{index}",
-        "empty_message": "Prazno sporočilo za klepet",
-        "message_parse_failed": "Ni moč razčleniti sporočila",
-        "unknown_sender": "Neznan pošiljatelj",
+        "empty_message": "Prazno sporocilo za klepet",
+        "message_parse_failed": "Ni moc razcleniti sporocila",
+        "unknown_sender": "Neznan po�iljatelj",
         "download_attachment_failed_toast": "Nalaganje priloge ni uspelo"
       },
       "file_imports": {
         "import_file_button": "Uvozi datoteko",
         "file_not_found": "Datoteka ni najdena",
         "file_import_failed": "Uvoz datoteke ni uspel:{error}",
-        "file_imported": "Datoteka, uspešno uvožena",
-        "file_delete_failed": "Zbriši datoteko",
+        "file_imported": "Datoteka, uspe�no uvo�ena",
+        "file_delete_failed": "Zbri�i datoteko",
         "no_files_hint": "Tukaj lahko uvozite datoteke za uporabo v Snapchatu. Pritisnite spodnji gumb za uvoz datoteke."
       },
       "better_location": {
         "spoofed_coordinates_title": "Lat{latitude}, Lng{longitude}",
         "save_coordinates_dialog_title": "Shrani koordinate",
         "saved_name_dialog_hint": "Shrani ime",
-        "latitude_dialog_hint": "Zemljepisna širina",
-        "longitude_dialog_hint": "Zemljepisna dolžina",
+        "latitude_dialog_hint": "Zemljepisna �irina",
+        "longitude_dialog_hint": "Zemljepisna dol�ina",
         "save_dialog_button": "Shrani",
         "choose_location_button": "Izberite lokacijo",
-        "manual_coordinates_hint": "Uravnaj koordinate ročno.",
+        "manual_coordinates_hint": "Uravnaj koordinate rocno.",
         "saved_coordinates_subtitle": "Upravljajte svoje shranjene lokacije spoof",
         "teleport_to_friend_button": "Teleportiraj se prijatelju",
         "spoof_location_toggle": "Lokacija gob",
         "suspend_location_updates": "Zaustavi posodobitve lokacije",
         "saved_coordinates_title": "Shranjene koordinate",
         "no_saved_coordinates_hint": "Ni shranjenih koordinat",
-        "delete_dialog_title": "Zbriši shranjene koordinate",
-        "delete_dialog_message": "Ali res želite zbrisati to shranjeno koordinato?",
+        "delete_dialog_title": "Zbri�i shranjene koordinate",
+        "delete_dialog_message": "Ali res �elite zbrisati to shranjeno koordinato?",
         "teleport_to_friend_title": "Teleportiraj se prijatelju",
         "search_bar": "Iskanje",
         "no_friends_map": "Brez prijateljev na zemljevidu",
@@ -266,100 +266,100 @@
       "add_friend": {
         "title": "Dodaj prijatelja ali skupino",
         "search_hint": "Iskanje",
-        "fetch_error": "Ni moč pridobiti podatkov",
+        "fetch_error": "Ni moc pridobiti podatkov",
         "category_groups": "Skupine",
         "category_friends": "Prijatelji",
-        "participants_text": "{count}udeleženci",
+        "participants_text": "{count}udele�enci",
         "unselect_all_button": "Odizberi vse"
       },
       "scripting": {
-        "repo_hint": "Prilepi URL skladišča"
+        "repo_hint": "Prilepi URL skladi�ca"
       },
       "scripting_warning": {
         "title": "Opozorilo",
-        "content": "PurrfectSnap vključuje skriptno orodje, ki omogoča izvedbo uporabniško določene kode na vaši napravi. Bodite zelo previdni in namestite module iz znanih, zanesljivih virov. Nepooblaščeni ali nepreverjeni moduli lahko pomenijo varnostno tveganje za vaš sistem."
+        "content": "PurrfectSnap vkljucuje skriptno orodje, ki omogoca izvedbo uporabni�ko dolocene kode na va�i napravi. Bodite zelo previdni in namestite module iz znanih, zanesljivih virov. Nepoobla�ceni ali nepreverjeni moduli lahko pomenijo varnostno tveganje za va� sistem."
       },
       "reset_config": {
         "title": "Ponastavi nastavitve",
-        "content": "Si prepričan, da želiš ponastaviti konfig?",
-        "success_toast": "Nastavitev uspešno ponastavi"
+        "content": "Si preprican, da �eli� ponastaviti konfig?",
+        "success_toast": "Nastavitev uspe�no ponastavi"
       },
       "quick_actions_dialog": {
         "title": "Hitra dejanja",
         "subtitle": "Hitreje dostopajte do priljubljenih orodij"
       },
       "export_config": {
-        "title": "Izvozi občutljive podatke?",
-        "content": "Ali želite konfig izvoziti z občutljivimi podatki? (kot so lokacijske koordinate itd.)"
+        "title": "Izvozi obcutljive podatke?",
+        "content": "Ali �elite konfig izvoziti z obcutljivimi podatki? (kot so lokacijske koordinate itd.)"
       },
       "messaging_action": {
         "title": "Izberite vrste vsebin za obdelavo",
         "select_all_button": "Izberi vse"
       },
       "file_imports": {
-        "no_files_settings_hint": "Ni najdenih datotek. Prepričajte se, da ste uvozili zahtevane datoteke v oddelku Uvoz datoteke",
-        "settings_select_file_hint": "Izberite uvoženo datoteko"
+        "no_files_settings_hint": "Ni najdenih datotek. Prepricajte se, da ste uvozili zahtevane datoteke v oddelku Uvoz datoteke",
+        "settings_select_file_hint": "Izberite uvo�eno datoteko"
       }
     },
     "scripting": {
       "actions_button": "Dejanja",
       "actions_title": "Dejanja",
       "catalog_tab": "Katalog",
-      "clear_module_data_button": "Počisti podatke",
-      "clear_module_data_failed": "Ni uspelo počistiti podatkov modula",
-      "delete_module_button": "Zbriši",
-      "delete_module_failed": "Ni moč zbrisati modula",
+      "clear_module_data_button": "Pocisti podatke",
+      "clear_module_data_failed": "Ni uspelo pocistiti podatkov modula",
+      "delete_module_button": "Zbri�i",
+      "delete_module_failed": "Ni moc zbrisati modula",
       "documentation_button": "Zdravniki",
       "download_script_failed": "Prenesi skript",
-      "downloading_script": "Prenašanje skripta...",
+      "downloading_script": "Prena�anje skripta...",
       "edit_module_button": "Uredi",
       "enter_url_label": "Vnesite URL",
       "import_button": "Uvozi",
       "import_from_url_button": "Uvozi z URL- ja",
       "import_script_from_url_title": "Uvozi skript z URL- ja",
       "import_script_warning": "Namestite samo skripte iz virov, ki jim zaupate.",
-      "installed_scripts_tab": "Nameščen",
+      "installed_scripts_tab": "Name�cen",
       "manage_repos_button": "Upravljajte repo posle",
-      "module_data_cleared": "Modul je čist!",
+      "module_data_cleared": "Modul je cist!",
       "module_not_found": "Modul ni najden",
       "no_description": "Brez opisa",
-      "no_scripts_folder_selected_title": "Izberite mapo skriptov za začetek",
+      "no_scripts_folder_selected_title": "Izberite mapo skriptov za zacetek",
       "no_scripts_found_title": "Ni najdenih skriptov",
       "no_settings_for_module": "Ta modul nima nobenih nastavitev",
-      "open_module_failed": "Ni moč odpreti datoteke modula",
+      "open_module_failed": "Ni moc odpreti datoteke modula",
       "open_scripts_folder_button": "Odpri mapo s skripti",
-      "script_already_installed": "Skript je že nameščen",
+      "script_already_installed": "Skript je �e name�cen",
       "select_folder_button": "Izberite mapo",
       "select_scripts_folder_toast": "Najprej izberite mapo s skripti",
       "update_module_button": "Posodobi modul",
-      "update_module_failed": "Ni moč posodobiti modula",
+      "update_module_failed": "Ni moc posodobiti modula",
       "use_catalog_to_add_scripts": "Uporabi katalog za dodajanje skriptov",
       "ok_button_timeout": "V REDU{timeout}",
       "catalog": {
         "no_repos_added": "Ni dodanih arhivov",
-        "repo_list_info": "Najdi skladišča tukaj:",
-        "link_text": "Seznam skladišč",
-        "script_already_installed": "Skript je že nameščen",
+        "repo_list_info": "Najdi skladi�ca tukaj:",
+        "link_text": "Seznam skladi�c",
+        "script_already_installed": "Skript je �e name�cen",
         "script_downloaded": "Prenesena skripta",
-        "could_not_create_file": "Ni moč ustvariti datoteke",
+        "could_not_create_file": "Ni moc ustvariti datoteke",
         "no_scripts_folder_selected": "Najprej izberite mapo s skripti",
         "no_scripts_available": "Ni skriptov",
-        "installed_button": "Nameščen",
+        "installed_button": "Name�cen",
         "download_button": "Prenesi"
       },
       "repos": {
         "no_repos_added": "Ni dodanih arhivov",
-        "add_repo_button": "Dodaj skladišče",
-        "add_repo_dialog_title": "Dodaj skladišče",
-        "repo_url_label": "URL skladišča",
+        "add_repo_button": "Dodaj skladi�ce",
+        "add_repo_dialog_title": "Dodaj skladi�ce",
+        "repo_url_label": "URL skladi�ca",
         "add_button": "Dodaj",
-        "invalid_repo_title": "Neveljavno skladišče",
-        "invalid_repo_error": "To skladišče manjka zahtevanih podatkov.",
-        "repo_added_toast": "Dodaj skladišče",
-        "add_repo_failed_toast": "Dodajanje skladišča ni uspelo:{message}",
+        "invalid_repo_title": "Neveljavno skladi�ce",
+        "invalid_repo_error": "To skladi�ce manjka zahtevanih podatkov.",
+        "repo_added_toast": "Dodaj skladi�ce",
+        "add_repo_failed_toast": "Dodajanje skladi�ca ni uspelo:{message}",
         "remove_button": "Odstrani",
-        "remove_repo_dialog_title": "Odstrani skladišče",
-        "remove_repo_dialog_text": "Ali res želite odstraniti to skladišče?"
+        "remove_repo_dialog_title": "Odstrani skladi�ce",
+        "remove_repo_dialog_text": "Ali res �elite odstraniti to skladi�ce?"
       }
     },
     "friend_tracker": {
@@ -369,103 +369,103 @@
       "add_rule_button": "Dodaj pravilo",
       "import_button": "Uvozi",
       "filters_title": "Filtri",
-      "search_by_label": "Išči po",
-      "newest_first_label": "Najnovejši prvi",
+      "search_by_label": "I�ci po",
+      "newest_first_label": "Najnovej�i prvi",
       "since_label": "Od",
       "until_label": "Dokler",
       "unit_label": "Enota",
       "pick_a_date_button": "Izberi datum",
       "export_button": "Izvoz",
-      "delete_button": "Zbriši",
+      "delete_button": "Zbri�i",
       "search_placeholder": "Iskanje",
       "no_logs_found": "Ni najdenih dnevnikov",
       "no_rules_found": "Ni najdenih pravil",
       "export_logs_dialog_title": "Izvozi dnevnike",
-      "export_logs_dialog_confirm_text": "Izvozi dnevnike z uporabo tekočih filtrov?",
+      "export_logs_dialog_confirm_text": "Izvozi dnevnike z uporabo tekocih filtrov?",
       "export_as_button": "Izvoz kot{type}",
       "new_rule_title": "Novo pravilo",
       "edit_rule_title": "Uredi pravilo",
-      "general_section_title": "Splošno",
+      "general_section_title": "Splo�no",
       "rule_name_label": "Ime pravila",
       "default_rule_name": "Novo pravilo",
       "author_name_label": "Avtor",
-      "scope_section_title": "Področje uporabe",
+      "scope_section_title": "Podrocje uporabe",
       "scope_all": "Vsi prijatelji/skupine",
-      "scope_whitelist": "Nihče razen",
+      "scope_whitelist": "Nihce razen",
       "scope_blacklist": "Vsi razen",
       "events_section_title": "Dogodki",
       "events_suffix": "dogodki",
-      "no_events_text": "Ni še dodanih dogodkov",
+      "no_events_text": "Ni �e dodanih dogodkov",
       "add_event_dialog_title": "Dodaj dogodek",
       "event_type_label": "Vrsta dogodka",
-      "triggers_title": "Sprožilci",
+      "triggers_title": "Spro�ilci",
       "conditions_title": "Pogoji",
       "condition_only_inside_conversation": "Samo, ko sem v pogovoru",
       "condition_only_outside_conversation": "Samo ko sem zunaj pogovora",
       "condition_only_when_app_active": "Samo, ko je Snapchat aktiven",
-      "condition_only_when_app_inactive": "Samo, če je Snapchat neaktiven",
+      "condition_only_when_app_inactive": "Samo, ce je Snapchat neaktiven",
       "condition_no_push_notification_when_app_active": "Ko je Snapchat aktiven, ni obvestila",
       "add_button": "Dodaj",
-      "cannot_save_rule_dialog_title": "Ni moč shraniti pravila",
-      "cannot_save_rule_dialog_text": "Izpolnite manjkajoča polja, da shranite to pravilo.",
+      "cannot_save_rule_dialog_title": "Ni moc shraniti pravila",
+      "cannot_save_rule_dialog_text": "Izpolnite manjkajoca polja, da shranite to pravilo.",
       "duplicate_rule_name_dialog_title": "Podvoji ime pravila",
-      "duplicate_rule_name_dialog_text": "Pravilo s tem imenom že obstaja. Izberi novo ime.",
+      "duplicate_rule_name_dialog_text": "Pravilo s tem imenom �e obstaja. Izberi novo ime.",
       "discard_changes_dialog_title": "Zavrzite spremembe?",
-      "discard_changes_dialog_text": "Imate neshranjene spremembe. Jih zavržeš?",
-      "rule_subtitle": "Nastavi sprožilce in možnosti za to pravilo.",
+      "discard_changes_dialog_text": "Imate neshranjene spremembe. Jih zavr�e�?",
+      "rule_subtitle": "Nastavi spro�ilce in mo�nosti za to pravilo.",
       "discard_button": "Zavrzi",
-      "enabled_label": "Omogočeno",
-      "disabled_label": "Onemogočeno",
-      "delete_rule_dialog_title": "Izbriši pravilo",
-      "delete_rule_dialog_text": "Ali res želite izbrisati to pravilo?",
+      "enabled_label": "Omogoceno",
+      "disabled_label": "Onemogoceno",
+      "delete_rule_dialog_title": "Izbri�i pravilo",
+      "delete_rule_dialog_text": "Ali res �elite izbrisati to pravilo?",
       "no_repos_added": "Ni dodanih arhivov",
       "import_dialog_title": "Uvozna pravila",
       "bulk_import_button": "Uvoz razsutega tovora",
       "individual_import_button": "Enotni uvoz",
       "invalid_import_type_dialog_title": "Neveljaven uvoz",
-      "invalid_import_type_dialog_text": "Izbrana vrsta datoteke se ne ujema z načinom uvoza.",
+      "invalid_import_type_dialog_text": "Izbrana vrsta datoteke se ne ujema z nacinom uvoza.",
       "export_dialog_title": "Izvozna pravila",
       "bulk_export_button": "Izvoz razsutega tovora",
       "individual_export_button": "Enotni izvoz",
       "reverse_order_checkbox": "Povratni vrstni red",
-      "delete_logs_dialog_title": "Zbriši dnevnike",
-      "delete_logs_dialog_confirm_text": "Izbriši vse dnevnike, ki se ujemajo s trenutnimi filtri?",
+      "delete_logs_dialog_title": "Zbri�i dnevnike",
+      "delete_logs_dialog_confirm_text": "Izbri�i vse dnevnike, ki se ujemajo s trenutnimi filtri?",
       "select_friends_groups_button": "Izberite prijatelje / skupine"
     },
     "friend_tracker_export": {
       "title": "Izvozi sledilnik prijateljev",
       "save_button": "Shrani",
       "back_button_description": "Pojdi nazaj",
-      "expand_button_description": "Razširi ali zruši kategorijo",
-      "exported_toast": "Izvožena konfiguracija sledilnika",
+      "expand_button_description": "Raz�iri ali zru�i kategorijo",
+      "exported_toast": "Izvo�ena konfiguracija sledilnika",
       "export_failed_toast": "Ni uspelo izvoziti sledilnika:{message}"
     },
     "friend_tracker_import": {
       "title": "Uvozi sledilnik prijateljstva",
       "confirm_button": "Uvozi",
       "back_button_description": "Pojdi nazaj",
-      "expand_button_description": "Razširi ali zruši kategorijo",
-      "imported_toast": "Uvožen sledilnik",
+      "expand_button_description": "Raz�iri ali zru�i kategorijo",
+      "imported_toast": "Uvo�en sledilnik",
       "import_failed_toast": "Uvoz sledilnika ni uspel:{message}"
     },
     "friend_tracker_catalog": {
       "title": "Katalog sledilnikov prijateljev",
       "no_repos_added": "Ni dodanih arhivov",
-      "manage_repos_description": "Upravljajte skladišča"
+      "manage_repos_description": "Upravljajte skladi�ca"
     },
     "friend_tracker_repos": {
       "no_repos_added": "Ni dodanih arhivov",
-      "add_repo_button": "Dodaj skladišče",
-      "add_repo_dialog_title": "Dodaj skladišče",
-      "repo_url_label": "URL skladišča",
+      "add_repo_button": "Dodaj skladi�ce",
+      "add_repo_dialog_title": "Dodaj skladi�ce",
+      "repo_url_label": "URL skladi�ca",
       "add_button": "Dodaj",
-      "invalid_repo_title": "Neveljavno skladišče",
-      "invalid_repo_error": "To skladišče manjka zahtevanih podatkov.",
-      "repo_added_toast": "Dodaj skladišče",
-      "add_repo_failed_toast": "Dodajanje skladišča ni uspelo:{message}",
+      "invalid_repo_title": "Neveljavno skladi�ce",
+      "invalid_repo_error": "To skladi�ce manjka zahtevanih podatkov.",
+      "repo_added_toast": "Dodaj skladi�ce",
+      "add_repo_failed_toast": "Dodajanje skladi�ca ni uspelo:{message}",
       "remove_button": "Odstrani",
-      "remove_repo_dialog_title": "Odstrani skladišče",
-      "remove_repo_dialog_text": "Ali res želite odstraniti to skladišče?"
+      "remove_repo_dialog_title": "Odstrani skladi�ce",
+      "remove_repo_dialog_text": "Ali res �elite odstraniti to skladi�ce?"
     },
     "logger_history": {
       "select_conversation_placeholder": "Izberite pogovor"
@@ -475,64 +475,64 @@
         "title": "Izvozi povzetek nastavitev",
         "back_button_description": "Pojdi nazaj",
         "save_button": "Shrani",
-        "expand_button_description": "Razširi ali zruši kategorijo",
-        "enabled": "Omogočeno",
-        "disabled": "Onemogočeno",
-        "enable_feature": "Omogoči funkcijo"
+        "expand_button_description": "Raz�iri ali zru�i kategorijo",
+        "enabled": "Omogoceno",
+        "disabled": "Onemogoceno",
+        "enable_feature": "Omogoci funkcijo"
       },
       "config_import": {
         "title": "Uvozi povzetek nastavitev",
         "back_button_description": "Pojdi nazaj",
         "confirm_button": "Uvozi",
-        "expand_button_description": "Razširi ali zruši kategorijo",
-        "enabled": "Omogočeno",
-        "disabled": "Onemogočeno",
-        "enable_feature": "Omogoči funkcijo",
-        "config_imported_toast": "Nastavitev uspešno uvoženih",
+        "expand_button_description": "Raz�iri ali zru�i kategorijo",
+        "enabled": "Omogoceno",
+        "disabled": "Onemogoceno",
+        "enable_feature": "Omogoci funkcijo",
+        "config_imported_toast": "Nastavitev uspe�no uvo�enih",
         "config_import_failure_toast": "Uvoz nastavitev ni uspel{error}"
       }
     }
   },
   "rules": {
     "toasts": {
-      "enabled": "{ruleName}omogočeno",
-      "disabled": "{ruleName}onemogočeno"
+      "enabled": "{ruleName}omogoceno",
+      "disabled": "{ruleName}onemogoceno"
     },
     "modes": {
-      "blacklist": "Način črne liste",
-      "whitelist": "Način bele liste"
+      "blacklist": "Nacin crne liste",
+      "whitelist": "Nacin bele liste"
     },
     "properties": {
       "auto_download": {
         "name": "Samodejno prenesej",
         "description": "Samodejno prenesi Snaps, ko jih gleda",
         "options": {
-          "blacklist": "Izključi iz samodejnega prejemanja",
-          "whitelist": "Samodejno prenašanje"
+          "blacklist": "Izkljuci iz samodejnega prejemanja",
+          "whitelist": "Samodejno prena�anje"
         }
       },
       "stealth": {
-        "name": "Nevidni način",
-        "description": "Vsem preprečuje, da bi vedeli, da ste odprli njihove Snaps/Chats in pogovore",
+        "name": "Nevidni nacin",
+        "description": "Vsem preprecuje, da bi vedeli, da ste odprli njihove Snaps/Chats in pogovore",
         "options": {
-          "blacklist": "Izključitev iz nevidnega načina",
-          "whitelist": "Nevidni način"
+          "blacklist": "Izkljucitev iz nevidnega nacina",
+          "whitelist": "Nevidni nacin"
         }
       },
       "auto_save": {
         "name": "Samodejno shrani",
-        "description": "Ob ogledu shrani sporočila za klepet",
+        "description": "Ob ogledu shrani sporocila za klepet",
         "options": {
-          "blacklist": "Izključi iz samodejnega shranjevanja",
+          "blacklist": "Izkljuci iz samodejnega shranjevanja",
           "whitelist": "Samodejno shrani"
         }
       },
       "unsaveable_messages": {
-        "name": "Nerešljiva sporočila",
-        "description": "Preprečuje shranjevanje sporočil v klepetu drugih ljudi",
+        "name": "Nere�ljiva sporocila",
+        "description": "Preprecuje shranjevanje sporocil v klepetu drugih ljudi",
         "options": {
-          "blacklist": "Izključi iz nerešljivih sporočil",
-          "whitelist": "Nerešljiva sporočila"
+          "blacklist": "Izkljuci iz nere�ljivih sporocil",
+          "whitelist": "Nere�ljiva sporocila"
         }
       },
       "auto_open_snaps": {
@@ -547,51 +547,51 @@
         "name": "Skrij pred virom prijateljev"
       },
       "e2e_encryption": {
-        "name": "Uporabi šifriranje E2E"
+        "name": "Uporabi �ifriranje E2E"
       },
       "pin_conversation": {
         "name": "Pripni pogovor"
       },
       "exclude_message_logger": {
-        "name": "Izbriši iz dnevnika sporočil"
+        "name": "Izbri�i iz dnevnika sporocil"
       },
       "auto_reply": {
         "name": "Samodejno odgovori",
-        "description": "Samodejno pošilja odgovore na prejeta sporočila, ko ste odsotni",
+        "description": "Samodejno po�ilja odgovore na prejeta sporocila, ko ste odsotni",
         "options": {
-          "blacklist": "Izključi iz samodejnega odgovora",
+          "blacklist": "Izkljuci iz samodejnega odgovora",
           "whitelist": "Samodejno odgovori"
         }
       },
       "auto_delete_sent_messages": {
-        "name": "Samodejno zbriši poslana sporočila",
-        "description": "Samodejno izbriše poslana sporočila po določenem časovnem obdobju",
+        "name": "Samodejno zbri�i poslana sporocila",
+        "description": "Samodejno izbri�e poslana sporocila po dolocenem casovnem obdobju",
         "options": {
-          "blacklist": "Izbriši iz samodejno izbrisanih sporočil",
-          "whitelist": "Samodejno zbriši poslana sporočila"
+          "blacklist": "Izbri�i iz samodejno izbrisanih sporocil",
+          "whitelist": "Samodejno zbri�i poslana sporocila"
         }
       },
       "message_logger": {
-        "name": "Dnevnik sporočil",
-        "description": "Obdrži kopijo sporočil, tudi če so izbrisana",
+        "name": "Dnevnik sporocil",
+        "description": "Obdr�i kopijo sporocil, tudi ce so izbrisana",
         "options": {
-          "blacklist": "Izbriši iz dnevnika sporočil",
-          "whitelist": "Dnevnik sporočil"
+          "blacklist": "Izbri�i iz dnevnika sporocil",
+          "whitelist": "Dnevnik sporocil"
         }
       },
       "auto_read": {
         "name": "Samodejno branje",
-        "description": "Samodejno označi snapse in klepete kot prebrane",
+        "description": "Samodejno oznaci snapse in klepete kot prebrane",
         "options": {
-          "blacklist": "Izključi iz samodejnega branja",
+          "blacklist": "Izkljuci iz samodejnega branja",
           "whitelist": "Samodejno branje"
         }
       },
       "hide_typing_indicator": {
         "name": "Skrij indikator tipkanja",
-        "description": "Prepreči drugim, da bi videli, ko tipkate",
+        "description": "Prepreci drugim, da bi videli, ko tipkate",
         "options": {
-          "blacklist": "Izključen iz kazalca skritih tipk",
+          "blacklist": "Izkljucen iz kazalca skritih tipk",
           "whitelist": "Skrij indikator tipkanja"
         }
       }
@@ -599,28 +599,28 @@
   },
   "actions": {
     "clean_snapchat_cache": {
-      "name": "Čist predpomnilnik Snapchat",
-      "description": "Očisti predpomnilnik Snapchat"
+      "name": "Cist predpomnilnik Snapchat",
+      "description": "Ocisti predpomnilnik Snapchat"
     },
     "manage_friend_list": {
       "name": "Upravljaj seznam prijateljev",
       "description": "Uvozi/izvozi seznam prijateljev ob podpori"
     },
     "export_chat_messages": {
-      "name": "Izvozi sporočila",
-      "description": "Izvozi pogovorna sporočila v datoteko JSON/HTML/TXT"
+      "name": "Izvozi sporocila",
+      "description": "Izvozi pogovorna sporocila v datoteko JSON/HTML/TXT"
     },
     "export_memories": {
       "name": "Izvozni spomini",
       "description": "Izvozi pomnilnike v datoteko ZIP"
     },
     "bulk_messaging_action": {
-      "name": "Dejanje masovnega sporočanja",
-      "description": "Opravlja operacije, kot so brisanje prijateljev ali množično brisanje pogovorov"
+      "name": "Dejanje masovnega sporocanja",
+      "description": "Opravlja operacije, kot so brisanje prijateljev ali mno�icno brisanje pogovorov"
     },
     "regen_mappings": {
       "name": "Regenerativne karte",
-      "description": "Ročno regeneriranje kartiranja"
+      "description": "Rocno regeneriranje kartiranja"
     },
     "change_language": {
       "name": "Spremeni jezik",
@@ -636,24 +636,24 @@
     },
     "logger_history": {
       "name": "Zgodovina dnevnika",
-      "description": "Oglejte si zgodovino prijavljenih sporočil"
+      "description": "Oglejte si zgodovino prijavljenih sporocil"
     }
   },
   "features": {
     "notices": {
       "unstable": " Nestabilno",
-      "ban_risk": " Ta funkcija lahko povzroči prepovedi",
+      "ban_risk": " Ta funkcija lahko povzroci prepovedi",
       "internal_behavior": " To lahko zlomi notranje vedenje Snapchata"
     },
     "options": {
       "app_appearance": {
         "always_light": "Vedno svetloba",
         "always_dark": "Vedno temno",
-        "null": "Vžigalni sistem"
+        "null": "V�igalni sistem"
       },
       "auto_reload": {
-        "snapchat_only": "Znova naloži samo Snapchat",
-        "all": "Znova naloži Snapchat + PurrfectSnap",
+        "snapchat_only": "Znova nalo�i samo Snapchat",
+        "all": "Znova nalo�i Snapchat + PurrfectSnap",
         "null": "Privzeto"
       },
       "walk_radius": {
@@ -679,12 +679,12 @@
         "hide_typing_indicator": "?? Skrij indikator tipkanja",
         "auto_save_messages": "?? Samodejno shranjevanje sporo?il"
       },
-      "schedule_scheduled_for": "Načrtovano za{name}v{time}",
-      "schedule_sending_in": "Pošiljanje noter{time}",
+      "schedule_scheduled_for": "Nacrtovano za{name}v{time}",
+      "schedule_sending_in": "Po�iljanje noter{time}",
       "schedule_sent_to": "Poslano na{name}",
       "schedule_sent": "Razporejen zamah poslan",
-      "schedule_failed_to": "Pošiljanje ni uspelo{name}",
-      "schedule_failed": "Načrtovani zaskočitev ni uspela",
+      "schedule_failed_to": "Po�iljanje ni uspelo{name}",
+      "schedule_failed": "Nacrtovani zaskocitev ni uspela",
       "schedule_cancelled_for": "Preklicano za{name}",
       "device_model": {
         "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
@@ -695,25 +695,25 @@
       },
       "settings_menu": {
         "default": "Privzeto",
-        "legacy": "Zapuščina"
+        "legacy": "Zapu�cina"
       },
       "path_format": {
         "create_author_folder": "Ustvari mapo za vsakega avtorja",
-        "create_source_folder": "Ustvari mapo za vsako vrsto večpredstavnostnega vira",
-        "append_hash": "Dodaj edinstven haši k imenu datoteke",
+        "create_source_folder": "Ustvari mapo za vsako vrsto vecpredstavnostnega vira",
+        "append_hash": "Dodaj edinstven ha�i k imenu datoteke",
         "append_source": "Dodaj medijski vir k imenu datoteke",
-        "append_username": "Dodaj uporabniško ime k imenu datoteke",
-        "append_date_time": "Dodaj datum in čas k imenu datoteke",
+        "append_username": "Dodaj uporabni�ko ime k imenu datoteke",
+        "append_date_time": "Dodaj datum in cas k imenu datoteke",
         "append_type": "Dodaj vrsto medija k imenu datoteke"
       },
       "auto_download_sources": {
         "friend_snaps": "Prijatelj pripne",
         "friend_stories": "Prijateljske zgodbe",
         "public_stories": "Javne zgodbe",
-        "spotlight": "Žaromet"
+        "spotlight": "�aromet"
       },
       "logging": {
-        "started": "Začetek",
+        "started": "Zacetek",
         "success": "Uspeh",
         "progress": "Napredek",
         "failure": "Neuspeh"
@@ -731,64 +731,64 @@
         "speaking": "Govorjenje",
         "chat_reaction": "Reakcija DM",
         "group_chat_reaction": "Odziv skupine",
-        "initiate_audio": "Prihodni zvočni klic",
-        "abandon_audio": "Zgrešen zvočni klic",
+        "initiate_audio": "Prihodni zvocni klic",
+        "abandon_audio": "Zgre�en zvocni klic",
         "initiate_video": "Sprejem videoklica",
-        "abandon_video": "Zgrešen video klic",
-        "map_live_location": "Lokacija zemljevida v živo"
+        "abandon_video": "Zgre�en video klic",
+        "map_live_location": "Lokacija zemljevida v �ivo"
       },
       "auto_read": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogoceno"
       },
       "hide_typing_indicator": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogoceno"
       },
       "auto_delete_sent_messages": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogoceno"
       },
       "auto_download": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogoceno"
       },
       "stealth": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogoceno"
       },
       "auto_save": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno",
+        "disabled": "Onemogoceno",
         "auto_save": "?? Samodejno shranjevanje sporo?il"
       },
       "message_logger": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogoceno"
       },
       "auto_reply": {
-        "blacklist": "Črna lista",
+        "blacklist": "Crna lista",
         "whitelist": "Bela lista",
-        "disabled": "Onemogočeno"
+        "disabled": "Onemogoceno"
       },
       "custom_android_id": {
         "null": "Uporabi pravi ID Android"
       },
       "add_friend_source_spoof": {
-        "added_by_username": "Po uporabniškem imenu",
+        "added_by_username": "Po uporabni�kem imenu",
         "added_by_mention": "Z besedami",
         "added_by_group_chat": "Po skupinskem klepetu",
         "added_by_qr_code": "Z oznako QR",
         "added_by_community": "Po Skupnosti",
         "added_by_quick_add": "Z Quick Add (veliko tveganje prepovedi)",
-        "added_by_spotlight": "Po žarišču",
+        "added_by_spotlight": "Po �ari�cu",
         "null": "Ne govori o viru"
       },
       "custom_streaks_expiration_format": {
@@ -801,7 +801,7 @@
         "null": "Privzeta pisava Emoji"
       },
       "custom_shared_library": {
-        "null": "Uporabi privzeto knjižnico"
+        "null": "Uporabi privzeto knji�nico"
       },
       "override_front_resolution": {
         "null": "Uporabi privzeto napravo"
@@ -810,12 +810,23 @@
         "null": "Uporabi privzeto napravo"
       },
       "custom_resolution": {
-        "null": "Uporabi samodejno ločljivost"
+        "null": "Uporabi samodejno locljivost"
       },
       "startup_default_camera": {
         "front": "Sprednja kamera",
         "back": "Zadnja kamera",
         "null": "Zapomni si, kaj je bilo nazadnje uporabljeno"
+      },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
       },
       "front_custom_frame_rate": {
         "null": "Privzeti FPS naprave"
@@ -845,9 +856,9 @@
         "title": "Izgled"
       },
       "gallery_media_send_override": {
-        "always_ask": "Vedno vprašaj",
+        "always_ask": "Vedno vpra�aj",
         "ORIGINAL": "Originalni mediji",
-        "NOTE": "Zvočna opomba",
+        "NOTE": "Zvocna opomba",
         "SNAP": "Snap",
         "SAVEABLE_SNAP": "Shrani snap",
         "null": "Privzeto snapchat"
@@ -856,17 +867,17 @@
         "hide_caption_text": "Skrij besedilo naslova",
         "hide_snap_filters": "Skrij filtre za pripenjanje",
         "hide_extras": "Skrij dodatke (npr. omembe)",
-        "remove_audio_note_duration": "Odstrani trajanje zvočne note",
-        "remove_audio_note_transcript_capability": "Odstrani zvočno noto Transcript Capability"
+        "remove_audio_note_duration": "Odstrani trajanje zvocne note",
+        "remove_audio_note_transcript_capability": "Odstrani zvocno noto Transcript Capability"
       },
       "hide_ui_components": {
         "hide_profile_call_buttons": "Odstrani gumbe za klice profilov",
         "hide_chat_call_buttons": "Odstrani gumbe za klicni pogovor",
-        "hide_live_location_share_button": "Odstrani gumb za skupno lokacijo v živo",
+        "hide_live_location_share_button": "Odstrani gumb za skupno lokacijo v �ivo",
         "hide_stickers_button": "Odstrani gumb nalepke",
-        "hide_voice_record_button": "Odstrani gumb za zvočni zapis",
+        "hide_voice_record_button": "Odstrani gumb za zvocni zapis",
         "hide_unread_chat_hint": "Odstrani neprebrano Namig za klepet",
-        "hide_post_to_story_buttons": "Odstrani gumbe Post to Story pred pošiljanjem Snap",
+        "hide_post_to_story_buttons": "Odstrani gumbe Post to Story pred po�iljanjem Snap",
         "hide_billboard_prompt": "Odstrani predlogo Billboarda v viru prijateljev",
         "hide_snapchat_plus_gift_reminders": "Odstrani klepet Plus darilni opomniki v pogovorih",
         "hide_map_reactions": "Odstrani odzive zemljevida"
@@ -880,14 +891,14 @@
         "chat": "Klepet",
         "camera": "Kamera",
         "discover": "Odkrij",
-        "spotlight": "Žaromet",
+        "spotlight": "�aromet",
         "null": "Privzeto snapchat"
       },
       "spotlight_comments_username_icon": {
-        "user": "Ikona uporabniškega imena",
-        "👤": "Ikona uporabniškega imena",
-        "[👤]": "Ikona uporabniškega imena",
-        "default": "Ikona uporabniškega imena",
+        "user": "Ikona uporabni�kega imena",
+        "??": "Ikona uporabni�kega imena",
+        "[??]": "Ikona uporabni�kega imena",
+        "default": "Ikona uporabni�kega imena",
         "no_icon": "Brez ikone"
       },
       "custom_image_upload_format": {
@@ -897,7 +908,7 @@
         "null": "Samodejno"
       },
       "snapchat_plus": {
-        "not_subscribed": "Ni naročeno",
+        "not_subscribed": "Ni naroceno",
         "basic": "Osnovno",
         "ad_free": "& Prost",
         "null": "Privzeto"
@@ -913,16 +924,16 @@
         "null": "Privzeti Bitmoji"
       },
       "disable_confirmation_dialogs": {
-        "erase_message": "Izbriši sporočilo",
+        "erase_message": "Izbri�i sporocilo",
         "remove_friend": "Odstrani prijatelja",
         "block_friend": "Blokiraj prijatelja",
         "ignore_friend": "Prezri prijatelja",
         "hide_friend": "Skrij prijatelja",
         "hide_conversation": "Skrij pogovor",
-        "clear_conversation": "Počisti pogovor iz prijateljevega vira"
+        "clear_conversation": "Pocisti pogovor iz prijateljevega vira"
       },
       "edit_text_override": {
-        "multi_line_chat_input": "Več črt Vnos za klepet",
+        "multi_line_chat_input": "Vec crt Vnos za klepet",
         "bypass_text_input_limit": "Obhodna meja vnosa besedila"
       },
       "auto_purge": {
@@ -956,26 +967,26 @@
       },
       "disable_permission_requests": {
         "notifications": "Obvestila",
-        "read_media_images": "Beri večpredstavnost Slike",
-        "read_media_video": "Beri večpredstavnost Video",
+        "read_media_images": "Beri vecpredstavnost Slike",
+        "read_media_video": "Beri vecpredstavnost Video",
         "camera": "Kamera",
         "microphone": "Mikrofon",
         "location": "Lokacija",
         "read_contacts": "Preberi stike",
-        "nearby_devices": "Naprave v bližini",
+        "nearby_devices": "Naprave v bli�ini",
         "phone_calls": "Telefonski klici"
       },
       "message_indicators": {
-        "encryption_indicator": "Doda ikono poleg sporočil, ki so bila poslana samo vam",
+        "encryption_indicator": "Doda ikono poleg sporocil, ki so bila poslana samo vam",
         "platform_indicator": "Doda ikono platforme, iz katere je bil poslan medij (npr. Android, iOS, Web)",
-        "location_indicator": "Doda ikono za ponori, ko so poslani z omogočeno lokacijo",
-        "ovf_editor_indicator": "Označuje, ali je bil snap poslan z uporabo urejevalnika OVF",
-        "director_mode_indicator": "Doda ikono za ponori, ko so bile poslane z načinom direktor, ki se lahko uporabi za pošiljanje slik galerije kot snaps"
+        "location_indicator": "Doda ikono za ponori, ko so poslani z omogoceno lokacijo",
+        "ovf_editor_indicator": "Oznacuje, ali je bil snap poslan z uporabo urejevalnika OVF",
+        "director_mode_indicator": "Doda ikono za ponori, ko so bile poslane z nacinom direktor, ki se lahko uporabi za po�iljanje slik galerije kot snaps"
       },
       "auto_mark_as_read": {
-        "conversation_read": "Označi pogovor, kot se bere pri pošiljanju sporočila",
-        "snap_reply": "Označi se kot prebrano, ko jim odgovarja",
-        "save_snap_in_chat": "Označi kot prebrano, ko jih hraniš v klepetu v nevidnem načinu"
+        "conversation_read": "Oznaci pogovor, kot se bere pri po�iljanju sporocila",
+        "snap_reply": "Oznaci se kot prebrano, ko jim odgovarja",
+        "save_snap_in_chat": "Oznaci kot prebrano, ko jih hrani� v klepetu v nevidnem nacinu"
       },
       "friend_mutation_notifier": {
         "remove_friend": "Obvesti, ko te nekdo odstrani kot prijatelja",
@@ -986,10 +997,10 @@
         "bitmoji_scene_changes": "Obvesti, ko nekdo spremeni svojo Bitmoji sceno"
       },
       "double_tap_chat_action": {
-        "like_message": "Podobno sporočilo",
-        "copy_text": "Kopiraj besedilo na odložišče",
-        "delete_message": "Zbriši sporočilo",
-        "mark_as_read": "Označi kot prebrano",
+        "like_message": "Podobno sporocilo",
+        "copy_text": "Kopiraj besedilo na odlo�i�ce",
+        "delete_message": "Zbri�i sporocilo",
+        "mark_as_read": "Oznaci kot prebrano",
         "custom_emoji_reaction": "Po meri Emoji Reaction",
         "null": "Privzeto"
       },
@@ -1007,56 +1018,56 @@
         "gemini-2.5-flash": "Gemini 2.5 Flash"
       },
       "ai_api_key": {
-        "": "Ni določeno"
+        "": "Ni doloceno"
       },
       "ai_system_prompt": {
-        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Si koristen in prijazen pomočnik, ki se odziva na sporočila na Snapchatu. Naj odgovorijo naravno, priložnostno in pogovorno. Izogibajte se pretirano formalni ali robotski. Odgovori, kot da si resnična oseba, ki ima normalen pogovor."
+        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Si koristen in prijazen pomocnik, ki se odziva na sporocila na Snapchatu. Naj odgovorijo naravno, prilo�nostno in pogovorno. Izogibajte se pretirano formalni ali robotski. Odgovori, kot da si resnicna oseba, ki ima normalen pogovor."
       },
       "ai_provider": {
-        "gemini": "Dvojčici",
+        "gemini": "Dvojcici",
         "deepseek": "Globoko iskanje",
         "openai": "OpenAI",
         "openrouter": "OpenRouter"
       },
       "ai_personality_traits": {
-        "friendly, casual, helpful, empathetic": "prijazno, priložnostno, koristno, sočutno"
+        "friendly, casual, helpful, empathetic": "prijazno, prilo�nostno, koristno, socutno"
       },
       "ai_response_style": {
-        "casual": "Priložnost",
+        "casual": "Prilo�nost",
         "formal": "Formalno",
         "friendly": "Prijazen",
         "humorous": "Humor",
-        "empathetic": "Empatično",
+        "empathetic": "Empaticno",
         "toxic": "Egy",
         "busy": "Zaposleni"
       },
       "ai_temperature": {
-        "0.7": "Uravnoteženo (0,7)"
+        "0.7": "Uravnote�eno (0,7)"
       },
       "ai_response_language": {
         "auto": "Samodejno",
-        "en": "Angleščina",
-        "es": "Španščina",
+        "en": "Angle�cina",
+        "es": "�pan�cina",
         "fr": "Francoski",
-        "de": "Nemščina",
+        "de": "Nem�cina",
         "it": "Italijanska",
-        "pt": "Portugalščina",
+        "pt": "Portugal�cina",
         "ru": "Ruski",
         "ja": "Japonka",
         "ko": "Korejska",
         "zh": "Kitajska",
-        "ar": "Arabščina",
+        "ar": "Arab�cina",
         "hi": "Hindi",
-        "tr": "Turščina",
+        "tr": "Tur�cina",
         "pl": "Poljska",
         "nl": "Nizozemska",
-        "sv": "Švedska",
+        "sv": "�vedska",
         "da": "Danski",
-        "no": "Norveška",
+        "no": "Norve�ka",
         "fi": "Finska"
       },
       "friendGreeting": {
-        "Hey": "Živjo"
+        "Hey": "�ivjo"
       },
       "half_swipe_messages": {
         "[\"I noticed you half-swiped! I'll respond soon.\"]": "Opazila sem, da si na pol pomota! Kmalu se bom odzval."
@@ -1065,7 +1076,7 @@
         "Thanks for the tiny snap!": "Hvala za majhen udarec!"
       },
       "voice_note_messages": {
-        "Thanks for the voice note!": "Hvala za sporočilo!"
+        "Thanks for the voice note!": "Hvala za sporocilo!"
       },
       "chat_messages": {
         "Hello! How are you?": "Halo! Kako si?"
@@ -1080,7 +1091,7 @@
         "Cool sticker!": "Kul nalepka!"
       },
       "snap_messages": {
-        "Thanks for the snap!": "Hvala za priložnost!"
+        "Thanks for the snap!": "Hvala za prilo�nost!"
       },
       "story_share_messages": {
         "Thanks for sharing!": "Hvala za delitev!"
@@ -1089,7 +1100,7 @@
         "Thanks for the map reaction!": "Hvala za odziv na zemljevid!"
       },
       "auto_reply_content_types": {
-        "chat_messages": "Sporočila za klepet",
+        "chat_messages": "Sporocila za klepet",
         "snap_messages": "Snaps",
         "story_share_messages": "Deli zgodbe",
         "story_reply_messages": "Odgovore zgodbe",
@@ -1098,22 +1109,22 @@
         "sticker_messages": "Nalepke",
         "tiny_snap_messages": "Majhni snaps",
         "map_reaction_messages": "Odzivi na zemljevid",
-        "half_swipes": "Polovičarji"
+        "half_swipes": "Polovicarji"
       },
       "supported_languages": {
-        "en": "Angleščina",
-        "es": "Španščina",
+        "en": "Angle�cina",
+        "es": "�pan�cina",
         "fr": "Francoski",
-        "de": "Nemščina",
+        "de": "Nem�cina",
         "it": "Italijanska",
-        "pt": "Portugalščina",
+        "pt": "Portugal�cina",
         "ru": "Ruski",
         "ja": "Japonka",
         "ko": "Korejska",
         "zh": "Kitajska",
-        "ar": "Arabščina",
+        "ar": "Arab�cina",
         "hi": "Hindi",
-        "tr": "Turščina"
+        "tr": "Tur�cina"
       },
       "translation_position": {
         "above": "Zgornje besedilo",
@@ -1124,21 +1135,21 @@
         "auto": "Samodejno zaznaj"
       },
       "target_language": {
-        "en": "Angleščina"
+        "en": "Angle�cina"
       }
     },
     "properties": {
       "global": {
         "name": "Globalno",
-        "description": "Šibke globalne nastavitve za snapchat",
+        "description": "�ibke globalne nastavitve za snapchat",
         "properties": {
           "better_location": {
-            "name": "Boljša lokacija",
-            "description": "Izboljša lokacijo Snapchata",
+            "name": "Bolj�a lokacija",
+            "description": "Izbolj�a lokacijo Snapchata",
             "properties": {
               "spoof_location": {
                 "name": "Lokacija gob",
-                "description": "Spofs vaš položaj na določeno eno"
+                "description": "Spofs va� polo�aj na doloceno eno"
               },
               "coordinates": {
                 "name": "Koordinate",
@@ -1146,54 +1157,54 @@
               },
               "walk_radius": {
                 "name": "Polmer hoje",
-                "description": "Naključno hodite v tem polmeru (ft)"
+                "description": "Nakljucno hodite v tem polmeru (ft)"
               },
               "always_update_location": {
-                "name": "Vedno osveži lokacijo",
-                "description": "Prisilite Snapchat za posodobitev lokacije, tudi če ni prejetih podatkov GPS"
+                "name": "Vedno osve�i lokacijo",
+                "description": "Prisilite Snapchat za posodobitev lokacije, tudi ce ni prejetih podatkov GPS"
               },
               "suspend_location_updates": {
                 "name": "Zaustavi posodobitve lokacije",
-                "description": "Preprečuje posodabljanje vaše lokacije"
+                "description": "Preprecuje posodabljanje va�e lokacije"
               },
               "spoof_battery_level": {
                 "name": "Stopnja baterije za puh",
                 "description": "Spofs raven baterije naprave na zemljevidu\nVrednost mora biti med 0 in 100"
               },
               "spoof_headphones": {
-                "name": "Slušalke",
-                "description": "Spofov status poslušanja glasbe na zemljevidu"
+                "name": "Slu�alke",
+                "description": "Spofov status poslu�anja glasbe na zemljevidu"
               },
               "show_battery_level": {
-                "name": "Prikaži stopnjo baterije",
-                "description": "Prikaže raven baterije vaših prijateljev na zemljevidu"
+                "name": "Prika�i stopnjo baterije",
+                "description": "Prika�e raven baterije va�ih prijateljev na zemljevidu"
               }
             }
           },
           "snapchat_plus": {
             "name": "Snapchat Plus",
-            "description": "Omogoči Snapchat Plus funkcije\nNekatere funkcije na strani strežnika morda ne bodo delovale"
+            "description": "Omogoci Snapchat Plus funkcije\nNekatere funkcije na strani stre�nika morda ne bodo delovale"
           },
           "media_upload_quality": {
-            "name": "Kakovost pošiljanja večpredstavnostnih datotek",
-            "description": "Prenese kakovost pošiljanja večpredstavnostnih datotek",
+            "name": "Kakovost po�iljanja vecpredstavnostnih datotek",
+            "description": "Prenese kakovost po�iljanja vecpredstavnostnih datotek",
             "properties": {
               "force_video_upload_source_quality": {
                 "name": "Prisili kakovost vira videa",
-                "description": "Prisili Snapchat za uporabo kakovosti vira pri nalaganju videoposnetkov\nProsimo, upoštevajte, da to ne sme odstraniti metapodatkov iz medijev"
+                "description": "Prisili Snapchat za uporabo kakovosti vira pri nalaganju videoposnetkov\nProsimo, upo�tevajte, da to ne sme odstraniti metapodatkov iz medijev"
               },
               "disable_image_compression": {
-                "name": "Onemogoči kompresijo slike",
-                "description": "Onemogoči stiskanje slike pri nalaganju večpredstavnostnih datotek"
+                "name": "Onemogoci kompresijo slike",
+                "description": "Onemogoci stiskanje slike pri nalaganju vecpredstavnostnih datotek"
               },
               "custom_image_upload_format": {
-                "name": "Lastna oblika pošiljanja slike",
-                "description": "Nastavi obliko pošiljanja slik po meri\nIzberite format brez izgube (kot PNG) za najboljšo kakovost"
+                "name": "Lastna oblika po�iljanja slike",
+                "description": "Nastavi obliko po�iljanja slik po meri\nIzberite format brez izgube (kot PNG) za najbolj�o kakovost"
               }
             }
           },
           "disable_confirmation_dialogs": {
-            "name": "Onemogoči potrditvena pogovorna okna",
+            "name": "Onemogoci potrditvena pogovorna okna",
             "description": "Samodejno potrdi izbrana dejanja"
           },
           "auto_updater": {
@@ -1205,7 +1216,7 @@
             "description": "Nadzor nad preverjanjem PurrfectSnap za posodobitve",
             "properties": {
               "auto_update_check": {
-                "name": "Samodejno osveži"
+                "name": "Samodejno osve�i"
               },
               "update_check_frequency": {
                 "name": "Frekvenca posodabljanja preverjanja"
@@ -1216,45 +1227,45 @@
             "name": "Nastavitve vmesnika",
             "properties": {
               "haptic_feedback": {
-                "name": "Haptične povratne informacije"
+                "name": "Hapticne povratne informacije"
               }
             }
           },
           "disable_metrics": {
-            "name": "Onemogoči merjenje",
-            "description": "Bloki, ki pošiljajo posebne analitične podatke v Snapchat"
+            "name": "Onemogoci merjenje",
+            "description": "Bloki, ki po�iljajo posebne analiticne podatke v Snapchat"
           },
           "disable_story_sections": {
-            "name": "Onemogoči del zgodbe",
-            "description": "Odstrani rubrike s strani Zgodbe\nLahko zahteva osvežitev za pravilno delo"
+            "name": "Onemogoci del zgodbe",
+            "description": "Odstrani rubrike s strani Zgodbe\nLahko zahteva osve�itev za pravilno delo"
           },
           "block_ads": {
             "name": "Blokiraj oglase",
-            "description": "Preprečuje prikaz oglasov"
+            "description": "Preprecuje prikaz oglasov"
           },
           "disable_custom_tabs": {
-            "name": "Onemogoči zavihke po meri",
+            "name": "Onemogoci zavihke po meri",
             "description": "Odpre povezave v podprtih aplikacijah in ne v spletnem brskalniku"
           },
           "disable_permission_requests": {
-            "name": "Onemogoči zahteve za dovoljenje",
-            "description": "Preprečuje Snapchat, da bi zaprosil za posebna dovoljenja"
+            "name": "Onemogoci zahteve za dovoljenje",
+            "description": "Preprecuje Snapchat, da bi zaprosil za posebna dovoljenja"
           },
           "disable_memories_snap_feed": {
-            "name": "Onemogoči spomine snap feed",
-            "description": "Prepreči prikazovanje nedavnih spominov, ko podrsnete v kamero"
+            "name": "Onemogoci spomine snap feed",
+            "description": "Prepreci prikazovanje nedavnih spominov, ko podrsnete v kamero"
           },
           "spotlight_comments_username": {
-            "name": "Spotlight Komentarji Uporabniško ime",
-            "description": "Prikaže uporabniško ime avtorja v komentarjih Spotlight"
+            "name": "Spotlight Komentarji Uporabni�ko ime",
+            "description": "Prika�e uporabni�ko ime avtorja v komentarjih Spotlight"
           },
           "spotlight_comments_username_icon": {
-            "name": "Spotlight Komentarji Uporabniško ime Ikona",
-            "description": "Izberite, katera ikona je prikazana poleg uporabniških imen v komentarjih Spotlight"
+            "name": "Spotlight Komentarji Uporabni�ko ime Ikona",
+            "description": "Izberite, katera ikona je prikazana poleg uporabni�kih imen v komentarjih Spotlight"
           },
           "bypass_video_length_restriction": {
-            "name": "Omejitve dolžine obvoza",
-            "description": "Samski: pošlje en sam video\nRazdeli: razdeljeni videoposnetki po urejanju"
+            "name": "Omejitve dol�ine obvoza",
+            "description": "Samski: po�lje en sam video\nRazdeli: razdeljeni videoposnetki po urejanju"
           },
           "default_video_playback_rate": {
             "name": "Privzeta hitrost predvajanja videa",
@@ -1265,24 +1276,24 @@
             "description": "Dodaj drsnik v meniju opernega konteksta, da spremeni hitrost predvajanja videa\nOpomba: Spremembe veljajo samo za nadaljnje videoposnetke"
           },
           "disable_google_play_dialogs": {
-            "name": "Onemogoči pogovorna okna storitev Google Play",
-            "description": "Prepreči prikaz pogovornih oken o razpoložljivosti storitev Google Play"
+            "name": "Onemogoci pogovorna okna storitev Google Play",
+            "description": "Prepreci prikaz pogovornih oken o razpolo�ljivosti storitev Google Play"
           },
           "default_volume_controls": {
             "name": "Privzeti nadzor glasnosti",
             "description": "Sile Snapchat za uporabo nadzor glasnosti sistema"
           },
           "disable_telecom_framework": {
-            "name": "Onemogoči telekomunikacijski okvir",
-            "description": "Prepreči Snapchat uporabo Android Telecom okvir\nTo vam omogoča poslušanje glasbe med klicem"
+            "name": "Onemogoci telekomunikacijski okvir",
+            "description": "Prepreci Snapchat uporabo Android Telecom okvir\nTo vam omogoca poslu�anje glasbe med klicem"
           },
           "hide_active_music": {
             "name": "Skrij aktivno glasbo",
-            "description": "Prepreči Snapchatu, da bi vedel, da poslušaš glasbo.\nTo vam bo omogočilo, da boste jemali snapse z gumbi za nadzor glasnosti med poslušanjem glasbe"
+            "description": "Prepreci Snapchatu, da bi vedel, da poslu�a� glasbo.\nTo vam bo omogocilo, da boste jemali snapse z gumbi za nadzor glasnosti med poslu�anjem glasbe"
           },
           "disable_snap_splitting": {
-            "name": "Onemogoči razdelitev snap",
-            "description": "Prepreči, da bi se Snaps razdelil na več delov\nSlike, ki jih pošiljate, se bodo spremenile v videoposnetke"
+            "name": "Onemogoci razdelitev snap",
+            "description": "Prepreci, da bi se Snaps razdelil na vec delov\nSlike, ki jih po�iljate, se bodo spremenile v videoposnetke"
           }
         }
       },
@@ -1299,36 +1310,59 @@
             "description": "Izberite vire za samodejno prejemanje iz"
           },
           "prevent_self_auto_download": {
-            "name": "Prepreči samodejno prenašanje",
-            "description": "Preprečuje samodejno prenašanje lastnih Snapsov"
+            "name": "Prepreci samodejno prena�anje",
+            "description": "Preprecuje samodejno prena�anje lastnih Snapsov"
           },
           "path_format": {
             "name": "Oblika poti",
-            "description": "Določite obliko poti datoteke"
+            "description": "Dolocite obliko poti datoteke"
           },
           "allow_duplicate": {
             "name": "Dovoli podvajanje",
-            "description": "Omogoča večkraten prenos istih medijev"
+            "description": "Omogoca veckraten prenos istih medijev"
           },
           "merge_overlays": {
-            "name": "Združi prekrivanje",
-            "description": "Združi besedilo in medije Snap v eno datoteko"
+            "name": "Zdru�i prekrivanje",
+            "description": "Zdru�i besedilo in medije Snap v eno datoteko"
           },
           "force_image_format": {
             "name": "Prisili obliko slike",
-            "description": "Prisili slike za shranjevanje v določeni obliki"
+            "description": "Prisili slike za shranjevanje v doloceni obliki"
           },
           "force_voice_note_format": {
             "name": "Prisili obliko glasovne note",
-            "description": "Sili glas Opombe, ki jih je treba shraniti v določeni obliki"
+            "description": "Sili glas Opombe, ki jih je treba shraniti v doloceni obliki"
           },
           "auto_download_voice_notes": {
-            "name": "Samodejno prenašanje Glasovni zapiski",
+            "name": "Samodejno prena�anje Glasovni zapiski",
             "description": "Samodejno prenese glasovne zapiske med predvajanjem"
+          },
+          \"call_recorder\": {
+              \"name\": \"Call Recorder\",
+              \"description\": \"Manage call recording settings\",
+              \"properties\": {
+                  \"call_recorder\": {
+                      \"name\": \"Mode\",
+                      \"description\": \"Select what should be recorded\"
+                  },
+                  \"auto_start_recording\": {
+                      \"name\": \"Auto Start Recording\",
+                      \"description\": \"Automatically start recording when a call starts\"
+                  },
+                  \"call_recorder_ui\": {
+                      \"name\": \"Call Recorder UI\",
+                      \"description\": \"Show the recording overlay UI during calls\"
+                  },
+                  \"call_recorder_ui_design\": {
+                      \"name\": \"UI Design\",
+                      \"description\": \"Select the design for the call recorder overlay\"
+                  },
+                  \"call_recording_saved_toast\": \"Saved\"
+              }
           },
           "download_profile_pictures": {
             "name": "Prenesi slike profila",
-            "description": "Omogoča prenos slik profila s strani profila"
+            "description": "Omogoca prenos slik profila s strani profila"
           },
           "opera_download_button": {
             "name": "Gumb za prenos Opere",
@@ -1336,15 +1370,15 @@
           },
           "download_context_menu": {
             "name": "Prenesi kontekstni meni",
-            "description": "Omogoča prenos/predogled sporočil iz pogovora ali zgodbe z uporabo kontekstnega menija.\nDolg pritisk na gumbe bo prisilil prenos"
+            "description": "Omogoca prenos/predogled sporocil iz pogovora ali zgodbe z uporabo kontekstnega menija.\nDolg pritisk na gumbe bo prisilil prenos"
           },
           "ffmpeg_options": {
-            "name": "Možnosti FFmpeg",
-            "description": "Navedite dodatne Možnosti FFmpeg",
+            "name": "Mo�nosti FFmpeg",
+            "description": "Navedite dodatne Mo�nosti FFmpeg",
             "properties": {
               "threads": {
                 "name": "Niti",
-                "description": "Količina niti za uporabo"
+                "description": "Kolicina niti za uporabo"
               },
               "preset": {
                 "name": "Prednastavljeno",
@@ -1359,7 +1393,7 @@
                 "description": "Nastavite video bitrate (kbps)"
               },
               "audio_bitrate": {
-                "name": "Zvočna bitna hitrost",
+                "name": "Zvocna bitna hitrost",
                 "description": "Nastavite bitno hitrost zvoka (kbps)"
               },
               "custom_video_codec": {
@@ -1367,72 +1401,72 @@
                 "description": "Nastavi lastni video kodek (npr. libx264)"
               },
               "custom_audio_codec": {
-                "name": "Lastni zvočni kodek",
-                "description": "Nastavi po meri zvočno kodo (npr. AAC)"
+                "name": "Lastni zvocni kodek",
+                "description": "Nastavi po meri zvocno kodo (npr. AAC)"
               }
             }
           },
           "logging": {
-            "name": "Beleženje",
-            "description": "Prikazuje zdravice med prenašanjem medijev"
+            "name": "Bele�enje",
+            "description": "Prikazuje zdravice med prena�anjem medijev"
           },
           "custom_path_format": {
             "name": "Lastna oblika poti",
-            "description": "Določite obliko poti po meri za prenesene nosilce\n\nRazpoložljive spremenljivke:\n- % uporabniško ime%\n- % vira%\n- % hash%\n- % date_time%"
+            "description": "Dolocite obliko poti po meri za prenesene nosilce\n\nRazpolo�ljive spremenljivke:\n- % uporabni�ko ime%\n- % vira%\n- % hash%\n- % date_time%"
           }
         }
       },
       "user_interface": {
-        "name": "Uporabniški vmesnik",
-        "description": "Spremeni videz in občutek Snapchata",
+        "name": "Uporabni�ki vmesnik",
+        "description": "Spremeni videz in obcutek Snapchata",
         "properties": {
           "enable_app_appearance": {
-            "name": "Omogoči nastavitve videza",
-            "description": "Omogoči nastavljanje skritega videza\nNi mogoče zahtevati na novejših različicah Snapchat"
+            "name": "Omogoci nastavitve videza",
+            "description": "Omogoci nastavljanje skritega videza\nNi mogoce zahtevati na novej�ih razlicicah Snapchat"
           },
           "friend_feed_message_preview": {
-            "name": "Ogled sporočila o viru prijateljev",
-            "description": "Prikaže ogled zadnjih sporočil v viru prijateljev",
+            "name": "Ogled sporocila o viru prijateljev",
+            "description": "Prika�e ogled zadnjih sporocil v viru prijateljev",
             "properties": {
               "amount": {
                 "name": "Znesek",
-                "description": "Količina sporočil za predogled"
+                "description": "Kolicina sporocil za predogled"
               }
             }
           },
           "snap_preview": {
             "name": "Ogled snap",
-            "description": "Prikaže majhen predogled poleg nevidnih Snaps v klepetu"
+            "description": "Prika�e majhen predogled poleg nevidnih Snaps v klepetu"
           },
           "bootstrap_override": {
-            "name": "Povoz čevlja",
-            "description": "Povozi nastavitve za boottrap uporabniškega vmesnika",
+            "name": "Povoz cevlja",
+            "description": "Povozi nastavitve za boottrap uporabni�kega vmesnika",
             "properties": {
               "app_appearance": {
                 "name": "Videz",
                 "description": "Nastavi obstojen videz"
               },
               "home_tab": {
-                "name": "Domači zavihek",
-                "description": "Povozi začetni zavihek ob odpiranju Snapchata"
+                "name": "Domaci zavihek",
+                "description": "Povozi zacetni zavihek ob odpiranju Snapchata"
               }
             }
           },
           "map_friend_nametags": {
-            "name": "Izboljšane značke zemljevida prijateljstva",
-            "description": "Izboljša oznake prijateljev na Snapmapu"
+            "name": "Izbolj�ane znacke zemljevida prijateljstva",
+            "description": "Izbolj�a oznake prijateljev na Snapmapu"
           },
           "prevent_message_list_auto_scroll": {
-            "name": "Samodejno premakni seznam sporočil",
-            "description": "Pri pošiljanju/sprejemanju sporočila prepreči, da bi se seznam sporočil premaknil na dno"
+            "name": "Samodejno premakni seznam sporocil",
+            "description": "Pri po�iljanju/sprejemanju sporocila prepreci, da bi se seznam sporocil premaknil na dno"
           },
           "streak_expiration_info": {
-            "name": "Prikaži podatke o preteku",
-            "description": "Ob števcu Streaks prikaže časovnik iztekanja"
+            "name": "Prika�i podatke o preteku",
+            "description": "Ob �tevcu Streaks prika�e casovnik iztekanja"
           },
           "hide_friend_feed_entry": {
             "name": "Skrij vnos vira prijateljev",
-            "description": "Skriva določenega prijatelja iz prijateljevega vira\nZa upravljanje te funkcije uporabite družbeni zavihek"
+            "description": "Skriva dolocenega prijatelja iz prijateljevega vira\nZa upravljanje te funkcije uporabite dru�beni zavihek"
           },
           "hide_streak_restore": {
             "name": "Skrij Streak Restore",
@@ -1452,19 +1486,19 @@
           },
           "opera_media_quick_info": {
             "name": "Hitre informacije o operi",
-            "description": "Prikaže uporabne informacije o medijih, kot je datum ustvarjanja v kontekstu opernega menija"
+            "description": "Prika�e uporabne informacije o medijih, kot je datum ustvarjanja v kontekstu opernega menija"
           },
           "old_bitmoji_selfie": {
             "name": "Stari selfie Bitmoji",
-            "description": "Prinese nazaj Bitmoji selfies iz starejših Snapchat različic"
+            "description": "Prinese nazaj Bitmoji selfies iz starej�ih Snapchat razlicic"
           },
           "disable_spotlight": {
-            "name": "Onemogoči točkovno svetlobo",
-            "description": "Onemogoči stran Spotlight"
+            "name": "Onemogoci tockovno svetlobo",
+            "description": "Onemogoci stran Spotlight"
           },
           "friend_feed_menu_buttons": {
             "name": "Gumbi menija Feed Friend",
-            "description": "Izberite, kateri gumbi naj se prikažejo v meniju Feed"
+            "description": "Izberite, kateri gumbi naj se prika�ejo v meniju Feed"
           },
           "auto_close_friend_feed_menu": {
             "name": "Samodejno zapri pogovorni meni",
@@ -1472,18 +1506,18 @@
           },
           "vertical_story_viewer": {
             "name": "Pregledovalnik vertikalnih zgodb",
-            "description": "Omogoči vertikalni pregledovalnik zgodb za vse zgodbe"
+            "description": "Omogoci vertikalni pregledovalnik zgodb za vse zgodbe"
           },
           "enable_friend_feed_menu_bar": {
             "name": "Menijska vrstica o viru prijateljev",
-            "description": "Omogoči novo menijsko vrstico Feed Friend"
+            "description": "Omogoci novo menijsko vrstico Feed Friend"
           },
           "message_indicators": {
-            "name": "Kazalniki sporočil",
-            "description": "Dodajanje posebnih indikatorskih ikon v sporočila\nOpomba: Kazalniki morda niso 100% točni"
+            "name": "Kazalniki sporocil",
+            "description": "Dodajanje posebnih indikatorskih ikon v sporocila\nOpomba: Kazalniki morda niso 100% tocni"
           },
           "stealth_mode_indicator": {
-            "name": "Kazalnik nevidnega načina",
+            "name": "Kazalnik nevidnega nacina",
             "description": "Dodajanje "
           },
           "edit_text_override": {
@@ -1491,108 +1525,108 @@
             "description": "Preglasi vedenje besedilnega polja"
           },
           "prevent_forced_keyboard": {
-            "name": "Prepreči prisilno tipkovnico",
-            "description": "Ko odprete pogovor, se Snapchat samodejno ne prikaže"
+            "name": "Prepreci prisilno tipkovnico",
+            "description": "Ko odprete pogovor, se Snapchat samodejno ne prika�e"
           },
           "force_amoled_theme": {
             "name": "SMOLED Tema",
-            "description": "Prisilite pravo črno temo AMOLED preko aplikacije UI"
+            "description": "Prisilite pravo crno temo AMOLED preko aplikacije UI"
           },
           "settings_menu": {
             "name": "Menu Nastavitve",
-            "description": "Izberite med novimi in zapuščinskimi nastavitvami menija"
+            "description": "Izberite med novimi in zapu�cinskimi nastavitvami menija"
           }
         }
       },
       "messaging": {
-        "name": "Sporočanje",
-        "description": "Spremenite način interakcije s prijatelji",
+        "name": "Sporocanje",
+        "description": "Spremenite nacin interakcije s prijatelji",
         "properties": {
           "bypass_screenshot_detection": {
             "name": "Zaznavanje obhodnega zaslona",
-            "description": "Prepreči zaznavanje Snapchata, ko posnamete posnetek zaslona"
+            "description": "Prepreci zaznavanje Snapchata, ko posnamete posnetek zaslona"
           },
           "anonymous_story_viewing": {
             "name": "Anonimno pregledovanje zgodbe",
-            "description": "Vsem preprečuje, da bi vedeli, da ste videli njihovo zgodbo"
+            "description": "Vsem preprecuje, da bi vedeli, da ste videli njihovo zgodbo"
           },
           "prevent_story_rewatch_indicator": {
-            "name": "Prepreči ponovitev zgodbe",
-            "description": "Vsem preprečuje, da bi vedeli, da ste ponovno videli njihovo zgodbo"
+            "name": "Prepreci ponovitev zgodbe",
+            "description": "Vsem preprecuje, da bi vedeli, da ste ponovno videli njihovo zgodbo"
           },
           "hide_peek_a_peek": {
             "name": "Skrij Peek-a- Peek",
-            "description": "Prepreči pošiljanje obvestila, ko na pol potegnete v klepet"
+            "description": "Prepreci po�iljanje obvestila, ko na pol potegnete v klepet"
           },
           "hide_bitmoji_presence": {
             "name": "Skrij prisotnost Bitmoji",
-            "description": "Preprečuje vašemu Bitmojiju, da bi se pojavil med klepetom"
+            "description": "Preprecuje va�emu Bitmojiju, da bi se pojavil med klepetom"
           },
           "hide_typing_notifications": {
             "name": "Skrij obvestila o tipkah",
-            "description": "Vsem preprečuje, da bi vedeli, da tipkaš sporočilo"
+            "description": "Vsem preprecuje, da bi vedeli, da tipka� sporocilo"
           },
           "unlimited_snap_view_time": {
-            "name": "Neomejen čas prikaza snap",
-            "description": "Odstrani časovni okvir za ogled Snaps"
+            "name": "Neomejen cas prikaza snap",
+            "description": "Odstrani casovni okvir za ogled Snaps"
           },
           "auto_mark_as_read": {
-            "name": "Samodejno označi kot prebrano",
-            "description": "Samodejno označi sporočila/snema kot prebrana tudi, ko je omogočen način nevidnosti"
+            "name": "Samodejno oznaci kot prebrano",
+            "description": "Samodejno oznaci sporocila/snema kot prebrana tudi, ko je omogocen nacin nevidnosti"
           },
           "mark_snap_as_seen_button": {
-            "name": "Označi Snap kot viden gumb",
-            "description": "Doda gumb za označitev Snap, kot se vidi pri ogledu.\nTo bo delovalo tudi, ko bo omogočen nevidni način"
+            "name": "Oznaci Snap kot viden gumb",
+            "description": "Doda gumb za oznacitev Snap, kot se vidi pri ogledu.\nTo bo delovalo tudi, ko bo omogocen nevidni nacin"
           },
           "skip_when_marking_as_seen": {
-            "name": "Preskoči, ko je zaznamovano",
-            "description": "Samodejno preskoči na naslednji Snap, ko označuje Snap, kot se vidi.\nUporabljajte v kombinaciji z gumbom Mark Snap"
+            "name": "Preskoci, ko je zaznamovano",
+            "description": "Samodejno preskoci na naslednji Snap, ko oznacuje Snap, kot se vidi.\nUporabljajte v kombinaciji z gumbom Mark Snap"
           },
           "loop_media_playback": {
-            "name": "Predvajanje večpredstavnostne zanke",
+            "name": "Predvajanje vecpredstavnostne zanke",
             "description": "Zanke medijsko predvajanje ob gledanju Snaps / Zgodbe"
           },
           "disable_replay_in_ff": {
-            "name": "Onemogoči ponovitev v FF",
-            "description": "Onemogoči možnost ponovnega igranja z dolgim tiskom iz vira prijateljev"
+            "name": "Onemogoci ponovitev v FF",
+            "description": "Onemogoci mo�nost ponovnega igranja z dolgim tiskom iz vira prijateljev"
           },
           "half_swipe_notifier": {
-            "name": "Obvestilo o polovičnem vrtenju",
-            "description": "Obvešča te, ko se nekdo pol zavleče v pogovor",
+            "name": "Obvestilo o polovicnem vrtenju",
+            "description": "Obve�ca te, ko se nekdo pol zavlece v pogovor",
             "properties": {
               "min_duration": {
                 "name": "Minimalno trajanje",
-                "description": "Najmanjša dolžina polovičnega podrsa (v sekundah)"
+                "description": "Najmanj�a dol�ina polovicnega podrsa (v sekundah)"
               },
               "max_duration": {
-                "name": "Najdaljše trajanje",
-                "description": "Najdaljše trajanje polovičnega podrsa (v sekundah)"
+                "name": "Najdalj�e trajanje",
+                "description": "Najdalj�e trajanje polovicnega podrsa (v sekundah)"
               }
             }
           },
           "call_start_confirmation": {
-            "name": "Potrditev začetka klica",
-            "description": "Prikaže potrditveno okno ob zagonu klica"
+            "name": "Potrditev zacetka klica",
+            "description": "Prika�e potrditveno okno ob zagonu klica"
           },
           "unlimited_conversation_pinning": {
             "name": "Neomejeno povezovanje",
-            "description": "Omogoča vam, da pripnete neomejeno število pogovorov lokalno"
+            "description": "Omogoca vam, da pripnete neomejeno �tevilo pogovorov lokalno"
           },
           "disable_snap_mode_restrictions": {
-            "name": "Onemogoči omejitve načina snap",
-            "description": "Omogoča ogled samouničevalnih Snaps brez omejitev"
+            "name": "Onemogoci omejitve nacina snap",
+            "description": "Omogoca ogled samounicevalnih Snaps brez omejitev"
           },
           "prevent_message_sending": {
-            "name": "Prepreči pošiljanje sporočila",
-            "description": "Preprečevanje pošiljanja določenih vrst sporočil"
+            "name": "Prepreci po�iljanje sporocila",
+            "description": "Preprecevanje po�iljanja dolocenih vrst sporocil"
           },
           "friend_mutation_notifier": {
             "name": "Obvestilo o mutaciji prijatelja",
-            "description": "Obvešča te, ko se nekaj spremeni v prijateljevem profilu"
+            "description": "Obve�ca te, ko se nekaj spremeni v prijateljevem profilu"
           },
           "better_notifications": {
-            "name": "Boljša obvestila",
-            "description": "Doda več informacij v prejetih obvestilih",
+            "name": "Bolj�a obvestila",
+            "description": "Doda vec informacij v prejetih obvestilih",
             "properties": {
               "group_notifications": {
                 "name": "Obvestila o skupini",
@@ -1600,23 +1634,23 @@
               },
               "chat_preview": {
                 "name": "Predogled klepeta",
-                "description": "Prikaže ogled prejetih sporočil v obvestilu"
+                "description": "Prika�e ogled prejetih sporocil v obvestilu"
               },
               "media_preview": {
                 "name": "Ogled medija",
-                "description": "Prikaže ogled izbranih vrst medijev v obvestilu"
+                "description": "Prika�e ogled izbranih vrst medijev v obvestilu"
               },
               "media_caption": {
-                "name": "Večpredstavnostni naslov",
-                "description": "Prikaže priloženi naslov nosilcev v obvestilu"
+                "name": "Vecpredstavnostni naslov",
+                "description": "Prika�e prilo�eni naslov nosilcev v obvestilu"
               },
               "stacked_media_messages": {
-                "name": "Zložena večpredstavnostna sporočila",
-                "description": "Združi več medijskih sporočil v eno besedilno obvestilo, ko jih ni mogoče videti. Uporaba v kombinaciji s predogledom klepeta"
+                "name": "Zlo�ena vecpredstavnostna sporocila",
+                "description": "Zdru�i vec medijskih sporocil v eno besedilno obvestilo, ko jih ni mogoce videti. Uporaba v kombinaciji s predogledom klepeta"
               },
               "friend_add_source": {
                 "name": "Dodaj vir",
-                "description": "Prikaže izvor prijateljeve zahteve v obvestilu"
+                "description": "Prika�e izvor prijateljeve zahteve v obvestilu"
               },
               "reply_button": {
                 "name": "Gumb za odgovor",
@@ -1628,115 +1662,115 @@
               },
               "download_button": {
                 "name": "Prenesi gumb",
-                "description": "Omogoča prenos nosilcev iz obvestila"
+                "description": "Omogoca prenos nosilcev iz obvestila"
               },
               "mark_as_read_button": {
-                "name": "Označi kot gumb za branje",
-                "description": "Omogoča označitev sporočila kot prebrano iz obvestila"
+                "name": "Oznaci kot gumb za branje",
+                "description": "Omogoca oznacitev sporocila kot prebrano iz obvestila"
               },
               "mark_as_read_and_save_in_chat": {
-                "name": "Označi kot branje in shranjevanje v klepetu",
+                "name": "Oznaci kot branje in shranjevanje v klepetu",
                 "description": "Doda oznako kot prebrano in shrani v gumb za klepet v obvestilo"
               }
             }
           },
           "notification_blacklist": {
-            "name": "Črni seznam obvestil",
+            "name": "Crni seznam obvestil",
             "description": "Izberite obvestila, ki naj se blokirajo"
           },
           "message_logger": {
-            "name": "Dnevnik sporočil",
-            "description": "Prepreči izbris sporočil",
+            "name": "Dnevnik sporocil",
+            "description": "Prepreci izbris sporocil",
             "properties": {
               "keep_my_own_messages": {
-                "name": "Ohrani moja lastna sporočila",
-                "description": "Prepreči brisanje lastnih sporočil"
+                "name": "Ohrani moja lastna sporocila",
+                "description": "Prepreci brisanje lastnih sporocil"
               },
               "auto_purge": {
-                "name": "Samodejno čiščenje",
-                "description": "Samodejno izbriše predpomnjena sporočila, ki so starejša od določenega časa"
+                "name": "Samodejno ci�cenje",
+                "description": "Samodejno izbri�e predpomnjena sporocila, ki so starej�a od dolocenega casa"
               },
               "message_filter": {
-                "name": "Filter sporočil",
-                "description": "Izberite, katera sporočila naj se zabeležijo (prazna za vsa sporočila)"
+                "name": "Filter sporocil",
+                "description": "Izberite, katera sporocila naj se zabele�ijo (prazna za vsa sporocila)"
               },
               "deleted_message_color": {
-                "name": "Barva izbrisanega sporočila",
-                "description": "Nastavi barvo izbrisanih sporočil"
+                "name": "Barva izbrisanega sporocila",
+                "description": "Nastavi barvo izbrisanih sporocil"
               }
             }
           },
           "auto_save_messages_in_conversations": {
-            "name": "Samodejno shrani sporočila",
-            "description": "Samodejno shrani vsako sporočilo v pogovorih"
+            "name": "Samodejno shrani sporocila",
+            "description": "Samodejno shrani vsako sporocilo v pogovorih"
           },
           "unsaveable_messages": {
-            "name": "Nerešljiva sporočila",
-            "description": "Preprečuje shranjevanje izbranih vrst sporočil v klepetu",
+            "name": "Nere�ljiva sporocila",
+            "description": "Preprecuje shranjevanje izbranih vrst sporocil v klepetu",
             "properties": {
               "chat": {
-                "name": "Sporočila za klepet",
-                "description": "Naredi sporočila za klepet nerešljiva"
+                "name": "Sporocila za klepet",
+                "description": "Naredi sporocila za klepet nere�ljiva"
               },
               "snap": {
                 "name": "Snaps",
-                "description": "Naredi tleskne nerešljive"
+                "description": "Naredi tleskne nere�ljive"
               },
               "external_media": {
                 "name": "Zunanji mediji",
-                "description": "Naj bodo zunanji mediji nerešljivi"
+                "description": "Naj bodo zunanji mediji nere�ljivi"
               },
               "sticker": {
                 "name": "Nalepke",
-                "description": "Naredite nalepke nerešljive"
+                "description": "Naredite nalepke nere�ljive"
               },
               "share": {
                 "name": "Delnice",
-                "description": "Naj bo skupna vsebina nerešljiva"
+                "description": "Naj bo skupna vsebina nere�ljiva"
               },
               "note": {
-                "name": "Zvočni zapiski",
-                "description": "Naredi zvočne zapiske nerešljive"
+                "name": "Zvocni zapiski",
+                "description": "Naredi zvocne zapiske nere�ljive"
               },
               "story_reply": {
                 "name": "Odgovore zgodbe",
-                "description": "Naj bodo odgovori zgodbe nerešljivi"
+                "description": "Naj bodo odgovori zgodbe nere�ljivi"
               }
             }
           },
           "gallery_media_send_override": {
-            "name": "Galerija Mediji Pošlji preklic",
-            "description": "Ob pošiljanju iz Galerije se prikaže vir medijev",
+            "name": "Galerija Mediji Po�lji preklic",
+            "description": "Ob po�iljanju iz Galerije se prika�e vir medijev",
             "properties": {
               "mode": {
-                "name": "Način povoza",
-                "description": "Izberite način pošiljanja galerijskih medijev"
+                "name": "Nacin povoza",
+                "description": "Izberite nacin po�iljanja galerijskih medijev"
               },
               "include_camera_snaps": {
-                "name": "Vključi pripete fotoaparate",
-                "description": "Prikaži tudi pogovorno okno za preklop kamere"
+                "name": "Vkljuci pripete fotoaparate",
+                "description": "Prika�i tudi pogovorno okno za preklop kamere"
               }
             }
           },
           "strip_media_metadata": {
             "name": "Metapodatki o medijih",
-            "description": "Odstrani metapodatke nosilcev pred pošiljanjem kot sporočila"
+            "description": "Odstrani metapodatke nosilcev pred po�iljanjem kot sporocila"
           },
           "bypass_message_retention_policy": {
-            "name": "Politika zadrževanja sporočil ob prehodu",
-            "description": "Prepreči brisanje sporočil po njihovem ogledu"
+            "name": "Politika zadr�evanja sporocil ob prehodu",
+            "description": "Prepreci brisanje sporocil po njihovem ogledu"
           },
           "bypass_message_action_restrictions": {
             "name": "Omejitve ukrepanja ob prehodu",
-            "description": "Omogoča, da se odzovete na snap, ne da bi ga odprli, ali da shranite nerešljivo sporočilo"
+            "description": "Omogoca, da se odzovete na snap, ne da bi ga odprli, ali da shranite nere�ljivo sporocilo"
           },
           "remove_groups_locked_status": {
             "name": "Odstrani zaklenjeno stanje skupin",
-            "description": "Omogoča ogled podatkov o skupinah po tem, ko so jih brcnili"
+            "description": "Omogoca ogled podatkov o skupinah po tem, ko so jih brcnili"
           },
           "double_tap_chat_action": {
             "name": "Dejanje z dvojnim tapom",
-            "description": "Naredi dejanje po meri, ko dvakrat tapnete sporočilo v klepetu"
+            "description": "Naredi dejanje po meri, ko dvakrat tapnete sporocilo v klepetu"
           },
           "double_tap_chat_action_custom_emoji": {
             "name": "Double Tap Chat Action po meri Emoji Reaction",
@@ -1744,97 +1778,97 @@
           },
           "auto_reply": {
             "name": "Samodejno odgovori",
-            "description": "Samodejno pošilja odgovore na prejeta sporočila, ko ste odsotni",
+            "description": "Samodejno po�ilja odgovore na prejeta sporocila, ko ste odsotni",
             "properties": {
               "allow_running_in_background": {
-                "name": "Dovoli vožnjo v ozadju",
-                "description": "Dovoli samodejno odgovor zagnati v ozadju. Opomba: To bo znatno izčrpa baterije"
+                "name": "Dovoli vo�njo v ozadju",
+                "description": "Dovoli samodejno odgovor zagnati v ozadju. Opomba: To bo znatno izcrpa baterije"
               },
               "cooldown_seconds": {
                 "name": "Ohlajanje sekund",
-                "description": "Najkrajši čas med samodejnimi povezavami na isti pogovor (v sekundah)"
+                "description": "Najkraj�i cas med samodejnimi povezavami na isti pogovor (v sekundah)"
               },
               "message_age_threshold": {
-                "name": "Prag starosti sporočila",
-                "description": "Odgovor samo na sporočila, prejeta v tem časovnem okviru (v sekundah)"
+                "name": "Prag starosti sporocila",
+                "description": "Odgovor samo na sporocila, prejeta v tem casovnem okviru (v sekundah)"
               },
               "ai_config": {
                 "name": "Nastavitve AI",
                 "description": "Nastavitve za samodejne odzive na AI",
                 "properties": {
                   "enable_ai_replies": {
-                    "name": "Omogoči odgovore AI",
-                    "description": "Uporabite AI za ustvarjanje inteligentnih samodejnih odzivov namesto sporočil predloge"
+                    "name": "Omogoci odgovore AI",
+                    "description": "Uporabite AI za ustvarjanje inteligentnih samodejnih odzivov namesto sporocil predloge"
                   },
                   "ai_provider": {
                     "name": "Ponudnik AI",
                     "description": "Izberite katero storitev AI za ustvarjanje odgovorov"
                   },
                   "ai_endpoint_url": {
-                    "name": "URL za končno točko AI",
-                    "description": "URL končnega cilja API za storitev AI (npr. OpenAI, lokalni strežnik AI)"
+                    "name": "URL za koncno tocko AI",
+                    "description": "URL koncnega cilja API za storitev AI (npr. OpenAI, lokalni stre�nik AI)"
                   },
                   "ai_model": {
                     "name": "AI model",
                     "description": "AI model za ustvarjanje odgovorov (npr. gpt-3.5-turbo, gpt-4)"
                   },
                   "ai_api_key": {
-                    "name": "Ključ AI API",
-                    "description": "API ključ za preverjanje pristnosti z AI storitev"
+                    "name": "Kljuc AI API",
+                    "description": "API kljuc za preverjanje pristnosti z AI storitev"
                   },
                   "ai_system_prompt": {
                     "name": "Poziv sistema AI",
-                    "description": "Sistem, ki določa osebnost in vedenje AI"
+                    "description": "Sistem, ki doloca osebnost in vedenje AI"
                   },
                   "ai_max_tokens": {
-                    "name": "Al Max žetoni",
-                    "description": "Največje število žetonov (besed) lahko AI uporabi v odzivih"
+                    "name": "Al Max �etoni",
+                    "description": "Najvecje �tevilo �etonov (besed) lahko AI uporabi v odzivih"
                   },
                   "ai_temperature": {
                     "name": "Temperatura AI",
-                    "description": "Kontrolira naključnost v odzivih AI (0,0 = deterministično, 2,0 = zelo naključno)"
+                    "description": "Kontrolira nakljucnost v odzivih AI (0,0 = deterministicno, 2,0 = zelo nakljucno)"
                   },
                   "ai_context_length": {
-                    "name": "Dolžina konteksta AI",
-                    "description": "Število prejšnjih sporočil, ki jih je treba vključiti kot kontekst za odzive AI"
+                    "name": "Dol�ina konteksta AI",
+                    "description": "�tevilo prej�njih sporocil, ki jih je treba vkljuciti kot kontekst za odzive AI"
                   },
                   "ai_personality_traits": {
                     "name": "AI osebnostne lastnosti",
-                    "description": "Osebnostne lastnosti, ločene od vejice (npr. prijateljske, priložnostne, koristne)"
+                    "description": "Osebnostne lastnosti, locene od vejice (npr. prijateljske, prilo�nostne, koristne)"
                   },
                   "ai_response_style": {
                     "name": "Slog odziva AI",
-                    "description": "Splošni slog za odzive AI"
+                    "description": "Splo�ni slog za odzive AI"
                   },
                   "ai_response_language": {
                     "name": "Jezik odziva AI",
-                    "description": "Jezik za odzive AI (avto = enako kot prejeto sporočilo)"
+                    "description": "Jezik za odzive AI (avto = enako kot prejeto sporocilo)"
                   },
                   "ai_use_conversation_history": {
                     "name": "Uporabi zgodovino pogovorov",
-                    "description": "Vključi prejšnja sporočila kot kontekst za ustreznejše odzive AI"
+                    "description": "Vkljuci prej�nja sporocila kot kontekst za ustreznej�e odzive AI"
                   },
                   "ai_include_friend_info": {
-                    "name": "Vključi podatke o prijatelju",
-                    "description": "Vključite ime prijatelja in druge razpoložljive informacije v kontekstu AI"
+                    "name": "Vkljuci podatke o prijatelju",
+                    "description": "Vkljucite ime prijatelja in druge razpolo�ljive informacije v kontekstu AI"
                   },
                   "ai_fallback_to_template": {
                     "name": "Umik na predlogo",
-                    "description": "Uporabi sporočila predloge, če AI ne ustvari odziva"
+                    "description": "Uporabi sporocila predloge, ce AI ne ustvari odziva"
                   },
                   "ai_request_timeout": {
-                    "name": "Čas za zahtevo AI",
-                    "description": "Najdaljši čas čakanja na odziv AI (v sekundah)"
+                    "name": "Cas za zahtevo AI",
+                    "description": "Najdalj�i cas cakanja na odziv AI (v sekundah)"
                   },
                   "ai_retry_attempts": {
                     "name": "AI poskusi znova",
-                    "description": "Število ponovnih preizkusov zahtev AI, če ne uspejo"
+                    "description": "�tevilo ponovnih preizkusov zahtev AI, ce ne uspejo"
                   }
                 }
               },
               "auto_trigger_config": {
                 "name": "Nastavitve samodejnega zagona",
-                "description": "Nastavitve za sprožitve samodejnega odziva in predloge sporočil",
+                "description": "Nastavitve za spro�itve samodejnega odziva in predloge sporocil",
                 "properties": {
                   "friendSpecificGreeting": {
                     "name": "Pozdrav prijateljev",
@@ -1842,51 +1876,51 @@
                   },
                   "friendGreeting": {
                     "name": "Prijateljski pozdrav",
-                    "description": "Pozdravno besedilo, ki naj se uporabi, ko je omogočen poseben pozdrav prijatelja"
+                    "description": "Pozdravno besedilo, ki naj se uporabi, ko je omogocen poseben pozdrav prijatelja"
                   },
                   "auto_reply_content_types": {
                     "name": "Samodejno odgovori",
-                    "description": "Izberite, katere vrste sporočil naj sprožijo samodejno javljanje"
+                    "description": "Izberite, katere vrste sporocil naj spro�ijo samodejno javljanje"
                   },
                   "chat_messages": {
-                    "name": "Odgovori sporočil",
-                    "description": "Samodejno odgovarjajte za besedilna sporočila za klepet"
+                    "name": "Odgovori sporocil",
+                    "description": "Samodejno odgovarjajte za besedilna sporocila za klepet"
                   },
                   "snap_messages": {
                     "name": "Pripni odgovore",
-                    "description": "Samodejno javljanje sporočil za snaps"
+                    "description": "Samodejno javljanje sporocil za snaps"
                   },
                   "story_share_messages": {
                     "name": "Story Deli odgovore",
-                    "description": "Samodejno odgovarjaj na sporočila za souporabe zgodb"
+                    "description": "Samodejno odgovarjaj na sporocila za souporabe zgodb"
                   },
                   "story_reply_messages": {
                     "name": "Odzivi odgovorov zgodbe",
-                    "description": "Samodejno javljaj sporočila za odgovore na zgodbe"
+                    "description": "Samodejno javljaj sporocila za odgovore na zgodbe"
                   },
                   "external_media_messages": {
                     "name": "Odgovori zunanjih medijev",
-                    "description": "Samodejno javljanje sporočil za zunanje medije"
+                    "description": "Samodejno javljanje sporocil za zunanje medije"
                   },
                   "voice_note_messages": {
                     "name": "Odgovori na glasovno noto",
-                    "description": "Samodejno javljanje sporočil za glasovne zapiske"
+                    "description": "Samodejno javljanje sporocil za glasovne zapiske"
                   },
                   "sticker_messages": {
                     "name": "Nalepke",
-                    "description": "Samodejno javljanje sporočil za nalepke"
+                    "description": "Samodejno javljanje sporocil za nalepke"
                   },
                   "tiny_snap_messages": {
                     "name": "Majhni odgovori Snap",
-                    "description": "Samodejno javljanje sporočil za majhne snapse"
+                    "description": "Samodejno javljanje sporocil za majhne snapse"
                   },
                   "map_reaction_messages": {
                     "name": "Odgovori za odziv na zemljevid",
-                    "description": "Samodejno javljanje sporočil za odzive zemljevidov"
+                    "description": "Samodejno javljanje sporocil za odzive zemljevidov"
                   },
                   "half_swipe_messages": {
-                    "name": "Polovična sporočila",
-                    "description": "Samodejno javljanje sporočil za pol podrsa"
+                    "name": "Polovicna sporocila",
+                    "description": "Samodejno javljanje sporocil za pol podrsa"
                   }
                 }
               }
@@ -1897,68 +1931,68 @@
             "description": "Nastavi zamikanje in nastavitve v vrsti za samodejne odprte snapse",
             "properties": {
               "allow_running_in_background": {
-                "name": "Dovoli vožnjo v ozadju",
-                "description": "Omogoča samodejno odpiranje snapsov, da tečejo v ozadju. Opomba: To bo znatno izčrpa baterije"
+                "name": "Dovoli vo�njo v ozadju",
+                "description": "Omogoca samodejno odpiranje snapsov, da tecejo v ozadju. Opomba: To bo znatno izcrpa baterije"
               },
               "min_delay": {
                 "name": "Min zamuda (ms)",
-                "description": "Najmanjša zamuda v milisekundah pred odprtjem snap"
+                "description": "Najmanj�a zamuda v milisekundah pred odprtjem snap"
               },
               "max_delay_ms": {
-                "name": "Največja zamuda (ms)",
-                "description": "Največja zamuda v milisekundah pred odprtjem snap"
+                "name": "Najvecja zamuda (ms)",
+                "description": "Najvecja zamuda v milisekundah pred odprtjem snap"
               },
               "queue_size": {
                 "name": "Velikost vrste",
-                "description": "Največje število snapsov za ohranitev v vrsti"
+                "description": "Najvecje �tevilo snapsov za ohranitev v vrsti"
               },
               "retry_attempts": {
                 "name": "Poskusi znova",
-                "description": "Število ponovnih poskusov odpiranja preloma, če ne uspe"
+                "description": "�tevilo ponovnih poskusov odpiranja preloma, ce ne uspe"
               },
               "retry_delay": {
-                "name": "Poizkušaj zavlačevati (ms)",
+                "name": "Poizku�aj zavlacevati (ms)",
                 "description": "Zamuda v milisekundah med poskusi ponovnega poskusa"
               }
             }
           },
           "auto_delete_sent_messages": {
-            "name": "Samodejno zbriši poslana sporočila",
-            "description": "Samodejno izbriše poslana sporočila po določenem časovnem obdobju",
+            "name": "Samodejno zbri�i poslana sporocila",
+            "description": "Samodejno izbri�e poslana sporocila po dolocenem casovnem obdobju",
             "properties": {
               "allow_running_in_background": {
-                "name": "Dovoli vožnjo v ozadju",
-                "description": "Dovoli samodejno brisanje poslanih sporočil v ozadju. Opomba: To bo znatno izčrpa baterije"
+                "name": "Dovoli vo�njo v ozadju",
+                "description": "Dovoli samodejno brisanje poslanih sporocil v ozadju. Opomba: To bo znatno izcrpa baterije"
               },
               "delete_after_value": {
-                "name": "Zbriši po (vrednost)",
-                "description": "Časovna vrednost pred izbrisom poslanega sporočila"
+                "name": "Zbri�i po (vrednost)",
+                "description": "Casovna vrednost pred izbrisom poslanega sporocila"
               },
               "delete_after_unit": {
-                "name": "Časovna enota",
-                "description": "Izberite časovno enoto za zamik izbrisa"
+                "name": "Casovna enota",
+                "description": "Izberite casovno enoto za zamik izbrisa"
               },
               "message_types": {
-                "name": "Vrste sporočil",
-                "description": "Izberite, katere vrste sporočil naj bodo samodejno izbrisane"
+                "name": "Vrste sporocil",
+                "description": "Izberite, katere vrste sporocil naj bodo samodejno izbrisane"
               },
               "show_countdown": {
-                "name": "Prikaži odštevanje",
-                "description": "Prikaži odštevanje pred brisanjem sporočila"
+                "name": "Prika�i od�tevanje",
+                "description": "Prika�i od�tevanje pred brisanjem sporocila"
               },
               "show_notification": {
-                "name": "Prikaži obvestilo",
-                "description": "Prikaži obvestilo med odštevanjem"
+                "name": "Prika�i obvestilo",
+                "description": "Prika�i obvestilo med od�tevanjem"
               }
             }
           },
           "instant_translation": {
-            "name": "Prevajalnik sporočil",
-            "description": "Samodejno prevedi prejeta sporočila v svoj jezik",
+            "name": "Prevajalnik sporocil",
+            "description": "Samodejno prevedi prejeta sporocila v svoj jezik",
             "properties": {
               "enabled": {
-                "name": "Omogoči prevajalnik sporočil",
-                "description": "Omogoči samodejno prevajanje sporočil"
+                "name": "Omogoci prevajalnik sporocil",
+                "description": "Omogoci samodejno prevajanje sporocil"
               },
               "source_language": {
                 "name": "Izvorni jezik",
@@ -1969,24 +2003,24 @@
                 "description": "Jezik za prevajanje"
               },
               "show_original": {
-                "name": "Prikaži izvirno besedilo",
-                "description": "Prikaži izvirno besedilo sporočila"
+                "name": "Prika�i izvirno besedilo",
+                "description": "Prika�i izvirno besedilo sporocila"
               },
               "show_translation": {
-                "name": "Prikaži prevod",
-                "description": "Prikaži prevedeno besedilo"
+                "name": "Prika�i prevod",
+                "description": "Prika�i prevedeno besedilo"
               },
               "translation_position": {
-                "name": "Položaj prevajanja",
+                "name": "Polo�aj prevajanja",
                 "description": "Kje prikazati prevod glede na izvirno besedilo"
               },
               "auto_translate": {
                 "name": "Samodejno prevedi",
-                "description": "Samodejno prevedi sporočila ob prejemu"
+                "description": "Samodejno prevedi sporocila ob prejemu"
               },
               "translate_on_tap": {
                 "name": "Prevedi na tapnite",
-                "description": "Ob uporabi prevedi sporočila"
+                "description": "Ob uporabi prevedi sporocila"
               },
               "supported_languages": {
                 "name": "Podprti jeziki",
@@ -1998,7 +2032,7 @@
               },
               "max_retries": {
                 "name": "Najve? ponovitev",
-                "description": "Največje število poskusov ponovnega preskušanja"
+                "description": "Najvecje �tevilo poskusov ponovnega presku�anja"
               },
               "retry_delay": {
                 "name": "Poskusi odlog",
@@ -2007,8 +2041,8 @@
             }
           },
           "scheduled_send_allow_running_in_background": {
-            "name": "Dovoli razporejeno Pošlji v ozadje",
-            "description": "Obdrži razporejeno obdelavo sporočil, medtem ko je Snapchat v ozadju"
+            "name": "Dovoli razporejeno Po�lji v ozadje",
+            "description": "Obdr�i razporejeno obdelavo sporocil, medtem ko je Snapchat v ozadju"
           }
         }
       },
@@ -2026,22 +2060,22 @@
             "name": "Samodejno odgovori"
           },
           "auto_delete_sent_messages": {
-            "name": "Samodejno zbriši poslana sporočila"
+            "name": "Samodejno zbri�i poslana sporocila"
           },
           "auto_download": {
-            "name": "Samodejno prenašanje"
+            "name": "Samodejno prena�anje"
           },
           "stealth": {
-            "name": "Nevidni način"
+            "name": "Nevidni nacin"
           },
           "auto_save": {
             "name": "Samodejno shrani"
           },
           "message_logger": {
-            "name": "Dnevnik sporočil"
+            "name": "Dnevnik sporocil"
           },
           "unsaveable_messages": {
-            "name": "Nerešljiva sporočila"
+            "name": "Nere�ljiva sporocila"
           }
         }
       },
@@ -2050,28 +2084,28 @@
         "description": "Prilagodite prave nastavitve za popoln snap",
         "properties": {
           "disable_cameras": {
-            "name": "Onemogoči fotoaparate",
-            "description": "Prepreči uporabo izbranih kamer"
+            "name": "Onemogoci fotoaparate",
+            "description": "Prepreci uporabo izbranih kamer"
           },
           "black_photos": {
-            "name": "Črne fotografije",
-            "description": "Zamenja posnete fotografije s črnim ozadjem\nVideo posnetki niso prizadeti"
+            "name": "Crne fotografije",
+            "description": "Zamenja posnete fotografije s crnim ozadjem\nVideo posnetki niso prizadeti"
           },
           "immersive_camera_preview": {
-            "name": "Potapljaški ogled",
-            "description": "Prepreči snapchat pred ogledom fotoaparata\nTo lahko povzroči, da kamera utripa na nekaterih napravah"
+            "name": "Potaplja�ki ogled",
+            "description": "Prepreci snapchat pred ogledom fotoaparata\nTo lahko povzroci, da kamera utripa na nekaterih napravah"
           },
           "override_front_resolution": {
-            "name": "Ločljivost prednje strani",
-            "description": "Prenese ločljivost kamere za prednjo kamero"
+            "name": "Locljivost prednje strani",
+            "description": "Prenese locljivost kamere za prednjo kamero"
           },
           "override_back_resolution": {
-            "name": "Ločljivost nazaj",
-            "description": "Prenese ločljivost kamere za zadnjo kamero"
+            "name": "Locljivost nazaj",
+            "description": "Prenese locljivost kamere za zadnjo kamero"
           },
           "custom_resolution": {
-            "name": "Ločljivost po meri",
-            "description": "Nastavi po meri ločljivost kamere, širino x višino (npr 1920x1080).\nLočljivost po meri mora biti podprta z vašo napravo"
+            "name": "Locljivost po meri",
+            "description": "Nastavi po meri locljivost kamere, �irino x vi�ino (npr 1920x1080).\nLocljivost po meri mora biti podprta z va�o napravo"
           },
           "front_custom_frame_rate": {
             "name": "Spredaj po meri",
@@ -2089,6 +2123,17 @@
             "name": "Zagon privzete kamere",
             "description": "Nastavi privzeti fotoaparat ob odpiranju Snapchat"
           },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
           "hevc_recording": {
             "name": "HEVC Zapisovanje",
             "description": "Uporablja HEVC (H.265) kodek za snemanje videa"
@@ -2097,15 +2142,15 @@
       },
       "streaks_reminder": {
         "name": "Opomnik Streaks",
-        "description": "Občasno vas obvesti o svojih Streaks",
+        "description": "Obcasno vas obvesti o svojih Streaks",
         "properties": {
           "interval": {
             "name": "Interval",
             "description": "Interval med posameznimi opomniki (v urah)"
           },
           "remaining_hours": {
-            "name": "Preostali čas",
-            "description": "Preostali čas pred priglasitvijo je prikazan (v urah)"
+            "name": "Preostali cas",
+            "description": "Preostali cas pred priglasitvijo je prikazan (v urah)"
           },
           "group_notifications": {
             "name": "Obvestila o skupini",
@@ -2123,23 +2168,23 @@
             "properties": {
               "composer_hooks": {
                 "name": "Kljuke skladatelja",
-                "description": "Vbrizga kodo v okvir Segregator navzkrižne platforme UI",
+                "description": "Vbrizga kodo v okvir Segregator navzkri�ne platforme UI",
                 "properties": {
                   "show_first_created_username": {
-                    "name": "Prikaži prvo ustvarjeno uporabniško ime",
-                    "description": "Prikaže prvo ustvarjeno uporabniško ime poleg trenutnega uporabniškega imena na strani profila"
+                    "name": "Prika�i prvo ustvarjeno uporabni�ko ime",
+                    "description": "Prika�e prvo ustvarjeno uporabni�ko ime poleg trenutnega uporabni�kega imena na strani profila"
                   },
                   "bypass_camera_roll_limit": {
                     "name": "Obhodna meja vrtenja fotoaparata",
-                    "description": "Poveča največjo količino medijev, ki jih lahko pošljete iz kamere roll"
+                    "description": "Poveca najvecjo kolicino medijev, ki jih lahko po�ljete iz kamere roll"
                   },
                   "custom_self_destruct_snap_delay": {
-                    "name": "Prilagojeno samouničenje",
-                    "description": "Daje več možnosti za samouničenje timer pri pošiljanju Snap"
+                    "name": "Prilagojeno samounicenje",
+                    "description": "Daje vec mo�nosti za samounicenje timer pri po�iljanju Snap"
                   },
                   "composer_console": {
                     "name": "Konzola skladatelja",
-                    "description": "Omogoča izvajanje kode JavaScript v Sestavljalniku (samo za arm64)"
+                    "description": "Omogoca izvajanje kode JavaScript v Sestavljalniku (samo za arm64)"
                   },
                   "composer_logs": {
                     "name": "Dnevniki skladateljev",
@@ -2148,22 +2193,22 @@
                 }
               },
               "disable_bitmoji": {
-                "name": "Onemogoči Bitmoji",
-                "description": "Onemogoči prijatelje profil Bitmoji"
+                "name": "Onemogoci Bitmoji",
+                "description": "Onemogoci prijatelje profil Bitmoji"
               },
               "custom_emoji_font": {
                 "name": "Lastna pisava Emoji",
-                "description": "Omogoča uporabo pisave emoji po meri. Deluje samo s pisavami .ttf"
+                "description": "Omogoca uporabo pisave emoji po meri. Deluje samo s pisavami .ttf"
               },
               "custom_shared_library": {
-                "name": "Lastna skupna knjižnica",
-                "description": "V Snapchat naloži knjižnico po meri. Ta funkcija je namenjena samo preskušanju"
+                "name": "Lastna skupna knji�nica",
+                "description": "V Snapchat nalo�i knji�nico po meri. Ta funkcija je namenjena samo presku�anju"
               }
             }
           },
           "spoof": {
             "name": "Spof",
-            "description": "Spoof različne informacije o vas",
+            "description": "Spoof razlicne informacije o vas",
             "properties": {
               "play_store_installer_package_name": {
                 "name": "Predvajaj Namestilnik trgovine Name",
@@ -2171,15 +2216,15 @@
               },
               "remove_vpn_transport_flag": {
                 "name": "Odstrani VPN Oznaka prevoza",
-                "description": "Prepreči Snapchat odkrivanje VPN"
+                "description": "Prepreci Snapchat odkrivanje VPN"
               },
               "remove_mock_location_flag": {
                 "name": "Odstrani zastavo lokacije Mock",
-                "description": "Prepreči zaznavanje Snapchat Lokacija premikanja"
+                "description": "Prepreci zaznavanje Snapchat Lokacija premikanja"
               },
               "force_wifi_transport_flag": {
                 "name": "Prisili zastavo za prenos Wi-Fi",
-                "description": "Prisilite omrežni transport za poročanje Wi-Fi namesto mobilnih podatkov"
+                "description": "Prisilite omre�ni transport za porocanje Wi-Fi namesto mobilnih podatkov"
               },
               "spoof_device_id": {
                 "name": "ID naprave spoof",
@@ -2197,7 +2242,7 @@
               },
               "spoof_device": {
                 "name": "Naprava za brizganje",
-                "description": "Predstavite Snapchat kot teče na drugem modelu naprave"
+                "description": "Predstavite Snapchat kot tece na drugem modelu naprave"
               },
               "device_model": {
                 "name": "Model naprave",
@@ -2206,12 +2251,12 @@
             }
           },
           "convert_message_locally": {
-            "name": "Pretvori sporočilo krajevno",
+            "name": "Pretvori sporocilo krajevno",
             "description": "Pretvori snaps za klepet zunanjih medijev lokalno. To se pojavi v kontekstnem meniju za prenos klepeta"
           },
           "media_file_picker": {
-            "name": "Izbirnik večpredstavnostnih datotek",
-            "description": "Omogoča izbiro vseh video/avdio datotek iz galerije"
+            "name": "Izbirnik vecpredstavnostnih datotek",
+            "description": "Omogoca izbiro vseh video/avdio datotek iz galerije"
           },
           "story_logger": {
             "name": "Dnevnik zgodb",
@@ -2219,55 +2264,55 @@
           },
           "call_recorder": {
             "name": "Zapisovalnik klicev",
-            "description": "Samodejno zapisuje zvočne klice"
+            "description": "Samodejno zapisuje zvocne klice"
           },
           "account_switcher": {
-            "name": "Preklopnik računov",
-            "description": "Omogoča prehod med računi brez odjave\nDolgo pritisnite na ikono iskanja ob vašem profilu Bitmoji, da odprete meni\nOpomba: Ta funkcija je eksperimentalna in se bo v prihodnosti verjetno spremenila",
+            "name": "Preklopnik racunov",
+            "description": "Omogoca prehod med racuni brez odjave\nDolgo pritisnite na ikono iskanja ob va�em profilu Bitmoji, da odprete meni\nOpomba: Ta funkcija je eksperimentalna in se bo v prihodnosti verjetno spremenila",
             "properties": {
               "auto_backup_current_account": {
-                "name": "Samodejno varnostno kopiranje tekočega računa",
-                "description": "Ob odjavi ali zamenjavi računov samodejno podpri tekoči račun"
+                "name": "Samodejno varnostno kopiranje tekocega racuna",
+                "description": "Ob odjavi ali zamenjavi racunov samodejno podpri tekoci racun"
               }
             }
           },
           "better_transcript": {
             "name": "Bolje prepisano",
-            "description": "Izboljša transkripcijo glasovne note",
+            "description": "Izbolj�a transkripcijo glasovne note",
             "properties": {
               "force_transcription": {
                 "name": "Prisili transkripcijo glasovne note",
-                "description": "Omogoča prepisovanje vseh glasovnih sporočil"
+                "description": "Omogoca prepisovanje vseh glasovnih sporocil"
               },
               "preferred_transcription_lang": {
                 "name": "Prednostni jezik za transkripcijo",
-                "description": "Najprimernejši jezik za transkripcijo glasovne note (npr. EN, ES, FR)"
+                "description": "Najprimernej�i jezik za transkripcijo glasovne note (npr. EN, ES, FR)"
               },
               "notification_transcript": {
                 "name": "Obvestilo",
-                "description": "Prekliče glasovne zapiske v obvestilih\nTa funkcija zahteva, da je možnost za ogled klepeta omogočena v boljših obvestilih"
+                "description": "Preklice glasovne zapiske v obvestilih\nTa funkcija zahteva, da je mo�nost za ogled klepeta omogocena v bolj�ih obvestilih"
               }
             }
           },
           "voice_note_auto_play": {
             "name": "Samodejno predvajanje glasovne note",
-            "description": "Samodejno predvaja naslednjo glasovno noto po trenutnem konča"
+            "description": "Samodejno predvaja naslednjo glasovno noto po trenutnem konca"
           },
           "friend_notes": {
             "name": "Opombe prijateljev",
-            "description": "Omogoča vam dodajanje not prijateljem profilom"
+            "description": "Omogoca vam dodajanje not prijateljem profilom"
           },
           "cof_experiments": {
             "name": "Preskusi COF",
-            "description": "Omogoči nesproščene/beta Snapchat funkcije"
+            "description": "Omogoci nespro�cene/beta Snapchat funkcije"
           },
           "context_menu_fix": {
             "name": "Popravljanje kontekstnega menija",
-            "description": "Poskus popravila menija Feed Friend, ko naprava ne deluje, ni mogoče pravilno prikazati"
+            "description": "Poskus popravila menija Feed Friend, ko naprava ne deluje, ni mogoce pravilno prikazati"
           },
           "app_lock": {
             "name": "Zakleni aplikacijo",
-            "description": "Preprečuje dostop do Snapchata brez kode",
+            "description": "Preprecuje dostop do Snapchata brez kode",
             "properties": {
               "lock_on_resume": {
                 "name": "Zakleni v nadaljevanje",
@@ -2276,84 +2321,84 @@
             }
           },
           "infinite_story_boost": {
-            "name": "Neskončna zgodba",
+            "name": "Neskoncna zgodba",
             "description": "Obide zgodbo o omejitvi"
           },
           "meo_passcode_bypass": {
-            "name": "Moje oči so samo mimo",
-            "description": "Prestopi moje oči Samo geslo\nTo bo delovalo le, če je bila koda pravilno vnesena pred"
+            "name": "Moje oci so samo mimo",
+            "description": "Prestopi moje oci Samo geslo\nTo bo delovalo le, ce je bila koda pravilno vnesena pred"
           },
           "no_friend_score_delay": {
-            "name": "Brez zavlačevanja prijatelja",
+            "name": "Brez zavlacevanja prijatelja",
             "description": "Odstrani zamudo ob ogledu rezultata prijateljev"
           },
           "best_friend_pinning": {
-            "name": "Najboljši prijatelj",
-            "description": "Dovoli ti, da prijatelja pripneš za najboljšega prijatelja. Opomba: Samo ti lahko vidiš svojega najboljšega prijatelja"
+            "name": "Najbolj�i prijatelj",
+            "description": "Dovoli ti, da prijatelja pripne� za najbolj�ega prijatelja. Opomba: Samo ti lahko vidi� svojega najbolj�ega prijatelja"
           },
           "e2ee": {
-            "name": "Šifriranje od konca do konca",
-            "description": "Šifrira vaša sporočila z AES z uporabo skupnega skrivnega ključa\nPoskrbite, da shranite ključ nekje varno!",
+            "name": "�ifriranje od konca do konca",
+            "description": "�ifrira va�a sporocila z AES z uporabo skupnega skrivnega kljuca\nPoskrbite, da shranite kljuc nekje varno!",
             "properties": {
               "encrypted_message_indicator": {
-                "name": "Šifrirani kazalnik sporočila",
-                "description": "Dodaja _ emoji poleg šifriranih sporočil"
+                "name": "�ifrirani kazalnik sporocila",
+                "description": "Dodaja _ emoji poleg �ifriranih sporocil"
               },
               "force_message_encryption": {
-                "name": "Prisili šifriranje sporočila",
-                "description": "Preprečuje pošiljanje šifriranih sporočil ljudem, ki nimajo omogočenega šifriranja E2E samo, če je izbranih več pogovorov"
+                "name": "Prisili �ifriranje sporocila",
+                "description": "Preprecuje po�iljanje �ifriranih sporocil ljudem, ki nimajo omogocenega �ifriranja E2E samo, ce je izbranih vec pogovorov"
               }
             }
           },
           "add_friend_source_spoof": {
             "name": "Dodaj izvorno spoo",
-            "description": "Izvor prijateljeve prošnje"
+            "description": "Izvor prijateljeve pro�nje"
           },
           "hidden_snapchat_plus_features": {
             "name": "Skrite Snapchat Plus funkcije",
-            "description": "Omogoči nesproščene/beta Snapchat Plus funkcije\nMorda ne bo delovalo na starejših različicah Snapchat"
+            "description": "Omogoci nespro�cene/beta Snapchat Plus funkcije\nMorda ne bo delovalo na starej�ih razlicicah Snapchat"
           },
           "custom_streaks_expiration_format": {
             "name": "Oblika zastaranja po meri",
-            "description": "Prilagodi obliko poteče Streaks\n\nRazpoložljive spremenljivke:\n- %c: Število streaks\n- %e: Steklena ura Emoji\n- %d: dnevi\n- %h: Ure\n- %m: zapisnik\n- %s: sekunde\n- %w: preostali čas"
+            "description": "Prilagodi obliko potece Streaks\n\nRazpolo�ljive spremenljivke:\n- %c: �tevilo streaks\n- %e: Steklena ura Emoji\n- %d: dnevi\n- %h: Ure\n- %m: zapisnik\n- %s: sekunde\n- %w: preostali cas"
           },
           "prevent_forced_logout": {
-            "name": "Prepreči prisilno odjavo",
-            "description": "Preprečuje Snapchat, da bi vas odjavil, ko se prijavite na drugo napravo"
+            "name": "Prepreci prisilno odjavo",
+            "description": "Preprecuje Snapchat, da bi vas odjavil, ko se prijavite na drugo napravo"
           },
           "snapscore_changes": {
             "name": "Spremembe skenscore",
-            "description": "Sledi spremembam v prijateljih Snapscore\nUporabi to možnost samo v novejših različicah Snapchata"
+            "description": "Sledi spremembam v prijateljih Snapscore\nUporabi to mo�nost samo v novej�ih razlicicah Snapchata"
           }
         }
       },
       "scripting": {
         "name": "Skriptiranje",
-        "description": "Zaženi skripte po meri za razširitev PurrfectSnap",
+        "description": "Za�eni skripte po meri za raz�iritev PurrfectSnap",
         "properties": {
           "developer_mode": {
-            "name": "Način razvijalca",
-            "description": "Prikazuje informacije o razhroščevanju na Snapchatovem uporabniškem vmesniku"
+            "name": "Nacin razvijalca",
+            "description": "Prikazuje informacije o razhro�cevanju na Snapchatovem uporabni�kem vmesniku"
           },
           "module_folder": {
             "name": "Mapa modula",
             "description": "Mapa, kjer so skripti"
           },
           "auto_reload": {
-            "name": "Samodejno ponovno naloži",
-            "description": "Samodejno ponovno naloži skripte, ko se spremenijo"
+            "name": "Samodejno ponovno nalo�i",
+            "description": "Samodejno ponovno nalo�i skripte, ko se spremenijo"
           },
           "integrated_ui": {
-            "name": "Vgrajen uporabniški vmesnik",
-            "description": "Dovoli skriptom dodajanje komponent uporabniškega vmesnika v Snapchat"
+            "name": "Vgrajen uporabni�ki vmesnik",
+            "description": "Dovoli skriptom dodajanje komponent uporabni�kega vmesnika v Snapchat"
           },
           "disable_log_anonymization": {
-            "name": "Onemogoči anonimizacijo dnevnika",
-            "description": "Onemogoči anonimizacijo dnevnikov"
+            "name": "Onemogoci anonimizacijo dnevnika",
+            "description": "Onemogoci anonimizacijo dnevnikov"
           },
           "disable_optimization": {
-            "name": "Onemogoči optimizacijo",
-            "description": "Onemogoči optimizacijo scenarijev. To lahko povzroči težave z uspešnostjo."
+            "name": "Onemogoci optimizacijo",
+            "description": "Onemogoci optimizacijo scenarijev. To lahko povzroci te�ave z uspe�nostjo."
           }
         }
       },
@@ -2362,56 +2407,56 @@
         "description": "Zapisi prijateljeve aktivnosti na Snapchatu",
         "properties": {
           "record_messaging_events": {
-            "name": "Zapisuj dogodke sporočanja",
-            "description": "Zapisi dogodkov, kot so odpiranje snap, branje sporočila itd."
+            "name": "Zapisuj dogodke sporocanja",
+            "description": "Zapisi dogodkov, kot so odpiranje snap, branje sporocila itd."
           },
           "allow_running_in_background": {
-            "name": "Dovoli vožnjo v ozadju",
-            "description": "Omogoča zaganjanje sledilnika v ozadju. Opomba: To bo znatno izčrpa baterije"
+            "name": "Dovoli vo�njo v ozadju",
+            "description": "Omogoca zaganjanje sledilnika v ozadju. Opomba: To bo znatno izcrpa baterije"
           },
           "auto_purge": {
-            "name": "Samodejno čiščenje",
-            "description": "Samodejno izbriše predpomnjene dogodke, ki so starejši od določenega časa"
+            "name": "Samodejno ci�cenje",
+            "description": "Samodejno izbri�e predpomnjene dogodke, ki so starej�i od dolocenega casa"
           }
         }
       }
     },
     "friend_notes": {
-      "placeholder": "Dodaj sporočilo..."
+      "placeholder": "Dodaj sporocilo..."
     }
   },
   "friend_menu_option": {
     "mark_snaps_as_seen": "Mark Snaps, kot se vidi",
-    "mark_stories_as_seen_locally": "Označite zgodbe, kot jih vidite na lokalni ravni",
+    "mark_stories_as_seen_locally": "Oznacite zgodbe, kot jih vidite na lokalni ravni",
     "preview": "Ogled",
-    "stealth_mode": "Nevidni način",
-    "auto_download_blacklist": "Samodejno prenesi črni seznam",
+    "stealth_mode": "Nevidni nacin",
+    "auto_download_blacklist": "Samodejno prenesi crni seznam",
     "anti_auto_save": "Samodejno shrani"
   },
   "content_type": {
     "CHAT": "Klepet",
     "SNAP": "Snap",
     "EXTERNAL_MEDIA": "Zunanji mediji",
-    "NOTE": "Zvočna opomba",
+    "NOTE": "Zvocna opomba",
     "STICKER": "Nalepka",
-    "SHARE": "Delež",
+    "SHARE": "Dele�",
     "STATUS": "Stanje",
     "LOCATION": "Lokacija",
     "STATUS_SAVE_TO_CAMERA_ROLL": "Shranjeno v kamero",
     "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "Posnetek zaslona",
     "STATUS_CONVERSATION_CAPTURE_RECORD": "Zapis zaslona",
-    "STATUS_CALL_MISSED_VIDEO": "Zgrešen video klic",
-    "STATUS_CALL_MISSED_AUDIO": "Zgrešen zvočni klic",
-    "LIVE_LOCATION_SHARE": "Delitev lokacije v živo",
+    "STATUS_CALL_MISSED_VIDEO": "Zgre�en video klic",
+    "STATUS_CALL_MISSED_AUDIO": "Zgre�en zvocni klic",
+    "LIVE_LOCATION_SHARE": "Delitev lokacije v �ivo",
     "CREATIVE_TOOL_ITEM": "Ustvarjalna orodja",
-    "FAMILY_CENTER_INVITE": "Povabite v družinsko središče",
-    "FAMILY_CENTER_ACCEPT": "Družinski center Sprejmi",
-    "FAMILY_CENTER_LEAVE": "Družinski center dopust",
+    "FAMILY_CENTER_INVITE": "Povabite v dru�insko sredi�ce",
+    "FAMILY_CENTER_ACCEPT": "Dru�inski center Sprejmi",
+    "FAMILY_CENTER_LEAVE": "Dru�inski center dopust",
     "STATUS_PLUS_GIFT": "Status plus darilo",
     "TINY_SNAP": "Mali snap",
-    "STATUS_COUNTDOWN": "Odštevanje",
+    "STATUS_COUNTDOWN": "Od�tevanje",
     "MAP_REACTION": "Odziv zemljevida",
-    "chat_messages": "Sporočila za klepet",
+    "chat_messages": "Sporocila za klepet",
     "snap_messages": "Snaps",
     "story_share_messages": "Deli zgodbe",
     "story_reply_messages": "Odgovore zgodbe",
@@ -2420,68 +2465,68 @@
     "sticker_messages": "Nalepka",
     "tiny_snap_messages": "Mali snap",
     "map_reaction_messages": "Odziv zemljevida",
-    "half_swipes": "Polovičarji"
+    "half_swipes": "Polovicarji"
   },
   "media_download_source": {
     "none": "Brez",
-    "pending": "Čakanje",
-    "chat_media": "Večpredstavnostni klepet",
+    "pending": "Cakanje",
+    "chat_media": "Vecpredstavnostni klepet",
     "story": "Zgodba",
     "public_story": "Javna zgodba",
-    "spotlight": "Žaromet",
+    "spotlight": "�aromet",
     "profile_picture": "Slika profila",
     "story_logger": "Dnevnik zgodb",
-    "message_logger": "Dnevnik sporočil",
-    "merged": "Združeno",
+    "message_logger": "Dnevnik sporocil",
+    "merged": "Zdru�eno",
     "voice_call": "Glasovni klic"
   },
   "chat_action_menu": {
     "preview_button": "Ogled",
     "download_button": "Prenesi",
-    "delete_logged_message_button": "Zbriši zamašeno sporočilo",
-    "show_chat_edit_history": "Prikaži zgodovino pogovorov",
-    "convert_message": "Pretvori sporočilo"
+    "delete_logged_message_button": "Zbri�i zama�eno sporocilo",
+    "show_chat_edit_history": "Prika�i zgodovino pogovorov",
+    "convert_message": "Pretvori sporocilo"
   },
   "opera_context_menu": {
-    "download": "Prenesi večpredstavnost",
+    "download": "Prenesi vecpredstavnost",
     "sent_at": "Poslano na{date}",
     "created_at": "Ustvarjeno na{date}",
-    "expires_at": "Poteče{date}",
+    "expires_at": "Potece{date}",
     "media_size": "Velikost medija:{size}",
     "media_duration": "Trajanje medijev:{duration}ms",
-    "show_debug_info": "Prikaži podatke razhroščevanja"
+    "show_debug_info": "Prika�i podatke razhro�cevanja"
   },
   "modal_option": {
     "profile_info": "Podatki o profilu",
     "close": "Zapri"
   },
   "gallery_media_send_override": {
-    "always_ask": "Vedno vprašaj",
+    "always_ask": "Vedno vpra�aj",
     "ORIGINAL": "Originalni mediji",
-    "NOTE": "Zvočna opomba",
+    "NOTE": "Zvocna opomba",
     "SNAP": "Snap",
     "SAVEABLE_SNAP": "Shrani snap",
     "null": "Privzeto snapchat",
-    "multiple_media_toast": "Pošljete lahko le po en medij naenkrat"
+    "multiple_media_toast": "Po�ljete lahko le po en medij naenkrat"
   },
   "mark_as_seen": {
     "no_unseen_snaps_toast": "Ni bilo najdenih nevidnih Snapsov!",
-    "seen_toast": "Označen kot viden!",
-    "unseen_toast": "Označena kot nevidna!",
-    "already_seen_toast": "Že označeno kot videno!",
-    "already_unseen_toast": "Že označena kot nevidna!"
+    "seen_toast": "Oznacen kot viden!",
+    "unseen_toast": "Oznacena kot nevidna!",
+    "already_seen_toast": "�e oznaceno kot videno!",
+    "already_unseen_toast": "�e oznacena kot nevidna!"
   },
   "conversation_preview": {
-    "streak_expiration": "poteče{day}dni{hour}ure{minute}minute",
-    "total_messages": "Skupna poslana/prejeta sporočila:\n{count}",
+    "streak_expiration": "potece{day}dni{hour}ure{minute}minute",
+    "total_messages": "Skupna poslana/prejeta sporocila:\n{count}",
     "title": "Ogled",
     "unknown_user": "Neznan uporabnik",
-    "no_messages": "Ni najdenih sporočil!"
+    "no_messages": "Ni najdenih sporocil!"
   },
   "profile_info": {
     "title": "Podatki o profilu",
-    "first_created_username": "Prvo ustvarjeno uporabniško ime",
-    "mutable_username": "Mutable Uporabniško ime",
+    "first_created_username": "Prvo ustvarjeno uporabni�ko ime",
+    "mutable_username": "Mutable Uporabni�ko ime",
     "display_name": "Ime prikaza",
     "added_date": "Dodan datum",
     "birthday": "Rojstni dan:{month}{day}",
@@ -2490,13 +2535,13 @@
     "add_source": "Dodaj vir",
     "snapchat_plus": "Snapchat Plus",
     "snapchat_plus_state": {
-      "subscribed": "Naročeno",
-      "not_subscribed": "Ni naročeno"
+      "subscribed": "Naroceno",
+      "not_subscribed": "Ni naroceno"
     }
   },
   "snapchat_plus_state": {
-    "subscribed": "Naročeno",
-    "not_subscribed": "Ni naročeno"
+    "subscribed": "Naroceno",
+    "not_subscribed": "Ni naroceno"
   },
   "friendship_link_type": {
     "mutual": "Vzajemno",
@@ -2514,18 +2559,18 @@
     "progress_status": "Predelava{index}o{total}",
     "selection_dialog_continue_button": "Nadaljuj",
     "confirmation_dialog": {
-      "title": "Si prepričan?",
-      "message": "To bo vplivalo na vse izbrane , Tega dejanja ni mogoče razveljaviti."
+      "title": "Si preprican?",
+      "message": "To bo vplivalo na vse izbrane , Tega dejanja ni mogoce razveljaviti."
     },
     "actions": {
       "remove_friends": "Odstrani prijatelje",
-      "clear_conversations": "Počisti pogovore",
-      "clear_friend_feed": "Počisti vir prijateljev ({count})",
+      "clear_conversations": "Pocisti pogovore",
+      "clear_friend_feed": "Pocisti vir prijateljev ({count})",
       "unfollow": "Ne sledi",
       "remove": "Odstrani"
     },
     "leave_groups": "Zapusti{count}skupine",
-    "left_group_success": "Leva skupina uspešno",
+    "left_group_success": "Leva skupina uspe�no",
     "failed_to_leave_group": "Ni uspelo zapustiti skupine:{error}",
     "conversation_types": {
       "friends_only": "Samo prijatelji",
@@ -2541,15 +2586,15 @@
     "relationship": "Razmerje:",
     "unknown_group": "Neznana skupina",
     "type_group_chat": "Vrsta: skupinski klepet",
-    "clean_conversations": "Čista{count}pogovori",
+    "clean_conversations": "Cista{count}pogovori",
     "remove_friends": "Odstrani{count}prijatelji",
-    "clean_conversations_and_remove_friends": "Čista{count}pogovori in odstranite{count}prijatelji",
-    "clean_group_conversations": "Čista{count}skupinski pogovori",
-    "clean_all_conversations": "Čista{count}pogovori",
+    "clean_conversations_and_remove_friends": "Cista{count}pogovori in odstranite{count}prijatelji",
+    "clean_group_conversations": "Cista{count}skupinski pogovori",
+    "clean_all_conversations": "Cista{count}pogovori",
     "failed_to_fetch_conversations": "Pridobivanje pogovorov ni uspelo:{error}",
     "failed_to_fetch_friend_conversations": "Pridobivanje prijateljevih pogovorov ni uspelo:{error}",
     "failed_to_process": "Obdelava ni uspela{id}",
-    "deleted_messages": "{count}izbrisana sporočila",
+    "deleted_messages": "{count}izbrisana sporocila",
     "filters": {
       "all": "Vse",
       "my_friends": "Moji prijatelji",
@@ -2557,7 +2602,7 @@
       "removed_me": "Odstrani Me",
       "suggested": "Predlagano",
       "deleted": "Zbrisano",
-      "business_accounts": "Poslovni računi",
+      "business_accounts": "Poslovni racuni",
       "streaks": "Streaks",
       "non_streaks": "Brez streakov",
       "followed": "Sledi",
@@ -2566,13 +2611,13 @@
     },
     "sort_options": {
       "none": "Brez",
-      "username": "Uporabniško ime",
-      "added_timestamp": "Dodan časovni žig",
+      "username": "Uporabni�ko ime",
+      "added_timestamp": "Dodan casovni �ig",
       "snap_score": "Snap to?ke",
-      "streak_length": "Dolžina streak",
-      "most_messages_sent": "Večina poslanih sporočil",
-      "most_recent_message": "Najnovejše sporočilo",
-      "nearest_location": "Najbližja lokacija"
+      "streak_length": "Dol�ina streak",
+      "most_messages_sent": "Vecina poslanih sporocil",
+      "most_recent_message": "Najnovej�e sporocilo",
+      "nearest_location": "Najbli�ja lokacija"
     }
   },
   "chat_export": {
@@ -2581,49 +2626,49 @@
       "text_field_selection": "{amount}izbrano",
       "text_field_selection_all": "Vse",
       "export_file_format_title": "Izvozi obliko datoteke",
-      "message_type_filter_title": "Filtriraj sporočila po vrsti",
-      "amount_of_messages_title": "Število sporočil (pustite prazno za vse)",
-      "download_medias_title": "Prenesi večpredstavnost"
+      "message_type_filter_title": "Filtriraj sporocila po vrsti",
+      "amount_of_messages_title": "�tevilo sporocil (pustite prazno za vse)",
+      "download_medias_title": "Prenesi vecpredstavnost"
     },
-    "dialog_negative_button": "Prekliči",
+    "dialog_negative_button": "Preklici",
     "dialog_positive_button": "Izvoz",
     "exported_to": "Izvozno v{path}",
     "exporting_chats": "Izvozi pogovore...",
     "processing_chats": "Predelava{amount}pogovori...",
     "export_fail": "Pogovor o izvozu ni uspel{conversation}",
     "writing_output": "Pisanje izhoda...",
-    "finished": "Končano! Zdaj lahko zaprete pogovorno okno.",
-    "no_messages_found": "Ni najdenih sporočil!",
+    "finished": "Koncano! Zdaj lahko zaprete pogovorno okno.",
+    "no_messages_found": "Ni najdenih sporocil!",
     "exporting_message": "Izvoz{conversation}..."
   },
   "button": {
     "ok": "V REDU",
     "positive": "Ja, ja",
-    "negative": "Št",
-    "cancel": "Prekliči",
+    "negative": "�t",
+    "cancel": "Preklici",
     "save": "Shrani",
     "open": "Odpri",
     "download": "Prenesi",
-    "send": "Pošlji",
+    "send": "Po�lji",
     "restore_original": "Obnovi izvirno",
     "convert_external_media": "Pretvori zunanje medije"
   },
   "tracker_events": {
     "conversation_enter": "Vnos pogovora",
     "conversation_exit": "Pogovorni izhod",
-    "started_typing": "Začetek tipkanja",
+    "started_typing": "Zacetek tipkanja",
     "stopped_typing": "Ustavljeno tipkanje",
-    "started_speaking": "Začel je govoriti",
+    "started_speaking": "Zacel je govoriti",
     "stopped_speaking": "Ustavljen govor",
-    "started_peeking": "Začel je lulati",
+    "started_peeking": "Zacel je lulati",
     "stopped_peeking": "Prenehano lulanje",
-    "message_read": "Branje sporočila",
-    "message_deleted": "Sporočilo izbrisano",
-    "message_saved": "Shranjeno sporočilo",
-    "message_unsaved": "Sporočilo ni shranjeno",
-    "message_edited": "Urejeno sporočilo",
-    "message_reaction_add": "Odziv sporočila Dodaj",
-    "message_reaction_remove": "Odstrani odziv sporočila",
+    "message_read": "Branje sporocila",
+    "message_deleted": "Sporocilo izbrisano",
+    "message_saved": "Shranjeno sporocilo",
+    "message_unsaved": "Sporocilo ni shranjeno",
+    "message_edited": "Urejeno sporocilo",
+    "message_reaction_add": "Odziv sporocila Dodaj",
+    "message_reaction_remove": "Odstrani odziv sporocila",
     "snap_opened": "Pripni odprto",
     "snap_replayed": "Snap related",
     "snap_replayed_twice": "Snap dvakrat predvajan",
@@ -2631,7 +2676,7 @@
     "snap_screen_record": "Pripni zaslonski zapis",
     "i_can_see_you": "Vidim te"
   },
-  "cleared_from_feed": "Očiščeno iz krme",
+  "cleared_from_feed": "Oci�ceno iz krme",
   "tracker_actions": {
     "log": "Dnevnik",
     "in_app_notification": "Obvestilo v aplikaciji",
@@ -2642,7 +2687,7 @@
     "button": {
       "reply": "Odgovori",
       "download": "Prenesi",
-      "mark_as_read": "Označi kot prebrano"
+      "mark_as_read": "Oznaci kot prebrano"
     }
   },
   "profile_picture_downloader": {
@@ -2652,12 +2697,12 @@
     "background_option": "Ozadje"
   },
   "call_start_confirmation": {
-    "dialog_title": "Začni klicati",
-    "dialog_message": "Si prepričan, da želiš začeti klic?"
+    "dialog_title": "Zacni klicati",
+    "dialog_message": "Si preprican, da �eli� zaceti klic?"
   },
   "half_swipe_notifier": {
-    "notification_channel_name": "Polovični odmik",
-    "notification_content_dm": "{friend}samo pol-švignil v vaš klepet za{duration}sekunde",
+    "notification_channel_name": "Polovicni odmik",
+    "notification_content_dm": "{friend}samo pol-�vignil v va� klepet za{duration}sekunde",
     "notification_content_group": "{friend}na pol zavita{group}besedilo{duration}sekunde"
   },
   "download_processor": {
@@ -2670,22 +2715,22 @@
       "original_story": "Prvotna zgodba"
     },
     "select_attachments_title": "Izberite priloge",
-    "download_started_toast": "Prenos se je začel",
+    "download_started_toast": "Prenos se je zacel",
     "unsupported_content_type_toast": "Nepodprt tip vsebine!",
-    "failed_no_longer_available_toast": "Mediji niso več na voljo",
+    "failed_no_longer_available_toast": "Mediji niso vec na voljo",
     "no_attachments_toast": "Ni najdenih prilog!",
-    "already_queued_toast": "Mediji so že v vrsti!",
-    "already_downloaded_toast": "Mediji so že naloženi!",
-    "content_saved_toast": "Rešena!",
-    "download_toast": "Prenašanje{path}...",
+    "already_queued_toast": "Mediji so �e v vrsti!",
+    "already_downloaded_toast": "Mediji so �e nalo�eni!",
+    "content_saved_toast": "Re�ena!",
+    "download_toast": "Prena�anje{path}...",
     "processing_toast": "Predelava{path}...",
-    "failed_generic_toast": "Prenašanje ni uspelo",
+    "failed_generic_toast": "Prena�anje ni uspelo",
     "failed_to_create_preview_toast": "Ustvarjanje ogleda ni uspelo",
     "failed_processing_toast": "Obdelava ni uspela{error}",
     "failed_gallery_toast": "Shranjevanje v galerijo ni uspelo{error}",
     "dash_no_chapter": "Ni najdenega poglavja",
     "dash_dialog": {
-      "title": "Prenesi pomišljaj",
+      "title": "Prenesi pomi�ljaj",
       "download_all": "Prenesi vse",
       "segment_text": "Odsek{from}-Kaj{to}"
     }
@@ -2701,29 +2746,29 @@
   },
   "end_to_end_encryption": {
     "toolbox": {
-      "no_shared_key": "S tem prijateljem še nimaš skupne skrivnosti. Kliknite spodaj za začetek novega.",
-      "shared_key_fingerprint": "Vaš prstni odtis je:\n\n{fingerprint}Preverite, če se ujema s prstnim odtisom vašega prijatelja!",
-      "initiate_exchange_button": "Zaženi izmenjavo ključev"
+      "no_shared_key": "S tem prijateljem �e nima� skupne skrivnosti. Kliknite spodaj za zacetek novega.",
+      "shared_key_fingerprint": "Va� prstni odtis je:\n\n{fingerprint}Preverite, ce se ujema s prstnim odtisom va�ega prijatelja!",
+      "initiate_exchange_button": "Za�eni izmenjavo kljucev"
     },
     "confirmation_dialogs": {
-      "title": "Šifriranje na koncu",
-      "confirmation_1": "OPOZORILO: To bo nadomestilo vaš obstoječi ključ. Zrahljali boste dostop do vseh šifriranih sporočil tega prijatelja. Si prepričan, da želiš nadaljevati?",
-      "confirmation_2": "Res hočeš nadaljevati? To je tvoja zadnja priložnost, da odnehaš."
+      "title": "�ifriranje na koncu",
+      "confirmation_1": "OPOZORILO: To bo nadomestilo va� obstojeci kljuc. Zrahljali boste dostop do vseh �ifriranih sporocil tega prijatelja. Si preprican, da �eli� nadaljevati?",
+      "confirmation_2": "Res hoce� nadaljevati? To je tvoja zadnja prilo�nost, da odneha�."
     },
-    "unencrypted_conversation_send_failure_toast": "Ne moreš poslati šifrirane vsebine v šifrirane in nešifrirane pogovore!",
-    "native_hooks_send_failure_toast": "Ni bilo moč poslati! Prosim, v nastavitvah omogočite domače hooke.",
-    "no_participants_to_encrypt_toast": "V tem pogovoru nimate prijateljev, s katerimi bi šifrirali sporočila!",
-    "encryption_failed_toast": "Šifriranje sporočila ni uspelo! Preverite logcat za več podrobnosti.",
-    "accept_public_key_success_toast": "Javni ključ uspešno sprejet!",
-    "accept_secret_key_success_toast": "Končano! Zdaj lahko s tem prijateljem pošiljate in prejemate šifrirana sporočila.",
-    "accept_public_key_failure_toast": "Ni moč sprejeti javnega ključa",
-    "accept_secret_key_failure_toast": "Ni moč sprejeti skrivnega ključa",
+    "unencrypted_conversation_send_failure_toast": "Ne more� poslati �ifrirane vsebine v �ifrirane in ne�ifrirane pogovore!",
+    "native_hooks_send_failure_toast": "Ni bilo moc poslati! Prosim, v nastavitvah omogocite domace hooke.",
+    "no_participants_to_encrypt_toast": "V tem pogovoru nimate prijateljev, s katerimi bi �ifrirali sporocila!",
+    "encryption_failed_toast": "�ifriranje sporocila ni uspelo! Preverite logcat za vec podrobnosti.",
+    "accept_public_key_success_toast": "Javni kljuc uspe�no sprejet!",
+    "accept_secret_key_success_toast": "Koncano! Zdaj lahko s tem prijateljem po�iljate in prejemate �ifrirana sporocila.",
+    "accept_public_key_failure_toast": "Ni moc sprejeti javnega kljuca",
+    "accept_secret_key_failure_toast": "Ni moc sprejeti skrivnega kljuca",
     "accept_secret_button": "Sprejmi skrivnost",
-    "accept_public_key_button": "Sprejmi javno Ključ",
-    "outgoing_pk_message": "Zahtevek za izmenjavo ključev",
-    "outgoing_secret_message": "Odziv na ključno izmenjavo",
-    "incoming_pk_message": "Pravkar ste prejeli prošnjo za javni ključ. Kliknite spodaj, da ga sprejmete.",
-    "incoming_secret_message": "Tvoj prijatelj je sprejel tvoj javni ključ. Kliknite spodaj, da sprejmete skrivnost."
+    "accept_public_key_button": "Sprejmi javno Kljuc",
+    "outgoing_pk_message": "Zahtevek za izmenjavo kljucev",
+    "outgoing_secret_message": "Odziv na kljucno izmenjavo",
+    "incoming_pk_message": "Pravkar ste prejeli pro�njo za javni kljuc. Kliknite spodaj, da ga sprejmete.",
+    "incoming_secret_message": "Tvoj prijatelj je sprejel tvoj javni kljuc. Kliknite spodaj, da sprejmete skrivnost."
   },
   "auto_open_snaps": {
     "title": "Samodejno odpri priponke",
@@ -2731,17 +2776,17 @@
     "error_title": "Samodejno odpri priponke (Errors)",
     "channel_description": "Obvestila za stanje v vrsti za samodejno odpiranje",
     "priority_channel_description": "Obvestila o visoki prednosti za samodejno odpiranje snapsov",
-    "error_channel_description": "Obvestila o napaki, ko samodejno odpiranje zaskoči",
+    "error_channel_description": "Obvestila o napaki, ko samodejno odpiranje zaskoci",
     "paused_status": "Auto Open Snaps stoped",
     "processing_status": "Obdelava okraskov:{queued}v vrsti,{processed}predelan",
     "monitor_status": "Spremljanje...",
     "recent_snaps": "Nedavni snaps",
     "action_pause": "Premor",
     "action_resume": "Nadaljuj",
-    "action_clear": "Počisti vrsto",
-    "action_reset": "Ponastavi število",
-    "error_content": "Ni moč odpreti snap{sender}:{error}",
-    "resumed_feedback": "Samodejno odpri še enkrat",
+    "action_clear": "Pocisti vrsto",
+    "action_reset": "Ponastavi �tevilo",
+    "error_content": "Ni moc odpreti snap{sender}:{error}",
+    "resumed_feedback": "Samodejno odpri �e enkrat",
     "paused_feedback": "Samodejno odpri premor",
     "resumed_message": "Obdelava se samodejno nadaljuje za snapse v vrsti",
     "paused_message": "Obdelava prekinjena. Vrsta je ohranjena ({count}snaps)",
@@ -2749,10 +2794,10 @@
     "status_monitoring": "Spremljanje",
     "status_active": "Aktivno",
     "queue_cleared": "Ponastavitev vrste in statistike",
-    "queue_cleared_title": "Počisti vrsto",
-    "queue_cleared_reset": "Počisti in ponastavi vrsto",
-    "queue_cleared_feedback": "Potrjeno{count}vrstni zanki • Ponastavi{processed}predelano štetje",
-    "queue_cleared_feedback_simple": "Ponastavi{processed}predelano štetje",
+    "queue_cleared_title": "Pocisti vrsto",
+    "queue_cleared_reset": "Pocisti in ponastavi vrsto",
+    "queue_cleared_feedback": "Potrjeno{count}vrstni zanki � Ponastavi{processed}predelano �tetje",
+    "queue_cleared_feedback_simple": "Ponastavi{processed}predelano �tetje",
     "unknown_sender": "Neznano",
     "unknown_user": "Neznan uporabnik",
     "content_type_external_media": "Zunanji mediji",
@@ -2768,64 +2813,64 @@
     "notification_queue_preview": "PREDHOD KVUE",
     "notification_processing_continue": "Obdelava se bo nadaljevala samodejno...",
     "notification_no_snaps_queue": "V vrsti ni snapsov.",
-    "notification_queue_cleared_opened": "Počistite vrsto ({opened}odprt)",
+    "notification_queue_cleared_opened": "Pocistite vrsto ({opened}odprt)",
     "content_type_photo_video_snap": "Foto/Video Snap",
     "conversation_type_group_with_name": "Skupina:{name}",
-    "delete_logs_title": "Zbrišem dnevnike?",
+    "delete_logs_title": "Zbri�em dnevnike?",
     "delete_logs_progress": "Brisanje{count}dnevniki...",
-    "delete_logs_description": "To bo izbrisalo dnevnike na podlagi trenutnega filtra in iskalne poizvedbe. Tega dejanja ni mogoče razveljaviti.",
+    "delete_logs_description": "To bo izbrisalo dnevnike na podlagi trenutnega filtra in iskalne poizvedbe. Tega dejanja ni mogoce razveljaviti.",
     "export_logs_title": "Izvozi dnevnike?",
-    "export_logs_progress": "Izvažanje dnevnikov...",
+    "export_logs_progress": "Izva�anje dnevnikov...",
     "export_logs_description": "To bo izvoz dnevnikov na podlagi trenutnega filtra in iskanje poizvedbe.",
     "export_logs_as": "Izvoz kot{type}",
-    "export_logs_success": "Izvoženi dnevniki!",
-    "export_logs_failure": "Izvoz dnevnikov ni uspel. Preverite za več podrobnosti.",
+    "export_logs_success": "Izvo�eni dnevniki!",
+    "export_logs_failure": "Izvoz dnevnikov ni uspel. Preverite za vec podrobnosti.",
     "deleted_logs_count": "Zbrisano{count}dnevniki"
   },
-  "script_imported": "Skript{name}uvoženo!",
-  "script_import_failed": "Uvoz skripta ni uspel.{error}. Preveri dnevnike za več podrobnosti",
+  "script_imported": "Skript{name}uvo�eno!",
+  "script_import_failed": "Uvoz skripta ni uspel.{error}. Preveri dnevnike za vec podrobnosti",
   "script_updating": "Posodobitev skripta{name}...",
-  "script_updated": "Posodobljen{name}v različico{version}",
-  "script_update_failed": "Ni moč posodobiti modula. Preveri dnevnike za več podrobnosti",
-  "script_edit_failed": "Ni moč odpreti datoteke modula. Preveri dnevnike za več podrobnosti",
-  "script_data_cleared": "Modul je čist!",
-  "script_data_clear_failed": "Ni uspelo odstraniti podatkov modula. Preveri dnevnike za več podrobnosti",
+  "script_updated": "Posodobljen{name}v razlicico{version}",
+  "script_update_failed": "Ni moc posodobiti modula. Preveri dnevnike za vec podrobnosti",
+  "script_edit_failed": "Ni moc odpreti datoteke modula. Preveri dnevnike za vec podrobnosti",
+  "script_data_cleared": "Modul je cist!",
+  "script_data_clear_failed": "Ni uspelo odstraniti podatkov modula. Preveri dnevnike za vec podrobnosti",
   "script_deleted": "Zbrisan skript{name}!",
-  "script_delete_failed": "Ni moč zbrisati modula. Preveri dnevnike za več podrobnosti",
+  "script_delete_failed": "Ni moc zbrisati modula. Preveri dnevnike za vec podrobnosti",
   "script_actions": "Dejanja",
   "script_no_description": "Brez opisa",
-  "script_update_available": "Razpoložljiva posodobitev:{version}",
-  "script_loaded": "Naložen skript{name}",
-  "script_unloaded": "Razložen skript{name}",
-  "script_enable_disable_failed": "Ni uspelo{action}scenarij. Preveri dnevnike za več podrobnosti",
+  "script_update_available": "Razpolo�ljiva posodobitev:{version}",
+  "script_loaded": "Nalo�en skript{name}",
+  "script_unloaded": "Razlo�en skript{name}",
+  "script_enable_disable_failed": "Ni uspelo{action}scenarij. Preveri dnevnike za vec podrobnosti",
   "script_no_settings": "Ta modul nima nobenih nastavitev",
   "script_no_scripts_found": "Ni najdenih skriptov",
   "script_ok_timeout": "V REDU{timeout}",
   "scripting_tagline": "Upravljajte skripte, uvoz in mape",
-  "installed_scripts_tab": "Nameščen",
+  "installed_scripts_tab": "Name�cen",
   "catalog_tab": "Katalog",
-  "no_scripts_folder_selected_title": "Izberite mapo skriptov za začetek",
+  "no_scripts_folder_selected_title": "Izberite mapo skriptov za zacetek",
   "select_folder_button": "Izberite mapo",
   "select_scripts_folder_toast": "Najprej izberite mapo s skripti",
-  "delete_rule_title": "Izbriši pravilo",
-  "delete_rule_description": "Ali res želite izbrisati to pravilo?",
+  "delete_rule_title": "Izbri�i pravilo",
+  "delete_rule_description": "Ali res �elite izbrisati to pravilo?",
   "rule_name": "Ime pravila",
   "friend_tracker_notifications": {
     "notification_channel_name": "Sledilnik prijateljev",
     "notification_title": "Dejavnost prijateljev",
-    "conversation_enter": "{friend}vnešen{conversation}",
+    "conversation_enter": "{friend}vne�en{conversation}",
     "conversation_exit": "{friend}levo{conversation}",
-    "started_typing": "{friend}je začel tipkati{conversation}",
+    "started_typing": "{friend}je zacel tipkati{conversation}",
     "stopped_typing": "{friend}ustavi tipkanje v{conversation}",
-    "started_speaking": "{friend}je začel govoriti{conversation}",
+    "started_speaking": "{friend}je zacel govoriti{conversation}",
     "stopped_speaking": "{friend}nehaj govoriti{conversation}",
-    "started_peeking": "{friend}začel kukati noter{conversation}",
+    "started_peeking": "{friend}zacel kukati noter{conversation}",
     "stopped_peeking": "{friend}nehaj kukati noter{conversation}",
-    "message_read": "{friend}preberi sporočilo v{conversation}",
-    "message_deleted": "{friend}zbrisal sporočilo v{conversation}",
-    "message_saved": "{friend}shrani sporočilo v{conversation}",
-    "message_unsaved": "{friend}neshranjeno sporočilo v{conversation}",
-    "message_edited": "{friend}uredil sporočilo v{conversation}",
+    "message_read": "{friend}preberi sporocilo v{conversation}",
+    "message_deleted": "{friend}zbrisal sporocilo v{conversation}",
+    "message_saved": "{friend}shrani sporocilo v{conversation}",
+    "message_unsaved": "{friend}neshranjeno sporocilo v{conversation}",
+    "message_edited": "{friend}uredil sporocilo v{conversation}",
     "message_reaction_add": "{friend}dodano reakcijo v{conversation}",
     "message_reaction_remove": "{friend}odstranil reakcijo v{conversation}",
     "snap_opened": "{friend}odprl snap v{conversation}",
@@ -2852,7 +2897,7 @@
     "date_range_picker_title": "Izberite obseg datuma",
     "date_picker_switch_to_calendar_mode": "Koledar",
     "date_picker_switch_to_input_mode": "Vhod",
-    "date_range_picker_scroll_to_previous_month": "Prejšnji mesec",
+    "date_range_picker_scroll_to_previous_month": "Prej�nji mesec",
     "date_range_picker_scroll_to_next_month": "Naslednji mesec",
     "date_picker_today_description": "Danes",
     "date_range_picker_day_in_range": "Izbrano",
@@ -2862,29 +2907,29 @@
     "date_range_input_invalid_range_input": "Neveljaven obseg datuma"
   },
   "send_override_dialog": {
-    "title": "Pošlji medije kot",
+    "title": "Po�lji medije kot",
     "duration": "Trajanje:{duration}",
     "saveable_snap_hint": "Naredi Snap shranjen v klepetu",
     "unlimited_duration": "Neomejeno",
     "schedule": "Razpored",
-    "select_time": "Izberite čas",
+    "select_time": "Izberite cas",
     "select": "Izberi",
     "select_date_first": "Prosim izberite datum",
-    "invalid_time": "Prosim izberite prihodnji čas"
+    "invalid_time": "Prosim izberite prihodnji cas"
   },
   "auto_reply_messages": {
     "dialog": {
-      "add_message": "Dodaj sporočilo",
-      "edit_message": "Uredi sporočilo",
-      "message_label": "Sporočilo",
-      "no_messages": "Ni še sporočil. Dodaj prvo sporočilo!",
-      "message_placeholder": "Vnesite svoje samodejno sporočilo..."
+      "add_message": "Dodaj sporocilo",
+      "edit_message": "Uredi sporocilo",
+      "message_label": "Sporocilo",
+      "no_messages": "Ni �e sporocil. Dodaj prvo sporocilo!",
+      "message_placeholder": "Vnesite svoje samodejno sporocilo..."
     }
   },
   "auto_delete_sent_messages": {
-    "countdown_toast": "Sporočilo bo izbrisano v{time}",
-    "delete_success_toast": "Sporočilo je bilo uspešno izbrisano",
-    "delete_failed_toast": "Ni uspelo zbrisati sporočila"
+    "countdown_toast": "Sporocilo bo izbrisano v{time}",
+    "delete_success_toast": "Sporocilo je bilo uspe�no izbrisano",
+    "delete_failed_toast": "Ni uspelo zbrisati sporocila"
   },
   "translation_position": {
     "above": "Zgoraj",
@@ -2892,38 +2937,38 @@
     "inline": "Vstavljeno"
   },
   "language_codes": {
-    "en": "Angleščina",
-    "es": "Španščina",
+    "en": "Angle�cina",
+    "es": "�pan�cina",
     "fr": "Francoski",
-    "de": "Nemščina",
+    "de": "Nem�cina",
     "it": "Italijanska",
-    "pt": "Portugalščina",
+    "pt": "Portugal�cina",
     "ru": "Ruski",
     "ja": "Japonka",
     "ko": "Korejska",
     "zh": "Kitajska",
-    "ar": "Arabščina",
+    "ar": "Arab�cina",
     "hi": "Hindi",
-    "tr": "Turščina",
+    "tr": "Tur�cina",
     "nl": "Nizozemska",
     "pl": "Poljska",
-    "sv": "Švedska",
+    "sv": "�vedska",
     "da": "Danski",
-    "no": "Norveška",
+    "no": "Norve�ka",
     "fi": "Finska",
-    "cs": "Češka",
-    "hu": "Madžarska",
-    "ro": "Romunščina",
-    "bg": "Bolgarščina",
-    "hr": "Hrvaška",
-    "sk": "Slovaščina",
+    "cs": "Ce�ka",
+    "hu": "Mad�arska",
+    "ro": "Romun�cina",
+    "bg": "Bolgar�cina",
+    "hr": "Hrva�ka",
+    "sk": "Slova�cina",
     "sl": "Slovenski",
-    "et": "Estonščina",
+    "et": "Eston�cina",
     "lv": "Latvijska",
     "lt": "Litva",
-    "mt": "Malteščina",
+    "mt": "Malte�cina",
     "ga": "Irska",
-    "cy": "ValižanskoName"
+    "cy": "Vali�anskoName"
   },
   "tracker": {
     "tabs": {
@@ -2932,7 +2977,7 @@
     },
     "actions": {
       "export": "Izvoz",
-      "delete": "Zbriši",
+      "delete": "Zbri�i",
       "add_rule": "Dodaj pravilo",
       "save_rule": "Shrani pravilo"
     },
@@ -2941,35 +2986,36 @@
       "no_rules_found": "Ni najdenih pravil",
       "no_events": "Ni dogodkov"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Iskanje"
     },
     "filters": {
-      "newest_first": "Najnovejši prvi",
+      "newest_first": "Najnovej�i prvi",
       "pick_a_date": "Izberi datum",
       "title": "Filtri",
-      "search_by": "Išči po",
+      "search_by": "I�ci po",
       "since": "Od",
       "until": "Dokler",
       "types": {
-        "username": "Uporabniško ime",
+        "username": "Uporabni�ko ime",
         "conversation": "Pogovor",
         "event": "Dogodek"
       },
       "event_types": {
-        "conversation_enter": "Vnešen pogovor",
+        "conversation_enter": "Vne�en pogovor",
         "conversation_exit": "Levi pogovor",
-        "started_typing": "Začetek tipkanja",
+        "started_typing": "Zacetek tipkanja",
         "stopped_typing": "Ustavljeno tipkanje",
-        "started_speaking": "Začel je govoriti",
+        "started_speaking": "Zacel je govoriti",
         "stopped_speaking": "Zaustavljen govor",
-        "started_peeking": "Začel je kukati",
+        "started_peeking": "Zacel je kukati",
         "stopped_peeking": "Nehal sem kukati",
-        "message_read": "Preberi sporočilo",
-        "message_deleted": "Zbrisano sporočilo",
-        "message_saved": "Shrani sporočilo",
-        "message_unsaved": "Neshranjeno sporočilo",
-        "message_edited": "Urejeno sporočilo",
+        "message_read": "Preberi sporocilo",
+        "message_deleted": "Zbrisano sporocilo",
+        "message_saved": "Shrani sporocilo",
+        "message_unsaved": "Neshranjeno sporocilo",
+        "message_edited": "Urejeno sporocilo",
         "message_reaction_add": "Dodana reakcija",
         "message_reaction_remove": "Odstranjena reakcija",
         "snap_opened": "Odprt snap",
@@ -2983,23 +3029,23 @@
       "export_dialog": {
         "title": "Izvozi dnevnike",
         "description": "Izvozi dnevnike sledilnika v datoteko",
-        "progress": "Izvažanje dnevnikov...",
+        "progress": "Izva�anje dnevnikov...",
         "export_as": "Izvoz kot{type}",
         "format_json": "JSON",
         "format_csv": "CSV"
       },
       "delete_dialog": {
-        "title": "Zbriši dnevnike",
-        "message": "Ste prepričani, da želite zbrisati vse dnevnike? Tega dejanja ni mogoče razveljaviti.",
-        "confirm": "Zbriši vse",
-        "cancel": "Prekliči",
+        "title": "Zbri�i dnevnike",
+        "message": "Ste prepricani, da �elite zbrisati vse dnevnike? Tega dejanja ni mogoce razveljaviti.",
+        "confirm": "Zbri�i vse",
+        "cancel": "Preklici",
         "progress": "Brisanje{count}dnevniki..."
       },
       "log_entry": {
         "in_conversation": "v{conversation}",
         "unknown_user": "Neznano",
         "unknown_conversation": "DM",
-        "i_can_see_you_entered": "Vnešen",
+        "i_can_see_you_entered": "Vne�en",
         "i_can_see_you_left": "Levo",
         "i_can_see_you_duration": "Trajanje",
         "i_can_see_you_not_available": "N/A",
@@ -3008,19 +3054,19 @@
         "i_can_see_you_unit_second": "s",
         "event_text": "{friend}{event}v{conversation}",
         "events": {
-          "conversation_enter": "vnešen",
+          "conversation_enter": "vne�en",
           "conversation_exit": "levo",
-          "started_typing": "začel tipkati",
+          "started_typing": "zacel tipkati",
           "stopped_typing": "ustavi tipkanje",
-          "started_speaking": "je začel govoriti",
+          "started_speaking": "je zacel govoriti",
           "stopped_speaking": "nehaj govoriti",
-          "started_peeking": "začel kukati",
+          "started_peeking": "zacel kukati",
           "stopped_peeking": "nehaj kukati",
-          "message_read": "preberi sporočilo",
-          "message_deleted": "zbrisal sporočilo",
-          "message_saved": "shrani sporočilo",
-          "message_unsaved": "neshranjeno sporočilo",
-          "message_edited": "uredil sporočilo",
+          "message_read": "preberi sporocilo",
+          "message_deleted": "zbrisal sporocilo",
+          "message_saved": "shrani sporocilo",
+          "message_unsaved": "neshranjeno sporocilo",
+          "message_edited": "uredil sporocilo",
           "message_reaction_add": "dodano reakcijo",
           "message_reaction_remove": "odstranjena reakcija",
           "snap_opened": "odprl snap",
@@ -3034,63 +3080,63 @@
     },
     "edit_rule": {
       "custom_rule": "Pravilo po meri",
-      "scope": "Področje uporabe",
+      "scope": "Podrocje uporabe",
       "events": "Dogodki",
       "add_event": "Dodaj dogodek",
       "type": "Vrsta",
-      "triggers": "Sprožilci",
+      "triggers": "Spro�ilci",
       "conditions": "Pogoji",
       "only_inside_conversation": "Samo, ko sem v pogovoru",
       "only_outside_conversation": "Samo ko sem zunaj pogovora",
       "only_when_app_active": "Samo, ko je Snapchat aktiven",
-      "only_when_app_inactive": "Samo, če je Snapchat neaktiven",
+      "only_when_app_inactive": "Samo, ce je Snapchat neaktiven",
       "no_notification_when_app_active": "Ko je Snapchat aktiven, ni obvestila",
       "scope_options": {
         "all_friends_groups": "Vsi prijatelji/skupine",
-        "no_one_except": "Nihče razen",
+        "no_one_except": "Nihce razen",
         "everyone_except": "Vsi razen"
       }
     }
   },
   "debug": {
-    "title": "Razhrošči",
-    "clear": "Počisti",
+    "title": "Razhro�ci",
+    "clear": "Pocisti",
     "files": {
       "config_json": "Nastavitvena datoteka",
       "mappings_json": "Datoteka s kartami",
-      "message_logger_db": "Zbirka dnevnikov sporočil",
-      "pinned_best_friend_txt": "Pripeta datoteka najboljšega prijatelja",
+      "message_logger_db": "Zbirka dnevnikov sporocil",
+      "pinned_best_friend_txt": "Pripeta datoteka najbolj�ega prijatelja",
       "native_sig_cache_txt": "Podpis domorodcev Predpomnilnik"
     },
     "settings": {
-      "test_mode": "Preskusni način (SAMO ZA ODPRAVO)",
-      "disable_feature_loading": "Onemogoči nalaganje funkcij",
-      "disable_auto_mapper": "Onemogoči samodejni zemljevid",
-      "disable_bypass_status_indicator": "Onemogoči kazalnik obvoznega stanja"
+      "test_mode": "Preskusni nacin (SAMO ZA ODPRAVO)",
+      "disable_feature_loading": "Onemogoci nalaganje funkcij",
+      "disable_auto_mapper": "Onemogoci samodejni zemljevid",
+      "disable_bypass_status_indicator": "Onemogoci kazalnik obvoznega stanja"
     }
   },
   "ui_settings_title": "Nastavitve vmesnika",
-  "haptic_feedback_label": "Haptične povratne informacije",
+  "haptic_feedback_label": "Hapticne povratne informacije",
   "updates_title": "Posodobitve",
-  "auto_update_check": "Samodejno osveži",
+  "auto_update_check": "Samodejno osve�i",
   "update_check_frequency_daily": "Dnevno",
   "update_check_frequency_weekly": "Teden",
-  "update_check_frequency_monthly": "Mesečno",
+  "update_check_frequency_monthly": "Mesecno",
   "update_channel_stable": "Stabilno",
-  "update_channel_prerelease": "Pred sproščanjem",
+  "update_channel_prerelease": "Pred spro�canjem",
   "friend_notes_title": "Opombe prijateljev",
-  "friend_notes_description": "Upravljajte in varnostno kopiranje zapiskov vašega prijatelja",
+  "friend_notes_description": "Upravljajte in varnostno kopiranje zapiskov va�ega prijatelja",
   "app_theme_title": "Tema App",
   "theme_mode_system": "Sistem",
   "theme_mode_light": "Svetloba",
   "theme_mode_dark": "Temno",
-  "test_mode_label": "Omogoči PurrAuro",
-  "disable_feature_loading_label": "Onemogoči nalaganje funkcij",
-  "disable_auto_mapper_label": "Onemogoči samodejni zemljevid",
-  "disable_bypass_indicator_label": "Onemogoči kazalnik obvoda",
+  "test_mode_label": "Omogoci PurrAuro",
+  "disable_feature_loading_label": "Onemogoci nalaganje funkcij",
+  "disable_auto_mapper_label": "Onemogoci samodejni zemljevid",
+  "disable_bypass_indicator_label": "Onemogoci kazalnik obvoda",
   "friend_list": {
     "manage_title": "Upravljaj seznam prijateljev",
-    "export_description": "Izvozni prijatelji vam omogočajo, da shranite seznam osebnih dokumentov svojih prijateljev v besedilni datoteki. Uvoz iz datoteke bo prikazal prijatelje na seznamu, kjer jih lahko dodate.",
+    "export_description": "Izvozni prijatelji vam omogocajo, da shranite seznam osebnih dokumentov svojih prijateljev v besedilni datoteki. Uvoz iz datoteke bo prikazal prijatelje na seznamu, kjer jih lahko dodate.",
     "export_friends": "Izvozi prijatelje",
     "import_from_file": "Uvozi iz datoteke",
     "load_suggested_friends": "Load suggested friends",
@@ -3102,13 +3148,13 @@
     "date_range": "Datumski razpon",
     "select": "Izberi",
     "sort_by_folder": "Razvrsti po mapi",
-    "include_my_eyes_only": "Vključi samo moje oči",
-    "cancel": "Prekliči",
+    "include_my_eyes_only": "Vkljuci samo moje oci",
+    "cancel": "Preklici",
     "export": "Izvoz",
-    "quit": "Končaj",
+    "quit": "Koncaj",
     "done": "Opravljeno",
     "ok": "V REDU",
-    "exporting_memories": "Izvažanje spominov... ({failed}spodletelo)"
+    "exporting_memories": "Izva�anje spominov... ({failed}spodletelo)"
   },
   "scripting_ui": {
     "no_scripts_folder_selected": "Ni izbrane mape s skripti",
@@ -3116,111 +3162,111 @@
     "import_from_url": "Uvozi z URL- ja",
     "open_scripts_folder": "Odpri mapo skriptov",
     "import_script_from_url": "Uvozi skript z URL- ja",
-    "warning_imported_scripts": "Opozorilo: Uvoženi skripti so lahko škodljivi za vašo napravo. Uvozi le skripte iz zanesljivih virov.",
+    "warning_imported_scripts": "Opozorilo: Uvo�eni skripti so lahko �kodljivi za va�o napravo. Uvozi le skripte iz zanesljivih virov.",
     "enter_url_here": "Sem vnesite URL:",
     "import": "Uvozi",
-    "cancel": "Prekliči",
+    "cancel": "Preklici",
     "documentation": "Dokumentacija"
   },
   "common": {
-    "cancel": "Prekliči",
+    "cancel": "Preklici",
     "add": "Dodaj",
     "ok": "V REDU",
-    "quit": "Končaj",
+    "quit": "Koncaj",
     "done": "Opravljeno",
     "back": "Nazaj",
     "unknown": "Neznano",
     "added": "Dodano",
     "no_friends_found": "Ni najdenih prijateljev",
-    "exporting_memories": "Izvažanje spominov... ({failed}spodletelo)"
+    "exporting_memories": "Izva�anje spominov... ({failed}spodletelo)"
   },
-  "clear_friend_feed": "Počisti vir prijateljev",
+  "clear_friend_feed": "Pocisti vir prijateljev",
   "select_date": "Izberite datum",
-  "schedule_scheduled_for": "Načrtovano za{name}v{time}",
-  "schedule_sending_in": "Pošiljanje noter{time}",
+  "schedule_scheduled_for": "Nacrtovano za{name}v{time}",
+  "schedule_sending_in": "Po�iljanje noter{time}",
   "schedule_sent_to": "Poslano na{name}",
   "schedule_sent": "Razporejen zamah poslan",
-  "schedule_failed_to": "Pošiljanje ni uspelo{name}",
-  "schedule_failed": "Načrtovani zaskočitev ni uspela",
+  "schedule_failed_to": "Po�iljanje ni uspelo{name}",
+  "schedule_failed": "Nacrtovani zaskocitev ni uspela",
   "schedule_cancelled_for": "Preklicano za{name}",
   "by_author": "z{author}",
-  "version": "Različica{version}",
-  "delete_button": "Zbriši",
+  "version": "Razlicica{version}",
+  "delete_button": "Zbri�i",
   "logger_history": {
-    "download_started": "Prenos se je začel!",
+    "download_started": "Prenos se je zacel!",
     "downloaded_to": "Preneseno na{path}",
-    "failed_to_download": "Prenašanje ni uspelo{message}",
+    "failed_to_download": "Prena�anje ni uspelo{message}",
     "select_conversation": "Izberite pogovor",
     "select_conversation_placeholder": "Izberite pogovor",
     "edited_at": "urejeno v{date}",
     "download_attachment_failed_toast": "Nalaganje priloge ni uspelo",
-    "message_parse_failed": "Razčlenjevanje sporočil ni uspelo",
-    "empty_message": "Prazno sporočilo",
-    "no_more_messages": "Nič več sporočil",
+    "message_parse_failed": "Razclenjevanje sporocil ni uspelo",
+    "empty_message": "Prazno sporocilo",
+    "no_more_messages": "Nic vec sporocil",
     "reverse_order_checkbox": "Povratni vrstni red",
     "view_logger_history_button": "Zgodovina dnevnika",
     "posted_at": "Objavljeno dne{date}",
     "created_at": "Ustvarjeno na{date}",
-    "failed_to_open_file": "Ni moč odpreti datoteke. Preveri dnevnike za več informacij",
-    "failed_to_get_file": "Ni moč dobiti datoteke",
+    "failed_to_open_file": "Ni moc odpreti datoteke. Preveri dnevnike za vec informacij",
+    "failed_to_get_file": "Ni moc dobiti datoteke",
     "download_button": "Prenesi",
     "chat_attachment": "Dodatek{index}",
     "log_header_format": "{username}Kaj?{type}Kaj?{date}",
-    "edited_at_text": "Urejeno v »{message}\"{date}",
+    "edited_at_text": "Urejeno v �{message}\"{date}",
     "list_group_format": "Skupina{name}",
     "list_friend_format": "Prijatelj{name}",
-    "download_started_toast": "Prenos se je začel",
+    "download_started_toast": "Prenos se je zacel",
     "download_success_toast": "Preneseno na{path}",
     "download_failed_toast": "Prenesi ni uspelo:{message}",
     "close_button_description": "Zapri iskanje",
-    "search_button_description": "Iskanje sporočil"
+    "search_button_description": "Iskanje sporocil"
   },
   "debug_dialogs": {
     "info": "Podatki",
     "refs": "Ref",
     "arroyo": "Arroyo",
-    "message": "Sporočilo",
+    "message": "Sporocilo",
     "media_references": "Reference za medije",
     "arroyo_proto": "Arroyo proto",
-    "message_proto": "Proto sporočilo"
+    "message_proto": "Proto sporocilo"
   },
   "error_messages": {
-    "failed_to_fetch_message": "Ni moč pridobiti sporočila:{error}",
-    "failed_to_edit_message": "Ni uspelo urediti sporočila:{error}"
+    "failed_to_fetch_message": "Ni moc pridobiti sporocila:{error}",
+    "failed_to_edit_message": "Ni uspelo urediti sporocila:{error}"
   },
   "ai_response_style": {
-    "casual": "Priložnost",
+    "casual": "Prilo�nost",
     "formal": "Formalno",
     "friendly": "Prijazen",
     "humorous": "Humor",
-    "empathetic": "Empatično",
+    "empathetic": "Empaticno",
     "busy": "Zaposleni",
     "toxic": "Strupeno"
   },
   "ai_response_language": {
     "auto": "Samodejno (enaka prejeta)",
-    "en": "Angleščina",
-    "es": "Španščina",
+    "en": "Angle�cina",
+    "es": "�pan�cina",
     "fr": "Francoski",
-    "de": "Nemščina",
+    "de": "Nem�cina",
     "it": "Italijanska",
-    "pt": "Portugalščina",
+    "pt": "Portugal�cina",
     "ru": "Ruski",
     "ja": "Japonka",
     "ko": "Korejska",
     "zh": "Kitajska",
     "ar": "Arabski (ZAE) in (KSA)",
     "hi": "Hindi",
-    "tr": "Turščina",
+    "tr": "Tur�cina",
     "pl": "Poljska",
     "nl": "Nizozemska",
-    "sv": "Švedska",
+    "sv": "�vedska",
     "da": "Danski",
-    "no": "Norveška",
+    "no": "Norve�ka",
     "fi": "Finska"
   },
   "ai_provider": {
-    "gemini": "Dvojčici",
+    "gemini": "Dvojcici",
     "deepseek": "Globoko iskanje",
     "openai": "OpenAI",
     "openrouter": "OpenRouter"

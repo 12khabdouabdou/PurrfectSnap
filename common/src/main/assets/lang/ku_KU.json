@@ -769,6 +769,29 @@
                         "name": "دابەزاندنی ئۆتۆماتیکی دەنگەکان",
                         "description": "خۆکارانە نامە دەنگییەکان دادەبەزێنێت لەکاتی لێدانیان"
                     },
+                    \"call_recorder\": {
+                        \"name\": \"Call Recorder\",
+                        \"description\": \"Manage call recording settings\",
+                        \"properties\": {
+                            \"call_recorder\": {
+                                \"name\": \"Mode\",
+                                \"description\": \"Select what should be recorded\"
+                            },
+                            \"auto_start_recording\": {
+                                \"name\": \"Auto Start Recording\",
+                                \"description\": \"Automatically start recording when a call starts\"
+                            },
+                            \"call_recorder_ui\": {
+                                \"name\": \"Call Recorder UI\",
+                                \"description\": \"Show the recording overlay UI during calls\"
+                            },
+                            \"call_recorder_ui_design\": {
+                                \"name\": \"UI Design\",
+                                \"description\": \"Select the design for the call recorder overlay\"
+                            },
+                            \"call_recording_saved_toast\": \"Saved\"
+                        }
+                    },
                     "download_profile_pictures": {
                         "name": "دابەزاندنی وێنەی پڕۆفایل",
                         "description": "ڕێگەت دەدات وێنەی پڕۆفایلەکان دابەزێنیت لە پەڕەی پڕۆفایلەوە"
@@ -1690,6 +1713,17 @@
                         "name": "کامێرای بنەڕەتی کاتی کردنەوە",
                         "description": "کامێرای بنەڕەتی دیاری دەکات کاتێک سناپچات دەکرێتەوە"
                     },
+                    \"call_recorder\": {
+                        \"only_record_self\": \"Only Record Self\",
+                        \"only_record_others\": \"Only Record Others\",
+                        \"record_both\": \"Record Both Sides\"
+                    },
+                    \"call_recorder_ui_design\": {
+                        \"default\": \"Default\",
+                        \"snapchat\": \"Snapchat\",
+                        \"cyber\": \"Cyber\",
+                        \"frost\": \"Frost\"
+                    },
                     "hevc_recording": {
                         "name": "تۆمارکردنی HEVC",
                         "description": "کۆدێکی HEVC (H.265) بەکاردەهێنێت بۆ تۆمارکردنی ڤیدیۆ"
@@ -2147,6 +2181,17 @@
                 "back": "کامێرای دواوە",
                 "null": "دواهەمین بەکارهێنراو بیربکەرەوە"
             },
+                    \"call_recorder\": {
+                        \"only_record_self\": \"Only Record Self\",
+                        \"only_record_others\": \"Only Record Others\",
+                        \"record_both\": \"Record Both Sides\"
+                    },
+                    \"call_recorder_ui_design\": {
+                        \"default\": \"Default\",
+                        \"snapchat\": \"Snapchat\",
+                        \"cyber\": \"Cyber\",
+                        \"frost\": \"Frost\"
+                    },
             "front_custom_frame_rate": {
                 "null": "FPS-ی بنەڕەتی ئامێر"
             },
@@ -3022,6 +3067,7 @@
             "no_rules_found": "هیچ یاسایەک نەدۆزرایەوە",
             "no_events": "هیچ ڕووداوێک نییە"
         },
+        "scopes_suffix": "scopes",
         "search": {
             "placeholder": "گەڕان"
         },

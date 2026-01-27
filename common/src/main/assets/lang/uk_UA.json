@@ -815,6 +815,17 @@
         "back": "Задня камера",
         "null": "Пам'яті останнього"
       },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
       "front_custom_frame_rate": {
         "null": "Тип пристрою FPS"
       },
@@ -1323,6 +1334,29 @@
           "auto_download_voice_notes": {
             "name": "Автозавантаження Голосові ноти",
             "description": "Автоматично завантажує голосові ноти при грі їх"
+          },
+          \"call_recorder\": {
+              \"name\": \"Call Recorder\",
+              \"description\": \"Manage call recording settings\",
+              \"properties\": {
+                  \"call_recorder\": {
+                      \"name\": \"Mode\",
+                      \"description\": \"Select what should be recorded\"
+                  },
+                  \"auto_start_recording\": {
+                      \"name\": \"Auto Start Recording\",
+                      \"description\": \"Automatically start recording when a call starts\"
+                  },
+                  \"call_recorder_ui\": {
+                      \"name\": \"Call Recorder UI\",
+                      \"description\": \"Show the recording overlay UI during calls\"
+                  },
+                  \"call_recorder_ui_design\": {
+                      \"name\": \"UI Design\",
+                      \"description\": \"Select the design for the call recorder overlay\"
+                  },
+                  \"call_recording_saved_toast\": \"Saved\"
+              }
           },
           "download_profile_pictures": {
             "name": "Завантажити профіль Фотографії",
@@ -2087,6 +2121,17 @@
             "name": "За замовчуванням камера",
             "description": "Налаштування камери за замовчуванням при відкритті Snapchat"
           },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
           "hevc_recording": {
             "name": "ГЕВЦ Запис",
             "description": "Використання HEVC (H.265) кодека для запису відео"
@@ -2939,6 +2984,7 @@
       "no_rules_found": "Не знайдено правила",
       "no_events": "Немає подій"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Пошук"
     },

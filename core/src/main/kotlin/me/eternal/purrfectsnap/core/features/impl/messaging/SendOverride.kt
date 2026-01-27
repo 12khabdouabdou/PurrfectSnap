@@ -3,8 +3,11 @@ package me.eternal.purrfectsnap.core.features.impl.messaging
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -12,7 +15,8 @@ import androidx.compose.runtime.*
 import androidx.core.app.NotificationCompat
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +37,8 @@ import me.eternal.purrfectsnap.core.event.events.impl.SendMessageWithContentEven
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.features.impl.experiments.MediaFilePicker
 import me.eternal.purrfectsnap.core.messaging.MessageSender
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -545,75 +551,138 @@ class SendOverride : Feature("Send Override") {
                 val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
                 
                 createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
-                    val mainTranslation = remember {
-                        context.translation.getCategory("send_override_dialog")
-                    }
+                    PurrfectOverlayTheme {
+                        val mainTranslation = remember {
+                            context.translation.getCategory("send_override_dialog")
+                        }
+                        val dialogShape = RoundedCornerShape(24.dp)
+                        val dialogSurfaceColor = Color(0xFF2A2452)
+                        val border = remember {
+                            Brush.linearGradient(
+                                listOf(
+                                    PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.55f),
+                                    PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.35f)
+                                )
+                            )
+                        }
+                        val dialogBackground = remember {
+                            Brush.linearGradient(
+                                listOf(
+                                    Color(0xFF2A2452),
+                                    Color(0xFF1A143A)
+                                )
+                            )
+                        }
 
-                    @Composable
-                    fun ActionTile(
-                        modifier: Modifier = Modifier,
-                        selected: Boolean = false,
-                        icon: ImageVector,
-                        title: String,
-                        enabled: Boolean = true,
-                        onClick: () -> Unit
-                    ) {
-                        Card(
-                            modifier = modifier.then(if (!enabled) Modifier.alpha(0.5f) else Modifier),
-                            onClick = { if (enabled) onClick() },
-                            elevation = if (selected) CardDefaults.elevatedCardElevation(disabledElevation = 3.dp) else CardDefaults.cardElevation(),
-                            colors = if (selected) CardDefaults.elevatedCardColors() else CardDefaults.cardColors()
+                        @Composable
+                        fun ActionTile(
+                            modifier: Modifier = Modifier,
+                            selected: Boolean = false,
+                            icon: ImageVector,
+                            title: String,
+                            onClick: () -> Unit
+                        ) {
+                            Card(
+                                modifier = modifier,
+                                onClick = onClick,
+                                shape = RoundedCornerShape(18.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = if (selected) 4.dp else 1.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (selected) Color(0xFF3E3478) else Color(0xFF2F2A5B),
+                                    contentColor = Color.White
+                                ),
+                                border = if (selected) BorderStroke(1.dp, PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.6f)) else null
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 10.dp, vertical = 12.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        icon,
+                                        contentDescription = title,
+                                        modifier = Modifier.size(28.dp),
+                                        tint = if (selected) PurrfectOverlayPalette.glowSecondary else Color.White.copy(alpha = 0.9f)
+                                    )
+                                    Spacer(Modifier.height(6.dp))
+                                    Text(
+                                        title,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        fontSize = 12.sp,
+                                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                                        softWrap = true,
+                                        lineHeight = 14.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = dialogShape,
+                            color = dialogSurfaceColor,
+                            tonalElevation = 0.dp,
+                            shadowElevation = 18.dp,
+                            border = BorderStroke(1.dp, border)
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(16.dp)
-                                    .size(75.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
+                                    .background(dialogBackground, dialogShape)
+                                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(icon, contentDescription = title, modifier = Modifier
-                                    .size(32.dp)
-                                    .padding(4.dp))
-                                Text(title, modifier = Modifier.fillMaxWidth(), fontSize = 12.sp, fontWeight = FontWeight.Light, softWrap = true, lineHeight = 14.sp, textAlign = TextAlign.Center)
-                            }
-                        }
-                    }
+                                val translation = remember {
+                                    context.translation.getCategory("features.options.gallery_media_send_override")
+                                }
+                                var scheduleEnabled by remember { mutableStateOf(false) }
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val translation = remember {
-                            context.translation.getCategory("features.options.gallery_media_send_override")
-                        }
-                        var scheduleEnabled by remember { mutableStateOf(false) }
+                                Text(
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    text = "Send as ${translation[selectedType]}",
+                                    modifier = Modifier.padding(5.dp)
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    ActionTile(
+                                        modifier = Modifier.weight(1f).height(92.dp),
+                                        selected = selectedType == "ORIGINAL",
+                                        icon = Icons.Filled.Photo,
+                                        title = translation["ORIGINAL"]
+                                    ) {
+                                        selectedType = "ORIGINAL"
+                                    }
+                                    ActionTile(
+                                        modifier = Modifier.weight(1f).height(92.dp),
+                                        selected = selectedType == "SNAP" || selectedType == "SAVEABLE_SNAP",
+                                        icon = Icons.Filled.PhotoCamera,
+                                        title = translation["SNAP"]
+                                    ) {
+                                        selectedType = "SNAP"
+                                    }
+                                    ActionTile(
+                                        modifier = Modifier.weight(1f).height(92.dp),
+                                        selected = selectedType == "NOTE",
+                                        icon = Icons.Filled.MusicNote,
+                                        title = translation["NOTE"]
+                                    ) {
+                                        selectedType = "NOTE"
+                                    }
+                                }
 
-                        Text(fontSize = 20.sp, fontWeight = FontWeight.Medium, text = "${mainTranslation["send_as"]} ${
-                            translation[selectedType]}", modifier = Modifier.padding(5.dp))
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            ActionTile(selected = selectedType == "ORIGINAL", icon = Icons.Filled.Photo, title = translation["ORIGINAL"], enabled = true) {
-                                selectedType = "ORIGINAL"
-                            }
-                            ActionTile(selected = selectedType == "SNAP" || selectedType == "SAVEABLE_SNAP", icon = Icons.Filled.PhotoCamera, title = translation["SNAP"], enabled = true) {
-                                selectedType = "SNAP"
-                            }
-                            ActionTile(selected = selectedType == "NOTE", icon = Icons.Filled.MusicNote, title = translation["NOTE"], enabled = true) {
-                                selectedType = "NOTE"
-                            }
-                        }
-
-                        fun convertDuration(duration: Float) = when {
-                            duration in -2f..-1f -> 100
-                            duration in -1f..-0f -> 250
-                            duration in -0f..1f -> 500
-                            duration >= 11f -> null
-                            else -> ((duration * 1000).toInt() / 1000) * 1000
-                        }
+                                fun convertDuration(duration: Float) = when {
+                                    duration in -2f..-1f -> 100
+                                    duration in -1f..-0f -> 250
+                                    duration in -0f..1f -> 500
+                                    duration >= 11f -> null
+                                    else -> ((duration * 1000).toInt() / 1000) * 1000
+                                }
                         
                         fun formatTimeText(ms: Long): String {
                             val days = (ms / (24 * 60 * 60 * 1000)).toInt()
@@ -937,6 +1006,8 @@ class SendOverride : Feature("Send Override") {
                             }
                         }
                     }
+                }
+                }
                 }.show()
             }
         }

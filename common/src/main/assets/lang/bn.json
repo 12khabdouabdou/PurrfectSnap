@@ -815,6 +815,17 @@
         "back": "পূর্ববর্তী ক্যামেরা",
         "null": "সর্বশেষ ব্যবহৃত হয়েছে"
       },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
       "front_custom_frame_rate": {
         "null": "ডিফল্ট FPS"
       },
@@ -1323,6 +1334,29 @@
           "auto_download_voice_notes": {
             "name": "স্বয়ংক্রিয়ভাবে ডাউনলোড ভয়েস নোট",
             "description": "স্বয়ংক্রিয়ভাবে ভয়েস বাজানোর সময় স্বয়ংক্রিয়রূপে সেগুলি ডাউনলোড করা হবে"
+          },
+          \"call_recorder\": {
+              \"name\": \"Call Recorder\",
+              \"description\": \"Manage call recording settings\",
+              \"properties\": {
+                  \"call_recorder\": {
+                      \"name\": \"Mode\",
+                      \"description\": \"Select what should be recorded\"
+                  },
+                  \"auto_start_recording\": {
+                      \"name\": \"Auto Start Recording\",
+                      \"description\": \"Automatically start recording when a call starts\"
+                  },
+                  \"call_recorder_ui\": {
+                      \"name\": \"Call Recorder UI\",
+                      \"description\": \"Show the recording overlay UI during calls\"
+                  },
+                  \"call_recorder_ui_design\": {
+                      \"name\": \"UI Design\",
+                      \"description\": \"Select the design for the call recorder overlay\"
+                  },
+                  \"call_recording_saved_toast\": \"Saved\"
+              }
           },
           "download_profile_pictures": {
             "name": "প্রোফাইল ছবি ডাউনলোড করুন",
@@ -2087,6 +2121,17 @@
             "name": "প্রারম্ভিক ক্যামেরা",
             "description": "খোলার সময় ডিফল্ট ক্যামেরা নির্ধারণ করা হয়"
           },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
           "hevc_recording": {
             "name": "HVC রেকর্ড",
             "description": "ভিডিও রেকর্ডিংের জন্য HVC (H.65) কোডেক প্রয়োগ করা হয়"
@@ -2939,6 +2984,7 @@
       "no_rules_found": "কোনো নিয়ম পাওয়া যায়নি",
       "no_events": "কোনো অনুষ্ঠান নেই"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "অনুসন্ধান"
     },

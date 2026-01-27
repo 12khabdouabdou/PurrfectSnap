@@ -863,6 +863,30 @@ class HomeRootSection : Routes.Route() {
             }
         }
 
+        LaunchedEffect(Unit) {
+            if (context.sharedPreferences.getBoolean("show_changelog_on_launch", false)) {
+                val version = context.sharedPreferences.getString("changelog_version_on_launch", null)
+                context.sharedPreferences.edit()
+                    .putBoolean("show_changelog_on_launch", false)
+                    .remove("changelog_version_on_launch")
+                    .apply()
+                version?.let {
+                    showChangelogDialog = true
+                    loadChangelog(it, changelogUrl)
+                }
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            if (context.sharedPreferences.getBoolean("show_announcements_on_launch", false)) {
+                context.sharedPreferences.edit()
+                    .putBoolean("show_announcements_on_launch", false)
+                    .apply()
+                showAnnouncementsDialog = true
+                loadAnnouncements()
+            }
+        }
+
         val onUpdateButtonClick: () -> Unit = {
             latestUpdate?.let {
                 showChangelogDialog = true

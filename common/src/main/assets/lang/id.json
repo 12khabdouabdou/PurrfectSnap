@@ -1,4 +1,4 @@
-﻿{
+{
   "setup": {
     "dialogs": {
       "select_language": "Pilih Bahasa",
@@ -57,7 +57,7 @@
     },
     "sections": {
       "home": {
-        "version_title": "v{versionName}· by Eternal",
+        "version_title": "v{versionName}� by Eternal",
         "update_title": "Update PurrfectSnap",
         "update_content": "Versi{version}tersedia!",
         "update_button": "Unduh",
@@ -641,9 +641,9 @@
   },
   "features": {
     "notices": {
-      "unstable": "♫ Tidak stabil",
-      "ban_risk": "♫ Fitur ini dapat menyebabkan bans",
-      "internal_behavior": "♫ Ini mungkin melanggar perilaku internal Snapchat"
+      "unstable": "? Tidak stabil",
+      "ban_risk": "? Fitur ini dapat menyebabkan bans",
+      "internal_behavior": "? Ini mungkin melanggar perilaku internal Snapchat"
     },
     "options": {
       "app_appearance": {
@@ -670,8 +670,8 @@
         "stealth": "Mode Stealth",
         "auto_reply": "Reply Otomatis",
         "auto_delete_sent_messages": "Hapus Pesan Terkirim oleh Otomatis",
-        "mark_snaps_as_seen": "♫ Mark Snaps seperti yang terlihat",
-        "mark_stories_as_seen_locally": "♫ Mark Stories seperti yang terlihat secara lokal",
+        "mark_snaps_as_seen": "? Mark Snaps seperti yang terlihat",
+        "mark_stories_as_seen_locally": "? Mark Stories seperti yang terlihat secara lokal",
         "conversation_info": "Info Percakapan:",
         "e2e_encryption": "Gunakan Enkripsi E2E",
         "message_logger": "Pencari Pesan:",
@@ -815,6 +815,17 @@
         "back": "Kamera Belakang",
         "null": "Ingat terakhir digunakan"
       },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
       "front_custom_frame_rate": {
         "null": "FPS baku perangkat"
       },
@@ -883,8 +894,8 @@
       },
       "spotlight_comments_username_icon": {
         "user": "Ikon Nama Pengguna",
-        "👤": "Ikon Nama Pengguna",
-        "[👤]": "Ikon Nama Pengguna",
+        "??": "Ikon Nama Pengguna",
+        "[??]": "Ikon Nama Pengguna",
         "default": "Ikon Nama Pengguna",
         "no_icon": "Tak ada ikon"
       },
@@ -1323,6 +1334,29 @@
           "auto_download_voice_notes": {
             "name": "Unduh Otomatis Catatan Suara",
             "description": "Otomatis mengunduh catatan suara ketika memainkannya"
+          },
+          \"call_recorder\": {
+              \"name\": \"Call Recorder\",
+              \"description\": \"Manage call recording settings\",
+              \"properties\": {
+                  \"call_recorder\": {
+                      \"name\": \"Mode\",
+                      \"description\": \"Select what should be recorded\"
+                  },
+                  \"auto_start_recording\": {
+                      \"name\": \"Auto Start Recording\",
+                      \"description\": \"Automatically start recording when a call starts\"
+                  },
+                  \"call_recorder_ui\": {
+                      \"name\": \"Call Recorder UI\",
+                      \"description\": \"Show the recording overlay UI during calls\"
+                  },
+                  \"call_recorder_ui_design\": {
+                      \"name\": \"UI Design\",
+                      \"description\": \"Select the design for the call recorder overlay\"
+                  },
+                  \"call_recording_saved_toast\": \"Saved\"
+              }
           },
           "download_profile_pictures": {
             "name": "Unduh Foto Profil",
@@ -2087,6 +2121,17 @@
             "name": "Awalan Kamera Baku",
             "description": "Tata kamera bawaan ketika membuka Snapchat"
           },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
           "hevc_recording": {
             "name": "HEVC Merekam",
             "description": "Menggunakan HEVC (H.265) codec untuk rekaman video"
@@ -2939,6 +2984,7 @@
       "no_rules_found": "Tidak ada aturan yang ditemukan",
       "no_events": "Tidak ada peristiwa"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Cari"
     },

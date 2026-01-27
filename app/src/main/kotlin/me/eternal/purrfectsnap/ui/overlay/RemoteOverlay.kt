@@ -78,6 +78,7 @@ class RemoteOverlay(
     fun close() {
         if (!::dialog.isInitialized || !dialog.isShowing) return
         dismissCallback = null
+        context.sharedPreferences.edit().putBoolean("overlay_active", false).apply()
         context.androidContext.mainExecutor.execute {
             dialog.dismiss()
         }
@@ -92,6 +93,7 @@ class RemoteOverlay(
             return
         }
 
+        context.sharedPreferences.edit().putBoolean("overlay_active", true).apply()
         context.androidContext.mainExecutor.execute {
             dialog = object: Dialog(context.androidContext, R.style.FullscreenOverlayDialog) {
                 override fun dismiss() {
@@ -99,6 +101,9 @@ class RemoteOverlay(
                         if (it()) return
                     }
                     super.dismiss()
+                    this@RemoteOverlay.context.sharedPreferences.edit()
+                        .putBoolean("overlay_active", false)
+                        .apply()
                     this@RemoteOverlay.context.config.writeConfig()
                 }
             }

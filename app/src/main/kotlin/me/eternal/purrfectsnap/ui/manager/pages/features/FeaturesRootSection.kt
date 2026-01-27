@@ -936,6 +936,7 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun FeatureSearchBar(rowScope: RowScope, focusRequester: FocusRequester) {
         var searchValue by remember { mutableStateOf("") }
+        val isOverlay = remember { context.sharedPreferences.getBoolean("overlay_active", false) }
         val scope = rememberCoroutineScope()
         var currentSearchJob by remember { mutableStateOf<Job?>(null) }
         val searchHistory = remember { mutableStateListOf<String>().apply { addAll(loadSearchHistory()) } }
@@ -985,7 +986,9 @@ class FeaturesRootSection : Routes.Route() {
                     onValueChange = { keyword ->
                         searchValue = keyword
                         if (keyword.isEmpty()) {
-                            navigateToMainRoot()
+                            if (isOverlay) {
+                                routes.navController.popBackStack(routeInfo.id, false)
+                            }
                         } else {
                             launchSearch(keyword, record = false, delayMs = 250L)
                         }
@@ -1019,7 +1022,9 @@ class FeaturesRootSection : Routes.Route() {
                         if (searchValue.isNotEmpty()) {
                             IconButton(onClick = {
                                 searchValue = ""
-                                navigateToMainRoot()
+                                if (isOverlay) {
+                                    routes.navController.popBackStack(routeInfo.id, false)
+                                }
                                 focusRequester.requestFocus()
                             }) {
                                 Icon(
@@ -1140,6 +1145,7 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         var showSearchBar by rememberSaveable { mutableStateOf(isSearchResults) }
         val focusRequester = remember { FocusRequester() }
+        val isOverlay = remember { context.sharedPreferences.getBoolean("overlay_active", false) }
         var searchValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
             mutableStateOf(
                 TextFieldValue(
@@ -1364,8 +1370,14 @@ class FeaturesRootSection : Routes.Route() {
                                         if (searchValue.text.isNotEmpty()) {
                                             IconButton(onClick = {
                                                 searchValue = TextFieldValue("", TextRange(0))
-                                                navigateToMainRoot()
-                                                showSearchBar = false
+                                                updateSearch("", record = false)
+                                                if (isSearchResults) {
+                                                    if (isOverlay) {
+                                                        routes.navController.popBackStack(routeInfo.id, false)
+                                                    }
+                                                } else {
+                                                    showSearchBar = false
+                                                }
                                             }) {
                                                 Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White)
                                             }
@@ -1414,7 +1426,9 @@ class FeaturesRootSection : Routes.Route() {
                                 IconButton(onClick = {
                                     if (showSearchBar) {
                                         searchValue = TextFieldValue("", TextRange(0))
-                                        navigateToMainRoot()
+                                        if (isOverlay) {
+                                            routes.navController.popBackStack(routeInfo.id, false)
+                                        }
                                     }
                                     showSearchBar = !showSearchBar
                                 }) {

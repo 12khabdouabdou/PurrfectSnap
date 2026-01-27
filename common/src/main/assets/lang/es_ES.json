@@ -1,8 +1,8 @@
-Ôªø{
+{
   "setup": {
     "dialogs": {
       "select_language": "Seleccionar idioma",
-      "save_folder": "Elige d√≥nde guardar las descargas",
+      "save_folder": "Elige dÛnde guardar las descargas",
       "select_save_folder_button": "Seleccione carpeta"
     },
     "mappings": {
@@ -12,8 +12,8 @@
     },
     "permissions": {
       "dialog": "Completar estos elementos esenciales para continuar:",
-      "notification_access": "Acceso a la notificaci√≥n",
-      "battery_optimization": "Optimizaci√≥n de la bater√≠a",
+      "notification_access": "Acceso a la notificaciÛn",
+      "battery_optimization": "OptimizaciÛn de la baterÌa",
       "display_over_other_apps": "Mostrar sobre otras aplicaciones",
       "request_button": "Solicitud"
     }
@@ -25,8 +25,8 @@
   "manager": {
     "routes": {
       "tasks": "Tareas",
-      "features": "Caracter√≠sticas",
-      "manage_rule_feature": "Funci√≥n de la regla de gesti√≥n",
+      "features": "CaracterÌsticas",
+      "manage_rule_feature": "FunciÛn de la regla de gestiÛn",
       "home": "Inicio",
       "home_about": "Acerca de",
       "home_settings": "Ajustes",
@@ -36,20 +36,20 @@
       "friend_tracker": "Amigo Tracker",
       "friend_tracker_catalog": "Cat?logo de seguimiento de amigos",
       "manage_friend_tracker_repos": "Manage Friend Tracker Repositorios",
-      "edit_rule": "Edici√≥n",
+      "edit_rule": "EdiciÛn",
       "file_imports": "Importaciones de archivos",
-      "manage_repos": "Repositorios de gesti√≥n",
+      "manage_repos": "Repositorios de gestiÛn",
       "social": "Social",
-      "manage_scope": "√Åmbito de gesti√≥n",
+      "manage_scope": "¡mbito de gestiÛn",
       "messaging_preview": "Vista previa",
       "scripts": "Scripts",
       "manage_script_repos": "Manage Script Repositorios",
       "view_logger_history": "Historia del Logger",
-      "better_location": "Mejor ubicaci√≥n"
+      "better_location": "Mejor ubicaciÛn"
     },
     "navigation": {
       "customize_bottom_bar_title": "Personalizar barra inferior",
-      "customize_bottom_bar_subtitle": "Escoge qu√© pesta√±as muestran en tu pantalla de inicio",
+      "customize_bottom_bar_subtitle": "Escoge quÈ pestaÒas muestran en tu pantalla de inicio",
       "available_tabs_title": "Tabs disponibles",
       "shown_tabs_title": "Pesta?as mostradas",
       "reset_button": "Restablecer",
@@ -57,61 +57,61 @@
     },
     "sections": {
       "home": {
-        "version_title": "v{versionName}¬∑ por Eterno",
+        "version_title": "v{versionName}∑ por Eterno",
         "update_title": "Actualizaci?n de PurrfectSnap",
-        "update_content": "Versi√≥n{version}est√° disponible!",
+        "update_content": "VersiÛn{version}est· disponible!",
         "update_button": "Descargar",
-        "debug_build_summary_title": "Est√°s ejecutando una construcci√≥n depuradora de PurrfectSnap",
-        "debug_build_summary_content": "Versi√≥n{versionName}(G){versionCode})",
-        "debug_build_summary_date": "Fecha de construcci√≥n:{date}(G){days}hace d√≠as)",
-        "quick_actions_title": "Medidas r√°pidas"
+        "debug_build_summary_title": "Est·s ejecutando una construcciÛn depuradora de PurrfectSnap",
+        "debug_build_summary_content": "VersiÛn{versionName}(G){versionCode})",
+        "debug_build_summary_date": "Fecha de construcciÛn:{date}(G){days}hace dÌas)",
+        "quick_actions_title": "Medidas r·pidas"
       },
       "home_logs": {
         "no_logs_hint": "No hay registros disponibles",
         "clear_logs_button": "Registros claros",
         "export_logs_button": "Exportar registros",
         "saving_logs_toast": "Registros de ahorro, esto puede tomar un tiempo ...",
-        "saved_logs_success_toast": "Logros guardados con √©xito",
+        "saved_logs_success_toast": "Logros guardados con Èxito",
         "saved_logs_failure_toast": "No se pudieron guardar los registros"
       },
       "home_settings": {
         "actions_title": "Acciones",
         "message_logger_title": "Mensaje Logger",
         "debug_title": "Depurar",
-        "success_toast": "¬°Hecho!",
+        "success_toast": "°Hecho!",
         "message_logger_summary": "{messageCount}mensajes\n{storyCount}cuentos",
-        "export_button": "Exportaci√≥n",
+        "export_button": "ExportaciÛn",
         "clear_button": "Despejado",
         "view_logger_history_button": "Ver historia de Logger",
         "ui_settings_title": "Ajustes de IU",
         "haptic_feedback_label": "Respuesta h?ptica",
         "use_system_toasts_label": "Use Toasts del sistema",
         "updates_title": "Actualizaciones",
-        "auto_update_check": "Control de actualizaci√≥n autom√°tica",
+        "auto_update_check": "Control de actualizaciÛn autom·tica",
         "update_check_frequency_daily": "Diario",
         "update_check_frequency_weekly": "Semanal",
         "update_check_frequency_monthly": "Mensual",
         "update_channel_stable": "Estable",
         "update_channel_prerelease": "Prelanzamiento",
         "update_notification_channel_name": "Actualizaciones",
-        "update_notification_channel_description": "Obs√©rvese notificado cuando hay nuevos lanzamientos disponibles",
-        "update_notification_title": "Nueva actualizaci√≥n disponible",
-        "update_notification_text": "Pulse para abrir PurrfectSnap y descargar la √∫ltima compilaci√≥n.",
-        "app_theme_title": "Tema de aplicaci√≥n",
+        "update_notification_channel_description": "ObsÈrvese notificado cuando hay nuevos lanzamientos disponibles",
+        "update_notification_title": "Nueva actualizaciÛn disponible",
+        "update_notification_text": "Pulse para abrir PurrfectSnap y descargar la ˙ltima compilaciÛn.",
+        "app_theme_title": "Tema de aplicaciÛn",
         "theme_icon_description": "Elegir tema abierto",
         "theme_mode_system": "Sistema",
         "theme_mode_light": "Luz",
         "theme_mode_dark": "Oscuro",
         "friend_notes_title": "Notas de amigos",
         "friend_notes_description": "Administrar y respaldar las notas de su amigo",
-        "friend_notes_no_notes_to_backup": "Todav√≠a no hay notas para respaldar",
+        "friend_notes_no_notes_to_backup": "TodavÌa no hay notas para respaldar",
         "friend_notes_backup_success": "Notas de amigos respaldadas",
         "friend_notes_restore_success": "Notas de amigos restauradas",
         "backup_button": "Copia de seguridad",
-        "restore_button": "Restauraci√≥n",
+        "restore_button": "RestauraciÛn",
         "view_button": "Ver",
         "customize_bottom_bar_title": "Personalizar barra inferior",
-        "customize_bottom_bar_subtitle": "Escoge qu√© pesta√±as muestran en tu pantalla de inicio",
+        "customize_bottom_bar_subtitle": "Escoge quÈ pestaÒas muestran en tu pantalla de inicio",
         "available_tabs_title": "Tabs disponibles",
         "reset_button": "Restablecer",
         "done_button": "Hecho",
@@ -125,28 +125,28 @@
         "no_tasks": "Sin tareas",
         "merge_button": "Combinar",
         "failed_to_open_file": "No se pudo abrir el archivo",
-        "merge_files_toast": "Fusi√≥n{count}archivos",
-        "remove_selected_tasks_title": "¬øEst√°s seguro de que quieres eliminar tareas seleccionadas?",
-        "remove_all_tasks_title": "¬øEst√°s seguro de que quieres eliminar todas las tareas?",
-        "delete_files_option": "Tambi√©n eliminar archivos",
+        "merge_files_toast": "FusiÛn{count}archivos",
+        "remove_selected_tasks_title": "øEst·s seguro de que quieres eliminar tareas seleccionadas?",
+        "remove_all_tasks_title": "øEst·s seguro de que quieres eliminar todas las tareas?",
+        "delete_files_option": "TambiÈn eliminar archivos",
         "remove_selected_tasks_confirm": "Retirar{count}tareas?",
-        "remove_all_tasks_confirm": "¬øQuitar todas las tareas?"
+        "remove_all_tasks_confirm": "øQuitar todas las tareas?"
       },
       "features": {
         "disabled": "Discapacitados",
-        "export_option": "Exportaci√≥n",
-        "import_option": "Importaci√≥n",
+        "export_option": "ExportaciÛn",
+        "import_option": "ImportaciÛn",
         "reset_option": "Restablecer",
-        "config_export_success_toast": "Config exportado con √©xito",
-        "config_import_success_toast": "Config importado con √©xito",
+        "config_export_success_toast": "Config exportado con Èxito",
+        "config_import_success_toast": "Config importado con Èxito",
         "config_import_failure_toast": "Failed to import config{error}",
         "config_export_failure_toast": "Failed to export config{error}",
         "saved_config_snackbar": "Config guardado",
-        "older_required": "Esta funci√≥n requiere Snapchat v{version}o mayor para trabajar correctamente",
-        "newer_required": "Esta funci√≥n requiere Snapchat v{version}o m√°s nuevo para trabajar correctamente",
-        "search_button": "B√∫squeda",
-        "clear_history": "Historial de b√∫squeda clara",
-        "subtitle": "Buscar y gestionar caracter√≠sticas"
+        "older_required": "Esta funciÛn requiere Snapchat v{version}o mayor para trabajar correctamente",
+        "newer_required": "Esta funciÛn requiere Snapchat v{version}o m·s nuevo para trabajar correctamente",
+        "search_button": "B˙squeda",
+        "clear_history": "Historial de b˙squeda clara",
+        "subtitle": "Buscar y gestionar caracterÌsticas"
       },
       "bypass_status": {
           "active": "PurrAura Active",
@@ -154,45 +154,45 @@
       },
       "manage_rule_feature": {
         "disable_state_option": "Discapacitados",
-        "disable_state_subtext": "Ning√∫n amigo/grupos ser√° afectado",
+        "disable_state_subtext": "Ning˙n amigo/grupos ser· afectado",
         "whitelist_state_option": "Nadie excepto...",
-        "whitelist_state_subtext": "S√≥lo{count}amigos/grupos se ver√°n afectados por esta regla",
+        "whitelist_state_subtext": "SÛlo{count}amigos/grupos se ver·n afectados por esta regla",
         "whitelist_state_button": "Seleccione amigos/grupos permitidos",
         "blacklist_state_option": "Todos excepto...",
-        "blacklist_state_subtext": "Todos excepto{count}amigos/grupos se ver√°n afectados por esta regla",
+        "blacklist_state_subtext": "Todos excepto{count}amigos/grupos se ver·n afectados por esta regla",
         "blacklist_state_button": "Seleccione amigos/grupos excluidos",
         "clear_list_button": "Lista clara de amigos/grupos",
-        "dialog_clear_confirmation_text": "¬øSeguro que quieres borrar la lista?"
+        "dialog_clear_confirmation_text": "øSeguro que quieres borrar la lista?"
       },
       "social": {
         "friends_tab": "Amigos",
         "groups_tab": "Grupos",
-        "empty_hint": "Tu lista est√° vac√≠a por ahora",
-        "friends_empty_title": "Todav√≠a no hay amigos a√±adidos",
-        "groups_empty_title": "A√∫n no se han sincronizado grupos",
+        "empty_hint": "Tu lista est· vacÌa por ahora",
+        "friends_empty_title": "TodavÌa no hay amigos aÒadidos",
+        "groups_empty_title": "A˙n no se han sincronizado grupos",
         "streaks_expiration_short": "{hours}h",
         "social_tagline": "Gestionar los alcances, las rachas y las previsiones",
-        "social_empty_hint": "Pulse el bot√≥n + para sincronizar amigos o grupos."
+        "social_empty_hint": "Pulse el botÛn + para sincronizar amigos o grupos."
       },
       "manage_scope": {
         "logged_stories_button": "Mostrar historias registradas",
-        "e2ee_title": "Encriptaci√≥n de extremo a extremo",
+        "e2ee_title": "EncriptaciÛn de extremo a extremo",
         "e2ee_subtitle": "Administra tu llave compartida para este amigo.",
-        "export_base64_button": "Base de exportaci√≥n64",
-        "import_base64_button": "Base de importaci√≥n64",
-        "invalid_key_size_32_bytes": "Tama√±o clave inv√°lido. Proporciona una llave de 32 bytes.",
-        "successfully_imported_key": "Clave importada con √©xito.",
+        "export_base64_button": "Base de exportaciÛn64",
+        "import_base64_button": "Base de importaciÛn64",
+        "invalid_key_size_32_bytes": "TamaÒo clave inv·lido. Proporciona una llave de 32 bytes.",
+        "successfully_imported_key": "Clave importada con Èxito.",
         "failed_to_import_key": "No importar clave:{message}",
         "rules_title": "Reglas",
         "participants_text": "{count}participantes",
-        "not_found": "No se encontr√≥",
+        "not_found": "No se encontrÛ",
         "streaks_title": "Rachas",
-        "streaks_length_text": "Duraci√≥n:{length}",
+        "streaks_length_text": "DuraciÛn:{length}",
         "streaks_expiration_text": "Excursiones en{eta}",
         "streaks_expiration_text_expired": "Gastos",
         "reminder_button": "Configurar recordatorio",
-        "delete_scope_confirm_dialog_title": "¬øEst√°s seguro de que quieres eliminar un{scope}?",
-        "notes_placeholder": "Haga clic para a√±adir una nota"
+        "delete_scope_confirm_dialog_title": "øEst·s seguro de que quieres eliminar un{scope}?",
+        "notes_placeholder": "Haga clic para aÒadir una nota"
       },
       "logged_stories": {
         "story_failed_to_load": "No se pudo cargar",
@@ -200,33 +200,33 @@
         "save_from_cache_button": "Guardar de Cache"
       },
       "messaging_preview": {
-        "bridge_connection_failed": "Sin conexi√≥n al puente. Aseg√∫rate de que Snapchat funcione en el fondo",
-        "bridge_connection_error": "Sin conexi√≥n al puente. Aseg√∫rate de que Snapchat funcione en el fondo",
-        "bridge_init_failed": "Failed to initialize messaging bridge. Aseg√∫rate de que Snapchat funcione en el fondo",
+        "bridge_connection_failed": "Sin conexiÛn al puente. Aseg˙rate de que Snapchat funcione en el fondo",
+        "bridge_connection_error": "Sin conexiÛn al puente. Aseg˙rate de que Snapchat funcione en el fondo",
+        "bridge_init_failed": "Failed to initialize messaging bridge. Aseg˙rate de que Snapchat funcione en el fondo",
         "message_fetch_failed": "Failed para buscar mensajes",
         "no_message_hint": "No mensaje",
         "subtitle": "Sostener para seleccionar",
         "actions_title": "Acciones de conversaci?n",
-        "save_selection_option": "Guardar la selecci√≥n",
+        "save_selection_option": "Guardar la selecciÛn",
         "save_all_option": "Guardar todo",
-        "unsave_selection_option": "Selecci√≥n desave",
+        "unsave_selection_option": "SelecciÛn desave",
         "unsave_all_option": "Desconozca a todos",
         "mark_selection_as_seen_option": "Marca seleccionada Snap como se ve",
         "mark_all_as_seen_option": "Marca todos los Snaps como se ve",
-        "delete_selection_option": "Eliminar la selecci√≥n",
+        "delete_selection_option": "Eliminar la selecciÛn",
         "delete_all_option": "Eliminar todo",
         "processed_message_toast": "Procesado{count}mensajes",
         "processed_messages_toast": "Procesado{count}mensajes",
         "processed_messages_text": "Procesado{count}",
-        "close_button_description": "Selecci√≥n clara"
+        "close_button_description": "SelecciÛn clara"
       },
       "logger_history": {
         "list_friend_format": "Amigo{name}",
         "list_group_format": "Grupo{name}",
-        "no_more_messages": "No m√°s mensajes",
+        "no_more_messages": "No m·s mensajes",
         "reverse_order_checkbox": "Orden inversa",
-        "chat_attachment": "Adjunci√≥n{index}",
-        "empty_message": "Mensaje de chat vac√≠o",
+        "chat_attachment": "AdjunciÛn{index}",
+        "empty_message": "Mensaje de chat vacÌo",
         "message_parse_failed": "No se pudo analizar el mensaje",
         "unknown_sender": "Remitente desconocido",
         "download_attachment_failed_toast": "Fallado para descargar el adjunto"
@@ -235,9 +235,9 @@
         "import_file_button": "Importar archivo",
         "file_not_found": "Archivo no encontrado",
         "file_import_failed": "Failed to import file:{error}",
-        "file_imported": "Archivo importado con √©xito",
+        "file_imported": "Archivo importado con Èxito",
         "file_delete_failed": "No se pudo eliminar el archivo",
-        "no_files_hint": "Aqu√≠ puede importar archivos para su uso en Snapchat. Presione el bot√≥n de abajo para importar un archivo."
+        "no_files_hint": "AquÌ puede importar archivos para su uso en Snapchat. Presione el botÛn de abajo para importar un archivo."
       },
       "better_location": {
         "spoofed_coordinates_title": "Lat{latitude}, Lng{longitude}",
@@ -251,13 +251,13 @@
         "saved_coordinates_subtitle": "Administrar sus lugares de la cuchara salvada",
         "teleport_to_friend_button": "Teleport a Amigo",
         "spoof_location_toggle": "Lugar de destino",
-        "suspend_location_updates": "Actualizaciones de ubicaci√≥n suspendidas",
+        "suspend_location_updates": "Actualizaciones de ubicaciÛn suspendidas",
         "saved_coordinates_title": "Coordinaciones salvadas",
         "no_saved_coordinates_hint": "No hay coordenadas guardadas",
         "delete_dialog_title": "Eliminar coordenada guardada",
-        "delete_dialog_message": "¬øEst√°s seguro de querer borrar esta coordenadas guardada?",
+        "delete_dialog_message": "øEst·s seguro de querer borrar esta coordenadas guardada?",
         "teleport_to_friend_title": "Teleport a Amigo",
-        "search_bar": "B√∫squeda",
+        "search_bar": "B˙squeda",
         "no_friends_map": "No amigos en el mapa",
         "no_friends_found": "No hay amigos encontrados"
       }
@@ -265,7 +265,7 @@
     "dialogs": {
       "add_friend": {
         "title": "Agregar Amigo o Grupo",
-        "search_hint": "B√∫squeda",
+        "search_hint": "B˙squeda",
         "fetch_error": "Failed totch data",
         "category_groups": "Grupos",
         "category_friends": "Amigos",
@@ -277,34 +277,34 @@
       },
       "scripting_warning": {
         "title": "Advertencia",
-        "content": "PurrfectSnap incluye una herramienta de scripting, permitiendo la ejecuci√≥n de c√≥digo definido por el usuario en su dispositivo. Utilice extrema precauci√≥n y s√≥lo instalar m√≥dulos de fuentes conocidas y fiables. Los m√≥dulos no autorizados o no verificados pueden plantear riesgos de seguridad a su sistema."
+        "content": "PurrfectSnap incluye una herramienta de scripting, permitiendo la ejecuciÛn de cÛdigo definido por el usuario en su dispositivo. Utilice extrema precauciÛn y sÛlo instalar mÛdulos de fuentes conocidas y fiables. Los mÛdulos no autorizados o no verificados pueden plantear riesgos de seguridad a su sistema."
       },
       "reset_config": {
         "title": "Restablecer configuraci?n",
-        "content": "¬øEst√°s seguro de que quieres restablecer el config?",
-        "success_toast": "Config reset con √©xito"
+        "content": "øEst·s seguro de que quieres restablecer el config?",
+        "success_toast": "Config reset con Èxito"
       },
       "quick_actions_dialog": {
-        "title": "Medidas r√°pidas",
-        "subtitle": "Accede a tus herramientas favoritas m√°s r√°pido"
+        "title": "Medidas r·pidas",
+        "subtitle": "Accede a tus herramientas favoritas m·s r·pido"
       },
       "export_config": {
         "title": "?Exportar datos sensibles?",
-        "content": "¬øQuieres exportar el config con datos sensibles? (Como coordenadas de ubicaci√≥n, etc.)"
+        "content": "øQuieres exportar el config con datos sensibles? (Como coordenadas de ubicaciÛn, etc.)"
       },
       "messaging_action": {
         "title": "Elija tipos de contenido para procesar",
         "select_all_button": "Seleccione todos"
       },
       "file_imports": {
-        "no_files_settings_hint": "No hay archivos encontrados. Aseg√∫rese de que ha importado los archivos necesarios en la secci√≥n Importaciones de archivos",
+        "no_files_settings_hint": "No hay archivos encontrados. Aseg˙rese de que ha importado los archivos necesarios en la secciÛn Importaciones de archivos",
         "settings_select_file_hint": "Seleccione un archivo importado"
       }
     },
     "scripting": {
       "actions_button": "Acciones",
       "actions_title": "Acciones",
-      "catalog_tab": "Cat√°logo",
+      "catalog_tab": "Cat·logo",
       "clear_module_data_button": "Datos claros",
       "clear_module_data_failed": "No se pudieron borrar los datos del m?dulo",
       "delete_module_button": "Suprimir",
@@ -314,31 +314,31 @@
       "downloading_script": "Descargar script...",
       "edit_module_button": "Editar",
       "enter_url_label": "Introduzca URL",
-      "import_button": "Importaci√≥n",
-      "import_from_url_button": "Importaci√≥n de URL",
-      "import_script_from_url_title": "Script de importaci√≥n desde URL",
-      "import_script_warning": "S√≥lo instala scripts de fuentes en las que conf√≠as.",
+      "import_button": "ImportaciÛn",
+      "import_from_url_button": "ImportaciÛn de URL",
+      "import_script_from_url_title": "Script de importaciÛn desde URL",
+      "import_script_warning": "SÛlo instala scripts de fuentes en las que confÌas.",
       "installed_scripts_tab": "Instalado",
       "manage_repos_button": "Administrar repos",
-      "module_data_cleared": "Datos del m√≥dulo despejados!",
-      "module_not_found": "M√≥dulo no encontrado",
-      "no_description": "No hay descripci√≥n",
+      "module_data_cleared": "Datos del mÛdulo despejados!",
+      "module_not_found": "MÛdulo no encontrado",
+      "no_description": "No hay descripciÛn",
       "no_scripts_folder_selected_title": "Seleccione la carpeta de scripts para empezar",
       "no_scripts_found_title": "No hay scripts encontrados",
-      "no_settings_for_module": "Este m√≥dulo no tiene ninguna configuraci√≥n",
+      "no_settings_for_module": "Este mÛdulo no tiene ninguna configuraciÛn",
       "open_module_failed": "No se pudo abrir el archivo del m?dulo",
       "open_scripts_folder_button": "Carpeta de scripts abiertos",
       "script_already_installed": "Script ya instalado",
       "select_folder_button": "Elija la carpeta",
       "select_scripts_folder_toast": "Por favor seleccione una carpeta de scripts primero",
-      "update_module_button": "M√≥dulo de actualizaci√≥n",
+      "update_module_button": "MÛdulo de actualizaciÛn",
       "update_module_failed": "No se pudo actualizar el m?dulo",
-      "use_catalog_to_add_scripts": "Utilice el cat√°logo para agregar scripts",
+      "use_catalog_to_add_scripts": "Utilice el cat·logo para agregar scripts",
       "ok_button_timeout": "OK{timeout}",
       "catalog": {
-        "no_repos_added": "No hay repositorios a√±adidos",
-        "repo_list_info": "Encontrar repositorios aqu√≠:",
-        "link_text": "Lista de dep√≥sitos",
+        "no_repos_added": "No hay repositorios aÒadidos",
+        "repo_list_info": "Encontrar repositorios aquÌ:",
+        "link_text": "Lista de depÛsitos",
         "script_already_installed": "Script ya instalado",
         "script_downloaded": "Script descargado",
         "could_not_create_file": "No se puede crear archivo",
@@ -348,85 +348,85 @@
         "download_button": "Descargar"
       },
       "repos": {
-        "no_repos_added": "No hay repositorios a√±adidos",
-        "add_repo_button": "A√±adir Repositorio",
-        "add_repo_dialog_title": "A√±adir Repositorio",
+        "no_repos_added": "No hay repositorios aÒadidos",
+        "add_repo_button": "AÒadir Repositorio",
+        "add_repo_dialog_title": "AÒadir Repositorio",
         "repo_url_label": "URL del repositorio",
-        "add_button": "A√±adir",
-        "invalid_repo_title": "Repositorio inv√°lido",
+        "add_button": "AÒadir",
+        "invalid_repo_title": "Repositorio inv·lido",
         "invalid_repo_error": "Este repositorio falta datos necesarios.",
-        "repo_added_toast": "Repositorio a√±adido",
+        "repo_added_toast": "Repositorio aÒadido",
         "add_repo_failed_toast": "Failed to add repository:{message}",
         "remove_button": "Retirar",
         "remove_repo_dialog_title": "Remove Repositorio",
-        "remove_repo_dialog_text": "¬øSeguro que quieres quitar este repositorio?"
+        "remove_repo_dialog_text": "øSeguro que quieres quitar este repositorio?"
       }
     },
     "friend_tracker": {
       "rules_tab": "Reglas",
       "logs_tab": "Registros",
-      "catalog_button": "Cat√°logo",
+      "catalog_button": "Cat·logo",
       "add_rule_button": "Agregar regla",
-      "import_button": "Importaci√≥n",
+      "import_button": "ImportaciÛn",
       "filters_title": "Filtros",
-      "search_by_label": "B√∫squeda por",
-      "newest_first_label": "M√°s reciente primero",
+      "search_by_label": "B˙squeda por",
+      "newest_first_label": "M·s reciente primero",
       "since_label": "Desde entonces",
       "until_label": "Hasta",
       "unit_label": "Dependencia",
       "pick_a_date_button": "Elige una cita",
-      "export_button": "Exportaci√≥n",
+      "export_button": "ExportaciÛn",
       "delete_button": "Suprimir",
-      "search_placeholder": "B√∫squeda",
+      "search_placeholder": "B˙squeda",
       "no_logs_found": "No hay registros encontrados",
       "no_rules_found": "No hay reglas encontradas",
       "export_logs_dialog_title": "Exportar registros",
       "export_logs_dialog_confirm_text": "Exportar registros usando filtros actuales?",
-      "export_as_button": "Exportaci√≥n{type}",
+      "export_as_button": "ExportaciÛn{type}",
       "new_rule_title": "Nueva regla",
-      "edit_rule_title": "Edici√≥n",
+      "edit_rule_title": "EdiciÛn",
       "general_section_title": "General",
       "rule_name_label": "Nombre de la regla",
       "default_rule_name": "Nueva regla",
       "author_name_label": "Autor",
-      "scope_section_title": "√Åmbito",
+      "scope_section_title": "¡mbito",
       "scope_all": "Todos los amigos/grupos",
       "scope_whitelist": "Nadie excepto",
       "scope_blacklist": "Todos excepto",
       "events_section_title": "Eventos",
       "events_suffix": "eventos",
-      "no_events_text": "No se han a√±adido a√∫n",
+      "no_events_text": "No se han aÒadido a˙n",
       "add_event_dialog_title": "Agregar evento",
       "event_type_label": "Tipo de evento",
       "triggers_title": "Disparadores",
       "conditions_title": "Condiciones",
-      "condition_only_inside_conversation": "S√≥lo cuando estoy dentro de la conversaci√≥n",
-      "condition_only_outside_conversation": "S√≥lo cuando estoy fuera de la conversaci√≥n",
-      "condition_only_when_app_active": "S√≥lo cuando Snapchat est√° activo",
-      "condition_only_when_app_inactive": "S√≥lo cuando Snapchat est√° inactivo",
-      "condition_no_push_notification_when_app_active": "No hay notificaci√≥n cuando Snapchat est√° activo",
-      "add_button": "A√±adir",
+      "condition_only_inside_conversation": "SÛlo cuando estoy dentro de la conversaciÛn",
+      "condition_only_outside_conversation": "SÛlo cuando estoy fuera de la conversaciÛn",
+      "condition_only_when_app_active": "SÛlo cuando Snapchat est· activo",
+      "condition_only_when_app_inactive": "SÛlo cuando Snapchat est· inactivo",
+      "condition_no_push_notification_when_app_active": "No hay notificaciÛn cuando Snapchat est· activo",
+      "add_button": "AÒadir",
       "cannot_save_rule_dialog_title": "No puedo salvar la regla",
       "cannot_save_rule_dialog_text": "Llene los campos perdidos para salvar esta regla.",
       "duplicate_rule_name_dialog_title": "Duplicar nombre de regla",
       "duplicate_rule_name_dialog_text": "Una regla con este nombre ya existe. Escoge un nuevo nombre.",
-      "discard_changes_dialog_title": "¬øCambios discretos?",
-      "discard_changes_dialog_text": "Tienes cambios sin salvar. ¬øDesvelarlos?",
+      "discard_changes_dialog_title": "øCambios discretos?",
+      "discard_changes_dialog_text": "Tienes cambios sin salvar. øDesvelarlos?",
       "rule_subtitle": "Configure disparadores y alcances para esta regla.",
-      "discard_button": "Divulgaci√≥n",
+      "discard_button": "DivulgaciÛn",
       "enabled_label": "Habilitado",
       "disabled_label": "Discapacitados",
-      "delete_rule_dialog_title": "Art√≠culo",
-      "delete_rule_dialog_text": "¬øSeguro que quieres borrar esta regla?",
-      "no_repos_added": "No hay repositorios a√±adidos",
-      "import_dialog_title": "Normas de importaci√≥n",
-      "bulk_import_button": "Importaci√≥n a granel",
-      "individual_import_button": "Importaci√≥n √∫nica",
-      "invalid_import_type_dialog_title": "Importaci√≥n inv√°lida",
-      "invalid_import_type_dialog_text": "El tipo de archivo seleccionado no coincide con el modo de importaci√≥n.",
-      "export_dialog_title": "Normas de exportaci√≥n",
-      "bulk_export_button": "Exportaci√≥n a granel",
-      "individual_export_button": "Exportaci√≥n √∫nica",
+      "delete_rule_dialog_title": "ArtÌculo",
+      "delete_rule_dialog_text": "øSeguro que quieres borrar esta regla?",
+      "no_repos_added": "No hay repositorios aÒadidos",
+      "import_dialog_title": "Normas de importaciÛn",
+      "bulk_import_button": "ImportaciÛn a granel",
+      "individual_import_button": "ImportaciÛn ˙nica",
+      "invalid_import_type_dialog_title": "ImportaciÛn inv·lida",
+      "invalid_import_type_dialog_text": "El tipo de archivo seleccionado no coincide con el modo de importaciÛn.",
+      "export_dialog_title": "Normas de exportaciÛn",
+      "bulk_export_button": "ExportaciÛn a granel",
+      "individual_export_button": "ExportaciÛn ˙nica",
       "reverse_order_checkbox": "Orden inversa",
       "delete_logs_dialog_title": "Eliminar los registros",
       "delete_logs_dialog_confirm_text": "Eliminar todos los registros que coincidan con los filtros actuales?",
@@ -436,46 +436,46 @@
       "title": "Exportar seguimiento de amigos",
       "save_button": "Guardar",
       "back_button_description": "Vuelve",
-      "expand_button_description": "Ampliar o colapsar la categor√≠a",
-      "exported_toast": "Configuraci√≥n de seguimiento exportada",
+      "expand_button_description": "Ampliar o colapsar la categorÌa",
+      "exported_toast": "ConfiguraciÛn de seguimiento exportada",
       "export_failed_toast": "Failed to export tracker:{message}"
     },
     "friend_tracker_import": {
       "title": "Importar Tracker de Amigo",
-      "confirm_button": "Importaci√≥n",
+      "confirm_button": "ImportaciÛn",
       "back_button_description": "Vuelve",
-      "expand_button_description": "Ampliar o colapsar la categor√≠a",
+      "expand_button_description": "Ampliar o colapsar la categorÌa",
       "imported_toast": "Seguimiento importado",
       "import_failed_toast": "Failed to import tracker:{message}"
     },
     "friend_tracker_catalog": {
       "title": "Cat?logo de seguimiento de amigos",
-      "no_repos_added": "No hay repositorios a√±adidos",
+      "no_repos_added": "No hay repositorios aÒadidos",
       "manage_repos_description": "Administrar repositorios"
     },
     "friend_tracker_repos": {
-      "no_repos_added": "No hay repositorios a√±adidos",
-      "add_repo_button": "A√±adir Repositorio",
-      "add_repo_dialog_title": "A√±adir Repositorio",
+      "no_repos_added": "No hay repositorios aÒadidos",
+      "add_repo_button": "AÒadir Repositorio",
+      "add_repo_dialog_title": "AÒadir Repositorio",
       "repo_url_label": "URL del repositorio",
-      "add_button": "A√±adir",
-      "invalid_repo_title": "Repositorio inv√°lido",
+      "add_button": "AÒadir",
+      "invalid_repo_title": "Repositorio inv·lido",
       "invalid_repo_error": "Este repositorio falta datos necesarios.",
-      "repo_added_toast": "Repositorio a√±adido",
+      "repo_added_toast": "Repositorio aÒadido",
       "add_repo_failed_toast": "Failed to add repository:{message}",
       "remove_button": "Retirar",
       "remove_repo_dialog_title": "Remove Repositorio",
-      "remove_repo_dialog_text": "¬øSeguro que quieres quitar este repositorio?"
+      "remove_repo_dialog_text": "øSeguro que quieres quitar este repositorio?"
     },
     "logger_history": {
-      "select_conversation_placeholder": "Seleccione una conversaci√≥n"
+      "select_conversation_placeholder": "Seleccione una conversaciÛn"
     },
     "features": {
       "config_export": {
         "title": "Exportar resumen de configuraci?n",
         "back_button_description": "Vuelve",
         "save_button": "Guardar",
-        "expand_button_description": "Ampliar o colapsar la categor√≠a",
+        "expand_button_description": "Ampliar o colapsar la categorÌa",
         "enabled": "Habilitado",
         "disabled": "Discapacitados",
         "enable_feature": "Habilitar funci?n"
@@ -483,12 +483,12 @@
       "config_import": {
         "title": "Importar Config Summary",
         "back_button_description": "Vuelve",
-        "confirm_button": "Importaci√≥n",
-        "expand_button_description": "Ampliar o colapsar la categor√≠a",
+        "confirm_button": "ImportaciÛn",
+        "expand_button_description": "Ampliar o colapsar la categorÌa",
         "enabled": "Habilitado",
         "disabled": "Discapacitados",
         "enable_feature": "Habilitar funci?n",
-        "config_imported_toast": "Config importado con √©xito",
+        "config_imported_toast": "Config importado con Èxito",
         "config_import_failure_toast": "Failed to import config{error}"
       }
     }
@@ -504,8 +504,8 @@
     },
     "properties": {
       "auto_download": {
-        "name": "Descarga autom√°tica",
-        "description": "Descarga autom√°tica Snaps al verlos",
+        "name": "Descarga autom·tica",
+        "description": "Descarga autom·tica Snaps al verlos",
         "options": {
           "blacklist": "Exclude de Auto Download",
           "whitelist": "Descarga autom?tica"
@@ -515,31 +515,31 @@
         "name": "Modo de Stealth",
         "description": "Impide que alguien sepa que has abierto sus Snaps/Chats y conversaciones",
         "options": {
-          "blacklist": "Exclusi√≥n del modo Stealth",
+          "blacklist": "ExclusiÛn del modo Stealth",
           "whitelist": "Modo de Stealth"
         }
       },
       "auto_save": {
-        "name": "Ahorro autom√°tico",
+        "name": "Ahorro autom·tico",
         "description": "Guarda mensajes de chat al verlas",
         "options": {
-          "blacklist": "Exclusi√≥n de la Ahorro Autom√°tico",
-          "whitelist": "Ahorro autom√°tico"
+          "blacklist": "ExclusiÛn de la Ahorro Autom·tico",
+          "whitelist": "Ahorro autom·tico"
         }
       },
       "unsaveable_messages": {
         "name": "Mensajes insalvables",
         "description": "Impide que los mensajes sean guardados en chat por otras personas",
         "options": {
-          "blacklist": "Exclusi√≥n de mensajes insalvables",
+          "blacklist": "ExclusiÛn de mensajes insalvables",
           "whitelist": "Mensajes insalvables"
         }
       },
       "auto_open_snaps": {
         "name": "Abrir Snaps autom?ticamente",
-        "description": "Abre autom√°ticamente Snaps cuando los recibe",
+        "description": "Abre autom·ticamente Snaps cuando los recibe",
         "options": {
-          "blacklist": "Exclusi√≥n de los ajustes de apertura autom√°tica",
+          "blacklist": "ExclusiÛn de los ajustes de apertura autom·tica",
           "whitelist": "Abrir Snaps autom?ticamente"
         }
       },
@@ -553,11 +553,11 @@
         "name": "Fijar conversaci?n"
       },
       "exclude_message_logger": {
-        "name": "Exclusi√≥n del registrador de mensajes"
+        "name": "ExclusiÛn del registrador de mensajes"
       },
       "auto_reply": {
         "name": "Auto Responder",
-        "description": "Env√≠a autom√°ticamente respuestas a los mensajes entrantes cuando est√©s fuera",
+        "description": "EnvÌa autom·ticamente respuestas a los mensajes entrantes cuando estÈs fuera",
         "options": {
           "blacklist": "Exclude of Auto Reply",
           "whitelist": "Auto Responder"
@@ -565,7 +565,7 @@
       },
       "auto_delete_sent_messages": {
         "name": "Auto Eliminar Mensajes enviados",
-        "description": "Elimina autom√°ticamente los mensajes enviados despu√©s de un per√≠odo de tiempo especificado",
+        "description": "Elimina autom·ticamente los mensajes enviados despuÈs de un perÌodo de tiempo especificado",
         "options": {
           "blacklist": "Excluir de Auto Eliminar Mensajes enviados",
           "whitelist": "Auto Eliminar Mensajes enviados"
@@ -575,13 +575,13 @@
         "name": "Mensaje Logger",
         "description": "Mantenga una copia de mensajes incluso si se eliminan",
         "options": {
-          "blacklist": "Exclusi√≥n del registrador de mensajes",
+          "blacklist": "ExclusiÛn del registrador de mensajes",
           "whitelist": "Mensaje Logger"
         }
       },
       "auto_read": {
         "name": "Auto Leer",
-        "description": "Marcar autom√°ticamente los snaps y chats como le√≠dos",
+        "description": "Marcar autom·ticamente los snaps y chats como leÌdos",
         "options": {
           "blacklist": "Excluido de Auto Read",
           "whitelist": "Auto Leer"
@@ -589,7 +589,7 @@
       },
       "hide_typing_indicator": {
         "name": "Ocultar indicador de escritura",
-        "description": "Evitar que otros vean cuando est√°s escribiendo",
+        "description": "Evitar que otros vean cuando est·s escribiendo",
         "options": {
           "blacklist": "Excluir de ocultar indicador de escritura",
           "whitelist": "Ocultar indicador de tipo"
@@ -599,28 +599,28 @@
   },
   "actions": {
     "clean_snapchat_cache": {
-      "name": "Cach√© de Snapchat limpia",
-      "description": "Limpia el cach√© de Snapchat"
+      "name": "CachÈ de Snapchat limpia",
+      "description": "Limpia el cachÈ de Snapchat"
     },
     "manage_friend_list": {
-      "name": "Lista de amigos de gesti√≥n",
+      "name": "Lista de amigos de gestiÛn",
       "description": "Importar/exportar su lista de amigos al respaldar"
     },
     "export_chat_messages": {
       "name": "Exportar mensajes de chat",
-      "description": "Exporta mensajes de conversaci√≥n en un archivo JSON/HTML/TXT"
+      "description": "Exporta mensajes de conversaciÛn en un archivo JSON/HTML/TXT"
     },
     "export_memories": {
       "name": "Exportar recuerdos",
       "description": "Exporta recuerdos en un archivo ZIP"
     },
     "bulk_messaging_action": {
-      "name": "Acci√≥n de mensajer√≠a a granel",
+      "name": "AcciÛn de mensajerÌa a granel",
       "description": "Realiza operaciones tales como borrar amigos o eliminar masivamente conversaciones"
     },
     "regen_mappings": {
       "name": "Mappings regenerados",
-      "description": "Cartograf√≠as regeneradas manualmente"
+      "description": "CartografÌas regeneradas manualmente"
     },
     "change_language": {
       "name": "Cambiar idioma",
@@ -642,7 +642,7 @@
   "features": {
     "notices": {
       "unstable": "Observador Inestable",
-      "ban_risk": "Observador Esta caracter√≠stica puede causar prohibiciones",
+      "ban_risk": "Observador Esta caracterÌstica puede causar prohibiciones",
       "internal_behavior": "Observador Esto puede romper el comportamiento interno de Snapchat"
     },
     "options": {
@@ -652,7 +652,7 @@
         "null": "Sistema de coincidencia"
       },
       "auto_reload": {
-        "snapchat_only": "Reload Snapchat s√≥lo",
+        "snapchat_only": "Reload Snapchat sÛlo",
         "all": "Recargar Snapchat + PurrfectSnap",
         "null": "Predeterminado"
       },
@@ -660,30 +660,30 @@
         "null": "Use radio predeterminado"
       },
       "spoof_battery_level": {
-        "null": "Usar nivel de bater√≠a real"
+        "null": "Usar nivel de baterÌa real"
       },
       "friend_feed_menu_buttons": {
-        "auto_download": "Descarga autom√°tica",
-        "auto_save": "üí¨ Auto Guardar Mensajes",
+        "auto_download": "Descarga autom·tica",
+        "auto_save": "?? Auto Guardar Mensajes",
         "unsaveable_messages": "* Mensajes insalvables",
-        "auto_open_snaps": "üì∑ Auto Open Snaps",
+        "auto_open_snaps": "?? Auto Open Snaps",
         "stealth": "Modo de Stealth",
-        "auto_reply": "üì®",
+        "auto_reply": "??",
         "auto_delete_sent_messages": "Auto Eliminar Mensajes enviados",
         "mark_snaps_as_seen": ". Mark Snaps como se ve",
         "mark_stories_as_seen_locally": ". Mark Stories como se ve localmente",
-        "conversation_info": "‚ãÖ Conversation Info",
+        "conversation_info": "∑ Conversation Info",
         "e2e_encryption": "?? Usar cifrado E2E",
-        "message_logger": "üìù Mensaje Logger",
+        "message_logger": "?? Mensaje Logger",
         "auto_read": "Recibir auto Leer",
-        "hide_typing_indicator": "üôà Ocultar indicador de clasificaci√≥n"
+        "hide_typing_indicator": "?? Ocultar indicador de clasificaciÛn"
       },
       "schedule_scheduled_for": "Puestos previstos{name}dentro{time}",
       "schedule_sending_in": "Enviando{time}",
       "schedule_sent_to": "Enviado{name}",
       "schedule_sent": "Cierre programado enviado",
       "schedule_failed_to": "Failed to send to{name}",
-      "schedule_failed": "Fall√≥ el snap programado",
+      "schedule_failed": "FallÛ el snap programado",
       "schedule_cancelled_for": "Cancelado{name}",
       "device_model": {
         "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
@@ -699,41 +699,41 @@
       "path_format": {
         "create_author_folder": "Crear carpeta para cada autor",
         "create_source_folder": "Crear carpeta para cada tipo de fuente de medios",
-        "append_hash": "A√±adir un hash √∫nico al nombre del archivo",
-        "append_source": "A√±adir la fuente de medios al nombre del archivo",
-        "append_username": "A√±ada el nombre de usuario al nombre de archivo",
-        "append_date_time": "A√±adir la fecha y hora al nombre del archivo",
-        "append_type": "A√±adir el tipo multimedia al nombre del archivo"
+        "append_hash": "AÒadir un hash ˙nico al nombre del archivo",
+        "append_source": "AÒadir la fuente de medios al nombre del archivo",
+        "append_username": "AÒada el nombre de usuario al nombre de archivo",
+        "append_date_time": "AÒadir la fecha y hora al nombre del archivo",
+        "append_type": "AÒadir el tipo multimedia al nombre del archivo"
       },
       "auto_download_sources": {
         "friend_snaps": "El amigo Snaps",
         "friend_stories": "Historias de amigos",
-        "public_stories": "Historias p√∫blicas",
+        "public_stories": "Historias p˙blicas",
         "spotlight": "Spotlight"
       },
       "logging": {
         "started": "Comienzo",
-        "success": "√âxito",
+        "success": "…xito",
         "progress": "Progresos",
         "failure": "Fallo"
       },
       "notifications": {
         "chat_screenshot": "Captura",
-        "chat_screen_record": "Grabaci√≥n de pantalla",
-        "snap_replay": "Repetici√≥n",
-        "camera_roll_save": "Rollo de c√°mara",
+        "chat_screen_record": "GrabaciÛn de pantalla",
+        "snap_replay": "RepeticiÛn",
+        "camera_roll_save": "Rollo de c·mara",
         "chat": "Chat",
         "chat_reply": "Chat",
         "snap": "Snap",
-        "typing": "Tipograf√≠a",
+        "typing": "TipografÌa",
         "stories": "Historias",
         "speaking": "Hablando",
         "chat_reaction": "Reacci?n en DM",
-        "group_chat_reaction": "Reacci√≥n del Grupo",
+        "group_chat_reaction": "ReacciÛn del Grupo",
         "initiate_audio": "Llamada de audio entrante",
         "abandon_audio": "Llamada de audio perdida",
-        "initiate_video": "Llamada de v√≠deo entrante",
-        "abandon_video": "Llamada de v√≠deo perdida",
+        "initiate_video": "Llamada de vÌdeo entrante",
+        "abandon_video": "Llamada de vÌdeo perdida",
         "map_live_location": "Mapa Live Location"
       },
       "auto_read": {
@@ -781,9 +781,9 @@
       },
       "add_friend_source_spoof": {
         "added_by_username": "Por nombre de usuario",
-        "added_by_mention": "Por Menci√≥n",
+        "added_by_mention": "Por MenciÛn",
         "added_by_group_chat": "Por chat de grupo",
-        "added_by_qr_code": "Por c√≥digo QR",
+        "added_by_qr_code": "Por cÛdigo QR",
         "added_by_community": "Por comunidad",
         "added_by_quick_add": "Por Quick Add (alto riesgo de baneo)",
         "added_by_spotlight": "Por Spotlight",
@@ -808,12 +808,23 @@
         "null": "Uso predeterminado del dispositivo"
       },
       "custom_resolution": {
-        "null": "Utilice la resoluci√≥n autom√°tica"
+        "null": "Utilice la resoluciÛn autom·tica"
       },
       "startup_default_camera": {
-        "front": "C√°mara frontal",
-        "back": "C√°mara trasera",
-        "null": "Recuerda el √∫ltimo usado"
+        "front": "C·mara frontal",
+        "back": "C·mara trasera",
+        "null": "Recuerda el ˙ltimo usado"
+      },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
       },
       "front_custom_frame_rate": {
         "null": "FPS por defecto de dispositivo"
@@ -825,16 +836,16 @@
         "null": "Uso predeterminado de Snapchat"
       },
       "custom_path_format": {
-        "null": "Use patr√≥n predeterminado"
+        "null": "Use patrÛn predeterminado"
       },
       "force_image_format": {
         "null": "Uso predeterminado de Snapchat"
       },
       "custom_video_codec": {
-        "null": "C√≥digo predeterminadoc"
+        "null": "CÛdigo predeterminadoc"
       },
       "custom_audio_codec": {
-        "null": "C√≥digo predeterminadoc"
+        "null": "CÛdigo predeterminadoc"
       },
       "preset": {
         "null": "Preset predeterminado"
@@ -854,19 +865,19 @@
         "hide_caption_text": "Ocultar texto de captura",
         "hide_snap_filters": "Ocultar filtros de ajuste",
         "hide_extras": "Ocultar extras (por ejemplo, menciones)",
-        "remove_audio_note_duration": "Eliminar la nota de audio Duraci√≥n",
-        "remove_audio_note_transcript_capability": "Remove Audio Nota Transcripci√≥n Capacidad"
+        "remove_audio_note_duration": "Eliminar la nota de audio DuraciÛn",
+        "remove_audio_note_transcript_capability": "Remove Audio Nota TranscripciÛn Capacidad"
       },
       "hide_ui_components": {
         "hide_profile_call_buttons": "Quitar los botones de llamada de perfil",
         "hide_chat_call_buttons": "Quitar los botones de llamadas de chat",
         "hide_live_location_share_button": "Remove Live Location Compartir Button",
         "hide_stickers_button": "Quitar palos Button",
-        "hide_voice_record_button": "Quitar el bot√≥n de grabaci√≥n de voz",
+        "hide_voice_record_button": "Quitar el botÛn de grabaciÛn de voz",
         "hide_unread_chat_hint": "Eliminar el pan Chat Hint",
         "hide_post_to_story_buttons": "Eliminar Post a Story botones antes de enviar un Snap",
         "hide_billboard_prompt": "Eliminar aviso de cartel en el feed de amigos",
-        "hide_snapchat_plus_gift_reminders": "Quitar Snapchat M√°s recordatorios de regalo en conversaciones",
+        "hide_snapchat_plus_gift_reminders": "Quitar Snapchat M·s recordatorios de regalo en conversaciones",
         "hide_map_reactions": "Eliminar las reacciones de mapa"
       },
       "hide_story_suggestions": {
@@ -876,33 +887,33 @@
       "home_tab": {
         "map": "Mapa",
         "chat": "Chat",
-        "camera": "C√°mara",
+        "camera": "C·mara",
         "discover": "Descubre",
         "spotlight": "Spotlight",
         "null": "Predeterminado de Snapchat"
       },
       "spotlight_comments_username_icon": {
         "user": "Nombre de usuario Icon",
-        "üë§": "Nombre de usuario Icon",
-        "[üë§]": "Nombre de usuario Icon",
+        "??": "Nombre de usuario Icon",
+        "[??]": "Nombre de usuario Icon",
         "default": "Nombre de usuario Icon",
         "no_icon": "No hay icono"
       },
       "custom_image_upload_format": {
-        "null": "Autom√°tico"
+        "null": "Autom·tico"
       },
       "update_check_frequency": {
         "null": "Autom?tico"
       },
       "snapchat_plus": {
-        "not_subscribed": "No est√° suscrito",
-        "basic": "B√°sica",
+        "not_subscribed": "No est· suscrito",
+        "basic": "B·sica",
         "ad_free": "Sin anuncios",
         "null": "Predeterminado"
       },
       "bypass_video_length_restriction": {
         "single": "Medios individuales",
-        "split": "Medios de comunicaci√≥n",
+        "split": "Medios de comunicaciÛn",
         "null": "Predeterminado"
       },
       "old_bitmoji_selfie": {
@@ -920,8 +931,8 @@
         "clear_conversation": "Eliminar conversaci?n del feed de amigos"
       },
       "edit_text_override": {
-        "multi_line_chat_input": "Multil√≠nea Chat Input",
-        "bypass_text_input_limit": "Presi√≥n de entrada de texto"
+        "multi_line_chat_input": "MultilÌnea Chat Input",
+        "bypass_text_input_limit": "PresiÛn de entrada de texto"
       },
       "auto_purge": {
         "never": "Nunca",
@@ -929,8 +940,8 @@
         "3_hours": "3 horas",
         "6_hours": "6 horas",
         "12_hours": "12 horas",
-        "1_day": "1 d√≠a",
-        "3_days": "3 d√≠as",
+        "1_day": "1 dÌa",
+        "3_days": "3 dÌas",
         "1_week": "1 semana",
         "2_weeks": "2 semanas",
         "1_month": "1 Mes",
@@ -949,35 +960,35 @@
         "discover": "Descubre"
       },
       "disable_cameras": {
-        "front": "C√°mara frontal",
-        "back": "C√°mara trasera"
+        "front": "C·mara frontal",
+        "back": "C·mara trasera"
       },
       "disable_permission_requests": {
         "notifications": "Notificaciones",
-        "read_media_images": "Read Media Im√°genes",
+        "read_media_images": "Read Media Im·genes",
         "read_media_video": "Leer video multimedia",
-        "camera": "C√°mara",
+        "camera": "C·mara",
         "microphone": "Microfono",
-        "location": "Ubicaci√≥n",
+        "location": "UbicaciÛn",
         "read_contacts": "Lea Contactos",
         "nearby_devices": "Dispositivos cercanos",
-        "phone_calls": "Llamadas telef√≥nicas"
+        "phone_calls": "Llamadas telefÛnicas"
       },
       "message_indicators": {
-        "encryption_indicator": "A√±ade un icono üîí junto a los mensajes que han sido enviados s√≥lo a usted",
-        "platform_indicator": "A√±ade el icono de plataforma desde el que se envi√≥ un medio (por ejemplo Android, iOS, Web)",
-        "location_indicator": "A√±ade un icono üìç a los snaps cuando se han enviado con ubicaci√≥n habilitada",
+        "encryption_indicator": "AÒade un icono ?? junto a los mensajes que han sido enviados sÛlo a usted",
+        "platform_indicator": "AÒade el icono de plataforma desde el que se enviÛ un medio (por ejemplo Android, iOS, Web)",
+        "location_indicator": "AÒade un icono ?? a los snaps cuando se han enviado con ubicaciÛn habilitada",
         "ovf_editor_indicator": "Indica si se ha enviado un snap usando OVF Editor",
-        "director_mode_indicator": "A√±ade un icono de ‚úècourse a snaps cuando se han enviado con el modo Director, que se puede utilizar para enviar im√°genes de galer√≠a como snaps"
+        "director_mode_indicator": "AÒade un icono de ?course a snaps cuando se han enviado con el modo Director, que se puede utilizar para enviar im·genes de galerÌa como snaps"
       },
       "auto_mark_as_read": {
-        "conversation_read": "Marcar la conversaci√≥n como le√≠do al enviar un mensaje",
+        "conversation_read": "Marcar la conversaciÛn como leÌdo al enviar un mensaje",
         "snap_reply": "Marcos se rompe como se lee cuando responde a ellos",
         "save_snap_in_chat": "Marcos se ajusta como se lee al guardarlos en chat mientras que en modo Stealth"
       },
       "friend_mutation_notifier": {
         "remove_friend": "Notificar cuando alguien te quita como amigo",
-        "birthday_changes": "Avisad cuando alguien cambie su cumplea√±os",
+        "birthday_changes": "Avisad cuando alguien cambie su cumpleaÒos",
         "bitmoji_selfie_changes": "Avisad cuando alguien cambie su selfie Bitmoji",
         "bitmoji_avatar_changes": "Avisad cuando alguien cambie su avatar Bitmoji",
         "bitmoji_background_changes": "Avisad cuando alguien cambie su fondo de Bitmoji",
@@ -988,7 +999,7 @@
         "copy_text": "Copiar texto para el tablero",
         "delete_message": "Borrar el mensaje",
         "mark_as_read": "Marcar como Leer",
-        "custom_emoji_reaction": "Reacci√≥n personalizada de Emoji",
+        "custom_emoji_reaction": "ReacciÛn personalizada de Emoji",
         "null": "Predeterminado"
       },
       "message_types": {
@@ -999,16 +1010,16 @@
         "STICKER": "Pegatina"
       },
       "double_tap_chat_action_custom_emoji": {
-        "Custom emoji reaction": "Reacci√≥n emoji personalizada"
+        "Custom emoji reaction": "ReacciÛn emoji personalizada"
       },
       "ai_model": {
         "gemini-2.5-flash": "Gemini 2.5 Flash"
       },
       "ai_api_key": {
-        "": "No est√° listo"
+        "": "No est· listo"
       },
       "ai_system_prompt": {
-        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Usted es un asistente √∫til y amable respondiendo a los mensajes en Snapchat. Mantenga las respuestas naturales, casuales y conversales. Evite ser excesivamente formal o rob√≥tica. Responde como si fueras una persona real teniendo una conversaci√≥n normal."
+        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Usted es un asistente ˙til y amable respondiendo a los mensajes en Snapchat. Mantenga las respuestas naturales, casuales y conversales. Evite ser excesivamente formal o robÛtica. Responde como si fueras una persona real teniendo una conversaciÛn normal."
       },
       "ai_provider": {
         "gemini": "Gemini",
@@ -1017,14 +1028,14 @@
         "openrouter": "OpenRouter"
       },
       "ai_personality_traits": {
-        "friendly, casual, helpful, empathetic": "amigable, casual, servicial, emp√°tica"
+        "friendly, casual, helpful, empathetic": "amigable, casual, servicial, emp·tica"
       },
       "ai_response_style": {
         "casual": "Informal",
         "formal": "Formal",
         "friendly": "Amistad",
         "humorous": "Humor",
-        "empathetic": "Pat√©tico",
+        "empathetic": "PatÈtico",
         "toxic": "Atrevido",
         "busy": "Ocupado"
       },
@@ -1033,23 +1044,23 @@
       },
       "ai_response_language": {
         "auto": "Autom?tico",
-        "en": "Ingl√©s",
-        "es": "Espa√±ol",
-        "fr": "Franc√©s",
-        "de": "Alem√°n",
+        "en": "InglÈs",
+        "es": "EspaÒol",
+        "fr": "FrancÈs",
+        "de": "Alem·n",
         "it": "Italiano",
-        "pt": "Portugu√©s",
+        "pt": "PortuguÈs",
         "ru": "Ruso",
-        "ja": "Japon√©s",
+        "ja": "JaponÈs",
         "ko": "Corea",
         "zh": "Chino",
-        "ar": "√Årabe",
+        "ar": "¡rabe",
         "hi": "Hindi",
         "tr": "Turco",
         "pl": "Polaco",
         "nl": "Neerland?s",
         "sv": "Suecia",
-        "da": "Dan√©s",
+        "da": "DanÈs",
         "no": "Noruega",
         "fi": "Finland"
       },
@@ -1057,34 +1068,34 @@
         "Hey": "Hey"
       },
       "half_swipe_messages": {
-        "[\"I noticed you half-swiped! I'll respond soon.\"]": "¬°Te he notado medio loco! Responder√© pronto."
+        "[\"I noticed you half-swiped! I'll respond soon.\"]": "°Te he notado medio loco! ResponderÈ pronto."
       },
       "tiny_snap_messages": {
-        "Thanks for the tiny snap!": "¬°Gracias por el peque√±o snap!"
+        "Thanks for the tiny snap!": "°Gracias por el pequeÒo snap!"
       },
       "voice_note_messages": {
-        "Thanks for the voice note!": "¬°Gracias por la nota de voz!"
+        "Thanks for the voice note!": "°Gracias por la nota de voz!"
       },
       "chat_messages": {
-        "Hello! How are you?": "¬°Hola! ¬øC√≥mo est√°s?"
+        "Hello! How are you?": "°Hola! øCÛmo est·s?"
       },
       "story_reply_messages": {
         "Thanks for the story reply!": "Gracias por la respuesta de la historia!"
       },
       "external_media_messages": {
-        "Nice media!": "¬°Buen medio!"
+        "Nice media!": "°Buen medio!"
       },
       "sticker_messages": {
-        "Cool sticker!": "¬°Una buena pegatina!"
+        "Cool sticker!": "°Una buena pegatina!"
       },
       "snap_messages": {
-        "Thanks for the snap!": "¬°Gracias por el snap!"
+        "Thanks for the snap!": "°Gracias por el snap!"
       },
       "story_share_messages": {
-        "Thanks for sharing!": "¬°Gracias por compartir!"
+        "Thanks for sharing!": "°Gracias por compartir!"
       },
       "map_reaction_messages": {
-        "Thanks for the map reaction!": "¬°Gracias por la reacci√≥n del mapa!"
+        "Thanks for the map reaction!": "°Gracias por la reacciÛn del mapa!"
       },
       "auto_reply_content_types": {
         "chat_messages": "Chat Mensajes",
@@ -1099,17 +1110,17 @@
         "half_swipes": "Medios golpes"
       },
       "supported_languages": {
-        "en": "Ingl√©s",
-        "es": "Espa√±ol",
-        "fr": "Franc√©s",
-        "de": "Alem√°n",
+        "en": "InglÈs",
+        "es": "EspaÒol",
+        "fr": "FrancÈs",
+        "de": "Alem·n",
         "it": "Italiano",
-        "pt": "Portugu√©s",
+        "pt": "PortuguÈs",
         "ru": "Ruso",
-        "ja": "Japon√©s",
+        "ja": "JaponÈs",
         "ko": "Corea",
         "zh": "Chino",
-        "ar": "√Årabe",
+        "ar": "¡rabe",
         "hi": "Hindi",
         "tr": "Turco"
       },
@@ -1119,10 +1130,10 @@
         "inline": "En l?nea"
       },
       "source_language": {
-        "auto": "Detectar autom√°ticamente"
+        "auto": "Detectar autom·ticamente"
       },
       "target_language": {
-        "en": "Ingl√©s"
+        "en": "InglÈs"
       }
     },
     "properties": {
@@ -1131,79 +1142,79 @@
         "description": "Ajustes de Snapchat Global Tweak",
         "properties": {
           "better_location": {
-            "name": "Mejor ubicaci√≥n",
-            "description": "Mejora la ubicaci√≥n de Snapchat",
+            "name": "Mejor ubicaciÛn",
+            "description": "Mejora la ubicaciÛn de Snapchat",
             "properties": {
               "spoof_location": {
                 "name": "Lugar de destino",
-                "description": "Cucharas de su ubicaci√≥n a uno especificado"
+                "description": "Cucharas de su ubicaciÛn a uno especificado"
               },
               "coordinates": {
                 "name": "Coordinaciones",
-                "description": "Establezca las coordenadas de la ubicaci√≥n asfaltada"
+                "description": "Establezca las coordenadas de la ubicaciÛn asfaltada"
               },
               "walk_radius": {
                 "name": "Radio de caminata",
                 "description": "Camina aleatoriamente dentro de este radio (ft)"
               },
               "always_update_location": {
-                "name": "Ubicaci√≥n de actualizaci√≥n siempre",
-                "description": "Fuerza Snapchat para actualizar la ubicaci√≥n incluso si no se reciben datos GPS"
+                "name": "UbicaciÛn de actualizaciÛn siempre",
+                "description": "Fuerza Snapchat para actualizar la ubicaciÛn incluso si no se reciben datos GPS"
               },
               "suspend_location_updates": {
-                "name": "Actualizaciones de ubicaci√≥n suspendidas",
-                "description": "Impide que su ubicaci√≥n se actualice"
+                "name": "Actualizaciones de ubicaciÛn suspendidas",
+                "description": "Impide que su ubicaciÛn se actualice"
               },
               "spoof_battery_level": {
-                "name": "Nivel de la bater√≠a",
-                "description": "Cubre el nivel de bater√≠a de su dispositivo en el mapa\nEl valor debe ser entre 0 y 100"
+                "name": "Nivel de la baterÌa",
+                "description": "Cubre el nivel de baterÌa de su dispositivo en el mapa\nEl valor debe ser entre 0 y 100"
               },
               "spoof_headphones": {
                 "name": "Auriculares falsos",
-                "description": "Spoofs el estado de escuchar m√∫sica en el mapa"
+                "description": "Spoofs el estado de escuchar m˙sica en el mapa"
               },
               "show_battery_level": {
-                "name": "Mostrar nivel de bater√≠a",
-                "description": "Muestra el nivel de bater√≠a de tus amigos en el mapa"
+                "name": "Mostrar nivel de baterÌa",
+                "description": "Muestra el nivel de baterÌa de tus amigos en el mapa"
               }
             }
           },
           "snapchat_plus": {
             "name": "Snapchat Plus",
-            "description": "Permite Snapchat M√°s caracter√≠sticas\nAlgunas caracter√≠sticas lado del servidor pueden no funcionar"
+            "description": "Permite Snapchat M·s caracterÌsticas\nAlgunas caracterÌsticas lado del servidor pueden no funcionar"
           },
           "media_upload_quality": {
             "name": "Media Upload Calidad",
             "description": "Supera la calidad de la carga de los medios",
             "properties": {
               "force_video_upload_source_quality": {
-                "name": "Fuerza de descarga de v√≠deo Fuente Calidad",
-                "description": "Fuerzas Snapchat para utilizar la calidad de fuente al subir v√≠deos\nTenga en cuenta que esto no puede eliminar metadatos de los medios de comunicaci√≥n"
+                "name": "Fuerza de descarga de vÌdeo Fuente Calidad",
+                "description": "Fuerzas Snapchat para utilizar la calidad de fuente al subir vÌdeos\nTenga en cuenta que esto no puede eliminar metadatos de los medios de comunicaciÛn"
               },
               "disable_image_compression": {
-                "name": "Compresi√≥n de imagen deshabilitada",
-                "description": "Desactiva la compresi√≥n de la imagen al subir los medios"
+                "name": "CompresiÛn de imagen deshabilitada",
+                "description": "Desactiva la compresiÛn de la imagen al subir los medios"
               },
               "custom_image_upload_format": {
                 "name": "Formato de carga de imagen personalizada",
-                "description": "Establece un formato personalizado de carga de imagen\nSeleccione un formato sin p√©rdidas (como PNG) para la mejor calidad"
+                "description": "Establece un formato personalizado de carga de imagen\nSeleccione un formato sin pÈrdidas (como PNG) para la mejor calidad"
               }
             }
           },
           "disable_confirmation_dialogs": {
-            "name": "Dialogos de confirmaci√≥n deshabilitados",
-            "description": "Confirma autom√°ticamente las acciones seleccionadas"
+            "name": "Dialogos de confirmaciÛn deshabilitados",
+            "description": "Confirma autom·ticamente las acciones seleccionadas"
           },
           "auto_updater": {
-            "name": "Actualizaci√≥n autom√°tica",
-            "description": "Comprobaciones autom√°ticas para nuevas actualizaciones"
+            "name": "ActualizaciÛn autom·tica",
+            "description": "Comprobaciones autom·ticas para nuevas actualizaciones"
           },
           "update_settings": {
-            "name": "Configuraci√≥n de actualizaci√≥n",
-            "description": "Controla c√≥mo PurrfectSnap verifica las actualizaciones",
+            "name": "ConfiguraciÛn de actualizaciÛn",
+            "description": "Controla cÛmo PurrfectSnap verifica las actualizaciones",
             "properties": {
               "auto_update_check": {
-                "name": "Control de actualizaci√≥n autom√°tica"
+                "name": "Control de actualizaciÛn autom·tica"
               },
               "update_check_frequency": {
                 "name": "Actualizar Frecuencia"
@@ -1220,11 +1231,11 @@
           },
           "disable_metrics": {
             "name": "Metrices deshabilitables",
-            "description": "Bloques que env√≠an datos anal√≠ticos espec√≠ficos a Snapchat"
+            "description": "Bloques que envÌan datos analÌticos especÌficos a Snapchat"
           },
           "disable_story_sections": {
             "name": "Secciones de historia deshabilitadas",
-            "description": "Elimina secciones de la p√°gina Historias\nPuede requerir un refresco para trabajar correctamente"
+            "description": "Elimina secciones de la p·gina Historias\nPuede requerir un refresco para trabajar correctamente"
           },
           "block_ads": {
             "name": "Anuncios bloque",
@@ -1235,12 +1246,12 @@
             "description": "Abre enlaces en aplicaciones compatibles en lugar de en el navegador web"
           },
           "disable_permission_requests": {
-            "name": "Solicitudes de autorizaci√≥n",
-            "description": "Impide que Snapchat pida permisos espec√≠ficos"
+            "name": "Solicitudes de autorizaciÛn",
+            "description": "Impide que Snapchat pida permisos especÌficos"
           },
           "disable_memories_snap_feed": {
             "name": "Memorias desactivables",
-            "description": "Impide que Snapchat muestre recuerdos recientes cuando se mueve en c√°mara"
+            "description": "Impide que Snapchat muestre recuerdos recientes cuando se mueve en c·mara"
           },
           "spotlight_comments_username": {
             "name": "Spotlight Comentarios Nombre de usuario",
@@ -1248,23 +1259,23 @@
           },
           "spotlight_comments_username_icon": {
             "name": "Comentarios Nombre de usuario Icon",
-            "description": "Elija qu√© icono se muestra junto a los nombres de usuario en comentarios Spotlight"
+            "description": "Elija quÈ icono se muestra junto a los nombres de usuario en comentarios Spotlight"
           },
           "bypass_video_length_restriction": {
-            "name": "Restrictions de la longitud del v√≠deo",
-            "description": "Single: env√≠a un solo v√≠deo\nDividir: dividir v√≠deos despu√©s de la edici√≥n"
+            "name": "Restrictions de la longitud del vÌdeo",
+            "description": "Single: envÌa un solo vÌdeo\nDividir: dividir vÌdeos despuÈs de la ediciÛn"
           },
           "default_video_playback_rate": {
-            "name": "Tasa de reproducci√≥n de v√≠deo por defecto",
-            "description": "Establece la velocidad predeterminada para la reproducci√≥n de videos\nEl valor debe ser entre 0.1 y 4.0"
+            "name": "Tasa de reproducciÛn de vÌdeo por defecto",
+            "description": "Establece la velocidad predeterminada para la reproducciÛn de videos\nEl valor debe ser entre 0.1 y 4.0"
           },
           "video_playback_rate_slider": {
             "name": "Video Playback Nota Slider",
-            "description": "A√±ade un slider en el men√∫ contextual de la √≥pera para cambiar la tasa de reproducci√≥n de v√≠deo\nNota: Los cambios s√≥lo se aplican a los v√≠deos posteriores"
+            "description": "AÒade un slider en el men˙ contextual de la Ûpera para cambiar la tasa de reproducciÛn de vÌdeo\nNota: Los cambios sÛlo se aplican a los vÌdeos posteriores"
           },
           "disable_google_play_dialogs": {
             "name": "Desactivar Google Play Services Dialogs",
-            "description": "Evitar que se muestren los di√°logos de disponibilidad de Google Play Services"
+            "description": "Evitar que se muestren los di·logos de disponibilidad de Google Play Services"
           },
           "default_volume_controls": {
             "name": "Controles de volumen por defecto",
@@ -1272,15 +1283,15 @@
           },
           "disable_telecom_framework": {
             "name": "Desactivar framework de telecomunicaciones",
-            "description": "Impide Snapchat utilizar el marco Android Telecom\nEsto le permite escuchar m√∫sica mientras se llama"
+            "description": "Impide Snapchat utilizar el marco Android Telecom\nEsto le permite escuchar m˙sica mientras se llama"
           },
           "hide_active_music": {
-            "name": "Ocultar m√∫sica activa",
-            "description": "Impide que Snapchat sepa que est√°s escuchando m√∫sica\nEsto le permitir√° tomar snaps usando botones de volumen de control mientras escucha m√∫sica"
+            "name": "Ocultar m˙sica activa",
+            "description": "Impide que Snapchat sepa que est·s escuchando m˙sica\nEsto le permitir· tomar snaps usando botones de volumen de control mientras escucha m˙sica"
           },
           "disable_snap_splitting": {
-            "name": "Desactivar el ajuste de separaci√≥n",
-            "description": "Evita que Snaps se divida en m√∫ltiples partes\nFotos que env√≠as se convertir√° en v√≠deos"
+            "name": "Desactivar el ajuste de separaciÛn",
+            "description": "Evita que Snaps se divida en m˙ltiples partes\nFotos que envÌas se convertir· en vÌdeos"
           }
         }
       },
@@ -1294,11 +1305,11 @@
           },
           "auto_download_sources": {
             "name": "Fuentes de descarga autom?tica",
-            "description": "Seleccione las fuentes para descargar autom√°ticamente desde"
+            "description": "Seleccione las fuentes para descargar autom·ticamente desde"
           },
           "prevent_self_auto_download": {
-            "name": "Evitar la descarga autom√°tica",
-            "description": "Evita que tus propios Snaps sean descargados autom√°ticamente"
+            "name": "Evitar la descarga autom·tica",
+            "description": "Evita que tus propios Snaps sean descargados autom·ticamente"
           },
           "path_format": {
             "name": "Formato de ruta",
@@ -1314,7 +1325,7 @@
           },
           "force_image_format": {
             "name": "Formato de imagen de la fuerza",
-            "description": "Im√°genes de las fuerzas que se guardar√°n en un formato especificado"
+            "description": "Im·genes de las fuerzas que se guardar·n en un formato especificado"
           },
           "force_voice_note_format": {
             "name": "Formato de nota de voz de fuerza",
@@ -1322,19 +1333,42 @@
           },
           "auto_download_voice_notes": {
             "name": "Auto Download Notas de voz",
-            "description": "Descarga autom√°ticamente las notas de voz al reproducirlas"
+            "description": "Descarga autom·ticamente las notas de voz al reproducirlas"
+          },
+          \"call_recorder\": {
+              \"name\": \"Call Recorder\",
+              \"description\": \"Manage call recording settings\",
+              \"properties\": {
+                  \"call_recorder\": {
+                      \"name\": \"Mode\",
+                      \"description\": \"Select what should be recorded\"
+                  },
+                  \"auto_start_recording\": {
+                      \"name\": \"Auto Start Recording\",
+                      \"description\": \"Automatically start recording when a call starts\"
+                  },
+                  \"call_recorder_ui\": {
+                      \"name\": \"Call Recorder UI\",
+                      \"description\": \"Show the recording overlay UI during calls\"
+                  },
+                  \"call_recorder_ui_design\": {
+                      \"name\": \"UI Design\",
+                      \"description\": \"Select the design for the call recorder overlay\"
+                  },
+                  \"call_recording_saved_toast\": \"Saved\"
+              }
           },
           "download_profile_pictures": {
-            "name": "Descargar Perfil Im√°genes",
-            "description": "Permite descargar Fotos de Perfil de la p√°gina de perfil"
+            "name": "Descargar Perfil Im·genes",
+            "description": "Permite descargar Fotos de Perfil de la p·gina de perfil"
           },
           "opera_download_button": {
             "name": "Opera Descargar Button",
-            "description": "A√±ade un bot√≥n de descarga en la esquina superior derecha al ver un Snap.\nLarga pulsaci√≥n en botones fuerza descargar"
+            "description": "AÒade un botÛn de descarga en la esquina superior derecha al ver un Snap.\nLarga pulsaciÛn en botones fuerza descargar"
           },
           "download_context_menu": {
             "name": "Descargar Context Menu",
-            "description": "Permite descargar/previsualizar mensajes desde una conversaci√≥n o una historia usando el men√∫ contextual.\nLarga pulsaci√≥n en botones fuerza descargar"
+            "description": "Permite descargar/previsualizar mensajes desde una conversaciÛn o una historia usando el men˙ contextual.\nLarga pulsaciÛn en botones fuerza descargar"
           },
           "ffmpeg_options": {
             "name": "Opciones FFmpeg",
@@ -1346,27 +1380,27 @@
               },
               "preset": {
                 "name": "Preajuste",
-                "description": "Establecer la velocidad de la conversi√≥n"
+                "description": "Establecer la velocidad de la conversiÛn"
               },
               "constant_rate_factor": {
                 "name": "Factor de tarifa constante",
-                "description": "Establecer el factor de velocidad constante para el encoder de v√≠deo\nDe 0 a 51 para libx264"
+                "description": "Establecer el factor de velocidad constante para el encoder de vÌdeo\nDe 0 a 51 para libx264"
               },
               "video_bitrate": {
-                "name": "Bit√°cora de v√≠deo",
-                "description": "Establecer el bitrate de v√≠deo (kbps)"
+                "name": "Bit·cora de vÌdeo",
+                "description": "Establecer el bitrate de vÌdeo (kbps)"
               },
               "audio_bitrate": {
                 "name": "Tasa de bits de audio",
                 "description": "Establecer el bitrate de audio (kbps)"
               },
               "custom_video_codec": {
-                "name": "C√≥digo de v√≠deo personalizado",
-                "description": "Establecer un c√≥digo de v√≠deo personalizado (por ejemplo, libx264)"
+                "name": "CÛdigo de vÌdeo personalizado",
+                "description": "Establecer un cÛdigo de vÌdeo personalizado (por ejemplo, libx264)"
               },
               "custom_audio_codec": {
-                "name": "C√≥digo de audio personalizado",
-                "description": "Establecer un c√≥digo de audio personalizado (por ejemplo, AAC)"
+                "name": "CÛdigo de audio personalizado",
+                "description": "Establecer un cÛdigo de audio personalizado (por ejemplo, AAC)"
               }
             }
           },
@@ -1376,21 +1410,21 @@
           },
           "custom_path_format": {
             "name": "Formato de ruta personalizada",
-            "description": "Especifique un formato de ruta personalizado para los medios descargados\n\nVariables disponibles:\n- Apellido\n- %source%\n- S√≠.\n- ¬°No"
+            "description": "Especifique un formato de ruta personalizado para los medios descargados\n\nVariables disponibles:\n- Apellido\n- %source%\n- SÌ.\n- °No"
           }
         }
       },
       "user_interface": {
         "name": "Interfaz de usuario",
-        "description": "Cambiar el aspecto y la sensaci√≥n de Snapchat",
+        "description": "Cambiar el aspecto y la sensaciÛn de Snapchat",
         "properties": {
           "enable_app_appearance": {
-            "name": "Activar configuraci√≥n de apariencia",
-            "description": "Permite la configuraci√≥n de apariencia oculta\nPuede que no sea necesario en nuevas versiones de Snapchat"
+            "name": "Activar configuraciÛn de apariencia",
+            "description": "Permite la configuraciÛn de apariencia oculta\nPuede que no sea necesario en nuevas versiones de Snapchat"
           },
           "friend_feed_message_preview": {
-            "name": "Mensaje de alimentaci√≥n del amigo",
-            "description": "Muestra una vista previa de los √∫ltimos mensajes en el Amigo Feed",
+            "name": "Mensaje de alimentaciÛn del amigo",
+            "description": "Muestra una vista previa de los ˙ltimos mensajes en el Amigo Feed",
             "properties": {
               "amount": {
                 "name": "Monto",
@@ -1400,7 +1434,7 @@
           },
           "snap_preview": {
             "name": "Vista previa",
-            "description": "Muestra una peque√±a vista previa junto a Snaps invisible en chat"
+            "description": "Muestra una pequeÒa vista previa junto a Snaps invisible en chat"
           },
           "bootstrap_override": {
             "name": "Anulaci?n de bootstrap",
@@ -1408,11 +1442,11 @@
             "properties": {
               "app_appearance": {
                 "name": "Apariencia",
-                "description": "Establece una aparici√≥n persistente"
+                "description": "Establece una apariciÛn persistente"
               },
               "home_tab": {
                 "name": "Pesta?a de inicio",
-                "description": "Anula la pesta√±a de inicio al abrir Snapchat"
+                "description": "Anula la pestaÒa de inicio al abrir Snapchat"
               }
             }
           },
@@ -1421,36 +1455,36 @@
             "description": "Mejora los Nombres de los amigos en el Snapmap"
           },
           "prevent_message_list_auto_scroll": {
-            "name": "Lista de mensajes de prevenci√≥n",
+            "name": "Lista de mensajes de prevenciÛn",
             "description": "Evita la lista de mensajes de desplazamiento a la parte inferior al enviar/recibir un mensaje"
           },
           "streak_expiration_info": {
-            "name": "Mostrar informaci√≥n de la exploraci√≥n de Streak",
-            "description": "Muestra un temporizador de exploraci√≥n de Streak junto al mostrador Streaks"
+            "name": "Mostrar informaciÛn de la exploraciÛn de Streak",
+            "description": "Muestra un temporizador de exploraciÛn de Streak junto al mostrador Streaks"
           },
           "hide_friend_feed_entry": {
             "name": "Ocultar entrada del feed de amigos",
-            "description": "Oculta a un amigo espec√≠fico del Amigo Feed\nUtilice la pesta√±a social para gestionar esta funci√≥n"
+            "description": "Oculta a un amigo especÌfico del Amigo Feed\nUtilice la pestaÒa social para gestionar esta funciÛn"
           },
           "hide_streak_restore": {
-            "name": "Esc√≥ndete",
-            "description": "Oculta el bot√≥n Restaurar en el pienso amigo"
+            "name": "EscÛndete",
+            "description": "Oculta el botÛn Restaurar en el pienso amigo"
           },
           "hide_quick_add_suggestions": {
-            "name": "Ocultar r√°pido A√±adir sugerencias",
-            "description": "Elimina sugerencias de amigos r√°pidas"
+            "name": "Ocultar r·pido AÒadir sugerencias",
+            "description": "Elimina sugerencias de amigos r·pidas"
           },
           "hide_story_suggestions": {
             "name": "Ocultar historia Sugerencias",
-            "description": "Elimina sugerencias de la p√°gina Historias"
+            "description": "Elimina sugerencias de la p·gina Historias"
           },
           "hide_ui_components": {
             "name": "Ocultar componentes UI",
-            "description": "Seleccione qu√© componentes UI para ocultar"
+            "description": "Seleccione quÈ componentes UI para ocultar"
           },
           "opera_media_quick_info": {
             "name": "Informaci?n r?pida de medios de Opera",
-            "description": "Muestra informaci√≥n √∫til de medios como fecha de creaci√≥n en el men√∫ contextual de la √≥pera"
+            "description": "Muestra informaciÛn ˙til de medios como fecha de creaciÛn en el men˙ contextual de la Ûpera"
           },
           "old_bitmoji_selfie": {
             "name": "Selfie de Bitmoji antiguo",
@@ -1458,15 +1492,15 @@
           },
           "disable_spotlight": {
             "name": "Desactive Spotlight",
-            "description": "Deshabilita la p√°gina Spotlight"
+            "description": "Deshabilita la p·gina Spotlight"
           },
           "friend_feed_menu_buttons": {
-            "name": "Botones de men√∫ de alimentaci√≥n amigo",
-            "description": "Seleccione qu√© botones mostrar en el men√∫ de alimentaci√≥n del amigo"
+            "name": "Botones de men˙ de alimentaciÛn amigo",
+            "description": "Seleccione quÈ botones mostrar en el men˙ de alimentaciÛn del amigo"
           },
           "auto_close_friend_feed_menu": {
-            "name": "Men√∫ de alimentaci√≥n de un amigo cercano",
-            "description": "Cierre autom√°ticamente el men√∫ de alimentaci√≥n del amigo despu√©s de presionar un bot√≥n de configuraci√≥n"
+            "name": "Men˙ de alimentaciÛn de un amigo cercano",
+            "description": "Cierre autom·ticamente el men˙ de alimentaciÛn del amigo despuÈs de presionar un botÛn de configuraciÛn"
           },
           "vertical_story_viewer": {
             "name": "Visor vertical de historias",
@@ -1478,119 +1512,119 @@
           },
           "message_indicators": {
             "name": "Indicadores de mensaje",
-            "description": "A√±ade iconos de indicadores espec√≠ficos a los mensajes\nNota: Los indicadores podr√≠an no ser 100% exactos"
+            "description": "AÒade iconos de indicadores especÌficos a los mensajes\nNota: Los indicadores podrÌan no ser 100% exactos"
           },
           "stealth_mode_indicator": {
             "name": "Indicador de modo de esterilidad",
-            "description": "A√±ade un üëª emoji junto a conversaciones en modo sigilo"
+            "description": "AÒade un ?? emoji junto a conversaciones en modo sigilo"
           },
           "edit_text_override": {
-            "name": "Edici√≥n de texto Override",
+            "name": "EdiciÛn de texto Override",
             "description": "Supera el comportamiento del campo de texto"
           },
           "prevent_forced_keyboard": {
             "name": "Teclado forzado",
-            "description": "Previene Snapchat de aparecer autom√°ticamente el teclado cuando se abre una conversaci√≥n"
+            "description": "Previene Snapchat de aparecer autom·ticamente el teclado cuando se abre una conversaciÛn"
           },
           "force_amoled_theme": {
             "name": "Force AMOLED Tema",
-            "description": "Forzar un verdadero tema negro AMOLED en toda la aplicaci√≥n UI"
+            "description": "Forzar un verdadero tema negro AMOLED en toda la aplicaciÛn UI"
           },
           "settings_menu": {
-            "name": "Men√∫ Ajustes",
-            "description": "Elija entre los dise√±os de men√∫ de configuraci√≥n nuevos y heredados"
+            "name": "Men˙ Ajustes",
+            "description": "Elija entre los diseÒos de men˙ de configuraciÛn nuevos y heredados"
           }
         }
       },
       "messaging": {
-        "name": "Mensajer√≠a",
-        "description": "Cambia c√≥mo interact√∫as con amigos",
+        "name": "MensajerÌa",
+        "description": "Cambia cÛmo interact˙as con amigos",
         "properties": {
           "bypass_screenshot_detection": {
-            "name": "Bypass Captura de Pantalla Detecci√≥n",
+            "name": "Bypass Captura de Pantalla DetecciÛn",
             "description": "Evita que Snapchat detecte cuando toma una captura de pantalla"
           },
           "anonymous_story_viewing": {
-            "name": "Historia an√≥nima viendo",
+            "name": "Historia anÛnima viendo",
             "description": "Impide que alguien sepa que has visto su historia"
           },
           "prevent_story_rewatch_indicator": {
-            "name": "Evitar el indicador de recuperaci√≥n de historias",
+            "name": "Evitar el indicador de recuperaciÛn de historias",
             "description": "Impide que alguien sepa que has vuelto a ver su historia"
           },
           "hide_peek_a_peek": {
             "name": "Ocultar Peek-a-Peek",
-            "description": "Evita la notificaci√≥n de ser enviado cuando usted medio cambia en un chat"
+            "description": "Evita la notificaciÛn de ser enviado cuando usted medio cambia en un chat"
           },
           "hide_bitmoji_presence": {
             "name": "Ocultar la presencia de Bitmoji",
-            "description": "Evita que tu Bitmoji aparezca mientras est√° en Chat"
+            "description": "Evita que tu Bitmoji aparezca mientras est· en Chat"
           },
           "hide_typing_notifications": {
             "name": "Ocultar notificaciones de escritura",
-            "description": "Evita que alguien sepa que est√°s escribiendo un mensaje"
+            "description": "Evita que alguien sepa que est·s escribiendo un mensaje"
           },
           "unlimited_snap_view_time": {
-            "name": "Tiempo de visi√≥n de ajuste ilimitado",
-            "description": "Elimina el l√≠mite de tiempo para ver los ajustes"
+            "name": "Tiempo de visiÛn de ajuste ilimitado",
+            "description": "Elimina el lÌmite de tiempo para ver los ajustes"
           },
           "auto_mark_as_read": {
-            "name": "Marca autom√°tica como Leer",
-            "description": "Marca autom√°ticamente mensajes/snaps como le√≠dos incluso cuando el modo Stealth est√° habilitado"
+            "name": "Marca autom·tica como Leer",
+            "description": "Marca autom·ticamente mensajes/snaps como leÌdos incluso cuando el modo Stealth est· habilitado"
           },
           "mark_snap_as_seen_button": {
-            "name": "Marcar el bot√≥n como visto",
-            "description": "A√±ade un bot√≥n para marcar un Snap como se ve al verla.\nEsto funcionar√° incluso cuando est√© habilitado el modo Stealth"
+            "name": "Marcar el botÛn como visto",
+            "description": "AÒade un botÛn para marcar un Snap como se ve al verla.\nEsto funcionar· incluso cuando estÈ habilitado el modo Stealth"
           },
           "skip_when_marking_as_seen": {
             "name": "Omitir al marcar como visto",
-            "description": "Se salta autom√°ticamente al siguiente Snap al marcar un Snap como se ve.\nUsar en combinaci√≥n con Mark Snap como bot√≥n visto"
+            "description": "Se salta autom·ticamente al siguiente Snap al marcar un Snap como se ve.\nUsar en combinaciÛn con Mark Snap como botÛn visto"
           },
           "loop_media_playback": {
             "name": "Reproducir medios en bucle",
-            "description": "Interruptores de reproducci√≥n de medios al ver Snaps / Stories"
+            "description": "Interruptores de reproducciÛn de medios al ver Snaps / Stories"
           },
           "disable_replay_in_ff": {
-            "name": "Reproducci√≥n deshabilitado en FF",
-            "description": "Deshabilita la capacidad de repetici√≥n con una larga prensa del Amigo Feed"
+            "name": "ReproducciÛn deshabilitado en FF",
+            "description": "Deshabilita la capacidad de repeticiÛn con una larga prensa del Amigo Feed"
           },
           "half_swipe_notifier": {
             "name": "Notificador de medio giro",
-            "description": "Te notifica cuando alguien medio cambia en una conversaci√≥n",
+            "description": "Te notifica cuando alguien medio cambia en una conversaciÛn",
             "properties": {
               "min_duration": {
-                "name": "Duraci√≥n m√≠nima",
-                "description": "La duraci√≥n m√≠nima del medio giro (en segundos)"
+                "name": "DuraciÛn mÌnima",
+                "description": "La duraciÛn mÌnima del medio giro (en segundos)"
               },
               "max_duration": {
-                "name": "Duraci√≥n m√°xima",
-                "description": "La duraci√≥n m√°xima del medio giro (en segundos)"
+                "name": "DuraciÛn m·xima",
+                "description": "La duraciÛn m·xima del medio giro (en segundos)"
               }
             }
           },
           "call_start_confirmation": {
-            "name": "Confirmaci√≥n de inicio de llamada",
-            "description": "Muestra un di√°logo de confirmaci√≥n al iniciar una llamada"
+            "name": "ConfirmaciÛn de inicio de llamada",
+            "description": "Muestra un di·logo de confirmaciÛn al iniciar una llamada"
           },
           "unlimited_conversation_pinning": {
-            "name": "Conversaci√≥n ilimitada Pinning",
+            "name": "ConversaciÛn ilimitada Pinning",
             "description": "Permite crear una cantidad ilimitada de conversaciones localmente"
           },
           "disable_snap_mode_restrictions": {
             "name": "Restricciones del modo de ajuste",
-            "description": "Permite ver los ajustes de autodestrucci√≥n sin restricciones"
+            "description": "Permite ver los ajustes de autodestrucciÛn sin restricciones"
           },
           "prevent_message_sending": {
             "name": "Prevent Message Send",
             "description": "Evita enviar ciertos tipos de mensajes"
           },
           "friend_mutation_notifier": {
-            "name": "Notificador de mutaci√≥n amigo",
+            "name": "Notificador de mutaciÛn amigo",
             "description": "Te notifica cuando algo cambia en el perfil de un amigo"
           },
           "better_notifications": {
             "name": "Mejores notificaciones",
-            "description": "A√±ade m√°s informaci√≥n en notificaciones recibidas",
+            "description": "AÒade m·s informaciÛn en notificaciones recibidas",
             "properties": {
               "group_notifications": {
                 "name": "Notificaciones de grupos",
@@ -1598,48 +1632,48 @@
               },
               "chat_preview": {
                 "name": "Vista previa de chat",
-                "description": "Muestra una vista previa de los mensajes recibidos en la notificaci√≥n"
+                "description": "Muestra una vista previa de los mensajes recibidos en la notificaciÛn"
               },
               "media_preview": {
                 "name": "Avance de los medios",
-                "description": "Muestra una vista previa de los tipos de medios seleccionados en la notificaci√≥n"
+                "description": "Muestra una vista previa de los tipos de medios seleccionados en la notificaciÛn"
               },
               "media_caption": {
                 "name": "Pie de foto multimedia",
-                "description": "Muestra la captura adjunta de los medios de comunicaci√≥n en la notificaci√≥n"
+                "description": "Muestra la captura adjunta de los medios de comunicaciÛn en la notificaciÛn"
               },
               "stacked_media_messages": {
                 "name": "Mensajes de medios apilados",
-                "description": "Combina varios mensajes multimedia en una notificaci√≥n de texto cuando no pueden ser previstos. Uso en combinaci√≥n con Chat Preview"
+                "description": "Combina varios mensajes multimedia en una notificaciÛn de texto cuando no pueden ser previstos. Uso en combinaciÛn con Chat Preview"
               },
               "friend_add_source": {
                 "name": "Amigo Agregar fuente",
-                "description": "Muestra la fuente de una solicitud de amigo en la notificaci√≥n"
+                "description": "Muestra la fuente de una solicitud de amigo en la notificaciÛn"
               },
               "reply_button": {
                 "name": "Responder Button",
-                "description": "A√±ade un bot√≥n de respuesta a la notificaci√≥n"
+                "description": "AÒade un botÛn de respuesta a la notificaciÛn"
               },
               "smart_replies": {
                 "name": "Respuestas inteligentes",
-                "description": "Adds suggested replies to notifications (Android 10+). Uso en combinaci√≥n con Responder Button"
+                "description": "Adds suggested replies to notifications (Android 10+). Uso en combinaciÛn con Responder Button"
               },
               "download_button": {
                 "name": "Descargar Button",
-                "description": "Permite descargar los medios de comunicaci√≥n de la notificaci√≥n"
+                "description": "Permite descargar los medios de comunicaciÛn de la notificaciÛn"
               },
               "mark_as_read_button": {
-                "name": "Marcar como bot√≥n de lectura",
-                "description": "Permite marcar un mensaje tal como se lee en la notificaci√≥n"
+                "name": "Marcar como botÛn de lectura",
+                "description": "Permite marcar un mensaje tal como se lee en la notificaciÛn"
               },
               "mark_as_read_and_save_in_chat": {
                 "name": "Marcar como Leer y Guardar en Chat",
-                "description": "A√±ade una marca como le√≠da y guarda en el bot√≥n chat a la notificaci√≥n"
+                "description": "AÒade una marca como leÌda y guarda en el botÛn chat a la notificaciÛn"
               }
             }
           },
           "notification_blacklist": {
-            "name": "Notificaci√≥n Lista negra",
+            "name": "NotificaciÛn Lista negra",
             "description": "Seleccione notificaciones que deben bloquearse"
           },
           "message_logger": {
@@ -1652,11 +1686,11 @@
               },
               "auto_purge": {
                 "name": "Purgado autom?tico",
-                "description": "Elimina autom√°ticamente mensajes en cach√© que son mayores que la cantidad especificada de tiempo"
+                "description": "Elimina autom·ticamente mensajes en cachÈ que son mayores que la cantidad especificada de tiempo"
               },
               "message_filter": {
                 "name": "Filtro de mensaje",
-                "description": "Seleccione qu√© mensajes deben conectarse (vac√≠o para todos los mensajes)"
+                "description": "Seleccione quÈ mensajes deben conectarse (vacÌo para todos los mensajes)"
               },
               "deleted_message_color": {
                 "name": "Color de mensaje eliminado",
@@ -1665,8 +1699,8 @@
             }
           },
           "auto_save_messages_in_conversations": {
-            "name": "Mensajes de ahorro autom√°tico",
-            "description": "Salva autom√°ticamente cada mensaje en conversaciones"
+            "name": "Mensajes de ahorro autom·tico",
+            "description": "Salva autom·ticamente cada mensaje en conversaciones"
           },
           "unsaveable_messages": {
             "name": "Mensajes insalvables",
@@ -1703,61 +1737,61 @@
             }
           },
           "gallery_media_send_override": {
-            "name": "Galer√≠a Media Enviar Override",
-            "description": "Espadas de la fuente de medios al enviar desde la galer√≠a",
+            "name": "GalerÌa Media Enviar Override",
+            "description": "Espadas de la fuente de medios al enviar desde la galerÌa",
             "properties": {
               "mode": {
-                "name": "Modo de anulaci√≥n",
-                "description": "Elija c√≥mo se env√≠an los medios de galer√≠a"
+                "name": "Modo de anulaciÛn",
+                "description": "Elija cÛmo se envÌan los medios de galerÌa"
               },
               "include_camera_snaps": {
-                "name": "Incluir los ajustes de c√°mara",
-                "description": "Tambi√©n muestre el di√°logo de anulaci√≥n para los snaps de c√°mara"
+                "name": "Incluir los ajustes de c·mara",
+                "description": "TambiÈn muestre el di·logo de anulaciÛn para los snaps de c·mara"
               }
             }
           },
           "strip_media_metadata": {
-            "name": "Metadatos de medios de difusi√≥n",
-            "description": "Elimina los metadatos de los medios de comunicaci√≥n antes de enviar como mensaje"
+            "name": "Metadatos de medios de difusiÛn",
+            "description": "Elimina los metadatos de los medios de comunicaciÛn antes de enviar como mensaje"
           },
           "bypass_message_retention_policy": {
-            "name": "Pol√≠tica de retenci√≥n de mensajes",
-            "description": "Impide que los mensajes sean eliminados despu√©s de verlos"
+            "name": "PolÌtica de retenciÛn de mensajes",
+            "description": "Impide que los mensajes sean eliminados despuÈs de verlos"
           },
           "bypass_message_action_restrictions": {
-            "name": "Restrictiones de acci√≥n del mensaje",
+            "name": "Restrictiones de acciÛn del mensaje",
             "description": "Permite reaccionar a un snap sin haberlo abierto o guardar un mensaje insalvable"
           },
           "remove_groups_locked_status": {
             "name": "Eliminar Grupos Estado bloqueado",
-            "description": "Permite ver la informaci√≥n del grupo despu√©s de ser pateado"
+            "description": "Permite ver la informaciÛn del grupo despuÈs de ser pateado"
           },
           "double_tap_chat_action": {
             "name": "Doble toque Chat Action",
-            "description": "Realiza una acci√≥n personalizada al duplicar un mensaje en chat"
+            "description": "Realiza una acciÛn personalizada al duplicar un mensaje en chat"
           },
           "double_tap_chat_action_custom_emoji": {
-            "name": "Doble Tap Chat Acci√≥n de acci√≥n Emoji personalizado",
-            "description": "Establece una reacci√≥n emoji personalizada para la acci√≥n de chat doble"
+            "name": "Doble Tap Chat AcciÛn de acciÛn Emoji personalizado",
+            "description": "Establece una reacciÛn emoji personalizada para la acciÛn de chat doble"
           },
           "auto_reply": {
             "name": "Auto Responder",
-            "description": "Env√≠a autom√°ticamente respuestas a los mensajes entrantes cuando est√©s fuera",
+            "description": "EnvÌa autom·ticamente respuestas a los mensajes entrantes cuando estÈs fuera",
             "properties": {
               "allow_running_in_background": {
                 "name": "Permitir correr en el fondo",
-                "description": "Permite Auto Responder a correr en el fondo. Nota: Esto va a drenar significativamente su bater√≠a"
+                "description": "Permite Auto Responder a correr en el fondo. Nota: Esto va a drenar significativamente su baterÌa"
               },
               "cooldown_seconds": {
                 "name": "Enfriamiento Segundos",
-                "description": "Tiempo m√≠nimo entre auto-replies a la misma conversaci√≥n (en segundos)"
+                "description": "Tiempo mÌnimo entre auto-replies a la misma conversaciÛn (en segundos)"
               },
               "message_age_threshold": {
                 "name": "Edad del mensaje Umbral",
-                "description": "S√≥lo respuesta a los mensajes recibidos dentro de este plazo (en segundos)"
+                "description": "SÛlo respuesta a los mensajes recibidos dentro de este plazo (en segundos)"
               },
               "ai_config": {
-                "name": "Configuraci√≥n AI",
+                "name": "ConfiguraciÛn AI",
                 "description": "Ajustes para auto-replies impulsados por AI",
                 "properties": {
                   "enable_ai_replies": {
@@ -1766,7 +1800,7 @@
                   },
                   "ai_provider": {
                     "name": "Proveedor de IA",
-                    "description": "Seleccione qu√© servicio AI utilizar para generar respuestas"
+                    "description": "Seleccione quÈ servicio AI utilizar para generar respuestas"
                   },
                   "ai_endpoint_url": {
                     "name": "URL del endpoint de IA",
@@ -1786,7 +1820,7 @@
                   },
                   "ai_max_tokens": {
                     "name": "M?ximo de tokens de IA",
-                    "description": "N√∫mero m√°ximo de fichas (palabras) que la AI puede utilizar en respuestas"
+                    "description": "N˙mero m·ximo de fichas (palabras) que la AI puede utilizar en respuestas"
                   },
                   "ai_temperature": {
                     "name": "Temperatura AI",
@@ -1794,11 +1828,11 @@
                   },
                   "ai_context_length": {
                     "name": "AI Context Longitud",
-                    "description": "N√∫mero de mensajes anteriores para incluir como contexto las respuestas de la AI"
+                    "description": "N˙mero de mensajes anteriores para incluir como contexto las respuestas de la AI"
                   },
                   "ai_personality_traits": {
                     "name": "Rasgos de personalidad de IA",
-                    "description": "Caracter√≠sticas de personalidad separadas por el comma para la AI (por ejemplo, amistosa, casual, servicial)"
+                    "description": "CaracterÌsticas de personalidad separadas por el comma para la AI (por ejemplo, amistosa, casual, servicial)"
                   },
                   "ai_response_style": {
                     "name": "Estilo de respuesta de AI",
@@ -1809,12 +1843,12 @@
                     "description": "Idioma para respuestas de IA (auto = igual que el mensaje recibido)"
                   },
                   "ai_use_conversation_history": {
-                    "name": "Uso Historia de Conversaci√≥n",
+                    "name": "Uso Historia de ConversaciÛn",
                     "description": "Incluir mensajes anteriores como contexto para respuestas de IA m?s relevantes"
                   },
                   "ai_include_friend_info": {
                     "name": "Incluir informaci?n del amigo",
-                    "description": "Incluye el nombre de amigo y otra informaci√≥n disponible en contexto AI"
+                    "description": "Incluye el nombre de amigo y otra informaciÛn disponible en contexto AI"
                   },
                   "ai_fallback_to_template": {
                     "name": "Usar plantilla como respaldo",
@@ -1822,69 +1856,69 @@
                   },
                   "ai_request_timeout": {
                     "name": "Tiempo de espera de solicitud de IA",
-                    "description": "Tiempo m√°ximo para esperar a la respuesta de AI (en segundos)"
+                    "description": "Tiempo m·ximo para esperar a la respuesta de AI (en segundos)"
                   },
                   "ai_retry_attempts": {
                     "name": "Intentos de reintento de IA",
-                    "description": "N√∫mero de veces para volver a enviar solicitudes de AI si fallan"
+                    "description": "N˙mero de veces para volver a enviar solicitudes de AI si fallan"
                   }
                 }
               },
               "auto_trigger_config": {
-                "name": "Configuraci√≥n del desencadenante autom√°tico",
-                "description": "Ajustes para los desencadenantes autom√°ticos y plantillas de mensajes",
+                "name": "ConfiguraciÛn del desencadenante autom·tico",
+                "description": "Ajustes para los desencadenantes autom·ticos y plantillas de mensajes",
                 "properties": {
                   "friendSpecificGreeting": {
-                    "name": "Saludo espec√≠fico del amigo",
-                    "description": "Agregar el nombre de amigo a auto-replies para la personalizaci√≥n"
+                    "name": "Saludo especÌfico del amigo",
+                    "description": "Agregar el nombre de amigo a auto-replies para la personalizaciÛn"
                   },
                   "friendGreeting": {
                     "name": "Amigo saludando",
-                    "description": "Saludar el texto para usar cuando se habilita el saludo espec√≠fico de un amigo"
+                    "description": "Saludar el texto para usar cuando se habilita el saludo especÌfico de un amigo"
                   },
                   "auto_reply_content_types": {
                     "name": "Disparadores de respuesta autom?tica",
-                    "description": "Seleccione qu√© tipo de mensaje debe desencadenar auto-replies"
+                    "description": "Seleccione quÈ tipo de mensaje debe desencadenar auto-replies"
                   },
                   "chat_messages": {
                     "name": "Chat Mensaje Respuestas",
-                    "description": "Mensajes autom√°ticos para mensajes de chat de texto"
+                    "description": "Mensajes autom·ticos para mensajes de chat de texto"
                   },
                   "snap_messages": {
                     "name": "Respuestas a Snaps",
-                    "description": "Mensajes autom√°ticos para instant√°neas"
+                    "description": "Mensajes autom·ticos para instant·neas"
                   },
                   "story_share_messages": {
                     "name": "Story Share Respuestas",
-                    "description": "Mensajes autom√°ticos para compartir historias"
+                    "description": "Mensajes autom·ticos para compartir historias"
                   },
                   "story_reply_messages": {
                     "name": "Respuestas de la historia",
-                    "description": "Mensajes autom√°ticos para respuestas de historia"
+                    "description": "Mensajes autom·ticos para respuestas de historia"
                   },
                   "external_media_messages": {
                     "name": "Respuestas de medios externos",
-                    "description": "Mensajes autom√°ticos para medios externos"
+                    "description": "Mensajes autom·ticos para medios externos"
                   },
                   "voice_note_messages": {
                     "name": "Voz Nota Respuestas",
-                    "description": "Mensajes autom√°ticos para notas de voz"
+                    "description": "Mensajes autom·ticos para notas de voz"
                   },
                   "sticker_messages": {
                     "name": "Respuestas adhesivas",
-                    "description": "Mensajes autom√°ticos para pegatinas"
+                    "description": "Mensajes autom·ticos para pegatinas"
                   },
                   "tiny_snap_messages": {
-                    "name": "Peque√±as r√©plicas de Snap",
-                    "description": "Mensajes autom√°ticos para peque√±os snaps"
+                    "name": "PequeÒas rÈplicas de Snap",
+                    "description": "Mensajes autom·ticos para pequeÒos snaps"
                   },
                   "map_reaction_messages": {
                     "name": "Respuestas a reacciones de mapa",
-                    "description": "Mensajes autom√°ticos para las reacciones del mapa"
+                    "description": "Mensajes autom·ticos para las reacciones del mapa"
                   },
                   "half_swipe_messages": {
                     "name": "Mensajes de medio golpe",
-                    "description": "Mensajes autom√°ticos de respuesta para medio swipes"
+                    "description": "Mensajes autom·ticos de respuesta para medio swipes"
                   }
                 }
               }
@@ -1896,71 +1930,71 @@
             "properties": {
               "allow_running_in_background": {
                 "name": "Permitir correr en el fondo",
-                "description": "Permite que Auto Open Snaps funcione en el fondo. Nota: Esto va a drenar significativamente su bater√≠a"
+                "description": "Permite que Auto Open Snaps funcione en el fondo. Nota: Esto va a drenar significativamente su baterÌa"
               },
               "min_delay": {
                 "name": "Retardo m?nimo (ms)",
-                "description": "Retraso m√≠nimo en milisegundos antes de abrir un snap"
+                "description": "Retraso mÌnimo en milisegundos antes de abrir un snap"
               },
               "max_delay_ms": {
                 "name": "Retardo m?ximo (ms)",
-                "description": "M√°xima demora en milisegundos antes de abrir un snap"
+                "description": "M·xima demora en milisegundos antes de abrir un snap"
               },
               "queue_size": {
-                "name": "Tama√±o de la cola",
-                "description": "N√∫mero m√°ximo de snaps para mantener en la cola"
+                "name": "TamaÒo de la cola",
+                "description": "N˙mero m·ximo de snaps para mantener en la cola"
               },
               "retry_attempts": {
                 "name": "Intentos de reintento",
-                "description": "N√∫mero de veces para volver a abrir un snap si falla"
+                "description": "N˙mero de veces para volver a abrir un snap si falla"
               },
               "retry_delay": {
                 "name": "Retardo de reintento (ms)",
-                "description": "Dilataci√≥n en milisegundos entre intentos de retry"
+                "description": "DilataciÛn en milisegundos entre intentos de retry"
               }
             }
           },
           "auto_delete_sent_messages": {
             "name": "Auto Eliminar Mensajes enviados",
-            "description": "Elimina autom√°ticamente los mensajes enviados despu√©s de un per√≠odo de tiempo especificado",
+            "description": "Elimina autom·ticamente los mensajes enviados despuÈs de un perÌodo de tiempo especificado",
             "properties": {
               "allow_running_in_background": {
                 "name": "Permitir correr en el fondo",
-                "description": "Permite Auto Eliminar Mensajes enviados para funcionar en el fondo. Nota: Esto va a drenar significativamente su bater√≠a"
+                "description": "Permite Auto Eliminar Mensajes enviados para funcionar en el fondo. Nota: Esto va a drenar significativamente su baterÌa"
               },
               "delete_after_value": {
-                "name": "Eliminar despu√©s (valor)",
+                "name": "Eliminar despuÈs (valor)",
                 "description": "Valor de tiempo antes de eliminar el mensaje enviado"
               },
               "delete_after_unit": {
                 "name": "Dependencia de Tiempo",
-                "description": "Seleccione la unidad de tiempo para demora de eliminaci√≥n"
+                "description": "Seleccione la unidad de tiempo para demora de eliminaciÛn"
               },
               "message_types": {
                 "name": "Tipos de mensaje",
-                "description": "Seleccione qu√© tipos de mensajes deben ser eliminados autom√°ticamente"
+                "description": "Seleccione quÈ tipos de mensajes deben ser eliminados autom·ticamente"
               },
               "show_countdown": {
-                "name": "Cuenta atr√°s",
-                "description": "Mostrar cuenta atr√°s antes de eliminar el mensaje"
+                "name": "Cuenta atr·s",
+                "description": "Mostrar cuenta atr·s antes de eliminar el mensaje"
               },
               "show_notification": {
-                "name": "Mostrar notificaci√≥n",
-                "description": "Mostrar notificaci√≥n durante la cuenta regresiva"
+                "name": "Mostrar notificaciÛn",
+                "description": "Mostrar notificaciÛn durante la cuenta regresiva"
               }
             }
           },
           "instant_translation": {
             "name": "Traductor de Mensaje",
-            "description": "Traducir autom√°ticamente mensajes entrantes a tu idioma preferido",
+            "description": "Traducir autom·ticamente mensajes entrantes a tu idioma preferido",
             "properties": {
               "enabled": {
                 "name": "Activar el traductor de mensajes",
-                "description": "Permitir la traducci√≥n autom√°tica de mensajes"
+                "description": "Permitir la traducciÛn autom·tica de mensajes"
               },
               "source_language": {
                 "name": "Idioma fuente",
-                "description": "Idioma a traducir desde (utilizar 'auto' para la detecci√≥n autom√°tica)"
+                "description": "Idioma a traducir desde (utilizar 'auto' para la detecciÛn autom·tica)"
               },
               "target_language": {
                 "name": "Lenguaje objetivo",
@@ -1971,16 +2005,16 @@
                 "description": "Mostrar el texto original del mensaje"
               },
               "show_translation": {
-                "name": "Mostrar traducci√≥n",
+                "name": "Mostrar traducciÛn",
                 "description": "Mostrar el texto traducido"
               },
               "translation_position": {
-                "name": "Posici√≥n de traducci√≥n",
-                "description": "D√≥nde mostrar la traducci√≥n relativa al texto original"
+                "name": "PosiciÛn de traducciÛn",
+                "description": "DÛnde mostrar la traducciÛn relativa al texto original"
               },
               "auto_translate": {
                 "name": "Auto Traducir",
-                "description": "Traducir autom√°ticamente los mensajes recibidos"
+                "description": "Traducir autom·ticamente los mensajes recibidos"
               },
               "translate_on_tap": {
                 "name": "Traducir en Tap",
@@ -1988,31 +2022,31 @@
               },
               "supported_languages": {
                 "name": "Idiomas compatibles",
-                "description": "Idiomas disponibles para la traducci√≥n"
+                "description": "Idiomas disponibles para la traducciÛn"
               },
               "pause_on_error": {
                 "name": "Pausa sobre el error",
-                "description": "Pausa traducci√≥n cuando el servicio est√° bloqueado"
+                "description": "Pausa traducciÛn cuando el servicio est· bloqueado"
               },
               "max_retries": {
                 "name": "M?ximo de reintentos",
-                "description": "N√∫mero m√°ximo de intentos de reingreso"
+                "description": "N˙mero m·ximo de intentos de reingreso"
               },
               "retry_delay": {
                 "name": "Retardo de reintento",
-                "description": "Dilataci√≥n entre intentos de retry (milliseconds)"
+                "description": "DilataciÛn entre intentos de retry (milliseconds)"
               }
             }
           },
           "scheduled_send_allow_running_in_background": {
             "name": "Permiso previsto Enviar a correr en el fondo",
-            "description": "Mantenga el procesamiento de mensajes programados mientras Snapchat est√° en el fondo"
+            "description": "Mantenga el procesamiento de mensajes programados mientras Snapchat est· en el fondo"
           }
         }
       },
       "rules": {
         "name": "Reglas",
-        "description": "Configurar reglas de automatizaci√≥n",
+        "description": "Configurar reglas de automatizaciÛn",
         "properties": {
           "auto_read": {
             "name": "Auto Leer"
@@ -2033,7 +2067,7 @@
             "name": "Modo de Stealth"
           },
           "auto_save": {
-            "name": "Ahorro autom√°tico"
+            "name": "Ahorro autom·tico"
           },
           "message_logger": {
             "name": "Mensaje Logger"
@@ -2044,58 +2078,69 @@
         }
       },
       "camera": {
-        "name": "C√°mara",
-        "description": "Ajuste la configuraci√≥n correcta para el ajuste perfecto",
+        "name": "C·mara",
+        "description": "Ajuste la configuraciÛn correcta para el ajuste perfecto",
         "properties": {
           "disable_cameras": {
-            "name": "C√°maras deshabilitables",
-            "description": "Evita que Snapchat use las c√°maras seleccionadas"
+            "name": "C·maras deshabilitables",
+            "description": "Evita que Snapchat use las c·maras seleccionadas"
           },
           "black_photos": {
             "name": "Fotos negras",
-            "description": "Reemplaza fotos capturadas con fondo negro\nLos v√≠deos no se ven afectados"
+            "description": "Reemplaza fotos capturadas con fondo negro\nLos vÌdeos no se ven afectados"
           },
           "immersive_camera_preview": {
             "name": "Vista previa inmersiva",
-            "description": "Impide Snapchat de Cropping la vista previa de la c√°mara\nEsto podr√≠a causar que la c√°mara se flicker en algunos dispositivos"
+            "description": "Impide Snapchat de Cropping la vista previa de la c·mara\nEsto podrÌa causar que la c·mara se flicker en algunos dispositivos"
           },
           "override_front_resolution": {
             "name": "Resoluciones anteriores",
-            "description": "Supera la resoluci√≥n de la c√°mara para la c√°mara frontal"
+            "description": "Supera la resoluciÛn de la c·mara para la c·mara frontal"
           },
           "override_back_resolution": {
-            "name": "Resoluciones de revocaci√≥n",
-            "description": "Supera la resoluci√≥n de la c√°mara para la c√°mara trasera"
+            "name": "Resoluciones de revocaciÛn",
+            "description": "Supera la resoluciÛn de la c·mara para la c·mara trasera"
           },
           "custom_resolution": {
-            "name": "Resoluci√≥n aduanera",
-            "description": "Establece una resoluci√≥n de c√°mara personalizada, anchura x altura (por ejemplo 1920x1080).\nLa resoluci√≥n personalizada debe ser soportada por tu dispositivo"
+            "name": "ResoluciÛn aduanera",
+            "description": "Establece una resoluciÛn de c·mara personalizada, anchura x altura (por ejemplo 1920x1080).\nLa resoluciÛn personalizada debe ser soportada por tu dispositivo"
           },
           "front_custom_frame_rate": {
             "name": "Tasa de Marco Personalizado",
-            "description": "Supera la velocidad del marco de la c√°mara delantera"
+            "description": "Supera la velocidad del marco de la c·mara delantera"
           },
           "back_custom_frame_rate": {
-            "name": "Atr√°s Tasa de fractura",
-            "description": "Supera la velocidad del marco de c√°mara trasera"
+            "name": "Atr·s Tasa de fractura",
+            "description": "Supera la velocidad del marco de c·mara trasera"
           },
           "force_camera_source_encoding": {
-            "name": "Codificaci√≥n de la c√°mara de fuerza",
-            "description": "Fuerzas de la c√°mara fuente de codificaci√≥n"
+            "name": "CodificaciÛn de la c·mara de fuerza",
+            "description": "Fuerzas de la c·mara fuente de codificaciÛn"
           },
           "startup_default_camera": {
             "name": "C?mara predeterminada al inicio",
-            "description": "Establece la c√°mara predeterminada al abrir Snapchat"
+            "description": "Establece la c·mara predeterminada al abrir Snapchat"
           },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
           "hevc_recording": {
-            "name": "HEVC Grabaci√≥n",
-            "description": "Usa HEVC (H.265) codec para grabaci√≥n de v√≠deo"
+            "name": "HEVC GrabaciÛn",
+            "description": "Usa HEVC (H.265) codec para grabaciÛn de vÌdeo"
           }
         }
       },
       "streaks_reminder": {
         "name": "Recordatorio de rachas",
-        "description": "Te notifica peri√≥dicamente sobre tus problemas",
+        "description": "Te notifica periÛdicamente sobre tus problemas",
         "properties": {
           "interval": {
             "name": "Intervalo",
@@ -2103,7 +2148,7 @@
           },
           "remaining_hours": {
             "name": "Tiempo restante",
-            "description": "El tiempo restante antes de la notificaci√≥n se muestra (horas)"
+            "description": "El tiempo restante antes de la notificaciÛn se muestra (horas)"
           },
           "group_notifications": {
             "name": "Notificaciones de grupos",
@@ -2113,31 +2158,31 @@
       },
       "experimental": {
         "name": "Experimental",
-        "description": "Caracter√≠sticas experimentales",
+        "description": "CaracterÌsticas experimentales",
         "properties": {
           "native_hooks": {
             "name": "Ganchos nativos",
-            "description": "Caracter√≠sticas inseguras que se conectan al c√≥digo nativo de Snapchat",
+            "description": "CaracterÌsticas inseguras que se conectan al cÛdigo nativo de Snapchat",
             "properties": {
               "composer_hooks": {
                 "name": "Ganchos de compositor",
-                "description": "Inyecte c√≥digo en el marco UI multiplataforma Composer",
+                "description": "Inyecte cÛdigo en el marco UI multiplataforma Composer",
                 "properties": {
                   "show_first_created_username": {
                     "name": "Mostrar primero nombre de usuario creado",
-                    "description": "Muestra el primer nombre de usuario creado junto al nombre de usuario actual en la p√°gina de perfil"
+                    "description": "Muestra el primer nombre de usuario creado junto al nombre de usuario actual en la p·gina de perfil"
                   },
                   "bypass_camera_roll_limit": {
-                    "name": "Borde del l√≠mite de la c√°mara",
-                    "description": "Aumenta la cantidad m√°xima de medios que puede enviar desde el rollo de c√°mara"
+                    "name": "Borde del lÌmite de la c·mara",
+                    "description": "Aumenta la cantidad m·xima de medios que puede enviar desde el rollo de c·mara"
                   },
                   "custom_self_destruct_snap_delay": {
-                    "name": "Carga de ajuste de autodestrucci√≥n personalizada",
-                    "description": "Da m√°s opciones para el temporizador de autodestrucci√≥n al enviar un Snap"
+                    "name": "Carga de ajuste de autodestrucciÛn personalizada",
+                    "description": "Da m·s opciones para el temporizador de autodestrucciÛn al enviar un Snap"
                   },
                   "composer_console": {
                     "name": "Consola de compositor",
-                    "description": "Permite ejecutar c√≥digo JavaScript en Composer (arm64 solamente)"
+                    "description": "Permite ejecutar cÛdigo JavaScript en Composer (arm64 solamente)"
                   },
                   "composer_logs": {
                     "name": "Registros de Composer",
@@ -2155,13 +2200,13 @@
               },
               "custom_shared_library": {
                 "name": "Biblioteca compartida personalizada",
-                "description": "Carga una biblioteca compartida personalizada en Snapchat. Esta caracter√≠stica es s√≥lo para fines de prueba"
+                "description": "Carga una biblioteca compartida personalizada en Snapchat. Esta caracterÌstica es sÛlo para fines de prueba"
               }
             }
           },
           "spoof": {
             "name": "Suplantar",
-            "description": "Cuchara de informaci√≥n sobre usted",
+            "description": "Cuchara de informaciÛn sobre usted",
             "properties": {
               "play_store_installer_package_name": {
                 "name": "Nombre del paquete Installer Store",
@@ -2172,15 +2217,15 @@
                 "description": "Impide que Snapchat detecte VPNs"
               },
               "remove_mock_location_flag": {
-                "name": "Remove Mock Ubicaci√≥n Bandera",
-                "description": "Impide que Snapchat detecte Ubicaci√≥n del mock"
+                "name": "Remove Mock UbicaciÛn Bandera",
+                "description": "Impide que Snapchat detecte UbicaciÛn del mock"
               },
               "force_wifi_transport_flag": {
                 "name": "Bandera de transporte Wi-Fi de la Fuerza",
-                "description": "Transporte de la red de fuerzas para informar Wi-Fi en lugar de datos m√≥viles"
+                "description": "Transporte de la red de fuerzas para informar Wi-Fi en lugar de datos mÛviles"
               },
               "spoof_device_id": {
-                "name": "Identificaci√≥n del dispositivo",
+                "name": "IdentificaciÛn del dispositivo",
                 "description": "Anule el ID de Android enviado a Snapchat",
                 "properties": {
                   "spoof_android_id": {
@@ -2199,17 +2244,17 @@
               },
               "device_model": {
                 "name": "Modelo de dispositivo",
-                "description": "Elija qu√© modelo de dispositivo para la cuchara"
+                "description": "Elija quÈ modelo de dispositivo para la cuchara"
               }
             }
           },
           "convert_message_locally": {
             "name": "Convertir Mensaje Local",
-            "description": "Convierte snaps en chat de medios externos localmente. Esto aparece en el men√∫ contextual de descarga de chat"
+            "description": "Convierte snaps en chat de medios externos localmente. Esto aparece en el men˙ contextual de descarga de chat"
           },
           "media_file_picker": {
             "name": "Selector de archivos multimedia",
-            "description": "Permite seleccionar cualquier archivo de v√≠deo/audio de la galer√≠a"
+            "description": "Permite seleccionar cualquier archivo de vÌdeo/audio de la galerÌa"
           },
           "story_logger": {
             "name": "Registro de historias",
@@ -2217,89 +2262,89 @@
           },
           "call_recorder": {
             "name": "Grabador de llamadas",
-            "description": "Registra autom√°ticamente las llamadas de audio"
+            "description": "Registra autom·ticamente las llamadas de audio"
           },
           "account_switcher": {
             "name": "Switcher de cuenta",
-            "description": "Permite cambiar entre las cuentas sin iniciar sesi√≥n\nLarga presi√≥n sobre el icono de b√∫squeda junto a su perfil Bitmoji para abrir el men√∫\nNota: Esta caracter√≠stica es experimental y probablemente cambiar√° en el futuro",
+            "description": "Permite cambiar entre las cuentas sin iniciar sesiÛn\nLarga presiÛn sobre el icono de b˙squeda junto a su perfil Bitmoji para abrir el men˙\nNota: Esta caracterÌstica es experimental y probablemente cambiar· en el futuro",
             "properties": {
               "auto_backup_current_account": {
                 "name": "Auto Backup Cuenta actual",
-                "description": "Respalda autom√°ticamente la cuenta actual al iniciar sesi√≥n o cambiar cuentas"
+                "description": "Respalda autom·ticamente la cuenta actual al iniciar sesiÛn o cambiar cuentas"
               }
             }
           },
           "better_transcript": {
-            "name": "Mejor transcripci√≥n",
-            "description": "Mejora la transcripci√≥n de la nota de voz",
+            "name": "Mejor transcripciÛn",
+            "description": "Mejora la transcripciÛn de la nota de voz",
             "properties": {
               "force_transcription": {
-                "name": "Nota de la Fuerza de Voz Transcripci√≥n",
+                "name": "Nota de la Fuerza de Voz TranscripciÛn",
                 "description": "Permite que todas las notas de voz sean transcritas"
               },
               "preferred_transcription_lang": {
                 "name": "Idioma preferido",
-                "description": "El idioma preferido para la transcripci√≥n de la nota de voz (por ejemplo EN, ES, FR)"
+                "description": "El idioma preferido para la transcripciÛn de la nota de voz (por ejemplo EN, ES, FR)"
               },
               "notification_transcript": {
-                "name": "Transcripci√≥n",
-                "description": "Transcribe notas de voz en notificaciones\nEsta caracter√≠stica requiere que la funci√≥n de vista previa de chat est√© habilitada en notificaciones mejores"
+                "name": "TranscripciÛn",
+                "description": "Transcribe notas de voz en notificaciones\nEsta caracterÌstica requiere que la funciÛn de vista previa de chat estÈ habilitada en notificaciones mejores"
               }
             }
           },
           "voice_note_auto_play": {
             "name": "Nota de voz Auto Play",
-            "description": "Juega autom√°ticamente la siguiente nota de voz despu√©s de que el actual termine"
+            "description": "Juega autom·ticamente la siguiente nota de voz despuÈs de que el actual termine"
           },
           "friend_notes": {
             "name": "Notas de amigos",
-            "description": "Permite a√±adir notas a los perfiles de amigos"
+            "description": "Permite aÒadir notas a los perfiles de amigos"
           },
           "cof_experiments": {
             "name": "Experimentos de COF",
-            "description": "Permite funciones de Snapchat sin liberaci√≥n/beta"
+            "description": "Permite funciones de Snapchat sin liberaciÛn/beta"
           },
           "context_menu_fix": {
             "name": "Correcci?n del men? contextual",
-            "description": "Intento de reparar el men√∫ Amigo Alimentado como cuando el dispositivo est√° fuera de l√≠nea no se puede mostrar correctamente"
+            "description": "Intento de reparar el men˙ Amigo Alimentado como cuando el dispositivo est· fuera de lÌnea no se puede mostrar correctamente"
           },
           "app_lock": {
             "name": "Bloqueo de la app",
-            "description": "Evita el acceso a Snapchat sin c√≥digo de paso",
+            "description": "Evita el acceso a Snapchat sin cÛdigo de paso",
             "properties": {
               "lock_on_resume": {
                 "name": "Bloqueo en el volumen",
-                "description": "Cierra la aplicaci√≥n cuando se vuelve a abrir"
+                "description": "Cierra la aplicaciÛn cuando se vuelve a abrir"
               }
             }
           },
           "infinite_story_boost": {
             "name": "Historia Infinita Boost",
-            "description": "Pasa la historia l√≠mite de retraso"
+            "description": "Pasa la historia lÌmite de retraso"
           },
           "meo_passcode_bypass": {
-            "name": "Mis ojos s√≥lo pasan el c√≥digo de paso",
-            "description": "Pasa los ojos S√≥lo contrase√±a\nEsto s√≥lo funcionar√° si el contrase√±a ha sido introducido correctamente antes"
+            "name": "Mis ojos sÛlo pasan el cÛdigo de paso",
+            "description": "Pasa los ojos SÛlo contraseÒa\nEsto sÛlo funcionar· si el contraseÒa ha sido introducido correctamente antes"
           },
           "no_friend_score_delay": {
             "name": "Sin retraso de puntuaci?n de amigos",
-            "description": "Elimina el retraso al ver una partici√≥n de amigos"
+            "description": "Elimina el retraso al ver una particiÛn de amigos"
           },
           "best_friend_pinning": {
             "name": "Mejor amigo Pinning",
-            "description": "Le permite colocar a un amigo como su mejor amigo n√∫mero uno. Nota: S√≥lo puedes ver a tu mejor amigo"
+            "description": "Le permite colocar a un amigo como su mejor amigo n˙mero uno. Nota: SÛlo puedes ver a tu mejor amigo"
           },
           "e2ee": {
-            "name": "Encriptaci√≥n de extremo a extremo",
-            "description": "Cifra tus mensajes con AES usando una clave secreta compartida\nAseg√∫rese de guardar su llave en alg√∫n lugar seguro!",
+            "name": "EncriptaciÛn de extremo a extremo",
+            "description": "Cifra tus mensajes con AES usando una clave secreta compartida\nAseg˙rese de guardar su llave en alg˙n lugar seguro!",
             "properties": {
               "encrypted_message_indicator": {
                 "name": "Indicador de mensaje cifrado",
-                "description": "A√±ade un emoji al lado de mensajes cifrados"
+                "description": "AÒade un emoji al lado de mensajes cifrados"
               },
               "force_message_encryption": {
-                "name": "Encriptaci√≥n de Mensajes de Fuerza",
-                "description": "Evita enviar mensajes cifrados a personas que no tienen E2E Encryption habilitado s√≥lo cuando se seleccionan m√∫ltiples conversaciones"
+                "name": "EncriptaciÛn de Mensajes de Fuerza",
+                "description": "Evita enviar mensajes cifrados a personas que no tienen E2E Encryption habilitado sÛlo cuando se seleccionan m˙ltiples conversaciones"
               }
             }
           },
@@ -2308,20 +2353,20 @@
             "description": "Suplanta el origen de una solicitud de amistad"
           },
           "hidden_snapchat_plus_features": {
-            "name": "Snapchat ocultado m√°s caracter√≠sticas",
-            "description": "Permite habilitar las caracter√≠sticas de Snapchat Plus\nPodr√≠a no funcionar en versiones anteriores de Snapchat"
+            "name": "Snapchat ocultado m·s caracterÌsticas",
+            "description": "Permite habilitar las caracterÌsticas de Snapchat Plus\nPodrÌa no funcionar en versiones anteriores de Snapchat"
           },
           "custom_streaks_expiration_format": {
-            "name": "Formato de expansi√≥n de Streaks personalizados",
-            "description": "Personaliza el formato Streaks Expiration\n\nVariables disponibles:\n- %c: Conteo de Escarabajos\n- %e: Timeglass Emoji\n- %d: D√≠as\n- %h: Horas\n- %m: Minutes\n- %s: Seconds\n- %w: Tiempo restante"
+            "name": "Formato de expansiÛn de Streaks personalizados",
+            "description": "Personaliza el formato Streaks Expiration\n\nVariables disponibles:\n- %c: Conteo de Escarabajos\n- %e: Timeglass Emoji\n- %d: DÌas\n- %h: Horas\n- %m: Minutes\n- %s: Seconds\n- %w: Tiempo restante"
           },
           "prevent_forced_logout": {
             "name": "Evitar cierre de sesi?n forzado",
-            "description": "Evita que Snapchat lo inicie cuando inicie sesi√≥n en otro dispositivo"
+            "description": "Evita que Snapchat lo inicie cuando inicie sesiÛn en otro dispositivo"
           },
           "snapscore_changes": {
             "name": "Cambios de Snapscore",
-            "description": "Rastreo de cambios en amigos Snapscore\nUtilice esta funci√≥n en versiones m√°s recientes de Snapchat s√≥lo"
+            "description": "Rastreo de cambios en amigos Snapscore\nUtilice esta funciÛn en versiones m·s recientes de Snapchat sÛlo"
           }
         }
       },
@@ -2331,51 +2376,51 @@
         "properties": {
           "developer_mode": {
             "name": "Modo de desarrollo",
-            "description": "Muestra informaci√≥n de depuraci√≥n en la UI de Snapchat"
+            "description": "Muestra informaciÛn de depuraciÛn en la UI de Snapchat"
           },
           "module_folder": {
-            "name": "Carpeta de m√≥dulo",
+            "name": "Carpeta de mÛdulo",
             "description": "La carpeta donde se encuentran los scripts"
           },
           "auto_reload": {
-            "name": "Recarga autom√°tica",
-            "description": "Recarga autom√°ticamente scripts cuando cambian"
+            "name": "Recarga autom·tica",
+            "description": "Recarga autom·ticamente scripts cuando cambian"
           },
           "integrated_ui": {
             "name": "UI integrada",
-            "description": "Permite a los scripts a√±adir componentes de interfaz de usuario personalizados a Snapchat"
+            "description": "Permite a los scripts aÒadir componentes de interfaz de usuario personalizados a Snapchat"
           },
           "disable_log_anonymization": {
             "name": "Anonimato de registro",
-            "description": "Desactiva la anonimatoizaci√≥n de los registros"
+            "description": "Desactiva la anonimatoizaciÛn de los registros"
           },
           "disable_optimization": {
-            "name": "Optimizaci√≥n deshabilitaci√≥n",
-            "description": "Desactiva la optimizaci√≥n de scripts. Esto puede causar problemas de rendimiento."
+            "name": "OptimizaciÛn deshabilitaciÛn",
+            "description": "Desactiva la optimizaciÛn de scripts. Esto puede causar problemas de rendimiento."
           }
         }
       },
       "friend_tracker": {
         "name": "Amigo Tracker",
-        "description": "Act√∫a del amigo de los discos en Snapchat",
+        "description": "Act˙a del amigo de los discos en Snapchat",
         "properties": {
           "record_messaging_events": {
             "name": "Record Messaging Eventos",
-            "description": "Actos de mensajer√≠a como abrir un snap, leer un mensaje, etc."
+            "description": "Actos de mensajerÌa como abrir un snap, leer un mensaje, etc."
           },
           "allow_running_in_background": {
             "name": "Permitir correr en el fondo",
-            "description": "Permite al rastreador correr en el fondo. Nota: Esto va a drenar significativamente su bater√≠a"
+            "description": "Permite al rastreador correr en el fondo. Nota: Esto va a drenar significativamente su baterÌa"
           },
           "auto_purge": {
             "name": "Purgado autom?tico",
-            "description": "Elimina autom√°ticamente eventos cach√© que son mayores que la cantidad especificada de tiempo"
+            "description": "Elimina autom·ticamente eventos cachÈ que son mayores que la cantidad especificada de tiempo"
           }
         }
       }
     },
     "friend_notes": {
-      "placeholder": "A√±adir una nota..."
+      "placeholder": "AÒadir una nota..."
     }
   },
   "friend_menu_option": {
@@ -2393,21 +2438,21 @@
     "NOTE": "Nota de audio",
     "STICKER": "Pegatina",
     "SHARE": "Compartir",
-    "STATUS": "Situaci√≥n",
-    "LOCATION": "Ubicaci√≥n",
-    "STATUS_SAVE_TO_CAMERA_ROLL": "Guardado en rollo de c√°mara",
+    "STATUS": "SituaciÛn",
+    "LOCATION": "UbicaciÛn",
+    "STATUS_SAVE_TO_CAMERA_ROLL": "Guardado en rollo de c·mara",
     "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "Captura",
-    "STATUS_CONVERSATION_CAPTURE_RECORD": "Grabaci√≥n de pantalla",
-    "STATUS_CALL_MISSED_VIDEO": "Llamada de v√≠deo perdida",
+    "STATUS_CONVERSATION_CAPTURE_RECORD": "GrabaciÛn de pantalla",
+    "STATUS_CALL_MISSED_VIDEO": "Llamada de vÌdeo perdida",
     "STATUS_CALL_MISSED_AUDIO": "Llamada de audio perdida",
-    "LIVE_LOCATION_SHARE": "Ubicaci√≥n en vivo Compartir",
-    "CREATIVE_TOOL_ITEM": "Art√≠culo de la herramienta creativa",
+    "LIVE_LOCATION_SHARE": "UbicaciÛn en vivo Compartir",
+    "CREATIVE_TOOL_ITEM": "ArtÌculo de la herramienta creativa",
     "FAMILY_CENTER_INVITE": "Invitaci?n a Family Center",
     "FAMILY_CENTER_ACCEPT": "Family Center Aceptar",
     "FAMILY_CENTER_LEAVE": "Salir de Family Center",
-    "STATUS_PLUS_GIFT": "Estado m√°s regalo",
+    "STATUS_PLUS_GIFT": "Estado m·s regalo",
     "TINY_SNAP": "Snap peque?o",
-    "STATUS_COUNTDOWN": "Cuenta atr√°s",
+    "STATUS_COUNTDOWN": "Cuenta atr·s",
     "MAP_REACTION": "Reacci?n de mapa",
     "chat_messages": "Chat Mensajes",
     "snap_messages": "Snaps",
@@ -2430,14 +2475,14 @@
     "profile_picture": "Perfil Imagen",
     "story_logger": "Registro de historias",
     "message_logger": "Mensaje Logger",
-    "merged": "Fusi√≥n",
+    "merged": "FusiÛn",
     "voice_call": "Llamada de voz"
   },
   "chat_action_menu": {
     "preview_button": "Vista previa",
     "download_button": "Descargar",
     "delete_logged_message_button": "Borrar mensaje perdido",
-    "show_chat_edit_history": "Mostrar historia de edici√≥n de chat",
+    "show_chat_edit_history": "Mostrar historia de ediciÛn de chat",
     "convert_message": "Convertir"
   },
   "opera_context_menu": {
@@ -2445,12 +2490,12 @@
     "sent_at": "Enviado{date}",
     "created_at": "Creado en{date}",
     "expires_at": "Gastos en{date}",
-    "media_size": "Tama√±o medio:{size}",
-    "media_duration": "Duraci√≥n de los medios:{duration}ms",
-    "show_debug_info": "Mostrar informaci√≥n de depuraci√≥n"
+    "media_size": "TamaÒo medio:{size}",
+    "media_duration": "DuraciÛn de los medios:{duration}ms",
+    "show_debug_info": "Mostrar informaciÛn de depuraciÛn"
   },
   "modal_option": {
-    "profile_info": "Informaci√≥n del perfil",
+    "profile_info": "InformaciÛn del perfil",
     "close": "Cerca"
   },
   "gallery_media_send_override": {
@@ -2460,41 +2505,41 @@
     "SNAP": "Snap",
     "SAVEABLE_SNAP": "Ajuste ahorrable",
     "null": "Predeterminado de Snapchat",
-    "multiple_media_toast": "S√≥lo se puede enviar un medio a la vez"
+    "multiple_media_toast": "SÛlo se puede enviar un medio a la vez"
   },
   "mark_as_seen": {
-    "no_unseen_snaps_toast": "¬°No se han encontrado Snaps!",
+    "no_unseen_snaps_toast": "°No se han encontrado Snaps!",
     "seen_toast": "Marcado como visto!",
-    "unseen_toast": "¬°Marcado como invisible!",
-    "already_seen_toast": "¬°Ya marcado como visto!",
-    "already_unseen_toast": "¬°Ya marcado como invisible!"
+    "unseen_toast": "°Marcado como invisible!",
+    "already_seen_toast": "°Ya marcado como visto!",
+    "already_unseen_toast": "°Ya marcado como invisible!"
   },
   "conversation_preview": {
-    "streak_expiration": "expira en{day}d√≠as{hour}horas{minute}minutos",
+    "streak_expiration": "expira en{day}dÌas{hour}horas{minute}minutos",
     "total_messages": "Total de mensajes enviados/recibidos:\n{count}",
     "title": "Vista previa",
     "unknown_user": "Usuario desconocido",
-    "no_messages": "¬°No hay mensajes encontrados!"
+    "no_messages": "°No hay mensajes encontrados!"
   },
   "profile_info": {
-    "title": "Informaci√≥n del perfil",
+    "title": "InformaciÛn del perfil",
     "first_created_username": "Nombre de usuario creado",
     "mutable_username": "Nombre de usuario editable",
     "display_name": "Nombre",
     "added_date": "Fecha",
-    "birthday": "Cumplea√±os{month}{day}",
-    "hidden_birthday": "Cumplea√±os : Oculto",
+    "birthday": "CumpleaÒos{month}{day}",
+    "hidden_birthday": "CumpleaÒos : Oculto",
     "friendship": "Amistad",
     "add_source": "Agregar origen",
     "snapchat_plus": "Snapchat Plus",
     "snapchat_plus_state": {
       "subscribed": "Suscrito",
-      "not_subscribed": "No est√° suscrito"
+      "not_subscribed": "No est· suscrito"
     }
   },
   "snapchat_plus_state": {
     "subscribed": "Suscrito",
-    "not_subscribed": "No est√° suscrito"
+    "not_subscribed": "No est· suscrito"
   },
   "friendship_link_type": {
     "mutual": "Mutuo",
@@ -2508,12 +2553,12 @@
   },
   "bulk_messaging_action": {
     "actions.title": "Acciones",
-    "choose_action_title": "Elija una acci√≥n",
+    "choose_action_title": "Elija una acciÛn",
     "progress_status": "Procesamiento{index}de{total}",
     "selection_dialog_continue_button": "Continuar",
     "confirmation_dialog": {
-      "title": "¬øEst√°s seguro?",
-      "message": "Esto afectar√° a todos los seleccionados, Esta acci√≥n no se puede deshacer."
+      "title": "øEst·s seguro?",
+      "message": "Esto afectar· a todos los seleccionados, Esta acciÛn no se puede deshacer."
     },
     "actions": {
       "remove_friends": "Quitar amigos",
@@ -2523,20 +2568,20 @@
       "remove": "Retirar"
     },
     "leave_groups": "Vete{count}grupos",
-    "left_group_success": "Grupo izquierdo con √©xito",
+    "left_group_success": "Grupo izquierdo con Èxito",
     "failed_to_leave_group": "Failed to leave group:{error}",
     "conversation_types": {
-      "friends_only": "S√≥lo amigos",
-      "groups_only": "Grupos S√≥lo",
+      "friends_only": "SÛlo amigos",
+      "groups_only": "Grupos SÛlo",
       "both": "Grupos de Amigos"
     },
     "sort_by": "Ordenar por",
     "reverse_order": "Orden inversa",
-    "search_by_name": "B√∫squeda por nombre",
+    "search_by_name": "B˙squeda por nombre",
     "no_friends_found": "No hay amigos encontrados",
     "no_groups_found": "No se encontraron grupos",
     "no_friends_or_groups_found": "No hay amigos ni grupos encontrados",
-    "relationship": "Relaci√≥n:",
+    "relationship": "RelaciÛn:",
     "unknown_group": "Grupo desconocido",
     "type_group_chat": "Tipo: Chat de grupo",
     "clean_conversations": "Limpio{count}conversaciones",
@@ -2552,7 +2597,7 @@
       "all": "Todos",
       "my_friends": "Mis amigos",
       "blocked": "Bloqueados",
-      "removed_me": "Me quit√≥",
+      "removed_me": "Me quitÛ",
       "suggested": "Sugerido",
       "deleted": "Suprimido",
       "business_accounts": "Cuentas comerciales",
@@ -2560,17 +2605,17 @@
       "non_streaks": "Sin rachas",
       "followed": "Seguido",
       "following": "Siguiendo",
-      "location_on_map": "Ubicaci√≥n en Mapa"
+      "location_on_map": "UbicaciÛn en Mapa"
     },
     "sort_options": {
       "none": "Ninguno",
       "username": "Nombre de usuario",
-      "added_timestamp": "A√±adido Timestamp",
+      "added_timestamp": "AÒadido Timestamp",
       "snap_score": "Partituras",
       "streak_length": "Longitud de montaje",
       "most_messages_sent": "M?s mensajes enviados",
-      "most_recent_message": "Mensaje m√°s reciente",
-      "nearest_location": "Ubicaci√≥n m√°s cercana"
+      "most_recent_message": "Mensaje m·s reciente",
+      "nearest_location": "UbicaciÛn m·s cercana"
     }
   },
   "chat_export": {
@@ -2578,37 +2623,37 @@
       "select_conversations_title": "Seleccionar conversaciones",
       "text_field_selection": "{amount}seleccionado",
       "text_field_selection_all": "Todos",
-      "export_file_format_title": "Formato de archivo de exportaci√≥n",
+      "export_file_format_title": "Formato de archivo de exportaciÛn",
       "message_type_filter_title": "Mensajes de filtro por tipo",
       "amount_of_messages_title": "Cuenta del mensaje (dejar en blanco para todos)",
       "download_medias_title": "Descargar Media"
     },
     "dialog_negative_button": "Cancelar",
-    "dialog_positive_button": "Exportaci√≥n",
+    "dialog_positive_button": "ExportaciÛn",
     "exported_to": "Exportado a{path}",
     "exporting_chats": "Exportando chats...",
     "processing_chats": "Procesamiento{amount}conversaciones...",
     "export_fail": "Failed to export conversation{conversation}",
-    "writing_output": "Producci√≥n de escritura...",
-    "finished": "¬°Hecho! Ahora puedes cerrar este di√°logo.",
-    "no_messages_found": "¬°No hay mensajes encontrados!",
-    "exporting_message": "Exportaci√≥n{conversation}..."
+    "writing_output": "ProducciÛn de escritura...",
+    "finished": "°Hecho! Ahora puedes cerrar este di·logo.",
+    "no_messages_found": "°No hay mensajes encontrados!",
+    "exporting_message": "ExportaciÛn{conversation}..."
   },
   "button": {
     "ok": "OK",
-    "positive": "S√≠",
+    "positive": "SÌ",
     "negative": "No",
     "cancel": "Cancelar",
     "save": "Guardar",
     "open": "Abierto",
     "download": "Descargar",
     "send": "Enviar",
-    "restore_original": "Restauraci√≥n original",
+    "restore_original": "RestauraciÛn original",
     "convert_external_media": "Convertir Medios externos"
   },
   "tracker_events": {
-    "conversation_enter": "Conversaci√≥n Entra",
-    "conversation_exit": "Salida de conversaci√≥n",
+    "conversation_enter": "ConversaciÛn Entra",
+    "conversation_exit": "Salida de conversaciÛn",
     "started_typing": "Comienzo de escribir",
     "stopped_typing": "Detenido escribiendo",
     "started_speaking": "Comienzo a hablar",
@@ -2620,20 +2665,20 @@
     "message_saved": "Mensaje guardado",
     "message_unsaved": "Mensaje no salvo",
     "message_edited": "Mensaje editado",
-    "message_reaction_add": "Reacci√≥n del mensaje A√±adir",
-    "message_reaction_remove": "Reacci√≥n del mensaje Remove",
+    "message_reaction_add": "ReacciÛn del mensaje AÒadir",
+    "message_reaction_remove": "ReacciÛn del mensaje Remove",
     "snap_opened": "Snap abierto",
     "snap_replayed": "Snap reproducido",
     "snap_replayed_twice": "Snap reproducido dos veces",
     "snap_screenshot": "Snap Captura de Pantalla",
-    "snap_screen_record": "Grabaci√≥n de pantalla",
+    "snap_screen_record": "GrabaciÛn de pantalla",
     "i_can_see_you": "Puedo verte"
   },
-  "cleared_from_feed": "Despejado de la alimentaci√≥n",
+  "cleared_from_feed": "Despejado de la alimentaciÛn",
   "tracker_actions": {
     "log": "Registrar",
-    "in_app_notification": "Notificaci√≥n de aplicaci√≥n",
-    "push_notification": "Notificaci√≥n de empuje",
+    "in_app_notification": "NotificaciÛn de aplicaciÛn",
+    "push_notification": "NotificaciÛn de empuje",
     "custom": "Aduanas"
   },
   "better_notifications": {
@@ -2651,12 +2696,12 @@
   },
   "call_start_confirmation": {
     "dialog_title": "Empieza a llamar",
-    "dialog_message": "¬øSeguro que quieres empezar una llamada?"
+    "dialog_message": "øSeguro que quieres empezar una llamada?"
   },
   "half_swipe_notifier": {
     "notification_channel_name": "Media vuelta",
-    "notification_content_dm": "{friend}s√≥lo medio resbaladizo en su chat para{duration}segundos",
-    "notification_content_group": "{friend}s√≥lo medio resbaladizo en{group}para{duration}segundos"
+    "notification_content_dm": "{friend}sÛlo medio resbaladizo en su chat para{duration}segundos",
+    "notification_content_group": "{friend}sÛlo medio resbaladizo en{group}para{duration}segundos"
   },
   "download_processor": {
     "attachment_type": {
@@ -2668,29 +2713,29 @@
       "original_story": "Historia original"
     },
     "select_attachments_title": "Seleccione archivos adjuntos",
-    "download_started_toast": "Descargar comenz√≥",
+    "download_started_toast": "Descargar comenzÛ",
     "unsupported_content_type_toast": "Tipo de contenido sin soporte!",
-    "failed_no_longer_available_toast": "Los medios ya no est√°n disponibles",
+    "failed_no_longer_available_toast": "Los medios ya no est·n disponibles",
     "no_attachments_toast": "No hay apegos encontrados!",
-    "already_queued_toast": "¬°Los medios ya est√°n en fila!",
-    "already_downloaded_toast": "¬°Los medios ya descargados!",
-    "content_saved_toast": "¬°Salvado!",
+    "already_queued_toast": "°Los medios ya est·n en fila!",
+    "already_downloaded_toast": "°Los medios ya descargados!",
+    "content_saved_toast": "°Salvado!",
     "download_toast": "Descarga{path}...",
     "processing_toast": "Procesamiento{path}...",
     "failed_generic_toast": "No se pudo descargar",
     "failed_to_create_preview_toast": "Failed para crear vista previa",
     "failed_processing_toast": "Failed processing{error}",
     "failed_gallery_toast": "Failed saving to gallery{error}",
-    "dash_no_chapter": "No hay cap√≠tulo encontrado",
+    "dash_no_chapter": "No hay capÌtulo encontrado",
     "dash_dialog": {
-      "title": "Descarga los medios de comunicaci√≥n",
+      "title": "Descarga los medios de comunicaciÛn",
       "download_all": "Descargar All",
       "segment_text": "Segmento{from}-{to}"
     }
   },
   "streaks_reminder": {
     "notification_title": "Rachas",
-    "notification_text": "Perder√°s tu Streak con{friend}dentro{hoursLeft}horas"
+    "notification_text": "Perder·s tu Streak con{friend}dentro{hoursLeft}horas"
   },
   "biometric_auth": {
     "unlock_button": "Desbloquear",
@@ -2699,37 +2744,37 @@
   },
   "end_to_end_encryption": {
     "toolbox": {
-      "no_shared_key": "A√∫n no tienes un secreto compartido con este amigo. Haga clic a continuaci√≥n para iniciar una nueva.",
-      "shared_key_fingerprint": "Tu huella es:\n\n{fingerprint}Aseg√∫rese de comprobar si coincide con la huella de su amigo!",
+      "no_shared_key": "A˙n no tienes un secreto compartido con este amigo. Haga clic a continuaciÛn para iniciar una nueva.",
+      "shared_key_fingerprint": "Tu huella es:\n\n{fingerprint}Aseg˙rese de comprobar si coincide con la huella de su amigo!",
       "initiate_exchange_button": "Iniciar el intercambio clave"
     },
     "confirmation_dialogs": {
-      "title": "Encriptaci√≥n de extremo a extremo",
-      "confirmation_1": "Esto sobreescribir√° tu llave existente. Usted perder√° el acceso a todos los mensajes cifrados de este amigo. ¬øSeguro que quieres continuar?",
-      "confirmation_2": "¬øSeguro que quieres continuar? Esta es tu √∫ltima oportunidad para salir."
+      "title": "EncriptaciÛn de extremo a extremo",
+      "confirmation_1": "Esto sobreescribir· tu llave existente. Usted perder· el acceso a todos los mensajes cifrados de este amigo. øSeguro que quieres continuar?",
+      "confirmation_2": "øSeguro que quieres continuar? Esta es tu ˙ltima oportunidad para salir."
     },
-    "unencrypted_conversation_send_failure_toast": "¬°No puedes enviar contenido cifrado a conversaciones encriptadas y no cifradas!",
-    "native_hooks_send_failure_toast": "¬°Failed to send! Por favor, active los ganchos nativos en la configuraci√≥n.",
-    "no_participants_to_encrypt_toast": "¬°No tienes amigos en esta conversaci√≥n para encriptar mensajes!",
-    "encryption_failed_toast": "¬°Failed to encrypt message! Chequee logcat para m√°s detalles.",
-    "accept_public_key_success_toast": "¬°La clave p√∫blica aceptada con √©xito!",
-    "accept_secret_key_success_toast": "¬°Hecho! Ahora puede enviar y recibir mensajes cifrados con este amigo.",
-    "accept_public_key_failure_toast": "No aceptar la clave p√∫blica",
+    "unencrypted_conversation_send_failure_toast": "°No puedes enviar contenido cifrado a conversaciones encriptadas y no cifradas!",
+    "native_hooks_send_failure_toast": "°Failed to send! Por favor, active los ganchos nativos en la configuraciÛn.",
+    "no_participants_to_encrypt_toast": "°No tienes amigos en esta conversaciÛn para encriptar mensajes!",
+    "encryption_failed_toast": "°Failed to encrypt message! Chequee logcat para m·s detalles.",
+    "accept_public_key_success_toast": "°La clave p˙blica aceptada con Èxito!",
+    "accept_secret_key_success_toast": "°Hecho! Ahora puede enviar y recibir mensajes cifrados con este amigo.",
+    "accept_public_key_failure_toast": "No aceptar la clave p˙blica",
     "accept_secret_key_failure_toast": "No aceptar la clave secreta",
     "accept_secret_button": "Aceptar Secreto",
-    "accept_public_key_button": "Aceptar P√∫blico Clave",
+    "accept_public_key_button": "Aceptar P˙blico Clave",
     "outgoing_pk_message": "Solicitud de cambio clave",
     "outgoing_secret_message": "Respuesta del intercambio clave",
-    "incoming_pk_message": "Acabas de recibir una solicitud de clave p√∫blica. Haga clic a continuaci√≥n para aceptarlo.",
-    "incoming_secret_message": "Tu amigo acaba de aceptar tu llave p√∫blica. Haga clic a continuaci√≥n para aceptar el secreto."
+    "incoming_pk_message": "Acabas de recibir una solicitud de clave p˙blica. Haga clic a continuaciÛn para aceptarlo.",
+    "incoming_secret_message": "Tu amigo acaba de aceptar tu llave p˙blica. Haga clic a continuaciÛn para aceptar el secreto."
   },
   "auto_open_snaps": {
     "title": "Abrir Snaps autom?ticamente",
     "priority_title": "Auto Open Snaps (Prioridad)",
     "error_title": "Auto Open Snaps (Errores)",
-    "channel_description": "Notificaciones para el estado de cola de apertura autom√°tica",
-    "priority_channel_description": "Notificaciones de alta prioridad para la apertura autom√°tica",
-    "error_channel_description": "Notificaciones de error cuando falla la apertura autom√°tica",
+    "channel_description": "Notificaciones para el estado de cola de apertura autom·tica",
+    "priority_channel_description": "Notificaciones de alta prioridad para la apertura autom·tica",
+    "error_channel_description": "Notificaciones de error cuando falla la apertura autom·tica",
     "paused_status": "Auto Open Snaps parado",
     "processing_status": "Procesando los snaps:{queued}en espera,{processed}procesadas",
     "monitor_status": "Monitoreo...",
@@ -2741,15 +2786,15 @@
     "error_content": "Failed to open snap from{sender}:{error}",
     "resumed_feedback": "Apertura autom?tica reanudada",
     "paused_feedback": "Apertura autom?tica en pausa",
-    "resumed_message": "Procesamiento continuar√° autom√°ticamente para los snaps apagados",
+    "resumed_message": "Procesamiento continuar· autom·ticamente para los snaps apagados",
     "paused_message": "Procesando se detuvo. Queue kept ({count}snaps)",
     "status_paused": "Pausa",
-    "status_monitoring": "Supervisi√≥n",
+    "status_monitoring": "SupervisiÛn",
     "status_active": "Activo",
-    "queue_cleared": "Lugar despejado y reajuste de estad√≠sticas",
+    "queue_cleared": "Lugar despejado y reajuste de estadÌsticas",
     "queue_cleared_title": "Cola limpiada",
     "queue_cleared_reset": "Queue Cleared \" Reset",
-    "queue_cleared_feedback": "Despejado{count}chasis apagadas ‚Ä¢ Reset{processed}conteo procesado",
+    "queue_cleared_feedback": "Despejado{count}chasis apagadas ï Reset{processed}conteo procesado",
     "queue_cleared_feedback_simple": "Reset{processed}conteo procesado",
     "unknown_sender": "Desconocida",
     "unknown_user": "Usuario desconocido",
@@ -2759,86 +2804,86 @@
     "conversation_type_dm": "DM",
     "conversation_type_group_chat": "Chat de grupo",
     "conversation_type_chat": "Chat",
-    "notification_status": "Situaci√≥n",
-    "notification_statistics": "ESTAD√çSTICAS",
-    "notification_queue_size": "Tama√±o de la cola",
+    "notification_status": "SituaciÛn",
+    "notification_statistics": "ESTADÕSTICAS",
+    "notification_queue_size": "TamaÒo de la cola",
     "notification_total_opened": "Total de Snaps abiertos",
     "notification_queue_preview": "PREVISTA DE PREVISTAS",
-    "notification_processing_continue": "Procesamiento continuar√° autom√°ticamente...",
+    "notification_processing_continue": "Procesamiento continuar· autom·ticamente...",
     "notification_no_snaps_queue": "No hay problemas en la cola.",
     "notification_queue_cleared_opened": "Queue cleared ({opened}abierta)",
-    "content_type_photo_video_snap": "Foto/V√≠deo",
+    "content_type_photo_video_snap": "Foto/VÌdeo",
     "conversation_type_group_with_name": "Grupo:{name}",
     "delete_logs_title": "Eliminar los registros?",
-    "delete_logs_progress": "Eliminaci√≥n{count}troncos...",
-    "delete_logs_description": "Esto eliminar√° los registros basados en el filtro actual y la consulta de b√∫squeda. Esta acci√≥n no se puede deshacer.",
-    "export_logs_title": "¬øRegistros de exportaci√≥n?",
+    "delete_logs_progress": "EliminaciÛn{count}troncos...",
+    "delete_logs_description": "Esto eliminar· los registros basados en el filtro actual y la consulta de b˙squeda. Esta acciÛn no se puede deshacer.",
+    "export_logs_title": "øRegistros de exportaciÛn?",
     "export_logs_progress": "Exportando registros...",
-    "export_logs_description": "Esto exportar√° registros basados en el filtro actual y la consulta de b√∫squeda.",
-    "export_logs_as": "Exportaci√≥n{type}",
+    "export_logs_description": "Esto exportar· registros basados en el filtro actual y la consulta de b˙squeda.",
+    "export_logs_as": "ExportaciÛn{type}",
     "export_logs_success": "Registros exportados!",
-    "export_logs_failure": "No exportaba troncos. Chequee logcat para m√°s detalles.",
+    "export_logs_failure": "No exportaba troncos. Chequee logcat para m·s detalles.",
     "deleted_logs_count": "Suprimido{count}troncos"
   },
   "script_imported": "Script{name}importado!",
-  "script_import_failed": "Failed to import script.{error}. Compruebe los registros para m√°s detalles",
-  "script_updating": "Actualizaci√≥n de script{name}...",
-  "script_updated": "Actualizado{name}a versi√≥n{version}",
-  "script_update_failed": "Failed to update module. Compruebe los registros para m√°s detalles",
-  "script_edit_failed": "Failed to open module file. Compruebe los registros para m√°s detalles",
-  "script_data_cleared": "Datos del m√≥dulo despejados!",
-  "script_data_clear_failed": "Failed to clear module data. Compruebe los registros para m√°s detalles",
+  "script_import_failed": "Failed to import script.{error}. Compruebe los registros para m·s detalles",
+  "script_updating": "ActualizaciÛn de script{name}...",
+  "script_updated": "Actualizado{name}a versiÛn{version}",
+  "script_update_failed": "Failed to update module. Compruebe los registros para m·s detalles",
+  "script_edit_failed": "Failed to open module file. Compruebe los registros para m·s detalles",
+  "script_data_cleared": "Datos del mÛdulo despejados!",
+  "script_data_clear_failed": "Failed to clear module data. Compruebe los registros para m·s detalles",
   "script_deleted": "Borrado script{name}!",
-  "script_delete_failed": "Failed to delete module. Compruebe los registros para m√°s detalles",
+  "script_delete_failed": "Failed to delete module. Compruebe los registros para m·s detalles",
   "script_actions": "Acciones",
-  "script_no_description": "No hay descripci√≥n",
-  "script_update_available": "Actualizaci√≥n disponible:{version}",
+  "script_no_description": "No hay descripciÛn",
+  "script_update_available": "ActualizaciÛn disponible:{version}",
   "script_loaded": "Script cargado{name}",
   "script_unloaded": "Script descargado{name}",
-  "script_enable_disable_failed": "Failed{action}script. Compruebe los registros para m√°s detalles",
-  "script_no_settings": "Este m√≥dulo no tiene ninguna configuraci√≥n",
+  "script_enable_disable_failed": "Failed{action}script. Compruebe los registros para m·s detalles",
+  "script_no_settings": "Este mÛdulo no tiene ninguna configuraciÛn",
   "script_no_scripts_found": "No hay scripts encontrados",
   "script_ok_timeout": "OK{timeout}",
   "scripting_tagline": "Gestionar scripts, importaciones y carpetas",
   "installed_scripts_tab": "Instalado",
-  "catalog_tab": "Cat√°logo",
+  "catalog_tab": "Cat·logo",
   "no_scripts_folder_selected_title": "Seleccione la carpeta de scripts para empezar",
   "select_folder_button": "Elija la carpeta",
   "select_scripts_folder_toast": "Por favor seleccione una carpeta de scripts primero",
-  "delete_rule_title": "Art√≠culo",
-  "delete_rule_description": "¬øSeguro que quieres borrar esta regla?",
+  "delete_rule_title": "ArtÌculo",
+  "delete_rule_description": "øSeguro que quieres borrar esta regla?",
   "rule_name": "Nombre de la regla",
   "friend_tracker_notifications": {
     "notification_channel_name": "Amigo Tracker",
     "notification_title": "Actividad del amigo",
     "conversation_enter": "{friend}entrada{conversation}",
     "conversation_exit": "{friend}izquierda{conversation}",
-    "started_typing": "{friend}empez√≥ a escribir{conversation}",
-    "stopped_typing": "{friend}dej√≥ de escribir{conversation}",
-    "started_speaking": "{friend}empez√≥ a hablar{conversation}",
-    "stopped_speaking": "{friend}dej√≥ de hablar{conversation}",
-    "started_peeking": "{friend}comenz√≥ a mirar en{conversation}",
-    "stopped_peeking": "{friend}dej√≥ de mirar en{conversation}",
+    "started_typing": "{friend}empezÛ a escribir{conversation}",
+    "stopped_typing": "{friend}dejÛ de escribir{conversation}",
+    "started_speaking": "{friend}empezÛ a hablar{conversation}",
+    "stopped_speaking": "{friend}dejÛ de hablar{conversation}",
+    "started_peeking": "{friend}comenzÛ a mirar en{conversation}",
+    "stopped_peeking": "{friend}dejÛ de mirar en{conversation}",
     "message_read": "{friend}leer un mensaje{conversation}",
     "message_deleted": "{friend}borrado un mensaje en{conversation}",
-    "message_saved": "{friend}guard√≥ un mensaje en{conversation}",
+    "message_saved": "{friend}guardÛ un mensaje en{conversation}",
     "message_unsaved": "{friend}sin guardar un mensaje en{conversation}",
     "message_edited": "{friend}editado un mensaje{conversation}",
-    "message_reaction_add": "{friend}a√±adi√≥ una reacci√≥n{conversation}",
-    "message_reaction_remove": "{friend}retirada una reacci√≥n{conversation}",
-    "snap_opened": "{friend}abri√≥ un snap in{conversation}",
+    "message_reaction_add": "{friend}aÒadiÛ una reacciÛn{conversation}",
+    "message_reaction_remove": "{friend}retirada una reacciÛn{conversation}",
+    "snap_opened": "{friend}abriÛ un snap in{conversation}",
     "snap_replayed": "{friend}replayed a snap in{conversation}",
     "snap_replayed_twice": "{friend}replayed a snap twice in{conversation}",
-    "snap_screenshot": "{friend}tom√≥ una captura de pantalla en{conversation}",
+    "snap_screenshot": "{friend}tomÛ una captura de pantalla en{conversation}",
     "snap_screen_record": "{friend}pantalla registrada en{conversation}",
     "i_can_see_you": "{friend}actividad{conversation}:{details}"
   },
   "friend_mutation_observer": {
     "notification_channel_name": "Observador de mutaci?n de amigos",
     "friend_removed": "{username}te ha quitado como amigo",
-    "birthday_removed": "{username}ha quitado su cumplea√±os ({birthday})",
-    "birthday_added": "{username}ha a√±adido su cumplea√±os ({birthday})",
-    "birthday_changed": "{username}ha cambiado su cumplea√±os desde{oldBirthday}a{newBirthday}",
+    "birthday_removed": "{username}ha quitado su cumpleaÒos ({birthday})",
+    "birthday_added": "{username}ha aÒadido su cumpleaÒos ({birthday})",
+    "birthday_changed": "{username}ha cambiado su cumpleaÒos desde{oldBirthday}a{newBirthday}",
     "bitmoji_selfie_changed": "{username}ha cambiado su selfie Bitmoji",
     "bitmoji_avatar_changed": "{username}ha cambiado su avatar Bitmoji",
     "bitmoji_background_changed": "{username}ha cambiado sus antecedentes de Bitmoji",
@@ -2854,14 +2899,14 @@
     "date_range_picker_scroll_to_next_month": "Mes siguiente",
     "date_picker_today_description": "Hoy",
     "date_range_picker_day_in_range": "Seleccionado",
-    "date_input_invalid_for_pattern": "Fecha inv√°lida",
-    "date_input_invalid_year_range": "A√±o inv√°lido",
-    "date_input_invalid_not_allowed": "Fecha inv√°lida",
-    "date_range_input_invalid_range_input": "Gama de fecha inv√°lida"
+    "date_input_invalid_for_pattern": "Fecha inv·lida",
+    "date_input_invalid_year_range": "AÒo inv·lido",
+    "date_input_invalid_not_allowed": "Fecha inv·lida",
+    "date_range_input_invalid_range_input": "Gama de fecha inv·lida"
   },
   "send_override_dialog": {
     "title": "Enviar medios como",
-    "duration": "Duraci√≥n:{duration}",
+    "duration": "DuraciÛn:{duration}",
     "saveable_snap_hint": "Hacer Snap guardable en el chat",
     "unlimited_duration": "Ilimitados",
     "schedule": "Cuadro",
@@ -2875,52 +2920,52 @@
       "add_message": "Agregar mensaje",
       "edit_message": "Editar mensaje",
       "message_label": "Mensaje",
-      "no_messages": "A√∫n no hay mensajes. ¬°A√±ada su primer mensaje!",
-      "message_placeholder": "Introduzca su mensaje de auto-replicaci√≥n..."
+      "no_messages": "A˙n no hay mensajes. °AÒada su primer mensaje!",
+      "message_placeholder": "Introduzca su mensaje de auto-replicaciÛn..."
     }
   },
   "auto_delete_sent_messages": {
-    "countdown_toast": "El mensaje ser√° eliminado en{time}",
-    "delete_success_toast": "Mensaje eliminado con √©xito",
+    "countdown_toast": "El mensaje ser· eliminado en{time}",
+    "delete_success_toast": "Mensaje eliminado con Èxito",
     "delete_failed_toast": "No se pudo eliminar el mensaje"
   },
   "translation_position": {
     "above": "Arriba",
-    "below": "A continuaci√≥n",
+    "below": "A continuaciÛn",
     "inline": "En l?nea"
   },
   "language_codes": {
-    "en": "Ingl√©s",
-    "es": "Espa√±ol",
-    "fr": "Franc√©s",
-    "de": "Alem√°n",
+    "en": "InglÈs",
+    "es": "EspaÒol",
+    "fr": "FrancÈs",
+    "de": "Alem·n",
     "it": "Italiano",
-    "pt": "Portugu√©s",
+    "pt": "PortuguÈs",
     "ru": "Ruso",
-    "ja": "Japon√©s",
+    "ja": "JaponÈs",
     "ko": "Corea",
     "zh": "Chino",
-    "ar": "√Årabe",
+    "ar": "¡rabe",
     "hi": "Hindi",
     "tr": "Turco",
     "nl": "Neerland?s",
     "pl": "Polaco",
     "sv": "Suecia",
-    "da": "Dan√©s",
+    "da": "DanÈs",
     "no": "Noruega",
     "fi": "Finland",
     "cs": "Checo",
-    "hu": "H√∫ngaro",
+    "hu": "H˙ngaro",
     "ro": "Rumania",
-    "bg": "B√∫lgaro",
+    "bg": "B˙lgaro",
     "hr": "Croata",
     "sk": "Eslovaco",
     "sl": "Eslovenia",
     "et": "Estonia",
     "lv": "Letonia",
     "lt": "Lituania",
-    "mt": "Malt√©s",
-    "ga": "Irland√©s",
+    "mt": "MaltÈs",
+    "ga": "IrlandÈs",
     "cy": "Gal?s"
   },
   "tracker": {
@@ -2929,7 +2974,7 @@
       "rules": "Reglas"
     },
     "actions": {
-      "export": "Exportaci√≥n",
+      "export": "ExportaciÛn",
       "delete": "Suprimir",
       "add_rule": "Agregar regla",
       "save_rule": "Regla"
@@ -2939,38 +2984,39 @@
       "no_rules_found": "No hay reglas encontradas",
       "no_events": "No hay eventos"
     },
+    "scopes_suffix": "scopes",
     "search": {
-      "placeholder": "B√∫squeda"
+      "placeholder": "B˙squeda"
     },
     "filters": {
-      "newest_first": "M√°s reciente primero",
+      "newest_first": "M·s reciente primero",
       "pick_a_date": "Elige una cita",
       "title": "Filtros",
-      "search_by": "B√∫squeda por",
+      "search_by": "B˙squeda por",
       "since": "Desde entonces",
       "until": "Hasta",
       "types": {
         "username": "Nombre de usuario",
-        "conversation": "Conversaci√≥n",
+        "conversation": "ConversaciÛn",
         "event": "Evento"
       },
       "event_types": {
-        "conversation_enter": "Conversaci√≥n entrada",
-        "conversation_exit": "Conversaci√≥n izquierda",
+        "conversation_enter": "ConversaciÛn entrada",
+        "conversation_exit": "ConversaciÛn izquierda",
         "started_typing": "Comienzo de escribir",
-        "stopped_typing": "Dej√© de escribir",
-        "started_speaking": "Comenz√≥ a hablar",
-        "stopped_speaking": "Dej√© de hablar",
-        "started_peeking": "Empec√© a mirar",
-        "stopped_peeking": "Dej√© de mirar",
+        "stopped_typing": "DejÈ de escribir",
+        "started_speaking": "ComenzÛ a hablar",
+        "stopped_speaking": "DejÈ de hablar",
+        "started_peeking": "EmpecÈ a mirar",
+        "stopped_peeking": "DejÈ de mirar",
         "message_read": "Texto",
         "message_deleted": "Mensaje suprimido",
         "message_saved": "Mensaje guardado",
         "message_unsaved": "Mensaje no guardado",
         "message_edited": "Mensaje editado",
-        "message_reaction_add": "Reacci√≥n agregada",
-        "message_reaction_remove": "Reacci√≥n eliminada",
-        "snap_opened": "R√°pido abierto",
+        "message_reaction_add": "ReacciÛn agregada",
+        "message_reaction_remove": "ReacciÛn eliminada",
+        "snap_opened": "R·pido abierto",
         "snap_replayed": "Reprodujo un snap",
         "snap_replayed_twice": "Replayed snap dos veces",
         "snap_screenshot": "Hizo una captura de pantalla",
@@ -2982,16 +3028,16 @@
         "title": "Exportar registros",
         "description": "Exportar registros de su amigo rastreador a un archivo",
         "progress": "Exportando registros...",
-        "export_as": "Exportaci√≥n{type}",
+        "export_as": "ExportaciÛn{type}",
         "format_json": "JSON",
         "format_csv": "CSV"
       },
       "delete_dialog": {
         "title": "Eliminar los registros",
-        "message": "¬øEst√°s seguro de querer borrar todos los registros? Esta acci√≥n no se puede deshacer.",
+        "message": "øEst·s seguro de querer borrar todos los registros? Esta acciÛn no se puede deshacer.",
         "confirm": "Eliminar todo",
         "cancel": "Cancelar",
-        "progress": "Eliminaci√≥n{count}troncos..."
+        "progress": "EliminaciÛn{count}troncos..."
       },
       "log_entry": {
         "in_conversation": "dentro{conversation}",
@@ -2999,7 +3045,7 @@
         "unknown_conversation": "DMs",
         "i_can_see_you_entered": "Entrado",
         "i_can_see_you_left": "Izquierda",
-        "i_can_see_you_duration": "Duraci√≥n",
+        "i_can_see_you_duration": "DuraciÛn",
         "i_can_see_you_not_available": "N/A",
         "i_can_see_you_unit_hour": "h",
         "i_can_see_you_unit_minute": "m",
@@ -3008,23 +3054,23 @@
         "events": {
           "conversation_enter": "entrada",
           "conversation_exit": "izquierda",
-          "started_typing": "empez√≥ a escribir",
+          "started_typing": "empezÛ a escribir",
           "stopped_typing": "deja de escribir",
-          "started_speaking": "comenz√≥ a hablar",
+          "started_speaking": "comenzÛ a hablar",
           "stopped_speaking": "deja de hablar",
-          "started_peeking": "comenz√≥ a mirar",
-          "stopped_peeking": "par√≥ de mirar",
+          "started_peeking": "comenzÛ a mirar",
+          "stopped_peeking": "parÛ de mirar",
           "message_read": "leer un mensaje",
           "message_deleted": "borrado de un mensaje",
-          "message_saved": "guard√≥ un mensaje",
+          "message_saved": "guardÛ un mensaje",
           "message_unsaved": "sin guardar un mensaje",
           "message_edited": "editado un mensaje",
-          "message_reaction_add": "a√±adi√≥ una reacci√≥n",
-          "message_reaction_remove": "retirada una reacci√≥n",
-          "snap_opened": "abri√≥ un snap",
+          "message_reaction_add": "aÒadiÛ una reacciÛn",
+          "message_reaction_remove": "retirada una reacciÛn",
+          "snap_opened": "abriÛ un snap",
           "snap_replayed": "reprodujo un snap",
           "snap_replayed_twice": "reprodujo un snap dos veces",
-          "snap_screenshot": "tom√≥ una captura de pantalla",
+          "snap_screenshot": "tomÛ una captura de pantalla",
           "snap_screen_record": "pantalla grabada",
           "i_can_see_you": "activo"
         }
@@ -3032,17 +3078,17 @@
     },
     "edit_rule": {
       "custom_rule": "Regla de aduana",
-      "scope": "√Åmbito",
+      "scope": "¡mbito",
       "events": "Eventos",
       "add_event": "Agregar evento",
       "type": "Tipo",
       "triggers": "Disparadores",
       "conditions": "Condiciones",
-      "only_inside_conversation": "S√≥lo cuando estoy dentro de la conversaci√≥n",
-      "only_outside_conversation": "S√≥lo cuando estoy fuera de la conversaci√≥n",
-      "only_when_app_active": "S√≥lo cuando Snapchat est√° activo",
-      "only_when_app_inactive": "S√≥lo cuando Snapchat est√° inactivo",
-      "no_notification_when_app_active": "No hay notificaci√≥n cuando Snapchat est√° activo",
+      "only_inside_conversation": "SÛlo cuando estoy dentro de la conversaciÛn",
+      "only_outside_conversation": "SÛlo cuando estoy fuera de la conversaciÛn",
+      "only_when_app_active": "SÛlo cuando Snapchat est· activo",
+      "only_when_app_inactive": "SÛlo cuando Snapchat est· inactivo",
+      "no_notification_when_app_active": "No hay notificaciÛn cuando Snapchat est· activo",
       "scope_options": {
         "all_friends_groups": "Todos los amigos/grupos",
         "no_one_except": "Nadie excepto",
@@ -3054,7 +3100,7 @@
     "title": "Depurar",
     "clear": "Despejado",
     "files": {
-      "config_json": "Archivo de configuraci√≥n",
+      "config_json": "Archivo de configuraciÛn",
       "mappings_json": "Archivo de mapeos",
       "message_logger_db": "Base de datos del registrador de mensajes",
       "pinned_best_friend_txt": "Archivo de mejor amigo fijado",
@@ -3070,7 +3116,7 @@
   "ui_settings_title": "Ajustes de IU",
   "haptic_feedback_label": "Respuesta h?ptica",
   "updates_title": "Actualizaciones",
-  "auto_update_check": "Control de actualizaci√≥n autom√°tica",
+  "auto_update_check": "Control de actualizaciÛn autom·tica",
   "update_check_frequency_daily": "Diario",
   "update_check_frequency_weekly": "Semanal",
   "update_check_frequency_monthly": "Mensual",
@@ -3078,7 +3124,7 @@
   "update_channel_prerelease": "Prelanzamiento",
   "friend_notes_title": "Notas de amigos",
   "friend_notes_description": "Administrar y respaldar las notas de su amigo",
-  "app_theme_title": "Tema de aplicaci√≥n",
+  "app_theme_title": "Tema de aplicaciÛn",
   "theme_mode_system": "Sistema",
   "theme_mode_light": "Luz",
   "theme_mode_dark": "Oscuro",
@@ -3087,12 +3133,12 @@
   "disable_auto_mapper_label": "Desactivado Auto Mapper",
   "disable_bypass_indicator_label": "Indicador de bypass deshabilitado",
   "friend_list": {
-    "manage_title": "Lista de amigos de gesti√≥n",
-    "export_description": "Los amigos de exportaci√≥n le permiten guardar una lista de IDs de sus amigos en un archivo de texto. Importar desde un archivo mostrar√° a los amigos en una lista donde puede agregarlos.",
+    "manage_title": "Lista de amigos de gestiÛn",
+    "export_description": "Los amigos de exportaciÛn le permiten guardar una lista de IDs de sus amigos en un archivo de texto. Importar desde un archivo mostrar· a los amigos en una lista donde puede agregarlos.",
     "export_friends": "Exportar amigos",
-    "import_from_file": "Importaci√≥n del archivo",
+    "import_from_file": "ImportaciÛn del archivo",
     "load_suggested_friends": "Load suggested friends",
-    "add": "A√±adir"
+    "add": "AÒadir"
   },
   "memories": {
     "export_title": "Exportar recuerdos",
@@ -3102,7 +3148,7 @@
     "sort_by_folder": "Ordenar por carpeta",
     "include_my_eyes_only": "Incluir My Eyes Only",
     "cancel": "Cancelar",
-    "export": "Exportaci√≥n",
+    "export": "ExportaciÛn",
     "quit": "Salir",
     "done": "Hecho",
     "ok": "OK",
@@ -3111,24 +3157,24 @@
   "scripting_ui": {
     "no_scripts_folder_selected": "No hay carpeta de scripts seleccionadas",
     "select_folder": "Seleccione la carpeta",
-    "import_from_url": "Importaci√≥n de URL",
+    "import_from_url": "ImportaciÛn de URL",
     "open_scripts_folder": "Carpeta Open Scripts",
-    "import_script_from_url": "Script de importaci√≥n desde URL",
-    "warning_imported_scripts": "Advertencia: Los scripts importados pueden ser da√±inos para tu dispositivo. S√≥lo los scripts de importaci√≥n de fuentes de confianza.",
-    "enter_url_here": "Introduzca URL aqu√≠:",
-    "import": "Importaci√≥n",
+    "import_script_from_url": "Script de importaciÛn desde URL",
+    "warning_imported_scripts": "Advertencia: Los scripts importados pueden ser daÒinos para tu dispositivo. SÛlo los scripts de importaciÛn de fuentes de confianza.",
+    "enter_url_here": "Introduzca URL aquÌ:",
+    "import": "ImportaciÛn",
     "cancel": "Cancelar",
-    "documentation": "Documentaci√≥n"
+    "documentation": "DocumentaciÛn"
   },
   "common": {
     "cancel": "Cancelar",
-    "add": "A√±adir",
+    "add": "AÒadir",
     "ok": "OK",
     "quit": "Salir",
     "done": "Hecho",
-    "back": "Atr√°s",
+    "back": "Atr·s",
     "unknown": "Desconocida",
-    "added": "A√±adido",
+    "added": "AÒadido",
     "no_friends_found": "No hay amigos encontrados",
     "exporting_memories": "Exportando recuerdos... (G){failed}fracasado)"
   },
@@ -3139,38 +3185,38 @@
   "schedule_sent_to": "Enviado{name}",
   "schedule_sent": "Cierre programado enviado",
   "schedule_failed_to": "Failed to send to{name}",
-  "schedule_failed": "Fall√≥ el snap programado",
+  "schedule_failed": "FallÛ el snap programado",
   "schedule_cancelled_for": "Cancelado{name}",
   "by_author": "por{author}",
-  "version": "Versi√≥n{version}",
+  "version": "VersiÛn{version}",
   "delete_button": "Suprimir",
   "logger_history": {
-    "download_started": "¬°Descargar comenz√≥!",
+    "download_started": "°Descargar comenzÛ!",
     "downloaded_to": "Descargado{path}",
     "failed_to_download": "Failed to download{message}",
-    "select_conversation": "Seleccione una conversaci√≥n",
-    "select_conversation_placeholder": "Seleccione una conversaci√≥n",
+    "select_conversation": "Seleccione una conversaciÛn",
+    "select_conversation_placeholder": "Seleccione una conversaciÛn",
     "edited_at": "editado en{date}",
     "download_attachment_failed_toast": "Fallado para descargar el adjunto",
-    "message_parse_failed": "El parse de mensajes fall√≥",
-    "empty_message": "Mensaje vac√≠o",
-    "no_more_messages": "No m√°s mensajes",
+    "message_parse_failed": "El parse de mensajes fallÛ",
+    "empty_message": "Mensaje vacÌo",
+    "no_more_messages": "No m·s mensajes",
     "reverse_order_checkbox": "Orden inversa",
     "view_logger_history_button": "Ver historia de Logger",
     "posted_at": "Publicado en{date}",
     "created_at": "Creado en{date}",
-    "failed_to_open_file": "Failed to open file. Compruebe los registros para m√°s informaci√≥n",
+    "failed_to_open_file": "Failed to open file. Compruebe los registros para m·s informaciÛn",
     "failed_to_get_file": "No se pudo obtener el archivo",
     "download_button": "Descargar",
-    "chat_attachment": "Adjunci√≥n{index}",
+    "chat_attachment": "AdjunciÛn{index}",
     "log_header_format": "{username}?{type}?{date}",
     "edited_at_text": "Editado a \"{message}\"en{date}",
     "list_group_format": "Grupo{name}",
     "list_friend_format": "Amigo{name}",
-    "download_started_toast": "Descargar comenz√≥",
+    "download_started_toast": "Descargar comenzÛ",
     "download_success_toast": "Descargado{path}",
     "download_failed_toast": "Descarga fallado:{message}",
-    "close_button_description": "B√∫squeda cercana",
+    "close_button_description": "B˙squeda cercana",
     "search_button_description": "Buscar mensajes"
   },
   "debug_dialogs": {
@@ -3191,29 +3237,29 @@
     "formal": "Formal",
     "friendly": "Amistad",
     "humorous": "Humor",
-    "empathetic": "Pat√©tico",
+    "empathetic": "PatÈtico",
     "busy": "Ocupado",
     "toxic": "T?xico"
   },
   "ai_response_language": {
-    "auto": "Auto (Lo mismo que se recibi√≥)",
-    "en": "Ingl√©s",
-    "es": "Espa√±ol",
-    "fr": "Franc√©s",
-    "de": "Alem√°n",
+    "auto": "Auto (Lo mismo que se recibiÛ)",
+    "en": "InglÈs",
+    "es": "EspaÒol",
+    "fr": "FrancÈs",
+    "de": "Alem·n",
     "it": "Italiano",
-    "pt": "Portugu√©s",
+    "pt": "PortuguÈs",
     "ru": "Ruso",
-    "ja": "Japon√©s",
+    "ja": "JaponÈs",
     "ko": "Corea",
     "zh": "Chino",
-    "ar": "√Årabe (EAU) y (KSA)",
+    "ar": "¡rabe (EAU) y (KSA)",
     "hi": "Hindi",
     "tr": "Turco",
     "pl": "Polaco",
     "nl": "Neerland?s",
     "sv": "Suecia",
-    "da": "Dan√©s",
+    "da": "DanÈs",
     "no": "Noruega",
     "fi": "Finland"
   },

@@ -50,6 +50,15 @@ class DownloaderConfig : ConfigContainer() {
         set(mutableListOf("success", "progress", "failure"))
     }
     val customPathFormat = string("custom_path_format") { addNotices(FeatureNotice.UNSTABLE) }
-    val callRecorder = unique("call_recorder", "only_record_self", "only_record_others", "record_both") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
+    val fileHashCheck = boolean("file_hash_check")
+    inner class CallRecorderOptions : ConfigContainer() {
+        val callRecorder = unique("call_recorder", "only_record_self", "only_record_others", "record_both") { addNotices(FeatureNotice.UNSTABLE) }
+        val autoStartRecording = boolean("auto_start_recording", false)
+        val callRecorderUi = boolean("call_recorder_ui", true)
+        val callRecorderUiDesign = unique("call_recorder_ui_design", "default", "snapchat", "cyber", "frost") {
+            addFlags(ConfigFlag.NO_DISABLE_KEY)
+        }.apply { set("default") }
+    }
+    val callRecorder = container("call_recorder", CallRecorderOptions()) { requireRestart() }
     val chatWallpaperDownloader = boolean("chat_wallpaper_downloader") { requireRestart() }
 }

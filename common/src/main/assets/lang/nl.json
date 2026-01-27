@@ -1,4 +1,4 @@
-ï»¿{
+{
   "setup": {
     "dialogs": {
       "select_language": "Taal selecteren",
@@ -11,7 +11,7 @@
       "generate_failure": "Er is een fout opgetreden bij het genereren van mappen, probeer het opnieuw."
     },
     "permissions": {
-      "dialog": "Voltooien van deze essentiÃ«le om te blijven:",
+      "dialog": "Voltooien van deze essentiële om te blijven:",
       "notification_access": "Toegang tot kennisgeving",
       "battery_optimization": "Batterijoptimalisatie",
       "display_over_other_apps": "Over andere apps weergeven",
@@ -57,7 +57,7 @@
     },
     "sections": {
       "home": {
-        "version_title": "v{versionName}Â· door Eternal",
+        "version_title": "v{versionName}· door Eternal",
         "update_title": "PurrfectSnap-update",
         "update_content": "Versie{version}is beschikbaar!",
         "update_button": "Downloaden",
@@ -154,12 +154,12 @@
       },
       "manage_rule_feature": {
         "disable_state_option": "Uitgeschakeld",
-        "disable_state_subtext": "Geen vrienden/groepen worden beÃ¯nvloed",
+        "disable_state_subtext": "Geen vrienden/groepen worden beïnvloed",
         "whitelist_state_option": "Niemand behalve...",
-        "whitelist_state_subtext": "Alleen{count}vrienden/groepen worden beÃ¯nvloed door deze regel",
+        "whitelist_state_subtext": "Alleen{count}vrienden/groepen worden beïnvloed door deze regel",
         "whitelist_state_button": "Selecteer toegestane vrienden/groepen",
         "blacklist_state_option": "Iedereen behalve...",
-        "blacklist_state_subtext": "Iedereen behalve{count}vrienden/groepen worden beÃ¯nvloed door deze regel",
+        "blacklist_state_subtext": "Iedereen behalve{count}vrienden/groepen worden beïnvloed door deze regel",
         "blacklist_state_button": "Uitgesloten vrienden/groepen selecteren",
         "clear_list_button": "Lijst vrienden/groepen wissen",
         "dialog_clear_confirmation_text": "Weet je zeker dat je de lijst wilt wissen?"
@@ -181,7 +181,7 @@
         "export_base64_button": "Basis exporteren64",
         "import_base64_button": "Basis importeren64",
         "invalid_key_size_32_bytes": "Ongeldige sleutelgrootte. Geef een 32-byte sleutel.",
-        "successfully_imported_key": "Sleutel succesvol geÃ¯mporteerd.",
+        "successfully_imported_key": "Sleutel succesvol geïmporteerd.",
         "failed_to_import_key": "Kon sleutel niet importeren:{message}",
         "rules_title": "Regels",
         "participants_text": "{count}deelnemers",
@@ -235,27 +235,27 @@
         "import_file_button": "Bestand importeren",
         "file_not_found": "Bestand niet gevonden",
         "file_import_failed": "Kon bestand niet importeren:{error}",
-        "file_imported": "Bestand geÃ¯mporteerd met succes",
+        "file_imported": "Bestand geïmporteerd met succes",
         "file_delete_failed": "Verwijderen van bestand is mislukt",
         "no_files_hint": "Hier kunt u bestanden importeren voor gebruik in Snapchat. Druk op onderstaande knop om een bestand te importeren."
       },
       "better_location": {
         "spoofed_coordinates_title": "Lat{latitude}, Lng{longitude}",
-        "save_coordinates_dialog_title": "CoÃ¶rdinaten opslaan",
+        "save_coordinates_dialog_title": "Coördinaten opslaan",
         "saved_name_dialog_hint": "Opgeslagen naam",
         "latitude_dialog_hint": "Breedtegraad",
         "longitude_dialog_hint": "Lengtegraad",
         "save_dialog_button": "Opslaan",
         "choose_location_button": "Kies een locatie",
-        "manual_coordinates_hint": "Stel de coÃ¶rdinaten handmatig in.",
+        "manual_coordinates_hint": "Stel de coördinaten handmatig in.",
         "saved_coordinates_subtitle": "Uw opgeslagen spooflocaties beheren",
         "teleport_to_friend_button": "Teleporteer naar vriend",
         "spoof_location_toggle": "Spoof-locatie",
         "suspend_location_updates": "Locatie-updates onderbreken",
-        "saved_coordinates_title": "Opgeslagen coÃ¶rdinaten",
-        "no_saved_coordinates_hint": "Geen opgeslagen coÃ¶rdinaten",
-        "delete_dialog_title": "Opgeslagen coÃ¶rdinaat verwijderen",
-        "delete_dialog_message": "Weet u zeker dat u deze opgeslagen coÃ¶rdinaat wilt verwijderen?",
+        "saved_coordinates_title": "Opgeslagen coördinaten",
+        "no_saved_coordinates_hint": "Geen opgeslagen coördinaten",
+        "delete_dialog_title": "Opgeslagen coördinaat verwijderen",
+        "delete_dialog_message": "Weet u zeker dat u deze opgeslagen coördinaat wilt verwijderen?",
         "teleport_to_friend_title": "Teleporteer naar vriend",
         "search_bar": "Zoeken",
         "no_friends_map": "Geen vrienden op de kaart",
@@ -290,15 +290,15 @@
       },
       "export_config": {
         "title": "Gevoelige gegevens exporteren?",
-        "content": "Wilt u de configuratie met gevoelige gegevens exporteren? (Zoals locatiecoÃ¶rdinaten, enz.)"
+        "content": "Wilt u de configuratie met gevoelige gegevens exporteren? (Zoals locatiecoördinaten, enz.)"
       },
       "messaging_action": {
         "title": "Kies inhoudstypen om te verwerken",
         "select_all_button": "Alles selecteren"
       },
       "file_imports": {
-        "no_files_settings_hint": "Geen bestanden gevonden. Zorg ervoor dat u de benodigde bestanden hebt geÃ¯mporteerd in de sectie Bestand Importeren",
-        "settings_select_file_hint": "Een geÃ¯mporteerd bestand selecteren"
+        "no_files_settings_hint": "Geen bestanden gevonden. Zorg ervoor dat u de benodigde bestanden hebt geïmporteerd in de sectie Bestand Importeren",
+        "settings_select_file_hint": "Een geïmporteerd bestand selecteren"
       }
     },
     "scripting": {
@@ -318,7 +318,7 @@
       "import_from_url_button": "Importeren uit URL",
       "import_script_from_url_title": "Script importeren van URL",
       "import_script_warning": "Installeer alleen scripts van bronnen die je vertrouwt.",
-      "installed_scripts_tab": "GeÃ¯nstalleerd",
+      "installed_scripts_tab": "Geïnstalleerd",
       "manage_repos_button": "Repo's beheren",
       "module_data_cleared": "Module gegevens gewist!",
       "module_not_found": "Module niet gevonden",
@@ -328,7 +328,7 @@
       "no_settings_for_module": "Deze module heeft geen instellingen",
       "open_module_failed": "Openen van modulebestand is mislukt",
       "open_scripts_folder_button": "Map scripts openen",
-      "script_already_installed": "Script is al geÃ¯nstalleerd",
+      "script_already_installed": "Script is al geïnstalleerd",
       "select_folder_button": "Map kiezen",
       "select_scripts_folder_toast": "Selecteer eerst een scriptmap",
       "update_module_button": "Module bijwerken",
@@ -339,12 +339,12 @@
         "no_repos_added": "Geen repositories toegevoegd",
         "repo_list_info": "Zoek repositories hier:",
         "link_text": "Repositorylijst",
-        "script_already_installed": "Script is al geÃ¯nstalleerd",
+        "script_already_installed": "Script is al geïnstalleerd",
         "script_downloaded": "Gedownload script",
         "could_not_create_file": "Kon bestand niet aanmaken",
         "no_scripts_folder_selected": "Selecteer eerst een scriptmap",
         "no_scripts_available": "Geen scripts beschikbaar",
-        "installed_button": "GeÃ¯nstalleerd",
+        "installed_button": "Geïnstalleerd",
         "download_button": "Downloaden"
       },
       "repos": {
@@ -437,7 +437,7 @@
       "save_button": "Opslaan",
       "back_button_description": "Ga terug",
       "expand_button_description": "Categorie uitvouwen of instorten",
-      "exported_toast": "Trackerconfiguratie geÃ«xporteerd",
+      "exported_toast": "Trackerconfiguratie geëxporteerd",
       "export_failed_toast": "Exporteren van tracker is mislukt:{message}"
     },
     "friend_tracker_import": {
@@ -445,7 +445,7 @@
       "confirm_button": "Importeren",
       "back_button_description": "Ga terug",
       "expand_button_description": "Categorie uitvouwen of instorten",
-      "imported_toast": "Tracker geÃ¯mporteerd",
+      "imported_toast": "Tracker geïmporteerd",
       "import_failed_toast": "Importeren van tracker is mislukt:{message}"
     },
     "friend_tracker_catalog": {
@@ -666,7 +666,7 @@
         "auto_download": "Automatisch downloaden",
         "auto_save": "Berichten automatisch opslaan",
         "unsaveable_messages": "Wat? Niet op te slaan berichten",
-        "auto_open_snaps": "ðŸ“· Auto Open Snaps",
+        "auto_open_snaps": "?? Auto Open Snaps",
         "stealth": "Stealth-modus",
         "auto_reply": "Automatisch reageren",
         "auto_delete_sent_messages": "Verzonden berichten automatisch verwijderen",
@@ -815,6 +815,17 @@
         "back": "Achterste camera",
         "null": "Herinner laatst gebruikt"
       },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
       "front_custom_frame_rate": {
         "null": "Apparaat standaard FPS"
       },
@@ -883,8 +894,8 @@
       },
       "spotlight_comments_username_icon": {
         "user": "Gebruikersnaam pictogram",
-        "ðŸ‘¤": "Gebruikersnaam pictogram",
-        "[ðŸ‘¤]": "Gebruikersnaam pictogram",
+        "??": "Gebruikersnaam pictogram",
+        "[??]": "Gebruikersnaam pictogram",
         "default": "Gebruikersnaam pictogram",
         "no_icon": "Geen pictogram"
       },
@@ -985,7 +996,7 @@
       },
       "double_tap_chat_action": {
         "like_message": "Net als bericht",
-        "copy_text": "Tekst naar klembord kopiÃ«ren",
+        "copy_text": "Tekst naar klembord kopiëren",
         "delete_message": "Bericht verwijderen",
         "mark_as_read": "Markeren als gelezen",
         "custom_emoji_reaction": "Aangepaste Emoji reactie",
@@ -1139,8 +1150,8 @@
                 "description": "Spoofs uw locatie naar een opgegeven"
               },
               "coordinates": {
-                "name": "CoÃ¶rdinaten",
-                "description": "De coÃ¶rdinaten van de spoofed-locatie instellen"
+                "name": "Coördinaten",
+                "description": "De coördinaten van de spoofed-locatie instellen"
               },
               "walk_radius": {
                 "name": "Loop Straal",
@@ -1310,7 +1321,7 @@
           },
           "merge_overlays": {
             "name": "Overlays samenvoegen",
-            "description": "Combineert de tekst en de media van een snap in Ã©Ã©n bestand"
+            "description": "Combineert de tekst en de media van een snap in één bestand"
           },
           "force_image_format": {
             "name": "Afbeeldingsformaat forceren",
@@ -1323,6 +1334,29 @@
           "auto_download_voice_notes": {
             "name": "Automatisch downloaden Stemnoten",
             "description": "Automatisch voice notes downloaden bij het afspelen ervan"
+          },
+          \"call_recorder\": {
+              \"name\": \"Call Recorder\",
+              \"description\": \"Manage call recording settings\",
+              \"properties\": {
+                  \"call_recorder\": {
+                      \"name\": \"Mode\",
+                      \"description\": \"Select what should be recorded\"
+                  },
+                  \"auto_start_recording\": {
+                      \"name\": \"Auto Start Recording\",
+                      \"description\": \"Automatically start recording when a call starts\"
+                  },
+                  \"call_recorder_ui\": {
+                      \"name\": \"Call Recorder UI\",
+                      \"description\": \"Show the recording overlay UI during calls\"
+                  },
+                  \"call_recorder_ui_design\": {
+                      \"name\": \"UI Design\",
+                      \"description\": \"Select the design for the call recorder overlay\"
+                  },
+                  \"call_recording_saved_toast\": \"Saved\"
+              }
           },
           "download_profile_pictures": {
             "name": "Profielfoto's downloaden",
@@ -1594,7 +1628,7 @@
             "properties": {
               "group_notifications": {
                 "name": "Groepsmeldingen",
-                "description": "Groepsmeldingen in Ã©Ã©n enkele"
+                "description": "Groepsmeldingen in één enkele"
               },
               "chat_preview": {
                 "name": "Chatvoorbeeld",
@@ -1610,7 +1644,7 @@
               },
               "stacked_media_messages": {
                 "name": "Gestapelde mediaberichten",
-                "description": "Combineert meerdere mediaberichten in Ã©Ã©n tekstmelding wanneer ze niet kunnen worden bekeken. Gebruik in combinatie met Chat Preview"
+                "description": "Combineert meerdere mediaberichten in één tekstmelding wanneer ze niet kunnen worden bekeken. Gebruik in combinatie met Chat Preview"
               },
               "friend_add_source": {
                 "name": "Vriend Bron toevoegen",
@@ -2053,7 +2087,7 @@
           },
           "black_photos": {
             "name": "Zwarte foto's",
-            "description": "Vervangt gevangen foto's door een zwarte achtergrond\nVideo's worden niet beÃ¯nvloed"
+            "description": "Vervangt gevangen foto's door een zwarte achtergrond\nVideo's worden niet beïnvloed"
           },
           "immersive_camera_preview": {
             "name": "Onderdompelend voorbeeld",
@@ -2087,6 +2121,17 @@
             "name": "Standaardcamera opstarten",
             "description": "Stelt de standaard camera in bij het openen van Snapchat"
           },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
           "hevc_recording": {
             "name": "HEVC Registratie",
             "description": "Gebruikt HEVC (H.265) codec voor video-opname"
@@ -2103,11 +2148,11 @@
           },
           "remaining_hours": {
             "name": "Resterende tijd",
-            "description": "De resterende tijd vÃ³Ã³r de kennisgeving (uren)"
+            "description": "De resterende tijd vóór de kennisgeving (uren)"
           },
           "group_notifications": {
             "name": "Groepsmeldingen",
-            "description": "Groepsmeldingen in Ã©Ã©n enkele"
+            "description": "Groepsmeldingen in één enkele"
           }
         }
       },
@@ -2287,7 +2332,7 @@
           },
           "best_friend_pinning": {
             "name": "Beste vriend Pinning",
-            "description": "Hiermee kun je een vriend als je nummer Ã©Ã©n beste vriend prikken. Opmerking: Alleen jij kunt je gepinde beste vriend zien"
+            "description": "Hiermee kun je een vriend als je nummer één beste vriend prikken. Opmerking: Alleen jij kunt je gepinde beste vriend zien"
           },
           "e2ee": {
             "name": "End-to-end-versleuteling",
@@ -2342,7 +2387,7 @@
             "description": "Automatisch herlaadt scripts wanneer ze veranderen"
           },
           "integrated_ui": {
-            "name": "GeÃ¯ntegreerde UI",
+            "name": "Geïntegreerde UI",
             "description": "Hiermee kunnen scripts aangepaste UI-componenten toevoegen aan Snapchat"
           },
           "disable_log_anonymization": {
@@ -2460,7 +2505,7 @@
     "SNAP": "Knap",
     "SAVEABLE_SNAP": "Opslaan",
     "null": "Standaard Snapchat",
-    "multiple_media_toast": "U kunt slechts Ã©Ã©n media per keer verzenden"
+    "multiple_media_toast": "U kunt slechts één media per keer verzenden"
   },
   "mark_as_seen": {
     "no_unseen_snaps_toast": "Geen ongeziene snaps gevonden!",
@@ -2749,7 +2794,7 @@
     "queue_cleared": "Wachtrij goedgekeurd en statistieken opnieuw ingesteld",
     "queue_cleared_title": "Wachtrij is leeg",
     "queue_cleared_reset": "Wachtrij leeggemaakt & herstellen",
-    "queue_cleared_feedback": "Klaar{count}klikken in de wachtrij â€¢ Terugzetten{processed}verwerkt aantal",
+    "queue_cleared_feedback": "Klaar{count}klikken in de wachtrij • Terugzetten{processed}verwerkt aantal",
     "queue_cleared_feedback_simple": "Reset{processed}verwerkt aantal",
     "unknown_sender": "Onbekend",
     "unknown_user": "Onbekende gebruiker",
@@ -2780,7 +2825,7 @@
     "export_logs_failure": "Exporteren van logs is mislukt. Check logcat voor meer informatie.",
     "deleted_logs_count": "Verwijderd{count}logs"
   },
-  "script_imported": "Script{name}geÃ¯mporteerd!",
+  "script_imported": "Script{name}geïmporteerd!",
   "script_import_failed": "Kon script niet importeren.{error}. Controleer logs voor meer details",
   "script_updating": "Bijwerken van script{name}...",
   "script_updated": "Bijgewerkt{name}naar versie{version}",
@@ -2800,7 +2845,7 @@
   "script_no_scripts_found": "Geen scripts gevonden",
   "script_ok_timeout": "OK{timeout}",
   "scripting_tagline": "Beheer scripts, import en mappen",
-  "installed_scripts_tab": "GeÃ¯nstalleerd",
+  "installed_scripts_tab": "Geïnstalleerd",
   "catalog_tab": "Catalogus",
   "no_scripts_folder_selected_title": "Selecteer uw scriptmap om aan de slag te gaan",
   "select_folder_button": "Map kiezen",
@@ -2913,7 +2958,7 @@
     "hu": "Hongaars",
     "ro": "Roemeens",
     "bg": "Bulgaars",
-    "hr": "KroatiÃ«",
+    "hr": "Kroatië",
     "sk": "Slowaaks",
     "sl": "Sloveens",
     "et": "Ests",
@@ -2939,6 +2984,7 @@
       "no_rules_found": "Geen regels gevonden",
       "no_events": "Geen gebeurtenissen"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Zoeken"
     },
@@ -3114,7 +3160,7 @@
     "import_from_url": "Importeren uit URL",
     "open_scripts_folder": "Scriptsmap openen",
     "import_script_from_url": "Script importeren van URL",
-    "warning_imported_scripts": "Waarschuwing: geÃ¯mporteerde scripts kunnen schadelijk zijn voor uw apparaat. Alleen scripts importeren uit vertrouwde bronnen.",
+    "warning_imported_scripts": "Waarschuwing: geïmporteerde scripts kunnen schadelijk zijn voor uw apparaat. Alleen scripts importeren uit vertrouwde bronnen.",
     "enter_url_here": "Voer hier URL in:",
     "import": "Importeren",
     "cancel": "Annuleren",

@@ -68,6 +68,8 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (::navController.isInitialized.not()) return
+        handleAnnouncementIntent(intent)
+        handleUpdateIntent(intent)
 
         intent.getStringExtra("route")?.let { route ->
             navController.popBackStack()
@@ -95,6 +97,8 @@ class MainActivity : ComponentActivity() {
             activity = this@MainActivity
             checkForRequirements()
         }
+        handleAnnouncementIntent(intent)
+        handleUpdateIntent(intent)
         val routes = Routes(managerContext)
         routes.activityLauncher = ActivityLauncherHelper(this)
         routes.getRoutes().forEach { it.init() }
@@ -255,5 +259,23 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(restartReceiver)
+    }
+
+    private fun handleAnnouncementIntent(intent: Intent) {
+        if (intent.getBooleanExtra("show_announcements", false)) {
+            applicationContext.getSharedPreferences("prefs", 0).edit()
+                .putBoolean("show_announcements_on_launch", true)
+                .apply()
+        }
+    }
+
+    private fun handleUpdateIntent(intent: Intent) {
+        if (intent.getBooleanExtra("show_changelog", false)) {
+            val version = intent.getStringExtra("changelog_version")
+            applicationContext.getSharedPreferences("prefs", 0).edit()
+                .putBoolean("show_changelog_on_launch", true)
+                .putString("changelog_version_on_launch", version)
+                .apply()
+        }
     }
 }

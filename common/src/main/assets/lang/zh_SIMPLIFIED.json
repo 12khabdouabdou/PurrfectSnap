@@ -815,6 +815,17 @@
         "back": "后镜头",
         "null": "记住上次使用"
       },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
       "front_custom_frame_rate": {
         "null": "设备默认 FPS"
       },
@@ -1323,6 +1334,29 @@
           "auto_download_voice_notes": {
             "name": "自动下载 语音符",
             "description": "播放时自动下载语音注释"
+          },
+          \"call_recorder\": {
+              \"name\": \"Call Recorder\",
+              \"description\": \"Manage call recording settings\",
+              \"properties\": {
+                  \"call_recorder\": {
+                      \"name\": \"Mode\",
+                      \"description\": \"Select what should be recorded\"
+                  },
+                  \"auto_start_recording\": {
+                      \"name\": \"Auto Start Recording\",
+                      \"description\": \"Automatically start recording when a call starts\"
+                  },
+                  \"call_recorder_ui\": {
+                      \"name\": \"Call Recorder UI\",
+                      \"description\": \"Show the recording overlay UI during calls\"
+                  },
+                  \"call_recorder_ui_design\": {
+                      \"name\": \"UI Design\",
+                      \"description\": \"Select the design for the call recorder overlay\"
+                  },
+                  \"call_recording_saved_toast\": \"Saved\"
+              }
           },
           "download_profile_pictures": {
             "name": "下载配置文件图片",
@@ -2087,6 +2121,17 @@
             "name": "启动默认相机",
             "description": "打开 Snapchat 时设置默认相机"
           },
+      \"call_recorder\": {
+          \"only_record_self\": \"Only Record Self\",
+          \"only_record_others\": \"Only Record Others\",
+          \"record_both\": \"Record Both Sides\"
+      },
+      \"call_recorder_ui_design\": {
+          \"default\": \"Default\",
+          \"snapchat\": \"Snapchat\",
+          \"cyber\": \"Cyber\",
+          \"frost\": \"Frost\"
+      },
           "hevc_recording": {
             "name": "赫尔辛基 记录",
             "description": "录像使用HEVC(H.265)编码器"
@@ -2939,6 +2984,7 @@
       "no_rules_found": "没有找到规则",
       "no_events": "无事件"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "搜索"
     },

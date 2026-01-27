@@ -697,6 +697,29 @@
                         "name": "تنزيل الملاحظات الصوتية تلقائيًا",
                         "description": "تنزيل الملاحظات الصوتية تلقائيًا عند تشغيلها"
                     },
+                    \"call_recorder\": {
+                        \"name\": \"Call Recorder\",
+                        \"description\": \"Manage call recording settings\",
+                        \"properties\": {
+                            \"call_recorder\": {
+                                \"name\": \"Mode\",
+                                \"description\": \"Select what should be recorded\"
+                            },
+                            \"auto_start_recording\": {
+                                \"name\": \"Auto Start Recording\",
+                                \"description\": \"Automatically start recording when a call starts\"
+                            },
+                            \"call_recorder_ui\": {
+                                \"name\": \"Call Recorder UI\",
+                                \"description\": \"Show the recording overlay UI during calls\"
+                            },
+                            \"call_recorder_ui_design\": {
+                                \"name\": \"UI Design\",
+                                \"description\": \"Select the design for the call recorder overlay\"
+                            },
+                            \"call_recording_saved_toast\": \"Saved\"
+                        }
+                    },
                     "download_profile_pictures": {
                         "name": "تنزيل صور الملف الشخصي",
                         "description": "يسمح لك بتنزيل صور الملف الشخصي من صفحة الملف الشخصي"
@@ -1646,6 +1669,17 @@
                         "name": "الكاميرا الافتراضية عند البدء",
                         "description": "تعيين الكاميرا الافتراضية عند فتح سناب شات"
                     },
+                    \"call_recorder\": {
+                        \"only_record_self\": \"Only Record Self\",
+                        \"only_record_others\": \"Only Record Others\",
+                        \"record_both\": \"Record Both Sides\"
+                    },
+                    \"call_recorder_ui_design\": {
+                        \"default\": \"Default\",
+                        \"snapchat\": \"Snapchat\",
+                        \"cyber\": \"Cyber\",
+                        \"frost\": \"Frost\"
+                    },
                     "hevc_recording": {
                         "name": "تسجيل HEVC",
                         "description": "يستخدم برنامج ترميز HEVC (H.265) لتسجيل الفيديو"
@@ -2184,6 +2218,17 @@
                 "back": "الكاميرا الخلفية",
                 "null": "تذكر آخر استخدام"
             },
+                    \"call_recorder\": {
+                        \"only_record_self\": \"Only Record Self\",
+                        \"only_record_others\": \"Only Record Others\",
+                        \"record_both\": \"Record Both Sides\"
+                    },
+                    \"call_recorder_ui_design\": {
+                        \"default\": \"Default\",
+                        \"snapchat\": \"Snapchat\",
+                        \"cyber\": \"Cyber\",
+                        \"frost\": \"Frost\"
+                    },
             "call_recorder": {
                 "only_record_self": "تسجيل الذات فقط",
                 "only_record_others": "تسجيل الآخرين فقط",
@@ -3027,6 +3072,7 @@
             "no_rules_found": "لم يتم العثور على قواعد",
             "no_events": "لا توجد أحداث"
         },
+        "scopes_suffix": "scopes",
         "search": {
             "placeholder": "بحث"
         },

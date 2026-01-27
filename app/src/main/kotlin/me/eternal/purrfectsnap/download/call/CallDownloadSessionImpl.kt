@@ -17,6 +17,9 @@ import me.eternal.purrfectsnap.download.FFMpegProcessor
 import me.eternal.purrfectsnap.task.PendingTaskListener
 import me.eternal.purrfectsnap.task.Task
 import me.eternal.purrfectsnap.task.TaskType
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.absoluteValue
@@ -109,7 +112,11 @@ class CallDownloadSessionImpl(
             return
         }
 
-        val outputFile = context.androidContext.cacheDir.resolve("call_${UUID.randomUUID()}_final.mp3")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.getDefault())
+        val dateString = dateFormat.format(Date(callStartTimestamp))
+        val finalFileName = "Call_${author}_$dateString"
+
+        val outputFile = context.androidContext.cacheDir.resolve("${finalFileName}_final.mp3")
         val pendingTask = context.taskManager.createPendingTask(
             Task(
                 type = TaskType.DOWNLOAD,
@@ -136,24 +143,30 @@ class CallDownloadSessionImpl(
                 }
 
                 val sortedStreams = streams.filter { it.outputFile.exists() }.sortedBy { it.startTimestampMillis }
+                if (sortedStreams.isEmpty()) {
+                    pendingTask.fail("No recorded audio data")
+                    return@launch
+                }
+
                 FFMpegProcessor.newFFMpegProcessor(context, pendingTask).execute(
                     FFMpegProcessor.Request(
                         action = FFMpegProcessor.Action.MERGE_AUDIO_STREAMS,
                         inputs = sortedStreams.map { it.outputFile.absolutePath },
                         output = outputFile,
-                        inputDelayOffsets = sortedStreams.associate { stream -> stream.outputFile.absolutePath to (stream.startTimestampMillis - callStartTimestamp) }
+                        inputDelayOffsets = sortedStreams.associate { stream -> stream.outputFile.absolutePath to (stream.startTimestampMillis - callStartTimestamp).coerceAtLeast(0L) }
                     )
                 )
 
                 DownloadProcessor(context, object: DownloadCallback.Default() {
                     override fun onSuccess(outputPath: String) {
                         context.log.verbose("Downloaded call $outputPath")
+                        context.shortToast(context.translation["features.properties.downloader.properties.call_recorder.properties.call_recording_saved_toast"])
                     }
                 }).saveMediaToGallery(pendingTask, outputFile, DownloadMetadata(
                     mediaIdentifier = UUID.randomUUID().toString(),
                     outputPath = createNewFilePath(
                         context.config.root,
-                        UUID.randomUUID().toString().hashCode().absoluteValue.toString(16),
+                        finalFileName,
                         downloadSource = MediaDownloadSource.VOICE_CALL,
                         mediaAuthor = author,
                         creationTimestamp = System.currentTimeMillis()
@@ -162,6 +175,9 @@ class CallDownloadSessionImpl(
                     downloadSource = MediaDownloadSource.VOICE_CALL.translate(context.translation),
                     iconUrl = null
                 ))
+            } catch (e: Exception) {
+                context.log.error("Failed to merge call recording", e)
+                pendingTask.fail("Merge failed: ${e.message}")
             } finally {
                 streams.forEach { stream ->
                     stream.outputFile.delete()

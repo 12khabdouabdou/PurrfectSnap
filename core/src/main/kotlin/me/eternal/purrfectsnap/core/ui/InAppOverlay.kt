@@ -3,22 +3,14 @@ package me.eternal.purrfectsnap.core.ui
 import android.app.Activity
 import android.view.View
 import android.widget.FrameLayout
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
-import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -29,21 +21,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import me.eternal.purrfectsnap.common.ui.AppMaterialTheme
 import me.eternal.purrfectsnap.common.ui.createComposeView
 import me.eternal.purrfectsnap.common.util.ktx.copyToClipboard
+import me.eternal.purrfectsnap.core.event.Event
 import me.eternal.purrfectsnap.core.ModContext
 import me.eternal.purrfectsnap.core.PurrfectSnap
 import me.eternal.purrfectsnap.core.util.hook.HookStage
@@ -56,9 +52,21 @@ import kotlin.system.exitProcess
 
 typealias CustomComposable = @Composable BoxScope.() -> Unit
 
+class CallRecorderUIState {
+    var isRecording by mutableStateOf(false)
+    var showOverlay by mutableStateOf(false)
+    var currentAuthor by mutableStateOf("")
+    var recordingStartTime by mutableStateOf(0L)
+    var offsetX by mutableStateOf(0f)
+    var offsetY by mutableStateOf(0f)
+    var isMinimized by mutableStateOf(false)
+    var lastInteractionTime by mutableStateOf(0L)
+}
+
 class InAppOverlay(
     private val context: ModContext
 ) {
+    val callRecorderState = CallRecorderUIState()
     companion object {
         fun showCrashOverlay(content: String, throwable: Throwable? = null) {
             // deny network requests
@@ -75,59 +83,67 @@ class InAppOverlay(
                 val contentView = param.thisObject<Activity>().findViewById<FrameLayout>(android.R.id.content)
                 contentView.children().forEach { it.visibility = View.GONE }
                 val screenView = createComposeView(param.thisObject()) {
-                    PurrfectOverlayTheme {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(PurrfectOverlayPalette.backgroundGradient),
-                            contentAlignment = Alignment.Center
+                    AppMaterialTheme(isDarkTheme = true) {
+                        val auroraGradient = Brush.verticalGradient(
+                            listOf(Color(0xFF2E2E69), Color(0xFF1E1E45))
+                        )
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = Color.Transparent
                         ) {
-                            PurrfectGlassCard(
+                            Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp),
-                                title = "PurrfectSnap",
-                                subtitle = content,
-                                icon = Icons.Outlined.Warning
+                                    .fillMaxSize()
+                                    .background(auroraGradient),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally)
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
-                                    if (throwable != null) {
-                                        Surface(
-                                            onClick = { contentView.context.copyToClipboard(throwable.stackTraceToString()) },
-                                            shape = RoundedCornerShape(999.dp),
-                                            color = Color.White.copy(alpha = 0.10f),
-                                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
-                                        ) {
-                                            Text(
-                                                "Copy error",
-                                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                                color = Color.White
-                                            )
-                                        }
-                                    }
-                                    Surface(
-                                        onClick = { exitProcess(1) },
-                                        shape = RoundedCornerShape(999.dp),
-                                        color = PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.28f),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            Brush.linearGradient(
-                                                listOf(
-                                                    PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.7f),
-                                                    PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.55f),
-                                                )
-                                            )
-                                        )
+                                    Text(
+                                        text = "PurrfectSnap",
+                                        fontSize = 32.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.height(40.dp))
+                                    Text(
+                                        text = content,
+                                        fontSize = 18.sp,
+                                        color = Color.White.copy(alpha = 0.9f)
+                                    )
+                                    Spacer(modifier = Modifier.height(60.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally)
                                     ) {
-                                        Text(
-                                            "Exit",
-                                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
-                                            color = Color.White,
-                                            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-                                        )
+                                        throwable?.let {
+                                            Button(
+                                                onClick = {
+                                                    contentView.context.copyToClipboard(it.stackTraceToString())
+                                                },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = Color.White.copy(alpha = 0.1f),
+                                                    contentColor = Color.White
+                                                )
+                                            ) {
+                                                Text("Copy error")
+                                            }
+                                        }
+                                        Button(
+                                            onClick = {
+                                                exitProcess(1)
+                                            },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                                contentColor = MaterialTheme.colorScheme.onPrimary
+                                            )
+                                        ) {
+                                            Text("Exit App")
+                                        }
                                     }
                                 }
                             }
@@ -155,79 +171,364 @@ class InAppOverlay(
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     private fun OverlayContent() {
-        CompositionLocalProvider(
-            LocalContentColor provides Color.White,
-            LocalTextStyle provides LocalTextStyle.current.merge(TextStyle(color = Color.White))
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding(),
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    .navigationBarsPadding(),
-            ) {
-                toasts.forEach { toast ->
-                    val animation by animateFloatAsState(
-                        targetValue = if (toast.visible) 1f else 0f,
-                        animationSpec = if (toast.visible) tween(durationMillis = 150) else tween(durationMillis = 300),
-                        label = "toast"
-                    )
+            toasts.forEach { toast ->
+                val animation by animateFloatAsState(
+                    targetValue = if (toast.visible) 1f else 0f,
+                    animationSpec = if (toast.visible) tween(durationMillis = 150) else tween(durationMillis = 300),
+                    label = "toast"
+                )
 
-                    LaunchedEffect(toast) {
-                        toast.visible = true
-                        if (toast.durationMs < 0) return@LaunchedEffect
-                        delay(toast.durationMs.toLong())
-                        toast.visible = false
-                        delay(1000)
-                        toast.shown = true
-                        synchronized(toasts) {
-                            if (toasts.isNotEmpty() && toasts.all { it.shown }) toasts.clear()
-                        }
-                    }
-
-                    val deviceWidth = LocalContext.current.resources.displayMetrics.widthPixels
-                    val delayAnimationSpec =  rememberSplineBasedDecay<Float>()
-                    val anchors = DraggableAnchors {
-                        0 at 0f
-                        1 at deviceWidth.toFloat()
-                    }
-                    val draggableState = remember {
-                        AnchoredDraggableState(
-                            initialValue = 0,
-                            anchors = anchors
-                        )
-                    }
-
-                    LaunchedEffect(draggableState.currentValue) {
-                        if (draggableState.currentValue == 1) {
-                            toast.visible = false
-                        }
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .anchoredDraggable(
-                                state = draggableState,
-                                orientation = Orientation.Horizontal
-                            )
-                            .offset { IntOffset(draggableState.offset.roundToInt(), 0) }
-                            .graphicsLayer {
-                                alpha = animation
-                                translationY = -100.dp.toPx() * (1 - animation)
-                            }
-                    ) {
-                        if (animation > 0.01f) {
-                            toast.composable(toast)
-                        }
+                LaunchedEffect(toast) {
+                    toast.visible = true
+                    if (toast.durationMs < 0) return@LaunchedEffect
+                    delay(toast.durationMs.toLong())
+                    toast.visible = false
+                    delay(1000)
+                    toast.shown = true
+                    synchronized(toasts) {
+                        if (toasts.isNotEmpty() && toasts.all { it.shown }) toasts.clear()
                     }
                 }
 
-                customComposables.forEach {
-                    it()
+                val deviceWidth = LocalContext.current.resources.displayMetrics.widthPixels
+                val delayAnimationSpec =  rememberSplineBasedDecay<Float>()
+                val draggableState = remember {
+                    AnchoredDraggableState(
+                        initialValue = 0,
+                        anchors = DraggableAnchors {
+                            -1 at -deviceWidth.toFloat()
+                            0 at 0f
+                            1 at deviceWidth.toFloat()
+                        },
+                        confirmValueChange = {
+                            if (it == 0) return@AnchoredDraggableState true
+                            toast.visible = false
+                            true
+                        }
+                    )
+                }
+                val flingBehavior = AnchoredDraggableDefaults.flingBehavior(draggableState)
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .anchoredDraggable(
+                            state = draggableState,
+                            orientation = Orientation.Horizontal,
+                            flingBehavior = flingBehavior
+                        )
+                        .offset { IntOffset(draggableState.offset.roundToInt(), 0) }
+                        .graphicsLayer {
+                            alpha = animation
+                            translationY = -100.dp.toPx() * (1 - animation)
+                        }
+                ) {
+                    if (animation > 0.01f) {
+                        toast.composable(toast)
+                    }
+                }
+            }
+
+            customComposables.forEach {
+                it()
+            }
+
+            CallRecorderOverlay()
+        }
+    }
+
+    @Composable
+    private fun CallRecorderOverlay() {
+        var elapsedTime by remember { mutableStateOf(0L) }
+        val density = LocalDensity.current
+        val screenWidth = LocalContext.current.resources.displayMetrics.widthPixels.toFloat()
+        
+        // Update timer every second
+        LaunchedEffect(callRecorderState.isRecording) {
+            if (callRecorderState.isRecording) {
+                while (true) {
+                    delay(1000)
+                    elapsedTime = System.currentTimeMillis() - callRecorderState.recordingStartTime
+                }
+            } else {
+                elapsedTime = 0L
+            }
+        }
+
+        // Auto-minimize logic
+        LaunchedEffect(callRecorderState.showOverlay, callRecorderState.lastInteractionTime) {
+            if (callRecorderState.showOverlay && !callRecorderState.isMinimized) {
+                delay(10000)
+                callRecorderState.isMinimized = true
+            }
+        }
+        
+        // Reset interaction time when shown
+        LaunchedEffect(callRecorderState.showOverlay) {
+            if (callRecorderState.showOverlay) {
+                callRecorderState.lastInteractionTime = System.currentTimeMillis()
+                callRecorderState.isMinimized = false
+            }
+        }
+
+        val displayOffsetX by animateFloatAsState(
+            targetValue = if (callRecorderState.isMinimized) {
+                -screenWidth / 2f + with(density) { 24.dp.toPx() }
+            } else {
+                callRecorderState.offsetX
+            },
+            label = "offsetX"
+        )
+        
+        val displayOffsetY by animateFloatAsState(
+            targetValue = if (callRecorderState.isMinimized) 0f else callRecorderState.offsetY,
+            label = "offsetY"
+        )
+        
+        // Pulsing animation for recording indicator
+        val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+        val pulseScale by infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 2.5f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1200, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "pulseScale"
+        )
+        val pulseAlpha by infiniteTransition.animateFloat(
+            initialValue = 0.6f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1200, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "pulseAlpha"
+        )
+        
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            AnimatedVisibility(
+                visible = callRecorderState.showOverlay,
+                enter = fadeIn() + scaleIn(initialScale = 0.8f),
+                exit = fadeOut(animationSpec = tween(durationMillis = 150))
+            ) {
+                val uiDesign = context.config.downloader.callRecorder.callRecorderUiDesign.get()
+                val isDark = context.mainActivity?.isDarkTheme() != false
+                
+                val containerColor = when (uiDesign) {
+                    "default" -> if (isDark) Color(0xFF2D2D30) else Color(0xFFEFEFF0)
+                    "cyber" -> Color(0xFF000000)
+                    "frost" -> Color(0xB3FFFFFF)
+                    "snapchat" -> Color(0xFFFFFC00)
+                    else -> if (isDark) Color(0xFF2D2D30) else Color(0xFFEFEFF0)
+                }
+
+                val contentColor = when (uiDesign) {
+                    "default" -> if (isDark) Color(0xFFE4E4E4) else Color(0xFF1F1F1F)
+                    "frost" -> Color(0xFF333333)
+                    "snapchat" -> Color.Black
+                    else -> Color.White
+                }
+
+                val buttonBackground = when (uiDesign) {
+                    "default" -> if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
+                    "cyber" -> Color(0xFF00E5FF).copy(alpha = 0.1f)
+                    "frost" -> Color.Black.copy(alpha = 0.1f)
+                    "snapchat" -> Color.Black
+                    else -> if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
+                }
+
+                val buttonIconColor = when (uiDesign) {
+                    "default" -> if (isDark) Color(0xFFE4E4E4) else Color(0xFF1F1F1F)
+                    "snapchat" -> Color.White
+                    "frost" -> Color(0xFF333333)
+                    "cyber" -> Color(0xFF00E5FF)
+                    else -> Color.White
+                }
+
+                val auroraGradient = Brush.horizontalGradient(
+                    listOf(
+                        Color(0xFF6F28A8),
+                        Color(0xFF0059B7)
+                    )
+                )
+
+                Card(
+                    modifier = Modifier
+                        .offset { IntOffset(displayOffsetX.roundToInt(), displayOffsetY.roundToInt()) }
+                        .shadow(
+                            elevation = 16.dp, 
+                            shape = CircleShape,
+                            ambientColor = if (uiDesign == "cyber") Color(0xFF00E5FF) else Color.Black,
+                            spotColor = if (uiDesign == "cyber") Color(0xFF00E5FF) else Color.Black
+                        )
+                        .then(when (uiDesign) {
+                            "cyber" -> Modifier.background(
+                                color = Color(0xFF00E5FF).copy(alpha = 0.4f),
+                                shape = CircleShape
+                            ).padding(1.dp)
+                            "frost" -> Modifier.background(
+                                color = Color.White.copy(alpha = 0.3f),
+                                shape = CircleShape
+                            ).padding(0.5.dp)
+                            else -> Modifier
+                        })
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = {
+                                    callRecorderState.isMinimized = false
+                                    callRecorderState.lastInteractionTime = System.currentTimeMillis()
+                                },
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+                                    callRecorderState.offsetX += dragAmount.x
+                                    callRecorderState.offsetY += dragAmount.y
+                                    callRecorderState.lastInteractionTime = System.currentTimeMillis()
+                                }
+                            )
+                        }
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                if (callRecorderState.isMinimized) {
+                                    callRecorderState.isMinimized = false
+                                }
+                                callRecorderState.lastInteractionTime = System.currentTimeMillis()
+                            }
+                        }
+                        .wrapContentSize(),
+                    shape = CircleShape,
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (uiDesign == "default") Color.Transparent else containerColor
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+                ) {
+                    Box(modifier = Modifier.then(
+                        if (uiDesign == "default") Modifier.background(auroraGradient) else Modifier
+                    )) {
+                        AnimatedContent(
+                            targetState = callRecorderState.isMinimized,
+                            label = "minimized"
+                        ) { minimized ->
+                            if (minimized) {
+                                Box(
+                                    modifier = Modifier.padding(12.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (callRecorderState.isRecording) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(10.dp)
+                                                    .scale(pulseScale)
+                                                    .background(Color.Red.copy(alpha = pulseAlpha), CircleShape)
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(10.dp)
+                                                    .background(Color.Red, CircleShape)
+                                            )
+                                        }
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(10.dp)
+                                                .background(contentColor.copy(alpha = 0.5f), CircleShape)
+                                        )
+                                    }
+                                }
+                            } else {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    // Timer and Status
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        val seconds = (elapsedTime / 1000) % 60
+                                        val minutes = (elapsedTime / 1000) / 60
+                                        
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            if (callRecorderState.isRecording) {
+                                                Box(contentAlignment = Alignment.Center) {
+                                                    // Pulsing Outer Ring
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(6.dp)
+                                                            .scale(pulseScale)
+                                                            .background(Color.Red.copy(alpha = pulseAlpha), CircleShape)
+                                                    )
+                                                    // Solid Inner Core
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(6.dp)
+                                                            .background(Color.Red, CircleShape)
+                                                    )
+                                                }
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                            }
+                                            Text(
+                                                text = String.format("%02d:%02d", minutes, seconds),
+                                                fontSize = 18.sp,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                color = contentColor
+                                            )
+                                        }
+                                    }
+
+                                    // Vertical Separator
+                                    Box(
+                                        modifier = Modifier
+                                            .width(1.5.dp)
+                                            .height(20.dp)
+                                            .background(contentColor.copy(alpha = 0.2f))
+                                    )
+
+                                    // Control Button
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .background(buttonBackground, CircleShape)
+                                            .pointerInput(callRecorderState.isRecording) {
+                                                detectTapGestures {
+                                                    callRecorderState.lastInteractionTime = System.currentTimeMillis()
+                                                    context.event.post(CallRecorderControlEvent(!callRecorderState.isRecording))
+                                                }
+                                            },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (callRecorderState.isRecording) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(10.dp)
+                                                    .background(buttonIconColor, RoundedCornerShape(1.dp))
+                                            )
+                                        } else {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(10.dp)
+                                                    .background(buttonIconColor, CircleShape)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
+
+    class CallRecorderControlEvent(val start: Boolean) : Event()
 
     private val overlayTag = Random.nextLong()
 
@@ -236,7 +537,9 @@ class InAppOverlay(
         activity.runOnUiThread {
             if (root.findViewWithTag<View>(overlayTag) != null) return@runOnUiThread
             root.addView(createComposeView(activity) {
-                PurrfectOverlayTheme { OverlayContent() }
+                AppMaterialTheme(isDarkTheme = remember { activity.isDarkTheme() }) {
+                    OverlayContent()
+                }
             }.apply {
                 tag = overlayTag
                 layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
@@ -272,9 +575,7 @@ class InAppOverlay(
 
         LinearProgressIndicator(
             progress = { progress.value },
-            modifier = modifier,
-            color = PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.85f),
-            trackColor = Color.White.copy(alpha = 0.10f),
+            modifier = modifier
         )
     }
 
@@ -285,26 +586,10 @@ class InAppOverlay(
         showDuration: Boolean = true,
         maxLines: Int = 3
     ) {
-        if (context.config.global.uiSettings.useSystemToasts.get()) {
-            if (durationMs > 2500) {
-                context.longToast(text)
-            } else {
-                context.shortToast(text)
-            }
-            return
-        }
         showToast(
             icon = { Icon(icon, contentDescription = "icon", modifier = Modifier.size(32.dp)) },
             text = {
-                Text(
-                    text,
-                    modifier = Modifier.fillMaxWidth(),
-                    maxLines = maxLines,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 15.sp,
-                    fontSize = 13.sp,
-                    color = Color.White
-                )
+                Text(text, modifier = Modifier.fillMaxWidth(), maxLines = maxLines, overflow = TextOverflow.Ellipsis, lineHeight = 15.sp, fontSize = 13.sp)
             },
             durationMs = durationMs,
             showDuration = showDuration
@@ -319,63 +604,42 @@ class InAppOverlay(
         durationMs: Int = 3000,
         showDuration: Boolean = true,
     ) {
-        val activity = context.mainActivity ?: return
-        injectOverlay(activity)
+        injectOverlay(context.mainActivity!!)
         toasts.add(Toast(
             composable = {
-                val shape = RoundedCornerShape(18.dp)
-                Surface(
+                val isDark = LocalContext.current.isDarkTheme()
+                val auroraGradient = Brush.verticalGradient(
+                    listOf(
+                        if (isDark) Color(0xFF2E2E69) else Color(0xFFE9DDFF),
+                        if (isDark) Color(0xFF1B1B4D) else Color(0xFFF9F8FF)
+                    )
+                )
+
+                ElevatedCard(
                     modifier = Modifier
-                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                        .padding(12.dp)
+                        .shadow(12.dp, MaterialTheme.shapes.large)
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = 18.dp,
-                            shape = shape,
-                            spotColor = PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.22f),
-                            ambientColor = PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.16f)
-                        )
-                        .clip(shape)
-                        .background(PurrfectOverlayPalette.cardOverlay, shape)
-                        .border(
-                            BorderStroke(
-                                1.dp,
-                                Brush.linearGradient(
-                                    listOf(
-                                        PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.55f),
-                                        PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.35f),
-                                    )
-                                )
-                            ),
-                            shape
-                        ),
-                    color = Color.Transparent,
-                    contentColor = Color.White,
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp
+                        .clip(MaterialTheme.shapes.large),
+                    colors = CardDefaults.elevatedCardColors(
+                        containerColor = Color.Transparent,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
-                    Column {
+                    Box(modifier = Modifier.background(auroraGradient)) {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp)
+                                .padding(16.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .background(Color.White.copy(alpha = 0.08f))
-                                    .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(14.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                icon()
-                            }
+                            icon()
                             text()
                         }
-                        if (showDuration && durationMs > 0) {
-                            DurationProgress(duration = durationMs, modifier = Modifier.fillMaxWidth())
-                        }
+                    }
+                    if (showDuration && durationMs > 0) {
+                        DurationProgress(duration = durationMs, modifier = Modifier.fillMaxWidth())
                     }
                 }
             },
@@ -390,7 +654,7 @@ class InAppOverlay(
             return
         }
 
-        val animationType = BypassAnimation.entries.random()
+        val animationType = BypassAnimation.values().random()
         
         lateinit var composable: CustomComposable
         composable = {
@@ -430,81 +694,34 @@ class InAppOverlay(
                         alpha = progress
                     }
             ) {
-                // Use PurrfectSnap UI colors - gradient for active, red tint for inactive
-                val backgroundColor = if (isWorking) {
-                    Brush.linearGradient(
-                        listOf(
-                            PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.85f),
-                            PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.75f)
-                        )
-                    )
-                } else {
-                    Brush.linearGradient(
-                        listOf(
-                            Color(0xFFB71C1C).copy(alpha = 0.85f),
-                            Color(0xFFD32F2F).copy(alpha = 0.75f)
-                        )
-                    )
-                }
+                val backgroundColor = if (isWorking) Color(0xFF1B5E20).copy(alpha = 0.8f) else Color(0xFFB71C1C).copy(alpha = 0.8f)
 
-                val shape = RoundedCornerShape(24.dp)
-                Surface(
+                Row(
                     modifier = Modifier
-                        .shadow(
-                            elevation = 12.dp,
-                            shape = shape,
-                            spotColor = if (isWorking) PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.3f) else Color(0xFFB71C1C).copy(alpha = 0.25f),
-                            ambientColor = if (isWorking) PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.2f) else Color(0xFFD32F2F).copy(alpha = 0.18f)
+                        .background(
+                            color = backgroundColor,
+                            shape = MaterialTheme.shapes.large
                         )
-                        .clip(shape)
-                        .background(backgroundColor, shape)
-                        .border(
-                            BorderStroke(
-                                1.dp,
-                                if (isWorking) {
-                                    Brush.linearGradient(
-                                        listOf(
-                                            PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.7f),
-                                            PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.6f)
-                                        )
-                                    )
-                                } else {
-                                    Brush.linearGradient(
-                                        listOf(
-                                            Color(0xFFB71C1C).copy(alpha = 0.7f),
-                                            Color(0xFFD32F2F).copy(alpha = 0.6f)
-                                        )
-                                    )
-                                }
-                            ),
-                            shape
-                        ),
-                    color = Color.Transparent,
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        
-                        Text(
-                            text = if (isWorking) 
-                                context.translation.getOrNull("manager.sections.bypass_status.active") ?: "Bypass Active"
-                            else 
-                                context.translation.getOrNull("manager.sections.bypass_status.inactive") ?: "Bypass Inactive",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Icon(
+                        imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    
+                    Text(
+                        text = if (isWorking) 
+                            context.translation["manager.sections.bypass_status.active"]
+                        else 
+                            context.translation["manager.sections.bypass_status.inactive"],
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }

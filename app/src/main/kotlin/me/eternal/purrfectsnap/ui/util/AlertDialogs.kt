@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import me.eternal.purrfectsnap.common.config.ConfigFlag
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog as StandardDialog
 import androidx.core.net.toUri
@@ -208,29 +209,40 @@ class AlertDialogs(
     @Suppress("UNCHECKED_CAST")
     fun UniqueSelectionDialog(property: PropertyPair<*>) {
         val disabledKey = property.key.params.disabledKey
+        val noDisable = property.key.params.flags.contains(ConfigFlag.NO_DISABLE_KEY)
         val keys = (property.value.defaultValues as List<String>).toMutableList().apply {
-            val disabledEntry = disabledKey ?: "null"
-            remove(disabledEntry)
-            add(0, disabledEntry)
-            if (disabledKey == null) {
+            if (noDisable) {
+                disabledKey?.let { remove(it) }
                 remove("null")
-                add(0, "null")
+            } else {
+                val disabledEntry = disabledKey ?: "null"
+                remove(disabledEntry)
+                add(0, disabledEntry)
+                if (disabledKey == null) {
+                    remove("null")
+                    add(0, "null")
+                }
             }
         }
 
         var selectedValue by remember {
-            mutableStateOf(property.value.getNullable()?.toString() ?: (disabledKey ?: "null"))
+            val currentValue = property.value.getNullable()?.toString()
+            mutableStateOf(currentValue ?: if (noDisable) (keys.firstOrNull().orEmpty()) else (disabledKey ?: "null"))
         }
 
         DefaultDialogCard {
             keys.forEachIndexed { index, item ->
                 fun select() {
                     selectedValue = item
-                    if (disabledKey != null && item == disabledKey) {
+                    if (!noDisable && disabledKey != null && item == disabledKey) {
                         property.value.setAny(disabledKey)
                         return
                     }
-                    property.value.setAny(if (disabledKey == null && index == 0) null else item)
+                    if (!noDisable && disabledKey == null && index == 0) {
+                        property.value.setAny(null)
+                        return
+                    }
+                    property.value.setAny(item)
                 }
 
                 Row(

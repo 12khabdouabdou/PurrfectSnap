@@ -21,6 +21,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import me.eternal.purrfectsnap.bridge.BridgeService
 import me.eternal.purrfectsnap.common.BuildConfig
 import me.eternal.purrfectsnap.common.Constants
@@ -45,12 +51,14 @@ import me.eternal.purrfectsnap.ui.manager.data.SnapchatAppInfo
 import me.eternal.purrfectsnap.ui.overlay.RemoteOverlay
 import me.eternal.purrfectsnap.ui.setup.Requirements
 import me.eternal.purrfectsnap.ui.setup.SetupActivity
+import me.eternal.purrfectsnap.task.AnnouncementCheckWorker
 import java.io.ByteArrayInputStream
 import java.lang.ref.WeakReference
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
 import com.tonyodev.fetch2.Fetch
 import com.tonyodev.fetch2.FetchConfiguration
+import java.util.concurrent.TimeUnit
 
 
 class RemoteSideContext(
@@ -123,6 +131,7 @@ class RemoteSideContext(
                 log.init()
                 log.verbose("Loading RemoteSideContext")
                 config.load()
+                ensureAutoUpdateCheckOnUpgrade()
                 launch {
                     mappings.apply {
                         init(androidContext)
@@ -132,6 +141,7 @@ class RemoteSideContext(
                     userLocale = config.locale
                     load()
                 }
+                scheduleAnnouncementCheck()
                 database.init()
                 streaksReminder.init()
                 scriptManager.init()
@@ -263,5 +273,43 @@ class RemoteSideContext(
         }
         intent.putExtra(EnumAction.ACTION_PARAMETER, action.key)
         androidContext.startActivity(intent)
+    }
+
+    private fun scheduleAnnouncementCheck() {
+        val workManager = WorkManager.getInstance(androidContext)
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+        val inputData = Data.Builder()
+            .putString("announcements_url", "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/announcements.txt")
+            .putString("channel_name", "Announcements")
+            .putString("channel_description", "Notifications for PurrfectSnap announcements")
+            .putString("notification_title", "New announcement available")
+            .putString("notification_text", "Tap to open and read.")
+            .build()
+        val workRequest = PeriodicWorkRequestBuilder<AnnouncementCheckWorker>(1, TimeUnit.DAYS)
+            .setConstraints(constraints)
+            .setInputData(inputData)
+            .build()
+        workManager.enqueueUniquePeriodicWork(
+            "purrfectsnap_announcement_check",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            workRequest
+        )
+    }
+
+    private fun ensureAutoUpdateCheckOnUpgrade() {
+        val currentVersion = BuildConfig.VERSION_CODE.toLong()
+        val lastVersion = sharedPreferences.getLong("last_build_version_code", -1L)
+        val reenabledOnce = sharedPreferences.getBoolean("auto_update_reenabled_once", false)
+        if (lastVersion == currentVersion) return
+        if (!reenabledOnce) {
+            config.root.global.updateSettings.autoUpdateCheck.set(true)
+            config.writeConfig()
+            sharedPreferences.edit()
+                .putBoolean("auto_update_reenabled_once", true)
+                .apply()
+        }
+        sharedPreferences.edit().putLong("last_build_version_code", currentVersion).apply()
     }
 }
