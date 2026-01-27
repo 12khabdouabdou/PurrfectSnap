@@ -205,15 +205,18 @@ class InAppOverlay(
                             -1 at -deviceWidth.toFloat()
                             0 at 0f
                             1 at deviceWidth.toFloat()
-                        },
-                        confirmValueChange = {
-                            if (it == 0) return@AnchoredDraggableState true
-                            toast.visible = false
-                            true
                         }
                     )
                 }
                 val flingBehavior = AnchoredDraggableDefaults.flingBehavior(draggableState)
+                LaunchedEffect(draggableState) {
+                    snapshotFlow { draggableState.currentValue }
+                        .collect { value ->
+                            if (value != 0) {
+                                toast.visible = false
+                            }
+                        }
+                }
 
                 Box(
                     modifier = Modifier
