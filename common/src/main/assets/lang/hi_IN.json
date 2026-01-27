@@ -1,4 +1,4 @@
-﻿{
+{
   "setup": {
     "dialogs": {
       "select_language": "भाषा चुनें",
@@ -814,6 +814,12 @@
         "front": "फ्रंट कैमरा",
         "back": "बैक कैमरा",
         "null": "अंतिम उपयोग"
+      },
+      "call_recorder_ui_design": {
+        "default": "Default",
+        "snapchat": "Snapchat",
+        "cyber": "Cyber",
+        "frost": "Frost"
       },
       "front_custom_frame_rate": {
         "null": "डिवाइस डिफ़ॉल्ट FPS"
@@ -2217,7 +2223,26 @@
           },
           "call_recorder": {
             "name": "कॉल रिकॉर्डर",
-            "description": "स्वचालित रूप से ऑडियो कॉल रिकॉर्ड"
+            "description": "Manage call recording settings",
+            "properties": {
+              "call_recorder": {
+                "name": "Mode",
+                "description": "Select what should be recorded"
+              },
+              "auto_start_recording": {
+                "name": "Auto Start Recording",
+                "description": "Automatically start recording when a call starts"
+              },
+              "call_recorder_ui": {
+                "name": "Call Recorder UI",
+                "description": "Show the recording overlay UI during calls"
+              },
+              "call_recorder_ui_design": {
+                "name": "UI Design",
+                "description": "Select the design for the call recorder overlay"
+              },
+              "call_recording_saved_toast": "Saved"
+            }
           },
           "account_switcher": {
             "name": "खाता स्विचर",
@@ -2939,6 +2964,7 @@
       "no_rules_found": "कोई नियम नहीं मिला",
       "no_events": "कोई घटना नहीं"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "खोज"
     },

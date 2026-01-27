@@ -1,4 +1,4 @@
-﻿{
+{
   "setup": {
     "dialogs": {
       "select_language": "Sélectionner la langue",
@@ -814,6 +814,12 @@
         "front": "Caméra avant",
         "back": "Caméra arrière",
         "null": "Souvenez-vous de la dernière utilisation"
+      },
+      "call_recorder_ui_design": {
+        "default": "Default",
+        "snapchat": "Snapchat",
+        "cyber": "Cyber",
+        "frost": "Frost"
       },
       "front_custom_frame_rate": {
         "null": "FPS par défaut du périphérique"
@@ -2217,7 +2223,26 @@
           },
           "call_recorder": {
             "name": "Enregistreur d'appel",
-            "description": "Enregistrement automatique des appels audio"
+            "description": "Manage call recording settings",
+            "properties": {
+              "call_recorder": {
+                "name": "Mode",
+                "description": "Select what should be recorded"
+              },
+              "auto_start_recording": {
+                "name": "Auto Start Recording",
+                "description": "Automatically start recording when a call starts"
+              },
+              "call_recorder_ui": {
+                "name": "Call Recorder UI",
+                "description": "Show the recording overlay UI during calls"
+              },
+              "call_recorder_ui_design": {
+                "name": "UI Design",
+                "description": "Select the design for the call recorder overlay"
+              },
+              "call_recording_saved_toast": "Saved"
+            }
           },
           "account_switcher": {
             "name": "Commutateur de compte",
@@ -2939,6 +2964,7 @@
       "no_rules_found": "Aucune règle trouvée",
       "no_events": "Pas d'événements"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Recherche"
     },

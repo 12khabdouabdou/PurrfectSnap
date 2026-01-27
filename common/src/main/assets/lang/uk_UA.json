@@ -815,6 +815,12 @@
         "back": "Задня камера",
         "null": "Пам'яті останнього"
       },
+      "call_recorder_ui_design": {
+        "default": "Default",
+        "snapchat": "Snapchat",
+        "cyber": "Cyber",
+        "frost": "Frost"
+      },
       "front_custom_frame_rate": {
         "null": "Тип пристрою FPS"
       },
@@ -2217,7 +2223,26 @@
           },
           "call_recorder": {
             "name": "Запис дзвінків",
-            "description": "Автоматично записувати аудіо дзвінки"
+            "description": "Manage call recording settings",
+            "properties": {
+              "call_recorder": {
+                "name": "Mode",
+                "description": "Select what should be recorded"
+              },
+              "auto_start_recording": {
+                "name": "Auto Start Recording",
+                "description": "Automatically start recording when a call starts"
+              },
+              "call_recorder_ui": {
+                "name": "Call Recorder UI",
+                "description": "Show the recording overlay UI during calls"
+              },
+              "call_recorder_ui_design": {
+                "name": "UI Design",
+                "description": "Select the design for the call recorder overlay"
+              },
+              "call_recording_saved_toast": "Saved"
+            }
           },
           "account_switcher": {
             "name": "Перемикач рахунку",
@@ -2939,6 +2964,7 @@
       "no_rules_found": "Не знайдено правила",
       "no_events": "Немає подій"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Пошук"
     },

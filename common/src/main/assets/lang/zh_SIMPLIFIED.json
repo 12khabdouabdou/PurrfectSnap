@@ -815,6 +815,12 @@
         "back": "后镜头",
         "null": "记住上次使用"
       },
+      "call_recorder_ui_design": {
+        "default": "Default",
+        "snapchat": "Snapchat",
+        "cyber": "Cyber",
+        "frost": "Frost"
+      },
       "front_custom_frame_rate": {
         "null": "设备默认 FPS"
       },
@@ -2217,7 +2223,26 @@
           },
           "call_recorder": {
             "name": "调用录音机",
-            "description": "自动记录音频通话"
+            "description": "Manage call recording settings",
+            "properties": {
+              "call_recorder": {
+                "name": "Mode",
+                "description": "Select what should be recorded"
+              },
+              "auto_start_recording": {
+                "name": "Auto Start Recording",
+                "description": "Automatically start recording when a call starts"
+              },
+              "call_recorder_ui": {
+                "name": "Call Recorder UI",
+                "description": "Show the recording overlay UI during calls"
+              },
+              "call_recorder_ui_design": {
+                "name": "UI Design",
+                "description": "Select the design for the call recorder overlay"
+              },
+              "call_recording_saved_toast": "Saved"
+            }
           },
           "account_switcher": {
             "name": "账户切换器",
@@ -2939,6 +2964,7 @@
       "no_rules_found": "没有找到规则",
       "no_events": "无事件"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "搜索"
     },

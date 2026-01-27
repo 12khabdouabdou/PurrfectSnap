@@ -757,7 +757,26 @@
                     },
                     "call_recorder": {
                         "name": "مسجل المكالمات",
-                        "description": "يسجل المكالمات الصوتية تلقائيًا"
+                        "description": "Manage call recording settings",
+                        "properties": {
+                            "call_recorder": {
+                                "name": "Mode",
+                                "description": "Select what should be recorded"
+                            },
+                            "auto_start_recording": {
+                                "name": "Auto Start Recording",
+                                "description": "Automatically start recording when a call starts"
+                            },
+                            "call_recorder_ui": {
+                                "name": "Call Recorder UI",
+                                "description": "Show the recording overlay UI during calls"
+                            },
+                            "call_recorder_ui_design": {
+                                "name": "UI Design",
+                                "description": "Select the design for the call recorder overlay"
+                            },
+                            "call_recording_saved_toast": "Saved"
+                        }
                     },
                     "chat_wallpaper_downloader": {
                         "name": "تنزيل خلفية المحادثة",
@@ -2189,6 +2208,12 @@
                 "only_record_others": "تسجيل الآخرين فقط",
                 "record_both": "تسجيل كلا الجانبين"
             },
+            "call_recorder_ui_design": {
+                "default": "Default",
+                "snapchat": "Snapchat",
+                "cyber": "Cyber",
+                "frost": "Frost"
+            },
             "supported_languages": {
                 "pt": "البرتغالية",
                 "fr": "French",
@@ -3027,6 +3052,7 @@
             "no_rules_found": "لم يتم العثور على قواعد",
             "no_events": "لا توجد أحداث"
         },
+        "scopes_suffix": "scopes",
         "search": {
             "placeholder": "بحث"
         },

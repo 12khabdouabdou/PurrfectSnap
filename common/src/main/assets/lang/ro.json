@@ -1,4 +1,4 @@
-﻿{
+{
   "setup": {
     "dialogs": {
       "select_language": "Alegeți limba",
@@ -816,6 +816,12 @@
         "front": "Camera din față",
         "back": "Camera din spate",
         "null": "Amintiți-vă ultima utilizare"
+      },
+      "call_recorder_ui_design": {
+        "default": "Default",
+        "snapchat": "Snapchat",
+        "cyber": "Cyber",
+        "frost": "Frost"
       },
       "front_custom_frame_rate": {
         "null": "FPS implicit dispozitiv"
@@ -2219,7 +2225,26 @@
           },
           "call_recorder": {
             "name": "Apelează înregistrarea",
-            "description": "Înregistrează automat apeluri audio"
+            "description": "Manage call recording settings",
+            "properties": {
+              "call_recorder": {
+                "name": "Mode",
+                "description": "Select what should be recorded"
+              },
+              "auto_start_recording": {
+                "name": "Auto Start Recording",
+                "description": "Automatically start recording when a call starts"
+              },
+              "call_recorder_ui": {
+                "name": "Call Recorder UI",
+                "description": "Show the recording overlay UI during calls"
+              },
+              "call_recorder_ui_design": {
+                "name": "UI Design",
+                "description": "Select the design for the call recorder overlay"
+              },
+              "call_recording_saved_toast": "Saved"
+            }
           },
           "account_switcher": {
             "name": "Switcher cont",
@@ -2941,6 +2966,7 @@
       "no_rules_found": "Nu s-au găsit reguli",
       "no_events": "Fără evenimente"
     },
+    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Caută"
     },
