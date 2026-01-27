@@ -1,21 +1,21 @@
-{
+Ôªø{
   "setup": {
     "dialogs": {
-      "select_language": "Velg sprÂk",
+      "select_language": "Velg spr√•k",
       "save_folder": "Velg hvor du vil lagre nedlastinger",
       "select_save_folder_button": "Velg mappe"
     },
     "mappings": {
       "dialog": "Forebygger kart...",
-      "generate_failure_no_snapchat": "PurrfectSnap klarte ikke Â oppdage Snapchat, pr¯v Â installere Snapchat pÂ nytt.",
-      "generate_failure": "En feil oppstod under fors¯k pÂ Â generere kartlegginger, pr¯v igjen."
+      "generate_failure_no_snapchat": "PurrfectSnap klarte ikke √• oppdage Snapchat, pr√∏v √• installere Snapchat p√• nytt.",
+      "generate_failure": "En feil oppstod under fors√∏k p√• √• generere kartlegginger, pr√∏v igjen."
     },
     "permissions": {
-      "dialog": "Fullf¯r disse n¯dvendighetene for Â fortsette:",
+      "dialog": "Fullf√∏r disse n√∏dvendighetene for √• fortsette:",
       "notification_access": "Tilgang til varsling",
       "battery_optimization": "Batterioptimering",
       "display_over_other_apps": "Vis over andre apper",
-      "request_button": "Foresp¯rsel"
+      "request_button": "Foresp√∏rsel"
     }
   },
   "scopes": {
@@ -38,10 +38,10 @@
       "manage_friend_tracker_repos": "Administrere Venn Tracker Repositories",
       "edit_rule": "Rediger regel",
       "file_imports": "Filimport",
-      "manage_repos": "HÂndtere repositorier",
+      "manage_repos": "H√•ndtere repositorier",
       "social": "Sosiale",
-      "manage_scope": "Administrer omrÂde",
-      "messaging_preview": "ForhÂndsvisning",
+      "manage_scope": "Administrer omr√•de",
+      "messaging_preview": "Forh√•ndsvisning",
       "scripts": "Skript",
       "manage_script_repos": "Administrer Script-gjenstander",
       "view_logger_history": "Logger Historie",
@@ -49,7 +49,7 @@
     },
     "navigation": {
       "customize_bottom_bar_title": "Tilpass bunnlinjen",
-      "customize_bottom_bar_subtitle": "Velg hvilke faner som vises pÂ startskjermen",
+      "customize_bottom_bar_subtitle": "Velg hvilke faner som vises p√• startskjermen",
       "available_tabs_title": "Tilgjengelige faner",
       "shown_tabs_title": "Vist faner",
       "reset_button": "Nullstill",
@@ -61,23 +61,23 @@
         "update_title": "Oppdatering av PurrfectSnap",
         "update_content": "Utgave{version}er tilgjengelig!",
         "update_button": "Last ned",
-        "debug_build_summary_title": "Du kj¯rer en feils¯kingsbygging av PurrfectSnap",
+        "debug_build_summary_title": "Du kj√∏rer en feils√∏kingsbygging av PurrfectSnap",
         "debug_build_summary_content": "Utgave{versionName}({versionCode})",
         "debug_build_summary_date": "Byggedato:{date}({days}dager siden)",
         "quick_actions_title": "Raske handlinger"
       },
       "home_logs": {
         "no_logs_hint": "Ingen logger tilgjengelig",
-        "clear_logs_button": "T¯m logger",
+        "clear_logs_button": "T√∏m logger",
         "export_logs_button": "Eksporter logger",
-        "saving_logs_toast": "≈ lagre logger kan ta litt tid...",
+        "saving_logs_toast": "√Ö lagre logger kan ta litt tid...",
         "saved_logs_success_toast": "Logger lagret vellykket",
-        "saved_logs_failure_toast": "Klarte ikke Â lagre logger"
+        "saved_logs_failure_toast": "Klarte ikke √• lagre logger"
       },
       "home_settings": {
         "actions_title": "Handlinger",
         "message_logger_title": "Meldingslogger",
-        "debug_title": "Feils¯king",
+        "debug_title": "Feils√∏king",
         "success_toast": "Ferdig!",
         "message_logger_summary": "{messageCount}meldinger\n{storyCount}historier",
         "export_button": "Eksporter",
@@ -90,45 +90,45 @@
         "auto_update_check": "Automatisk oppdateringskontroll",
         "update_check_frequency_daily": "Daglig",
         "update_check_frequency_weekly": "Uken",
-        "update_check_frequency_monthly": "MÂnedlig",
+        "update_check_frequency_monthly": "M√•nedlig",
         "update_channel_stable": "Stabil",
         "update_channel_prerelease": "Forutsetning",
         "update_notification_channel_name": "Oppdateringer",
-        "update_notification_channel_description": "Bli varslet nÂr nye utgivelser er tilgjengelige",
+        "update_notification_channel_description": "Bli varslet n√•r nye utgivelser er tilgjengelige",
         "update_notification_title": "Ny oppdatering tilgjengelig",
-        "update_notification_text": "Trykk for Â Âpne PurrfectSnap og laste ned den siste bygningen.",
+        "update_notification_text": "Trykk for √• √•pne PurrfectSnap og laste ned den siste bygningen.",
         "app_theme_title": "App Tema",
-        "theme_icon_description": "≈pne temavelger",
+        "theme_icon_description": "√Öpne temavelger",
         "theme_mode_system": "System",
         "theme_mode_light": "Lys",
-        "theme_mode_dark": "M¯rk",
+        "theme_mode_dark": "M√∏rk",
         "friend_notes_title": "Vennnotater",
         "friend_notes_description": "Administrere og sikkerhetskopiere dine vennenotater",
-        "friend_notes_no_notes_to_backup": "Ingen notater Â sikkerhetskopiere enda",
+        "friend_notes_no_notes_to_backup": "Ingen notater √• sikkerhetskopiere enda",
         "friend_notes_backup_success": "Vennnoter sikkerhetskopiert",
         "friend_notes_restore_success": "Vennnoter restaurert",
         "backup_button": "Sikkerhetskopi",
         "restore_button": "Gjenopprett",
         "view_button": "Vis",
         "customize_bottom_bar_title": "Tilpass bunnlinjen",
-        "customize_bottom_bar_subtitle": "Velg hvilke faner som vises pÂ startskjermen",
+        "customize_bottom_bar_subtitle": "Velg hvilke faner som vises p√• startskjermen",
         "available_tabs_title": "Tilgjengelige faner",
         "reset_button": "Nullstill",
         "done_button": "Ferdig",
         "clear_friend_feed": "Klar venn mate",
         "test_mode_label": "Aktiver PurrAura",
         "disable_feature_loading_label": "Deaktiver funksjonslasting",
-        "disable_auto_mapper_label": "SlÂ av automatisk kopling",
+        "disable_auto_mapper_label": "Sl√• av automatisk kopling",
         "disable_bypass_indicator_label": "Deaktiver Bypass- indikator"
       },
       "tasks": {
         "no_tasks": "Ingen oppgaver",
-        "merge_button": "SlÂ sammen",
-        "failed_to_open_file": "Klarte ikke Â Âpne filen",
+        "merge_button": "Sl√• sammen",
+        "failed_to_open_file": "Klarte ikke √• √•pne filen",
         "merge_files_toast": "Merging{count}filer",
-        "remove_selected_tasks_title": "Er du sikker pÂ at du vil fjerne valgte oppgaver?",
-        "remove_all_tasks_title": "Er du sikker pÂ at du vil fjerne alle oppgaver?",
-        "delete_files_option": "Slett ogsÂ filer",
+        "remove_selected_tasks_title": "Er du sikker p√• at du vil fjerne valgte oppgaver?",
+        "remove_all_tasks_title": "Er du sikker p√• at du vil fjerne alle oppgaver?",
+        "delete_files_option": "Slett ogs√• filer",
         "remove_selected_tasks_confirm": "Fjern{count}oppgaver?",
         "remove_all_tasks_confirm": "Fjerne alle oppgaver?"
       },
@@ -140,13 +140,13 @@
         "config_export_success_toast": "Konfigurasjon eksportert vellykket",
         "config_import_success_toast": "Konfigurer importert vellykket",
         "config_import_failure_toast": "Kunne ikke importere oppsett{error}",
-        "config_export_failure_toast": "Klarte ikke Â eksportere oppsett{error}",
+        "config_export_failure_toast": "Klarte ikke √• eksportere oppsett{error}",
         "saved_config_snackbar": "Konfigurer lagret",
-        "older_required": "Denne funksjonen krever Snapchat v{version}eller eldre Â jobbe riktig",
-        "newer_required": "Denne funksjonen krever Snapchat v{version}eller nyere til Â fungere riktig",
-        "search_button": "S¯k",
-        "clear_history": "T¯m s¯kehistorikken",
-        "subtitle": "S¯k og administrere funksjoner"
+        "older_required": "Denne funksjonen krever Snapchat v{version}eller eldre √• jobbe riktig",
+        "newer_required": "Denne funksjonen krever Snapchat v{version}eller nyere til √• fungere riktig",
+        "search_button": "S√∏k",
+        "clear_history": "T√∏m s√∏kehistorikken",
+        "subtitle": "S√∏k og administrere funksjoner"
       },
       "bypass_status": {
           "active": "PurrAura Active",
@@ -154,58 +154,58 @@
       },
       "manage_rule_feature": {
         "disable_state_option": "Deaktivert",
-        "disable_state_subtext": "Ingen venner/grupper vil bli ber¯rt",
+        "disable_state_subtext": "Ingen venner/grupper vil bli ber√∏rt",
         "whitelist_state_option": "Ingen andre enn...",
-        "whitelist_state_subtext": "Bare{count}venner/grupper vil bli pÂvirket av denne regelen",
+        "whitelist_state_subtext": "Bare{count}venner/grupper vil bli p√•virket av denne regelen",
         "whitelist_state_button": "Velg tillatte venner/grupper",
         "blacklist_state_option": "Alle bortsett fra ...",
-        "blacklist_state_subtext": "Alle bortsett fra{count}venner/grupper vil bli pÂvirket av denne regelen",
+        "blacklist_state_subtext": "Alle bortsett fra{count}venner/grupper vil bli p√•virket av denne regelen",
         "blacklist_state_button": "Velg utelukkede venner/grupper",
-        "clear_list_button": "T¯m venner/grupper",
-        "dialog_clear_confirmation_text": "Er du sikker pÂ at du vil slette listen?"
+        "clear_list_button": "T√∏m venner/grupper",
+        "dialog_clear_confirmation_text": "Er du sikker p√• at du vil slette listen?"
       },
       "social": {
         "friends_tab": "Venner",
         "groups_tab": "Grupper",
-        "empty_hint": "Listen din er tom for nÂ",
-        "friends_empty_title": "Ingen venner lagt til ennÂ",
-        "groups_empty_title": "Ingen grupper synkronisert ennÂ",
+        "empty_hint": "Listen din er tom for n√•",
+        "friends_empty_title": "Ingen venner lagt til enn√•",
+        "groups_empty_title": "Ingen grupper synkronisert enn√•",
         "streaks_expiration_short": "{hours}h",
-        "social_tagline": "Administrer omfang, streker og forhÂndsvisninger",
-        "social_empty_hint": "Trykk pÂ + knappen for Â synkronisere venner eller grupper."
+        "social_tagline": "Administrer omfang, streker og forh√•ndsvisninger",
+        "social_empty_hint": "Trykk p√• + knappen for √• synkronisere venner eller grupper."
       },
       "manage_scope": {
         "logged_stories_button": "Vis loggede historier",
         "e2ee_title": "Slutt til slutt- kryptering",
-        "e2ee_subtitle": "Administrere din felles n¯kkel for denne vennen.",
+        "e2ee_subtitle": "Administrere din felles n√∏kkel for denne vennen.",
         "export_base64_button": "Eksporter Base64",
         "import_base64_button": "Importer Base64",
-        "invalid_key_size_32_bytes": "Ugyldig n¯kkelst¯rrelse. Gi en 32-byte n¯kkel.",
-        "successfully_imported_key": "N¯kkel importert vellykket.",
-        "failed_to_import_key": "Kunne ikke importere n¯kkel:{message}",
+        "invalid_key_size_32_bytes": "Ugyldig n√∏kkelst√∏rrelse. Gi en 32-byte n√∏kkel.",
+        "successfully_imported_key": "N√∏kkel importert vellykket.",
+        "failed_to_import_key": "Kunne ikke importere n√∏kkel:{message}",
         "rules_title": "Regler",
         "participants_text": "{count}deltakere",
         "not_found": "Ikke funnet",
         "streaks_title": "Streaks",
         "streaks_length_text": "Lengde:{length}",
-        "streaks_expiration_text": "Utl¯per i{eta}",
-        "streaks_expiration_text_expired": "Utl¯pt",
-        "reminder_button": "Sett pÂmindelse",
-        "delete_scope_confirm_dialog_title": "Er du sikker pÂ at du vil slette en{scope}?",
-        "notes_placeholder": "Klikk for Â legge til et notat"
+        "streaks_expiration_text": "Utl√∏per i{eta}",
+        "streaks_expiration_text_expired": "Utl√∏pt",
+        "reminder_button": "Sett p√•mindelse",
+        "delete_scope_confirm_dialog_title": "Er du sikker p√• at du vil slette en{scope}?",
+        "notes_placeholder": "Klikk for √• legge til et notat"
       },
       "logged_stories": {
-        "story_failed_to_load": "Klarte ikke Â laste",
+        "story_failed_to_load": "Klarte ikke √• laste",
         "no_stories": "Ingen historier funnet",
         "save_from_cache_button": "Lagre fra Cache"
       },
       "messaging_preview": {
-        "bridge_connection_failed": "Klarte ikke Â koble til bro. S¯rg for at Snapchat kj¯rer i bakgrunnen",
-        "bridge_connection_error": "Klarte ikke Â koble til bro. S¯rg for at Snapchat kj¯rer i bakgrunnen",
-        "bridge_init_failed": "Kunne ikke starte meldingsbroen. S¯rg for at Snapchat kj¯rer i bakgrunnen",
-        "message_fetch_failed": "Klarte ikke Â hente meldinger",
+        "bridge_connection_failed": "Klarte ikke √• koble til bro. S√∏rg for at Snapchat kj√∏rer i bakgrunnen",
+        "bridge_connection_error": "Klarte ikke √• koble til bro. S√∏rg for at Snapchat kj√∏rer i bakgrunnen",
+        "bridge_init_failed": "Kunne ikke starte meldingsbroen. S√∏rg for at Snapchat kj√∏rer i bakgrunnen",
+        "message_fetch_failed": "Klarte ikke √• hente meldinger",
         "no_message_hint": "Ingen melding",
-        "subtitle": "Hold for Â velge",
+        "subtitle": "Hold for √• velge",
         "actions_title": "Samtalehandlinger",
         "save_selection_option": "Lagre utvalg",
         "save_all_option": "Lagre alle",
@@ -218,26 +218,26 @@
         "processed_message_toast": "Prosessert{count}meldinger",
         "processed_messages_toast": "Prosessert{count}meldinger",
         "processed_messages_text": "Prosessert{count}",
-        "close_button_description": "T¯m utvalget"
+        "close_button_description": "T√∏m utvalget"
       },
       "logger_history": {
         "list_friend_format": "Venn{name}",
         "list_group_format": "Gruppe{name}",
         "no_more_messages": "Ingen flere meldinger",
-        "reverse_order_checkbox": "Reverse rekkef¯lge",
+        "reverse_order_checkbox": "Reverse rekkef√∏lge",
         "chat_attachment": "Vedlegg{index}",
         "empty_message": "Tom Chat-melding",
-        "message_parse_failed": "Klarte ikke Â tolke melding",
+        "message_parse_failed": "Klarte ikke √• tolke melding",
         "unknown_sender": "Ukjend avsender",
-        "download_attachment_failed_toast": "Klarte ikke Â laste ned vedlegg"
+        "download_attachment_failed_toast": "Klarte ikke √• laste ned vedlegg"
       },
       "file_imports": {
         "import_file_button": "Importer fil",
         "file_not_found": "Fil ikke funnet",
-        "file_import_failed": "Klarte ikke Â importere fil:{error}",
+        "file_import_failed": "Klarte ikke √• importere fil:{error}",
         "file_imported": "Fil importert vellykket",
         "file_delete_failed": "Kunne ikke slette fil",
-        "no_files_hint": "Her kan du importere filer til bruk i Snapchat. Trykk pÂ knappen nedenfor for Â importere en fil."
+        "no_files_hint": "Her kan du importere filer til bruk i Snapchat. Trykk p√• knappen nedenfor for √• importere en fil."
       },
       "better_location": {
         "spoofed_coordinates_title": "Lat{latitude}, Lng{longitude}",
@@ -255,18 +255,18 @@
         "saved_coordinates_title": "Lagrede koordinater",
         "no_saved_coordinates_hint": "Ingen lagrede koordinater",
         "delete_dialog_title": "Slett lagret koordinat",
-        "delete_dialog_message": "Er du sikker pÂ at du vil slette denne lagrede koordinaten?",
+        "delete_dialog_message": "Er du sikker p√• at du vil slette denne lagrede koordinaten?",
         "teleport_to_friend_title": "Teleporter til venn",
-        "search_bar": "S¯k",
-        "no_friends_map": "Ingen venner pÂ kartet",
+        "search_bar": "S√∏k",
+        "no_friends_map": "Ingen venner p√• kartet",
         "no_friends_found": "Ingen venner funnet"
       }
     },
     "dialogs": {
       "add_friend": {
         "title": "Legg til venn eller gruppe",
-        "search_hint": "S¯k",
-        "fetch_error": "Klarte ikke Â hente data",
+        "search_hint": "S√∏k",
+        "fetch_error": "Klarte ikke √• hente data",
         "category_groups": "Grupper",
         "category_friends": "Venner",
         "participants_text": "{count}deltakere",
@@ -277,27 +277,27 @@
       },
       "scripting_warning": {
         "title": "Advarsel",
-        "content": "PurrfectSnap inneholder et skriptverkt¯y som gj¯r det mulig Â utf¯re brukerdefinert kode pÂ enheten. Bruk ekstrem forsiktighet og bare installere moduler fra kjente, pÂlitelige kilder. Uautoriserte eller uverifiserte moduler kan utgj¯re sikkerhetsrisiko for systemet ditt."
+        "content": "PurrfectSnap inneholder et skriptverkt√∏y som gj√∏r det mulig √• utf√∏re brukerdefinert kode p√• enheten. Bruk ekstrem forsiktighet og bare installere moduler fra kjente, p√•litelige kilder. Uautoriserte eller uverifiserte moduler kan utgj√∏re sikkerhetsrisiko for systemet ditt."
       },
       "reset_config": {
         "title": "Tilbakestill oppsett",
-        "content": "Er du sikker pÂ at du vil tilbakestille konfigurasjonen?",
+        "content": "Er du sikker p√• at du vil tilbakestille konfigurasjonen?",
         "success_toast": "Konfigurer tilbakestilling vellykket"
       },
       "quick_actions_dialog": {
         "title": "Raske handlinger",
-        "subtitle": "FÂ tilgang til dine favorittverkt¯y raskere"
+        "subtitle": "F√• tilgang til dine favorittverkt√∏y raskere"
       },
       "export_config": {
         "title": "Eksporter sensitive data?",
         "content": "Vil du eksportere konfigurasjonen med sensitive data? (Slik som lokaliseringskoordinater osv.)"
       },
       "messaging_action": {
-        "title": "Velg innholdstyper Â behandle",
+        "title": "Velg innholdstyper √• behandle",
         "select_all_button": "Velg alle"
       },
       "file_imports": {
-        "no_files_settings_hint": "Ingen filer funnet. Kontroller at du har importert de n¯dvendige filene i Filimport-delen",
+        "no_files_settings_hint": "Ingen filer funnet. Kontroller at du har importert de n√∏dvendige filene i Filimport-delen",
         "settings_select_file_hint": "Velg en importert fil"
       }
     },
@@ -305,35 +305,35 @@
       "actions_button": "Handlinger",
       "actions_title": "Handlinger",
       "catalog_tab": "Katalog",
-      "clear_module_data_button": "T¯m data",
-      "clear_module_data_failed": "Klarte ikke Â slette moduldata",
+      "clear_module_data_button": "T√∏m data",
+      "clear_module_data_failed": "Klarte ikke √• slette moduldata",
       "delete_module_button": "Slett",
-      "delete_module_failed": "Klarte ikke Â slette modulen",
+      "delete_module_failed": "Klarte ikke √• slette modulen",
       "documentation_button": "Dokumentasjon",
-      "download_script_failed": "Klarte ikke Â laste ned skript",
+      "download_script_failed": "Klarte ikke √• laste ned skript",
       "downloading_script": "Last ned skript...",
       "edit_module_button": "Rediger",
       "enter_url_label": "Skriv inn URL",
       "import_button": "Importer",
       "import_from_url_button": "Importer fra URL",
       "import_script_from_url_title": "Importer skript fra URL",
-      "import_script_warning": "Installer kun skript fra kilder du stoler pÂ.",
+      "import_script_warning": "Installer kun skript fra kilder du stoler p√•.",
       "installed_scripts_tab": "Installert",
       "manage_repos_button": "Administrer repos",
       "module_data_cleared": "Moduldata fjernet!",
       "module_not_found": "Modul ikke funnet",
       "no_description": "Ingen beskrivelse",
-      "no_scripts_folder_selected_title": "Velg skriptmappen for Â komme i gang",
+      "no_scripts_folder_selected_title": "Velg skriptmappen for √• komme i gang",
       "no_scripts_found_title": "Ingen skript funnet",
       "no_settings_for_module": "Denne modulen har ingen innstillinger",
-      "open_module_failed": "Klarte ikke Â Âpne modulfil",
-      "open_scripts_folder_button": "≈pne skriptmappe",
+      "open_module_failed": "Klarte ikke √• √•pne modulfil",
+      "open_scripts_folder_button": "√Öpne skriptmappe",
       "script_already_installed": "Skript allerede installert",
       "select_folder_button": "Velg mappe",
-      "select_scripts_folder_toast": "Velg en skriptmappe f¯rst",
+      "select_scripts_folder_toast": "Velg en skriptmappe f√∏rst",
       "update_module_button": "Oppdater modul",
-      "update_module_failed": "Klarte ikke Â oppdatere modulen",
-      "use_catalog_to_add_scripts": "Bruk katalogen til Â legge til skript",
+      "update_module_failed": "Klarte ikke √• oppdatere modulen",
+      "use_catalog_to_add_scripts": "Bruk katalogen til √• legge til skript",
       "ok_button_timeout": "OK{timeout}",
       "catalog": {
         "no_repos_added": "Ingen arkiver lagt til",
@@ -342,7 +342,7 @@
         "script_already_installed": "Skript allerede installert",
         "script_downloaded": "Skript lastet ned",
         "could_not_create_file": "Kunne ikke opprette fil",
-        "no_scripts_folder_selected": "Velg f¯rst en skriptmappe",
+        "no_scripts_folder_selected": "Velg f√∏rst en skriptmappe",
         "no_scripts_available": "Ingen tilgjengelige skript",
         "installed_button": "Installert",
         "download_button": "Last ned"
@@ -354,12 +354,12 @@
         "repo_url_label": "URL til arkiver",
         "add_button": "Legg til",
         "invalid_repo_title": "Ugyldig arkiv",
-        "invalid_repo_error": "Dette lageret mangler n¯dvendige data.",
+        "invalid_repo_error": "Dette lageret mangler n√∏dvendige data.",
         "repo_added_toast": "Arkiv lagt til",
-        "add_repo_failed_toast": "Klarte ikke Â legge til arkiv:{message}",
+        "add_repo_failed_toast": "Klarte ikke √• legge til arkiv:{message}",
         "remove_button": "Fjern",
         "remove_repo_dialog_title": "Fjern arkiv",
-        "remove_repo_dialog_text": "Er du sikker pÂ at du vil fjerne dette lageret?"
+        "remove_repo_dialog_text": "Er du sikker p√• at du vil fjerne dette lageret?"
       }
     },
     "friend_tracker": {
@@ -369,15 +369,15 @@
       "add_rule_button": "Legg til regel",
       "import_button": "Importer",
       "filters_title": "Filtre",
-      "search_by_label": "S¯k etter",
-      "newest_first_label": "Nyeste f¯rst",
+      "search_by_label": "S√∏k etter",
+      "newest_first_label": "Nyeste f√∏rst",
       "since_label": "Siden",
       "until_label": "Inntil",
       "unit_label": "Enhet",
       "pick_a_date_button": "Velg en dato",
       "export_button": "Eksporter",
       "delete_button": "Slett",
-      "search_placeholder": "S¯k",
+      "search_placeholder": "S√∏k",
       "no_logs_found": "Ingen logger funnet",
       "no_rules_found": "Ingen regler funnet",
       "export_logs_dialog_title": "Eksporter logger",
@@ -389,7 +389,7 @@
       "rule_name_label": "Regelnavn",
       "default_rule_name": "Ny regel",
       "author_name_label": "Forfatter",
-      "scope_section_title": "OmrÂde",
+      "scope_section_title": "Omr√•de",
       "scope_all": "Alle venner/grupper",
       "scope_whitelist": "Ingen andre enn",
       "scope_blacklist": "Alle bortsett fra",
@@ -400,24 +400,24 @@
       "event_type_label": "Hendelsestype",
       "triggers_title": "Utl?sere",
       "conditions_title": "Betingelser",
-      "condition_only_inside_conversation": "F¯rst nÂr jeg er inne i samtalen",
-      "condition_only_outside_conversation": "F¯rst nÂr jeg er utenfor samtale",
-      "condition_only_when_app_active": "Bare nÂr Snapchat er aktiv",
-      "condition_only_when_app_inactive": "Bare nÂr Snapchat er inaktiv",
-      "condition_no_push_notification_when_app_active": "Ingen melding nÂr Snapchat er aktiv",
+      "condition_only_inside_conversation": "F√∏rst n√•r jeg er inne i samtalen",
+      "condition_only_outside_conversation": "F√∏rst n√•r jeg er utenfor samtale",
+      "condition_only_when_app_active": "Bare n√•r Snapchat er aktiv",
+      "condition_only_when_app_inactive": "Bare n√•r Snapchat er inaktiv",
+      "condition_no_push_notification_when_app_active": "Ingen melding n√•r Snapchat er aktiv",
       "add_button": "Legg til",
       "cannot_save_rule_dialog_title": "Kan ikke lagre regel",
-      "cannot_save_rule_dialog_text": "Fyll ut de manglende feltene for Â lagre denne regelen.",
+      "cannot_save_rule_dialog_text": "Fyll ut de manglende feltene for √• lagre denne regelen.",
       "duplicate_rule_name_dialog_title": "Duplisert regelnavn",
       "duplicate_rule_name_dialog_text": "Det finnes allerede en regel med dette navnet. Velg et nytt navn.",
       "discard_changes_dialog_title": "Forkast endringer?",
-      "discard_changes_dialog_text": "Du har ul¯st endringer. Kast dem?",
-      "rule_subtitle": "Konfigurer utl¯sere og omfang for denne regelen.",
+      "discard_changes_dialog_text": "Du har ul√∏st endringer. Kast dem?",
+      "rule_subtitle": "Konfigurer utl√∏sere og omfang for denne regelen.",
       "discard_button": "Forkast",
       "enabled_label": "Aktivert",
       "disabled_label": "Deaktivert",
       "delete_rule_dialog_title": "Slett regel",
-      "delete_rule_dialog_text": "Er du sikker pÂ at du vil slette denne regelen?",
+      "delete_rule_dialog_text": "Er du sikker p√• at du vil slette denne regelen?",
       "no_repos_added": "Ingen arkiver lagt til",
       "import_dialog_title": "Importere regler",
       "bulk_import_button": "Import av bulk",
@@ -427,7 +427,7 @@
       "export_dialog_title": "Eksportere regler",
       "bulk_export_button": "Eksport av bulk",
       "individual_export_button": "Enkelt eksport",
-      "reverse_order_checkbox": "Reverse rekkef¯lge",
+      "reverse_order_checkbox": "Reverse rekkef√∏lge",
       "delete_logs_dialog_title": "Slett logger",
       "delete_logs_dialog_confirm_text": "Slette alle logger som matcher gjeldende filtre?",
       "select_friends_groups_button": "Velg venner / grupper"
@@ -435,18 +435,18 @@
     "friend_tracker_export": {
       "title": "Eksporter venn Tracker",
       "save_button": "Lagre",
-      "back_button_description": "GÂ tilbake",
+      "back_button_description": "G√• tilbake",
       "expand_button_description": "Utvid eller kollaps kategori",
       "exported_toast": "Tracker konfigurasjon eksportert",
-      "export_failed_toast": "Klarte ikke Â eksportere sporer:{message}"
+      "export_failed_toast": "Klarte ikke √• eksportere sporer:{message}"
     },
     "friend_tracker_import": {
       "title": "Importer venn Tracker",
       "confirm_button": "Importer",
-      "back_button_description": "GÂ tilbake",
+      "back_button_description": "G√• tilbake",
       "expand_button_description": "Utvid eller kollaps kategori",
       "imported_toast": "Tracker importert",
-      "import_failed_toast": "Klarte ikke Â importere sporer:{message}"
+      "import_failed_toast": "Klarte ikke √• importere sporer:{message}"
     },
     "friend_tracker_catalog": {
       "title": "Venn Tracker Catalog",
@@ -460,12 +460,12 @@
       "repo_url_label": "URL til arkiver",
       "add_button": "Legg til",
       "invalid_repo_title": "Ugyldig arkiv",
-      "invalid_repo_error": "Dette lageret mangler n¯dvendige data.",
+      "invalid_repo_error": "Dette lageret mangler n√∏dvendige data.",
       "repo_added_toast": "Arkiv lagt til",
-      "add_repo_failed_toast": "Klarte ikke Â legge til arkiv:{message}",
+      "add_repo_failed_toast": "Klarte ikke √• legge til arkiv:{message}",
       "remove_button": "Fjern",
       "remove_repo_dialog_title": "Fjern arkiv",
-      "remove_repo_dialog_text": "Er du sikker pÂ at du vil fjerne dette lageret?"
+      "remove_repo_dialog_text": "Er du sikker p√• at du vil fjerne dette lageret?"
     },
     "logger_history": {
       "select_conversation_placeholder": "Velg en samtale"
@@ -473,21 +473,21 @@
     "features": {
       "config_export": {
         "title": "Eksporter oppsettssammendrag",
-        "back_button_description": "GÂ tilbake",
+        "back_button_description": "G√• tilbake",
         "save_button": "Lagre",
         "expand_button_description": "Utvid eller kollaps kategori",
         "enabled": "Aktivert",
         "disabled": "Deaktivert",
-        "enable_feature": "SlÂ pÂ funksjon"
+        "enable_feature": "Sl√• p√• funksjon"
       },
       "config_import": {
         "title": "Importer konfigurasjonssammendrag",
-        "back_button_description": "GÂ tilbake",
+        "back_button_description": "G√• tilbake",
         "confirm_button": "Importer",
         "expand_button_description": "Utvid eller kollaps kategori",
         "enabled": "Aktivert",
         "disabled": "Deaktivert",
-        "enable_feature": "SlÂ pÂ funksjon",
+        "enable_feature": "Sl√• p√• funksjon",
         "config_imported_toast": "Konfigurer importert vellykket",
         "config_import_failure_toast": "Kunne ikke importere oppsett{error}"
       }
@@ -505,7 +505,7 @@
     "properties": {
       "auto_download": {
         "name": "Last ned automatisk",
-        "description": "Last ned automatisk Snaps nÂr du ser dem",
+        "description": "Last ned automatisk Snaps n√•r du ser dem",
         "options": {
           "blacklist": "Utelukk fra automatisk nedlasting",
           "whitelist": "Last ned automatisk"
@@ -513,7 +513,7 @@
       },
       "stealth": {
         "name": "Stealth-modus",
-        "description": "Forhindrer alle i Â vite at du har Âpnet sine snaps/chats og samtaler",
+        "description": "Forhindrer alle i √• vite at du har √•pnet sine snaps/chats og samtaler",
         "options": {
           "blacklist": "Utelukk fra Stealth-modus",
           "whitelist": "Stealth-modus"
@@ -521,7 +521,7 @@
       },
       "auto_save": {
         "name": "Lagre automatisk",
-        "description": "Lagrer Chatmeldinger nÂr du ser dem",
+        "description": "Lagrer Chatmeldinger n√•r du ser dem",
         "options": {
           "blacklist": "Utelukk fra automatisk lagring",
           "whitelist": "Lagre automatisk"
@@ -529,22 +529,22 @@
       },
       "unsaveable_messages": {
         "name": "Ubesparelige meldinger",
-        "description": "Forhindrer meldinger fra Â bli lagret i chat av andre personer",
+        "description": "Forhindrer meldinger fra √• bli lagret i chat av andre personer",
         "options": {
           "blacklist": "Utelat u reddede meldinger",
           "whitelist": "Ubesparelige meldinger"
         }
       },
       "auto_open_snaps": {
-        "name": "≈pne snaps automatisk",
-        "description": "≈pner automatisk Snaps nÂr du mottar dem",
+        "name": "√Öpne snaps automatisk",
+        "description": "√Öpner automatisk Snaps n√•r du mottar dem",
         "options": {
           "blacklist": "Utelat fra Auto Open Snaps",
-          "whitelist": "≈pne snaps automatisk"
+          "whitelist": "√Öpne snaps automatisk"
         }
       },
       "hide_friend_feed": {
-        "name": "Skjul fra vennefÙr"
+        "name": "Skjul fra vennef√¥r"
       },
       "e2e_encryption": {
         "name": "Bruk E2E-kryptering"
@@ -557,7 +557,7 @@
       },
       "auto_reply": {
         "name": "Automatisk svar",
-        "description": "Sender automatisk svar til innkommende meldinger nÂr du er borte",
+        "description": "Sender automatisk svar til innkommende meldinger n√•r du er borte",
         "options": {
           "blacklist": "Utelukk fra Auto Svar",
           "whitelist": "Automatisk svar"
@@ -589,7 +589,7 @@
       },
       "hide_typing_indicator": {
         "name": "Skjul skriveindikator",
-        "description": "Forhindre andre i Â se nÂr du skriver",
+        "description": "Forhindre andre i √• se n√•r du skriver",
         "options": {
           "blacklist": "Utelukk fra Skjul skriveindikator",
           "whitelist": "Skjul skriveindikator"
@@ -600,11 +600,11 @@
   "actions": {
     "clean_snapchat_cache": {
       "name": "Rens Snapchat-buffer",
-      "description": "Rengj¯r Snapchat Cache"
+      "description": "Rengj√∏r Snapchat Cache"
     },
     "manage_friend_list": {
       "name": "Administrer venneliste",
-      "description": "Importere/eksportere din venneliste nÂr sikkerhetskopiering"
+      "description": "Importere/eksportere din venneliste n√•r sikkerhetskopiering"
     },
     "export_chat_messages": {
       "name": "Eksporter Chat-meldinger",
@@ -616,15 +616,15 @@
     },
     "bulk_messaging_action": {
       "name": "Bulkmeldingshandling",
-      "description": "Utf¯rer operasjoner som Â slette venner eller masse sletting av samtaler"
+      "description": "Utf√∏rer operasjoner som √• slette venner eller masse sletting av samtaler"
     },
     "regen_mappings": {
       "name": "Regenerere kartlegginger",
       "description": "Manuelt regenerere kartlegginger"
     },
     "change_language": {
-      "name": "Endre sprÂk",
-      "description": "Endre sprÂket til PurrfectSnap"
+      "name": "Endre spr√•k",
+      "description": "Endre spr√•ket til PurrfectSnap"
     },
     "file_imports": {
       "name": "Filimport",
@@ -632,7 +632,7 @@
     },
     "friend_tracker": {
       "name": "Venn Tracker",
-      "description": "Spor vennene dine pÂ Snapchat"
+      "description": "Spor vennene dine p√• Snapchat"
     },
     "logger_history": {
       "name": "Logger Historie",
@@ -641,18 +641,18 @@
   },
   "features": {
     "notices": {
-      "unstable": "? Ustabil",
-      "ban_risk": "? Denne funksjonen kan forÂrsake forbud",
-      "internal_behavior": "? Dette kan bryte Snapchat intern oppf¯rsel"
+      "unstable": "‚ö† Ustabil",
+      "ban_risk": "‚ö† Denne funksjonen kan for√•rsake forbud",
+      "internal_behavior": "‚ö† Dette kan bryte Snapchat intern oppf√∏rsel"
     },
     "options": {
       "app_appearance": {
         "always_light": "Alltid lys",
-        "always_dark": "Alltid m¯rk",
+        "always_dark": "Alltid m√∏rk",
         "null": "F?lg system"
       },
       "auto_reload": {
-        "snapchat_only": "Last bare Snapchat pÂ nytt",
+        "snapchat_only": "Last bare Snapchat p√• nytt",
         "all": "Last Snapchat + PurrfectSnap",
         "null": "Standard"
       },
@@ -660,29 +660,29 @@
         "null": "Bruk standardradius"
       },
       "spoof_battery_level": {
-        "null": "Bruk ekte batterinivÂ"
+        "null": "Bruk ekte batteriniv√•"
       },
       "friend_feed_menu_buttons": {
-        "auto_download": "?? Automatisk nedlasting",
-        "auto_save": "?? Lagre meldinger automatisk",
-        "unsaveable_messages": "?? Ubesparelige meldinger",
+        "auto_download": "‚¨áÔ∏è Automatisk nedlasting",
+        "auto_save": "üí¨ Lagre meldinger automatisk",
+        "unsaveable_messages": "‚¨áÔ∏è Ubesparelige meldinger",
         "auto_open_snaps": "?? ?pne Snaps automatisk",
-        "stealth": "?? Stealth-modus",
-        "auto_reply": "?? Automatisk svar",
-        "auto_delete_sent_messages": "??? Auto Slett Sendte meldinger",
-        "mark_snaps_as_seen": "?? Mark Snaps som sett",
-        "mark_stories_as_seen_locally": "?? Merk historier som sett lokalt",
-        "conversation_info": "?? Samtaleinformasjon",
-        "e2e_encryption": "?? Bruk E2E-kryptering",
-        "message_logger": "?? Meldingslogger",
-        "auto_read": "? Automatisk lesing",
-        "hide_typing_indicator": "?? Skjul skriveindikator"
+        "stealth": "üëª Stealth-modus",
+        "auto_reply": "üì® Automatisk svar",
+        "auto_delete_sent_messages": "üóëÔ∏è Auto Slett Sendte meldinger",
+        "mark_snaps_as_seen": "üëÄ Mark Snaps som sett",
+        "mark_stories_as_seen_locally": "üëÄ Merk historier som sett lokalt",
+        "conversation_info": "üë§ Samtaleinformasjon",
+        "e2e_encryption": "üîí Bruk E2E-kryptering",
+        "message_logger": "üìù Meldingslogger",
+        "auto_read": "‚úÖ Automatisk lesing",
+        "hide_typing_indicator": "üôà Skjul skriveindikator"
       },
       "schedule_scheduled_for": "Planlagt for{name}i{time}",
       "schedule_sending_in": "Sender inn{time}",
       "schedule_sent_to": "Sendt til{name}",
       "schedule_sent": "Planlagt snap sendt",
-      "schedule_failed_to": "Klarte ikke Â sende til{name}",
+      "schedule_failed_to": "Klarte ikke √• sende til{name}",
       "schedule_failed": "Planlagt snap mislyktes",
       "schedule_cancelled_for": "Avlyst for{name}",
       "device_model": {
@@ -785,7 +785,7 @@
         "added_by_group_chat": "Etter gruppe Chat",
         "added_by_qr_code": "Av QR-koden",
         "added_by_community": "Etter fellesskap",
-        "added_by_quick_add": "Med Quick Add (h¯y risiko for Â bli forbudt)",
+        "added_by_quick_add": "Med Quick Add (h√∏y risiko for √• bli forbudt)",
         "added_by_spotlight": "Av Spotlight",
         "null": "Ikke spoof kilde"
       },
@@ -808,23 +808,12 @@
         "null": "Bruk standardenheten"
       },
       "custom_resolution": {
-        "null": "Bruk automatisk oppl¯sning"
+        "null": "Bruk automatisk oppl√∏sning"
       },
       "startup_default_camera": {
         "front": "Frontkamera",
         "back": "Tilbake kamera",
         "null": "Husk sist brukt"
-      },
-      \"call_recorder\": {
-          \"only_record_self\": \"Only Record Self\",
-          \"only_record_others\": \"Only Record Others\",
-          \"record_both\": \"Record Both Sides\"
-      },
-      \"call_recorder_ui_design\": {
-          \"default\": \"Default\",
-          \"snapchat\": \"Snapchat\",
-          \"cyber\": \"Cyber\",
-          \"frost\": \"Frost\"
       },
       "front_custom_frame_rate": {
         "null": "Standard FPS-enhet"
@@ -836,7 +825,7 @@
         "null": "Bruk Snapchat-standard"
       },
       "custom_path_format": {
-        "null": "Bruk standardm¯nster"
+        "null": "Bruk standardm√∏nster"
       },
       "force_image_format": {
         "null": "Bruk Snapchat-standard"
@@ -854,7 +843,7 @@
         "title": "Utseende"
       },
       "gallery_media_send_override": {
-        "always_ask": "Alltid sp¯r",
+        "always_ask": "Alltid sp√∏r",
         "ORIGINAL": "Originale medier",
         "NOTE": "Lydnotat",
         "SNAP": "Snap",
@@ -875,13 +864,13 @@
         "hide_stickers_button": "Fjern klistremerkeknappen",
         "hide_voice_record_button": "Fjern stemmeopptaksknapp",
         "hide_unread_chat_hint": "Fjern ulesne Chat Hint",
-        "hide_post_to_story_buttons": "Fjern innlegg til Story-knapper f¯r du sender en Snap",
-        "hide_billboard_prompt": "Fjern Billboard-prompt i venners fÙr",
+        "hide_post_to_story_buttons": "Fjern innlegg til Story-knapper f√∏r du sender en Snap",
+        "hide_billboard_prompt": "Fjern Billboard-prompt i venners f√¥r",
         "hide_snapchat_plus_gift_reminders": "Fjern Snapchat Pluss gave minner i samtaler",
         "hide_map_reactions": "Fjern kartreaksjoner"
       },
       "hide_story_suggestions": {
-        "hide_suggested_friend_stories": "Skjul foreslÂtte vennehistorier",
+        "hide_suggested_friend_stories": "Skjul foresl√•tte vennehistorier",
         "hide_my_stories": "Skjul historiene mine"
       },
       "home_tab": {
@@ -894,8 +883,8 @@
       },
       "spotlight_comments_username_icon": {
         "user": "Brukernavn Ikon",
-        "??": "Brukernavn Ikon",
-        "[??]": "Brukernavn Ikon",
+        "üë§": "Brukernavn Ikon",
+        "[üë§]": "Brukernavn Ikon",
         "default": "Brukernavn Ikon",
         "no_icon": "Ingen ikon"
       },
@@ -928,7 +917,7 @@
         "ignore_friend": "Overse venn",
         "hide_friend": "Skjul venn",
         "hide_conversation": "Skjul samtale",
-        "clear_conversation": "Klar samtale fra vennefÙr"
+        "clear_conversation": "Klar samtale fra vennef√¥r"
       },
       "edit_text_override": {
         "multi_line_chat_input": "Multilinje Chat Input",
@@ -944,9 +933,9 @@
         "3_days": "3 dager",
         "1_week": "1 uke",
         "2_weeks": "2 uker",
-        "1_month": "1 mÂned",
-        "3_months": "3 mÂneder",
-        "6_months": "6 mÂneder"
+        "1_month": "1 m√•ned",
+        "3_months": "3 m√•neder",
+        "6_months": "6 m√•neder"
       },
       "delete_after_unit": {
         "seconds": "Sekunder",
@@ -955,8 +944,8 @@
       },
       "disable_story_sections": {
         "friends": "Venner",
-        "suggested_stories": "ForeslÂtte historier",
-        "following": "F¯lger",
+        "suggested_stories": "Foresl√•tte historier",
+        "following": "F√∏lger",
         "discover": "Oppdag"
       },
       "disable_cameras": {
@@ -971,28 +960,28 @@
         "microphone": "Mikrofon",
         "location": "Beliggenhet",
         "read_contacts": "Les kontakter",
-        "nearby_devices": "NÊrliggende enheter",
+        "nearby_devices": "N√¶rliggende enheter",
         "phone_calls": "Telefonsamtaler"
       },
       "message_indicators": {
-        "encryption_indicator": "Legger til et ??-ikon ved siden av meldinger som kun er sendt til deg",
+        "encryption_indicator": "Legger til et üîí-ikon ved siden av meldinger som kun er sendt til deg",
         "platform_indicator": "Legger til plattformikonet som et medie ble sendt fra (f.eks. Android, iOS, Web)",
-        "location_indicator": "Legger til et ?? ikon i snaps nÂr de er sendt med plassering aktivert",
+        "location_indicator": "Legger til et üìç ikon i snaps n√•r de er sendt med plassering aktivert",
         "ovf_editor_indicator": "Viser om en snap har blitt sendt ved hjelp av OVF Editor",
-        "director_mode_indicator": "Legger til et ?? ikon til snaps nÂr de er sendt ved hjelp av Director Mode, som kan brukes til Â sende galleribilder som snaps"
+        "director_mode_indicator": "Legger til et ‚úèÔ∏è ikon til snaps n√•r de er sendt ved hjelp av Director Mode, som kan brukes til √• sende galleribilder som snaps"
       },
       "auto_mark_as_read": {
-        "conversation_read": "Merk samtalen som lest nÂr du sender en melding",
-        "snap_reply": "Merk snaps som lest nÂr du svarer pÂ dem",
-        "save_snap_in_chat": "Merk snaps som less nÂr du lagrer dem i chat mens du er i Stealth-modus"
+        "conversation_read": "Merk samtalen som lest n√•r du sender en melding",
+        "snap_reply": "Merk snaps som lest n√•r du svarer p√• dem",
+        "save_snap_in_chat": "Merk snaps som less n√•r du lagrer dem i chat mens du er i Stealth-modus"
       },
       "friend_mutation_notifier": {
-        "remove_friend": "Varsle nÂr noen fjerner deg som venn",
-        "birthday_changes": "Varsle nÂr noen endrer bursdagen",
-        "bitmoji_selfie_changes": "Varsle nÂr noen endrer Bitmoji selfie",
-        "bitmoji_avatar_changes": "Varsle nÂr noen endrer Bitmoji avatar",
-        "bitmoji_background_changes": "Varsle nÂr noen endrer sin Bitmoji-bakgrunn",
-        "bitmoji_scene_changes": "Varsle nÂr noen endrer Bitmoji scene"
+        "remove_friend": "Varsle n√•r noen fjerner deg som venn",
+        "birthday_changes": "Varsle n√•r noen endrer bursdagen",
+        "bitmoji_selfie_changes": "Varsle n√•r noen endrer Bitmoji selfie",
+        "bitmoji_avatar_changes": "Varsle n√•r noen endrer Bitmoji avatar",
+        "bitmoji_background_changes": "Varsle n√•r noen endrer sin Bitmoji-bakgrunn",
+        "bitmoji_scene_changes": "Varsle n√•r noen endrer Bitmoji scene"
       },
       "double_tap_chat_action": {
         "like_message": "Som melding",
@@ -1019,7 +1008,7 @@
         "": "Ikke satt"
       },
       "ai_system_prompt": {
-        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Du er en hjelpsom og vennlig assistent som svarer pÂ meldinger pÂ Snapchat. Hold svar naturlig, avslappet og samtale. UnngÂ Â vÊre for formell eller robotisk. Svar som om du er en ekte person som har en normal samtale."
+        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Du er en hjelpsom og vennlig assistent som svarer p√• meldinger p√• Snapchat. Hold svar naturlig, avslappet og samtale. Unng√• √• v√¶re for formell eller robotisk. Svar som om du er en ekte person som har en normal samtale."
       },
       "ai_provider": {
         "gemini": "Gemini",
@@ -1034,7 +1023,7 @@
         "casual": "Uformell",
         "formal": "Formell",
         "friendly": "Vennlig",
-        "humorous": "Humor¯s",
+        "humorous": "Humor√∏s",
         "empathetic": "Empatisk",
         "toxic": "Kantete",
         "busy": "Opptatt"
@@ -1077,7 +1066,7 @@
         "Thanks for the voice note!": "Takk for stemmenotatet!"
       },
       "chat_messages": {
-        "Hello! How are you?": "Hei! Hvordan gÂr det?"
+        "Hello! How are you?": "Hei! Hvordan g√•r det?"
       },
       "story_reply_messages": {
         "Thanks for the story reply!": "Takk for svaret!"
@@ -1155,27 +1144,27 @@
               },
               "walk_radius": {
                 "name": "G?-radius",
-                "description": "Tilfeldig gÂ rundt i denne radiusen (ft)"
+                "description": "Tilfeldig g√• rundt i denne radiusen (ft)"
               },
               "always_update_location": {
                 "name": "Oppdater alltid plassering",
-                "description": "Tving Snapchat til Â oppdatere plasseringen selv om ingen GPS-data er mottatt"
+                "description": "Tving Snapchat til √• oppdatere plasseringen selv om ingen GPS-data er mottatt"
               },
               "suspend_location_updates": {
                 "name": "Stopp plasseringsoppdateringer",
-                "description": "Forhindrer plasseringen fra Â bli oppdatert"
+                "description": "Forhindrer plasseringen fra √• bli oppdatert"
               },
               "spoof_battery_level": {
-                "name": "Spof batterinivÂ",
-                "description": "L¯s batterinivÂet pÂ enheten pÂ kartet\nVerdi mÂ vÊre mellom 0 og 100"
+                "name": "Spof batteriniv√•",
+                "description": "L√∏s batteriniv√•et p√• enheten p√• kartet\nVerdi m√• v√¶re mellom 0 og 100"
               },
               "spoof_headphones": {
                 "name": "Hodetelefoner",
-                "description": "Spoofs status som Â lytte til musikk pÂ kartet"
+                "description": "Spoofs status som √• lytte til musikk p√• kartet"
               },
               "show_battery_level": {
-                "name": "Vis batterinivÂ",
-                "description": "Viser batterinivÂet til vennene dine pÂ kartet"
+                "name": "Vis batteriniv√•",
+                "description": "Viser batteriniv√•et til vennene dine p√• kartet"
               }
             }
           },
@@ -1185,15 +1174,15 @@
           },
           "media_upload_quality": {
             "name": "Media Last opp kvalitet",
-            "description": "Overstyrer kvaliteten pÂ mediet",
+            "description": "Overstyrer kvaliteten p√• mediet",
             "properties": {
               "force_video_upload_source_quality": {
                 "name": "Tving video Last opp kildekvalitet",
-                "description": "Tvinger Snapchat til Â bruke kildekvaliteten nÂr du laster opp videoer\nVÊr oppmerksom pÂ at dette ikke kan fjerne metadata fra medier"
+                "description": "Tvinger Snapchat til √• bruke kildekvaliteten n√•r du laster opp videoer\nV√¶r oppmerksom p√• at dette ikke kan fjerne metadata fra medier"
               },
               "disable_image_compression": {
                 "name": "Deaktiver komprimering av bilder",
-                "description": "SlÂr av bildekomprimering nÂr du laster opp medier"
+                "description": "Sl√•r av bildekomprimering n√•r du laster opp medier"
               },
               "custom_image_upload_format": {
                 "name": "Tilpasset bildeopplastingsformat",
@@ -1202,7 +1191,7 @@
             }
           },
           "disable_confirmation_dialogs": {
-            "name": "SlÂ av konfirmasjonsdialoger",
+            "name": "Sl√• av konfirmasjonsdialoger",
             "description": "Bekreft automatisk valgte handlinger"
           },
           "auto_updater": {
@@ -1235,23 +1224,23 @@
           },
           "disable_story_sections": {
             "name": "Deaktiver Story-seksjonene",
-            "description": "Fjerner seksjoner fra Stories-siden\nKan kreve en oppdatering for Â fungere riktig"
+            "description": "Fjerner seksjoner fra Stories-siden\nKan kreve en oppdatering for √• fungere riktig"
           },
           "block_ads": {
             "name": "Blokker annonser",
-            "description": "Forhindrer annonser i Â bli vist"
+            "description": "Forhindrer annonser i √• bli vist"
           },
           "disable_custom_tabs": {
-            "name": "SlÂ av egendefinerte faner",
-            "description": "≈pner lenker i st¯ttede programmer i stedet for i nettleseren"
+            "name": "Sl√• av egendefinerte faner",
+            "description": "√Öpner lenker i st√∏ttede programmer i stedet for i nettleseren"
           },
           "disable_permission_requests": {
-            "name": "Deaktiver tillatelsesforesp¯rsler",
-            "description": "Forhindrer Snapchat fra Â be om spesifikke tillatelser"
+            "name": "Deaktiver tillatelsesforesp√∏rsler",
+            "description": "Forhindrer Snapchat fra √• be om spesifikke tillatelser"
           },
           "disable_memories_snap_feed": {
             "name": "Deaktiver minner Snap feed",
-            "description": "Forhindrer Snapchat fra Â vise nylige minner nÂr du sveiper opp i kamera"
+            "description": "Forhindrer Snapchat fra √• vise nylige minner n√•r du sveiper opp i kamera"
           },
           "spotlight_comments_username": {
             "name": "Spotlight Kommentarer Brukernavn",
@@ -1267,11 +1256,11 @@
           },
           "default_video_playback_rate": {
             "name": "Standard videoavspilling",
-            "description": "Angi standardhastigheten for avspilling av videoer\nVerdi mÂ vÊre mellom 0,1 og 4.0"
+            "description": "Angi standardhastigheten for avspilling av videoer\nVerdi m√• v√¶re mellom 0,1 og 4.0"
           },
           "video_playback_rate_slider": {
             "name": "Video Playback Pris Slider",
-            "description": "Legger til en glidebryter i Opera-kontekstmenyen for Â endre videoavspillingshastigheten\nMerk: Endringer gjelder bare for pÂf¯lgende videoer"
+            "description": "Legger til en glidebryter i Opera-kontekstmenyen for √• endre videoavspillingshastigheten\nMerk: Endringer gjelder bare for p√•f√∏lgende videoer"
           },
           "disable_google_play_dialogs": {
             "name": "Deaktivere Google Play-tjenester",
@@ -1279,19 +1268,19 @@
           },
           "default_volume_controls": {
             "name": "Standard volumkontroll",
-            "description": "Tvinger Snapchat til Â bruke systemets volumkontroll"
+            "description": "Tvinger Snapchat til √• bruke systemets volumkontroll"
           },
           "disable_telecom_framework": {
             "name": "Deaktiver Telecom Framework",
-            "description": "UnngÂr Snapchat fra Â bruke Android Telecom-rammeverket\nDette lar deg lytte til musikk mens du ringer"
+            "description": "Unng√•r Snapchat fra √• bruke Android Telecom-rammeverket\nDette lar deg lytte til musikk mens du ringer"
           },
           "hide_active_music": {
             "name": "Skjul aktiv musikk",
-            "description": "Forhindrer Snapchat fra Â vite at du lytter til musikk\nDette vil tillate deg Â ta snaps ved hjelp av kontroll volum knapper mens du lytter til musikk"
+            "description": "Forhindrer Snapchat fra √• vite at du lytter til musikk\nDette vil tillate deg √• ta snaps ved hjelp av kontroll volum knapper mens du lytter til musikk"
           },
           "disable_snap_splitting": {
             "name": "Deaktiver Snap-deling",
-            "description": "Forhindrer Snaps fra Â bli delt i flere deler\nBilder du sender vil bli til videoer"
+            "description": "Forhindrer Snaps fra √• bli delt i flere deler\nBilder du sender vil bli til videoer"
           }
         }
       },
@@ -1320,12 +1309,12 @@
             "description": "Lar det samme mediet lastes ned flere ganger"
           },
           "merge_overlays": {
-            "name": "SlÂ sammen overlegg",
+            "name": "Sl√• sammen overlegg",
             "description": "Kombinerer teksten og mediet til en Snap til en enkelt fil"
           },
           "force_image_format": {
             "name": "Tving bildeformat",
-            "description": "Tvinger bilder Â bli lagret i et spesifisert format"
+            "description": "Tvinger bilder √• bli lagret i et spesifisert format"
           },
           "force_voice_note_format": {
             "name": "Tving stemmenoteformat",
@@ -1333,30 +1322,7 @@
           },
           "auto_download_voice_notes": {
             "name": "Last ned automatisk Stemmenotater",
-            "description": "Laster automatisk ned stemmenotater nÂr du spiller dem"
-          },
-          \"call_recorder\": {
-              \"name\": \"Call Recorder\",
-              \"description\": \"Manage call recording settings\",
-              \"properties\": {
-                  \"call_recorder\": {
-                      \"name\": \"Mode\",
-                      \"description\": \"Select what should be recorded\"
-                  },
-                  \"auto_start_recording\": {
-                      \"name\": \"Auto Start Recording\",
-                      \"description\": \"Automatically start recording when a call starts\"
-                  },
-                  \"call_recorder_ui\": {
-                      \"name\": \"Call Recorder UI\",
-                      \"description\": \"Show the recording overlay UI during calls\"
-                  },
-                  \"call_recorder_ui_design\": {
-                      \"name\": \"UI Design\",
-                      \"description\": \"Select the design for the call recorder overlay\"
-                  },
-                  \"call_recording_saved_toast\": \"Saved\"
-              }
+            "description": "Laster automatisk ned stemmenotater n√•r du spiller dem"
           },
           "download_profile_pictures": {
             "name": "Last ned profilbilder",
@@ -1364,23 +1330,23 @@
           },
           "opera_download_button": {
             "name": "Opera Last ned knappen",
-            "description": "Legger til en nedlastingsknapp ¯verst til h¯yre nÂr du ser en Snap.\nLangtrykk pÂ knappene vil tvinge nedlasting"
+            "description": "Legger til en nedlastingsknapp √∏verst til h√∏yre n√•r du ser en Snap.\nLangtrykk p√• knappene vil tvinge nedlasting"
           },
           "download_context_menu": {
             "name": "Last ned Kontekstmeny",
-            "description": "Lar deg laste ned/vurdere meldinger fra en samtale eller en historie ved hjelp av kontekstmenyen.\nLangtrykk pÂ knappene vil tvinge nedlasting"
+            "description": "Lar deg laste ned/vurdere meldinger fra en samtale eller en historie ved hjelp av kontekstmenyen.\nLangtrykk p√• knappene vil tvinge nedlasting"
           },
           "ffmpeg_options": {
             "name": "FFmpeg-alternativer",
             "description": "Oppgi mer FFmpeg-alternativer",
             "properties": {
               "threads": {
-                "name": "TrÂder",
-                "description": "Mengden trÂder Â bruke"
+                "name": "Tr√•der",
+                "description": "Mengden tr√•der √• bruke"
               },
               "preset": {
                 "name": "Forvalg",
-                "description": "Angi hastigheten pÂ konverteringen"
+                "description": "Angi hastigheten p√• konverteringen"
               },
               "constant_rate_factor": {
                 "name": "Konstant prisfaktor",
@@ -1406,7 +1372,7 @@
           },
           "logging": {
             "name": "Logger",
-            "description": "Viser skÂler nÂr media lastes ned"
+            "description": "Viser sk√•ler n√•r media lastes ned"
           },
           "custom_path_format": {
             "name": "Tilpasset baneformat",
@@ -1416,25 +1382,25 @@
       },
       "user_interface": {
         "name": "Brukergrensesnitt",
-        "description": "Endre utseendet og f¯lelsen av Snapchat",
+        "description": "Endre utseendet og f√∏lelsen av Snapchat",
         "properties": {
           "enable_app_appearance": {
             "name": "Aktiver innstillinger for App-utseende",
-            "description": "Aktiverer den skjulte App utseende innstilling\nKan ikke kreves pÂ nyere Snapchat-versjoner"
+            "description": "Aktiverer den skjulte App utseende innstilling\nKan ikke kreves p√• nyere Snapchat-versjoner"
           },
           "friend_feed_message_preview": {
-            "name": "ForhÂndsvisning av vennemating",
-            "description": "Viser en forhÂndsvisning av de siste meldingene i Friend Feed",
+            "name": "Forh√•ndsvisning av vennemating",
+            "description": "Viser en forh√•ndsvisning av de siste meldingene i Friend Feed",
             "properties": {
               "amount": {
-                "name": "Bel¯p",
-                "description": "Mengden meldinger som skal forhÂndsvises"
+                "name": "Bel√∏p",
+                "description": "Mengden meldinger som skal forh√•ndsvises"
               }
             }
           },
           "snap_preview": {
-            "name": "ForhÂndsvisning av snap",
-            "description": "Viser en liten forhÂndsvisning ved siden av usynlige snaps i chat"
+            "name": "Forh√•ndsvisning av snap",
+            "description": "Viser en liten forh√•ndsvisning ved siden av usynlige snaps i chat"
           },
           "bootstrap_override": {
             "name": "Bootstrap Overstyr",
@@ -1446,29 +1412,29 @@
               },
               "home_tab": {
                 "name": "Hjem Fanen",
-                "description": "Overstyrer oppstartsfanen nÂr Snapchat Âpnes"
+                "description": "Overstyrer oppstartsfanen n√•r Snapchat √•pnes"
               }
             }
           },
           "map_friend_nametags": {
             "name": "Forbedret venn kart navnemerker",
-            "description": "Forbedre navnemerker til venner pÂ Snapmap"
+            "description": "Forbedre navnemerker til venner p√• Snapmap"
           },
           "prevent_message_list_auto_scroll": {
             "name": "Forhindre meldingsliste automatisk rulling",
-            "description": "Forhindrer meldingslisten fra Â rulle til bunnen nÂr du sender/mottar en melding"
+            "description": "Forhindrer meldingslisten fra √• rulle til bunnen n√•r du sender/mottar en melding"
           },
           "streak_expiration_info": {
             "name": "Vis Streak Extension Info",
             "description": "Viser en Streak Extension timer ved siden av Streaks-disken"
           },
           "hide_friend_feed_entry": {
-            "name": "Skjul innf¯ring av vennefÙr",
-            "description": "Skjuler en bestemt venn fra vennefÙren\nBruk den sosiale fanen til Â administrere denne funksjonen"
+            "name": "Skjul innf√∏ring av vennef√¥r",
+            "description": "Skjuler en bestemt venn fra vennef√¥ren\nBruk den sosiale fanen til √• administrere denne funksjonen"
           },
           "hide_streak_restore": {
             "name": "Skjul Streak Restore",
-            "description": "Skjul gjenopprettingsknappen i vennefÙret"
+            "description": "Skjul gjenopprettingsknappen i vennef√¥ret"
           },
           "hide_quick_add_suggestions": {
             "name": "Skjul raske forslag",
@@ -1496,11 +1462,11 @@
           },
           "friend_feed_menu_buttons": {
             "name": "Venn mate menyknapper",
-            "description": "Velg hvilke knapper som skal vises i menyen VennfÙr"
+            "description": "Velg hvilke knapper som skal vises i menyen Vennf√¥r"
           },
           "auto_close_friend_feed_menu": {
-            "name": "Auto Lukk Vennf¯der-menyen",
-            "description": "Lukker automatisk Venn-feed-menyen etter Â ha trykt pÂ en innstillingsknapp"
+            "name": "Auto Lukk Vennf√∏der-menyen",
+            "description": "Lukker automatisk Venn-feed-menyen etter √• ha trykt p√• en innstillingsknapp"
           },
           "vertical_story_viewer": {
             "name": "Vertikal historievisning",
@@ -1508,15 +1474,15 @@
           },
           "enable_friend_feed_menu_bar": {
             "name": "Venn mate menu bar",
-            "description": "Aktiverer den nye vennefÙr-menyen"
+            "description": "Aktiverer den nye vennef√¥r-menyen"
           },
           "message_indicators": {
             "name": "Meldingsindikatorer",
-            "description": "Legger til bestemte indikatorer ikoner i meldinger\nMerk: Indikatorer er kanskje ikke 100% n¯yaktige"
+            "description": "Legger til bestemte indikatorer ikoner i meldinger\nMerk: Indikatorer er kanskje ikke 100% n√∏yaktige"
           },
           "stealth_mode_indicator": {
             "name": "Stealth-modusindikator",
-            "description": "Legger til en ?? emoji ved siden av samtaler i stealth-modus"
+            "description": "Legger til en üëª emoji ved siden av samtaler i stealth-modus"
           },
           "edit_text_override": {
             "name": "Rediger tekstoverstyr",
@@ -1524,11 +1490,11 @@
           },
           "prevent_forced_keyboard": {
             "name": "Forhindre tvangstastatur",
-            "description": "Hindrer Snapchat fra Â automatisk dukke opp tastaturet nÂr du Âpner en samtale"
+            "description": "Hindrer Snapchat fra √• automatisk dukke opp tastaturet n√•r du √•pner en samtale"
           },
           "force_amoled_theme": {
             "name": "Force AMOLED Tema",
-            "description": "Tving en ekte svart AMOLED tema pÂ tvers av appen UI"
+            "description": "Tving en ekte svart AMOLED tema p√• tvers av appen UI"
           },
           "settings_menu": {
             "name": "Innstillinger Meny",
@@ -1542,27 +1508,27 @@
         "properties": {
           "bypass_screenshot_detection": {
             "name": "Bytt skjermbildedeteksjon",
-            "description": "Hindrer Snapchat fra Â oppdage nÂr du tar et skjermbilde"
+            "description": "Hindrer Snapchat fra √• oppdage n√•r du tar et skjermbilde"
           },
           "anonymous_story_viewing": {
             "name": "Anonym Story Visning",
-            "description": "Forhindrer noen i Â vite at du har sett deres historie"
+            "description": "Forhindrer noen i √• vite at du har sett deres historie"
           },
           "prevent_story_rewatch_indicator": {
             "name": "Forhindre Story Rewatch-indikator",
-            "description": "Forhindrer noen i Â vite at du har sett historien sin pÂ nytt"
+            "description": "Forhindrer noen i √• vite at du har sett historien sin p√• nytt"
           },
           "hide_peek_a_peek": {
             "name": "Skjul Peek-a-Peek",
-            "description": "Forhindrer varsling fra Â bli sendt nÂr du halvveis sveiper inn i en chat"
+            "description": "Forhindrer varsling fra √• bli sendt n√•r du halvveis sveiper inn i en chat"
           },
           "hide_bitmoji_presence": {
-            "name": "Skjul Bitmoji tilstedevÊrelse",
-            "description": "Forhindrer Bitmoji fra Â dukke opp mens du er i Chat"
+            "name": "Skjul Bitmoji tilstedev√¶relse",
+            "description": "Forhindrer Bitmoji fra √• dukke opp mens du er i Chat"
           },
           "hide_typing_notifications": {
             "name": "Skjul skrivevarsler",
-            "description": "Forhindrer alle i Â vite at du skriver en melding"
+            "description": "Forhindrer alle i √• vite at du skriver en melding"
           },
           "unlimited_snap_view_time": {
             "name": "Ubegrenset Snap Vis tid",
@@ -1570,27 +1536,27 @@
           },
           "auto_mark_as_read": {
             "name": "Merk som les",
-            "description": "Merker automatisk meldinger/snaps som lesne selv nÂr Stealth-modus er aktivert"
+            "description": "Merker automatisk meldinger/snaps som lesne selv n√•r Stealth-modus er aktivert"
           },
           "mark_snap_as_seen_button": {
             "name": "Merk Snap som sett knapp",
-            "description": "Legger til en knapp for Â markere en Snap som sett nÂr den vises.\nDette vil fungere selv nÂr Stealth-modus er aktivert"
+            "description": "Legger til en knapp for √• markere en Snap som sett n√•r den vises.\nDette vil fungere selv n√•r Stealth-modus er aktivert"
           },
           "skip_when_marking_as_seen": {
-            "name": "Hopp over nÂr merke som sett",
-            "description": "Hopper automatisk til neste Snap nÂr det markeres en Snap som sett.\nBruk i kombinasjon med Mark Snap som sett knapp"
+            "name": "Hopp over n√•r merke som sett",
+            "description": "Hopper automatisk til neste Snap n√•r det markeres en Snap som sett.\nBruk i kombinasjon med Mark Snap som sett knapp"
           },
           "loop_media_playback": {
             "name": "Loop av medieavspilling",
-            "description": "Loops media avspilling nÂr du ser Snaps / Historier"
+            "description": "Loops media avspilling n√•r du ser Snaps / Historier"
           },
           "disable_replay_in_ff": {
             "name": "Deaktiver Replay i FF",
-            "description": "Deaktiverer evnen til Â spille pÂ nytt med lang trykk fra vennematingen"
+            "description": "Deaktiverer evnen til √• spille p√• nytt med lang trykk fra vennematingen"
           },
           "half_swipe_notifier": {
             "name": "Half Strip Notifier",
-            "description": "Melder deg nÂr noen halvt sveiper inn i en samtale",
+            "description": "Melder deg n√•r noen halvt sveiper inn i en samtale",
             "properties": {
               "min_duration": {
                 "name": "Minimum Varighet",
@@ -1604,7 +1570,7 @@
           },
           "call_start_confirmation": {
             "name": "Anropsbekreftelse",
-            "description": "Viser en bekreftelsesdialog nÂr du starter en samtale"
+            "description": "Viser en bekreftelsesdialog n√•r du starter en samtale"
           },
           "unlimited_conversation_pinning": {
             "name": "Ubegrenset samtale",
@@ -1616,11 +1582,11 @@
           },
           "prevent_message_sending": {
             "name": "Forhindr meldingssending",
-            "description": "Forhindrer Â sende bestemte typer meldinger"
+            "description": "Forhindrer √• sende bestemte typer meldinger"
           },
           "friend_mutation_notifier": {
             "name": "Venn Mutation Notifier",
-            "description": "Melder deg nÂr noe endrer seg i en venns profil"
+            "description": "Melder deg n√•r noe endrer seg i en venns profil"
           },
           "better_notifications": {
             "name": "Bedre varsler",
@@ -1631,12 +1597,12 @@
                 "description": "Gruppevarsling til en enkelt"
               },
               "chat_preview": {
-                "name": "Chat ForhÂndsvisning",
-                "description": "Viser en forhÂndsvisning av mottatte meldinger i meldingen"
+                "name": "Chat Forh√•ndsvisning",
+                "description": "Viser en forh√•ndsvisning av mottatte meldinger i meldingen"
               },
               "media_preview": {
-                "name": "ForhÂndsvisning av medier",
-                "description": "Viser en forhÂndsvisning av de valgte medietypene i varslingen"
+                "name": "Forh√•ndsvisning av medier",
+                "description": "Viser en forh√•ndsvisning av de valgte medietypene i varslingen"
               },
               "media_caption": {
                 "name": "Media",
@@ -1644,11 +1610,11 @@
               },
               "stacked_media_messages": {
                 "name": "Stacked mediemeldinger",
-                "description": "Kombinerer flere mediemeldinger til ett tekstvarsling nÂr de ikke kan forhÂndsvises. Bruk i kombinasjon med Chat Preview"
+                "description": "Kombinerer flere mediemeldinger til ett tekstvarsling n√•r de ikke kan forh√•ndsvises. Bruk i kombinasjon med Chat Preview"
               },
               "friend_add_source": {
                 "name": "Venn Legg til kilde",
-                "description": "Viser kilden til en venneforesp¯rsel i meldingen"
+                "description": "Viser kilden til en venneforesp√∏rsel i meldingen"
               },
               "reply_button": {
                 "name": "Svarknapp",
@@ -1656,7 +1622,7 @@
               },
               "smart_replies": {
                 "name": "Smarte svar",
-                "description": "Legger til foreslÂtte svar pÂ varsler (Android 10+). Bruk i kombinasjon med Svar-knappen"
+                "description": "Legger til foresl√•tte svar p√• varsler (Android 10+). Bruk i kombinasjon med Svar-knappen"
               },
               "download_button": {
                 "name": "Last ned knappen",
@@ -1694,7 +1660,7 @@
               },
               "deleted_message_color": {
                 "name": "Slettet meldingsfarge",
-                "description": "Angi fargen pÂ slettede meldinger"
+                "description": "Angi fargen p√• slettede meldinger"
               }
             }
           },
@@ -1708,37 +1674,37 @@
             "properties": {
               "chat": {
                 "name": "Chatmeldinger",
-                "description": "Gj¯r chatmeldinger uunngÂelige"
+                "description": "Gj√∏r chatmeldinger uunng√•elige"
               },
               "snap": {
                 "name": "Snaps",
-                "description": "Gj¯r snaps upÂklagelig"
+                "description": "Gj√∏r snaps up√•klagelig"
               },
               "external_media": {
                 "name": "Eksterne medier",
-                "description": "Gj¯r eksterne medier uunngÂelige"
+                "description": "Gj√∏r eksterne medier uunng√•elige"
               },
               "sticker": {
                 "name": "Klistremerker",
-                "description": "Gj¯r klistremerker upÂklagelige"
+                "description": "Gj√∏r klistremerker up√•klagelige"
               },
               "share": {
                 "name": "Aktier",
-                "description": "Gj¯r delt innhold uleselig"
+                "description": "Gj√∏r delt innhold uleselig"
               },
               "note": {
                 "name": "Lydnotater",
-                "description": "Gj¯r lydnotater uleselig"
+                "description": "Gj√∏r lydnotater uleselig"
               },
               "story_reply": {
                 "name": "Story Svar",
-                "description": "Gj¯r historien svar uunngÂelig"
+                "description": "Gj√∏r historien svar uunng√•elig"
               }
             }
           },
           "gallery_media_send_override": {
             "name": "Gallery Media Send Overstyring",
-            "description": "Spoofs mediekilden nÂr du sender fra galleriet",
+            "description": "Spoofs mediekilden n√•r du sender fra galleriet",
             "properties": {
               "mode": {
                 "name": "Overstyr modus",
@@ -1746,29 +1712,29 @@
               },
               "include_camera_snaps": {
                 "name": "Inkluder kamerasnaps",
-                "description": "Vis ogsÂ overstyringsdialogen for kamerasnaps"
+                "description": "Vis ogs√• overstyringsdialogen for kamerasnaps"
               }
             }
           },
           "strip_media_metadata": {
             "name": "Fjern mediametadata",
-            "description": "Fjerner metadata av medier f¯r du sender som melding"
+            "description": "Fjerner metadata av medier f√∏r du sender som melding"
           },
           "bypass_message_retention_policy": {
-            "name": "ForhÂndsvisning av melding",
-            "description": "Forhindrer at meldinger slettes etter Â ha sett dem"
+            "name": "Forh√•ndsvisning av melding",
+            "description": "Forhindrer at meldinger slettes etter √• ha sett dem"
           },
           "bypass_message_action_restrictions": {
             "name": "Begrenselser av meldingshandlinger",
-            "description": "La deg reagere pÂ et snap uten Â ha Âpnet den eller lagre en uleselig melding"
+            "description": "La deg reagere p√• et snap uten √• ha √•pnet den eller lagre en uleselig melding"
           },
           "remove_groups_locked_status": {
-            "name": "Fjern grupper lÂst status",
-            "description": "Tillater deg Â vise gruppeinformasjon etter Â ha blitt sparket"
+            "name": "Fjern grupper l√•st status",
+            "description": "Tillater deg √• vise gruppeinformasjon etter √• ha blitt sparket"
           },
           "double_tap_chat_action": {
             "name": "Dobbelttrykk-chat-handling",
-            "description": "Utf¯rer en egendefinert handling nÂr dobbelt trykk pÂ en melding i chat"
+            "description": "Utf√∏rer en egendefinert handling n√•r dobbelt trykk p√• en melding i chat"
           },
           "double_tap_chat_action_custom_emoji": {
             "name": "Dobbelt trykk Chat Action Custom Emoji Reaction",
@@ -1776,31 +1742,31 @@
           },
           "auto_reply": {
             "name": "Automatisk svar",
-            "description": "Sender automatisk svar til innkommende meldinger nÂr du er borte",
+            "description": "Sender automatisk svar til innkommende meldinger n√•r du er borte",
             "properties": {
               "allow_running_in_background": {
-                "name": "Tillat kj¯ring i bakgrunnen",
-                "description": "Tillater automatisk svar Â kj¯re i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
+                "name": "Tillat kj√∏ring i bakgrunnen",
+                "description": "Tillater automatisk svar √• kj√∏re i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
               },
               "cooldown_seconds": {
-                "name": "Kj¯le ned sekunder",
+                "name": "Kj√∏le ned sekunder",
                 "description": "Minimum tid mellom auto-replies til samme samtale (i sekunder)"
               },
               "message_age_threshold": {
                 "name": "Brevaldergrense",
-                "description": "Bare svar pÂ meldinger som er mottatt innen denne tidsrammen (i sekunder)"
+                "description": "Bare svar p√• meldinger som er mottatt innen denne tidsrammen (i sekunder)"
               },
               "ai_config": {
                 "name": "AI-konfigurasjon",
                 "description": "Innstillinger for AI-drevet autoreplies",
                 "properties": {
                   "enable_ai_replies": {
-                    "name": "SlÂ pÂ AI-svar",
-                    "description": "Bruk AI til Â generere intelligente auto-replies i stedet for malmeldinger"
+                    "name": "Sl√• p√• AI-svar",
+                    "description": "Bruk AI til √• generere intelligente auto-replies i stedet for malmeldinger"
                   },
                   "ai_provider": {
-                    "name": "AI-leverand¯r",
-                    "description": "Velg hvilken AI-tjeneste som skal brukes til Â generere svar"
+                    "name": "AI-leverand√∏r",
+                    "description": "Velg hvilken AI-tjeneste som skal brukes til √• generere svar"
                   },
                   "ai_endpoint_url": {
                     "name": "URL til AI-endepunkt",
@@ -1808,15 +1774,15 @@
                   },
                   "ai_model": {
                     "name": "AI-modell",
-                    "description": "AI-modell som skal brukes til Â generere svar (f.eks. gpt-3.5-turbo, gpt-4)"
+                    "description": "AI-modell som skal brukes til √• generere svar (f.eks. gpt-3.5-turbo, gpt-4)"
                   },
                   "ai_api_key": {
-                    "name": "AI API N¯kkel",
-                    "description": "API-n¯kkel for Â godkjenne med AI-tjenesten"
+                    "name": "AI API N√∏kkel",
+                    "description": "API-n√∏kkel for √• godkjenne med AI-tjenesten"
                   },
                   "ai_system_prompt": {
                     "name": "AI-systemprompt",
-                    "description": "Systemprompt som definerer AIs personlighet og oppf¯rsel"
+                    "description": "Systemprompt som definerer AIs personlighet og oppf√∏rsel"
                   },
                   "ai_max_tokens": {
                     "name": "AI maks tokens",
@@ -1824,7 +1790,7 @@
                   },
                   "ai_temperature": {
                     "name": "AI-temperatur",
-                    "description": "Kontroller tilfeldighet i AI-svar (0.0 = deterministisk, 2.0 = svÊrt tilfeldig)"
+                    "description": "Kontroller tilfeldighet i AI-svar (0.0 = deterministisk, 2.0 = sv√¶rt tilfeldig)"
                   },
                   "ai_context_length": {
                     "name": "AI-kontekstlengde",
@@ -1839,8 +1805,8 @@
                     "description": "Samlet stil for AI svar"
                   },
                   "ai_response_language": {
-                    "name": "AI-responssprÂk",
-                    "description": "SprÂk for AI-responser (automatisk = det samme som mottatt melding)"
+                    "name": "AI-responsspr√•k",
+                    "description": "Spr√•k for AI-responser (automatisk = det samme som mottatt melding)"
                   },
                   "ai_use_conversation_history": {
                     "name": "Bruk samtalehistorie",
@@ -1855,30 +1821,30 @@
                     "description": "Bruk malmeldinger hvis AI ikke genererer et svar"
                   },
                   "ai_request_timeout": {
-                    "name": "Tidsgrense for AI-foresp¯rsel",
-                    "description": "Maksimal tid Â vente pÂ AI respons (i sekunder)"
+                    "name": "Tidsgrense for AI-foresp√∏rsel",
+                    "description": "Maksimal tid √• vente p√• AI respons (i sekunder)"
                   },
                   "ai_retry_attempts": {
-                    "name": "AI fors¯k fors¯k",
-                    "description": "Antall ganger Â pr¯ve AI-foresp¯rsler om de mislykkes"
+                    "name": "AI fors√∏k fors√∏k",
+                    "description": "Antall ganger √• pr√∏ve AI-foresp√∏rsler om de mislykkes"
                   }
                 }
               },
               "auto_trigger_config": {
                 "name": "Auto trigger- oppsett",
-                "description": "Innstillinger for automatiske utl¯sere og meldingsmaler",
+                "description": "Innstillinger for automatiske utl√∏sere og meldingsmaler",
                 "properties": {
                   "friendSpecificGreeting": {
                     "name": "Venn spesifikk hilsen",
-                    "description": "Legg til venns navn til auto-replies for personliggj¯ring"
+                    "description": "Legg til venns navn til auto-replies for personliggj√∏ring"
                   },
                   "friendGreeting": {
                     "name": "Venn hilsen",
-                    "description": "Hellig tekst Â bruke nÂr venn spesifikk hilsen er aktivert"
+                    "description": "Hellig tekst √• bruke n√•r venn spesifikk hilsen er aktivert"
                   },
                   "auto_reply_content_types": {
                     "name": "Auto-svar-utl?sere",
-                    "description": "Velg hvilke meldingstyper som skal utl¯se automatisk"
+                    "description": "Velg hvilke meldingstyper som skal utl√∏se automatisk"
                   },
                   "chat_messages": {
                     "name": "Chatmeldingsvar",
@@ -1901,7 +1867,7 @@
                     "description": "Automatiske meldinger for eksterne medier"
                   },
                   "voice_note_messages": {
-                    "name": "Svar pÂ stemmenotat",
+                    "name": "Svar p√• stemmenotat",
                     "description": "Automatiske meldinger for talenotater"
                   },
                   "sticker_messages": {
@@ -1909,8 +1875,8 @@
                     "description": "Automatiske meldinger for klistremerker"
                   },
                   "tiny_snap_messages": {
-                    "name": "SmÂ Snap svar",
-                    "description": "Auto-reply meldinger for smÂ snaps"
+                    "name": "Sm√• Snap svar",
+                    "description": "Auto-reply meldinger for sm√• snaps"
                   },
                   "map_reaction_messages": {
                     "name": "Kart Reaksjonssvar",
@@ -1925,32 +1891,32 @@
             }
           },
           "auto_open_snaps": {
-            "name": "Auto ≈pne Snaps-innstillinger",
-            "description": "Konfigurer forsinkelse og k¯innstillinger for Auto Open Snaps",
+            "name": "Auto √Öpne Snaps-innstillinger",
+            "description": "Konfigurer forsinkelse og k√∏innstillinger for Auto Open Snaps",
             "properties": {
               "allow_running_in_background": {
-                "name": "Tillat kj¯ring i bakgrunnen",
-                "description": "La Auto ≈pne Snaps kj¯res i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
+                "name": "Tillat kj√∏ring i bakgrunnen",
+                "description": "La Auto √Öpne Snaps kj√∏res i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
               },
               "min_delay": {
                 "name": "Min forsinkelse (ms)",
-                "description": "Minimum forsinkelse i millisekunder f¯r du Âpner en snap"
+                "description": "Minimum forsinkelse i millisekunder f√∏r du √•pner en snap"
               },
               "max_delay_ms": {
                 "name": "Max forsinkelse (ms)",
-                "description": "Maksimal forsinkelse i millisekunder f¯r du Âpner en snap"
+                "description": "Maksimal forsinkelse i millisekunder f√∏r du √•pner en snap"
               },
               "queue_size": {
-                "name": "K¯st¯rrelse",
-                "description": "Maksimalt antall snaps Â holde i k¯"
+                "name": "K√∏st√∏rrelse",
+                "description": "Maksimalt antall snaps √• holde i k√∏"
               },
               "retry_attempts": {
-                "name": "Pr¯v fors¯k pÂ nytt",
-                "description": "Antall ganger Â pr¯ve pÂ nytt Â Âpne et snap hvis det mislykkes"
+                "name": "Pr√∏v fors√∏k p√• nytt",
+                "description": "Antall ganger √• pr√∏ve p√• nytt √• √•pne et snap hvis det mislykkes"
               },
               "retry_delay": {
-                "name": "Pr¯v forsinkelse (ms)",
-                "description": "Forsinkelse i millisekunder mellom fors¯k"
+                "name": "Pr√∏v forsinkelse (ms)",
+                "description": "Forsinkelse i millisekunder mellom fors√∏k"
               }
             }
           },
@@ -1959,12 +1925,12 @@
             "description": "Sletter automatisk sendte meldinger etter en gitt tidsperiode",
             "properties": {
               "allow_running_in_background": {
-                "name": "Tillat kj¯ring i bakgrunnen",
-                "description": "Tillater automatisk slette sendt meldinger Â kj¯re i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
+                "name": "Tillat kj√∏ring i bakgrunnen",
+                "description": "Tillater automatisk slette sendt meldinger √• kj√∏re i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
               },
               "delete_after_value": {
                 "name": "Slett etter (verdi)",
-                "description": "Tidsverdi f¯r sletting av sendt melding"
+                "description": "Tidsverdi f√∏r sletting av sendt melding"
               },
               "delete_after_unit": {
                 "name": "Tidsenhet",
@@ -1976,7 +1942,7 @@
               },
               "show_countdown": {
                 "name": "Vis nedtelling",
-                "description": "Vis nedtelling f¯r meldingen slettes"
+                "description": "Vis nedtelling f√∏r meldingen slettes"
               },
               "show_notification": {
                 "name": "Vis melding",
@@ -1986,19 +1952,19 @@
           },
           "instant_translation": {
             "name": "Meldingsoversetter",
-            "description": "Oversett automatisk innkommende meldinger til ditt foretrukne sprÂk",
+            "description": "Oversett automatisk innkommende meldinger til ditt foretrukne spr√•k",
             "properties": {
               "enabled": {
-                "name": "SlÂ pÂ meldingsoversetter",
+                "name": "Sl√• p√• meldingsoversetter",
                 "description": "Aktiver automatisk oversettelse av meldinger"
               },
               "source_language": {
-                "name": "KildesprÂk",
-                "description": "SprÂk Â oversette fra (bruk 'auto' for automatisk deteksjon)"
+                "name": "Kildespr√•k",
+                "description": "Spr√•k √• oversette fra (bruk 'auto' for automatisk deteksjon)"
               },
               "target_language": {
-                "name": "MÂlsprÂk",
-                "description": "SprÂk Â oversette til"
+                "name": "M√•lspr√•k",
+                "description": "Spr√•k √• oversette til"
               },
               "show_original": {
                 "name": "Vis originaltekst",
@@ -2014,32 +1980,32 @@
               },
               "auto_translate": {
                 "name": "Oversett automatisk",
-                "description": "Oversette automatisk meldinger nÂr de mottas"
+                "description": "Oversette automatisk meldinger n√•r de mottas"
               },
               "translate_on_tap": {
-                "name": "Oversett pÂ Tap",
-                "description": "Oversett meldinger nÂr du trykker pÂ"
+                "name": "Oversett p√• Tap",
+                "description": "Oversett meldinger n√•r du trykker p√•"
               },
               "supported_languages": {
-                "name": "St¯ttede sprÂk",
-                "description": "SprÂk tilgjengelig for oversettelse"
+                "name": "St√∏ttede spr√•k",
+                "description": "Spr√•k tilgjengelig for oversettelse"
               },
               "pause_on_error": {
                 "name": "Pause ved feil",
-                "description": "Paus oversettelse nÂr tjenesten er blokkert"
+                "description": "Paus oversettelse n√•r tjenesten er blokkert"
               },
               "max_retries": {
                 "name": "Maks antall fors?k",
-                "description": "Maksimalt antall fors¯k"
+                "description": "Maksimalt antall fors√∏k"
               },
               "retry_delay": {
-                "name": "Pr¯v pÂ nytt",
-                "description": "Forsening mellom fors¯k pÂ gjenfors¯k (millisekunder)"
+                "name": "Pr√∏v p√• nytt",
+                "description": "Forsening mellom fors√∏k p√• gjenfors√∏k (millisekunder)"
               }
             }
           },
           "scheduled_send_allow_running_in_background": {
-            "name": "Tillat planlagt Send for Â kj¯re i bakgrunnen",
+            "name": "Tillat planlagt Send for √• kj√∏re i bakgrunnen",
             "description": "Hold planlagte meldinger behandling mens Snapchat er i bakgrunnen"
           }
         }
@@ -2083,27 +2049,27 @@
         "properties": {
           "disable_cameras": {
             "name": "Deaktiver kameraer",
-            "description": "Forhindrer Snapchat i Â bruke de valgte kameraene"
+            "description": "Forhindrer Snapchat i √• bruke de valgte kameraene"
           },
           "black_photos": {
             "name": "Svarte bilder",
-            "description": "Erstatter tatt bilder med svart bakgrunn\nVideoer pÂvirkes ikke"
+            "description": "Erstatter tatt bilder med svart bakgrunn\nVideoer p√•virkes ikke"
           },
           "immersive_camera_preview": {
-            "name": "ForhÂndsvisning",
-            "description": "Forhindrer Snapchat fra Â beskjere forhÂndsvisningen av kameraet\nDette kan f¯re til at kameraet flimmer pÂ noen enheter"
+            "name": "Forh√•ndsvisning",
+            "description": "Forhindrer Snapchat fra √• beskjere forh√•ndsvisningen av kameraet\nDette kan f√∏re til at kameraet flimmer p√• noen enheter"
           },
           "override_front_resolution": {
-            "name": "Overstyr frontoppl¯sning",
-            "description": "Overstyrer kameraets oppl¯sning for frontkameraet"
+            "name": "Overstyr frontoppl√∏sning",
+            "description": "Overstyrer kameraets oppl√∏sning for frontkameraet"
           },
           "override_back_resolution": {
-            "name": "Overstyr tilbakeoppl¯sning",
-            "description": "Overstyrer kameraoppl¯sningen til bakkameraet"
+            "name": "Overstyr tilbakeoppl√∏sning",
+            "description": "Overstyrer kameraoppl√∏sningen til bakkameraet"
           },
           "custom_resolution": {
-            "name": "Egendefinert oppl¯sning",
-            "description": "Angi en egendefinert kameraoppl¯sning, bredde x h¯yde (f.eks. 1920x1080).\nTilpasset oppl¯sning mÂ st¯ttes av enheten"
+            "name": "Egendefinert oppl√∏sning",
+            "description": "Angi en egendefinert kameraoppl√∏sning, bredde x h√∏yde (f.eks. 1920x1080).\nTilpasset oppl√∏sning m√• st√∏ttes av enheten"
           },
           "front_custom_frame_rate": {
             "name": "Tilpasset bildefrekvens foran",
@@ -2119,19 +2085,8 @@
           },
           "startup_default_camera": {
             "name": "Start standardkamera",
-            "description": "Angi standardkameraet nÂr Snapchat Âpnes"
+            "description": "Angi standardkameraet n√•r Snapchat √•pnes"
           },
-      \"call_recorder\": {
-          \"only_record_self\": \"Only Record Self\",
-          \"only_record_others\": \"Only Record Others\",
-          \"record_both\": \"Record Both Sides\"
-      },
-      \"call_recorder_ui_design\": {
-          \"default\": \"Default\",
-          \"snapchat\": \"Snapchat\",
-          \"cyber\": \"Cyber\",
-          \"frost\": \"Frost\"
-      },
           "hevc_recording": {
             "name": "HEVC Opptak",
             "description": "Bruker HEVC (H.265) codec for videoopptak"
@@ -2139,16 +2094,16 @@
         }
       },
       "streaks_reminder": {
-        "name": "Streaks pÂmindelse",
+        "name": "Streaks p√•mindelse",
         "description": "Med jevne mellomrom merker du deg om dine Streaks",
         "properties": {
           "interval": {
             "name": "Intervall",
-            "description": "Intervallet mellom hver pÂminnelse (timer)"
+            "description": "Intervallet mellom hver p√•minnelse (timer)"
           },
           "remaining_hours": {
             "name": "Resterende tid",
-            "description": "Resten av tiden f¯r meldingen vises (timer)"
+            "description": "Resten av tiden f√∏r meldingen vises (timer)"
           },
           "group_notifications": {
             "name": "Gruppevarsler",
@@ -2169,20 +2124,20 @@
                 "description": "Injiserer kode i Komponistens grensesnitt over plattformen",
                 "properties": {
                   "show_first_created_username": {
-                    "name": "Vis f¯rste opprettet brukernavn",
-                    "description": "Viser det f¯rste opprettede brukernavnet ved siden av det gjeldende brukernavnet pÂ profilsiden"
+                    "name": "Vis f√∏rste opprettet brukernavn",
+                    "description": "Viser det f√∏rste opprettede brukernavnet ved siden av det gjeldende brukernavnet p√• profilsiden"
                   },
                   "bypass_camera_roll_limit": {
                     "name": "Bypass kamerarullegrense",
-                    "description": "ÿker den maksimale mengden medier du kan sende fra kamerarullen"
+                    "description": "√òker den maksimale mengden medier du kan sende fra kamerarullen"
                   },
                   "custom_self_destruct_snap_delay": {
                     "name": "Tilpasset selvdestruktiv snap forsinkelse",
-                    "description": "Gir flere alternativer for selvdestruktive timer nÂr du sender en Snap"
+                    "description": "Gir flere alternativer for selvdestruktive timer n√•r du sender en Snap"
                   },
                   "composer_console": {
                     "name": "Komponistkonsoll",
-                    "description": "Lar deg kj¯re JavaScript-kode i Composer (bare arm64)"
+                    "description": "Lar deg kj√∏re JavaScript-kode i Composer (bare arm64)"
                   },
                   "composer_logs": {
                     "name": "Komponistlogger",
@@ -2200,7 +2155,7 @@
               },
               "custom_shared_library": {
                 "name": "Tilpasset felles bibliotek",
-                "description": "Laster et egendefinert delt bibliotek i Snapchat. Denne funksjonen er bare for testformÂl"
+                "description": "Laster et egendefinert delt bibliotek i Snapchat. Denne funksjonen er bare for testform√•l"
               }
             }
           },
@@ -2214,15 +2169,15 @@
               },
               "remove_vpn_transport_flag": {
                 "name": "Fjern VPN Transportflagg",
-                "description": "Forhindrer Snapchat i Â oppdage VPN-er"
+                "description": "Forhindrer Snapchat i √• oppdage VPN-er"
               },
               "remove_mock_location_flag": {
                 "name": "Fjern Mock plassering flagg",
-                "description": "Forhindrer Snapchat i Â oppdage Mock plassering"
+                "description": "Forhindrer Snapchat i √• oppdage Mock plassering"
               },
               "force_wifi_transport_flag": {
                 "name": "Tving Wi-Fi Transport Flagg",
-                "description": "Tving nettverkstransport til Â rapportere Wi-Fi i stedet for mobildata"
+                "description": "Tving nettverkstransport til √• rapportere Wi-Fi i stedet for mobildata"
               },
               "spoof_device_id": {
                 "name": "Spoof enhets-ID",
@@ -2234,17 +2189,17 @@
                   },
                   "custom_android_id": {
                     "name": "Tilpasset Android-ID",
-                    "description": "Verdi Â bruke ved spoofing Android-ID"
+                    "description": "Verdi √• bruke ved spoofing Android-ID"
                   }
                 }
               },
               "spoof_device": {
                 "name": "Spoof enhet",
-                "description": "Presenter Snapchat som kj¯rer pÂ en annen enhetsmodell"
+                "description": "Presenter Snapchat som kj√∏rer p√• en annen enhetsmodell"
               },
               "device_model": {
                 "name": "Enhetsmodell",
-                "description": "Velg hvilken enhetsmodell Â spoof"
+                "description": "Velg hvilken enhetsmodell √• spoof"
               }
             }
           },
@@ -2266,11 +2221,11 @@
           },
           "account_switcher": {
             "name": "Kontobryter",
-            "description": "La deg bytte mellom kontoer uten Â logge ut\nLangtrykk pÂ s¯keikonet ved siden av Bitmoji-profilen for Â Âpne menyen\nMerk: Denne funksjonen er eksperimentell og vil sannsynligvis endre seg i fremtiden",
+            "description": "La deg bytte mellom kontoer uten √• logge ut\nLangtrykk p√• s√∏keikonet ved siden av Bitmoji-profilen for √• √•pne menyen\nMerk: Denne funksjonen er eksperimentell og vil sannsynligvis endre seg i fremtiden",
             "properties": {
               "auto_backup_current_account": {
                 "name": "Automatisk sikkerhetskopiering av gjeldende konto",
-                "description": "Sikkerhetskopierer automatisk gjeldende konto nÂr du logger ut eller bytter kontoer"
+                "description": "Sikkerhetskopierer automatisk gjeldende konto n√•r du logger ut eller bytter kontoer"
               }
             }
           },
@@ -2280,15 +2235,15 @@
             "properties": {
               "force_transcription": {
                 "name": "Force Voice Note Transkript",
-                "description": "Tillater alle stemmenotater Â bli transkribert"
+                "description": "Tillater alle stemmenotater √• bli transkribert"
               },
               "preferred_transcription_lang": {
-                "name": "Foretrukne transkriptsprÂk",
-                "description": "Det foretrukne sprÂket for lydnotistranskripsjonen (f.eks. EN, ES, FR)"
+                "name": "Foretrukne transkriptspr√•k",
+                "description": "Det foretrukne spr√•ket for lydnotistranskripsjonen (f.eks. EN, ES, FR)"
               },
               "notification_transcript": {
                 "name": "Varsel Transcript",
-                "description": "Transskriberer stemmenotater i meldinger\nDenne funksjonen krever at funksjonen Chat ForhÂndsvisning aktiveres i bedre varsler"
+                "description": "Transskriberer stemmenotater i meldinger\nDenne funksjonen krever at funksjonen Chat Forh√•ndsvisning aktiveres i bedre varsler"
               }
             }
           },
@@ -2306,29 +2261,29 @@
           },
           "context_menu_fix": {
             "name": "Kontekstmeny Reparer",
-            "description": "Pr¯v Â reparere Venn Feed-menyen som nÂr enheten er frakoblet kan den ikke vises riktig"
+            "description": "Pr√∏v √• reparere Venn Feed-menyen som n√•r enheten er frakoblet kan den ikke vises riktig"
           },
           "app_lock": {
             "name": "App-l?s",
             "description": "Forhindrer tilgang til Snapchat uten kode",
             "properties": {
               "lock_on_resume": {
-                "name": "LÂs pÂ gjenoppretting",
-                "description": "LÂser appen nÂr den Âpnes pÂ nytt"
+                "name": "L√•s p√• gjenoppretting",
+                "description": "L√•ser appen n√•r den √•pnes p√• nytt"
               }
             }
           },
           "infinite_story_boost": {
             "name": "Uendelig Story-boost",
-            "description": "OvergÂ historien Boost Limit forsinkelse"
+            "description": "Overg√• historien Boost Limit forsinkelse"
           },
           "meo_passcode_bypass": {
-            "name": "Mine ¯yne bare passkode bypass",
-            "description": "GÂ forbi mine ¯yne Kun passkode\nDette vil bare fungere hvis passkoden er angitt riktig f¯r"
+            "name": "Mine √∏yne bare passkode bypass",
+            "description": "G√• forbi mine √∏yne Kun passkode\nDette vil bare fungere hvis passkoden er angitt riktig f√∏r"
           },
           "no_friend_score_delay": {
             "name": "Ingen venn poeng forsinkelse",
-            "description": "Fjerner forsinkelsen nÂr du ser en Venner Score"
+            "description": "Fjerner forsinkelsen n√•r du ser en Venner Score"
           },
           "best_friend_pinning": {
             "name": "Beste Venn Pinning",
@@ -2336,33 +2291,33 @@
           },
           "e2ee": {
             "name": "Slutt-til-slutt-kryptering",
-            "description": "Krypterer meldingene dine med AES ved hjelp av en delt hemmelig n¯kkel\nHusk Â lagre n¯kkelen et sted trygt!",
+            "description": "Krypterer meldingene dine med AES ved hjelp av en delt hemmelig n√∏kkel\nHusk √• lagre n√∏kkelen et sted trygt!",
             "properties": {
               "encrypted_message_indicator": {
                 "name": "Kryptert meldingsindikator",
-                "description": "Legger til en ?? emoji ved siden av krypterte meldinger"
+                "description": "Legger til en üîí emoji ved siden av krypterte meldinger"
               },
               "force_message_encryption": {
                 "name": "Tving meldingskryptering",
-                "description": "UnngÂr Â sende krypterte meldinger til personer som ikke har E2E-kryptering aktivert bare nÂr flere samtaler er valgt"
+                "description": "Unng√•r √• sende krypterte meldinger til personer som ikke har E2E-kryptering aktivert bare n√•r flere samtaler er valgt"
               }
             }
           },
           "add_friend_source_spoof": {
             "name": "Legg til Vennkilde",
-            "description": "Oppfatter kilden til en venneforesp¯rsel"
+            "description": "Oppfatter kilden til en venneforesp√∏rsel"
           },
           "hidden_snapchat_plus_features": {
             "name": "Skjulte Snapchat Plus-funksjoner",
-            "description": "Aktiverer uutgitte/beta Snapchat Plus-funksjoner\nKan ikke fungere pÂ eldre Snapchat-versjoner"
+            "description": "Aktiverer uutgitte/beta Snapchat Plus-funksjoner\nKan ikke fungere p√• eldre Snapchat-versjoner"
           },
           "custom_streaks_expiration_format": {
             "name": "Tilpasset Streaks Extension Format",
-            "description": "Tilpasser Streaks Exit-formatet\n\nTilgjengelige variabler:\n- %c: Streaks Count\n- %e: Hourglass Emoji\n- %d: Dager\n- %h: timer\n- %m: minutter\n- %s: sekunder\n- %w: gjenvÊrende tid"
+            "description": "Tilpasser Streaks Exit-formatet\n\nTilgjengelige variabler:\n- %c: Streaks Count\n- %e: Hourglass Emoji\n- %d: Dager\n- %h: timer\n- %m: minutter\n- %s: sekunder\n- %w: gjenv√¶rende tid"
           },
           "prevent_forced_logout": {
             "name": "Forebygging av tvangslogging",
-            "description": "UnngÂr Snapchat fra Â logge ut nÂr du logger pÂ en annen enhet"
+            "description": "Unng√•r Snapchat fra √• logge ut n√•r du logger p√• en annen enhet"
           },
           "snapscore_changes": {
             "name": "Snapscore endringer",
@@ -2372,45 +2327,45 @@
       },
       "scripting": {
         "name": "Skripting",
-        "description": "Kj¯r egendefinerte skript for Â utvide PurrfectSnap",
+        "description": "Kj√∏r egendefinerte skript for √• utvide PurrfectSnap",
         "properties": {
           "developer_mode": {
             "name": "Utviklermodus",
-            "description": "Viser feils¯kingsinformasjon pÂ Snapchats UI"
+            "description": "Viser feils√∏kingsinformasjon p√• Snapchats UI"
           },
           "module_folder": {
             "name": "Modulmappe",
             "description": "Mappen der skriptene er plassert"
           },
           "auto_reload": {
-            "name": "Last automatisk pÂ nytt",
-            "description": "Laster automatisk opp skript nÂr de endrer"
+            "name": "Last automatisk p√• nytt",
+            "description": "Laster automatisk opp skript n√•r de endrer"
           },
           "integrated_ui": {
             "name": "Integrert UI",
-            "description": "Tillater skript Â legge til egendefinerte UI-komponenter til Snapchat"
+            "description": "Tillater skript √• legge til egendefinerte UI-komponenter til Snapchat"
           },
           "disable_log_anonymization": {
-            "name": "SlÂ av logganonymisering",
+            "name": "Sl√• av logganonymisering",
             "description": "Deaktiverer anonymisering av logger"
           },
           "disable_optimization": {
             "name": "Deaktiver optimalisering",
-            "description": "Deaktiverer optimalisering av skript. Dette kan forÂrsake ytelsesproblemer."
+            "description": "Deaktiverer optimalisering av skript. Dette kan for√•rsake ytelsesproblemer."
           }
         }
       },
       "friend_tracker": {
         "name": "Venn Tracker",
-        "description": "Opptak venns aktivitet pÂ Snapchat",
+        "description": "Opptak venns aktivitet p√• Snapchat",
         "properties": {
           "record_messaging_events": {
             "name": "Ta opp meldinger hendelser",
-            "description": "Registrer meldingsbegivenheter som Â Âpne en snap, lese en melding etc."
+            "description": "Registrer meldingsbegivenheter som √• √•pne en snap, lese en melding etc."
           },
           "allow_running_in_background": {
-            "name": "Tillat kj¯ring i bakgrunnen",
-            "description": "La sporeren kj¯re i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
+            "name": "Tillat kj√∏ring i bakgrunnen",
+            "description": "La sporeren kj√∏re i bakgrunnen. Merk: Dette vil betydelig drenere batteriet ditt"
           },
           "auto_purge": {
             "name": "Automatisk rensing",
@@ -2426,7 +2381,7 @@
   "friend_menu_option": {
     "mark_snaps_as_seen": "Mark Snaps som sett",
     "mark_stories_as_seen_locally": "Merk historier som sett lokalt",
-    "preview": "ForhÂndsvisning",
+    "preview": "Forh√•ndsvisning",
     "stealth_mode": "Stealth-modus",
     "auto_download_blacklist": "Last ned Blacklist automatisk",
     "anti_auto_save": "Anti Auto Lagre"
@@ -2479,7 +2434,7 @@
     "voice_call": "Stemmesamtale"
   },
   "chat_action_menu": {
-    "preview_button": "ForhÂndsvisning",
+    "preview_button": "Forh√•ndsvisning",
     "download_button": "Last ned",
     "delete_logged_message_button": "Slett logget melding",
     "show_chat_edit_history": "Vis Chat Rediger historie",
@@ -2487,25 +2442,25 @@
   },
   "opera_context_menu": {
     "download": "Last ned medier",
-    "sent_at": "Sendt pÂ{date}",
-    "created_at": "Laget pÂ{date}",
-    "expires_at": "Utl¯per ved{date}",
-    "media_size": "Mediest¯rrelse:{size}",
+    "sent_at": "Sendt p√•{date}",
+    "created_at": "Laget p√•{date}",
+    "expires_at": "Utl√∏per ved{date}",
+    "media_size": "Mediest√∏rrelse:{size}",
     "media_duration": "Media varighet:{duration}ms",
-    "show_debug_info": "Vis feils¯kingsinformasjon"
+    "show_debug_info": "Vis feils√∏kingsinformasjon"
   },
   "modal_option": {
     "profile_info": "Profilinformasjon",
     "close": "Lukk"
   },
   "gallery_media_send_override": {
-    "always_ask": "Alltid sp¯r",
+    "always_ask": "Alltid sp√∏r",
     "ORIGINAL": "Originale medier",
     "NOTE": "Lydnotat",
     "SNAP": "Snap",
     "SAVEABLE_SNAP": "Lagrebar snap",
     "null": "Snapchat Standard",
-    "multiple_media_toast": "Du kan bare sende Èn medie om gangen"
+    "multiple_media_toast": "Du kan bare sende √©n medie om gangen"
   },
   "mark_as_seen": {
     "no_unseen_snaps_toast": "Ingen usynlige snaps funnet!",
@@ -2515,20 +2470,20 @@
     "already_unseen_toast": "Allerede merket som usynlig!"
   },
   "conversation_preview": {
-    "streak_expiration": "utl¯per i{day}dager{hour}timer{minute}minutter",
+    "streak_expiration": "utl√∏per i{day}dager{hour}timer{minute}minutter",
     "total_messages": "Totalt sendt/mottatte meldinger:\n{count}",
-    "title": "ForhÂndsvisning",
+    "title": "Forh√•ndsvisning",
     "unknown_user": "Ukjend bruker",
     "no_messages": "Ingen meldinger funnet!"
   },
   "profile_info": {
     "title": "Profilinformasjon",
-    "first_created_username": "F¯rst opprettet brukernavn",
+    "first_created_username": "F√∏rst opprettet brukernavn",
     "mutable_username": "Mutable Brukernavn",
     "display_name": "Visningsnavn",
     "added_date": "Lagt til dato",
-    "birthday": "F¯dselsdag :{month}{day}",
-    "hidden_birthday": "F¯dselsdag : Skjult",
+    "birthday": "F√∏dselsdag :{month}{day}",
+    "hidden_birthday": "F√∏dselsdag : Skjult",
     "friendship": "Vennskap",
     "add_source": "Legg til kilde",
     "snapchat_plus": "Snapchat Plus",
@@ -2543,13 +2498,13 @@
   },
   "friendship_link_type": {
     "mutual": "Gjensidig",
-    "outgoing": "UtgÂende",
+    "outgoing": "Utg√•ende",
     "blocked": "Blokkert",
     "deleted": "Slettet",
-    "following": "F¯lger",
-    "suggested": "ForeslÂtt",
+    "following": "F√∏lger",
+    "suggested": "Foresl√•tt",
     "incoming": "Innkommende",
-    "incoming_follower": "Innkommende f¯lger"
+    "incoming_follower": "Innkommende f√∏lger"
   },
   "bulk_messaging_action": {
     "actions.title": "Handlinger",
@@ -2558,26 +2513,26 @@
     "selection_dialog_continue_button": "Fortsett",
     "confirmation_dialog": {
       "title": "Er du sikker?",
-      "message": "Dette vil pÂvirke alle utvalgte, Denne handlingen kan ikke angres."
+      "message": "Dette vil p√•virke alle utvalgte, Denne handlingen kan ikke angres."
     },
     "actions": {
       "remove_friends": "Fjern venner",
       "clear_conversations": "Klare samtaler",
-      "clear_friend_feed": "Klar vennefÙr ({count})",
-      "unfollow": "F¯lg ikke",
+      "clear_friend_feed": "Klar vennef√¥r ({count})",
+      "unfollow": "F√∏lg ikke",
       "remove": "Fjern"
     },
     "leave_groups": "Leave{count}grupper",
     "left_group_success": "Venstre gruppe lykkes",
-    "failed_to_leave_group": "Klarte ikke Â forlate gruppen:{error}",
+    "failed_to_leave_group": "Klarte ikke √• forlate gruppen:{error}",
     "conversation_types": {
       "friends_only": "Kun venner",
       "groups_only": "Kun grupper",
       "both": "Venner og grupper"
     },
     "sort_by": "Sorter etter",
-    "reverse_order": "Omvend rekkef¯lge",
-    "search_by_name": "S¯k etter navn",
+    "reverse_order": "Omvend rekkef√∏lge",
+    "search_by_name": "S√∏k etter navn",
     "no_friends_found": "Ingen venner funnet",
     "no_groups_found": "Ingen grupper funnet",
     "no_friends_or_groups_found": "Ingen venner eller grupper funnet",
@@ -2589,23 +2544,23 @@
     "clean_conversations_and_remove_friends": "Ren{count}samtaler og fjerne{count}venner",
     "clean_group_conversations": "Ren{count}gruppesamtaler",
     "clean_all_conversations": "Ren{count}samtaler",
-    "failed_to_fetch_conversations": "Klarte ikke Â hente samtaler:{error}",
-    "failed_to_fetch_friend_conversations": "Klarte ikke Â hente vennesamtaler:{error}",
-    "failed_to_process": "Klarte ikke Â behandle{id}",
+    "failed_to_fetch_conversations": "Klarte ikke √• hente samtaler:{error}",
+    "failed_to_fetch_friend_conversations": "Klarte ikke √• hente vennesamtaler:{error}",
+    "failed_to_process": "Klarte ikke √• behandle{id}",
     "deleted_messages": "{count}slettede meldinger",
     "filters": {
       "all": "Alle",
       "my_friends": "Mine venner",
       "blocked": "Blokkert",
       "removed_me": "Fjernet meg",
-      "suggested": "ForeslÂtt",
+      "suggested": "Foresl√•tt",
       "deleted": "Slettet",
       "business_accounts": "Forretningskontoer",
       "streaks": "Streaks",
       "non_streaks": "Uten streaks",
-      "followed": "F¯lgt",
-      "following": "F¯lger",
-      "location_on_map": "Beliggenhet pÂ kart"
+      "followed": "F√∏lgt",
+      "following": "F√∏lger",
+      "location_on_map": "Beliggenhet p√• kart"
     },
     "sort_options": {
       "none": "Ingen",
@@ -2615,7 +2570,7 @@
       "streak_length": "Streak Lengde",
       "most_messages_sent": "De fleste meldinger sendt",
       "most_recent_message": "Siste melding",
-      "nearest_location": "NÊrmeste plassering"
+      "nearest_location": "N√¶rmeste plassering"
     }
   },
   "chat_export": {
@@ -2633,9 +2588,9 @@
     "exported_to": "Eksportert til{path}",
     "exporting_chats": "Eksportere Chats...",
     "processing_chats": "Behandling{amount}konversasjoner...",
-    "export_fail": "Klarte ikke Â eksportere samtale{conversation}",
+    "export_fail": "Klarte ikke √• eksportere samtale{conversation}",
     "writing_output": "Skriver ut...",
-    "finished": "Ferdig! Du kan nÂ lukke denne dialogen.",
+    "finished": "Ferdig! Du kan n√• lukke denne dialogen.",
     "no_messages_found": "Ingen meldinger funnet!",
     "exporting_message": "Eksporterer{conversation}..."
   },
@@ -2645,7 +2600,7 @@
     "negative": "Nei",
     "cancel": "Avbryt",
     "save": "Lagre",
-    "open": "≈pne",
+    "open": "√Öpne",
     "download": "Last ned",
     "send": "Send",
     "restore_original": "Gjenopprett original",
@@ -2656,8 +2611,8 @@
     "conversation_exit": "Samtaleavslutting",
     "started_typing": "Startet skrive",
     "stopped_typing": "Stoppet skrive",
-    "started_speaking": "Startet Â snakke",
-    "stopped_speaking": "Slutt Â snakke",
+    "started_speaking": "Startet √• snakke",
+    "stopped_speaking": "Slutt √• snakke",
     "started_peeking": "Startet peeking",
     "stopped_peeking": "Stoppet peeking",
     "message_read": "Melding Lese",
@@ -2667,14 +2622,14 @@
     "message_edited": "Melding redigert",
     "message_reaction_add": "Meldingsreaksjon Legg til",
     "message_reaction_remove": "Meldingsreaksjon Fjern",
-    "snap_opened": "Snap Âpnet",
+    "snap_opened": "Snap √•pnet",
     "snap_replayed": "Snap spilt av igjen",
     "snap_replayed_twice": "Snap Replayed to ganger",
     "snap_screenshot": "Snap skjermbilde",
     "snap_screen_record": "Snap-skjermopptak",
     "i_can_see_you": "Jeg kan se deg"
   },
-  "cleared_from_feed": "Fjernet fra fÙr",
+  "cleared_from_feed": "Fjernet fra f√¥r",
   "tracker_actions": {
     "log": "Logg",
     "in_app_notification": "Varsel i appen",
@@ -2696,7 +2651,7 @@
   },
   "call_start_confirmation": {
     "dialog_title": "Start samtale",
-    "dialog_message": "Er du sikker pÂ at du vil ringe?"
+    "dialog_message": "Er du sikker p√• at du vil ringe?"
   },
   "half_swipe_notifier": {
     "notification_channel_name": "Half Strip",
@@ -2714,16 +2669,16 @@
     },
     "select_attachments_title": "Velg vedlegg",
     "download_started_toast": "Last ned startet",
-    "unsupported_content_type_toast": "Ikke st¯ttet innholdstype!",
+    "unsupported_content_type_toast": "Ikke st√∏ttet innholdstype!",
     "failed_no_longer_available_toast": "Media ikke lenger tilgjengelig",
     "no_attachments_toast": "Ingen vedlegg funnet!",
-    "already_queued_toast": "Media allerede i k¯!",
+    "already_queued_toast": "Media allerede i k√∏!",
     "already_downloaded_toast": "Media allerede lastet ned!",
     "content_saved_toast": "Reddet!",
     "download_toast": "Last ned{path}...",
     "processing_toast": "Behandling{path}...",
-    "failed_generic_toast": "Klarte ikke Â laste ned",
-    "failed_to_create_preview_toast": "Klarte ikke Â opprette forhÂndsvisning",
+    "failed_generic_toast": "Klarte ikke √• laste ned",
+    "failed_to_create_preview_toast": "Klarte ikke √• opprette forh√•ndsvisning",
     "failed_processing_toast": "Mislykkes behandling{error}",
     "failed_gallery_toast": "Klarte ikke lagre i galleriet{error}",
     "dash_no_chapter": "Ingen kapittel funnet",
@@ -2738,63 +2693,63 @@
     "notification_text": "Du mister din Streak med{friend}i{hoursLeft}timer"
   },
   "biometric_auth": {
-    "unlock_button": "LÂs opp",
-    "title": "LÂs opp Snapchat",
-    "subtitle": "Vennligst autentiser for Â lÂse opp Snapchat"
+    "unlock_button": "L√•s opp",
+    "title": "L√•s opp Snapchat",
+    "subtitle": "Vennligst autentiser for √• l√•se opp Snapchat"
   },
   "end_to_end_encryption": {
     "toolbox": {
-      "no_shared_key": "Du har ikke en felles hemmelighet enda. Klikk nedenfor for Â starte en ny.",
-      "shared_key_fingerprint": "Fingeravtrykket er:\n\n{fingerprint}S¯rg for Â sjekke om det passer til din venns fingeravtrykk!",
-      "initiate_exchange_button": "Start n¯kkelutveksling"
+      "no_shared_key": "Du har ikke en felles hemmelighet enda. Klikk nedenfor for √• starte en ny.",
+      "shared_key_fingerprint": "Fingeravtrykket er:\n\n{fingerprint}S√∏rg for √• sjekke om det passer til din venns fingeravtrykk!",
+      "initiate_exchange_button": "Start n√∏kkelutveksling"
     },
     "confirmation_dialogs": {
       "title": "Slutt til slutt kryptering",
-      "confirmation_1": "ADVARSEL: Dette vil overskrive din eksisterende n¯kkel. Du vil miste tilgang til alle krypterte meldinger fra denne venn. Er du sikker pÂ at du vil fortsette?",
-      "confirmation_2": "Er du sikker pÂ at du vil fortsette? Dette er din siste sjanse til Â komme tilbake."
+      "confirmation_1": "ADVARSEL: Dette vil overskrive din eksisterende n√∏kkel. Du vil miste tilgang til alle krypterte meldinger fra denne venn. Er du sikker p√• at du vil fortsette?",
+      "confirmation_2": "Er du sikker p√• at du vil fortsette? Dette er din siste sjanse til √• komme tilbake."
     },
-    "unencrypted_conversation_send_failure_toast": "Du kan ikke sende kryptert innhold til bÂde krypterte og ukrypterte samtaler!",
-    "native_hooks_send_failure_toast": "Klarte ikke Â sende! Vennligst aktiver Native Hooks i innstillingene.",
-    "no_participants_to_encrypt_toast": "Du har ingen venner i denne samtalen for Â kryptere meldinger med!",
-    "encryption_failed_toast": "Klarte ikke Â kryptere meldingen! Sjekk logcat for mer informasjon.",
-    "accept_public_key_success_toast": "Offentlig n¯kkel akseptert!",
-    "accept_secret_key_success_toast": "Ferdig! Du kan nÂ sende og motta krypterte meldinger med denne vennen.",
-    "accept_public_key_failure_toast": "Kunne ikke akseptere offentlig n¯kkel",
-    "accept_secret_key_failure_toast": "Klarte ikke akseptere hemmelig n¯kkel",
+    "unencrypted_conversation_send_failure_toast": "Du kan ikke sende kryptert innhold til b√•de krypterte og ukrypterte samtaler!",
+    "native_hooks_send_failure_toast": "Klarte ikke √• sende! Vennligst aktiver Native Hooks i innstillingene.",
+    "no_participants_to_encrypt_toast": "Du har ingen venner i denne samtalen for √• kryptere meldinger med!",
+    "encryption_failed_toast": "Klarte ikke √• kryptere meldingen! Sjekk logcat for mer informasjon.",
+    "accept_public_key_success_toast": "Offentlig n√∏kkel akseptert!",
+    "accept_secret_key_success_toast": "Ferdig! Du kan n√• sende og motta krypterte meldinger med denne vennen.",
+    "accept_public_key_failure_toast": "Kunne ikke akseptere offentlig n√∏kkel",
+    "accept_secret_key_failure_toast": "Klarte ikke akseptere hemmelig n√∏kkel",
     "accept_secret_button": "Ta imot hemmelig",
-    "accept_public_key_button": "Godta offentlig N¯kkel",
-    "outgoing_pk_message": "N¯kkelutvekslingsforesp¯rsel",
-    "outgoing_secret_message": "N¯kkelutvekslingsrespons",
-    "incoming_pk_message": "Du mottok nettopp en offentlig n¯kkelforesp¯rsel. Klikk nedenfor for Â godta det.",
-    "incoming_secret_message": "Din venn aksepterte din offentlige n¯kkel. Klikk nedenfor for Â godta hemmeligheten."
+    "accept_public_key_button": "Godta offentlig N√∏kkel",
+    "outgoing_pk_message": "N√∏kkelutvekslingsforesp√∏rsel",
+    "outgoing_secret_message": "N√∏kkelutvekslingsrespons",
+    "incoming_pk_message": "Du mottok nettopp en offentlig n√∏kkelforesp√∏rsel. Klikk nedenfor for √• godta det.",
+    "incoming_secret_message": "Din venn aksepterte din offentlige n√∏kkel. Klikk nedenfor for √• godta hemmeligheten."
   },
   "auto_open_snaps": {
-    "title": "≈pne snaps automatisk",
+    "title": "√Öpne snaps automatisk",
     "priority_title": "?pne Snaps automatisk (prioritet)",
-    "error_title": "≈pne snaps automatisk (feil)",
-    "channel_description": "Varsler for automatisk Âpnende snaps k¯ status",
-    "priority_channel_description": "H¯y prioritetsvarsler for auto-Âpning snaps",
-    "error_channel_description": "Feilvarsler nÂr automatisk Âpnende snaps mislykkes",
-    "paused_status": "Auto ≈pne Snaps pause",
-    "processing_status": "Behandlingssnap:{queued}i k¯,{processed}behandlet",
-    "monitor_status": "OvervÂkning...",
+    "error_title": "√Öpne snaps automatisk (feil)",
+    "channel_description": "Varsler for automatisk √•pnende snaps k√∏ status",
+    "priority_channel_description": "H√∏y prioritetsvarsler for auto-√•pning snaps",
+    "error_channel_description": "Feilvarsler n√•r automatisk √•pnende snaps mislykkes",
+    "paused_status": "Auto √Öpne Snaps pause",
+    "processing_status": "Behandlingssnap:{queued}i k√∏,{processed}behandlet",
+    "monitor_status": "Overv√•kning...",
     "recent_snaps": "Nylige snaps",
     "action_pause": "Paus",
     "action_resume": "Fortsett",
-    "action_clear": "Fjern k¯",
+    "action_clear": "Fjern k√∏",
     "action_reset": "Tilbakestill antall",
-    "error_content": "Klarte ikke Âpne snap fra{sender}:){error}",
-    "resumed_feedback": "Automatisk Âpning",
-    "paused_feedback": "Auto ≈pne Pausa",
-    "resumed_message": "Behandlingen vil fortsette automatisk for k¯lige snaps",
-    "paused_message": "Behandlingen var utsett. K¯ bevart ({count}snaps)",
+    "error_content": "Klarte ikke √•pne snap fra{sender}:){error}",
+    "resumed_feedback": "Automatisk √•pning",
+    "paused_feedback": "Auto √Öpne Pausa",
+    "resumed_message": "Behandlingen vil fortsette automatisk for k√∏lige snaps",
+    "paused_message": "Behandlingen var utsett. K√∏ bevart ({count}snaps)",
     "status_paused": "Pausa",
-    "status_monitoring": "OvervÂkning",
+    "status_monitoring": "Overv√•kning",
     "status_active": "Aktiv",
-    "queue_cleared": "K¯ye ryddet og statistikk tilbakestille",
-    "queue_cleared_title": "K¯ye fjernet",
-    "queue_cleared_reset": "K¯ye ryddet og tilbakestilt",
-    "queue_cleared_feedback": "Fjernet{count}k¯lige snaps ï Nullstill{processed}bearbeidet count",
+    "queue_cleared": "K√∏ye ryddet og statistikk tilbakestille",
+    "queue_cleared_title": "K√∏ye fjernet",
+    "queue_cleared_reset": "K√∏ye ryddet og tilbakestilt",
+    "queue_cleared_feedback": "Fjernet{count}k√∏lige snaps ‚Ä¢ Nullstill{processed}bearbeidet count",
     "queue_cleared_feedback_simple": "Nullstill{processed}bearbeidet count",
     "unknown_sender": "Ukjend",
     "unknown_user": "Ukjend bruker",
@@ -2806,35 +2761,35 @@
     "conversation_type_chat": "Chat",
     "notification_status": "Status",
     "notification_statistics": "STATISTIK",
-    "notification_queue_size": "K¯st¯rrelse",
-    "notification_total_opened": "Total Snaps Âpnet",
+    "notification_queue_size": "K√∏st√∏rrelse",
+    "notification_total_opened": "Total Snaps √•pnet",
     "notification_queue_preview": "K?FORH?NDSVISNING",
     "notification_processing_continue": "Behandling vil fortsette automatisk...",
-    "notification_no_snaps_queue": "Ingen snaps i k¯.",
-    "notification_queue_cleared_opened": "K¯yeklart ({opened}Âpnet)",
+    "notification_no_snaps_queue": "Ingen snaps i k√∏.",
+    "notification_queue_cleared_opened": "K√∏yeklart ({opened}√•pnet)",
     "content_type_photo_video_snap": "Foto/Video Snap",
     "conversation_type_group_with_name": "Gruppe:{name}",
     "delete_logs_title": "Slett logger?",
     "delete_logs_progress": "Sletter{count}logger...",
-    "delete_logs_description": "Dette vil slette logger basert pÂ det gjeldende filteret og s¯kesp¯rselen. Denne handlingen kan ikke angres.",
+    "delete_logs_description": "Dette vil slette logger basert p√• det gjeldende filteret og s√∏kesp√∏rselen. Denne handlingen kan ikke angres.",
     "export_logs_title": "Eksporter logger?",
     "export_logs_progress": "Eksporterer logger...",
-    "export_logs_description": "Dette vil eksportere logger basert pÂ det gjeldende filteret og s¯kesp¯rselen.",
+    "export_logs_description": "Dette vil eksportere logger basert p√• det gjeldende filteret og s√∏kesp√∏rselen.",
     "export_logs_as": "Eksporter som{type}",
     "export_logs_success": "Eksporterte logger!",
-    "export_logs_failure": "Klarte ikke Â eksportere logger. Sjekk logcat for mer informasjon.",
+    "export_logs_failure": "Klarte ikke √• eksportere logger. Sjekk logcat for mer informasjon.",
     "deleted_logs_count": "Slettet{count}logger"
   },
   "script_imported": "Skript{name}importert!",
-  "script_import_failed": "Klarte ikke Â importere skript.{error}.. Sjekk logger for flere detaljer",
+  "script_import_failed": "Klarte ikke √• importere skript.{error}.. Sjekk logger for flere detaljer",
   "script_updating": "Oppdaterer skript{name}...",
   "script_updated": "Oppdatert{name}til versjon{version}",
-  "script_update_failed": "Klarte ikke Â oppdatere modulen. Sjekk logger for flere detaljer",
-  "script_edit_failed": "Kunne ikke Âpne modulfil. Sjekk logger for flere detaljer",
+  "script_update_failed": "Klarte ikke √• oppdatere modulen. Sjekk logger for flere detaljer",
+  "script_edit_failed": "Kunne ikke √•pne modulfil. Sjekk logger for flere detaljer",
   "script_data_cleared": "Moduldata fjernet!",
-  "script_data_clear_failed": "Klarte ikke Â slette moduldata. Sjekk logger for flere detaljer",
+  "script_data_clear_failed": "Klarte ikke √• slette moduldata. Sjekk logger for flere detaljer",
   "script_deleted": "Slettet skript{name}!",
-  "script_delete_failed": "Klarte ikke Â slette modul. Sjekk logger for flere detaljer",
+  "script_delete_failed": "Klarte ikke √• slette modul. Sjekk logger for flere detaljer",
   "script_actions": "Handlinger",
   "script_no_description": "Ingen beskrivelse",
   "script_update_available": "Oppdatering tilgjengelig:{version}",
@@ -2847,23 +2802,23 @@
   "scripting_tagline": "Administrer skript, import og mapper",
   "installed_scripts_tab": "Installert",
   "catalog_tab": "Katalog",
-  "no_scripts_folder_selected_title": "Velg skriptmappen for Â komme i gang",
+  "no_scripts_folder_selected_title": "Velg skriptmappen for √• komme i gang",
   "select_folder_button": "Velg mappe",
-  "select_scripts_folder_toast": "Velg en skriptmappe f¯rst",
+  "select_scripts_folder_toast": "Velg en skriptmappe f√∏rst",
   "delete_rule_title": "Slett regel",
-  "delete_rule_description": "Er du sikker pÂ at du vil slette denne regelen?",
+  "delete_rule_description": "Er du sikker p√• at du vil slette denne regelen?",
   "rule_name": "Regelnavn",
   "friend_tracker_notifications": {
     "notification_channel_name": "Venn Tracker",
     "notification_title": "Vennlig aktivitet",
     "conversation_enter": "{friend}angitt{conversation}",
     "conversation_exit": "{friend}venstre{conversation}",
-    "started_typing": "{friend}begynte Â skrive inn{conversation}",
-    "stopped_typing": "{friend}stoppet Â skrive i{conversation}",
-    "started_speaking": "{friend}begynner Â snakke i{conversation}",
-    "stopped_speaking": "{friend}slutt Â snakke i{conversation}",
-    "started_peeking": "{friend}begynn Â peke i{conversation}",
-    "stopped_peeking": "{friend}sluttet Â peke i{conversation}",
+    "started_typing": "{friend}begynte √• skrive inn{conversation}",
+    "stopped_typing": "{friend}stoppet √• skrive i{conversation}",
+    "started_speaking": "{friend}begynner √• snakke i{conversation}",
+    "stopped_speaking": "{friend}slutt √• snakke i{conversation}",
+    "started_peeking": "{friend}begynn √• peke i{conversation}",
+    "stopped_peeking": "{friend}sluttet √• peke i{conversation}",
     "message_read": "{friend}les en melding i{conversation}",
     "message_deleted": "{friend}slettet en melding i{conversation}",
     "message_saved": "{friend}lagret en melding i{conversation}",
@@ -2871,7 +2826,7 @@
     "message_edited": "{friend}redigert en melding i{conversation}",
     "message_reaction_add": "{friend}tilsatt en reaksjon i{conversation}",
     "message_reaction_remove": "{friend}fjernet en reaksjon i{conversation}",
-    "snap_opened": "{friend}Âpnet en snap i{conversation}",
+    "snap_opened": "{friend}√•pnet en snap i{conversation}",
     "snap_replayed": "{friend}replayed a snap in{conversation}",
     "snap_replayed_twice": "{friend}replayed en snap to ganger i{conversation}",
     "snap_screenshot": "{friend}ta et skjermbilde i{conversation}",
@@ -2892,17 +2847,17 @@
   "material3_strings": {
     "date_range_picker_start_headline": "Fra",
     "date_range_picker_end_headline": "Til",
-    "date_range_picker_title": "Velg datoomrÂde",
+    "date_range_picker_title": "Velg datoomr√•de",
     "date_picker_switch_to_calendar_mode": "Kalender",
     "date_picker_switch_to_input_mode": "Inngang",
-    "date_range_picker_scroll_to_previous_month": "Forrige mÂned",
-    "date_range_picker_scroll_to_next_month": "Neste mÂned",
+    "date_range_picker_scroll_to_previous_month": "Forrige m√•ned",
+    "date_range_picker_scroll_to_next_month": "Neste m√•ned",
     "date_picker_today_description": "I dag",
     "date_range_picker_day_in_range": "Valgt",
     "date_input_invalid_for_pattern": "Ugyldig dato",
-    "date_input_invalid_year_range": "Ugyldig Âr",
+    "date_input_invalid_year_range": "Ugyldig √•r",
     "date_input_invalid_not_allowed": "Ugyldig dato",
-    "date_range_input_invalid_range_input": "Ugyldig datoomrÂde"
+    "date_range_input_invalid_range_input": "Ugyldig datoomr√•de"
   },
   "send_override_dialog": {
     "title": "Send media som",
@@ -2920,14 +2875,14 @@
       "add_message": "Legg til melding",
       "edit_message": "Rediger melding",
       "message_label": "Melding",
-      "no_messages": "Ingen meldinger ennÂ. Legg til din f¯rste melding!",
+      "no_messages": "Ingen meldinger enn√•. Legg til din f√∏rste melding!",
       "message_placeholder": "Skriv inn din automatiske melding..."
     }
   },
   "auto_delete_sent_messages": {
     "countdown_toast": "Melding vil bli slettet i{time}",
     "delete_success_toast": "Melding slettet",
-    "delete_failed_toast": "Klarte ikke Â slette melding"
+    "delete_failed_toast": "Klarte ikke √• slette melding"
   },
   "translation_position": {
     "above": "Over",
@@ -2984,15 +2939,14 @@
       "no_rules_found": "Ingen regler funnet",
       "no_events": "Ingen hendelser"
     },
-    "scopes_suffix": "scopes",
     "search": {
-      "placeholder": "S¯k"
+      "placeholder": "S√∏k"
     },
     "filters": {
-      "newest_first": "Nyeste f¯rst",
+      "newest_first": "Nyeste f√∏rst",
       "pick_a_date": "Velg en dato",
       "title": "Filtre",
-      "search_by": "S¯k etter",
+      "search_by": "S√∏k etter",
       "since": "Siden",
       "until": "Inntil",
       "types": {
@@ -3004,9 +2958,9 @@
         "conversation_enter": "Entert samtale",
         "conversation_exit": "Venstre samtale",
         "started_typing": "Startet skrive",
-        "stopped_typing": "Stoppet Â skrive",
+        "stopped_typing": "Stoppet √• skrive",
         "started_speaking": "Startet tale",
-        "stopped_speaking": "Slutt Â snakke",
+        "stopped_speaking": "Slutt √• snakke",
         "started_peeking": "Startet pisking",
         "stopped_peeking": "Stoppet pisking",
         "message_read": "Les melding",
@@ -3016,7 +2970,7 @@
         "message_edited": "Redigert melding",
         "message_reaction_add": "Legg til reaksjon",
         "message_reaction_remove": "Fjernet reaksjon",
-        "snap_opened": "≈pnet snap",
+        "snap_opened": "√Öpnet snap",
         "snap_replayed": "Spilte av snap igjen",
         "snap_replayed_twice": "Replayed snap to ganger",
         "snap_screenshot": "Tatt skjermbilde",
@@ -3034,7 +2988,7 @@
       },
       "delete_dialog": {
         "title": "Slett logger",
-        "message": "Er du sikker pÂ at du vil slette alle loggene? Denne handlingen kan ikke angres.",
+        "message": "Er du sikker p√• at du vil slette alle loggene? Denne handlingen kan ikke angres.",
         "confirm": "Slett alle",
         "cancel": "Avbryt",
         "progress": "Sletter{count}logger..."
@@ -3054,12 +3008,12 @@
         "events": {
           "conversation_enter": "angitt",
           "conversation_exit": "venstre",
-          "started_typing": "begynte Â skrive",
-          "stopped_typing": "stoppet Â skrive",
-          "started_speaking": "begynte Â snakke",
-          "stopped_speaking": "slutt Â snakke",
-          "started_peeking": "begynn Â peke",
-          "stopped_peeking": "sluttet Â peke",
+          "started_typing": "begynte √• skrive",
+          "stopped_typing": "stoppet √• skrive",
+          "started_speaking": "begynte √• snakke",
+          "stopped_speaking": "slutt √• snakke",
+          "started_peeking": "begynn √• peke",
+          "stopped_peeking": "sluttet √• peke",
           "message_read": "les en melding",
           "message_deleted": "slettet en melding",
           "message_saved": "lagret en melding",
@@ -3067,7 +3021,7 @@
           "message_edited": "redigert en melding",
           "message_reaction_add": "tilsatt en reaksjon",
           "message_reaction_remove": "fjernet en reaksjon",
-          "snap_opened": "Âpnet en snap",
+          "snap_opened": "√•pnet en snap",
           "snap_replayed": "spilte av en snap igjen",
           "snap_replayed_twice": "replayed a snap to ganger",
           "snap_screenshot": "ta et skjermbilde",
@@ -3078,17 +3032,17 @@
     },
     "edit_rule": {
       "custom_rule": "Egendefinert regel",
-      "scope": "OmrÂde",
+      "scope": "Omr√•de",
       "events": "Hendelser",
       "add_event": "Legg til hendelse",
       "type": "Type",
       "triggers": "Utl?sere",
       "conditions": "Betingelser",
-      "only_inside_conversation": "F¯rst nÂr jeg er inne i samtalen",
-      "only_outside_conversation": "F¯rst nÂr jeg er utenfor samtale",
-      "only_when_app_active": "Bare nÂr Snapchat er aktiv",
-      "only_when_app_inactive": "Bare nÂr Snapchat er inaktiv",
-      "no_notification_when_app_active": "Ingen melding nÂr Snapchat er aktiv",
+      "only_inside_conversation": "F√∏rst n√•r jeg er inne i samtalen",
+      "only_outside_conversation": "F√∏rst n√•r jeg er utenfor samtale",
+      "only_when_app_active": "Bare n√•r Snapchat er aktiv",
+      "only_when_app_inactive": "Bare n√•r Snapchat er inaktiv",
+      "no_notification_when_app_active": "Ingen melding n√•r Snapchat er aktiv",
       "scope_options": {
         "all_friends_groups": "Alle venner/grupper",
         "no_one_except": "Ingen andre enn",
@@ -3097,7 +3051,7 @@
     }
   },
   "debug": {
-    "title": "Feils¯king",
+    "title": "Feils√∏king",
     "clear": "Fjern",
     "files": {
       "config_json": "Konfigurasjonsfil",
@@ -3109,7 +3063,7 @@
     "settings": {
       "test_mode": "Testmodus (kun for utbygging)",
       "disable_feature_loading": "Deaktiver funksjonslasting",
-      "disable_auto_mapper": "SlÂ av automatisk kopling",
+      "disable_auto_mapper": "Sl√• av automatisk kopling",
       "disable_bypass_status_indicator": "Deaktiver Statusindikator for Bypass"
     }
   },
@@ -3119,7 +3073,7 @@
   "auto_update_check": "Automatisk oppdateringskontroll",
   "update_check_frequency_daily": "Daglig",
   "update_check_frequency_weekly": "Uken",
-  "update_check_frequency_monthly": "MÂnedlig",
+  "update_check_frequency_monthly": "M√•nedlig",
   "update_channel_stable": "Stabil",
   "update_channel_prerelease": "Forutsetning",
   "friend_notes_title": "Vennnotater",
@@ -3127,10 +3081,10 @@
   "app_theme_title": "App Tema",
   "theme_mode_system": "System",
   "theme_mode_light": "Lys",
-  "theme_mode_dark": "M¯rk",
+  "theme_mode_dark": "M√∏rk",
   "test_mode_label": "Aktiver PurrAura",
   "disable_feature_loading_label": "Deaktiver funksjonslasting",
-  "disable_auto_mapper_label": "SlÂ av automatisk kopling",
+  "disable_auto_mapper_label": "Sl√• av automatisk kopling",
   "disable_bypass_indicator_label": "Deaktiver Bypass- indikator",
   "friend_list": {
     "manage_title": "Administrer venneliste",
@@ -3143,24 +3097,24 @@
   "memories": {
     "export_title": "Eksportere minner",
     "total_memories": "Totale minner:{count}",
-    "date_range": "DatoomrÂde",
+    "date_range": "Datoomr√•de",
     "select": "Velg",
     "sort_by_folder": "Sorter etter mappe",
-    "include_my_eyes_only": "Inkluder kun ¯ynene mine",
+    "include_my_eyes_only": "Inkluder kun √∏ynene mine",
     "cancel": "Avbryt",
     "export": "Eksporter",
     "quit": "Avslutt",
     "done": "Ferdig",
     "ok": "OK",
-    "exporting_memories": "≈ eksportere minner... ({failed}mislykkes)"
+    "exporting_memories": "√Ö eksportere minner... ({failed}mislykkes)"
   },
   "scripting_ui": {
     "no_scripts_folder_selected": "Ingen skriptmappe valgt",
     "select_folder": "Velg mappe",
     "import_from_url": "Importer fra URL",
-    "open_scripts_folder": "≈pne skriptmappe",
+    "open_scripts_folder": "√Öpne skriptmappe",
     "import_script_from_url": "Importer skript fra URL",
-    "warning_imported_scripts": "Advarsel: Importerte skript kan vÊre skadelig for enheten din. Bare importer skript fra pÂlitelige kilder.",
+    "warning_imported_scripts": "Advarsel: Importerte skript kan v√¶re skadelig for enheten din. Bare importer skript fra p√•litelige kilder.",
     "enter_url_here": "Skriv inn URL her:",
     "import": "Importer",
     "cancel": "Avbryt",
@@ -3176,7 +3130,7 @@
     "unknown": "Ukjend",
     "added": "Lagt til",
     "no_friends_found": "Ingen venner funnet",
-    "exporting_memories": "≈ eksportere minner... ({failed}mislykkes)"
+    "exporting_memories": "√Ö eksportere minner... ({failed}mislykkes)"
   },
   "clear_friend_feed": "Klar venn mate",
   "select_date": "Velg dato",
@@ -3184,7 +3138,7 @@
   "schedule_sending_in": "Sender inn{time}",
   "schedule_sent_to": "Sendt til{name}",
   "schedule_sent": "Planlagt snap sendt",
-  "schedule_failed_to": "Klarte ikke Â sende til{name}",
+  "schedule_failed_to": "Klarte ikke √• sende til{name}",
   "schedule_failed": "Planlagt snap mislyktes",
   "schedule_cancelled_for": "Avlyst for{name}",
   "by_author": "ved{author}",
@@ -3193,31 +3147,31 @@
   "logger_history": {
     "download_started": "Last ned startet!",
     "downloaded_to": "Lastet ned til{path}",
-    "failed_to_download": "Klarte ikke Â laste ned{message}",
+    "failed_to_download": "Klarte ikke √• laste ned{message}",
     "select_conversation": "Velg en samtale",
     "select_conversation_placeholder": "Velg en samtale",
-    "edited_at": "redigert pÂ{date}",
-    "download_attachment_failed_toast": "Klarte ikke Â laste ned vedlegg",
+    "edited_at": "redigert p√•{date}",
+    "download_attachment_failed_toast": "Klarte ikke √• laste ned vedlegg",
     "message_parse_failed": "Meldingstolking mislykkedes",
     "empty_message": "Tom melding",
     "no_more_messages": "Ingen flere meldinger",
-    "reverse_order_checkbox": "Omvend rekkef¯lge",
+    "reverse_order_checkbox": "Omvend rekkef√∏lge",
     "view_logger_history_button": "Vis Logger Historie",
-    "posted_at": "Publisert pÂ{date}",
-    "created_at": "Laget pÂ{date}",
-    "failed_to_open_file": "Klarte ikke Â Âpne filen. Sjekk logger for mer informasjon",
-    "failed_to_get_file": "Klarte ikke Â hente fil",
+    "posted_at": "Publisert p√•{date}",
+    "created_at": "Laget p√•{date}",
+    "failed_to_open_file": "Klarte ikke √• √•pne filen. Sjekk logger for mer informasjon",
+    "failed_to_get_file": "Klarte ikke √• hente fil",
     "download_button": "Last ned",
     "chat_attachment": "Vedlegg{index}",
     "log_header_format": "{username}?{type}?{date}",
-    "edited_at_text": "Redigert til{message}\" pÂ{date}",
+    "edited_at_text": "Redigert til{message}\" p√•{date}",
     "list_group_format": "Gruppe{name}",
     "list_friend_format": "Venn{name}",
     "download_started_toast": "Last ned startet",
     "download_success_toast": "Lastet ned til{path}",
     "download_failed_toast": "Last ned mislyktes:{message}",
-    "close_button_description": "Lukk s¯k",
-    "search_button_description": "S¯k i meldinger"
+    "close_button_description": "Lukk s√∏k",
+    "search_button_description": "S√∏k i meldinger"
   },
   "debug_dialogs": {
     "info": "Info",
@@ -3229,14 +3183,14 @@
     "message_proto": "Melding proto"
   },
   "error_messages": {
-    "failed_to_fetch_message": "Klarte ikke Â hente melding:{error}",
-    "failed_to_edit_message": "Klarte ikke Â redigere melding:{error}"
+    "failed_to_fetch_message": "Klarte ikke √• hente melding:{error}",
+    "failed_to_edit_message": "Klarte ikke √• redigere melding:{error}"
   },
   "ai_response_style": {
     "casual": "Uformell",
     "formal": "Formell",
     "friendly": "Vennlig",
-    "humorous": "Humor¯s",
+    "humorous": "Humor√∏s",
     "empathetic": "Empatisk",
     "busy": "Opptatt",
     "toxic": "Giftig"

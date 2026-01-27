@@ -1,4 +1,4 @@
-{
+Ôªø{
   "setup": {
     "dialogs": {
       "select_language": "Valitse kieli",
@@ -7,36 +7,36 @@
     },
     "mappings": {
       "dialog": "Luodaan karttoja...",
-      "generate_failure_no_snapchat": "PurrfectSnap ei pystynyt havaitsemaan Snapchatia, yrit‰ asentaa Snapchat uudelleen.",
-      "generate_failure": "Tapahtui virhe yritett‰ess‰ luoda karttoja, yrit‰ uudelleen."
+      "generate_failure_no_snapchat": "PurrfectSnap ei pystynyt havaitsemaan Snapchatia, yrit√§ asentaa Snapchat uudelleen.",
+      "generate_failure": "Tapahtui virhe yritett√§ess√§ luoda karttoja, yrit√§ uudelleen."
     },
     "permissions": {
-      "dialog": "T‰ydent‰‰ n‰m‰ olennaiset jatkaa:",
+      "dialog": "T√§ydent√§√§ n√§m√§ olennaiset jatkaa:",
       "notification_access": "Ilmoittaminen",
       "battery_optimization": "Akun optimointi",
-      "display_over_other_apps": "N‰yt‰ muiden sovellusten yli",
-      "request_button": "Pyyntˆ"
+      "display_over_other_apps": "N√§yt√§ muiden sovellusten yli",
+      "request_button": "Pyynt√∂"
     }
   },
   "scopes": {
-    "friend": "Yst‰v‰",
-    "group": "Ryhm‰"
+    "friend": "Yst√§v√§",
+    "group": "Ryhm√§"
   },
   "manager": {
     "routes": {
-      "tasks": "Teht‰v‰t",
+      "tasks": "Teht√§v√§t",
       "features": "Ominaisuudet",
-      "manage_rule_feature": "Hallitse s‰‰ntˆominaisuutta",
+      "manage_rule_feature": "Hallitse s√§√§nt√∂ominaisuutta",
       "home": "Alkuun",
       "home_about": "Tietoja",
       "home_settings": "Asetukset",
       "home_logs": "Lokit",
       "logger_history": "Loggerin historia",
       "logged_stories": "Kirjatut tarinat",
-      "friend_tracker": "Yst‰v‰n j‰ljitin",
-      "friend_tracker_catalog": "Yst‰v‰n seurantaluettelo",
+      "friend_tracker": "Yst√§v√§n j√§ljitin",
+      "friend_tracker_catalog": "Yst√§v√§n seurantaluettelo",
       "manage_friend_tracker_repos": "Hallitse Friend Tracker Repositories",
-      "edit_rule": "Muokkaa s‰‰ntˆ‰",
+      "edit_rule": "Muokkaa s√§√§nt√∂√§",
       "file_imports": "Tiedoston tuonti",
       "manage_repos": "Hallitse Repositoriesia",
       "social": "Sosiaalinen",
@@ -49,103 +49,103 @@
     },
     "navigation": {
       "customize_bottom_bar_title": "Muokkaa pohjapalkkia",
-      "customize_bottom_bar_subtitle": "Valitse mitk‰ v‰lilehdet n‰kyv‰t kotin‰ytˆll‰",
-      "available_tabs_title": "Saatavilla olevat v‰lilehdet",
-      "shown_tabs_title": "N‰yt‰ v‰lilehdet",
+      "customize_bottom_bar_subtitle": "Valitse mitk√§ v√§lilehdet n√§kyv√§t kotin√§yt√∂ll√§",
+      "available_tabs_title": "Saatavilla olevat v√§lilehdet",
+      "shown_tabs_title": "N√§yt√§ v√§lilehdet",
       "reset_button": "Nollaa",
       "done_button": "Valmis"
     },
     "sections": {
       "home": {
-        "version_title": "v{versionName}∑ Ikuinen",
-        "update_title": "PurrfectSnap- p‰ivitys",
+        "version_title": "v{versionName}¬∑ Ikuinen",
+        "update_title": "PurrfectSnap- p√§ivitys",
         "update_content": "Versio{version}on saatavilla!",
         "update_button": "Lataa",
-        "debug_build_summary_title": "Sinulla on PurrfectSnapin vianm‰‰ritys",
+        "debug_build_summary_title": "Sinulla on PurrfectSnapin vianm√§√§ritys",
         "debug_build_summary_content": "Versio{versionName}({versionCode})",
-        "debug_build_summary_date": "Koostamisp‰iv‰:{date}({days}p‰iv‰‰ sitten)",
+        "debug_build_summary_date": "Koostamisp√§iv√§:{date}({days}p√§iv√§√§ sitten)",
         "quick_actions_title": "Nopeat toimet"
       },
       "home_logs": {
         "no_logs_hint": "Tukkeja ei ole saatavilla",
-        "clear_logs_button": "Tyhjenn‰ lokit",
+        "clear_logs_button": "Tyhjenn√§ lokit",
         "export_logs_button": "Vie lokit",
-        "saving_logs_toast": "T‰m‰ voi kest‰‰ jonkin aikaa.",
+        "saving_logs_toast": "T√§m√§ voi kest√§√§ jonkin aikaa.",
         "saved_logs_success_toast": "Lokit tallennettu onnistuneesti",
-        "saved_logs_failure_toast": "Lokkien tallennus ep‰onnistui"
+        "saved_logs_failure_toast": "Lokkien tallennus ep√§onnistui"
       },
       "home_settings": {
         "actions_title": "Toimet",
         "message_logger_title": "Viestilokija",
-        "debug_title": "Vianetsint‰",
+        "debug_title": "Vianetsint√§",
         "success_toast": "Valmis!",
         "message_logger_summary": "{messageCount}viestit\n{storyCount}tarinoita",
         "export_button": "Vie",
-        "clear_button": "Tyhjenn‰",
-        "view_logger_history_button": "N‰yt‰ lokihistoria",
-        "ui_settings_title": "K‰yttˆliittym‰n asetukset",
+        "clear_button": "Tyhjenn√§",
+        "view_logger_history_button": "N√§yt√§ lokihistoria",
+        "ui_settings_title": "K√§ytt√∂liittym√§n asetukset",
         "haptic_feedback_label": "Haptinen palaute",
-        "use_system_toasts_label": "K‰yt‰ j‰rjestelm‰paahtoleip‰‰",
-        "updates_title": "P‰ivitykset",
-        "auto_update_check": "Automaattip‰ivityksen tarkistus",
+        "use_system_toasts_label": "K√§yt√§ j√§rjestelm√§paahtoleip√§√§",
+        "updates_title": "P√§ivitykset",
+        "auto_update_check": "Automaattip√§ivityksen tarkistus",
         "update_check_frequency_daily": "Vuorokausi",
         "update_check_frequency_weekly": "Viikoittain",
         "update_check_frequency_monthly": "Kuukausittain",
         "update_channel_stable": "Vakaa",
         "update_channel_prerelease": "Esijulkaisu",
-        "update_notification_channel_name": "P‰ivitykset",
+        "update_notification_channel_name": "P√§ivitykset",
         "update_notification_channel_description": "Ilmoita, kun uusia julkaisuja on saatavilla",
-        "update_notification_title": "Uusi p‰ivitys saatavilla",
+        "update_notification_title": "Uusi p√§ivitys saatavilla",
         "update_notification_text": "Napauta avataksesi PurrfectSnapin ja lataa uusin rakennus.",
         "app_theme_title": "App Teema",
         "theme_icon_description": "Avaa teemavalitsin",
-        "theme_mode_system": "J‰rjestelm‰",
+        "theme_mode_system": "J√§rjestelm√§",
         "theme_mode_light": "Valo",
         "theme_mode_dark": "Tumma",
-        "friend_notes_title": "Yst‰v‰t",
-        "friend_notes_description": "Hallitse ja varmuuskopioi yst‰v‰si muistiinpanoja",
-        "friend_notes_no_notes_to_backup": "Ei taustatietoja viel‰",
-        "friend_notes_backup_success": "Yst‰v‰n muistiinpanoja varmuuskopioitu",
-        "friend_notes_restore_success": "Yst‰v‰t muistiinpanot palautettu",
+        "friend_notes_title": "Yst√§v√§t",
+        "friend_notes_description": "Hallitse ja varmuuskopioi yst√§v√§si muistiinpanoja",
+        "friend_notes_no_notes_to_backup": "Ei taustatietoja viel√§",
+        "friend_notes_backup_success": "Yst√§v√§n muistiinpanoja varmuuskopioitu",
+        "friend_notes_restore_success": "Yst√§v√§t muistiinpanot palautettu",
         "backup_button": "Apu",
         "restore_button": "Palauta",
-        "view_button": "N‰yt‰",
+        "view_button": "N√§yt√§",
         "customize_bottom_bar_title": "Muokkaa pohjapalkkia",
-        "customize_bottom_bar_subtitle": "Valitse mitk‰ v‰lilehdet n‰kyv‰t kotin‰ytˆll‰",
-        "available_tabs_title": "Saatavilla olevat v‰lilehdet",
+        "customize_bottom_bar_subtitle": "Valitse mitk√§ v√§lilehdet n√§kyv√§t kotin√§yt√∂ll√§",
+        "available_tabs_title": "Saatavilla olevat v√§lilehdet",
         "reset_button": "Nollaa",
         "done_button": "Valmis",
-        "clear_friend_feed": "Tyhjenn‰ yst‰v‰syˆte",
-        "test_mode_label": "Ota PurrAura k‰yttˆˆn",
-        "disable_feature_loading_label": "Poista Ominaisuuden lataus k‰ytˆst‰",
-        "disable_auto_mapper_label": "Poista automaattinen mapper k‰ytˆst‰",
-        "disable_bypass_indicator_label": "Poista ohitustien ilmaisin k‰ytˆst‰"
+        "clear_friend_feed": "Tyhjenn√§ yst√§v√§sy√∂te",
+        "test_mode_label": "Ota PurrAura k√§ytt√∂√∂n",
+        "disable_feature_loading_label": "Poista Ominaisuuden lataus k√§yt√∂st√§",
+        "disable_auto_mapper_label": "Poista automaattinen mapper k√§yt√∂st√§",
+        "disable_bypass_indicator_label": "Poista ohitustien ilmaisin k√§yt√∂st√§"
       },
       "tasks": {
-        "no_tasks": "Ei teht‰vi‰",
-        "merge_button": "Yhdist‰",
+        "no_tasks": "Ei teht√§vi√§",
+        "merge_button": "Yhdist√§",
         "failed_to_open_file": "Tiedostoa ei voitu avata",
-        "merge_files_toast": "Yhdistet‰‰n{count}tiedostot",
-        "remove_selected_tasks_title": "Haluatko varmasti poistaa valitut teht‰v‰t?",
-        "remove_all_tasks_title": "Haluatko varmasti poistaa kaikki teht‰v‰t?",
-        "delete_files_option": "Poista myˆs tiedostoja",
-        "remove_selected_tasks_confirm": "Poista{count}teht‰v‰t?",
-        "remove_all_tasks_confirm": "Poistaa kaikki teht‰v‰t?"
+        "merge_files_toast": "Yhdistet√§√§n{count}tiedostot",
+        "remove_selected_tasks_title": "Haluatko varmasti poistaa valitut teht√§v√§t?",
+        "remove_all_tasks_title": "Haluatko varmasti poistaa kaikki teht√§v√§t?",
+        "delete_files_option": "Poista my√∂s tiedostoja",
+        "remove_selected_tasks_confirm": "Poista{count}teht√§v√§t?",
+        "remove_all_tasks_confirm": "Poistaa kaikki teht√§v√§t?"
       },
       "features": {
-        "disabled": "Ei k‰ytˆss‰",
+        "disabled": "Ei k√§yt√∂ss√§",
         "export_option": "Vie",
         "import_option": "Tuo",
         "reset_option": "Nollaa",
         "config_export_success_toast": "Config vietiin onnistuneesti",
         "config_import_success_toast": "Aseta tuotu onnistuneesti",
         "config_import_failure_toast": "Konfigia ei voitu tuoda{error}",
-        "config_export_failure_toast": "Konfigia ei voitu vied‰{error}",
+        "config_export_failure_toast": "Konfigia ei voitu vied√§{error}",
         "saved_config_snackbar": "Asetukset tallennettu",
-        "older_required": "T‰m‰ ominaisuus vaatii Snapchat v{version}tai vanhempi toimimaan oikein",
-        "newer_required": "T‰m‰ ominaisuus vaatii Snapchat v{version}tai uudempi toimimaan oikein",
+        "older_required": "T√§m√§ ominaisuus vaatii Snapchat v{version}tai vanhempi toimimaan oikein",
+        "newer_required": "T√§m√§ ominaisuus vaatii Snapchat v{version}tai uudempi toimimaan oikein",
         "search_button": "Etsi",
-        "clear_history": "Tyhjenn‰ hakuhistoria",
+        "clear_history": "Tyhjenn√§ hakuhistoria",
         "subtitle": "Etsi ja hallitse ominaisuuksia"
       },
       "bypass_status": {
@@ -153,91 +153,91 @@
           "inactive": "PurrAura Inactive"
       },
       "manage_rule_feature": {
-        "disable_state_option": "Ei k‰ytˆss‰",
-        "disable_state_subtext": "Yst‰vi‰ tai ryhmi‰ ei muuteta",
+        "disable_state_option": "Ei k√§yt√∂ss√§",
+        "disable_state_subtext": "Yst√§vi√§ tai ryhmi√§ ei muuteta",
         "whitelist_state_option": "Ei kukaan paitsi...",
-        "whitelist_state_subtext": "Ainoastaan{count}t‰m‰ s‰‰ntˆ vaikuttaa yst‰viin/ryhmiin",
-        "whitelist_state_button": "Valitse sallitut yst‰v‰t/ryhm‰t",
+        "whitelist_state_subtext": "Ainoastaan{count}t√§m√§ s√§√§nt√∂ vaikuttaa yst√§viin/ryhmiin",
+        "whitelist_state_button": "Valitse sallitut yst√§v√§t/ryhm√§t",
         "blacklist_state_option": "Kaikki paitsi...",
-        "blacklist_state_subtext": "Kaikki paitsi{count}t‰m‰ s‰‰ntˆ vaikuttaa yst‰viin/ryhmiin",
-        "blacklist_state_button": "Valitse pois j‰tetyt yst‰v‰t/ryhm‰t",
-        "clear_list_button": "Tyhjenn‰ yst‰vien/ryhmien luettelo",
-        "dialog_clear_confirmation_text": "Haluatko varmasti tyhjent‰‰ listan?"
+        "blacklist_state_subtext": "Kaikki paitsi{count}t√§m√§ s√§√§nt√∂ vaikuttaa yst√§viin/ryhmiin",
+        "blacklist_state_button": "Valitse pois j√§tetyt yst√§v√§t/ryhm√§t",
+        "clear_list_button": "Tyhjenn√§ yst√§vien/ryhmien luettelo",
+        "dialog_clear_confirmation_text": "Haluatko varmasti tyhjent√§√§ listan?"
       },
       "social": {
-        "friends_tab": "Yst‰v‰t",
-        "groups_tab": "Ryhm‰t",
-        "empty_hint": "Listasi on toistaiseksi tyhj‰",
-        "friends_empty_title": "Ei yst‰vi‰ viel‰ lis‰tty",
-        "groups_empty_title": "Ei ryhmi‰ synkronoitu viel‰",
+        "friends_tab": "Yst√§v√§t",
+        "groups_tab": "Ryhm√§t",
+        "empty_hint": "Listasi on toistaiseksi tyhj√§",
+        "friends_empty_title": "Ei yst√§vi√§ viel√§ lis√§tty",
+        "groups_empty_title": "Ei ryhmi√§ synkronoitu viel√§",
         "streaks_expiration_short": "{hours}h",
         "social_tagline": "Hallitse sovelluksia, juovia ja esikatseluja",
-        "social_empty_hint": "Napauta +-painiketta synkronoidaksesi yst‰vi‰ tai ryhmi‰."
+        "social_empty_hint": "Napauta +-painiketta synkronoidaksesi yst√§vi√§ tai ryhmi√§."
       },
       "manage_scope": {
-        "logged_stories_button": "N‰yt‰ kirjautuneet tarinat",
+        "logged_stories_button": "N√§yt√§ kirjautuneet tarinat",
         "e2ee_title": "Loppusalaus",
-        "e2ee_subtitle": "Hallitse jaetun avaimen t‰t‰ yst‰v‰‰.",
+        "e2ee_subtitle": "Hallitse jaetun avaimen t√§t√§ yst√§v√§√§.",
         "export_base64_button": "Vientipohja64",
         "import_base64_button": "Tuontipaikka64",
         "invalid_key_size_32_bytes": "Virheellinen avaimen koko. Antakaa 32 tavun avain.",
         "successfully_imported_key": "Avain tuotiin onnistuneesti.",
-        "failed_to_import_key": "Avaimen tuonti ep‰onnistui:{message}",
-        "rules_title": "S‰‰nnˆt",
+        "failed_to_import_key": "Avaimen tuonti ep√§onnistui:{message}",
+        "rules_title": "S√§√§nn√∂t",
         "participants_text": "{count}osallistujat",
-        "not_found": "Ei lˆytynyt",
+        "not_found": "Ei l√∂ytynyt",
         "streaks_title": "Streakit",
         "streaks_length_text": "Pituus:{length}",
-        "streaks_expiration_text": "P‰‰ttyy{eta}",
+        "streaks_expiration_text": "P√§√§ttyy{eta}",
         "streaks_expiration_text_expired": "Vanhentunut",
         "reminder_button": "Aseta muistutus",
         "delete_scope_confirm_dialog_title": "Haluatko varmasti poistaa{scope}?",
-        "notes_placeholder": "Lis‰‰ muistiinpano napsauttamalla"
+        "notes_placeholder": "Lis√§√§ muistiinpano napsauttamalla"
       },
       "logged_stories": {
-        "story_failed_to_load": "Lataaminen ep‰onnistui",
-        "no_stories": "Tarinoita ei lˆytynyt",
-        "save_from_cache_button": "Tallenna v‰limuistista"
+        "story_failed_to_load": "Lataaminen ep√§onnistui",
+        "no_stories": "Tarinoita ei l√∂ytynyt",
+        "save_from_cache_button": "Tallenna v√§limuistista"
       },
       "messaging_preview": {
-        "bridge_connection_failed": "Sillalle ei saatu yhteytt‰. Varmista, ett‰ Snapchat toimii taustalla",
-        "bridge_connection_error": "Sillalle ei saatu yhteytt‰. Varmista, ett‰ Snapchat toimii taustalla",
-        "bridge_init_failed": "Viestisiltaa ei voitu alustaa. Varmista, ett‰ Snapchat toimii taustalla",
-        "message_fetch_failed": "Viestien noutaminen ep‰onnistui",
-        "no_message_hint": "Ei viesti‰",
-        "subtitle": "Pid‰ valittuna",
+        "bridge_connection_failed": "Sillalle ei saatu yhteytt√§. Varmista, ett√§ Snapchat toimii taustalla",
+        "bridge_connection_error": "Sillalle ei saatu yhteytt√§. Varmista, ett√§ Snapchat toimii taustalla",
+        "bridge_init_failed": "Viestisiltaa ei voitu alustaa. Varmista, ett√§ Snapchat toimii taustalla",
+        "message_fetch_failed": "Viestien noutaminen ep√§onnistui",
+        "no_message_hint": "Ei viesti√§",
+        "subtitle": "Pid√§ valittuna",
         "actions_title": "Keskustelutoimet",
         "save_selection_option": "Tallenna valinta",
         "save_all_option": "Tallenna kaikki",
         "unsave_selection_option": "Poista valinta",
         "unsave_all_option": "Pelasta kaikki",
-        "mark_selection_as_seen_option": "Merkitse valittu Nap n‰kyviss‰",
-        "mark_all_as_seen_option": "Merkitse kaikki kuvat n‰hdyksi",
+        "mark_selection_as_seen_option": "Merkitse valittu Nap n√§kyviss√§",
+        "mark_all_as_seen_option": "Merkitse kaikki kuvat n√§hdyksi",
         "delete_selection_option": "Poista valinta",
         "delete_all_option": "Poista kaikki",
         "processed_message_toast": "Jalostettu{count}viestit",
         "processed_messages_toast": "Jalostettu{count}viestit",
         "processed_messages_text": "Jalostettu{count}",
-        "close_button_description": "Tyhjenn‰ valinta"
+        "close_button_description": "Tyhjenn√§ valinta"
       },
       "logger_history": {
-        "list_friend_format": "Yst‰v‰{name}",
-        "list_group_format": "Ryhm‰{name}",
-        "no_more_messages": "Ei en‰‰ viestej‰",
-        "reverse_order_checkbox": "K‰‰nteinen j‰rjestys",
+        "list_friend_format": "Yst√§v√§{name}",
+        "list_group_format": "Ryhm√§{name}",
+        "no_more_messages": "Ei en√§√§ viestej√§",
+        "reverse_order_checkbox": "K√§√§nteinen j√§rjestys",
         "chat_attachment": "Liite{index}",
-        "empty_message": "Tyhj‰ keskusteluviesti",
-        "message_parse_failed": "Viestin j‰sent‰minen ep‰onnistui",
-        "unknown_sender": "Tuntematon l‰hett‰j‰",
-        "download_attachment_failed_toast": "Liitteen lataus ep‰onnistui"
+        "empty_message": "Tyhj√§ keskusteluviesti",
+        "message_parse_failed": "Viestin j√§sent√§minen ep√§onnistui",
+        "unknown_sender": "Tuntematon l√§hett√§j√§",
+        "download_attachment_failed_toast": "Liitteen lataus ep√§onnistui"
       },
       "file_imports": {
         "import_file_button": "Tuo tiedosto",
-        "file_not_found": "Tiedostoa ei lˆytynyt",
+        "file_not_found": "Tiedostoa ei l√∂ytynyt",
         "file_import_failed": "Tiedostoa ei voitu tuoda:{error}",
         "file_imported": "Tiedosto tuotu onnistuneesti",
         "file_delete_failed": "Tiedostoa ei voitu poistaa",
-        "no_files_hint": "T‰‰lt‰ voit tuoda tiedostoja Snapchatiin. Paina alla olevaa painiketta tuodaksesi tiedoston."
+        "no_files_hint": "T√§√§lt√§ voit tuoda tiedostoja Snapchatiin. Paina alla olevaa painiketta tuodaksesi tiedoston."
       },
       "better_location": {
         "spoofed_coordinates_title": "Lat{latitude}, Lng{longitude}",
@@ -247,37 +247,37 @@
         "longitude_dialog_hint": "Pituusaste",
         "save_dialog_button": "Tallenna",
         "choose_location_button": "Valitse sijainti",
-        "manual_coordinates_hint": "S‰‰d‰ koordinaatit k‰sin.",
+        "manual_coordinates_hint": "S√§√§d√§ koordinaatit k√§sin.",
         "saved_coordinates_subtitle": "Hallitse tallennettuja parof-paikkoja",
         "teleport_to_friend_button": "Teleportoi yst?v?n luo",
         "spoof_location_toggle": "Spoof- sijainti",
-        "suspend_location_updates": "Keskeyt‰ sijaintip‰ivitykset",
+        "suspend_location_updates": "Keskeyt√§ sijaintip√§ivitykset",
         "saved_coordinates_title": "Tallennetut koordinaatit",
         "no_saved_coordinates_hint": "Ei tallennettuja koordinaatteja",
         "delete_dialog_title": "Poista tallennettu koordinaatti",
-        "delete_dialog_message": "Haluatko varmasti poistaa t‰m‰n tallennetun koordinaatin?",
+        "delete_dialog_message": "Haluatko varmasti poistaa t√§m√§n tallennetun koordinaatin?",
         "teleport_to_friend_title": "Teleportoi yst?v?n luo",
         "search_bar": "Etsi",
-        "no_friends_map": "Ei yst‰vi‰ kartalla",
-        "no_friends_found": "Ei yst‰vi‰ lˆytynyt"
+        "no_friends_map": "Ei yst√§vi√§ kartalla",
+        "no_friends_found": "Ei yst√§vi√§ l√∂ytynyt"
       }
     },
     "dialogs": {
       "add_friend": {
-        "title": "Lis‰‰ yst‰v‰ tai ryhm‰",
+        "title": "Lis√§√§ yst√§v√§ tai ryhm√§",
         "search_hint": "Etsi",
         "fetch_error": "Tietoja ei voitu noutaa",
-        "category_groups": "Ryhm‰t",
-        "category_friends": "Yst‰v‰t",
+        "category_groups": "Ryhm√§t",
+        "category_friends": "Yst√§v√§t",
         "participants_text": "{count}osallistujat",
         "unselect_all_button": "Poista kaikki"
       },
       "scripting": {
-        "repo_hint": "Liit‰ arkiston URL"
+        "repo_hint": "Liit√§ arkiston URL"
       },
       "scripting_warning": {
         "title": "Varoitus",
-        "content": "PurrfectSnap sis‰lt‰‰ komentotyˆkalun, joka mahdollistaa k‰ytt‰j‰n m‰‰rittelem‰n koodin suorittamisen laitteessasi. K‰yt‰ ‰‰rimm‰ist‰ varovaisuutta ja asenna vain moduuleja tunnetuista ja luotettavista l‰hteist‰. Luvattomat tai tarkistamattomat moduulit voivat aiheuttaa turvallisuusriskej‰ j‰rjestelm‰llesi."
+        "content": "PurrfectSnap sis√§lt√§√§ komentoty√∂kalun, joka mahdollistaa k√§ytt√§j√§n m√§√§rittelem√§n koodin suorittamisen laitteessasi. K√§yt√§ √§√§rimm√§ist√§ varovaisuutta ja asenna vain moduuleja tunnetuista ja luotettavista l√§hteist√§. Luvattomat tai tarkistamattomat moduulit voivat aiheuttaa turvallisuusriskej√§ j√§rjestelm√§llesi."
       },
       "reset_config": {
         "title": "Nollaa asetus",
@@ -286,18 +286,18 @@
       },
       "quick_actions_dialog": {
         "title": "Nopeat toimet",
-        "subtitle": "K‰yt‰ suosikkityˆkalujasi nopeammin"
+        "subtitle": "K√§yt√§ suosikkity√∂kalujasi nopeammin"
       },
       "export_config": {
         "title": "Vie sensitiiviset tiedot?",
-        "content": "Haluatko vied‰ konfiguraation arkaluonteisten tietojen kanssa? (kuten sijaintikoordinaatit jne.)"
+        "content": "Haluatko vied√§ konfiguraation arkaluonteisten tietojen kanssa? (kuten sijaintikoordinaatit jne.)"
       },
       "messaging_action": {
-        "title": "Valitse k‰sitelt‰v‰t sis‰ltˆtyypit",
+        "title": "Valitse k√§sitelt√§v√§t sis√§lt√∂tyypit",
         "select_all_button": "Valitse kaikki"
       },
       "file_imports": {
-        "no_files_settings_hint": "Tiedostoja ei lˆytynyt. Varmista, ett‰ olet tuonut vaaditut tiedostot tiedostojen tuonti-osioon",
+        "no_files_settings_hint": "Tiedostoja ei l√∂ytynyt. Varmista, ett√§ olet tuonut vaaditut tiedostot tiedostojen tuonti-osioon",
         "settings_select_file_hint": "Valitse tuotu tiedosto"
       }
     },
@@ -305,167 +305,167 @@
       "actions_button": "Toimet",
       "actions_title": "Toimet",
       "catalog_tab": "Luettelo",
-      "clear_module_data_button": "Tyhjenn‰ tiedot",
-      "clear_module_data_failed": "Moduulitietoja ei voitu tyhjent‰‰",
+      "clear_module_data_button": "Tyhjenn√§ tiedot",
+      "clear_module_data_failed": "Moduulitietoja ei voitu tyhjent√§√§",
       "delete_module_button": "Poista",
       "delete_module_failed": "Moduulia ei voitu poistaa",
-      "documentation_button": "L‰‰k‰rit",
-      "download_script_failed": "Skripti‰ ei voitu ladata",
-      "downloading_script": "Ladataan k‰sikirjoitusta...",
+      "documentation_button": "L√§√§k√§rit",
+      "download_script_failed": "Skripti√§ ei voitu ladata",
+      "downloading_script": "Ladataan k√§sikirjoitusta...",
       "edit_module_button": "Muokkaa",
       "enter_url_label": "Anna URL",
       "import_button": "Tuo",
       "import_from_url_button": "Tuo URL-osoitteesta",
       "import_script_from_url_title": "Tuo komentosarja URL-osoitteesta",
-      "import_script_warning": "Asenna vain skriptej‰ luotetuista l‰hteist‰.",
+      "import_script_warning": "Asenna vain skriptej√§ luotetuista l√§hteist√§.",
       "installed_scripts_tab": "Asennettu",
       "manage_repos_button": "Hallitse reposopimuksia",
       "module_data_cleared": "Moduulitiedot tyhjennetty!",
-      "module_not_found": "Moduulia ei lˆytynyt",
+      "module_not_found": "Moduulia ei l√∂ytynyt",
       "no_description": "Ei kuvausta",
       "no_scripts_folder_selected_title": "Valitse skriptien kansio, jonka voit aloittaa",
-      "no_scripts_found_title": "Skriptej‰ ei lˆytynyt",
-      "no_settings_for_module": "T‰ss‰ moduulissa ei ole asetuksia",
+      "no_scripts_found_title": "Skriptej√§ ei l√∂ytynyt",
+      "no_settings_for_module": "T√§ss√§ moduulissa ei ole asetuksia",
       "open_module_failed": "Moduulitiedostoa ei voitu avata",
       "open_scripts_folder_button": "Avaa komentosarjakansio",
       "script_already_installed": "Skripti on jo asennettu",
       "select_folder_button": "Valitse kansio",
       "select_scripts_folder_toast": "Valitse komentosarjakansio ensin",
-      "update_module_button": "P‰ivit‰ moduuli",
-      "update_module_failed": "Moduulia ei voitu p‰ivitt‰‰",
-      "use_catalog_to_add_scripts": "K‰yt‰ luetteloa skriptien lis‰‰miseen",
-      "ok_button_timeout": "SELVƒ{timeout}",
+      "update_module_button": "P√§ivit√§ moduuli",
+      "update_module_failed": "Moduulia ei voitu p√§ivitt√§√§",
+      "use_catalog_to_add_scripts": "K√§yt√§ luetteloa skriptien lis√§√§miseen",
+      "ok_button_timeout": "SELV√Ñ{timeout}",
       "catalog": {
-        "no_repos_added": "Ei arkistoja lis‰tty",
-        "repo_list_info": "Etsi arkistoja t‰‰lt‰:",
+        "no_repos_added": "Ei arkistoja lis√§tty",
+        "repo_list_info": "Etsi arkistoja t√§√§lt√§:",
         "link_text": "Versiovarastoluettelo",
         "script_already_installed": "Skripti on jo asennettu",
         "script_downloaded": "Komentosarja ladattu",
         "could_not_create_file": "Tiedostoa ei voitu luoda",
         "no_scripts_folder_selected": "Valitse skriptien kansio ensin",
-        "no_scripts_available": "Skriptej‰ ei ole saatavilla",
+        "no_scripts_available": "Skriptej√§ ei ole saatavilla",
         "installed_button": "Asennettu",
         "download_button": "Lataa"
       },
       "repos": {
-        "no_repos_added": "Ei arkistoja lis‰tty",
-        "add_repo_button": "Lis‰‰ versiovarasto",
-        "add_repo_dialog_title": "Lis‰‰ versiovarasto",
+        "no_repos_added": "Ei arkistoja lis√§tty",
+        "add_repo_button": "Lis√§√§ versiovarasto",
+        "add_repo_dialog_title": "Lis√§√§ versiovarasto",
         "repo_url_label": "Versiovaraston URL",
-        "add_button": "Lis‰‰",
+        "add_button": "Lis√§√§",
         "invalid_repo_title": "Virheellinen versiovarasto",
-        "invalid_repo_error": "T‰m‰ arkisto puuttuu vaadituista tiedoista.",
-        "repo_added_toast": "Versiovarasto lis‰tty",
-        "add_repo_failed_toast": "Arkistoa ei voitu lis‰t‰:{message}",
+        "invalid_repo_error": "T√§m√§ arkisto puuttuu vaadituista tiedoista.",
+        "repo_added_toast": "Versiovarasto lis√§tty",
+        "add_repo_failed_toast": "Arkistoa ei voitu lis√§t√§:{message}",
         "remove_button": "Poista",
         "remove_repo_dialog_title": "Poista versiovarasto",
-        "remove_repo_dialog_text": "Haluatko varmasti poistaa t‰m‰n arkiston?"
+        "remove_repo_dialog_text": "Haluatko varmasti poistaa t√§m√§n arkiston?"
       }
     },
     "friend_tracker": {
-      "rules_tab": "S‰‰nnˆt",
+      "rules_tab": "S√§√§nn√∂t",
       "logs_tab": "Lokit",
       "catalog_button": "Luettelo",
-      "add_rule_button": "Lis‰‰ s‰‰ntˆ",
+      "add_rule_button": "Lis√§√§ s√§√§nt√∂",
       "import_button": "Tuo",
       "filters_title": "Suodattimet",
       "search_by_label": "Etsi",
       "newest_first_label": "Uusin ensin",
-      "since_label": "Sen j‰lkeen",
+      "since_label": "Sen j√§lkeen",
       "until_label": "Asti",
-      "unit_label": "Yksikkˆ",
-      "pick_a_date_button": "Valitse p‰iv‰m‰‰r‰",
+      "unit_label": "Yksikk√∂",
+      "pick_a_date_button": "Valitse p√§iv√§m√§√§r√§",
       "export_button": "Vie",
       "delete_button": "Poista",
       "search_placeholder": "Etsi",
-      "no_logs_found": "Lokkeja ei lˆytynyt",
-      "no_rules_found": "S‰‰ntˆj‰ ei lˆytynyt",
+      "no_logs_found": "Lokkeja ei l√∂ytynyt",
+      "no_rules_found": "S√§√§nt√∂j√§ ei l√∂ytynyt",
       "export_logs_dialog_title": "Vie lokit",
-      "export_logs_dialog_confirm_text": "Vie lokit nykyisill‰ suodattimilla?",
-      "export_as_button": "Vie nimell‰{type}",
-      "new_rule_title": "Uusi s‰‰ntˆ",
-      "edit_rule_title": "Muokkaa s‰‰ntˆ‰",
-      "general_section_title": "Yleist‰",
-      "rule_name_label": "S‰‰ntˆnimi",
-      "default_rule_name": "Uusi s‰‰ntˆ",
-      "author_name_label": "Tekij‰",
+      "export_logs_dialog_confirm_text": "Vie lokit nykyisill√§ suodattimilla?",
+      "export_as_button": "Vie nimell√§{type}",
+      "new_rule_title": "Uusi s√§√§nt√∂",
+      "edit_rule_title": "Muokkaa s√§√§nt√∂√§",
+      "general_section_title": "Yleist√§",
+      "rule_name_label": "S√§√§nt√∂nimi",
+      "default_rule_name": "Uusi s√§√§nt√∂",
+      "author_name_label": "Tekij√§",
       "scope_section_title": "Soveltamisala",
-      "scope_all": "Kaikki yst‰v‰t/ryhm‰t",
+      "scope_all": "Kaikki yst√§v√§t/ryhm√§t",
       "scope_whitelist": "Ei kukaan paitsi..",
       "scope_blacklist": "Kaikki paitsi",
       "events_section_title": "Tapahtumat",
       "events_suffix": "tapahtumat",
-      "no_events_text": "Ei tapahtumia viel‰ lis‰tty",
-      "add_event_dialog_title": "Lis‰‰ tapahtuma",
+      "no_events_text": "Ei tapahtumia viel√§ lis√§tty",
+      "add_event_dialog_title": "Lis√§√§ tapahtuma",
       "event_type_label": "Tapahtumatyyppi",
       "triggers_title": "Laukaisimet",
       "conditions_title": "Edellytykset",
-      "condition_only_inside_conversation": "Vain kun olen sis‰ll‰",
+      "condition_only_inside_conversation": "Vain kun olen sis√§ll√§",
       "condition_only_outside_conversation": "Vain kun olen ulkopuolella",
       "condition_only_when_app_active": "Vain kun Snapchat on aktiivinen",
       "condition_only_when_app_inactive": "Vain kun Snapchat on inaktiivinen",
       "condition_no_push_notification_when_app_active": "Ei ilmoitusta Snapchat-hoidon aikana",
-      "add_button": "Lis‰‰",
-      "cannot_save_rule_dialog_title": "S‰‰ntˆ‰ ei voi tallentaa",
-      "cannot_save_rule_dialog_text": "T‰yt‰ puuttuvat kent‰t t‰m‰n s‰‰nnˆn pelastamiseksi.",
-      "duplicate_rule_name_dialog_title": "Kaksinkertaista s‰‰nnˆn nimi",
-      "duplicate_rule_name_dialog_text": "T‰m‰n niminen s‰‰ntˆ on jo olemassa. Valitse uusi nimi.",
-      "discard_changes_dialog_title": "Hylk‰‰tkˆ muutoksia?",
-      "discard_changes_dialog_text": "Sinulla on pelastamattomia muutoksia. Hylk‰‰ heid‰t?",
-      "rule_subtitle": "M‰‰rittele t‰m‰n s‰‰nnˆn laukaisimet ja soveltamisalat.",
-      "discard_button": "H‰vit‰",
-      "enabled_label": "K‰ytˆss‰",
-      "disabled_label": "Ei k‰ytˆss‰",
-      "delete_rule_dialog_title": "Poista s‰‰ntˆ",
-      "delete_rule_dialog_text": "Haluatko varmasti poistaa t‰m‰n s‰‰nnˆn?",
-      "no_repos_added": "Ei arkistoja lis‰tty",
-      "import_dialog_title": "Tuontis‰‰nnˆt",
+      "add_button": "Lis√§√§",
+      "cannot_save_rule_dialog_title": "S√§√§nt√∂√§ ei voi tallentaa",
+      "cannot_save_rule_dialog_text": "T√§yt√§ puuttuvat kent√§t t√§m√§n s√§√§nn√∂n pelastamiseksi.",
+      "duplicate_rule_name_dialog_title": "Kaksinkertaista s√§√§nn√∂n nimi",
+      "duplicate_rule_name_dialog_text": "T√§m√§n niminen s√§√§nt√∂ on jo olemassa. Valitse uusi nimi.",
+      "discard_changes_dialog_title": "Hylk√§√§tk√∂ muutoksia?",
+      "discard_changes_dialog_text": "Sinulla on pelastamattomia muutoksia. Hylk√§√§ heid√§t?",
+      "rule_subtitle": "M√§√§rittele t√§m√§n s√§√§nn√∂n laukaisimet ja soveltamisalat.",
+      "discard_button": "H√§vit√§",
+      "enabled_label": "K√§yt√∂ss√§",
+      "disabled_label": "Ei k√§yt√∂ss√§",
+      "delete_rule_dialog_title": "Poista s√§√§nt√∂",
+      "delete_rule_dialog_text": "Haluatko varmasti poistaa t√§m√§n s√§√§nn√∂n?",
+      "no_repos_added": "Ei arkistoja lis√§tty",
+      "import_dialog_title": "Tuontis√§√§nn√∂t",
       "bulk_import_button": "Irtotuonti",
       "individual_import_button": "Yksi tuonti",
       "invalid_import_type_dialog_title": "Virheellinen tuonti",
       "invalid_import_type_dialog_text": "Valittu tiedostotyyppi ei vastaa tuontitilaa.",
-      "export_dialog_title": "Vientis‰‰nnˆt",
+      "export_dialog_title": "Vientis√§√§nn√∂t",
       "bulk_export_button": "Irtotavaran vienti",
       "individual_export_button": "Yksi vienti",
-      "reverse_order_checkbox": "K‰‰nteinen j‰rjestys",
+      "reverse_order_checkbox": "K√§√§nteinen j√§rjestys",
       "delete_logs_dialog_title": "Poista lokit",
       "delete_logs_dialog_confirm_text": "Poista kaikki nykyiset suodattimet vastaavat lokit?",
-      "select_friends_groups_button": "Valitse yst‰v‰t / ryhm‰t"
+      "select_friends_groups_button": "Valitse yst√§v√§t / ryhm√§t"
     },
     "friend_tracker_export": {
-      "title": "Vie yst‰v‰n seurantaohjelma",
+      "title": "Vie yst√§v√§n seurantaohjelma",
       "save_button": "Tallenna",
       "back_button_description": "Mene takaisin",
       "expand_button_description": "Laajennus- tai romahdusluokka",
-      "exported_toast": "J‰ljittimen asetukset viety",
-      "export_failed_toast": "J‰ljitint‰ ei voitu vied‰:{message}"
+      "exported_toast": "J√§ljittimen asetukset viety",
+      "export_failed_toast": "J√§ljitint√§ ei voitu vied√§:{message}"
     },
     "friend_tracker_import": {
-      "title": "Tuo yst‰v‰seuraaja",
+      "title": "Tuo yst√§v√§seuraaja",
       "confirm_button": "Tuo",
       "back_button_description": "Mene takaisin",
       "expand_button_description": "Laajennus- tai romahdusluokka",
       "imported_toast": "Seuraaja tuotu",
-      "import_failed_toast": "J‰ljitint‰ ei voitu tuoda:{message}"
+      "import_failed_toast": "J√§ljitint√§ ei voitu tuoda:{message}"
     },
     "friend_tracker_catalog": {
-      "title": "Yst‰v‰n seurantaluettelo",
-      "no_repos_added": "Ei arkistoja lis‰tty",
+      "title": "Yst√§v√§n seurantaluettelo",
+      "no_repos_added": "Ei arkistoja lis√§tty",
       "manage_repos_description": "Hallitse arkistoja"
     },
     "friend_tracker_repos": {
-      "no_repos_added": "Ei arkistoja lis‰tty",
-      "add_repo_button": "Lis‰‰ versiovarasto",
-      "add_repo_dialog_title": "Lis‰‰ versiovarasto",
+      "no_repos_added": "Ei arkistoja lis√§tty",
+      "add_repo_button": "Lis√§√§ versiovarasto",
+      "add_repo_dialog_title": "Lis√§√§ versiovarasto",
       "repo_url_label": "Versiovaraston URL",
-      "add_button": "Lis‰‰",
+      "add_button": "Lis√§√§",
       "invalid_repo_title": "Virheellinen versiovarasto",
-      "invalid_repo_error": "T‰m‰ arkisto puuttuu vaadituista tiedoista.",
-      "repo_added_toast": "Versiovarasto lis‰tty",
-      "add_repo_failed_toast": "Arkistoa ei voitu lis‰t‰:{message}",
+      "invalid_repo_error": "T√§m√§ arkisto puuttuu vaadituista tiedoista.",
+      "repo_added_toast": "Versiovarasto lis√§tty",
+      "add_repo_failed_toast": "Arkistoa ei voitu lis√§t√§:{message}",
       "remove_button": "Poista",
       "remove_repo_dialog_title": "Poista versiovarasto",
-      "remove_repo_dialog_text": "Haluatko varmasti poistaa t‰m‰n arkiston?"
+      "remove_repo_dialog_text": "Haluatko varmasti poistaa t√§m√§n arkiston?"
     },
     "logger_history": {
       "select_conversation_placeholder": "Valitse keskustelu"
@@ -476,18 +476,18 @@
         "back_button_description": "Mene takaisin",
         "save_button": "Tallenna",
         "expand_button_description": "Laajennus- tai romahdusluokka",
-        "enabled": "K‰ytˆss‰",
-        "disabled": "Ei k‰ytˆss‰",
-        "enable_feature": "K‰yt‰ ominaisuutta"
+        "enabled": "K√§yt√∂ss√§",
+        "disabled": "Ei k√§yt√∂ss√§",
+        "enable_feature": "K√§yt√§ ominaisuutta"
       },
       "config_import": {
         "title": "Tuo asetuskooste",
         "back_button_description": "Mene takaisin",
         "confirm_button": "Tuo",
         "expand_button_description": "Laajennus- tai romahdusluokka",
-        "enabled": "K‰ytˆss‰",
-        "disabled": "Ei k‰ytˆss‰",
-        "enable_feature": "K‰yt‰ ominaisuutta",
+        "enabled": "K√§yt√∂ss√§",
+        "disabled": "Ei k√§yt√∂ss√§",
+        "enable_feature": "K√§yt√§ ominaisuutta",
         "config_imported_toast": "Aseta tuotu onnistuneesti",
         "config_import_failure_toast": "Konfigia ei voitu tuoda{error}"
       }
@@ -495,8 +495,8 @@
   },
   "rules": {
     "toasts": {
-      "enabled": "{ruleName}k‰ytˆss‰",
-      "disabled": "{ruleName}k‰ytˆst‰"
+      "enabled": "{ruleName}k√§yt√∂ss√§",
+      "disabled": "{ruleName}k√§yt√∂st√§"
     },
     "modes": {
       "blacklist": "Musta lista -tila",
@@ -505,23 +505,23 @@
     "properties": {
       "auto_download": {
         "name": "Automaattinen lataus",
-        "description": "Lataa automaattisesti Naps kun katselet niit‰",
+        "description": "Lataa automaattisesti Naps kun katselet niit√§",
         "options": {
-          "blacklist": "Pois p‰‰lt‰ Automaattinen lataus",
+          "blacklist": "Pois p√§√§lt√§ Automaattinen lataus",
           "whitelist": "Automaattinen lataus"
         }
       },
       "stealth": {
         "name": "Varastettu tila",
-        "description": "Est‰‰ ket‰‰n tiet‰m‰st‰, ett‰ olet avannut heid‰n Snaps / Chats ja keskusteluja",
+        "description": "Est√§√§ ket√§√§n tiet√§m√§st√§, ett√§ olet avannut heid√§n Snaps / Chats ja keskusteluja",
         "options": {
-          "blacklist": "Pois p‰‰lt‰ varkaustilasta",
+          "blacklist": "Pois p√§√§lt√§ varkaustilasta",
           "whitelist": "Varastettu tila"
         }
       },
       "auto_save": {
         "name": "Automaattinen tallennus",
-        "description": "Tallentaa keskusteluviestit katsellessaan niit‰",
+        "description": "Tallentaa keskusteluviestit katsellessaan niit√§",
         "options": {
           "blacklist": "Valitse automaattisesta tallennuksesta",
           "whitelist": "Automaattinen tallennus"
@@ -529,9 +529,9 @@
       },
       "unsaveable_messages": {
         "name": "Pelastamattomat viestit",
-        "description": "Est‰‰ viestien tallentamisen muiden ihmisten chatissa",
+        "description": "Est√§√§ viestien tallentamisen muiden ihmisten chatissa",
         "options": {
-          "blacklist": "Pois tallentamattomista viesteist‰",
+          "blacklist": "Pois tallentamattomista viesteist√§",
           "whitelist": "Pelastamattomat viestit"
         }
       },
@@ -539,15 +539,15 @@
         "name": "Automaattiavausnapsit",
         "description": "Avaa Snaps automaattisesti, kun saat ne",
         "options": {
-          "blacklist": "Pois p‰‰lt‰ Auto Open Snaps",
+          "blacklist": "Pois p√§√§lt√§ Auto Open Snaps",
           "whitelist": "Automaattiavausnapsit"
         }
       },
       "hide_friend_feed": {
-        "name": "Piilota yst‰v‰syˆte"
+        "name": "Piilota yst√§v√§sy√∂te"
       },
       "e2e_encryption": {
-        "name": "K‰yt‰ E2E-salausta"
+        "name": "K√§yt√§ E2E-salausta"
       },
       "pin_conversation": {
         "name": "Pin Keskustelu"
@@ -557,23 +557,23 @@
       },
       "auto_reply": {
         "name": "Automaattinen vastaus",
-        "description": "L‰hett‰‰ automaattisesti vastaukset saapuneisiin viesteihin kun olet poissa",
+        "description": "L√§hett√§√§ automaattisesti vastaukset saapuneisiin viesteihin kun olet poissa",
         "options": {
           "blacklist": "Poista automaattisesta vastauksesta",
           "whitelist": "Automaattinen vastaus"
         }
       },
       "auto_delete_sent_messages": {
-        "name": "Automaattinen poistaa l‰hetetyt viestit",
-        "description": "Poistaa l‰hetetyt viestit automaattisesti tietyn ajanjakson j‰lkeen",
+        "name": "Automaattinen poistaa l√§hetetyt viestit",
+        "description": "Poistaa l√§hetetyt viestit automaattisesti tietyn ajanjakson j√§lkeen",
         "options": {
-          "blacklist": "Poista automaattisesti l‰hetetyt viestit",
-          "whitelist": "Automaattinen poistaa l‰hetetyt viestit"
+          "blacklist": "Poista automaattisesti l√§hetetyt viestit",
+          "whitelist": "Automaattinen poistaa l√§hetetyt viestit"
         }
       },
       "message_logger": {
         "name": "Viestilokija",
-        "description": "Pid‰ kopio viesteist‰, vaikka ne poistettaisiin",
+        "description": "Pid√§ kopio viesteist√§, vaikka ne poistettaisiin",
         "options": {
           "blacklist": "Poista viestiloggerista",
           "whitelist": "Viestilokija"
@@ -583,13 +583,13 @@
         "name": "Automaattinen luku",
         "description": "Merkitse napsautukset automaattisesti luetuiksi",
         "options": {
-          "blacklist": "Pois p‰‰lt‰ automaattisesta lukemisesta",
+          "blacklist": "Pois p√§√§lt√§ automaattisesta lukemisesta",
           "whitelist": "Automaattinen luku"
         }
       },
       "hide_typing_indicator": {
         "name": "Piilota kirjoitusindikaattori",
-        "description": "Est‰ muita n‰kem‰st‰, kun kirjoitat",
+        "description": "Est√§ muita n√§kem√§st√§, kun kirjoitat",
         "options": {
           "blacklist": "Piilota kirjoitusindikaattori",
           "whitelist": "Piilota kirjoitusmerkki"
@@ -600,11 +600,11 @@
   "actions": {
     "clean_snapchat_cache": {
       "name": "Tyhjenn? Snapchat-v?limuisti",
-      "description": "Puhdistaa Snapchat v‰limuistin"
+      "description": "Puhdistaa Snapchat v√§limuistin"
     },
     "manage_friend_list": {
-      "name": "Hallitse yst‰v‰luetteloa",
-      "description": "Tuo/vied‰ yst‰viesi listaa peruutettaessa"
+      "name": "Hallitse yst√§v√§luetteloa",
+      "description": "Tuo/vied√§ yst√§viesi listaa peruutettaessa"
     },
     "export_chat_messages": {
       "name": "Vie keskusteluviestit",
@@ -616,40 +616,40 @@
     },
     "bulk_messaging_action": {
       "name": "Bulk viestit",
-      "description": "Suorittaa toimintoja, kuten poistamalla yst‰vi‰ tai poistamalla joukko keskusteluja"
+      "description": "Suorittaa toimintoja, kuten poistamalla yst√§vi√§ tai poistamalla joukko keskusteluja"
     },
     "regen_mappings": {
       "name": "Korjaa kartoitukset",
-      "description": "Korjaa kuvat k‰sin"
+      "description": "Korjaa kuvat k√§sin"
     },
     "change_language": {
-      "name": "Vaihda kielt‰",
-      "description": "Muuta PurrfectSnapin kielt‰"
+      "name": "Vaihda kielt√§",
+      "description": "Muuta PurrfectSnapin kielt√§"
     },
     "file_imports": {
       "name": "Tiedoston tuonti",
-      "description": "Tuo tiedostoja k‰ytett‰v‰ksi Snapchatissa"
+      "description": "Tuo tiedostoja k√§ytett√§v√§ksi Snapchatissa"
     },
     "friend_tracker": {
-      "name": "Yst‰v‰n j‰ljitin",
-      "description": "Seuraa yst‰vi‰si Snapchatissa"
+      "name": "Yst√§v√§n j√§ljitin",
+      "description": "Seuraa yst√§vi√§si Snapchatissa"
     },
     "logger_history": {
       "name": "Loggerin historia",
-      "description": "N‰yt‰ kirjattujen viestien historia"
+      "description": "N√§yt√§ kirjattujen viestien historia"
     }
   },
   "features": {
     "notices": {
-      "unstable": "- Mit‰? Ep‰stabiili",
-      "ban_risk": "- Mit‰? T‰m‰ ominaisuus voi aiheuttaa kieltoja",
-      "internal_behavior": "- Mit‰? T‰m‰ voi rikkoa Snapchat sis‰inen k‰ytt‰ytyminen"
+      "unstable": "- Mit√§? Ep√§stabiili",
+      "ban_risk": "- Mit√§? T√§m√§ ominaisuus voi aiheuttaa kieltoja",
+      "internal_behavior": "- Mit√§? T√§m√§ voi rikkoa Snapchat sis√§inen k√§ytt√§ytyminen"
     },
     "options": {
       "app_appearance": {
         "always_light": "Aina valo",
-        "always_dark": "Aina synkk‰",
-        "null": "Otteluj‰rjestelm‰"
+        "always_dark": "Aina synkk√§",
+        "null": "Otteluj√§rjestelm√§"
       },
       "auto_reload": {
         "snapchat_only": "Lataa vain Snapchat uudelleen",
@@ -657,33 +657,33 @@
         "null": "Oletus"
       },
       "walk_radius": {
-        "null": "K‰yt‰ oletuss‰dett‰"
+        "null": "K√§yt√§ oletuss√§dett√§"
       },
       "spoof_battery_level": {
-        "null": "K‰yt‰ todellista akun tasoa"
+        "null": "K√§yt√§ todellista akun tasoa"
       },
       "friend_feed_menu_buttons": {
         "auto_download": "Automaattinen lataus",
         "auto_save": "Automaattinen tallenna viestit",
-        "unsaveable_messages": "- Mit‰? Pelastamattomat viestit",
+        "unsaveable_messages": "- Mit√§? Pelastamattomat viestit",
         "auto_open_snaps": "Automaattiavaimet",
         "stealth": "Varastettu tila",
         "auto_reply": "Automaattinen vastaus",
-        "auto_delete_sent_messages": "Automaattinen poisto L‰hetetyt viestit",
-        "mark_snaps_as_seen": "- Mit‰? Mark Snaps n‰htyn‰",
-        "mark_stories_as_seen_locally": "- Mit‰? Merkitse tarinat paikallisiksi",
+        "auto_delete_sent_messages": "Automaattinen poisto L√§hetetyt viestit",
+        "mark_snaps_as_seen": "- Mit√§? Mark Snaps n√§htyn√§",
+        "mark_stories_as_seen_locally": "- Mit√§? Merkitse tarinat paikallisiksi",
         "conversation_info": "Keskustelutiedot",
-        "e2e_encryption": "K‰yt‰ E2E-salausta",
+        "e2e_encryption": "K√§yt√§ E2E-salausta",
         "message_logger": "Viestin loki",
         "auto_read": "Automaattinen luku",
         "hide_typing_indicator": "Piilota kirjoitusindikaattori"
       },
       "schedule_scheduled_for": "Suunniteltu{name}in{time}",
-      "schedule_sending_in": "L‰hetys{time}",
-      "schedule_sent_to": "L‰hetetty{name}",
-      "schedule_sent": "L‰hetetty",
-      "schedule_failed_to": "Ei voitu l‰hett‰‰{name}",
-      "schedule_failed": "Aikataulun mukainen napsautus ep‰onnistui",
+      "schedule_sending_in": "L√§hetys{time}",
+      "schedule_sent_to": "L√§hetetty{name}",
+      "schedule_sent": "L√§hetetty",
+      "schedule_failed_to": "Ei voitu l√§hett√§√§{name}",
+      "schedule_failed": "Aikataulun mukainen napsautus ep√§onnistui",
       "schedule_cancelled_for": "Peruttu{name}",
       "device_model": {
         "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
@@ -694,20 +694,20 @@
       },
       "settings_menu": {
         "default": "Oletus",
-        "legacy": "Perintˆ"
+        "legacy": "Perint√∂"
       },
       "path_format": {
-        "create_author_folder": "Luo kansio jokaiselle tekij‰lle",
-        "create_source_folder": "Luo kansio jokaiselle medial‰hdetyypille",
-        "append_hash": "Lis‰‰ tiedoston nimeen ainutlaatuinen hash",
-        "append_source": "Lis‰‰ medial‰hde tiedostonimeen",
-        "append_username": "Lis‰‰ k‰ytt‰j‰tunnus tiedostonimeen",
-        "append_date_time": "Lis‰‰ p‰iv‰m‰‰r‰ ja kellonaika tiedostonimeen",
-        "append_type": "Lis‰‰ mediatyyppi tiedostonimeen"
+        "create_author_folder": "Luo kansio jokaiselle tekij√§lle",
+        "create_source_folder": "Luo kansio jokaiselle medial√§hdetyypille",
+        "append_hash": "Lis√§√§ tiedoston nimeen ainutlaatuinen hash",
+        "append_source": "Lis√§√§ medial√§hde tiedostonimeen",
+        "append_username": "Lis√§√§ k√§ytt√§j√§tunnus tiedostonimeen",
+        "append_date_time": "Lis√§√§ p√§iv√§m√§√§r√§ ja kellonaika tiedostonimeen",
+        "append_type": "Lis√§√§ mediatyyppi tiedostonimeen"
       },
       "auto_download_sources": {
-        "friend_snaps": "Yst‰v‰n napsit",
-        "friend_stories": "Yst‰v‰tarinat",
+        "friend_snaps": "Yst√§v√§n napsit",
+        "friend_stories": "Yst√§v√§tarinat",
         "public_stories": "Julkiset tarinat",
         "spotlight": "Valokeila"
       },
@@ -719,7 +719,7 @@
       },
       "notifications": {
         "chat_screenshot": "Kuvakaappaus",
-        "chat_screen_record": "N‰ytˆn tallennus",
+        "chat_screen_record": "N√§yt√∂n tallennus",
         "snap_replay": "Napsauta uudelleen",
         "camera_roll_save": "Kamerarullan tallennus",
         "chat": "Keskustelu",
@@ -729,9 +729,9 @@
         "stories": "Tarinoita",
         "speaking": "Puhe",
         "chat_reaction": "DM-reaktio",
-        "group_chat_reaction": "Ryhm‰n reaktio",
+        "group_chat_reaction": "Ryhm√§n reaktio",
         "initiate_audio": "Saapuva puhelu",
-        "abandon_audio": "ƒ‰nipuhelu puuttuu",
+        "abandon_audio": "√Ñ√§nipuhelu puuttuu",
         "initiate_video": "Saapuva videokutsu",
         "abandon_video": "Videopuhelu puuttuu",
         "map_live_location": "Kartta live- sijainti"
@@ -739,92 +739,81 @@
       "auto_read": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "hide_typing_indicator": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "auto_delete_sent_messages": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "auto_download": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "stealth": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "auto_save": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "message_logger": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "auto_reply": {
         "blacklist": "Musta lista",
         "whitelist": "Valkoinen lista",
-        "disabled": "Ei k‰ytˆss‰"
+        "disabled": "Ei k√§yt√∂ss√§"
       },
       "custom_android_id": {
-        "null": "K‰yt‰ todellista Android-tunnusta"
+        "null": "K√§yt√§ todellista Android-tunnusta"
       },
       "add_friend_source_spoof": {
-        "added_by_username": "K‰ytt‰j‰tunnuksen mukaan",
+        "added_by_username": "K√§ytt√§j√§tunnuksen mukaan",
         "added_by_mention": "Mainitsemalla",
-        "added_by_group_chat": "Ryhm‰keskustelu",
+        "added_by_group_chat": "Ryhm√§keskustelu",
         "added_by_qr_code": "QR-koodilla",
-        "added_by_community": "Yhteisˆ",
+        "added_by_community": "Yhteis√∂",
         "added_by_quick_add": "By Quick Add (suuri riski saada kielto)",
         "added_by_spotlight": "Spotlight",
-        "null": "ƒl‰ l‰hde"
+        "null": "√Ñl√§ l√§hde"
       },
       "custom_streaks_expiration_format": {
-        "null": "J‰rjestelm‰n oletus"
+        "null": "J√§rjestelm√§n oletus"
       },
       "preferred_transcription_lang": {
-        "null": "K‰yt‰ Snapchat-oletusta"
+        "null": "K√§yt√§ Snapchat-oletusta"
       },
       "custom_emoji_font": {
         "null": "Oletusemoji-kirjasin"
       },
       "custom_shared_library": {
-        "null": "K‰yt‰ oletuskirjastoa"
+        "null": "K√§yt√§ oletuskirjastoa"
       },
       "override_front_resolution": {
-        "null": "K‰yt‰ laitteen oletusta"
+        "null": "K√§yt√§ laitteen oletusta"
       },
       "override_back_resolution": {
-        "null": "K‰yt‰ laitteen oletusta"
+        "null": "K√§yt√§ laitteen oletusta"
       },
       "custom_resolution": {
-        "null": "K‰yt‰ automaattista resoluutiota"
+        "null": "K√§yt√§ automaattista resoluutiota"
       },
       "startup_default_camera": {
         "front": "Etukamera",
         "back": "Takakamera",
-        "null": "Muista, ett‰ viimeksi k‰ytetty"
-      },
-      \"call_recorder\": {
-          \"only_record_self\": \"Only Record Self\",
-          \"only_record_others\": \"Only Record Others\",
-          \"record_both\": \"Record Both Sides\"
-      },
-      \"call_recorder_ui_design\": {
-          \"default\": \"Default\",
-          \"snapchat\": \"Snapchat\",
-          \"cyber\": \"Cyber\",
-          \"frost\": \"Frost\"
+        "null": "Muista, ett√§ viimeksi k√§ytetty"
       },
       "front_custom_frame_rate": {
         "null": "Laitteen oletus FPS"
@@ -833,13 +822,13 @@
         "null": "Laitteen oletus FPS"
       },
       "force_voice_note_format": {
-        "null": "K‰yt‰ Snapchat- oletusta"
+        "null": "K√§yt√§ Snapchat- oletusta"
       },
       "custom_path_format": {
-        "null": "K‰yt‰ oletusmallia"
+        "null": "K√§yt√§ oletusmallia"
       },
       "force_image_format": {
-        "null": "K‰yt‰ Snapchat- oletusta"
+        "null": "K√§yt√§ Snapchat- oletusta"
       },
       "custom_video_codec": {
         "null": "Oletuskoodic"
@@ -855,8 +844,8 @@
       },
       "gallery_media_send_override": {
         "always_ask": "Kysy aina",
-        "ORIGINAL": "Alkuper‰inen media",
-        "NOTE": "ƒ‰nimuistilappu",
+        "ORIGINAL": "Alkuper√§inen media",
+        "NOTE": "√Ñ√§nimuistilappu",
         "SNAP": "Napsauta",
         "SAVEABLE_SNAP": "Tallennettavissa",
         "null": "Snapchat- oletus"
@@ -866,22 +855,22 @@
         "hide_snap_filters": "Piilota snap- suotimet",
         "hide_extras": "Piilota ekstrat (esim",
         "remove_audio_note_duration": "Poista muistiinpanon kesto",
-        "remove_audio_note_transcript_capability": "Poista ‰‰nimuistilappu Transcript kapasiteetti"
+        "remove_audio_note_transcript_capability": "Poista √§√§nimuistilappu Transcript kapasiteetti"
       },
       "hide_ui_components": {
         "hide_profile_call_buttons": "Poista profiilin soittopainikkeet",
-        "hide_chat_call_buttons": "Poista keskustelupuhelun‰pp‰imet",
+        "hide_chat_call_buttons": "Poista keskustelupuhelun√§pp√§imet",
         "hide_live_location_share_button": "Poista live location -painike",
-        "hide_stickers_button": "Poista Tarran‰pp‰in",
-        "hide_voice_record_button": "Poista ‰‰nitallenteen painike",
+        "hide_stickers_button": "Poista Tarran√§pp√§in",
+        "hide_voice_record_button": "Poista √§√§nitallenteen painike",
         "hide_unread_chat_hint": "Poista lukematon Keskusteluvihje",
-        "hide_post_to_story_buttons": "Poista viesti Tarinan painikkeisiin ennen Snapin l‰hett‰mist‰",
-        "hide_billboard_prompt": "Poista mainostaulun pikaviesti yst‰vien syˆtteess‰",
+        "hide_post_to_story_buttons": "Poista viesti Tarinan painikkeisiin ennen Snapin l√§hett√§mist√§",
+        "hide_billboard_prompt": "Poista mainostaulun pikaviesti yst√§vien sy√∂tteess√§",
         "hide_snapchat_plus_gift_reminders": "Poista Snapchat Plus lahjamuistutuksia keskusteluissa",
         "hide_map_reactions": "Poista karttareaktiot"
       },
       "hide_story_suggestions": {
-        "hide_suggested_friend_stories": "Piilota ehdotetut yst‰v‰tarinat",
+        "hide_suggested_friend_stories": "Piilota ehdotetut yst√§v√§tarinat",
         "hide_my_stories": "Piilota tarinani"
       },
       "home_tab": {
@@ -893,10 +882,10 @@
         "null": "Snapchat- oletus"
       },
       "spotlight_comments_username_icon": {
-        "user": "K‰ytt‰j‰tunnuksen kuvake",
-        "??": "K‰ytt‰j‰tunnuksen kuvake",
-        "[??]": "K‰ytt‰j‰tunnuksen kuvake",
-        "default": "K‰ytt‰j‰tunnuksen kuvake",
+        "user": "K√§ytt√§j√§tunnuksen kuvake",
+        "üë§": "K√§ytt√§j√§tunnuksen kuvake",
+        "[üë§]": "K√§ytt√§j√§tunnuksen kuvake",
+        "default": "K√§ytt√§j√§tunnuksen kuvake",
         "no_icon": "Ei kuvaketta"
       },
       "custom_image_upload_format": {
@@ -923,16 +912,16 @@
       },
       "disable_confirmation_dialogs": {
         "erase_message": "Poista viesti",
-        "remove_friend": "Poista yst‰v‰",
-        "block_friend": "Block-yst‰v‰",
-        "ignore_friend": "ƒl‰ v‰lit‰ yst‰v‰st‰",
-        "hide_friend": "Piilota yst‰v‰",
+        "remove_friend": "Poista yst√§v√§",
+        "block_friend": "Block-yst√§v√§",
+        "ignore_friend": "√Ñl√§ v√§lit√§ yst√§v√§st√§",
+        "hide_friend": "Piilota yst√§v√§",
         "hide_conversation": "Piilota keskustelu",
-        "clear_conversation": "Tyhjenn‰ keskustelu yst‰v‰syˆtteest‰"
+        "clear_conversation": "Tyhjenn√§ keskustelu yst√§v√§sy√∂tteest√§"
       },
       "edit_text_override": {
         "multi_line_chat_input": "Monilinja Chat Input",
-        "bypass_text_input_limit": "Ohita tekstin syˆttˆraja"
+        "bypass_text_input_limit": "Ohita tekstin sy√∂tt√∂raja"
       },
       "auto_purge": {
         "never": "Ei koskaan",
@@ -941,7 +930,7 @@
         "6_hours": "6 tuntia",
         "12_hours": "12 tuntia",
         "1_day": "1 vrk",
-        "3_days": "3 p‰iv‰‰",
+        "3_days": "3 p√§iv√§√§",
         "1_week": "1 viikko",
         "2_weeks": "2 viikkoa",
         "1_month": "1 kuukausi",
@@ -950,11 +939,11 @@
       },
       "delete_after_unit": {
         "seconds": "Sekuntia",
-        "minutes": "Pˆyt‰kirja",
+        "minutes": "P√∂yt√§kirja",
         "hours": "Tunnit"
       },
       "disable_story_sections": {
-        "friends": "Yst‰v‰t",
+        "friends": "Yst√§v√§t",
         "suggested_stories": "Ehdotetut tarinat",
         "following": "Seuraava",
         "discover": "Etsi"
@@ -971,24 +960,24 @@
         "microphone": "Mikrofoni",
         "location": "Sijainti",
         "read_contacts": "Lue yhteystiedot",
-        "nearby_devices": "L‰histˆll‰ olevat laitteet",
+        "nearby_devices": "L√§hist√∂ll√§ olevat laitteet",
         "phone_calls": "Puhelut"
       },
       "message_indicators": {
-        "encryption_indicator": "Lis‰‰ vain sinulle l‰hetettyjen viestien viereen kuvakkeen",
-        "platform_indicator": "Lis‰‰ alustakuvakkeen, josta media l‰hetettiin (esim. Android, iOS, Web)",
-        "location_indicator": "Lis‰‰ kuvakkeen napsautuksiin, kun ne on l‰hetetty sijainti k‰ytˆss‰",
-        "ovf_editor_indicator": "Osoittaa, onko OVF-muokkaimella l‰hetetty napsahdus",
-        "director_mode_indicator": "Lis‰‰ kuvakkeen napsautuksiin, kun ne on l‰hetetty Director Mode -tilassa, jota voidaan k‰ytt‰‰ galleriakuvien l‰hett‰miseen sekunteina"
+        "encryption_indicator": "Lis√§√§ vain sinulle l√§hetettyjen viestien viereen kuvakkeen",
+        "platform_indicator": "Lis√§√§ alustakuvakkeen, josta media l√§hetettiin (esim. Android, iOS, Web)",
+        "location_indicator": "Lis√§√§ kuvakkeen napsautuksiin, kun ne on l√§hetetty sijainti k√§yt√∂ss√§",
+        "ovf_editor_indicator": "Osoittaa, onko OVF-muokkaimella l√§hetetty napsahdus",
+        "director_mode_indicator": "Lis√§√§ kuvakkeen napsautuksiin, kun ne on l√§hetetty Director Mode -tilassa, jota voidaan k√§ytt√§√§ galleriakuvien l√§hett√§miseen sekunteina"
       },
       "auto_mark_as_read": {
-        "conversation_read": "Merkitse keskustelu luetuksi viesti‰ l‰hetett‰ess‰",
-        "snap_reply": "Merkint‰ napsahtaa luettuna vastausten yhteydess‰",
+        "conversation_read": "Merkitse keskustelu luetuksi viesti√§ l√§hetett√§ess√§",
+        "snap_reply": "Merkint√§ napsahtaa luettuna vastausten yhteydess√§",
         "save_snap_in_chat": "Merkitse napsahtaa luettuna, kun tallennat ne chat-tilassa"
       },
       "friend_mutation_notifier": {
-        "remove_friend": "Ilmoita, kun joku poistaa sinut yst‰v‰n‰",
-        "birthday_changes": "Ilmoita, kun joku muuttaa syntym‰p‰iv‰‰ns‰",
+        "remove_friend": "Ilmoita, kun joku poistaa sinut yst√§v√§n√§",
+        "birthday_changes": "Ilmoita, kun joku muuttaa syntym√§p√§iv√§√§ns√§",
         "bitmoji_selfie_changes": "Ilmoita, kun joku muuttaa Bitmoji selfie",
         "bitmoji_avatar_changes": "Ilmoita, kun joku muuttaa Bitmoji avatarin",
         "bitmoji_background_changes": "Ilmoita, kun joku muuttaa Bitmoji-taustaansa",
@@ -996,7 +985,7 @@
       },
       "double_tap_chat_action": {
         "like_message": "Kuten viesti",
-        "copy_text": "Kopioi teksti leikepˆyd‰lle",
+        "copy_text": "Kopioi teksti leikep√∂yd√§lle",
         "delete_message": "Poista viesti",
         "mark_as_read": "Merkitse luetuksi",
         "custom_emoji_reaction": "Oma emoji-reaktio",
@@ -1019,21 +1008,21 @@
         "": "Ei asetettu"
       },
       "ai_system_prompt": {
-        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Olet avulias ja yst‰v‰llinen avustaja vastaa viestit Snapchat. Pid‰ vastaukset luonnollinen, rento, ja keskustelullinen. V‰lt‰ liian muodollinen tai robottimainen. Vastaa kuin olisit normaali ihminen."
+        "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Olet avulias ja yst√§v√§llinen avustaja vastaa viestit Snapchat. Pid√§ vastaukset luonnollinen, rento, ja keskustelullinen. V√§lt√§ liian muodollinen tai robottimainen. Vastaa kuin olisit normaali ihminen."
       },
       "ai_provider": {
         "gemini": "Kaksoset",
-        "deepseek": "Syv‰haku",
+        "deepseek": "Syv√§haku",
         "openai": "OpenAI",
         "openrouter": "OpenRouter"
       },
       "ai_personality_traits": {
-        "friendly, casual, helpful, empathetic": "yst‰v‰llinen, rento, avulias, empaattinen"
+        "friendly, casual, helpful, empathetic": "yst√§v√§llinen, rento, avulias, empaattinen"
       },
       "ai_response_style": {
         "casual": "Tavallinen",
         "formal": "Muodollinen",
-        "friendly": "Yst‰v‰llinen",
+        "friendly": "Yst√§v√§llinen",
         "humorous": "Huvittavaa",
         "empathetic": "Empaattinen",
         "toxic": "Rohkea",
@@ -1050,7 +1039,7 @@
         "de": "Saksa",
         "it": "Italia",
         "pt": "Portugali",
-        "ru": "Ven‰j‰",
+        "ru": "Ven√§j√§",
         "ja": "Japani",
         "ko": "Korea",
         "zh": "Kiina",
@@ -1068,16 +1057,16 @@
         "Hey": "Hei"
       },
       "half_swipe_messages": {
-        "[\"I noticed you half-swiped! I'll respond soon.\"]": "Huomasin, ett‰ olet puoliksi varastettu. Vastaan pian."
+        "[\"I noticed you half-swiped! I'll respond soon.\"]": "Huomasin, ett√§ olet puoliksi varastettu. Vastaan pian."
       },
       "tiny_snap_messages": {
-        "Thanks for the tiny snap!": "Kiitos pienest‰ napsautuksesta!"
+        "Thanks for the tiny snap!": "Kiitos pienest√§ napsautuksesta!"
       },
       "voice_note_messages": {
-        "Thanks for the voice note!": "Kiitos ‰‰niviestist‰!"
+        "Thanks for the voice note!": "Kiitos √§√§niviestist√§!"
       },
       "chat_messages": {
-        "Hello! How are you?": "Hei! Mit‰ kuuluu?"
+        "Hello! How are you?": "Hei! Mit√§ kuuluu?"
       },
       "story_reply_messages": {
         "Thanks for the story reply!": "Kiitos tarinan vastauksesta!"
@@ -1103,11 +1092,11 @@
         "story_share_messages": "Tarinaosakkeet",
         "story_reply_messages": "Tarinavastaukset",
         "external_media_messages": "Ulkoiset viestimet",
-        "voice_note_messages": "ƒ‰nimuistilaput",
+        "voice_note_messages": "√Ñ√§nimuistilaput",
         "sticker_messages": "Tarrat",
         "tiny_snap_messages": "Pienoisnapsit",
         "map_reaction_messages": "Karttareaktiot",
-        "half_swipes": "Puolikas pyyhk‰isy"
+        "half_swipes": "Puolikas pyyhk√§isy"
       },
       "supported_languages": {
         "en": "Englanti",
@@ -1116,7 +1105,7 @@
         "de": "Saksa",
         "it": "Italia",
         "pt": "Portugali",
-        "ru": "Ven‰j‰",
+        "ru": "Ven√§j√§",
         "ja": "Japani",
         "ko": "Korea",
         "zh": "Kiina",
@@ -1125,7 +1114,7 @@
         "tr": "Turkki"
       },
       "translation_position": {
-        "above": "Tekstin yl‰puolella",
+        "above": "Tekstin yl√§puolella",
         "below": "Alla oleva teksti",
         "inline": "Riviss?"
       },
@@ -1155,15 +1144,15 @@
               },
               "walk_radius": {
                 "name": "K?velys?de",
-                "description": "Satunnaisesti k‰vell‰ t‰m‰n s‰teen sis‰ll‰ (ft)"
+                "description": "Satunnaisesti k√§vell√§ t√§m√§n s√§teen sis√§ll√§ (ft)"
               },
               "always_update_location": {
-                "name": "P‰ivit‰ aina sijainti",
-                "description": "Pakota Snapchat p‰ivitt‰m‰‰n sijaintia, vaikka GPS-tietoja ei olisikaan saatu"
+                "name": "P√§ivit√§ aina sijainti",
+                "description": "Pakota Snapchat p√§ivitt√§m√§√§n sijaintia, vaikka GPS-tietoja ei olisikaan saatu"
               },
               "suspend_location_updates": {
-                "name": "Keskeyt‰ sijaintip‰ivitykset",
-                "description": "Est‰‰ sijaintisi p‰ivitt‰misen"
+                "name": "Keskeyt√§ sijaintip√§ivitykset",
+                "description": "Est√§√§ sijaintisi p√§ivitt√§misen"
               },
               "spoof_battery_level": {
                 "name": "Paristopariston taso",
@@ -1174,14 +1163,14 @@
                 "description": "Spoofs tilan kuunnella musiikkia kartalla"
               },
               "show_battery_level": {
-                "name": "N‰yt‰ akun taso",
-                "description": "N‰ytt‰‰ yst‰viesi akun tason kartalla"
+                "name": "N√§yt√§ akun taso",
+                "description": "N√§ytt√§√§ yst√§viesi akun tason kartalla"
               }
             }
           },
           "snapchat_plus": {
             "name": "Snapchat Plus",
-            "description": "K‰yt‰ Snapchatia Plus ominaisuudet\nJotkut palvelinpuoliset ominaisuudet eiv‰t ehk‰ toimi"
+            "description": "K√§yt√§ Snapchatia Plus ominaisuudet\nJotkut palvelinpuoliset ominaisuudet eiv√§t ehk√§ toimi"
           },
           "media_upload_quality": {
             "name": "Media lataa laatu",
@@ -1189,40 +1178,40 @@
             "properties": {
               "force_video_upload_source_quality": {
                 "name": "Pakota videol?hetyksen l?hdelaatu",
-                "description": "Pakottaa Snapchat k‰ytt‰m‰‰n l‰hdelaatua ladattaessa videoita\nHuomaa, ett‰ t‰m‰ ei v‰ltt‰m‰tt‰ poista metatietoja mediasta"
+                "description": "Pakottaa Snapchat k√§ytt√§m√§√§n l√§hdelaatua ladattaessa videoita\nHuomaa, ett√§ t√§m√§ ei v√§ltt√§m√§tt√§ poista metatietoja mediasta"
               },
               "disable_image_compression": {
-                "name": "Poista kuvan pakkaus k‰ytˆst‰",
-                "description": "Poistaa kuvan kompression ladattaessa levyj‰"
+                "name": "Poista kuvan pakkaus k√§yt√∂st√§",
+                "description": "Poistaa kuvan kompression ladattaessa levyj√§"
               },
               "custom_image_upload_format": {
                 "name": "Oma kuvan latausmuoto",
-                "description": "Asettaa mukautetun kuvan latausmuodon\nValitse h‰viˆtˆn muoto (kuten PNG) parhaaseen laatuun"
+                "description": "Asettaa mukautetun kuvan latausmuodon\nValitse h√§vi√∂t√∂n muoto (kuten PNG) parhaaseen laatuun"
               }
             }
           },
           "disable_confirmation_dialogs": {
-            "name": "Poista vahvistusikkuna k‰ytˆst‰",
+            "name": "Poista vahvistusikkuna k√§yt√∂st√§",
             "description": "Vahvista valitut toiminnot automaattisesti"
           },
           "auto_updater": {
-            "name": "Automaattinen p‰ivitys",
-            "description": "Uusien p‰ivitysten automaattinen tarkastaminen"
+            "name": "Automaattinen p√§ivitys",
+            "description": "Uusien p√§ivitysten automaattinen tarkastaminen"
           },
           "update_settings": {
-            "name": "P‰ivit‰ asetukset",
-            "description": "Ohjaa, miten PurrfectSnap tarkistaa p‰ivitykset",
+            "name": "P√§ivit√§ asetukset",
+            "description": "Ohjaa, miten PurrfectSnap tarkistaa p√§ivitykset",
             "properties": {
               "auto_update_check": {
-                "name": "Automaattip‰ivityksen tarkistus"
+                "name": "Automaattip√§ivityksen tarkistus"
               },
               "update_check_frequency": {
-                "name": "P‰ivit‰ tarkistustiheys"
+                "name": "P√§ivit√§ tarkistustiheys"
               }
             }
           },
           "ui_settings": {
-            "name": "K‰yttˆliittym‰n asetukset",
+            "name": "K√§ytt√∂liittym√§n asetukset",
             "properties": {
               "haptic_feedback": {
                 "name": "Haptinen palaute"
@@ -1230,40 +1219,40 @@
             }
           },
           "disable_metrics": {
-            "name": "Poista metrics k‰ytˆst‰",
-            "description": "Blocks l‰hett‰‰ erityisi‰ analytic tietoja Snapchat"
+            "name": "Poista metrics k√§yt√∂st√§",
+            "description": "Blocks l√§hett√§√§ erityisi√§ analytic tietoja Snapchat"
           },
           "disable_story_sections": {
-            "name": "Poista tarinajaksot k‰ytˆst‰",
+            "name": "Poista tarinajaksot k√§yt√∂st√§",
             "description": "Poistaa osiot Tarinoiden sivulta\nVoi vaatia virkistys toimia kunnolla"
           },
           "block_ads": {
             "name": "Lohkomainokset",
-            "description": "Est‰‰ mainosten n‰ytt‰misen"
+            "description": "Est√§√§ mainosten n√§ytt√§misen"
           },
           "disable_custom_tabs": {
-            "name": "Poista muokatut v‰lilehdet k‰ytˆst‰",
-            "description": "Avaa linkkej‰ tuettuihin sovelluksiin Web-selaimen sijaan"
+            "name": "Poista muokatut v√§lilehdet k√§yt√∂st√§",
+            "description": "Avaa linkkej√§ tuettuihin sovelluksiin Web-selaimen sijaan"
           },
           "disable_permission_requests": {
-            "name": "Poista lupapyynnˆt k‰ytˆst‰",
-            "description": "Est‰‰ Snapchatia pyyt‰m‰st‰ erityisoikeuksia"
+            "name": "Poista lupapyynn√∂t k√§yt√∂st√§",
+            "description": "Est√§√§ Snapchatia pyyt√§m√§st√§ erityisoikeuksia"
           },
           "disable_memories_snap_feed": {
-            "name": "Poista muistit Napsautussyˆte k‰ytˆst‰",
-            "description": "Est‰‰ Snapchatia n‰ytt‰m‰st‰ tuoreita muistoja, kun pyyhk‰iset kameraan"
+            "name": "Poista muistit Napsautussy√∂te k√§yt√∂st√§",
+            "description": "Est√§√§ Snapchatia n√§ytt√§m√§st√§ tuoreita muistoja, kun pyyhk√§iset kameraan"
           },
           "spotlight_comments_username": {
-            "name": "Spotlight Kommentit K‰ytt‰j‰tunnus",
-            "description": "N‰ytt‰‰ tekij‰nimen Spotlight kommenteissa"
+            "name": "Spotlight Kommentit K√§ytt√§j√§tunnus",
+            "description": "N√§ytt√§√§ tekij√§nimen Spotlight kommenteissa"
           },
           "spotlight_comments_username_icon": {
-            "name": "Spotlight Kommentit K‰ytt‰j‰tunnuskuvake",
-            "description": "Valitse mik‰ kuvake n‰kyy k‰ytt‰j‰nimien vieress‰ Spotlight kommenteissa"
+            "name": "Spotlight Kommentit K√§ytt√§j√§tunnuskuvake",
+            "description": "Valitse mik√§ kuvake n√§kyy k√§ytt√§j√§nimien vieress√§ Spotlight kommenteissa"
           },
           "bypass_video_length_restriction": {
             "name": "Ohitusvideon pituuden rajoitukset",
-            "description": "Yksi: l‰hett‰‰ yhden videon\nJaa: jaa videoita muokkauksen j‰lkeen"
+            "description": "Yksi: l√§hett√§√§ yhden videon\nJaa: jaa videoita muokkauksen j√§lkeen"
           },
           "default_video_playback_rate": {
             "name": "Videosoiton oletusnopeus",
@@ -1271,27 +1260,27 @@
           },
           "video_playback_rate_slider": {
             "name": "Videosoittonopeus Slider",
-            "description": "Lis‰‰ liukus‰‰dint‰ ooppera konteksti valikko muuttaa videon toistonopeutta\nHuomautus: Muutokset koskevat vain seuraavia videoita"
+            "description": "Lis√§√§ liukus√§√§dint√§ ooppera konteksti valikko muuttaa videon toistonopeutta\nHuomautus: Muutokset koskevat vain seuraavia videoita"
           },
           "disable_google_play_dialogs": {
-            "name": "Poista Google Play -palveluikkuna k‰ytˆst‰",
-            "description": "Est‰ Google Play -palvelujen saatavuus -ikkunat"
+            "name": "Poista Google Play -palveluikkuna k√§yt√∂st√§",
+            "description": "Est√§ Google Play -palvelujen saatavuus -ikkunat"
           },
           "default_volume_controls": {
-            "name": "Oletus‰‰nens‰‰timet",
-            "description": "Pakota Snapchat k‰ytt‰m‰‰n j‰rjestelm‰n ‰‰nenvoimakkuutta"
+            "name": "Oletus√§√§nens√§√§timet",
+            "description": "Pakota Snapchat k√§ytt√§m√§√§n j√§rjestelm√§n √§√§nenvoimakkuutta"
           },
           "disable_telecom_framework": {
-            "name": "Poista televiestint‰kehys k‰ytˆst‰",
-            "description": "Est‰‰ Snapchatia k‰ytt‰m‰st‰ Android Telecom -j‰rjestelm‰‰\nN‰in voit kuunnella musiikkia puhelun aikana"
+            "name": "Poista televiestint√§kehys k√§yt√∂st√§",
+            "description": "Est√§√§ Snapchatia k√§ytt√§m√§st√§ Android Telecom -j√§rjestelm√§√§\nN√§in voit kuunnella musiikkia puhelun aikana"
           },
           "hide_active_music": {
             "name": "Piilota aktiivinen musiikki",
-            "description": "Est‰‰ Snapchatia tiet‰m‰st‰, ett‰ kuuntelet musiikkia\nN‰in voit ottaa napsautuksia ohjaus ‰‰nenvoimakkuuden painikkeilla kuunnellessasi musiikkia"
+            "description": "Est√§√§ Snapchatia tiet√§m√§st√§, ett√§ kuuntelet musiikkia\nN√§in voit ottaa napsautuksia ohjaus √§√§nenvoimakkuuden painikkeilla kuunnellessasi musiikkia"
           },
           "disable_snap_splitting": {
-            "name": "Poista snap-jako k‰ytˆst‰",
-            "description": "Est‰‰ Napsien jakautumisen useaan osaan\nL‰hett‰m‰si kuvat muuttuvat videoiksi"
+            "name": "Poista snap-jako k√§yt√∂st√§",
+            "description": "Est√§√§ Napsien jakautumisen useaan osaan\nL√§hett√§m√§si kuvat muuttuvat videoiksi"
           }
         }
       },
@@ -1304,59 +1293,36 @@
             "description": "Valitse kansio, johon kaikki mediat ladataan"
           },
           "auto_download_sources": {
-            "name": "Automaattinen latausl‰hde",
-            "description": "Valitse automaattisesti ladattavat l‰hteet"
+            "name": "Automaattinen latausl√§hde",
+            "description": "Valitse automaattisesti ladattavat l√§hteet"
           },
           "prevent_self_auto_download": {
-            "name": "Est‰ self Automaattinen lataus",
-            "description": "Est‰‰ omien napsien lataamista automaattisesti"
+            "name": "Est√§ self Automaattinen lataus",
+            "description": "Est√§√§ omien napsien lataamista automaattisesti"
           },
           "path_format": {
             "name": "Polun muoto",
-            "description": "M‰‰rittele tiedostopolun muoto"
+            "description": "M√§√§rittele tiedostopolun muoto"
           },
           "allow_duplicate": {
             "name": "Salli kaksoiskappale",
             "description": "Sallie saman median ladata useita kertoja"
           },
           "merge_overlays": {
-            "name": "Yhdist‰ Overlays",
-            "description": "Yhdist‰‰ tekstin ja Snap-tiedoston median yhdeksi tiedostoksi"
+            "name": "Yhdist√§ Overlays",
+            "description": "Yhdist√§√§ tekstin ja Snap-tiedoston median yhdeksi tiedostoksi"
           },
           "force_image_format": {
             "name": "Pakota kuvan muoto",
             "description": "Pakottaa tallennettavat kuvat tiettyyn muotoon"
           },
           "force_voice_note_format": {
-            "name": "Voima‰‰nimuistilapun muoto",
-            "description": "Voimat ƒ‰ni Muistiinpanot, jotka tallennetaan tietyss‰ muodossa"
+            "name": "Voima√§√§nimuistilapun muoto",
+            "description": "Voimat √Ñ√§ni Muistiinpanot, jotka tallennetaan tietyss√§ muodossa"
           },
           "auto_download_voice_notes": {
-            "name": "Automaattinen lataus ƒ‰nimuistilaput",
-            "description": "Lataa ‰‰nimuistilaput automaattisesti, kun niit‰ soitetaan"
-          },
-          \"call_recorder\": {
-              \"name\": \"Call Recorder\",
-              \"description\": \"Manage call recording settings\",
-              \"properties\": {
-                  \"call_recorder\": {
-                      \"name\": \"Mode\",
-                      \"description\": \"Select what should be recorded\"
-                  },
-                  \"auto_start_recording\": {
-                      \"name\": \"Auto Start Recording\",
-                      \"description\": \"Automatically start recording when a call starts\"
-                  },
-                  \"call_recorder_ui\": {
-                      \"name\": \"Call Recorder UI\",
-                      \"description\": \"Show the recording overlay UI during calls\"
-                  },
-                  \"call_recorder_ui_design\": {
-                      \"name\": \"UI Design\",
-                      \"description\": \"Select the design for the call recorder overlay\"
-                  },
-                  \"call_recording_saved_toast\": \"Saved\"
-              }
+            "name": "Automaattinen lataus √Ñ√§nimuistilaput",
+            "description": "Lataa √§√§nimuistilaput automaattisesti, kun niit√§ soitetaan"
           },
           "download_profile_pictures": {
             "name": "Lataa profiilikuvat",
@@ -1364,19 +1330,19 @@
           },
           "opera_download_button": {
             "name": "Oopperan latauspainike",
-            "description": "Lis‰‰ latauspainikkeen oikeassa yl‰kulmassa, kun katselet Snap.\nPitk‰ painaminen painikkeilla pakottaa lataa"
+            "description": "Lis√§√§ latauspainikkeen oikeassa yl√§kulmassa, kun katselet Snap.\nPitk√§ painaminen painikkeilla pakottaa lataa"
           },
           "download_context_menu": {
             "name": "Lataa kontekstivalikko",
-            "description": "Voit ladata/esikatsella viestej‰ keskustelusta tai tarinasta kontekstivalikon avulla.\nPitk‰ painaminen painikkeilla pakottaa lataa"
+            "description": "Voit ladata/esikatsella viestej√§ keskustelusta tai tarinasta kontekstivalikon avulla.\nPitk√§ painaminen painikkeilla pakottaa lataa"
           },
           "ffmpeg_options": {
             "name": "FFmpeg- asetukset",
-            "description": "Lis‰tiedot FFmpeg- valinnat",
+            "description": "Lis√§tiedot FFmpeg- valinnat",
             "properties": {
               "threads": {
                 "name": "Lanka",
-                "description": "K‰ytett‰v‰t langat"
+                "description": "K√§ytett√§v√§t langat"
               },
               "preset": {
                 "name": "Esiaseta",
@@ -1384,107 +1350,107 @@
               },
               "constant_rate_factor": {
                 "name": "Vakionopeuskerroin",
-                "description": "Aseta videokoodaimen vakionopeuskerroin\n0-51, kun kyseess‰ on libx264"
+                "description": "Aseta videokoodaimen vakionopeuskerroin\n0-51, kun kyseess√§ on libx264"
               },
               "video_bitrate": {
                 "name": "Videon bittinopeus",
                 "description": "Aseta videobitrate (kbps)"
               },
               "audio_bitrate": {
-                "name": "ƒ‰nen Bitrate",
-                "description": "Aseta ‰‰nibitrate (kbps)"
+                "name": "√Ñ√§nen Bitrate",
+                "description": "Aseta √§√§nibitrate (kbps)"
               },
               "custom_video_codec": {
                 "name": "Oma videokoodekki",
                 "description": "Aseta oma videokoodekki (esim. libx264)"
               },
               "custom_audio_codec": {
-                "name": "Oma ‰‰nikoodekki",
+                "name": "Oma √§√§nikoodekki",
                 "description": "Aseta oma Audio Codec (esim. AAC)"
               }
             }
           },
           "logging": {
             "name": "Kirjaaminen",
-            "description": "N‰ytt‰‰ paahtoleiv‰n, kun media lataa"
+            "description": "N√§ytt√§√§ paahtoleiv√§n, kun media lataa"
           },
           "custom_path_format": {
             "name": "Oma polun muoto",
-            "description": "M‰‰rittele muokattu polkumuoto ladatuille levyille\n\nK‰ytett‰viss‰ olevat muuttujat:\n- %username%\n- %l‰hde%\n- Hash\n- %date_time%"
+            "description": "M√§√§rittele muokattu polkumuoto ladatuille levyille\n\nK√§ytett√§viss√§ olevat muuttujat:\n- %username%\n- %l√§hde%\n- Hash\n- %date_time%"
           }
         }
       },
       "user_interface": {
-        "name": "K‰yttˆliittym‰",
-        "description": "Muuta Snapchatin ulkon‰kˆ‰",
+        "name": "K√§ytt√∂liittym√§",
+        "description": "Muuta Snapchatin ulkon√§k√∂√§",
         "properties": {
           "enable_app_appearance": {
-            "name": "Ota k‰yttˆˆn ulkon‰kˆasetukset",
-            "description": "Sallii piilotetun n‰ytˆksen ilmestymisen asetukset\nEi v‰ltt‰m‰tt‰ tarvitse k‰ytt‰‰ uudempia Snapchat-versioita"
+            "name": "Ota k√§ytt√∂√∂n ulkon√§k√∂asetukset",
+            "description": "Sallii piilotetun n√§yt√∂ksen ilmestymisen asetukset\nEi v√§ltt√§m√§tt√§ tarvitse k√§ytt√§√§ uudempia Snapchat-versioita"
           },
           "friend_feed_message_preview": {
-            "name": "Yst‰v‰syˆteviestin esikatselu",
-            "description": "N‰ytt‰‰ yst‰v‰syˆtteen viimeisten viestien esikatselun",
+            "name": "Yst√§v√§sy√∂teviestin esikatselu",
+            "description": "N√§ytt√§√§ yst√§v√§sy√∂tteen viimeisten viestien esikatselun",
             "properties": {
               "amount": {
-                "name": "M‰‰r‰",
-                "description": "Esikatseltavien viestien m‰‰r‰"
+                "name": "M√§√§r√§",
+                "description": "Esikatseltavien viestien m√§√§r√§"
               }
             }
           },
           "snap_preview": {
             "name": "Snap- esikatselu",
-            "description": "N‰ytt‰‰ pienen esikatselun chatissa n‰kym‰ttˆm‰n Napsin vieress‰"
+            "description": "N√§ytt√§√§ pienen esikatselun chatissa n√§kym√§tt√∂m√§n Napsin vieress√§"
           },
           "bootstrap_override": {
             "name": "Bootstrapin ohitus",
-            "description": "Ohittaa k‰yttˆliittym‰n k‰ynnistystuen asetukset",
+            "description": "Ohittaa k√§ytt√∂liittym√§n k√§ynnistystuen asetukset",
             "properties": {
               "app_appearance": {
                 "name": "Ulkoasu",
                 "description": "Asettaa jatkuvan ulkoasun"
               },
               "home_tab": {
-                "name": "Kotiv‰lilehti",
-                "description": "Ohittaa k‰ynnistysv‰lilehden avattaessa Snapchatia"
+                "name": "Kotiv√§lilehti",
+                "description": "Ohittaa k√§ynnistysv√§lilehden avattaessa Snapchatia"
               }
             }
           },
           "map_friend_nametags": {
-            "name": "Parannetut yst‰v‰karttanimet",
-            "description": "Parantaa yst‰vien nimilappuja"
+            "name": "Parannetut yst√§v√§karttanimet",
+            "description": "Parantaa yst√§vien nimilappuja"
           },
           "prevent_message_list_auto_scroll": {
-            "name": "Est‰ viestilistan automaattinen k‰‰rˆ",
-            "description": "Est‰‰ viestiluettelon vierimisen alareunaan viesti‰ l‰hetett‰ess‰ tai vastaanotettaessa"
+            "name": "Est√§ viestilistan automaattinen k√§√§r√∂",
+            "description": "Est√§√§ viestiluettelon vierimisen alareunaan viesti√§ l√§hetett√§ess√§ tai vastaanotettaessa"
           },
           "streak_expiration_info": {
-            "name": "N‰yt‰ merkkijonon voimassaolon tiedot",
-            "description": "N‰ytt‰‰ Streak Ajastin vieress‰ Streaks laskuri"
+            "name": "N√§yt√§ merkkijonon voimassaolon tiedot",
+            "description": "N√§ytt√§√§ Streak Ajastin vieress√§ Streaks laskuri"
           },
           "hide_friend_feed_entry": {
-            "name": "Piilota yst‰v‰syˆte",
-            "description": "Piilottaa tietyn yst‰v‰n Friend Feedist‰\nK‰yt‰ sosiaalista v‰lilehte‰ hallitaksesi t‰t‰ ominaisuutta"
+            "name": "Piilota yst√§v√§sy√∂te",
+            "description": "Piilottaa tietyn yst√§v√§n Friend Feedist√§\nK√§yt√§ sosiaalista v√§lilehte√§ hallitaksesi t√§t√§ ominaisuutta"
           },
           "hide_streak_restore": {
             "name": "Piilota Streak Palauta",
-            "description": "Piilota Palauta-painike yst‰v‰syˆtteen"
+            "description": "Piilota Palauta-painike yst√§v√§sy√∂tteen"
           },
           "hide_quick_add_suggestions": {
             "name": "Piilota pikapanokset",
-            "description": "Poistaa nopeat yst‰v‰n ehdotukset"
+            "description": "Poistaa nopeat yst√§v√§n ehdotukset"
           },
           "hide_story_suggestions": {
             "name": "Piilota tarinan ehdotukset",
             "description": "Poistaa ehdotuksia Tarinoiden sivulta"
           },
           "hide_ui_components": {
-            "name": "Piilota k‰yttˆliittym‰n osat",
-            "description": "Valitse piilotettavat k‰yttˆliittym‰n osat"
+            "name": "Piilota k√§ytt√∂liittym√§n osat",
+            "description": "Valitse piilotettavat k√§ytt√∂liittym√§n osat"
           },
           "opera_media_quick_info": {
             "name": "Oopperamedian pikatiedot",
-            "description": "N‰ytt‰‰ hyˆdyllist‰ tietoa mediasta, kuten luontip‰iv‰m‰‰r‰n oopperan‰ytˆn kontekstivalikossa"
+            "description": "N√§ytt√§√§ hy√∂dyllist√§ tietoa mediasta, kuten luontip√§iv√§m√§√§r√§n oopperan√§yt√∂n kontekstivalikossa"
           },
           "old_bitmoji_selfie": {
             "name": "Bitmoji Selfie",
@@ -1492,171 +1458,171 @@
           },
           "disable_spotlight": {
             "name": "Poista valo",
-            "description": "Poistaa valokeilan sivun k‰ytˆst‰"
+            "description": "Poistaa valokeilan sivun k√§yt√∂st√§"
           },
           "friend_feed_menu_buttons": {
-            "name": "Yst‰v‰n syˆttˆvalikon painikkeet",
-            "description": "Valitse mitk‰ painikkeet n‰ytet‰‰n Friend Feed -valikossa"
+            "name": "Yst√§v√§n sy√∂tt√∂valikon painikkeet",
+            "description": "Valitse mitk√§ painikkeet n√§ytet√§√§n Friend Feed -valikossa"
           },
           "auto_close_friend_feed_menu": {
-            "name": "Automaattinen Sulje yst‰v‰syˆte valikko",
-            "description": "Sulje Friend Feed -valikon automaattisesti asetuspainikkeen painamisen j‰lkeen"
+            "name": "Automaattinen Sulje yst√§v√§sy√∂te valikko",
+            "description": "Sulje Friend Feed -valikon automaattisesti asetuspainikkeen painamisen j√§lkeen"
           },
           "vertical_story_viewer": {
             "name": "Pystysuuntainen tarinakatselin",
             "description": "Mahdollistaa vertikaalisen tarinan katsojan kaikille tarinoille"
           },
           "enable_friend_feed_menu_bar": {
-            "name": "Yst‰v‰n syˆttˆ valikkorivi",
-            "description": "Mahdollistaa uuden yst‰v‰syˆtˆn valikkopalkin"
+            "name": "Yst√§v√§n sy√∂tt√∂ valikkorivi",
+            "description": "Mahdollistaa uuden yst√§v√§sy√∂t√∂n valikkopalkin"
           },
           "message_indicators": {
             "name": "Viestin indikaattorit",
-            "description": "Lis‰‰ erityisi‰ indikaattoreita kuvakkeet viesteihin\nHuomautus: Indikaattorit eiv‰t ehk‰ ole 100% tarkkoja"
+            "description": "Lis√§√§ erityisi√§ indikaattoreita kuvakkeet viesteihin\nHuomautus: Indikaattorit eiv√§t ehk√§ ole 100% tarkkoja"
           },
           "stealth_mode_indicator": {
             "name": "Varastetun tilan ilmaisin",
-            "description": "Lis‰‰ emojin h‰ivetilassa olevien keskustelujen viereen"
+            "description": "Lis√§√§ emojin h√§ivetilassa olevien keskustelujen viereen"
           },
           "edit_text_override": {
-            "name": "Muokkaa teksti‰",
-            "description": "Ohittaa tekstikent‰n k‰ytt‰ytymisen"
+            "name": "Muokkaa teksti√§",
+            "description": "Ohittaa tekstikent√§n k√§ytt√§ytymisen"
           },
           "prevent_forced_keyboard": {
-            "name": "Est‰ pakotettu n‰pp‰imistˆ",
-            "description": "Est‰‰ Snapchatia ilmestym‰st‰ automaattisesti n‰pp‰imistˆlle, kun avaat keskustelun"
+            "name": "Est√§ pakotettu n√§pp√§imist√∂",
+            "description": "Est√§√§ Snapchatia ilmestym√§st√§ automaattisesti n√§pp√§imist√∂lle, kun avaat keskustelun"
           },
           "force_amoled_theme": {
             "name": "Pakota AMOLED Teema",
-            "description": "Pakota todellinen musta AMOLED teema kautta sovelluksen k‰yttˆliittym‰"
+            "description": "Pakota todellinen musta AMOLED teema kautta sovelluksen k√§ytt√∂liittym√§"
           },
           "settings_menu": {
             "name": "Asetukset",
-            "description": "Valitse uusien ja perinteisten asetusasettelujen v‰lill‰"
+            "description": "Valitse uusien ja perinteisten asetusasettelujen v√§lill√§"
           }
         }
       },
       "messaging": {
         "name": "Viestit",
-        "description": "Muuta vuorovaikutusta yst‰vien kanssa",
+        "description": "Muuta vuorovaikutusta yst√§vien kanssa",
         "properties": {
           "bypass_screenshot_detection": {
             "name": "Ohita kuvakaappauksen tunnistus",
-            "description": "Est‰‰ Snapchatia havaitsemasta, kun otat kuvakaappauksen"
+            "description": "Est√§√§ Snapchatia havaitsemasta, kun otat kuvakaappauksen"
           },
           "anonymous_story_viewing": {
-            "name": "Nimetˆn tarinankatselu",
-            "description": "Est‰‰ ket‰‰n tiet‰m‰st‰, ett‰ olet n‰hnyt heid‰n tarinansa"
+            "name": "Nimet√∂n tarinankatselu",
+            "description": "Est√§√§ ket√§√§n tiet√§m√§st√§, ett√§ olet n√§hnyt heid√§n tarinansa"
           },
           "prevent_story_rewatch_indicator": {
-            "name": "Est‰ tarinan katsella ilmaisin",
-            "description": "Est‰‰ ket‰‰n tiet‰m‰st‰, ett‰ olet katsonut heid‰n tarinansa uudelleen"
+            "name": "Est√§ tarinan katsella ilmaisin",
+            "description": "Est√§√§ ket√§√§n tiet√§m√§st√§, ett√§ olet katsonut heid√§n tarinansa uudelleen"
           },
           "hide_peek_a_peek": {
             "name": "Piilota Peek-a-Peek",
-            "description": "Est‰‰ ilmoituksen l‰hett‰misen, kun puoli pyyhk‰isee chattiin"
+            "description": "Est√§√§ ilmoituksen l√§hett√§misen, kun puoli pyyhk√§isee chattiin"
           },
           "hide_bitmoji_presence": {
             "name": "Piilota Bitmoji-esiintyminen",
-            "description": "Est‰‰ Bitmojin ilmestymisen chatissa"
+            "description": "Est√§√§ Bitmojin ilmestymisen chatissa"
           },
           "hide_typing_notifications": {
             "name": "Piilota kirjoitusilmoitukset",
-            "description": "Est‰‰ ket‰‰n tiet‰m‰st‰, ett‰ kirjoitat viesti‰"
+            "description": "Est√§√§ ket√§√§n tiet√§m√§st√§, ett√§ kirjoitat viesti√§"
           },
           "unlimited_snap_view_time": {
-            "name": "Rajoittamaton pikan‰kym‰n aika",
+            "name": "Rajoittamaton pikan√§kym√§n aika",
             "description": "Poistaa aikarajoituksen katselua varten"
           },
           "auto_mark_as_read": {
             "name": "Merkitse automaattisesti luetuksi",
-            "description": "Merkitsee viestit/napsit automaattisesti luetuiksi myˆs silloin, kun varastetila on k‰ytˆss‰"
+            "description": "Merkitsee viestit/napsit automaattisesti luetuiksi my√∂s silloin, kun varastetila on k√§yt√∂ss√§"
           },
           "mark_snap_as_seen_button": {
             "name": "Mark Snap kuin Nauha",
-            "description": "Lis‰‰ painikkeen merkit‰ Snap kuten n‰hd‰‰n, kun sit‰ tarkastellaan.\nT‰m‰ toimii silloinkin, kun varastetila on k‰ytˆss‰"
+            "description": "Lis√§√§ painikkeen merkit√§ Snap kuten n√§hd√§√§n, kun sit√§ tarkastellaan.\nT√§m√§ toimii silloinkin, kun varastetila on k√§yt√∂ss√§"
           },
           "skip_when_marking_as_seen": {
-            "name": "Ohita merkittyn‰ n‰hdyksi",
-            "description": "Hypp‰‰ automaattisesti seuraavaan Snap kun merkint‰ Snap kuten n‰hd‰‰n.\nK‰yttˆ yhdess‰ Mark Snap Seen Buttonin kanssa"
+            "name": "Ohita merkittyn√§ n√§hdyksi",
+            "description": "Hypp√§√§ automaattisesti seuraavaan Snap kun merkint√§ Snap kuten n√§hd√§√§n.\nK√§ytt√∂ yhdess√§ Mark Snap Seen Buttonin kanssa"
           },
           "loop_media_playback": {
             "name": "Loop Median toisto",
             "description": "Loops median toiston katsellessa Snaps / Tarinoita"
           },
           "disable_replay_in_ff": {
-            "name": "Poista toisto k‰ytˆst‰ FF:ss‰",
-            "description": "Poistaa mahdollisuuden toistaa pitk‰ll‰ painalluksella Friend Feedist‰"
+            "name": "Poista toisto k√§yt√∂st√§ FF:ss√§",
+            "description": "Poistaa mahdollisuuden toistaa pitk√§ll√§ painalluksella Friend Feedist√§"
           },
           "half_swipe_notifier": {
-            "name": "Puolikas pyyhk‰isyilmoitus",
-            "description": "Ilmoittaa, kun joku puoli pyyhk‰isee keskusteluun",
+            "name": "Puolikas pyyhk√§isyilmoitus",
+            "description": "Ilmoittaa, kun joku puoli pyyhk√§isee keskusteluun",
             "properties": {
               "min_duration": {
-                "name": "V‰himm‰iskesto",
-                "description": "Puolikkaan pyyhk‰isyn v‰himm‰iskesto (sekunteina)"
+                "name": "V√§himm√§iskesto",
+                "description": "Puolikkaan pyyhk√§isyn v√§himm√§iskesto (sekunteina)"
               },
               "max_duration": {
-                "name": "Enimm‰iskesto",
-                "description": "Puolikkaan pyyhk‰isyn enimm‰iskesto (sekunteina)"
+                "name": "Enimm√§iskesto",
+                "description": "Puolikkaan pyyhk√§isyn enimm√§iskesto (sekunteina)"
               }
             }
           },
           "call_start_confirmation": {
             "name": "Soita aloitusvahvistus",
-            "description": "N‰ytt‰‰ vahvistusikkunan puhelua aloitettaessa"
+            "description": "N√§ytt√§√§ vahvistusikkunan puhelua aloitettaessa"
           },
           "unlimited_conversation_pinning": {
             "name": "Rajoittamaton keskustelu",
-            "description": "Voit naulata rajoittamaton m‰‰r‰ keskusteluja paikallisesti"
+            "description": "Voit naulata rajoittamaton m√§√§r√§ keskusteluja paikallisesti"
           },
           "disable_snap_mode_restrictions": {
-            "name": "Poista pikatilarajoitukset k‰ytˆst‰",
+            "name": "Poista pikatilarajoitukset k√§yt√∂st√§",
             "description": "Voit katsella itsetuhoisia nappuloita ilman rajoituksia"
           },
           "prevent_message_sending": {
-            "name": "Est‰ viestin l‰hett‰minen",
-            "description": "Est‰‰ tietyntyyppisten viestien l‰hett‰misen"
+            "name": "Est√§ viestin l√§hett√§minen",
+            "description": "Est√§√§ tietyntyyppisten viestien l√§hett√§misen"
           },
           "friend_mutation_notifier": {
-            "name": "Yst‰v‰ Mutaatioilmoitus",
-            "description": "Ilmoittaa, kun jokin muuttuu yst‰v‰n profiilissa"
+            "name": "Yst√§v√§ Mutaatioilmoitus",
+            "description": "Ilmoittaa, kun jokin muuttuu yst√§v√§n profiilissa"
           },
           "better_notifications": {
             "name": "Paremmat ilmoitukset",
-            "description": "Lis‰‰ lis‰tietoja vastaanotettuihin ilmoituksiin",
+            "description": "Lis√§√§ lis√§tietoja vastaanotettuihin ilmoituksiin",
             "properties": {
               "group_notifications": {
-                "name": "Ryhm‰ilmoitukset",
-                "description": "Ryhm‰-ilmoitukset yhdeksi"
+                "name": "Ryhm√§ilmoitukset",
+                "description": "Ryhm√§-ilmoitukset yhdeksi"
               },
               "chat_preview": {
                 "name": "Chat- esikatselu",
-                "description": "N‰ytt‰‰ vastaanotettujen viestien esikatselun ilmoituksessa"
+                "description": "N√§ytt√§√§ vastaanotettujen viestien esikatselun ilmoituksessa"
               },
               "media_preview": {
                 "name": "Median esikatselu",
-                "description": "N‰ytt‰‰ esikatselun ilmoituksen valituista mediatyypeist‰"
+                "description": "N√§ytt√§√§ esikatselun ilmoituksen valituista mediatyypeist√§"
               },
               "media_caption": {
                 "name": "Mediateksti",
-                "description": "N‰ytt‰‰ ilmoituksen liitteen‰ olevan mediatekstin"
+                "description": "N√§ytt√§√§ ilmoituksen liitteen√§ olevan mediatekstin"
               },
               "stacked_media_messages": {
                 "name": "Pinotut viestit",
-                "description": "Yhdist‰‰ useita mediaviestej‰ yhdeksi teksti-ilmoitukseksi, kun niit‰ ei voi esikatsella. K‰yt‰ yhdess‰ chat esikatselun kanssa"
+                "description": "Yhdist√§√§ useita mediaviestej√§ yhdeksi teksti-ilmoitukseksi, kun niit√§ ei voi esikatsella. K√§yt√§ yhdess√§ chat esikatselun kanssa"
               },
               "friend_add_source": {
-                "name": "Yst‰v‰ Lis‰‰ l‰hde",
-                "description": "N‰ytt‰‰ yst‰v‰pyynnˆn l‰hteen ilmoituksessa"
+                "name": "Yst√§v√§ Lis√§√§ l√§hde",
+                "description": "N√§ytt√§√§ yst√§v√§pyynn√∂n l√§hteen ilmoituksessa"
               },
               "reply_button": {
                 "name": "Vastauspainike",
-                "description": "Lis‰‰ vastauspainikkeen ilmoitukseen"
+                "description": "Lis√§√§ vastauspainikkeen ilmoitukseen"
               },
               "smart_replies": {
-                "name": "ƒlykk‰it‰ vastauksia",
-                "description": "Lis‰t‰‰n ehdotettuja vastauksia ilmoituksiin (Android 10+). K‰yt‰ yhdess‰ Vastaus-painikkeen kanssa"
+                "name": "√Ñlykk√§it√§ vastauksia",
+                "description": "Lis√§t√§√§n ehdotettuja vastauksia ilmoituksiin (Android 10+). K√§yt√§ yhdess√§ Vastaus-painikkeen kanssa"
               },
               "download_button": {
                 "name": "Lataa painike",
@@ -1664,37 +1630,37 @@
               },
               "mark_as_read_button": {
                 "name": "Merkitse Read-painikkeeksi",
-                "description": "Voit merkit‰ ilmoituksen lukeman viestin"
+                "description": "Voit merkit√§ ilmoituksen lukeman viestin"
               },
               "mark_as_read_and_save_in_chat": {
                 "name": "Merkitse Lue ja tallenna chatissa",
-                "description": "Lis‰‰ merkinn‰n luettavaksi ja tallentaa chat-painikkeen ilmoitukseen"
+                "description": "Lis√§√§ merkinn√§n luettavaksi ja tallentaa chat-painikkeen ilmoitukseen"
               }
             }
           },
           "notification_blacklist": {
             "name": "Ilmoitus Musta lista",
-            "description": "Valitse ilmoitukset, jotka pit‰isi est‰‰"
+            "description": "Valitse ilmoitukset, jotka pit√§isi est√§√§"
           },
           "message_logger": {
             "name": "Viestilokija",
-            "description": "Est‰‰ viestien poistamisen",
+            "description": "Est√§√§ viestien poistamisen",
             "properties": {
               "keep_my_own_messages": {
-                "name": "Pid‰ omat viestini",
-                "description": "Est‰‰ omien viestien poistamisen"
+                "name": "Pid√§ omat viestini",
+                "description": "Est√§√§ omien viestien poistamisen"
               },
               "auto_purge": {
                 "name": "Automaattipuhdistus",
-                "description": "Poistaa automaattisesti v‰limuistissa olevat viestit, jotka ovat tietyn ajan vanhempia"
+                "description": "Poistaa automaattisesti v√§limuistissa olevat viestit, jotka ovat tietyn ajan vanhempia"
               },
               "message_filter": {
                 "name": "Viestisuodin",
-                "description": "Valitse mitk‰ viestit kirjataan (tyhj‰ kaikille viesteille)"
+                "description": "Valitse mitk√§ viestit kirjataan (tyhj√§ kaikille viesteille)"
               },
               "deleted_message_color": {
-                "name": "Poistettu viestin v‰ri",
-                "description": "Asettaa poistettujen viestien v‰rin"
+                "name": "Poistettu viestin v√§ri",
+                "description": "Asettaa poistettujen viestien v√§rin"
               }
             }
           },
@@ -1704,11 +1670,11 @@
           },
           "unsaveable_messages": {
             "name": "Pelastamattomat viestit",
-            "description": "Est‰‰ valittujen viestityyppien tallentamisen chattiin",
+            "description": "Est√§√§ valittujen viestityyppien tallentamisen chattiin",
             "properties": {
               "chat": {
                 "name": "Keskusteluviestit",
-                "description": "Tee chat-viesteist‰ pelastamattomia"
+                "description": "Tee chat-viesteist√§ pelastamattomia"
               },
               "snap": {
                 "name": "Napsit",
@@ -1724,11 +1690,11 @@
               },
               "share": {
                 "name": "Osakkeet",
-                "description": "Tee jaetusta sis‰llˆst‰ pelastamaton"
+                "description": "Tee jaetusta sis√§ll√∂st√§ pelastamaton"
               },
               "note": {
-                "name": "ƒ‰nimuistilaput",
-                "description": "Tehd‰ ‰‰nimuistilaput tallennettaviksi"
+                "name": "√Ñ√§nimuistilaput",
+                "description": "Tehd√§ √§√§nimuistilaput tallennettaviksi"
               },
               "story_reply": {
                 "name": "Tarinavastaukset",
@@ -1737,38 +1703,38 @@
             }
           },
           "gallery_media_send_override": {
-            "name": "Galleria Media L‰het‰ ohitus",
-            "description": "Spoofs medial‰hde l‰hetett‰ess‰ Galleria",
+            "name": "Galleria Media L√§het√§ ohitus",
+            "description": "Spoofs medial√§hde l√§hetett√§ess√§ Galleria",
             "properties": {
               "mode": {
                 "name": "Ohitustila",
-                "description": "Valitse miten galleriamedia l‰hetet‰‰n"
+                "description": "Valitse miten galleriamedia l√§hetet√§√§n"
               },
               "include_camera_snaps": {
-                "name": "Sis‰llyt‰ kamerat",
-                "description": "N‰yt‰ myˆs kameran napsautuksia koskeva ohitusikkuna"
+                "name": "Sis√§llyt√§ kamerat",
+                "description": "N√§yt√§ my√∂s kameran napsautuksia koskeva ohitusikkuna"
               }
             }
           },
           "strip_media_metadata": {
             "name": "Strip Median metatiedot",
-            "description": "Poistaa median metatiedot ennen viestin l‰hett‰mist‰"
+            "description": "Poistaa median metatiedot ennen viestin l√§hett√§mist√§"
           },
           "bypass_message_retention_policy": {
-            "name": "Ohita viestin s‰ilytysk‰yt‰ntˆ",
-            "description": "Est‰‰ viestien poistamisen niiden katselun j‰lkeen"
+            "name": "Ohita viestin s√§ilytysk√§yt√§nt√∂",
+            "description": "Est√§√§ viestien poistamisen niiden katselun j√§lkeen"
           },
           "bypass_message_action_restrictions": {
             "name": "Ohita viestin toimintarajoitukset",
-            "description": "Voit reagoida napsautukseen avaamatta sit‰ tai tallentamatta viesti‰"
+            "description": "Voit reagoida napsautukseen avaamatta sit√§ tai tallentamatta viesti√§"
           },
           "remove_groups_locked_status": {
             "name": "Poista ryhmien lukitustila",
-            "description": "Voit tarkastella ryhm‰tietoja potkimisen j‰lkeen"
+            "description": "Voit tarkastella ryhm√§tietoja potkimisen j√§lkeen"
           },
           "double_tap_chat_action": {
             "name": "Kaksoisnapauschattitoiminto",
-            "description": "Suorittaa mukautetun toimen, kun kaksoisn‰pp‰ilee viesti‰ chatissa"
+            "description": "Suorittaa mukautetun toimen, kun kaksoisn√§pp√§ilee viesti√§ chatissa"
           },
           "double_tap_chat_action_custom_emoji": {
             "name": "Double Tap Chat Action Custom Emoji reaktio",
@@ -1776,109 +1742,109 @@
           },
           "auto_reply": {
             "name": "Automaattinen vastaus",
-            "description": "L‰hett‰‰ automaattisesti vastaukset saapuneisiin viesteihin kun olet poissa",
+            "description": "L√§hett√§√§ automaattisesti vastaukset saapuneisiin viesteihin kun olet poissa",
             "properties": {
               "allow_running_in_background": {
                 "name": "Salli juokseminen taustalla",
-                "description": "Sallii Auto Replyn ajaa taustalla. Huom: T‰m‰ tyhjent‰‰ pariston merkitt‰v‰sti"
+                "description": "Sallii Auto Replyn ajaa taustalla. Huom: T√§m√§ tyhjent√§√§ pariston merkitt√§v√§sti"
               },
               "cooldown_seconds": {
-                "name": "J‰‰hdytyssekvenssit",
-                "description": "V‰himm‰isaika automaattisen vastaamisen saman keskustelun v‰lill‰ (sekunteina)"
+                "name": "J√§√§hdytyssekvenssit",
+                "description": "V√§himm√§isaika automaattisen vastaamisen saman keskustelun v√§lill√§ (sekunteina)"
               },
               "message_age_threshold": {
-                "name": "Viestin ik‰raja",
+                "name": "Viestin ik√§raja",
                 "description": "Ainoastaan vastaus saamiinsa viesteihin (sekunteina)"
               },
               "ai_config": {
                 "name": "AI- asetukset",
-                "description": "AI-k‰yttˆisten automaattisen vastaamisen asetukset",
+                "description": "AI-k√§ytt√∂isten automaattisen vastaamisen asetukset",
                 "properties": {
                   "enable_ai_replies": {
-                    "name": "K‰yt‰ teko‰lyvastauksia",
-                    "description": "K‰yt‰ teko‰ly‰ luodaksesi ‰lykk‰it‰ automaattisia vastauksia malliviestien sijaan"
+                    "name": "K√§yt√§ teko√§lyvastauksia",
+                    "description": "K√§yt√§ teko√§ly√§ luodaksesi √§lykk√§it√§ automaattisia vastauksia malliviestien sijaan"
                   },
                   "ai_provider": {
-                    "name": "Teko‰lyn tarjoaja",
-                    "description": "Valitse mit‰ teko‰lypalvelua k‰ytet‰‰n vastausten tuottamiseen"
+                    "name": "Teko√§lyn tarjoaja",
+                    "description": "Valitse mit√§ teko√§lypalvelua k√§ytet√§√§n vastausten tuottamiseen"
                   },
                   "ai_endpoint_url": {
-                    "name": "AI p‰‰tepisteen URL",
-                    "description": "API p‰‰tepisteen URL teko‰lypalvelulle (esim. OpenAI, paikallinen teko‰lypalvelin)"
+                    "name": "AI p√§√§tepisteen URL",
+                    "description": "API p√§√§tepisteen URL teko√§lypalvelulle (esim. OpenAI, paikallinen teko√§lypalvelin)"
                   },
                   "ai_model": {
                     "name": "AI-malli",
-                    "description": "Teko‰lymalli, jota k‰ytet‰‰n tuottamaan vastauksia (esim. gpt-3.5-turbo, gpt-4)"
+                    "description": "Teko√§lymalli, jota k√§ytet√§√§n tuottamaan vastauksia (esim. gpt-3.5-turbo, gpt-4)"
                   },
                   "ai_api_key": {
                     "name": "AI API avain",
-                    "description": "API-avain teko‰lypalveluun"
+                    "description": "API-avain teko√§lypalveluun"
                   },
                   "ai_system_prompt": {
                     "name": "AI-j?rjestelm?kehote",
-                    "description": "J‰rjestelm‰kehotus, joka m‰‰rittelee teko‰lyn persoonallisuuden ja k‰ytt‰ytymisen"
+                    "description": "J√§rjestelm√§kehotus, joka m√§√§rittelee teko√§lyn persoonallisuuden ja k√§ytt√§ytymisen"
                   },
                   "ai_max_tokens": {
                     "name": "Al Max Tokens",
-                    "description": "Enint‰‰n m‰‰r‰ rahakkeita (sanoja) AI voi k‰ytt‰‰ vastauksia"
+                    "description": "Enint√§√§n m√§√§r√§ rahakkeita (sanoja) AI voi k√§ytt√§√§ vastauksia"
                   },
                   "ai_temperature": {
-                    "name": "Teko‰lyn l‰mpˆtila",
+                    "name": "Teko√§lyn l√§mp√∂tila",
                     "description": "Kontrolloi AI-vasteiden satunnaisuutta (0,0 = deterministinen, 2,0 = hyvin satunnaista)"
                   },
                   "ai_context_length": {
                     "name": "AI Konteksti Pituus",
-                    "description": "Aiempien viestien lukum‰‰r‰ teko‰lyvastausten yhteydess‰"
+                    "description": "Aiempien viestien lukum√§√§r√§ teko√§lyvastausten yhteydess√§"
                   },
                   "ai_personality_traits": {
-                    "name": "Teko‰lyn persoonallisuuspiirteet",
-                    "description": "Pilkku erotellut persoonallisuusominaisuudet teko‰lylle (esim. yst‰v‰llinen, rento, avulias)"
+                    "name": "Teko√§lyn persoonallisuuspiirteet",
+                    "description": "Pilkku erotellut persoonallisuusominaisuudet teko√§lylle (esim. yst√§v√§llinen, rento, avulias)"
                   },
                   "ai_response_style": {
                     "name": "Al Response Style",
-                    "description": "Teko‰lyn vastausten yleinen tyyli"
+                    "description": "Teko√§lyn vastausten yleinen tyyli"
                   },
                   "ai_response_language": {
-                    "name": "Teko‰lyn vastauskieli",
-                    "description": "Kieli teko‰lyvastauksille (auto = sama kuin vastaanotettu viesti)"
+                    "name": "Teko√§lyn vastauskieli",
+                    "description": "Kieli teko√§lyvastauksille (auto = sama kuin vastaanotettu viesti)"
                   },
                   "ai_use_conversation_history": {
-                    "name": "K‰yt‰ keskusteluhistoriaa",
-                    "description": "Sis‰llyt‰ aiemmat viestit asiasis‰ltˆˆn, jotta teko‰ly vastaa paremmin"
+                    "name": "K√§yt√§ keskusteluhistoriaa",
+                    "description": "Sis√§llyt√§ aiemmat viestit asiasis√§lt√∂√∂n, jotta teko√§ly vastaa paremmin"
                   },
                   "ai_include_friend_info": {
-                    "name": "Sis‰llyt‰ yst‰v‰tiedot",
-                    "description": "Sis‰llyt‰ yst‰v‰n nimi ja muut saatavilla olevat tiedot teko‰lyn yhteydess‰"
+                    "name": "Sis√§llyt√§ yst√§v√§tiedot",
+                    "description": "Sis√§llyt√§ yst√§v√§n nimi ja muut saatavilla olevat tiedot teko√§lyn yhteydess√§"
                   },
                   "ai_fallback_to_template": {
                     "name": "Takaisin malliin",
-                    "description": "K‰yt‰ malliviestej‰, jos teko‰ly ei tuota vastausta"
+                    "description": "K√§yt√§ malliviestej√§, jos teko√§ly ei tuota vastausta"
                   },
                   "ai_request_timeout": {
-                    "name": "Teko‰lypyynnˆn aikakatkaisu",
-                    "description": "Suurin aika odottaa teko‰lyn vastetta (sekunteina)"
+                    "name": "Teko√§lypyynn√∂n aikakatkaisu",
+                    "description": "Suurin aika odottaa teko√§lyn vastetta (sekunteina)"
                   },
                   "ai_retry_attempts": {
-                    "name": "Teko‰lyn uudelleenyritys",
-                    "description": "Teko‰lypyyntˆjen uusimiskertojen m‰‰r‰, jos ne ep‰onnistuvat"
+                    "name": "Teko√§lyn uudelleenyritys",
+                    "description": "Teko√§lypyynt√∂jen uusimiskertojen m√§√§r√§, jos ne ep√§onnistuvat"
                   }
                 }
               },
               "auto_trigger_config": {
-                "name": "Automaattinen k‰ynnistysasetus",
+                "name": "Automaattinen k√§ynnistysasetus",
                 "description": "Automaattisen vastauksen laukaisimien ja viestimallien asetukset",
                 "properties": {
                   "friendSpecificGreeting": {
-                    "name": "Yst‰v‰kohtainen tervehdys",
-                    "description": "Lis‰‰ yst‰v‰n nimi automaattisiin vastauksiin personointia varten"
+                    "name": "Yst√§v√§kohtainen tervehdys",
+                    "description": "Lis√§√§ yst√§v√§n nimi automaattisiin vastauksiin personointia varten"
                   },
                   "friendGreeting": {
                     "name": "Tervehdys",
-                    "description": "Tervehdys teksti, jota k‰ytet‰‰n, kun yst‰v‰kohtainen tervehdys on k‰ytˆss‰"
+                    "description": "Tervehdys teksti, jota k√§ytet√§√§n, kun yst√§v√§kohtainen tervehdys on k√§yt√∂ss√§"
                   },
                   "auto_reply_content_types": {
                     "name": "Automaattinen vastaus Triggers",
-                    "description": "Valitse, mitk‰ viestityypit k‰ynnist‰isiv‰t automaattiset vastaukset"
+                    "description": "Valitse, mitk√§ viestityypit k√§ynnist√§isiv√§t automaattiset vastaukset"
                   },
                   "chat_messages": {
                     "name": "Chat Viestin vastaukset",
@@ -1898,11 +1864,11 @@
                   },
                   "external_media_messages": {
                     "name": "Ulkoiset viestimet Vastaukset",
-                    "description": "Automaattiset vastaviestit ulkoisille tiedotusv‰lineille"
+                    "description": "Automaattiset vastaviestit ulkoisille tiedotusv√§lineille"
                   },
                   "voice_note_messages": {
-                    "name": "Vastauksia ‰‰neen",
-                    "description": "Automaattivastausviestit ‰‰nimuistiin"
+                    "name": "Vastauksia √§√§neen",
+                    "description": "Automaattivastausviestit √§√§nimuistiin"
                   },
                   "sticker_messages": {
                     "name": "Tarravastaukset",
@@ -1918,7 +1884,7 @@
                   },
                   "half_swipe_messages": {
                     "name": "Puolikas pyyhi viestit",
-                    "description": "Automaattivastausviestit puolipyyhkijˆille"
+                    "description": "Automaattivastausviestit puolipyyhkij√∂ille"
                   }
                 }
               }
@@ -1930,123 +1896,123 @@
             "properties": {
               "allow_running_in_background": {
                 "name": "Salli juokseminen taustalla",
-                "description": "Sallii Auto Open Snapsin ajaa taustalla. Huom: T‰m‰ tyhjent‰‰ pariston merkitt‰v‰sti"
+                "description": "Sallii Auto Open Snapsin ajaa taustalla. Huom: T√§m√§ tyhjent√§√§ pariston merkitt√§v√§sti"
               },
               "min_delay": {
-                "name": "Pienin viiv‰stys (ms)",
+                "name": "Pienin viiv√§stys (ms)",
                 "description": "Pienin viive millisekunneissa ennen napsautuksen avaamista"
               },
               "max_delay_ms": {
-                "name": "Viiv‰styminen enint‰‰n (ms)",
+                "name": "Viiv√§styminen enint√§√§n (ms)",
                 "description": "Suurin viive millisekunneissa ennen napsautuksen avaamista"
               },
               "queue_size": {
                 "name": "Jousikoko",
-                "description": "Jonossa olevien napsojen enimm‰ism‰‰r‰"
+                "description": "Jonossa olevien napsojen enimm√§ism√§√§r√§"
               },
               "retry_attempts": {
-                "name": "Yrit‰ uudelleen",
-                "description": "Napsautuksen uudelleenavauskertojen m‰‰r‰, jos se ep‰onnistuu"
+                "name": "Yrit√§ uudelleen",
+                "description": "Napsautuksen uudelleenavauskertojen m√§√§r√§, jos se ep√§onnistuu"
               },
               "retry_delay": {
-                "name": "Yrit‰ uudelleen viiv‰stymist‰ (ms)",
-                "description": "Viive millisekunneissa uusintayritysten v‰lill‰"
+                "name": "Yrit√§ uudelleen viiv√§stymist√§ (ms)",
+                "description": "Viive millisekunneissa uusintayritysten v√§lill√§"
               }
             }
           },
           "auto_delete_sent_messages": {
-            "name": "Automaattinen poistaa l‰hetetyt viestit",
-            "description": "Poistaa l‰hetetyt viestit automaattisesti tietyn ajanjakson j‰lkeen",
+            "name": "Automaattinen poistaa l√§hetetyt viestit",
+            "description": "Poistaa l√§hetetyt viestit automaattisesti tietyn ajanjakson j√§lkeen",
             "properties": {
               "allow_running_in_background": {
                 "name": "Salli juokseminen taustalla",
-                "description": "Sallii Auto Delete L‰hetettyjen viestien ajaa taustalla. Huom: T‰m‰ tyhjent‰‰ pariston merkitt‰v‰sti"
+                "description": "Sallii Auto Delete L√§hetettyjen viestien ajaa taustalla. Huom: T√§m√§ tyhjent√§√§ pariston merkitt√§v√§sti"
               },
               "delete_after_value": {
-                "name": "Poista j‰lkeen (arvo)",
-                "description": "Aika-arvo ennen l‰hetetyn viestin poistamista"
+                "name": "Poista j√§lkeen (arvo)",
+                "description": "Aika-arvo ennen l√§hetetyn viestin poistamista"
               },
               "delete_after_unit": {
-                "name": "Aikayksikkˆ",
-                "description": "Valitse aikayksikkˆ poistoviiveelle"
+                "name": "Aikayksikk√∂",
+                "description": "Valitse aikayksikk√∂ poistoviiveelle"
               },
               "message_types": {
                 "name": "Viestityypit",
-                "description": "Valitse, mitk‰ viestityypit pit‰isi poistaa automaattisesti"
+                "description": "Valitse, mitk√§ viestityypit pit√§isi poistaa automaattisesti"
               },
               "show_countdown": {
-                "name": "N‰yt‰ laskenta",
-                "description": "N‰yt‰ l‰htˆlaskenta ennen viestin poistamista"
+                "name": "N√§yt√§ laskenta",
+                "description": "N√§yt√§ l√§ht√∂laskenta ennen viestin poistamista"
               },
               "show_notification": {
-                "name": "N‰yt‰ ilmoitus",
-                "description": "N‰yt‰ ilmoitus l‰htˆlaskennan aikana"
+                "name": "N√§yt√§ ilmoitus",
+                "description": "N√§yt√§ ilmoitus l√§ht√∂laskennan aikana"
               }
             }
           },
           "instant_translation": {
-            "name": "Viestin k‰‰nt‰j‰",
-            "description": "K‰‰nn‰ saapuvat viestit automaattisesti haluamallesi kielelle",
+            "name": "Viestin k√§√§nt√§j√§",
+            "description": "K√§√§nn√§ saapuvat viestit automaattisesti haluamallesi kielelle",
             "properties": {
               "enabled": {
-                "name": "Ota viestik‰‰nt‰j‰ k‰yttˆˆn",
-                "description": "K‰yt‰ viestien automaattista k‰‰nt‰mist‰"
+                "name": "Ota viestik√§√§nt√§j√§ k√§ytt√∂√∂n",
+                "description": "K√§yt√§ viestien automaattista k√§√§nt√§mist√§"
               },
               "source_language": {
-                "name": "L‰hdekieli",
-                "description": "Kielen k‰‰nt‰‰ (k‰yt‰ 'auto' automaattinen havaitseminen)"
+                "name": "L√§hdekieli",
+                "description": "Kielen k√§√§nt√§√§ (k√§yt√§ 'auto' automaattinen havaitseminen)"
               },
               "target_language": {
                 "name": "Kohdekieli",
-                "description": "Kieli k‰‰nt‰‰"
+                "description": "Kieli k√§√§nt√§√§"
               },
               "show_original": {
-                "name": "N‰yt‰ alkuper‰inen teksti",
-                "description": "N‰yt‰ alkuper‰isen viestin teksti"
+                "name": "N√§yt√§ alkuper√§inen teksti",
+                "description": "N√§yt√§ alkuper√§isen viestin teksti"
               },
               "show_translation": {
-                "name": "N‰yt‰ k‰‰nnˆs",
-                "description": "N‰yt‰ k‰‰nnetty teksti"
+                "name": "N√§yt√§ k√§√§nn√∂s",
+                "description": "N√§yt√§ k√§√§nnetty teksti"
               },
               "translation_position": {
-                "name": "K‰‰nnˆs",
-                "description": "Mist‰ n‰yt‰t k‰‰nnˆksen suhteessa alkuper‰iseen tekstiin"
+                "name": "K√§√§nn√∂s",
+                "description": "Mist√§ n√§yt√§t k√§√§nn√∂ksen suhteessa alkuper√§iseen tekstiin"
               },
               "auto_translate": {
-                "name": "Automaattinen k‰‰nnˆs",
-                "description": "K‰‰nn‰ viestit automaattisesti vastaanotettaessa"
+                "name": "Automaattinen k√§√§nn√∂s",
+                "description": "K√§√§nn√§ viestit automaattisesti vastaanotettaessa"
               },
               "translate_on_tap": {
-                "name": "K‰‰nn‰ napattaessa",
-                "description": "K‰‰nn‰ viestit napattaessa"
+                "name": "K√§√§nn√§ napattaessa",
+                "description": "K√§√§nn√§ viestit napattaessa"
               },
               "supported_languages": {
                 "name": "Tuetut kielet",
-                "description": "K‰‰nnett‰viss‰ olevat kielet"
+                "description": "K√§√§nnett√§viss√§ olevat kielet"
               },
               "pause_on_error": {
-                "name": "Keskeyt‰ virhe",
-                "description": "Keskeyt‰ k‰‰nnˆs, kun palvelu on estetty"
+                "name": "Keskeyt√§ virhe",
+                "description": "Keskeyt√§ k√§√§nn√∂s, kun palvelu on estetty"
               },
               "max_retries": {
                 "name": "Maks. uudelleenyritykset",
-                "description": "Uusintayritysten enimm‰ism‰‰r‰"
+                "description": "Uusintayritysten enimm√§ism√§√§r√§"
               },
               "retry_delay": {
-                "name": "Yrit‰ viiv‰sty‰ uudelleen",
-                "description": "Viiv‰stys uusintayritysten v‰lill‰ (millisekuntia)"
+                "name": "Yrit√§ viiv√§sty√§ uudelleen",
+                "description": "Viiv√§stys uusintayritysten v√§lill√§ (millisekuntia)"
               }
             }
           },
           "scheduled_send_allow_running_in_background": {
-            "name": "Salli aikataulu L‰het‰ ajaa taustalla",
-            "description": "Pid‰ aikataulutettujen viestien k‰sittely Snapchatin ollessa taustalla"
+            "name": "Salli aikataulu L√§het√§ ajaa taustalla",
+            "description": "Pid√§ aikataulutettujen viestien k√§sittely Snapchatin ollessa taustalla"
           }
         }
       },
       "rules": {
-        "name": "S‰‰nnˆt",
-        "description": "Automaatios‰‰ntˆjen asetukset",
+        "name": "S√§√§nn√∂t",
+        "description": "Automaatios√§√§nt√∂jen asetukset",
         "properties": {
           "auto_read": {
             "name": "Automaattinen luku"
@@ -2058,7 +2024,7 @@
             "name": "Automaattinen vastaus"
           },
           "auto_delete_sent_messages": {
-            "name": "Automaattinen poistaa l‰hetetyt viestit"
+            "name": "Automaattinen poistaa l√§hetetyt viestit"
           },
           "auto_download": {
             "name": "Automaattinen lataus"
@@ -2079,26 +2045,26 @@
       },
       "camera": {
         "name": "Kamera",
-        "description": "S‰‰d‰ oikeat asetukset t‰ydelliseen napsautukseen",
+        "description": "S√§√§d√§ oikeat asetukset t√§ydelliseen napsautukseen",
         "properties": {
           "disable_cameras": {
-            "name": "Poista kamera k‰ytˆst‰",
-            "description": "Est‰‰ Snapchatia k‰ytt‰m‰st‰ valittuja kameroita"
+            "name": "Poista kamera k√§yt√∂st√§",
+            "description": "Est√§√§ Snapchatia k√§ytt√§m√§st√§ valittuja kameroita"
           },
           "black_photos": {
             "name": "Mustat kuvat",
-            "description": "Korvaa mustalla taustalla olevat kuvat\nVideot eiv‰t vaikuta"
+            "description": "Korvaa mustalla taustalla olevat kuvat\nVideot eiv√§t vaikuta"
           },
           "immersive_camera_preview": {
             "name": "Immersive- esikatselu",
-            "description": "Est‰‰ Snapchat Croping kamera esikatselu\nT‰m‰ voi aiheuttaa kameran v‰lkkymist‰ joissakin laitteissa"
+            "description": "Est√§√§ Snapchat Croping kamera esikatselu\nT√§m√§ voi aiheuttaa kameran v√§lkkymist√§ joissakin laitteissa"
           },
           "override_front_resolution": {
             "name": "Ohita Front Resolution",
             "description": "Ohittaa kameran resoluution etukameralle"
           },
           "override_back_resolution": {
-            "name": "Ohita selk‰resoluutio",
+            "name": "Ohita selk√§resoluutio",
             "description": "Ohittaa kameran resoluution takakameralle"
           },
           "custom_resolution": {
@@ -2114,45 +2080,34 @@
             "description": "Ohittaa takakamerakuvanopeuden"
           },
           "force_camera_source_encoding": {
-            "name": "Pakota kamerat l‰hdekoodin koodaus",
-            "description": "Pakottaa kameral‰hteen koodauksen"
+            "name": "Pakota kamerat l√§hdekoodin koodaus",
+            "description": "Pakottaa kameral√§hteen koodauksen"
           },
           "startup_default_camera": {
-            "name": "K‰ynnistyksen oletuskamera",
+            "name": "K√§ynnistyksen oletuskamera",
             "description": "Asettaa oletuskameran avattaessa Snapchatia"
           },
-      \"call_recorder\": {
-          \"only_record_self\": \"Only Record Self\",
-          \"only_record_others\": \"Only Record Others\",
-          \"record_both\": \"Record Both Sides\"
-      },
-      \"call_recorder_ui_design\": {
-          \"default\": \"Default\",
-          \"snapchat\": \"Snapchat\",
-          \"cyber\": \"Cyber\",
-          \"frost\": \"Frost\"
-      },
           "hevc_recording": {
             "name": "HEVC Tallennus",
-            "description": "K‰ytt‰‰ HEVC-koodia (H.265) videotallennukseen"
+            "description": "K√§ytt√§√§ HEVC-koodia (H.265) videotallennukseen"
           }
         }
       },
       "streaks_reminder": {
         "name": "Streaks-muistutus",
-        "description": "S‰‰nnˆllisesti ilmoittaa Streaks",
+        "description": "S√§√§nn√∂llisesti ilmoittaa Streaks",
         "properties": {
           "interval": {
-            "name": "V‰liaika",
-            "description": "Kunkin muistutuksen v‰li (tuntia)"
+            "name": "V√§liaika",
+            "description": "Kunkin muistutuksen v√§li (tuntia)"
           },
           "remaining_hours": {
-            "name": "J‰ljell‰ oleva aika",
-            "description": "J‰ljell‰ oleva aika ennen ilmoituksen esitt‰mist‰ (tuntia)"
+            "name": "J√§ljell√§ oleva aika",
+            "description": "J√§ljell√§ oleva aika ennen ilmoituksen esitt√§mist√§ (tuntia)"
           },
           "group_notifications": {
-            "name": "Ryhm‰ilmoitukset",
-            "description": "Ryhm‰-ilmoitukset yhdeksi"
+            "name": "Ryhm√§ilmoitukset",
+            "description": "Ryhm√§-ilmoitukset yhdeksi"
           }
         }
       },
@@ -2162,45 +2117,45 @@
         "properties": {
           "native_hooks": {
             "name": "Natiivit hookit",
-            "description": "Ep‰turvallisia ominaisuuksia, jotka liittyv‰t Snapchat'n natiivi-koodiin",
+            "description": "Ep√§turvallisia ominaisuuksia, jotka liittyv√§t Snapchat'n natiivi-koodiin",
             "properties": {
               "composer_hooks": {
-                "name": "S‰velt‰j‰n koukut",
+                "name": "S√§velt√§j√§n koukut",
                 "description": "Ruiskuttaa koodin Composer cross-platform UI-kehykseen",
                 "properties": {
                   "show_first_created_username": {
-                    "name": "N‰yt‰ ensimm‰inen luotu k‰ytt‰j‰tunnus",
-                    "description": "N‰ytt‰‰ ensimm‰isen luodun k‰ytt‰j‰tunnuksen nykyisen k‰ytt‰j‰tunnuksen vieress‰ profiilisivulla"
+                    "name": "N√§yt√§ ensimm√§inen luotu k√§ytt√§j√§tunnus",
+                    "description": "N√§ytt√§√§ ensimm√§isen luodun k√§ytt√§j√§tunnuksen nykyisen k√§ytt√§j√§tunnuksen vieress√§ profiilisivulla"
                   },
                   "bypass_camera_roll_limit": {
                     "name": "Kameran rullausraja",
-                    "description": "Lis‰‰ kamerarullalta l‰hetett‰v‰n median enimm‰ism‰‰r‰‰"
+                    "description": "Lis√§√§ kamerarullalta l√§hetett√§v√§n median enimm√§ism√§√§r√§√§"
                   },
                   "custom_self_destruct_snap_delay": {
                     "name": "Oma itsetuho",
-                    "description": "Antaa enemm‰n vaihtoehtoja itsetuhoajalle l‰hetett‰ess‰ Snap"
+                    "description": "Antaa enemm√§n vaihtoehtoja itsetuhoajalle l√§hetett√§ess√§ Snap"
                   },
                   "composer_console": {
-                    "name": "S‰velt‰j‰konsoli",
-                    "description": "Voit suorittaa JavaScript-koodin s‰velt‰j‰ss‰ (vain arm64)"
+                    "name": "S√§velt√§j√§konsoli",
+                    "description": "Voit suorittaa JavaScript-koodin s√§velt√§j√§ss√§ (vain arm64)"
                   },
                   "composer_logs": {
-                    "name": "S‰velt‰j‰n lokit",
-                    "description": "Uudelleenohjaa s‰velt‰j‰n konsolilokit PurrfectSnapille"
+                    "name": "S√§velt√§j√§n lokit",
+                    "description": "Uudelleenohjaa s√§velt√§j√§n konsolilokit PurrfectSnapille"
                   }
                 }
               },
               "disable_bitmoji": {
-                "name": "Poista Bitmoji k‰ytˆst‰",
-                "description": "Est‰‰ yst‰vien profiilin Bitmoji"
+                "name": "Poista Bitmoji k√§yt√∂st√§",
+                "description": "Est√§√§ yst√§vien profiilin Bitmoji"
               },
               "custom_emoji_font": {
                 "name": "Oma Emoji-kirjasin",
-                "description": "Voit k‰ytt‰‰ mukautettua emoji-fontia. Toimii vain .ttf-kirjasinten kanssa"
+                "description": "Voit k√§ytt√§√§ mukautettua emoji-fontia. Toimii vain .ttf-kirjasinten kanssa"
               },
               "custom_shared_library": {
                 "name": "Oma jaettu kirjasto",
-                "description": "Lataa mukautetun jaetun kirjaston Snapchatiin. T‰m‰ ominaisuus on vain testaustarkoituksiin"
+                "description": "Lataa mukautetun jaetun kirjaston Snapchatiin. T√§m√§ ominaisuus on vain testaustarkoituksiin"
               }
             }
           },
@@ -2214,11 +2169,11 @@
               },
               "remove_vpn_transport_flag": {
                 "name": "Poista VPN Kuljetuslippu",
-                "description": "Est‰‰ Snapchatia havaitsemasta VPN:i‰"
+                "description": "Est√§√§ Snapchatia havaitsemasta VPN:i√§"
               },
               "remove_mock_location_flag": {
                 "name": "Poista Mock- sijaintilippu",
-                "description": "Est‰‰ Snapchatia havaitsemasta Madon sijainti"
+                "description": "Est√§√§ Snapchatia havaitsemasta Madon sijainti"
               },
               "force_wifi_transport_flag": {
                 "name": "Pakota Wi-Fi-liikennelippu",
@@ -2226,15 +2181,15 @@
               },
               "spoof_device_id": {
                 "name": "Laitetunniste",
-                "description": "Ohita Snapchatiin l‰hetetty Android-tunnus",
+                "description": "Ohita Snapchatiin l√§hetetty Android-tunnus",
                 "properties": {
                   "spoof_android_id": {
                     "name": "Spoofaa Android ID",
-                    "description": "Ohita Snapchatille l‰hetetty Android-tunnus omalla arvolla"
+                    "description": "Ohita Snapchatille l√§hetetty Android-tunnus omalla arvolla"
                   },
                   "custom_android_id": {
                     "name": "Oma Android-tunnus",
-                    "description": "Arvo, jota k‰ytet‰‰n, kun Android-tunnistetta k‰ytet‰‰n"
+                    "description": "Arvo, jota k√§ytet√§√§n, kun Android-tunnistetta k√§ytet√§√§n"
                   }
                 }
               },
@@ -2244,61 +2199,61 @@
               },
               "device_model": {
                 "name": "Laitemalli",
-                "description": "Valitse laitemalli, jota voi k‰ytt‰‰"
+                "description": "Valitse laitemalli, jota voi k√§ytt√§√§"
               }
             }
           },
           "convert_message_locally": {
             "name": "Muunna viesti paikallisesti",
-            "description": "Muuntaa napsahtaa keskustella ulkoisia media paikallisesti. T‰m‰ n‰kyy chat-kontekstivalikossa"
+            "description": "Muuntaa napsahtaa keskustella ulkoisia media paikallisesti. T√§m√§ n√§kyy chat-kontekstivalikossa"
           },
           "media_file_picker": {
             "name": "Mediatiedoston picker",
-            "description": "Voit valita mink‰ tahansa video/audio-tiedoston galleriasta"
+            "description": "Voit valita mink√§ tahansa video/audio-tiedoston galleriasta"
           },
           "story_logger": {
             "name": "Tarinalokija",
-            "description": "Tarjoaa yst‰vien tarinoita"
+            "description": "Tarjoaa yst√§vien tarinoita"
           },
           "call_recorder": {
-            "name": "Soita ‰‰nitin",
-            "description": "ƒ‰nipuheluiden automaattinen tallennus"
+            "name": "Soita √§√§nitin",
+            "description": "√Ñ√§nipuheluiden automaattinen tallennus"
           },
           "account_switcher": {
             "name": "Tilinvaihtaja",
-            "description": "Voit vaihtaa tilien v‰lill‰ kirjautumatta ulos\nPitk‰ paina hakukuvaketta Bitmoji-profiilin vieress‰ avataksesi valikosta\nHuom: T‰m‰ ominaisuus on kokeellinen ja todenn‰kˆisesti muuttuu tulevaisuudessa",
+            "description": "Voit vaihtaa tilien v√§lill√§ kirjautumatta ulos\nPitk√§ paina hakukuvaketta Bitmoji-profiilin vieress√§ avataksesi valikosta\nHuom: T√§m√§ ominaisuus on kokeellinen ja todenn√§k√∂isesti muuttuu tulevaisuudessa",
             "properties": {
               "auto_backup_current_account": {
                 "name": "Automaattinen varmuuskopio",
-                "description": "Automaattisesti varmuuskopioi vaihtotilin kirjautuessa ulos tai vaihtaessa tilej‰"
+                "description": "Automaattisesti varmuuskopioi vaihtotilin kirjautuessa ulos tai vaihtaessa tilej√§"
               }
             }
           },
           "better_transcript": {
             "name": "Parempi transkripti",
-            "description": "Parantaa ‰‰nimuistin transkriptiota",
+            "description": "Parantaa √§√§nimuistin transkriptiota",
             "properties": {
               "force_transcription": {
-                "name": "Voima‰‰nimuistilapun transkriptio",
-                "description": "Sallii kaikkien ‰‰nien kirjoitusten"
+                "name": "Voima√§√§nimuistilapun transkriptio",
+                "description": "Sallii kaikkien √§√§nien kirjoitusten"
               },
               "preferred_transcription_lang": {
                 "name": "Suositeltava transkriptiokieli",
-                "description": "ƒ‰nimuistiota koskevan transkriptin ensisijainen kieli (esim. EN, ES, FR)"
+                "description": "√Ñ√§nimuistiota koskevan transkriptin ensisijainen kieli (esim. EN, ES, FR)"
               },
               "notification_transcript": {
                 "name": "Ilmoitus",
-                "description": "Kirjoittaa muistiinpanoja ilmoituksiin\nT‰m‰ ominaisuus edellytt‰‰, ett‰ chat-esikatselutoiminto on k‰ytˆss‰ Parempien ilmoitusten yhteydess‰"
+                "description": "Kirjoittaa muistiinpanoja ilmoituksiin\nT√§m√§ ominaisuus edellytt√§√§, ett√§ chat-esikatselutoiminto on k√§yt√∂ss√§ Parempien ilmoitusten yhteydess√§"
               }
             }
           },
           "voice_note_auto_play": {
-            "name": "ƒ‰nimuistilapun automaattinen toisto",
-            "description": "Soittaa automaattisesti seuraavan ‰‰niviestin nykyisen viimeistelyn j‰lkeen"
+            "name": "√Ñ√§nimuistilapun automaattinen toisto",
+            "description": "Soittaa automaattisesti seuraavan √§√§niviestin nykyisen viimeistelyn j√§lkeen"
           },
           "friend_notes": {
-            "name": "Yst‰v‰t",
-            "description": "Voit lis‰t‰ muistiinpanoja yst‰vien profiileihin"
+            "name": "Yst√§v√§t",
+            "description": "Voit lis√§t√§ muistiinpanoja yst√§vien profiileihin"
           },
           "cof_experiments": {
             "name": "COF-kokeilut",
@@ -2306,11 +2261,11 @@
           },
           "context_menu_fix": {
             "name": "Kontekstivalikon korjaus",
-            "description": "Yrit‰ korjata Friend Feed Menu kuin kun laite on offline se ei voi n‰ytt‰‰ oikein"
+            "description": "Yrit√§ korjata Friend Feed Menu kuin kun laite on offline se ei voi n√§ytt√§√§ oikein"
           },
           "app_lock": {
             "name": "Sovelluslukko",
-            "description": "Est‰‰ p‰‰syn Snapchatiin ilman salasanaa",
+            "description": "Est√§√§ p√§√§syn Snapchatiin ilman salasanaa",
             "properties": {
               "lock_on_resume": {
                 "name": "Lukitse uudelleen",
@@ -2323,50 +2278,50 @@
             "description": "Ohita Story Boost Limit -viive"
           },
           "meo_passcode_bypass": {
-            "name": "Silm‰ni vain Passcode ohitus",
-            "description": "Ohita silm‰ni Vain salasana\nT‰m‰ toimii vain, jos salasana on syˆtetty oikein ennen"
+            "name": "Silm√§ni vain Passcode ohitus",
+            "description": "Ohita silm√§ni Vain salasana\nT√§m√§ toimii vain, jos salasana on sy√∂tetty oikein ennen"
           },
           "no_friend_score_delay": {
-            "name": "Ei yst‰v‰n pisteytysviivett‰",
+            "name": "Ei yst√§v√§n pisteytysviivett√§",
             "description": "Poistaa viiveen, kun katselet Friends Score"
           },
           "best_friend_pinning": {
-            "name": "Paras yst‰v‰ Pinning",
-            "description": "Saat panna yst‰v‰n parhaaksi yst‰v‰ksesi. Huom: Vain sin‰ n‰et yst‰v‰si"
+            "name": "Paras yst√§v√§ Pinning",
+            "description": "Saat panna yst√§v√§n parhaaksi yst√§v√§ksesi. Huom: Vain sin√§ n√§et yst√§v√§si"
           },
           "e2ee": {
             "name": "Loppusalaus",
-            "description": "Salaa viestisi AES: ll‰ k‰ytt‰en jaettua salaista avainta\nMuistakaa tallentaa avain jonnekin turvalliseen paikkaan!",
+            "description": "Salaa viestisi AES: ll√§ k√§ytt√§en jaettua salaista avainta\nMuistakaa tallentaa avain jonnekin turvalliseen paikkaan!",
             "properties": {
               "encrypted_message_indicator": {
                 "name": "Salattu viestin ilmaisin",
-                "description": "Lis‰‰ hymiˆn salattujen viestien viereen"
+                "description": "Lis√§√§ hymi√∂n salattujen viestien viereen"
               },
               "force_message_encryption": {
                 "name": "Pakkoviestin salaus",
-                "description": "Est‰‰ salattujen viestien l‰hett‰misen henkilˆille, joilla ei ole E2E- salausta k‰ytˆss‰ vain, kun useita keskusteluja on valittu"
+                "description": "Est√§√§ salattujen viestien l√§hett√§misen henkil√∂ille, joilla ei ole E2E- salausta k√§yt√∂ss√§ vain, kun useita keskusteluja on valittu"
               }
             }
           },
           "add_friend_source_spoof": {
-            "name": "Lis‰‰ yst‰v‰ L‰hde Spoof",
-            "description": "Spoofs Yst‰v‰n pyynnˆn l‰hde"
+            "name": "Lis√§√§ yst√§v√§ L√§hde Spoof",
+            "description": "Spoofs Yst√§v√§n pyynn√∂n l√§hde"
           },
           "hidden_snapchat_plus_features": {
             "name": "Piilotettu Snapchat Plus ominaisuudet",
-            "description": "Mahdollistaa vapauttamattomat/beeta Snapchat Plus -ominaisuudet\nEi v‰ltt‰m‰tt‰ toimi vanhempiin Snapchat-versioihin"
+            "description": "Mahdollistaa vapauttamattomat/beeta Snapchat Plus -ominaisuudet\nEi v√§ltt√§m√§tt√§ toimi vanhempiin Snapchat-versioihin"
           },
           "custom_streaks_expiration_format": {
             "name": "Custom Streaks viimeinen muoto",
-            "description": "Muokkaa Streaks-viivemuotoa\n\nK‰ytett‰viss‰ olevat muuttujat:\n- %c: Streaks-luku\n- %e: Tiimalasiemoji\n- %d: P‰iv‰t\n- %h: Tunteja\n- %m: Minuutti\n- %s: Sekuntia\n- %w: J‰ljell‰ oleva aika"
+            "description": "Muokkaa Streaks-viivemuotoa\n\nK√§ytett√§viss√§ olevat muuttujat:\n- %c: Streaks-luku\n- %e: Tiimalasiemoji\n- %d: P√§iv√§t\n- %h: Tunteja\n- %m: Minuutti\n- %s: Sekuntia\n- %w: J√§ljell√§ oleva aika"
           },
           "prevent_forced_logout": {
-            "name": "Est‰ pakotettu kirjautuminen",
-            "description": "Est‰‰ Snapchatia kirjautumasta ulos, kun kirjaudut toiseen laitteeseen"
+            "name": "Est√§ pakotettu kirjautuminen",
+            "description": "Est√§√§ Snapchatia kirjautumasta ulos, kun kirjaudut toiseen laitteeseen"
           },
           "snapscore_changes": {
             "name": "Tulosten muutokset",
-            "description": "Kappaleet muutokset yst‰viss‰ Tulos\nK‰yt‰ t‰t‰ toimintoa vain uudemmissa versioissa Snapchat"
+            "description": "Kappaleet muutokset yst√§viss√§ Tulos\nK√§yt√§ t√§t√§ toimintoa vain uudemmissa versioissa Snapchat"
           }
         }
       },
@@ -2375,8 +2330,8 @@
         "description": "Suorita mukautetut skriptit laajentaa PurrfectSnap",
         "properties": {
           "developer_mode": {
-            "name": "Kehitt‰j‰tila",
-            "description": "N‰ytt‰‰ vianj‰ljitystiedot Snapchatin k‰yttˆliittym‰st‰"
+            "name": "Kehitt√§j√§tila",
+            "description": "N√§ytt√§√§ vianj√§ljitystiedot Snapchatin k√§ytt√∂liittym√§st√§"
           },
           "module_folder": {
             "name": "Moduulin kansio",
@@ -2384,25 +2339,25 @@
           },
           "auto_reload": {
             "name": "Lataa automaattisesti uudelleen",
-            "description": "Lataa skriptej‰ automaattisesti, kun ne muuttuvat"
+            "description": "Lataa skriptej√§ automaattisesti, kun ne muuttuvat"
           },
           "integrated_ui": {
-            "name": "Integroitu k‰yttˆliittym‰",
-            "description": "Sallii skriptien lis‰t‰ omat k‰yttˆliittym‰n osat Snapchatiin"
+            "name": "Integroitu k√§ytt√∂liittym√§",
+            "description": "Sallii skriptien lis√§t√§ omat k√§ytt√∂liittym√§n osat Snapchatiin"
           },
           "disable_log_anonymization": {
-            "name": "Poista lokin anonymisointi k‰ytˆst‰",
-            "description": "Est‰‰ lokkien anonymoinnin"
+            "name": "Poista lokin anonymisointi k√§yt√∂st√§",
+            "description": "Est√§√§ lokkien anonymoinnin"
           },
           "disable_optimization": {
-            "name": "Poista optimointi k‰ytˆst‰",
-            "description": "Est‰‰ k‰sikirjoitusten optimoinnin. T‰m‰ voi aiheuttaa suorituskykyongelmia."
+            "name": "Poista optimointi k√§yt√∂st√§",
+            "description": "Est√§√§ k√§sikirjoitusten optimoinnin. T√§m√§ voi aiheuttaa suorituskykyongelmia."
           }
         }
       },
       "friend_tracker": {
-        "name": "Yst‰v‰n j‰ljitin",
-        "description": "Tallentaa yst‰v‰n toimintaa Snapchat",
+        "name": "Yst√§v√§n j√§ljitin",
+        "description": "Tallentaa yst√§v√§n toimintaa Snapchat",
         "properties": {
           "record_messaging_events": {
             "name": "Tallenna viestitapahtumat",
@@ -2410,21 +2365,21 @@
           },
           "allow_running_in_background": {
             "name": "Salli juokseminen taustalla",
-            "description": "Antaa j‰ljittimen kulkea taustalla. Huom: T‰m‰ tyhjent‰‰ pariston merkitt‰v‰sti"
+            "description": "Antaa j√§ljittimen kulkea taustalla. Huom: T√§m√§ tyhjent√§√§ pariston merkitt√§v√§sti"
           },
           "auto_purge": {
             "name": "Automaattipuhdistus",
-            "description": "Poistaa automaattisesti v‰limuistin tapahtumia, jotka ovat vanhempia kuin m‰‰r‰tty aika"
+            "description": "Poistaa automaattisesti v√§limuistin tapahtumia, jotka ovat vanhempia kuin m√§√§r√§tty aika"
           }
         }
       }
     },
     "friend_notes": {
-      "placeholder": "Lis‰‰ viesti..."
+      "placeholder": "Lis√§√§ viesti..."
     }
   },
   "friend_menu_option": {
-    "mark_snaps_as_seen": "Mark Snaps n‰htyn‰",
+    "mark_snaps_as_seen": "Mark Snaps n√§htyn√§",
     "mark_stories_as_seen_locally": "Merkitse tarinat paikallisiksi",
     "preview": "Esikatselu",
     "stealth_mode": "Varastettu tila",
@@ -2435,35 +2390,35 @@
     "CHAT": "Keskustelu",
     "SNAP": "Napsauta",
     "EXTERNAL_MEDIA": "Ulkoiset viestimet",
-    "NOTE": "ƒ‰nimuistilappu",
+    "NOTE": "√Ñ√§nimuistilappu",
     "STICKER": "Tarra",
     "SHARE": "Osuus",
     "STATUS": "Tila",
     "LOCATION": "Sijainti",
     "STATUS_SAVE_TO_CAMERA_ROLL": "Tallennettuna kamerarullalle",
     "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "Kuvakaappaus",
-    "STATUS_CONVERSATION_CAPTURE_RECORD": "N‰ytˆn tallennus",
+    "STATUS_CONVERSATION_CAPTURE_RECORD": "N√§yt√∂n tallennus",
     "STATUS_CALL_MISSED_VIDEO": "Videopuhelu puuttuu",
-    "STATUS_CALL_MISSED_AUDIO": "ƒ‰nipuhelu puuttuu",
+    "STATUS_CALL_MISSED_AUDIO": "√Ñ√§nipuhelu puuttuu",
     "LIVE_LOCATION_SHARE": "Live- sijainti",
-    "CREATIVE_TOOL_ITEM": "Luova tyˆkalu",
+    "CREATIVE_TOOL_ITEM": "Luova ty√∂kalu",
     "FAMILY_CENTER_INVITE": "Perhekeskus kutsu",
-    "FAMILY_CENTER_ACCEPT": "Perhekeskus hyv‰ksyy",
+    "FAMILY_CENTER_ACCEPT": "Perhekeskus hyv√§ksyy",
     "FAMILY_CENTER_LEAVE": "Perhekeskusloma",
     "STATUS_PLUS_GIFT": "Tila Plus -lahja",
     "TINY_SNAP": "Pikkunap",
-    "STATUS_COUNTDOWN": "L‰htˆlaskenta",
+    "STATUS_COUNTDOWN": "L√§ht√∂laskenta",
     "MAP_REACTION": "Karttareaktio",
     "chat_messages": "Keskusteluviestit",
     "snap_messages": "Napsit",
     "story_share_messages": "Tarinaosakkeet",
     "story_reply_messages": "Tarinavastaukset",
     "external_media_messages": "Ulkoiset viestimet",
-    "voice_note_messages": "ƒ‰nihuomautus",
+    "voice_note_messages": "√Ñ√§nihuomautus",
     "sticker_messages": "Tarra",
     "tiny_snap_messages": "Pikkunap",
     "map_reaction_messages": "Karttareaktio",
-    "half_swipes": "Puolikas pyyhk‰isy"
+    "half_swipes": "Puolikas pyyhk√§isy"
   },
   "media_download_source": {
     "none": "Ei ole",
@@ -2476,23 +2431,23 @@
     "story_logger": "Tarinalokija",
     "message_logger": "Viestilokija",
     "merged": "Yhdistetty",
-    "voice_call": "ƒ‰nikutsu"
+    "voice_call": "√Ñ√§nikutsu"
   },
   "chat_action_menu": {
     "preview_button": "Esikatselu",
     "download_button": "Lataa",
     "delete_logged_message_button": "Poista kirjautunut viesti",
-    "show_chat_edit_history": "N‰yt‰ muokkauksen historia",
+    "show_chat_edit_history": "N√§yt√§ muokkauksen historia",
     "convert_message": "Muunna viesti"
   },
   "opera_context_menu": {
     "download": "Lataa media",
-    "sent_at": "L‰hetetty{date}",
+    "sent_at": "L√§hetetty{date}",
     "created_at": "Luotu{date}",
-    "expires_at": "P‰‰ttyy{date}",
+    "expires_at": "P√§√§ttyy{date}",
     "media_size": "Mediakoko:{size}",
     "media_duration": "Median kesto:{duration}ms",
-    "show_debug_info": "N‰yt‰ vianetsint‰tiedot"
+    "show_debug_info": "N√§yt√§ vianetsint√§tiedot"
   },
   "modal_option": {
     "profile_info": "Profiilin tiedot",
@@ -2500,37 +2455,37 @@
   },
   "gallery_media_send_override": {
     "always_ask": "Kysy aina",
-    "ORIGINAL": "Alkuper‰inen media",
-    "NOTE": "ƒ‰nimuistilappu",
+    "ORIGINAL": "Alkuper√§inen media",
+    "NOTE": "√Ñ√§nimuistilappu",
     "SNAP": "Napsauta",
     "SAVEABLE_SNAP": "Tallennettavissa",
     "null": "Snapchat- oletus",
-    "multiple_media_toast": "Voit l‰hett‰‰ vain yhden median kerrallaan"
+    "multiple_media_toast": "Voit l√§hett√§√§ vain yhden median kerrallaan"
   },
   "mark_as_seen": {
-    "no_unseen_snaps_toast": "N‰kym‰ttˆmi‰ nappuloita ei lˆytynyt!",
-    "seen_toast": "Merkitty n‰hdyksi!",
-    "unseen_toast": "Merkitty n‰kym‰ttˆm‰ksi!",
-    "already_seen_toast": "Se on jo merkitty n‰hdyksi!",
-    "already_unseen_toast": "Se on jo merkitty n‰kym‰ttˆm‰ksi!"
+    "no_unseen_snaps_toast": "N√§kym√§tt√∂mi√§ nappuloita ei l√∂ytynyt!",
+    "seen_toast": "Merkitty n√§hdyksi!",
+    "unseen_toast": "Merkitty n√§kym√§tt√∂m√§ksi!",
+    "already_seen_toast": "Se on jo merkitty n√§hdyksi!",
+    "already_unseen_toast": "Se on jo merkitty n√§kym√§tt√∂m√§ksi!"
   },
   "conversation_preview": {
-    "streak_expiration": "p‰‰ttyy{day}p‰iv‰‰{hour}tuntia{minute}minuuttia",
-    "total_messages": "L‰hetettyjen/vastaanotettujen viestien kokonaism‰‰r‰:\n{count}",
+    "streak_expiration": "p√§√§ttyy{day}p√§iv√§√§{hour}tuntia{minute}minuuttia",
+    "total_messages": "L√§hetettyjen/vastaanotettujen viestien kokonaism√§√§r√§:\n{count}",
     "title": "Esikatselu",
-    "unknown_user": "Tuntematon k‰ytt‰j‰",
-    "no_messages": "Viesti‰ ei lˆytynyt!"
+    "unknown_user": "Tuntematon k√§ytt√§j√§",
+    "no_messages": "Viesti√§ ei l√∂ytynyt!"
   },
   "profile_info": {
     "title": "Profiilin tiedot",
-    "first_created_username": "Ensimm‰inen luotu k‰ytt‰j‰tunnus",
-    "mutable_username": "Mutable-k‰ytt‰j‰tunnus",
-    "display_name": "N‰ytˆn nimi",
-    "added_date": "Lis‰tty p‰iv‰m‰‰r‰",
-    "birthday": "Syntym‰p‰iv‰:{month}{day}",
-    "hidden_birthday": "Syntym‰p‰iv‰: Piilotettu",
-    "friendship": "Yst‰vyys",
-    "add_source": "Lis‰‰ l‰hde",
+    "first_created_username": "Ensimm√§inen luotu k√§ytt√§j√§tunnus",
+    "mutable_username": "Mutable-k√§ytt√§j√§tunnus",
+    "display_name": "N√§yt√∂n nimi",
+    "added_date": "Lis√§tty p√§iv√§m√§√§r√§",
+    "birthday": "Syntym√§p√§iv√§:{month}{day}",
+    "hidden_birthday": "Syntym√§p√§iv√§: Piilotettu",
+    "friendship": "Yst√§vyys",
+    "add_source": "Lis√§√§ l√§hde",
     "snapchat_plus": "Snapchat Plus",
     "snapchat_plus_state": {
       "subscribed": "Merkitty",
@@ -2542,7 +2497,7 @@
     "not_subscribed": "Ei merkitty"
   },
   "friendship_link_type": {
-    "mutual": "Keskin‰inen",
+    "mutual": "Keskin√§inen",
     "outgoing": "Ulkona",
     "blocked": "Estetty",
     "deleted": "Poistettu",
@@ -2558,44 +2513,44 @@
     "selection_dialog_continue_button": "Jatka",
     "confirmation_dialog": {
       "title": "Oletko varma?",
-      "message": "T‰m‰ vaikuttaa kaikkiin valittuihin , T‰t‰ toimintaa ei voida perua."
+      "message": "T√§m√§ vaikuttaa kaikkiin valittuihin , T√§t√§ toimintaa ei voida perua."
     },
     "actions": {
-      "remove_friends": "Poista yst‰v‰t",
-      "clear_conversations": "Tyhjenn‰ keskustelut",
-      "clear_friend_feed": "Selke‰ yst‰v‰syˆte ({count})",
+      "remove_friends": "Poista yst√§v√§t",
+      "clear_conversations": "Tyhjenn√§ keskustelut",
+      "clear_friend_feed": "Selke√§ yst√§v√§sy√∂te ({count})",
       "unfollow": "Ei seuraa",
       "remove": "Poista"
     },
-    "leave_groups": "Poistu{count}ryhm‰",
-    "left_group_success": "Vasen ryhm‰ onnistui",
-    "failed_to_leave_group": "Ryhm‰‰ ei voitu j‰tt‰‰:{error}",
+    "leave_groups": "Poistu{count}ryhm√§",
+    "left_group_success": "Vasen ryhm√§ onnistui",
+    "failed_to_leave_group": "Ryhm√§√§ ei voitu j√§tt√§√§:{error}",
     "conversation_types": {
-      "friends_only": "Vain yst‰ville",
-      "groups_only": "Vain ryhm‰t",
-      "both": "Yst‰v‰t ja ryhm‰t"
+      "friends_only": "Vain yst√§ville",
+      "groups_only": "Vain ryhm√§t",
+      "both": "Yst√§v√§t ja ryhm√§t"
     },
-    "sort_by": "J‰rjest‰",
-    "reverse_order": "K‰‰nteinen j‰rjestys",
-    "search_by_name": "Etsi nimell‰",
-    "no_friends_found": "Ei yst‰vi‰ lˆytynyt",
-    "no_groups_found": "Ryhmi‰ ei lˆytynyt",
-    "no_friends_or_groups_found": "Yst‰vi‰ tai ryhmi‰ ei lˆytynyt",
+    "sort_by": "J√§rjest√§",
+    "reverse_order": "K√§√§nteinen j√§rjestys",
+    "search_by_name": "Etsi nimell√§",
+    "no_friends_found": "Ei yst√§vi√§ l√∂ytynyt",
+    "no_groups_found": "Ryhmi√§ ei l√∂ytynyt",
+    "no_friends_or_groups_found": "Yst√§vi√§ tai ryhmi√§ ei l√∂ytynyt",
     "relationship": "Suhde:",
-    "unknown_group": "Tuntematon ryhm‰",
-    "type_group_chat": "Tyyppi: Ryhm‰keskustelu",
+    "unknown_group": "Tuntematon ryhm√§",
+    "type_group_chat": "Tyyppi: Ryhm√§keskustelu",
     "clean_conversations": "Puhdista{count}keskustelu",
-    "remove_friends": "Poista{count}yst‰v‰t",
-    "clean_conversations_and_remove_friends": "Puhdista{count}keskustelut ja poista{count}yst‰v‰t",
-    "clean_group_conversations": "Puhdista{count}ryhm‰keskustelut",
+    "remove_friends": "Poista{count}yst√§v√§t",
+    "clean_conversations_and_remove_friends": "Puhdista{count}keskustelut ja poista{count}yst√§v√§t",
+    "clean_group_conversations": "Puhdista{count}ryhm√§keskustelut",
     "clean_all_conversations": "Puhdista{count}keskustelu",
     "failed_to_fetch_conversations": "Keskusteluja ei voitu noutaa:{error}",
-    "failed_to_fetch_friend_conversations": "Yst‰v‰keskusteluja ei voitu hakea:{error}",
-    "failed_to_process": "K‰sittely ep‰onnistui{id}",
-    "deleted_messages": "{count}poistettuja viestej‰",
+    "failed_to_fetch_friend_conversations": "Yst√§v√§keskusteluja ei voitu hakea:{error}",
+    "failed_to_process": "K√§sittely ep√§onnistui{id}",
+    "deleted_messages": "{count}poistettuja viestej√§",
     "filters": {
       "all": "Kaikki",
-      "my_friends": "Yst‰v‰ni",
+      "my_friends": "Yst√§v√§ni",
       "blocked": "Estetty",
       "removed_me": "Poista",
       "suggested": "Ehdotettu",
@@ -2609,13 +2564,13 @@
     },
     "sort_options": {
       "none": "Ei ole",
-      "username": "K‰ytt‰j‰tunnus",
-      "added_timestamp": "Lis‰tty aikaleima",
-      "snap_score": "Napsauta pistem‰‰r‰",
+      "username": "K√§ytt√§j√§tunnus",
+      "added_timestamp": "Lis√§tty aikaleima",
+      "snap_score": "Napsauta pistem√§√§r√§",
       "streak_length": "Auran pituus",
-      "most_messages_sent": "Useimmat viestit l‰hetetty",
+      "most_messages_sent": "Useimmat viestit l√§hetetty",
       "most_recent_message": "Viimeisin viesti",
-      "nearest_location": "L‰hin sijainti"
+      "nearest_location": "L√§hin sijainti"
     }
   },
   "chat_export": {
@@ -2624,61 +2579,61 @@
       "text_field_selection": "{amount}valittu",
       "text_field_selection_all": "Kaikki",
       "export_file_format_title": "Vie tiedostomuoto",
-      "message_type_filter_title": "Suodata viestit tyypeitt‰in",
-      "amount_of_messages_title": "Viestien m‰‰r‰ (j‰t‰ tyhj‰ kaikille)",
+      "message_type_filter_title": "Suodata viestit tyypeitt√§in",
+      "amount_of_messages_title": "Viestien m√§√§r√§ (j√§t√§ tyhj√§ kaikille)",
       "download_medias_title": "Lataa media"
     },
     "dialog_negative_button": "Peruuta",
     "dialog_positive_button": "Vie",
     "exported_to": "Viety{path}",
-    "exporting_chats": "Vied‰ keskusteluja...",
+    "exporting_chats": "Vied√§ keskusteluja...",
     "processing_chats": "Jalostus{amount}keskusteluja...",
-    "export_fail": "Keskustelua ei voitu vied‰{conversation}",
+    "export_fail": "Keskustelua ei voitu vied√§{conversation}",
     "writing_output": "Kirjoitetaan tulostetta...",
-    "finished": "Valmis! Voit nyt sulkea t‰m‰n ikkunan.",
-    "no_messages_found": "Viesti‰ ei lˆytynyt!",
+    "finished": "Valmis! Voit nyt sulkea t√§m√§n ikkunan.",
+    "no_messages_found": "Viesti√§ ei l√∂ytynyt!",
     "exporting_message": "Vienti{conversation}..."
   },
   "button": {
-    "ok": "SELVƒ",
-    "positive": "Kyll‰",
+    "ok": "SELV√Ñ",
+    "positive": "Kyll√§",
     "negative": "Ei",
     "cancel": "Peruuta",
     "save": "Tallenna",
     "open": "Avaa",
     "download": "Lataa",
-    "send": "L‰het‰",
-    "restore_original": "Palauta alkuper‰inen",
+    "send": "L√§het√§",
+    "restore_original": "Palauta alkuper√§inen",
     "convert_external_media": "Muunna ulkoinen media"
   },
   "tracker_events": {
-    "conversation_enter": "Keskustelun syˆte",
+    "conversation_enter": "Keskustelun sy√∂te",
     "conversation_exit": "Keskustelun poistuminen",
     "started_typing": "Aloitettu kirjoitus",
     "stopped_typing": "Seis",
     "started_speaking": "Alkoi puhua",
     "stopped_speaking": "Lopetti puhumisen",
     "started_peeking": "Aloitti kurkimisen",
-    "stopped_peeking": "Pys‰ytetty kurkistelu",
+    "stopped_peeking": "Pys√§ytetty kurkistelu",
     "message_read": "Viestin lukeminen",
     "message_deleted": "Viesti poistettu",
     "message_saved": "Viesti tallennettu",
     "message_unsaved": "Viesti tallennettu",
     "message_edited": "Viesti muokattu",
-    "message_reaction_add": "Viestin vastaus Lis‰‰",
+    "message_reaction_add": "Viestin vastaus Lis√§√§",
     "message_reaction_remove": "Viestin reaktio Poista",
     "snap_opened": "Avattu",
     "snap_replayed": "Napsauta uudelleen",
     "snap_replayed_twice": "Toista kahdesti",
-    "snap_screenshot": "N‰yt‰ kuvakaappaus",
-    "snap_screen_record": "N‰yt‰ n‰ytˆn tietue",
-    "i_can_see_you": "N‰en sinut"
+    "snap_screenshot": "N√§yt√§ kuvakaappaus",
+    "snap_screen_record": "N√§yt√§ n√§yt√∂n tietue",
+    "i_can_see_you": "N√§en sinut"
   },
   "cleared_from_feed": "Rehusta puhdistettu",
   "tracker_actions": {
     "log": "Loki",
     "in_app_notification": "In-App-ilmoitus",
-    "push_notification": "Tyˆnn‰ ilmoitus",
+    "push_notification": "Ty√∂nn√§ ilmoitus",
     "custom": "Oma"
   },
   "better_notifications": {
@@ -2695,7 +2650,7 @@
     "background_option": "Tausta"
   },
   "call_start_confirmation": {
-    "dialog_title": "K‰ynnist‰ haku",
+    "dialog_title": "K√§ynnist√§ haku",
     "dialog_message": "Haluatko varmasti soittaa?"
   },
   "half_swipe_notifier": {
@@ -2710,23 +2665,23 @@
       "gif": "GIF",
       "external_media": "Ulkoiset viestimet",
       "note": "Huomautus",
-      "original_story": "Alkuper‰inen tarina"
+      "original_story": "Alkuper√§inen tarina"
     },
     "select_attachments_title": "Valitse liitteet",
     "download_started_toast": "Lataus aloitettu",
-    "unsupported_content_type_toast": "Tukematon sis‰ltˆtyyppi!",
-    "failed_no_longer_available_toast": "Mediaa ei en‰‰ ole saatavilla",
-    "no_attachments_toast": "Liitteit‰ ei lˆytynyt!",
+    "unsupported_content_type_toast": "Tukematon sis√§lt√∂tyyppi!",
+    "failed_no_longer_available_toast": "Mediaa ei en√§√§ ole saatavilla",
+    "no_attachments_toast": "Liitteit√§ ei l√∂ytynyt!",
     "already_queued_toast": "Media on jonossa!",
     "already_downloaded_toast": "Media on jo ladattu!",
     "content_saved_toast": "Pelastin!",
     "download_toast": "Noudetaan{path}...",
     "processing_toast": "Jalostus{path}...",
-    "failed_generic_toast": "Lataaminen ep‰onnistui",
+    "failed_generic_toast": "Lataaminen ep√§onnistui",
     "failed_to_create_preview_toast": "Esikatselua ei voitu luoda",
-    "failed_processing_toast": "K‰sittely ep‰onnistui{error}",
-    "failed_gallery_toast": "Tallennus galleriaan ep‰onnistui{error}",
-    "dash_no_chapter": "Lukua ei lˆytynyt",
+    "failed_processing_toast": "K√§sittely ep√§onnistui{error}",
+    "failed_gallery_toast": "Tallennus galleriaan ep√§onnistui{error}",
+    "dash_no_chapter": "Lukua ei l√∂ytynyt",
     "dash_dialog": {
       "title": "Lataa kojelautamedia",
       "download_all": "Lataa kaikki",
@@ -2735,38 +2690,38 @@
   },
   "streaks_reminder": {
     "notification_title": "Streakit",
-    "notification_text": "Menet‰t otsasi{friend}in{hoursLeft}tuntia"
+    "notification_text": "Menet√§t otsasi{friend}in{hoursLeft}tuntia"
   },
   "biometric_auth": {
     "unlock_button": "Avaa lukitus",
     "title": "Avaa Snapchat",
-    "subtitle": "Ole hyv‰ ja tunnista Snapchat"
+    "subtitle": "Ole hyv√§ ja tunnista Snapchat"
   },
   "end_to_end_encryption": {
     "toolbox": {
-      "no_shared_key": "Sinulla ei ole viel‰ jaettua salaisuutta. Napsauta alla aloittaaksesi uuden.",
-      "shared_key_fingerprint": "Sormenj‰lkesi on:\n\n{fingerprint}Tarkista, onko se yst‰v‰si sormenj‰lki!",
-      "initiate_exchange_button": "K‰ynnist‰ avainvaihto"
+      "no_shared_key": "Sinulla ei ole viel√§ jaettua salaisuutta. Napsauta alla aloittaaksesi uuden.",
+      "shared_key_fingerprint": "Sormenj√§lkesi on:\n\n{fingerprint}Tarkista, onko se yst√§v√§si sormenj√§lki!",
+      "initiate_exchange_button": "K√§ynnist√§ avainvaihto"
     },
     "confirmation_dialogs": {
       "title": "Loppusalaus",
-      "confirmation_1": "VAROITUS: T‰m‰ korvaa nykyisen avaimen. P‰‰set k‰siksi t‰m‰n yst‰v‰n salattuihin viesteihin. Haluatko varmasti jatkaa?",
-      "confirmation_2": "Haluatko varmasti jatkaa? T‰m‰ on viimeinen tilaisuutesi per‰‰nty‰."
+      "confirmation_1": "VAROITUS: T√§m√§ korvaa nykyisen avaimen. P√§√§set k√§siksi t√§m√§n yst√§v√§n salattuihin viesteihin. Haluatko varmasti jatkaa?",
+      "confirmation_2": "Haluatko varmasti jatkaa? T√§m√§ on viimeinen tilaisuutesi per√§√§nty√§."
     },
-    "unencrypted_conversation_send_failure_toast": "Et voi l‰hett‰‰ salattua sis‰ltˆ‰ sek‰ salattuihin ett‰ salaamattomiin keskusteluihin!",
-    "native_hooks_send_failure_toast": "L‰hetys ep‰onnistui! Ota Native Hooks k‰yttˆˆn asetuksissa.",
-    "no_participants_to_encrypt_toast": "Sinulla ei ole yst‰vi‰ t‰ss‰ keskustelussa salata viestej‰!",
-    "encryption_failed_toast": "Viestin salaaminen ep‰onnistui! Katso lis‰tietoja hirsikissasta.",
-    "accept_public_key_success_toast": "Julkinen avain hyv‰ksytty!",
-    "accept_secret_key_success_toast": "Valmis! Voit nyt l‰hett‰‰ ja vastaanottaa salattuja viestej‰ t‰m‰n yst‰v‰n kanssa.",
-    "accept_public_key_failure_toast": "Julkisen avaimen hyv‰ksyminen ep‰onnistui",
-    "accept_secret_key_failure_toast": "Salaista avainta ei voitu hyv‰ksy‰",
-    "accept_secret_button": "Hyv‰ksy salainen",
-    "accept_public_key_button": "Hyv‰ksy julkinen Avain",
-    "outgoing_pk_message": "Avainvaihtopyyntˆ",
+    "unencrypted_conversation_send_failure_toast": "Et voi l√§hett√§√§ salattua sis√§lt√∂√§ sek√§ salattuihin ett√§ salaamattomiin keskusteluihin!",
+    "native_hooks_send_failure_toast": "L√§hetys ep√§onnistui! Ota Native Hooks k√§ytt√∂√∂n asetuksissa.",
+    "no_participants_to_encrypt_toast": "Sinulla ei ole yst√§vi√§ t√§ss√§ keskustelussa salata viestej√§!",
+    "encryption_failed_toast": "Viestin salaaminen ep√§onnistui! Katso lis√§tietoja hirsikissasta.",
+    "accept_public_key_success_toast": "Julkinen avain hyv√§ksytty!",
+    "accept_secret_key_success_toast": "Valmis! Voit nyt l√§hett√§√§ ja vastaanottaa salattuja viestej√§ t√§m√§n yst√§v√§n kanssa.",
+    "accept_public_key_failure_toast": "Julkisen avaimen hyv√§ksyminen ep√§onnistui",
+    "accept_secret_key_failure_toast": "Salaista avainta ei voitu hyv√§ksy√§",
+    "accept_secret_button": "Hyv√§ksy salainen",
+    "accept_public_key_button": "Hyv√§ksy julkinen Avain",
+    "outgoing_pk_message": "Avainvaihtopyynt√∂",
     "outgoing_secret_message": "Keskeiset vaihtotoimet",
-    "incoming_pk_message": "Sait juuri julkisen avainpyynnˆn. Klikkaa alla hyv‰ksy‰ksesi sen.",
-    "incoming_secret_message": "Yst‰v‰si hyv‰ksyi juuri avaimesi. Klikkaa alla hyv‰ksy‰ salaisuus."
+    "incoming_pk_message": "Sait juuri julkisen avainpyynn√∂n. Klikkaa alla hyv√§ksy√§ksesi sen.",
+    "incoming_secret_message": "Yst√§v√§si hyv√§ksyi juuri avaimesi. Klikkaa alla hyv√§ksy√§ salaisuus."
   },
   "auto_open_snaps": {
     "title": "Automaattiavausnapsit",
@@ -2774,89 +2729,89 @@
     "error_title": "Automaattiavaimet (Errors)",
     "channel_description": "Ilmoitukset naps-jonon automaattisesta avaamisesta",
     "priority_channel_description": "Etusijalla olevat ilmoitukset automaattisesta napsautuksista",
-    "error_channel_description": "Virheilmoitukset, kun automaattiavaukset ep‰onnistuvat",
+    "error_channel_description": "Virheilmoitukset, kun automaattiavaukset ep√§onnistuvat",
     "paused_status": "Automaattiavaimet tauko",
-    "processing_status": "Napsautukset:{queued}jonossa,{processed}k‰sitelty",
+    "processing_status": "Napsautukset:{queued}jonossa,{processed}k√§sitelty",
     "monitor_status": "Tarkkailu...",
     "recent_snaps": "Viimeaikaiset kuvat",
-    "action_pause": "Keskeyt‰",
+    "action_pause": "Keskeyt√§",
     "action_resume": "Jatka",
-    "action_clear": "Tyhjenn‰ jono",
+    "action_clear": "Tyhjenn√§ jono",
     "action_reset": "Nollaa",
     "error_content": "Napsauta ei voitu avata{sender}:{error}",
     "resumed_feedback": "Avaa automaattisesti",
     "paused_feedback": "Automaattitauko",
-    "resumed_message": "K‰sittely jatkuu automaattisesti jonossa olevien napsautusten osalta",
-    "paused_message": "K‰sittely tauolla. Jousis‰ilˆtty ({count}napsahtaa)",
+    "resumed_message": "K√§sittely jatkuu automaattisesti jonossa olevien napsautusten osalta",
+    "paused_message": "K√§sittely tauolla. Jousis√§il√∂tty ({count}napsahtaa)",
     "status_paused": "Tauko",
     "status_monitoring": "Seuranta",
     "status_active": "Aktiivinen",
     "queue_cleared": "Jono selvitetty ja tilastot nollattu",
     "queue_cleared_title": "Jono tarkastettu",
     "queue_cleared_reset": "Jono tyhjennetty ja nollattu",
-    "queue_cleared_feedback": "Tyhjennetty{count}jonotetut napsautukset ï Nollaa{processed}k‰sitelty m‰‰r‰",
-    "queue_cleared_feedback_simple": "Nollaa{processed}k‰sitelty m‰‰r‰",
+    "queue_cleared_feedback": "Tyhjennetty{count}jonotetut napsautukset ‚Ä¢ Nollaa{processed}k√§sitelty m√§√§r√§",
+    "queue_cleared_feedback_simple": "Nollaa{processed}k√§sitelty m√§√§r√§",
     "unknown_sender": "Tuntematon",
-    "unknown_user": "Tuntematon k‰ytt‰j‰",
+    "unknown_user": "Tuntematon k√§ytt√§j√§",
     "content_type_external_media": "Ulkoiset viestimet",
     "content_type_snap": "Napsauta",
-    "conversation_type_friend_dm": "Yst‰v‰ DM",
+    "conversation_type_friend_dm": "Yst√§v√§ DM",
     "conversation_type_dm": "DM",
-    "conversation_type_group_chat": "Ryhm‰keskustelu",
+    "conversation_type_group_chat": "Ryhm√§keskustelu",
     "conversation_type_chat": "Keskustelu",
     "notification_status": "Tila",
     "notification_statistics": "TILASTOTIEDOT",
     "notification_queue_size": "Jousikoko",
-    "notification_total_opened": "Avatut kuvat yhteens‰",
+    "notification_total_opened": "Avatut kuvat yhteens√§",
     "notification_queue_preview": "NYKYINEN ESITYS",
-    "notification_processing_continue": "K‰sittely jatkuu automaattisesti...",
+    "notification_processing_continue": "K√§sittely jatkuu automaattisesti...",
     "notification_no_snaps_queue": "Ei napsahduksia jonossa.",
     "notification_queue_cleared_opened": "Jono tarkastettu ({opened}avattu)",
     "content_type_photo_video_snap": "Kuva/Video Napsauta",
-    "conversation_type_group_with_name": "Ryhm‰:{name}",
+    "conversation_type_group_with_name": "Ryhm√§:{name}",
     "delete_logs_title": "Poistaa lokit?",
     "delete_logs_progress": "Poistaminen{count}lokit...",
-    "delete_logs_description": "T‰m‰ poistaa lokit nykyisen suodattimen ja hakukyselyn perusteella. T‰t‰ toimintaa ei voida perua.",
+    "delete_logs_description": "T√§m√§ poistaa lokit nykyisen suodattimen ja hakukyselyn perusteella. T√§t√§ toimintaa ei voida perua.",
     "export_logs_title": "Vie lokit?",
     "export_logs_progress": "Vie lokit...",
-    "export_logs_description": "T‰m‰ vie lokit perustuen nykyiseen suodattimeen ja hakuun.",
-    "export_logs_as": "Vie nimell‰{type}",
+    "export_logs_description": "T√§m√§ vie lokit perustuen nykyiseen suodattimeen ja hakuun.",
+    "export_logs_as": "Vie nimell√§{type}",
     "export_logs_success": "Viedyt lokit!",
-    "export_logs_failure": "Lokkeja ei voitu vied‰. Katso lis‰tietoja hirsikissasta.",
+    "export_logs_failure": "Lokkeja ei voitu vied√§. Katso lis√§tietoja hirsikissasta.",
     "deleted_logs_count": "Poistettu{count}lokit"
   },
   "script_imported": "Skripti{name}tuontia!",
-  "script_import_failed": "K‰sikirjoitusta ei voitu tuoda.{error}. Tarkista lokit lis‰tietoja",
-  "script_updating": "P‰ivitet‰‰n komentosarjaa{name}...",
-  "script_updated": "P‰ivitetty{name}versioon{version}",
-  "script_update_failed": "Moduulia ei voitu p‰ivitt‰‰. Tarkista lokit lis‰tietoja",
-  "script_edit_failed": "Moduulitiedostoa ei voitu avata. Tarkista lokit lis‰tietoja",
+  "script_import_failed": "K√§sikirjoitusta ei voitu tuoda.{error}. Tarkista lokit lis√§tietoja",
+  "script_updating": "P√§ivitet√§√§n komentosarjaa{name}...",
+  "script_updated": "P√§ivitetty{name}versioon{version}",
+  "script_update_failed": "Moduulia ei voitu p√§ivitt√§√§. Tarkista lokit lis√§tietoja",
+  "script_edit_failed": "Moduulitiedostoa ei voitu avata. Tarkista lokit lis√§tietoja",
   "script_data_cleared": "Moduulitiedot tyhjennetty!",
-  "script_data_clear_failed": "Moduulitietoja ei voitu tyhjent‰‰. Tarkista lokit lis‰tietoja",
+  "script_data_clear_failed": "Moduulitietoja ei voitu tyhjent√§√§. Tarkista lokit lis√§tietoja",
   "script_deleted": "Poistettu skripti{name}!",
-  "script_delete_failed": "Moduulia ei voitu poistaa. Tarkista lokit lis‰tietoja",
+  "script_delete_failed": "Moduulia ei voitu poistaa. Tarkista lokit lis√§tietoja",
   "script_actions": "Toimet",
   "script_no_description": "Ei kuvausta",
-  "script_update_available": "P‰ivitys saatavilla:{version}",
+  "script_update_available": "P√§ivitys saatavilla:{version}",
   "script_loaded": "Ladattu skripti{name}",
   "script_unloaded": "Purettu skripti{name}",
-  "script_enable_disable_failed": "Ei voitu{action}k‰sikirjoitus. Tarkista lokit lis‰tietoja",
-  "script_no_settings": "T‰ss‰ moduulissa ei ole asetuksia",
-  "script_no_scripts_found": "Skriptej‰ ei lˆytynyt",
-  "script_ok_timeout": "SELVƒ{timeout}",
-  "scripting_tagline": "Hallitse skriptej‰, tuontia ja kansioita",
+  "script_enable_disable_failed": "Ei voitu{action}k√§sikirjoitus. Tarkista lokit lis√§tietoja",
+  "script_no_settings": "T√§ss√§ moduulissa ei ole asetuksia",
+  "script_no_scripts_found": "Skriptej√§ ei l√∂ytynyt",
+  "script_ok_timeout": "SELV√Ñ{timeout}",
+  "scripting_tagline": "Hallitse skriptej√§, tuontia ja kansioita",
   "installed_scripts_tab": "Asennettu",
   "catalog_tab": "Luettelo",
   "no_scripts_folder_selected_title": "Valitse skriptien kansio, jonka voit aloittaa",
   "select_folder_button": "Valitse kansio",
   "select_scripts_folder_toast": "Valitse komentosarjakansio ensin",
-  "delete_rule_title": "Poista s‰‰ntˆ",
-  "delete_rule_description": "Haluatko varmasti poistaa t‰m‰n s‰‰nnˆn?",
-  "rule_name": "S‰‰ntˆnimi",
+  "delete_rule_title": "Poista s√§√§nt√∂",
+  "delete_rule_description": "Haluatko varmasti poistaa t√§m√§n s√§√§nn√∂n?",
+  "rule_name": "S√§√§nt√∂nimi",
   "friend_tracker_notifications": {
-    "notification_channel_name": "Yst‰v‰n j‰ljitin",
-    "notification_title": "Yst‰v‰toiminta",
-    "conversation_enter": "{friend}syˆtetty{conversation}",
+    "notification_channel_name": "Yst√§v√§n j√§ljitin",
+    "notification_title": "Yst√§v√§toiminta",
+    "conversation_enter": "{friend}sy√∂tetty{conversation}",
     "conversation_exit": "{friend}vasemmalle{conversation}",
     "started_typing": "{friend}alkoi kirjoittaa{conversation}",
     "stopped_typing": "{friend}lopetti kirjoittamisen{conversation}",
@@ -2869,68 +2824,68 @@
     "message_saved": "{friend}tallensi viestin{conversation}",
     "message_unsaved": "{friend}tallensi viestin{conversation}",
     "message_edited": "{friend}muokattu viesti{conversation}",
-    "message_reaction_add": "{friend}lis‰t‰‰n reaktio{conversation}",
+    "message_reaction_add": "{friend}lis√§t√§√§n reaktio{conversation}",
     "message_reaction_remove": "{friend}poistanut reaktion{conversation}",
     "snap_opened": "{friend}avasi snap in{conversation}",
     "snap_replayed": "{friend}uudelleen{conversation}",
     "snap_replayed_twice": "{friend}toistaa snap kahdesti{conversation}",
     "snap_screenshot": "{friend}kuvakaappaus{conversation}",
-    "snap_screen_record": "{friend}n‰yttˆ tallennettu{conversation}",
+    "snap_screen_record": "{friend}n√§ytt√∂ tallennettu{conversation}",
     "i_can_see_you": "{friend}lla{conversation}:{details}"
   },
   "friend_mutation_observer": {
-    "notification_channel_name": "Yst‰v‰ mutaatiotarkkailija",
-    "friend_removed": "{username}on poistanut sinut yst‰v‰n‰",
-    "birthday_removed": "{username}on poistanut syntym‰p‰iv‰ns‰ ({birthday})",
-    "birthday_added": "{username}on lis‰nnyt syntym‰p‰iv‰ns‰ ({birthday})",
-    "birthday_changed": "{username}on muuttanut syntym‰p‰iv‰‰{oldBirthday}-{newBirthday}",
+    "notification_channel_name": "Yst√§v√§ mutaatiotarkkailija",
+    "friend_removed": "{username}on poistanut sinut yst√§v√§n√§",
+    "birthday_removed": "{username}on poistanut syntym√§p√§iv√§ns√§ ({birthday})",
+    "birthday_added": "{username}on lis√§nnyt syntym√§p√§iv√§ns√§ ({birthday})",
+    "birthday_changed": "{username}on muuttanut syntym√§p√§iv√§√§{oldBirthday}-{newBirthday}",
     "bitmoji_selfie_changed": "{username}on muuttanut Bitmoji selfie",
-    "bitmoji_avatar_changed": "{username}on muuttanut heid‰n Bitmoji avatar",
+    "bitmoji_avatar_changed": "{username}on muuttanut heid√§n Bitmoji avatar",
     "bitmoji_background_changed": "{username}on muuttanut bitmoji-taustaansa",
-    "bitmoji_scene_changed": "{username}on muuttanut heid‰n Bitmoji kohtauksen"
+    "bitmoji_scene_changed": "{username}on muuttanut heid√§n Bitmoji kohtauksen"
   },
   "material3_strings": {
     "date_range_picker_start_headline": "Alkaen",
     "date_range_picker_end_headline": "Matkaan",
-    "date_range_picker_title": "Valitse p‰iv‰m‰‰r‰v‰li",
+    "date_range_picker_title": "Valitse p√§iv√§m√§√§r√§v√§li",
     "date_picker_switch_to_calendar_mode": "Kalenteri",
-    "date_picker_switch_to_input_mode": "Syˆte",
+    "date_picker_switch_to_input_mode": "Sy√∂te",
     "date_range_picker_scroll_to_previous_month": "Edellinen kuukausi",
     "date_range_picker_scroll_to_next_month": "Ensi kuussa",
-    "date_picker_today_description": "T‰n‰‰n",
+    "date_picker_today_description": "T√§n√§√§n",
     "date_range_picker_day_in_range": "Valittu",
-    "date_input_invalid_for_pattern": "Virheellinen p‰iv‰",
+    "date_input_invalid_for_pattern": "Virheellinen p√§iv√§",
     "date_input_invalid_year_range": "Virheellinen vuosi",
-    "date_input_invalid_not_allowed": "Virheellinen p‰iv‰",
-    "date_range_input_invalid_range_input": "Virheellinen p‰iv‰m‰‰r‰alue"
+    "date_input_invalid_not_allowed": "Virheellinen p√§iv√§",
+    "date_range_input_invalid_range_input": "Virheellinen p√§iv√§m√§√§r√§alue"
   },
   "send_override_dialog": {
-    "title": "L‰het‰ media nimell‰",
+    "title": "L√§het√§ media nimell√§",
     "duration": "Kesto:{duration}",
     "saveable_snap_hint": "Tee Napsauta tallennettavissa chatissa",
     "unlimited_duration": "Rajoittamaton",
     "schedule": "Aikataulu",
     "select_time": "Valitse aika",
     "select": "Valitse",
-    "select_date_first": "Valitse p‰iv‰m‰‰r‰",
+    "select_date_first": "Valitse p√§iv√§m√§√§r√§",
     "invalid_time": "Valitse tuleva aika"
   },
   "auto_reply_messages": {
     "dialog": {
-      "add_message": "Lis‰‰ viesti",
-      "edit_message": "Muokkaa viesti‰",
+      "add_message": "Lis√§√§ viesti",
+      "edit_message": "Muokkaa viesti√§",
       "message_label": "Viesti",
-      "no_messages": "Ei viestej‰ viel‰. Lis‰‰ ensimm‰inen viestisi!",
+      "no_messages": "Ei viestej√§ viel√§. Lis√§√§ ensimm√§inen viestisi!",
       "message_placeholder": "Anna automaattinen vastausviesti..."
     }
   },
   "auto_delete_sent_messages": {
     "countdown_toast": "Viesti poistetaan{time}",
     "delete_success_toast": "Tieto onnistuneesti poistettu",
-    "delete_failed_toast": "Viesti‰ ei voitu poistaa"
+    "delete_failed_toast": "Viesti√§ ei voitu poistaa"
   },
   "translation_position": {
-    "above": "Yll‰",
+    "above": "Yll√§",
     "below": "Alla",
     "inline": "Riviss?"
   },
@@ -2941,7 +2896,7 @@
     "de": "Saksa",
     "it": "Italia",
     "pt": "Portugali",
-    "ru": "Ven‰j‰",
+    "ru": "Ven√§j√§",
     "ja": "Japani",
     "ko": "Korea",
     "zh": "Kiina",
@@ -2954,7 +2909,7 @@
     "da": "Tanska",
     "no": "Norja",
     "fi": "Suomi",
-    "cs": "Töekki",
+    "cs": "T≈°ekki",
     "hu": "Unkari",
     "ro": "Romania",
     "bg": "Bulgaria",
@@ -2971,38 +2926,37 @@
   "tracker": {
     "tabs": {
       "logs": "Lokit",
-      "rules": "S‰‰nnˆt"
+      "rules": "S√§√§nn√∂t"
     },
     "actions": {
       "export": "Vie",
       "delete": "Poista",
-      "add_rule": "Lis‰‰ s‰‰ntˆ",
-      "save_rule": "Tallenna s‰‰ntˆ"
+      "add_rule": "Lis√§√§ s√§√§nt√∂",
+      "save_rule": "Tallenna s√§√§nt√∂"
     },
     "messages": {
-      "no_logs_found": "Lokkeja ei lˆytynyt",
-      "no_rules_found": "S‰‰ntˆj‰ ei lˆytynyt",
+      "no_logs_found": "Lokkeja ei l√∂ytynyt",
+      "no_rules_found": "S√§√§nt√∂j√§ ei l√∂ytynyt",
       "no_events": "Ei tapahtumia"
     },
-    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "Etsi"
     },
     "filters": {
       "newest_first": "Uusin ensin",
-      "pick_a_date": "Valitse p‰iv‰m‰‰r‰",
+      "pick_a_date": "Valitse p√§iv√§m√§√§r√§",
       "title": "Suodattimet",
       "search_by": "Etsi",
-      "since": "Sen j‰lkeen",
+      "since": "Sen j√§lkeen",
       "until": "Asti",
       "types": {
-        "username": "K‰ytt‰j‰tunnus",
+        "username": "K√§ytt√§j√§tunnus",
         "conversation": "Keskustelu",
         "event": "Tapahtuma"
       },
       "event_types": {
-        "conversation_enter": "Syˆtetty keskustelu",
-        "conversation_exit": "L‰htenyt keskustelu",
+        "conversation_enter": "Sy√∂tetty keskustelu",
+        "conversation_exit": "L√§htenyt keskustelu",
         "started_typing": "Aloitetaan kirjoittaminen",
         "stopped_typing": "Lopetettu kirjoittaminen",
         "started_speaking": "Alkoi puhua",
@@ -3014,27 +2968,27 @@
         "message_saved": "Tallennettu viesti",
         "message_unsaved": "Tallentamaton viesti",
         "message_edited": "Muokattu viesti",
-        "message_reaction_add": "Lis‰reaktio",
+        "message_reaction_add": "Lis√§reaktio",
         "message_reaction_remove": "Poistettu reaktio",
         "snap_opened": "Avattu",
         "snap_replayed": "Toista",
         "snap_replayed_twice": "Toista snap kahdesti",
         "snap_screenshot": "Kuvakaappaus",
-        "snap_screen_record": "N‰ytˆlle tallennettu"
+        "snap_screen_record": "N√§yt√∂lle tallennettu"
       }
     },
     "logs": {
       "export_dialog": {
         "title": "Vie lokit",
-        "description": "Vie yst‰v‰si j‰ljitinlokit tiedostoon",
+        "description": "Vie yst√§v√§si j√§ljitinlokit tiedostoon",
         "progress": "Vie lokit...",
-        "export_as": "Vie nimell‰{type}",
+        "export_as": "Vie nimell√§{type}",
         "format_json": "JSON",
         "format_csv": "CSV"
       },
       "delete_dialog": {
         "title": "Poista lokit",
-        "message": "Haluatko varmasti poistaa kaikki lokit? T‰t‰ toimintaa ei voida perua.",
+        "message": "Haluatko varmasti poistaa kaikki lokit? T√§t√§ toimintaa ei voida perua.",
         "confirm": "Poista kaikki",
         "cancel": "Peruuta",
         "progress": "Poistaminen{count}lokit..."
@@ -3043,7 +2997,7 @@
         "in_conversation": "in{conversation}",
         "unknown_user": "Tuntematon",
         "unknown_conversation": "DM",
-        "i_can_see_you_entered": "Syˆtetty",
+        "i_can_see_you_entered": "Sy√∂tetty",
         "i_can_see_you_left": "Vasen",
         "i_can_see_you_duration": "Kesto",
         "i_can_see_you_not_available": "EI SOVELLETA",
@@ -3052,7 +3006,7 @@
         "i_can_see_you_unit_second": "tilu",
         "event_text": "{friend}{event}in{conversation}",
         "events": {
-          "conversation_enter": "syˆtetty",
+          "conversation_enter": "sy√∂tetty",
           "conversation_exit": "vasemmalle",
           "started_typing": "alkoi kirjoittaa",
           "stopped_typing": "lopeta kirjoittaminen",
@@ -3063,96 +3017,96 @@
           "message_read": "lue viesti",
           "message_deleted": "poistettu viesti",
           "message_saved": "tallensi viestin",
-          "message_unsaved": "tallentamatta viesti‰",
+          "message_unsaved": "tallentamatta viesti√§",
           "message_edited": "muokattu viesti",
-          "message_reaction_add": "lis‰t‰‰n reaktio",
+          "message_reaction_add": "lis√§t√§√§n reaktio",
           "message_reaction_remove": "poisti reaktion",
           "snap_opened": "avasi snap",
           "snap_replayed": "toisto",
           "snap_replayed_twice": "toistaa snap kahdesti",
           "snap_screenshot": "kuvakaappaus",
-          "snap_screen_record": "n‰yttˆ tallennettu",
+          "snap_screen_record": "n√§ytt√∂ tallennettu",
           "i_can_see_you": "oli aktiivinen"
         }
       }
     },
     "edit_rule": {
-      "custom_rule": "Oma s‰‰ntˆ",
+      "custom_rule": "Oma s√§√§nt√∂",
       "scope": "Soveltamisala",
       "events": "Tapahtumat",
-      "add_event": "Lis‰‰ tapahtuma",
+      "add_event": "Lis√§√§ tapahtuma",
       "type": "Tyyppi",
       "triggers": "Laukaisimet",
       "conditions": "Edellytykset",
-      "only_inside_conversation": "Vain kun olen sis‰ll‰",
+      "only_inside_conversation": "Vain kun olen sis√§ll√§",
       "only_outside_conversation": "Vain kun olen ulkopuolella",
       "only_when_app_active": "Vain kun Snapchat on aktiivinen",
       "only_when_app_inactive": "Vain kun Snapchat on inaktiivinen",
       "no_notification_when_app_active": "Ei ilmoitusta Snapchat-hoidon aikana",
       "scope_options": {
-        "all_friends_groups": "Kaikki yst‰v‰t/ryhm‰t",
+        "all_friends_groups": "Kaikki yst√§v√§t/ryhm√§t",
         "no_one_except": "Ei kukaan paitsi..",
         "everyone_except": "Kaikki paitsi"
       }
     }
   },
   "debug": {
-    "title": "Vianetsint‰",
-    "clear": "Tyhjenn‰",
+    "title": "Vianetsint√§",
+    "clear": "Tyhjenn√§",
     "files": {
       "config_json": "Asetustiedosto",
       "mappings_json": "Kartoitustiedosto",
       "message_logger_db": "Viestin lokitietokanta",
       "pinned_best_friend_txt": "Pinned Best Friend -tiedosto",
-      "native_sig_cache_txt": "Alkuper‰inen allekirjoitus V‰limuistitiedosto"
+      "native_sig_cache_txt": "Alkuper√§inen allekirjoitus V√§limuistitiedosto"
     },
     "settings": {
       "test_mode": "Testitila (vahingossa)",
-      "disable_feature_loading": "Poista Ominaisuuden lataus k‰ytˆst‰",
-      "disable_auto_mapper": "Poista automaattinen mapper k‰ytˆst‰",
-      "disable_bypass_status_indicator": "Poista ohitustilan ilmaisin k‰ytˆst‰"
+      "disable_feature_loading": "Poista Ominaisuuden lataus k√§yt√∂st√§",
+      "disable_auto_mapper": "Poista automaattinen mapper k√§yt√∂st√§",
+      "disable_bypass_status_indicator": "Poista ohitustilan ilmaisin k√§yt√∂st√§"
     }
   },
-  "ui_settings_title": "K‰yttˆliittym‰n asetukset",
+  "ui_settings_title": "K√§ytt√∂liittym√§n asetukset",
   "haptic_feedback_label": "Haptinen palaute",
-  "updates_title": "P‰ivitykset",
-  "auto_update_check": "Automaattip‰ivityksen tarkistus",
+  "updates_title": "P√§ivitykset",
+  "auto_update_check": "Automaattip√§ivityksen tarkistus",
   "update_check_frequency_daily": "Vuorokausi",
   "update_check_frequency_weekly": "Viikoittain",
   "update_check_frequency_monthly": "Kuukausittain",
   "update_channel_stable": "Vakaa",
   "update_channel_prerelease": "Esijulkaisu",
-  "friend_notes_title": "Yst‰v‰t",
-  "friend_notes_description": "Hallitse ja varmuuskopioi yst‰v‰si muistiinpanoja",
+  "friend_notes_title": "Yst√§v√§t",
+  "friend_notes_description": "Hallitse ja varmuuskopioi yst√§v√§si muistiinpanoja",
   "app_theme_title": "App Teema",
-  "theme_mode_system": "J‰rjestelm‰",
+  "theme_mode_system": "J√§rjestelm√§",
   "theme_mode_light": "Valo",
   "theme_mode_dark": "Tumma",
-  "test_mode_label": "Ota PurrAura k‰yttˆˆn",
-  "disable_feature_loading_label": "Poista Ominaisuuden lataus k‰ytˆst‰",
-  "disable_auto_mapper_label": "Poista automaattinen mapper k‰ytˆst‰",
-  "disable_bypass_indicator_label": "Poista ohitustien ilmaisin k‰ytˆst‰",
+  "test_mode_label": "Ota PurrAura k√§ytt√∂√∂n",
+  "disable_feature_loading_label": "Poista Ominaisuuden lataus k√§yt√∂st√§",
+  "disable_auto_mapper_label": "Poista automaattinen mapper k√§yt√∂st√§",
+  "disable_bypass_indicator_label": "Poista ohitustien ilmaisin k√§yt√∂st√§",
   "friend_list": {
-    "manage_title": "Hallitse yst‰v‰luetteloa",
-    "export_description": "Vie yst‰viesi avulla voit tallentaa listan yst‰viesi tunnisteista tekstitiedostoon. Tuominen tiedostosta n‰ytt‰‰ yst‰v‰t luettelossa, johon voit lis‰t‰ ne.",
-    "export_friends": "Vie yst‰v‰t",
+    "manage_title": "Hallitse yst√§v√§luetteloa",
+    "export_description": "Vie yst√§viesi avulla voit tallentaa listan yst√§viesi tunnisteista tekstitiedostoon. Tuominen tiedostosta n√§ytt√§√§ yst√§v√§t luettelossa, johon voit lis√§t√§ ne.",
+    "export_friends": "Vie yst√§v√§t",
     "import_from_file": "Tuo tiedostosta",
     "load_suggested_friends": "Load suggested friends",
-    "add": "Lis‰‰"
+    "add": "Lis√§√§"
   },
   "memories": {
     "export_title": "Vie muistot",
     "total_memories": "Kokonaismuistot:{count}",
-    "date_range": "P‰iv‰m‰‰r‰",
+    "date_range": "P√§iv√§m√§√§r√§",
     "select": "Valitse",
-    "sort_by_folder": "J‰rjest‰ kansioittain",
-    "include_my_eyes_only": "Vain silm‰ni",
+    "sort_by_folder": "J√§rjest√§ kansioittain",
+    "include_my_eyes_only": "Vain silm√§ni",
     "cancel": "Peruuta",
     "export": "Vie",
     "quit": "Lopeta",
     "done": "Valmis",
-    "ok": "SELVƒ",
-    "exporting_memories": "Viemme muistoja... ({failed}ep‰onnistui)"
+    "ok": "SELV√Ñ",
+    "exporting_memories": "Viemme muistoja... ({failed}ep√§onnistui)"
   },
   "scripting_ui": {
     "no_scripts_folder_selected": "Skriptikansiota ei ole valittu",
@@ -3160,64 +3114,64 @@
     "import_from_url": "Tuo URL-osoitteesta",
     "open_scripts_folder": "Avaa komentosarjakansio",
     "import_script_from_url": "Tuo komentosarja URL-osoitteesta",
-    "warning_imported_scripts": "Varoitus: Tuodut skriptit voivat olla haitallisia laitteellesi. Tuo skriptej‰ vain luotetuista l‰hteist‰.",
-    "enter_url_here": "Anna URL t‰h‰n:",
+    "warning_imported_scripts": "Varoitus: Tuodut skriptit voivat olla haitallisia laitteellesi. Tuo skriptej√§ vain luotetuista l√§hteist√§.",
+    "enter_url_here": "Anna URL t√§h√§n:",
     "import": "Tuo",
     "cancel": "Peruuta",
     "documentation": "Asiakirjat"
   },
   "common": {
     "cancel": "Peruuta",
-    "add": "Lis‰‰",
-    "ok": "SELVƒ",
+    "add": "Lis√§√§",
+    "ok": "SELV√Ñ",
     "quit": "Lopeta",
     "done": "Valmis",
     "back": "Takaisin",
     "unknown": "Tuntematon",
-    "added": "Lis‰tty",
-    "no_friends_found": "Ei yst‰vi‰ lˆytynyt",
-    "exporting_memories": "Viemme muistoja... ({failed}ep‰onnistui)"
+    "added": "Lis√§tty",
+    "no_friends_found": "Ei yst√§vi√§ l√∂ytynyt",
+    "exporting_memories": "Viemme muistoja... ({failed}ep√§onnistui)"
   },
-  "clear_friend_feed": "Tyhjenn‰ yst‰v‰syˆte",
-  "select_date": "Valitse p‰iv‰m‰‰r‰",
+  "clear_friend_feed": "Tyhjenn√§ yst√§v√§sy√∂te",
+  "select_date": "Valitse p√§iv√§m√§√§r√§",
   "schedule_scheduled_for": "Suunniteltu{name}in{time}",
-  "schedule_sending_in": "L‰hetys{time}",
-  "schedule_sent_to": "L‰hetetty{name}",
-  "schedule_sent": "L‰hetetty",
-  "schedule_failed_to": "Ei voitu l‰hett‰‰{name}",
-  "schedule_failed": "Aikataulun mukainen napsautus ep‰onnistui",
+  "schedule_sending_in": "L√§hetys{time}",
+  "schedule_sent_to": "L√§hetetty{name}",
+  "schedule_sent": "L√§hetetty",
+  "schedule_failed_to": "Ei voitu l√§hett√§√§{name}",
+  "schedule_failed": "Aikataulun mukainen napsautus ep√§onnistui",
   "schedule_cancelled_for": "Peruttu{name}",
-  "by_author": "menness‰{author}",
+  "by_author": "menness√§{author}",
   "version": "Versio{version}",
   "delete_button": "Poista",
   "logger_history": {
     "download_started": "Lataus alkoi!",
     "downloaded_to": "Ladattu{path}",
-    "failed_to_download": "Lataaminen ep‰onnistui{message}",
+    "failed_to_download": "Lataaminen ep√§onnistui{message}",
     "select_conversation": "Valitse keskustelu",
     "select_conversation_placeholder": "Valitse keskustelu",
     "edited_at": "muokattu osoitteessa{date}",
-    "download_attachment_failed_toast": "Liitteen lataus ep‰onnistui",
-    "message_parse_failed": "Viestin j‰sennys ep‰onnistui",
-    "empty_message": "Tyhj‰ viesti",
-    "no_more_messages": "Ei en‰‰ viestej‰",
-    "reverse_order_checkbox": "K‰‰nteinen j‰rjestys",
-    "view_logger_history_button": "N‰yt‰ lokihistoria",
-    "posted_at": "L‰hetetty{date}",
+    "download_attachment_failed_toast": "Liitteen lataus ep√§onnistui",
+    "message_parse_failed": "Viestin j√§sennys ep√§onnistui",
+    "empty_message": "Tyhj√§ viesti",
+    "no_more_messages": "Ei en√§√§ viestej√§",
+    "reverse_order_checkbox": "K√§√§nteinen j√§rjestys",
+    "view_logger_history_button": "N√§yt√§ lokihistoria",
+    "posted_at": "L√§hetetty{date}",
     "created_at": "Luotu{date}",
-    "failed_to_open_file": "Tiedostoa ei voitu avata. Tarkista lokit saadaksesi lis‰tietoja",
+    "failed_to_open_file": "Tiedostoa ei voitu avata. Tarkista lokit saadaksesi lis√§tietoja",
     "failed_to_get_file": "Tiedostoa ei voitu saada",
     "download_button": "Lataa",
     "chat_attachment": "Liite{index}",
     "log_header_format": "{username}?{type}?{date}",
     "edited_at_text": "Muokattu \"{message}\"{date}",
-    "list_group_format": "Ryhm‰{name}",
-    "list_friend_format": "Yst‰v‰{name}",
+    "list_group_format": "Ryhm√§{name}",
+    "list_friend_format": "Yst√§v√§{name}",
     "download_started_toast": "Lataus aloitettu",
     "download_success_toast": "Ladattu{path}",
-    "download_failed_toast": "Lataus ep‰onnistui:{message}",
+    "download_failed_toast": "Lataus ep√§onnistui:{message}",
     "close_button_description": "Sulje haku",
-    "search_button_description": "Etsi viestej‰"
+    "search_button_description": "Etsi viestej√§"
   },
   "debug_dialogs": {
     "info": "Tiedot",
@@ -3229,13 +3183,13 @@
     "message_proto": "Viestiproto"
   },
   "error_messages": {
-    "failed_to_fetch_message": "Viesti‰ ei voitu noutaa:{error}",
-    "failed_to_edit_message": "Viestin muokkaus ep‰onnistui:{error}"
+    "failed_to_fetch_message": "Viesti√§ ei voitu noutaa:{error}",
+    "failed_to_edit_message": "Viestin muokkaus ep√§onnistui:{error}"
   },
   "ai_response_style": {
     "casual": "Tavallinen",
     "formal": "Muodollinen",
-    "friendly": "Yst‰v‰llinen",
+    "friendly": "Yst√§v√§llinen",
     "humorous": "Huvittavaa",
     "empathetic": "Empaattinen",
     "busy": "Kiire",
@@ -3249,7 +3203,7 @@
     "de": "Saksa",
     "it": "Italia",
     "pt": "Portugali",
-    "ru": "Ven‰j‰",
+    "ru": "Ven√§j√§",
     "ja": "Japani",
     "ko": "Korea",
     "zh": "Kiina",
@@ -3265,7 +3219,7 @@
   },
   "ai_provider": {
     "gemini": "Kaksoset",
-    "deepseek": "Syv‰haku",
+    "deepseek": "Syv√§haku",
     "openai": "OpenAI",
     "openrouter": "OpenRouter"
   }

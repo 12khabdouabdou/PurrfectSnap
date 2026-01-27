@@ -815,17 +815,6 @@
         "back": "뒤 사진기",
         "null": "자주 묻는 질문"
       },
-      \"call_recorder\": {
-          \"only_record_self\": \"Only Record Self\",
-          \"only_record_others\": \"Only Record Others\",
-          \"record_both\": \"Record Both Sides\"
-      },
-      \"call_recorder_ui_design\": {
-          \"default\": \"Default\",
-          \"snapchat\": \"Snapchat\",
-          \"cyber\": \"Cyber\",
-          \"frost\": \"Frost\"
-      },
       "front_custom_frame_rate": {
         "null": "장치 기본 FPS"
       },
@@ -1334,29 +1323,6 @@
           "auto_download_voice_notes": {
             "name": "자동차 다운로드 음성 메모",
             "description": "자동으로 음성 메모를 다운로드 할 때"
-          },
-          \"call_recorder\": {
-              \"name\": \"Call Recorder\",
-              \"description\": \"Manage call recording settings\",
-              \"properties\": {
-                  \"call_recorder\": {
-                      \"name\": \"Mode\",
-                      \"description\": \"Select what should be recorded\"
-                  },
-                  \"auto_start_recording\": {
-                      \"name\": \"Auto Start Recording\",
-                      \"description\": \"Automatically start recording when a call starts\"
-                  },
-                  \"call_recorder_ui\": {
-                      \"name\": \"Call Recorder UI\",
-                      \"description\": \"Show the recording overlay UI during calls\"
-                  },
-                  \"call_recorder_ui_design\": {
-                      \"name\": \"UI Design\",
-                      \"description\": \"Select the design for the call recorder overlay\"
-                  },
-                  \"call_recording_saved_toast\": \"Saved\"
-              }
           },
           "download_profile_pictures": {
             "name": "Profile Pictures 다운로드",
@@ -2121,17 +2087,6 @@
             "name": "시작 기본 카메라",
             "description": "Snapchat에서 열 때 기본 카메라 설정"
           },
-      \"call_recorder\": {
-          \"only_record_self\": \"Only Record Self\",
-          \"only_record_others\": \"Only Record Others\",
-          \"record_both\": \"Record Both Sides\"
-      },
-      \"call_recorder_ui_design\": {
-          \"default\": \"Default\",
-          \"snapchat\": \"Snapchat\",
-          \"cyber\": \"Cyber\",
-          \"frost\": \"Frost\"
-      },
           "hevc_recording": {
             "name": "채용 정보 관련 기사",
             "description": "HEVC 사용 (H.265) 비디오 녹화에 대한 코덱"
@@ -2984,7 +2939,6 @@
       "no_rules_found": "자주 묻는 질문",
       "no_events": "행사안내"
     },
-    "scopes_suffix": "scopes",
     "search": {
       "placeholder": "제품정보"
     },
