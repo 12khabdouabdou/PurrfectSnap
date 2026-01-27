@@ -9,6 +9,7 @@
 - New: Auto Mapper for Manage Friend List(tq to RSR)
 - Fix: remove audio note duration & transcription(tq to RSR)
 - Fix: Missing translations
+- New: Chat Wallpaper download button UI
 
 ## v1.2.0
 - Fix: Prevent snap replay/missed audio voice call(thanks to RSR)
