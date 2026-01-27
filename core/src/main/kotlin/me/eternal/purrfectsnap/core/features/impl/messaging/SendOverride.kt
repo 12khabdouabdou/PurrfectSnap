@@ -343,6 +343,8 @@ class SendOverride : Feature("Send Override") {
             if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
                 localMessageContent.contentType != ContentType.SNAP &&
                 localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) return@subscribe
+            val includeCameraSnaps = context.config.messaging.galleryMediaSendOverride.includeCameraSnaps.get()
+            if (localMessageContent.contentType == ContentType.SNAP && !includeCameraSnaps) return@subscribe
 
             //prevent story replies
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
@@ -539,8 +541,9 @@ class SendOverride : Feature("Send Override") {
                 return true
             }
 
-            if (configOverrideType != null && configOverrideType != "always_ask") {
-                if (sendMedia(configOverrideType, 10)) {
+            val resolvedOverrideType = configOverrideType?.takeIf { it != "always_ask" }
+            if (resolvedOverrideType != null) {
+                if (sendMedia(resolvedOverrideType, 10)) {
                     event.invokeOriginal()
                 }
                 return@subscribe
