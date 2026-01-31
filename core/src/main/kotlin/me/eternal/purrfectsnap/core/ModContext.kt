@@ -100,7 +100,7 @@ class ModContext(
             runCatching {
                 runnable()
             }.onFailure {
-                longToast("Async task failed: " + it.message)
+                longToast(translation.format("toast_async_task_failed", "message" to (it.message ?: "")))
                 log.error("Async task failed", it)
             }
         }
@@ -139,7 +139,7 @@ class ModContext(
 
     fun logCritical(message: Any?, throwable: Throwable = Throwable()) {
         log.error(message ?: "Snapchat crash", throwable)
-        longToast(message ?: "Snapchat has crashed! Please check logs for more details.")
+        longToast(message ?: translation["toast_snapchat_crashed"])
     }
 
     private fun delayForceCloseApp(delay: Long) = Handler(Looper.getMainLooper()).postDelayed({

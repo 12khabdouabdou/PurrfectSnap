@@ -319,7 +319,7 @@ class HomeRootSection : Routes.Route() {
         ) { routes.homeLogs.navigate() }
         TopBarActionChip(
             icon = Icons.Filled.Info,
-            label = "About"
+            label = translation["manager.routes.home_about"]
         ) { routes.about.navigate() }
     }
 
@@ -453,7 +453,7 @@ class HomeRootSection : Routes.Route() {
                         fontFamily = avenirNext
                     )
                     Text(
-                        text = "An Xposed Module meant to enhance your Snapchat experience",
+                        text = translation["hero_tagline"],
                         color = Color.White.copy(alpha = 0.9f),
                         fontSize = 15.sp,
                         lineHeight = 20.sp,
@@ -465,9 +465,9 @@ class HomeRootSection : Routes.Route() {
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            HeroBadge("Version: $versionName - $channelLabel")
+            HeroBadge(translation.format("hero_version_label", "version" to versionName, "channel" to channelLabel))
             gitHashShort.takeIf { it.isNotBlank() && it.lowercase() != "unknown" }?.let {
-                HeroBadge("Build: $it")
+                HeroBadge(translation.format("hero_build_label", "build" to it))
             }
         }
 
@@ -566,7 +566,7 @@ class HomeRootSection : Routes.Route() {
                                                 tint = Color(0xFFA3F0C2)
                                             )
                                             Text(
-                                                text = "Ready to install",
+                                                text = translation["update_ready_label"],
                                                 color = Color.White,
                                                 fontWeight = FontWeight.SemiBold
                                             )
@@ -611,7 +611,7 @@ class HomeRootSection : Routes.Route() {
                                         .background(if (isPurrAuraActive) PurrfectPalette.glowPrimary else Color(0xFF8C8CA3))
                                 )
                                 Text(
-                                    text = if (isPurrAuraActive) "PurrAura Active!" else "PurrAura Inactive",
+                                    text = if (isPurrAuraActive) translation["purr_aura_active_label"] else translation["purr_aura_inactive_label"],
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 14.sp
@@ -627,7 +627,7 @@ class HomeRootSection : Routes.Route() {
                         ) {
                             Icon(Icons.Filled.Settings, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Open Settings")
+                            Text(translation["open_settings_button"])
                         }
                     }
                 }
@@ -657,7 +657,7 @@ class HomeRootSection : Routes.Route() {
                         ) {
                             Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Wiki", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(text = translation["wiki_button"], maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         OutlinedButton(
                             modifier = Modifier.weight(1f),
@@ -672,7 +672,7 @@ class HomeRootSection : Routes.Route() {
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "GitHub", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(text = translation["github_button"], maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         ExternalLinkIcon(
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
@@ -740,7 +740,7 @@ class HomeRootSection : Routes.Route() {
             context.database.getQuickTiles().filter { it.isNotBlank() }
         }
         val updateChannel = context.config.root.global.updateSettings.updateChannel.getNullable() ?: "stable"
-        val channelLabel = if (updateChannel == "prerelease") "Pre-release" else "Stable"
+        val channelLabel = if (updateChannel == "prerelease") translation["channel_label_prerelease"] else translation["channel_label_stable"]
         val latestUpdate by rememberAsyncMutableState(defaultValue = null, keys = arrayOf(updateChannel)) {
             val channel = if (updateChannel == "prerelease") Channel.PRERELEASE else Channel.STABLE
             Updater.getLatestRelease(channel)
@@ -785,7 +785,7 @@ class HomeRootSection : Routes.Route() {
                     if (abiName == null) {
                         android.widget.Toast.makeText(
                             context.androidContext,
-                            "Your device architecture is not supported for automatic updates.",
+                            translation["update_arch_not_supported_toast"],
                             android.widget.Toast.LENGTH_LONG
                         ).show()
                     } else {
@@ -807,7 +807,10 @@ class HomeRootSection : Routes.Route() {
                         "No matching update asset for arch=$abiName (available: ${latest.assetDownloads.keys})",
                         "HomeRoot"
                     )
-                    context.androidContext.openLink(latest.releaseUrl)
+                    context.androidContext.openLink(
+                        latest.releaseUrl,
+                        context.translation["toast_open_link_failed"]
+                    )
                 }
             }
         }
@@ -926,7 +929,7 @@ class HomeRootSection : Routes.Route() {
                         TopBarActionChip(
                             icon = Icons.Filled.Notifications,
                             label = null,
-                            contentDescription = "Announcements"
+                            contentDescription = translation["announcements_button_description"]
                         ) {
                             showAnnouncementsDialog = true
                             loadAnnouncements()
@@ -949,9 +952,24 @@ class HomeRootSection : Routes.Route() {
                     onUpdateAction = onUpdateButtonClick,
                     channelLabel = channelLabel,
                     isPurrAuraActive = isPurrAuraActive,
-                    onWikiClick = { context.androidContext.openLink("https://github.com/particle-box/PurrfectSnap/wiki") },
-                    onTelegramClick = { context.androidContext.openLink("https://t.me/purrfectsnap_official") },
-                    onGithubClick = { context.androidContext.openLink("https://github.com/particle-box/PurrfectSnap") },
+                    onWikiClick = {
+                        context.androidContext.openLink(
+                            "https://github.com/particle-box/PurrfectSnap/wiki",
+                            context.translation["toast_open_link_failed"]
+                        )
+                    },
+                    onTelegramClick = {
+                        context.androidContext.openLink(
+                            "https://t.me/purrfectsnap_official",
+                            context.translation["toast_open_link_failed"]
+                        )
+                    },
+                    onGithubClick = {
+                        context.androidContext.openLink(
+                            "https://github.com/particle-box/PurrfectSnap",
+                            context.translation["toast_open_link_failed"]
+                        )
+                    },
                     authorName = "ETERNAL",
                     onManageClick = { routes.settings.navigate() },
                     avenirNext = avenirNext,
@@ -1001,14 +1019,14 @@ class HomeRootSection : Routes.Route() {
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
-                                        text = "No quick tiles yet",
+                                        text = translation["quick_actions_empty_title"],
                                         fontSize = 20.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "Design your dream grid with the actions you use the most.",
+                                        text = translation["quick_actions_empty_subtitle"],
                                         fontSize = 14.sp,
                                         color = Color.White.copy(alpha = 0.75f),
                                         textAlign = TextAlign.Center
@@ -1027,7 +1045,7 @@ class HomeRootSection : Routes.Route() {
                                             modifier = Modifier.size(20.dp)
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text(text = "Add tile")
+                                        Text(text = translation["quick_actions_add_tile_button"])
                                     }
                                 }
                             } else {
@@ -1048,7 +1066,7 @@ class HomeRootSection : Routes.Route() {
                                         overflow = TextOverflow.Clip
                                     )
                                     Text(
-                                        text = "${selectedTiles.size} curated shortcuts",
+                                        text = translation.format("quick_actions_count_label", "count" to selectedTiles.size.toString()),
                                         fontSize = 13.sp,
                                         color = Color.White.copy(alpha = 0.75f),
                                         textAlign = TextAlign.Center
@@ -1069,7 +1087,7 @@ class HomeRootSection : Routes.Route() {
                                                 modifier = Modifier.size(18.dp)
                                             )
                                             Spacer(modifier = Modifier.width(6.dp))
-                                            Text(text = "Manage")
+                                            Text(text = translation["quick_actions_manage_button"])
                                         }
                                     }
                                 }

@@ -65,13 +65,7 @@ class HomeAbout : Routes.Route() {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
         }
         val scrollState = rememberScrollState()
-        val aboutStory = remember {
-            """
-            PurrfectSnap was founded on 2nd of October, 2025, as a fork of SnapEnhance by ΞTΞRNAL with a vision to provide users the quality Snapchat experience they deserve. This app was just meant to be a minor update in the SnapEnhance repository, but it soon became a separate app wherein the contributors kept adding features. Then the developer <RSR/> joined the team, and this app soon became a huge success. We received much love and support and gained 1K+ downloads in just two days! We thank all users and contributors; without your support, we wouldn't have reached this place. We would also like to convey our huge thanks to rhunk, the lead developer of SnapEnhance, as without him, this app wouldn't even exist. We are immensely grateful to him. Lastly, we would like to thank all our admins, notably: CLASSIC GENIUS, Harry, SUJΛL, Zain & scrodingerspet, who were right there with us from the very beginning. We would also like to thank all testers, notably Leo & Toxic, who tested and reported bugs continuously. We are immensely grateful for your contribution.
-            
-            
-            """.trimIndent()
-        }
+        val aboutStory = remember { translation["about_story"] }
         val pagePadding = 16.dp
         val bottomPadding = routes.bottomPadding +
             WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
@@ -82,7 +76,7 @@ class HomeAbout : Routes.Route() {
         val lastTapTime = remember { mutableLongStateOf(0L) }
 
         LaunchedEffect(Unit) {
-            context.shortToast("Tap 5 times in this screen to see some magic 😉!")
+            context.shortToast(translation["about_magic_toast"])
         }
 
         Box(
@@ -97,7 +91,7 @@ class HomeAbout : Routes.Route() {
                     .padding(bottom = bottomPadding)
             ) {
                 FloatingTopBar(
-                    title = routeInfo.translatedKey?.value ?: "About",
+                    title = routeInfo.translatedKey?.value ?: translation["manager.routes.home_about"],
                     onBack = { routes.navController.popBackStack() }
                 )
 
@@ -121,7 +115,7 @@ class HomeAbout : Routes.Route() {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "PurrfectSnap",
+                            text = translation["about_title"],
                             fontSize = 28.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = PurrfectPalette.textPrimary,
@@ -143,14 +137,14 @@ class HomeAbout : Routes.Route() {
                             }
                         )
                         Text(
-                            text = "An Xposed Module meant to enhance your Snapchat experience!",
+                            text = translation["about_tagline"],
                             fontSize = 13.sp,
                             color = PurrfectPalette.textSecondary,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = "Lead Developers",
+                            text = translation["about_lead_developers_title"],
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
@@ -196,7 +190,7 @@ class HomeAbout : Routes.Route() {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Our Story",
+                            text = translation["about_story_title"],
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -228,7 +222,7 @@ class HomeAbout : Routes.Route() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "With love, PurrfectSnap Team",
+                            text = translation["about_thanks_title"],
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
@@ -242,7 +236,12 @@ class HomeAbout : Routes.Route() {
                         ) {
                             Button(
                                 modifier = Modifier.weight(1f),
-                                onClick = { context.androidContext.openLink("https://github.com/particle-box/PurrfectSnap") },
+                                onClick = {
+                                    context.androidContext.openLink(
+                                        "https://github.com/particle-box/PurrfectSnap",
+                                        context.translation["toast_open_link_failed"]
+                                    )
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.White,
                                     contentColor = Color(0xFF1B152E)
@@ -254,11 +253,16 @@ class HomeAbout : Routes.Route() {
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "GitHub", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(text = translation["github_button"], maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                             OutlinedButton(
                                 modifier = Modifier.weight(1f),
-                                onClick = { context.androidContext.openLink("https://t.me/purrfectsnap_official") },
+                                onClick = {
+                                    context.androidContext.openLink(
+                                        "https://t.me/purrfectsnap_official",
+                                        context.translation["toast_open_link_failed"]
+                                    )
+                                },
                                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
                             ) {
@@ -269,7 +273,7 @@ class HomeAbout : Routes.Route() {
                                     tint = Color.White
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "Telegram", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(text = translation["telegram_button"], maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
                     }

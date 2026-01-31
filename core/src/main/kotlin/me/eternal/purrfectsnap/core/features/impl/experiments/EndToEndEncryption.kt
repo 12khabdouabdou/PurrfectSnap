@@ -75,12 +75,22 @@ class EndToEndEncryption : MessagingRuleFeature(
 
     private fun askForKeys(conversationId: String) {
         val friendId = context.database.getDMOtherParticipant(conversationId) ?: run {
-            context.longToast("Can't find friendId for conversationId $conversationId")
+            context.longToast(
+                translation.format(
+                    "missing_friend_id_toast",
+                    "conversationId" to conversationId
+                )
+            )
             return
         }
 
         val publicKey = e2eeInterface.createKeyExchange(friendId) ?: run {
-            context.longToast("Can't create key exchange for friendId $friendId")
+            context.longToast(
+                translation.format(
+                    "key_exchange_failed_toast",
+                    "friendId" to friendId
+                )
+            )
             return
         }
 
@@ -131,7 +141,12 @@ class EndToEndEncryption : MessagingRuleFeature(
 
     private fun handlePublicKeyRequest(conversationId: String, publicKey: ByteArray) {
         val friendId = context.database.getDMOtherParticipant(conversationId) ?: run {
-            context.longToast("Can't find friendId for conversationId $conversationId")
+            context.longToast(
+                translation.format(
+                    "missing_friend_id_toast",
+                    "conversationId" to conversationId
+                )
+            )
             return
         }
         warnKeyOverwrite(friendId) {
@@ -151,7 +166,12 @@ class EndToEndEncryption : MessagingRuleFeature(
 
     private fun handleSecretResponse(conversationId: String, secret: ByteArray) {
         val friendId = context.database.getDMOtherParticipant(conversationId) ?: run {
-            context.longToast("Can't find friendId for conversationId $conversationId")
+            context.longToast(
+                translation.format(
+                    "missing_friend_id_toast",
+                    "conversationId" to conversationId
+                )
+            )
             return
         }
         warnKeyOverwrite(friendId) {

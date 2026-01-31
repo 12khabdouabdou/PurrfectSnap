@@ -164,7 +164,12 @@ class FeatureManager(
                 }
             }.onFailure {
                 context.log.error("Failed to init feature ${feature.key}", it)
-                context.longToast("Failed to init feature ${feature.key}! Check logcat for more details.")
+                context.longToast(
+                    context.translation.format(
+                        "toast_feature_init_failed",
+                        "feature" to feature.key
+                    )
+                )
             }
         }
     }

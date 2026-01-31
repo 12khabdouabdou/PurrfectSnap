@@ -48,6 +48,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.random.Random
 
 class AccountSwitcher: Feature("Account Switcher") {
+    private val translation by lazy { context.translation.getCategory("account_switcher_ui") }
     private var exportCallback: Pair<Int, String>? = null // requestCode -> userId
     private var importRequestCode: Int? = null
 
@@ -107,7 +108,9 @@ class AccountSwitcher: Feature("Account Switcher") {
                         onClick = {
                             runCatching {
                                 if (!isLoginActivity && context.database.myUserId == user.first) {
-                                    context.shortToast("Already logged in as ${user.second}")
+                                    context.shortToast(
+                                        translation.format("already_logged_in", "username" to user.second)
+                                    )
                                     return@runCatching
                                 }
 
@@ -117,7 +120,7 @@ class AccountSwitcher: Feature("Account Switcher") {
 
                                 login(userId = user.first, username = user.second)
                             }.onFailure {
-                                context.shortToast("Failed to login. Check logs for more info.")
+                                context.shortToast(translation["login_failed_toast"])
                                 context.log.error("Failed to login", it)
                             }
                         }
@@ -259,7 +262,7 @@ class AccountSwitcher: Feature("Account Switcher") {
 
     private fun logout() {
         context.androidContext.dataDir.resolve( "shared_prefs/user_session_shared_pref.xml").takeIf { it.exists() }?.delete()
-        context.shortToast("Logged out")
+        context.shortToast(translation["logged_out_toast"])
         context.softRestartApp()
     }
 
@@ -268,7 +271,7 @@ class AccountSwitcher: Feature("Account Switcher") {
             ParcelFileDescriptor.AutoCloseInputStream(pfd).use { it.readBytes() }
         }
         if (accountData == null) {
-            context.shortToast("Account data not found")
+            context.shortToast(translation["data_not_found_toast"])
             return
         }
 
@@ -312,12 +315,12 @@ class AccountSwitcher: Feature("Account Switcher") {
             zipInputStream.close()
         } catch (e: Exception) {
             context.log.error("Failed to restore account data", e)
-            context.shortToast("Failed to restore account data")
+            context.shortToast(translation["restore_failed_toast"])
             return
         }
 
         context.log.debug("Account data restored")
-        context.shortToast("Logged in as $username")
+        context.shortToast(translation.format("logged_in_as_toast", "username" to username))
         context.softRestartApp()
     }
 
@@ -390,9 +393,9 @@ class AccountSwitcher: Feature("Account Switcher") {
                 context.database.getFriendInfo(context.database.myUserId)?.mutableUsername ?: "Unknown username",
                 getCurrentAccountData()
             )
-            context.shortToast("Account backed up!")
+            context.shortToast(translation["backup_success_toast"])
         }.onFailure {
-            context.shortToast("Failed to backup account. Check logs for more info.")
+            context.shortToast(translation["backup_failure_toast"])
             context.log.error("Failed to backup account", it)
         }
     }
@@ -465,11 +468,13 @@ class AccountSwitcher: Feature("Account Switcher") {
                         it.toParcelFileDescriptor(context.coroutineScope)
                     )
                 }
-                context.shortToast("Imported $username!")
+                context.shortToast(translation.format("import_success_toast", "username" to username))
                 updateUsers()
             }
         }.onFailure {
-            context.shortToast("Failed to import account: ${it.message}")
+            context.shortToast(
+                translation.format("import_failure_toast", "message" to (it.message ?: ""))
+            )
             context.log.error("Failed to import account", it)
         }
 
@@ -522,10 +527,10 @@ class AccountSwitcher: Feature("Account Switcher") {
                                     it.copyTo(outputStream)
                                 }
                             }
-                            context.shortToast("Account exported!")
+                            context.shortToast(translation["export_success_toast"])
                         }
                     }.onFailure {
-                        context.shortToast("Failed to export account. Check logs for more info.")
+                        context.shortToast(translation["export_failed_toast"])
                         context.log.error("Failed to export account", it)
                     }
                 }
@@ -539,10 +544,10 @@ class AccountSwitcher: Feature("Account Switcher") {
                 runCatching {
                     val accountStorage = context.bridgeClient.getAccountStorage()
 
-                    if (accountStorage.isAccountExists(context.database.myUserId)) {
-                        accountStorage.removeAccount(context.database.myUserId)
-                        context.shortToast("Removed account due to forced logout")
-                    }
+                        if (accountStorage.isAccountExists(context.database.myUserId)) {
+                            accountStorage.removeAccount(context.database.myUserId)
+                            context.shortToast(translation["forced_logout_toast"])
+                        }
                 }
                 return@hook
             }

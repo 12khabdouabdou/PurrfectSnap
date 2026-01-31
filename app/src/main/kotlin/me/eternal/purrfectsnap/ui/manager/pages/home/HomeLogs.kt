@@ -127,7 +127,7 @@ class HomeLogs : Routes.Route() {
                     }
                 }
                 readerResult.onFailure {
-                    context.longToast("Failed to read logs!")
+                    context.longToast(translation["read_logs_failed_toast"])
                 }
                 readerResult.getOrNull()?.let { reader ->
                     logReader = reader

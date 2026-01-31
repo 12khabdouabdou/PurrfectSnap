@@ -192,7 +192,12 @@ class Notifications : Feature("Notifications") {
                     val myUser = context.database.myUserId.let { context.database.getFriendInfo(it) } ?: return@subscribe
 
                     context.messageSender.sendChatMessage(listOf(SnapUUID(conversationId)), input, onError = {
-                        context.longToast("Failed to send message: $it")
+                        context.longToast(
+                            context.translation.format(
+                                "toast_send_message_failed",
+                                "error" to it.toString()
+                            )
+                        )
                         context.coroutineScope.launch(coroutineDispatcher) {
                             appendNotificationText("Failed to send message: $it")
                         }
@@ -221,7 +226,7 @@ class Notifications : Feature("Notifications") {
                             onResult = {
                                 if (it != null) {
                                     context.log.error("Failed to mark conversation as read: $it")
-                                    context.shortToast("Failed to mark conversation as read")
+                                    context.shortToast(context.translation["toast_mark_conversation_read_failed"])
                                 }
                             }
                         )
@@ -245,7 +250,7 @@ class Notifications : Feature("Notifications") {
                                     },
                                     onError = {
                                         context.log.error("Failed to fetch conversation: $it")
-                                        context.shortToast("Failed to fetch conversation")
+                                        context.shortToast(context.translation["toast_fetch_conversation_failed"])
                                     }
                                 )
                             }
@@ -257,13 +262,13 @@ class Notifications : Feature("Notifications") {
                             conversationManager.updateMessage(conversationId, clientMessageId, MessageUpdate.READ) {
                                 if (it != null) {
                                     context.log.error("Failed to open snap: $it")
-                                    context.shortToast("Failed to open snap")
+                                    context.shortToast(context.translation["toast_open_snap_failed"])
                                 }
                             }
                         }
                     }.onFailure {
                         context.log.error("Failed to mark message as read", it)
-                        context.shortToast("Failed to mark message as read. Check logs for more details")
+                        context.shortToast(context.translation["toast_mark_message_read_failed"])
                     }
                     notificationManager.cancel(notificationId)
                 }

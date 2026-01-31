@@ -52,6 +52,7 @@ class MappingsScreen : SetupScreen() {
     @Composable
     override fun Content() {
         val coroutineScope = rememberCoroutineScope()
+        val translation = context.translation
         var infoText by remember { mutableStateOf(null as String?) }
         var isGenerating by remember { mutableStateOf(false) }
         var showCompletionNotice by remember { mutableStateOf(false) }
@@ -98,13 +99,16 @@ class MappingsScreen : SetupScreen() {
 
         if (showCompletionNotice) {
             val confirmLabel = if (completionCountdown > 0) {
-                "I understand (${completionCountdown}s)"
+                translation.format(
+                    "setup.mappings.confirm_understand_timeout",
+                    "seconds" to completionCountdown.toString()
+                )
             } else {
-                "I understand"
+                translation["setup.mappings.confirm_understand"]
             }
             AestheticDialog(
                 onDismissRequest = { if (completionCountdown == 0) { showCompletionNotice = false; goNext() } },
-                title = "Please note!",
+                title = translation["setup.mappings.notice_title"],
                 text = "",
                 icon = Icons.Filled.Warning,
                 confirmButtonText = confirmLabel,
@@ -141,27 +145,27 @@ class MappingsScreen : SetupScreen() {
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "If you see the \"Account temporarily disabled\" error while logging in, do not worry. Follow these steps in order:",
+                                text = translation["setup.mappings.notice_intro"],
                                 style = bodyStyle,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "1. Reopen Snapchat and log in. This fixes it most of the time.",
+                                text = translation["setup.mappings.notice_step_1"],
                                 style = bodyStyle,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "2. If it still fails, tap the login button repeatedly. This usually covers the next chunk.",
+                                text = translation["setup.mappings.notice_step_2"],
                                 style = bodyStyle,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "3. If it still fails, clear Snapchat's data, disable any VPN, and log in again.",
+                                text = translation["setup.mappings.notice_step_3"],
                                 style = bodyStyle,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "For rooted users:",
+                                text = translation["setup.mappings.notice_rooted_title"],
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     color = Color.White,
                                     fontWeight = FontWeight.SemiBold,
@@ -170,7 +174,7 @@ class MappingsScreen : SetupScreen() {
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "Reopen Snapchat and log in. If it still fails, disable PurrfectSnap in LSPosed, log in, then re-enable PurrfectSnap.",
+                                text = translation["setup.mappings.notice_rooted_body"],
                                 style = bodyStyle,
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -193,7 +197,11 @@ class MappingsScreen : SetupScreen() {
 
                     if (warnings.isNotEmpty()) {
                         isGenerating = false
-                        infoText = "${warnings.size} warning(s) occurred while generating mappings:\n\n${warnings.joinToString("\n")}".also {
+                        infoText = translation.format(
+                            "setup.mappings.warnings_info",
+                            "count" to warnings.size.toString(),
+                            "warnings" to warnings.joinToString("\n")
+                        ).also {
                             context.log.warn(it)
                         }
                         return@launch
@@ -216,7 +224,7 @@ class MappingsScreen : SetupScreen() {
                 subtitle = null
             )
             DialogText(
-                text = "This only takes a moment. Keep the app open while magic happens!"
+                text = translation["setup.mappings.progress_hint"]
             )
             Spacer(modifier = Modifier.height(12.dp))
             Surface(

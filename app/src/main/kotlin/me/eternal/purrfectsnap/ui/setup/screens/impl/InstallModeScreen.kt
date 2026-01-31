@@ -98,10 +98,14 @@ class InstallModeScreen(
         }
 
         if (showGuides) {
-            val confirmLabel = if (timeout > 0) "I understand (${timeout}s)" else "I understand"
+            val confirmLabel = if (timeout > 0) {
+                context.translation.format("setup.install_mode.confirm_timeout", "seconds" to timeout.toString())
+            } else {
+                context.translation["setup.install_mode.confirm"]
+            }
             AestheticDialog(
                 onDismissRequest = { if (timeout == 0) showGuides = false },
-                title = "Please note!",
+                title = context.translation["setup.install_mode.notice_title"],
                 text = "",
                 icon = Icons.Filled.Warning,
                 confirmButtonText = confirmLabel,
@@ -138,39 +142,39 @@ class InstallModeScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Text(
-                                text = "Select the type of device you have: rooted or non-rooted. If you are unsure, choose Non-root and continue.",
+                                text = context.translation["setup.install_mode.notice_intro"],
                                 style = bodyStyle,
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "Non-rooted devices",
+                                text = context.translation["setup.install_mode.notice_non_root_title"],
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Start
                             )
                             Text(
-                                text = "Select Non-root and the app will handle everything. Tap Install Patched Snapchat when it appears. After it installs, do not open Snapchat yet. Continue the PurrfectSnap setup; once it finishes, you can open Snapchat and enjoy.",
+                                text = context.translation["setup.install_mode.notice_non_root_body"],
                                 style = bodyStyle,
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "Rooted devices",
+                                text = context.translation["setup.install_mode.notice_root_title"],
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White,
                                 modifier = Modifier.fillMaxWidth(),
                                 textAlign = TextAlign.Start
                             )
                             Text(
-                                text = "Make sure you have flashed LSPosed first. We recommend JingMatrix LSPosed or LSPosed Irena. After you select Root, the app will install the recommended Snapchat version. Do not open it yet; continue the PurrfectSnap setup. When setup finishes, enable PurrfectSnap in LSPosed and reboot your phone. Then start using Snapchat. We highly recommend detaching Snapchat from the Play Store with the Zygisk Detach module to prevent auto-updates.",
+                                text = context.translation["setup.install_mode.notice_root_body"],
                                 style = bodyStyle,
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "If you run into any installation issues, the solution will appear here. Please read it carefully.",
+                                text = context.translation["setup.install_mode.notice_issues_hint"],
                                 style = bodyStyle,
                                 textAlign = TextAlign.Start,
                                 modifier = Modifier.fillMaxWidth()
@@ -178,9 +182,9 @@ class InstallModeScreen(
                             Text(
                                 text = buildAnnotatedString {
                                     withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = Color.White)) {
-                                        append("Note: ")
+                                        append(context.translation["setup.install_mode.notice_note_prefix"])
                                     }
-                                    append("New Accounts easily get locked! It is recommended to use an older account with PurrfectSnap.")
+                                    append(context.translation["setup.install_mode.notice_note_body"])
                                 },
                                 style = bodyStyle,
                                 textAlign = TextAlign.Start,
@@ -194,8 +198,8 @@ class InstallModeScreen(
 
         SetupCard {
             StepTitle(
-                title = "Choose your device",
-                subtitle = "If you don't know, select Non-rooted device and proceed.",
+                title = context.translation["setup.install_mode.step_title"],
+                subtitle = context.translation["setup.install_mode.step_subtitle"],
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
             Column(
@@ -203,8 +207,8 @@ class InstallModeScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 ModeOption(
-                    title = "Rooted device",
-                    subtitle = "Use Lsposed and skip auto patching.",
+                    title = context.translation["setup.install_mode.root_option_title"],
+                    subtitle = context.translation["setup.install_mode.root_option_subtitle"],
                     icon = Icons.Filled.VerifiedUser,
                     accent = Brush.horizontalGradient(
                         listOf(
@@ -219,8 +223,8 @@ class InstallModeScreen(
                     }
                 )
                 ModeOption(
-                    title = "Non-rooted device",
-                    subtitle = "Use included auto patcher to install patched Snapchat.",
+                    title = context.translation["setup.install_mode.non_root_option_title"],
+                    subtitle = context.translation["setup.install_mode.non_root_option_subtitle"],
                     icon = Icons.Filled.Shield,
                     accent = Brush.horizontalGradient(
                         listOf(
@@ -262,7 +266,7 @@ class InstallModeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Skip Auto Setup",
+                        text = context.translation["setup.install_mode.skip_auto_setup"],
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White,

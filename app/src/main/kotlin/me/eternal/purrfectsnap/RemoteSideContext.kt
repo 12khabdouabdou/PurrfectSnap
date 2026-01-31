@@ -268,7 +268,7 @@ class RemoteSideContext(
             Constants.SNAPCHAT_PACKAGE_NAME
         )
         if (intent == null) {
-            shortToast("Can't execute action: Snapchat is not installed")
+            shortToast(translation["toast_snapchat_not_installed"])
             return
         }
         intent.putExtra(EnumAction.ACTION_PARAMETER, action.key)

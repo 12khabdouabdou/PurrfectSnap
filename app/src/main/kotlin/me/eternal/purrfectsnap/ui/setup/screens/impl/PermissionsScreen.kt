@@ -73,9 +73,9 @@ class PermissionsScreen : SetupScreen() {
 
     private fun descriptionFor(key: String): String {
         return when (key) {
-            "notification_access" -> "Alerts you the second downloads finish."
-            "battery_optimization" -> "Keeps background tasks alive without being killed."
-            "display_over_other_apps" -> "Enables floating overlays while you are in Snapchat."
+            "notification_access" -> context.translation["setup.permissions.notification_access_description"]
+            "battery_optimization" -> context.translation["setup.permissions.battery_optimization_description"]
+            "display_over_other_apps" -> context.translation["setup.permissions.display_over_other_apps_description"]
             else -> ""
         }
     }
@@ -178,7 +178,7 @@ class PermissionsScreen : SetupScreen() {
                                     modifier = Modifier.padding(end = 6.dp)
                                 )
                                 Text(
-                                    text = "Granted",
+                                    text = context.translation["setup.permissions.granted_label"],
                                     color = Color.White,
                                     fontWeight = FontWeight.SemiBold
                                 )

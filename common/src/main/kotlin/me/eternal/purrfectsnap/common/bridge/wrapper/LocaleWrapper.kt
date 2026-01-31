@@ -33,11 +33,26 @@ class LocaleWrapper(
     lateinit var loadedLocale: Locale
 
     private fun load(locale: String, pfd: ParcelFileDescriptor) {
-        loadedLocale = if (locale.contains("_")) {
-            val split = locale.split("_")
-            Locale.Builder().setLanguage(split[0]).setRegion(split[1]).build()
-        } else {
-            Locale.Builder().setLanguage(locale).build()
+        loadedLocale = when (locale) {
+            "zh_SIMPLIFIED" -> Locale.SIMPLIFIED_CHINESE
+            else -> {
+                if (locale.contains("_")) {
+                    val split = locale.split("_", limit = 2)
+                    val language = split[0]
+                    val region = split.getOrNull(1)
+                    runCatching {
+                        val builder = Locale.Builder().setLanguage(language)
+                        if (!region.isNullOrBlank() && region.length in 2..3) {
+                            builder.setRegion(region)
+                        }
+                        builder.build()
+                    }.getOrElse {
+                        Locale.forLanguageTag(locale.replace('_', '-'))
+                    }
+                } else {
+                    Locale.forLanguageTag(locale)
+                }
+            }
         }
 
         val translations = AutoCloseInputStream(pfd).use {

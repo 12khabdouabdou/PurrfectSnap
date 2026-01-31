@@ -71,6 +71,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.eternal.purrfectsnap.common.bridge.wrapper.LocaleWrapper
 import me.eternal.purrfectsnap.setup.patch.AutoPatchServer
 import me.eternal.purrfectsnap.setup.patch.LSPatch
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
@@ -93,7 +94,8 @@ class PatchSnapchatScreen : SetupScreen() {
     @Composable
     override fun Content() {
         val coroutineScope = rememberCoroutineScope()
-        val logs = remember { mutableStateListOf("Auto Patcher is ready.") }
+        val translation = context.translation
+        val logs = remember { mutableStateListOf(translation["setup.patch.ready_log"]) }
         @Suppress("DEPRECATION")
         val clipboard = LocalClipboardManager.current
         var progress by remember { mutableFloatStateOf(-1f) }
@@ -146,7 +148,7 @@ class PatchSnapchatScreen : SetupScreen() {
                 repeat(80) {
                     if (isSnapchatInstalledAfter(patchStartedAt)) {
                         installVerified = true
-                        pushLog("Snapchat install confirmed. You're cleared to continue.")
+                        pushLog(translation["setup.patch.install_confirmed_log"])
                         return@launch
                     }
                     delay(1200)
@@ -179,7 +181,12 @@ class PatchSnapchatScreen : SetupScreen() {
 
         suspend fun downloadSnapchatFromAutoPatchServer(): File? = withContext(Dispatchers.IO) {
             val latestApk = autoPatchServer.fetchLatestSnapchatApk() ?: return@withContext null
-            pushStatus("Downloading recommended Snapchat version (${latestApk.tagName})...")
+            pushStatus(
+                translation.format(
+                    "setup.patch.download_recommended_status",
+                    "version" to latestApk.tagName
+                )
+            )
 
             okHttpClient.newCall(Request.Builder().url(latestApk.downloadUrl).build()).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
@@ -223,22 +230,27 @@ class PatchSnapchatScreen : SetupScreen() {
                 downloadFinished = false
                 patchStartedAt = System.currentTimeMillis()
                 logs.clear()
-                pushLog("Starting Auto Patcher for recommended Snapchat version.")
+                pushLog(translation["setup.patch.starting_log"])
                 runCatching {
                     if (isSnapchatInstalled()) {
-                        pushStatus("Snapchat is installed. Please uninstall it first (don't keep data), then start Auto Patcher again.")
-                        throw IllegalStateException("Snapchat still installed. Uninstall it first, to continue.")
+                        pushStatus(translation["setup.patch.uninstall_prompt_status"])
+                        throw IllegalStateException(translation["setup.patch.uninstall_prompt_error"])
                     }
                     val modulePath = context.androidContext.packageManager.getPackageInfo(
                         context.androidContext.packageName, 0
-                    ).applicationInfo?.sourceDir ?: throw IllegalStateException("Module apk not found")
-                    pushStatus("Fetching recommended Snapchat APK...")
+                    ).applicationInfo?.sourceDir ?: throw IllegalStateException(translation["setup.patch.module_apk_not_found_error"])
+                    pushStatus(translation["setup.patch.fetching_apk_status"])
                     val downloaded = downloadSnapchatFromAutoPatchServer()
-                        ?: throw IllegalStateException("Download failed")
+                        ?: throw IllegalStateException(translation["setup.patch.download_failed_error"])
                     downloadedApkPath = downloaded.absolutePath
-                    pushStatus("Download completed: ${downloaded.name}")
+                    pushStatus(
+                        translation.format(
+                            "setup.patch.download_completed_status",
+                            "fileName" to downloaded.name
+                        )
+                    )
                     downloadFinished = true
-                    pushStatus("Starting patch powered by Jingmatrix Lspatch")
+                    pushStatus(translation["setup.patch.starting_patch_status"])
                     val lsPatch = LSPatch(
                         context.androidContext,
                         mapOf(context.androidContext.packageName to File(modulePath)),
@@ -247,16 +259,22 @@ class PatchSnapchatScreen : SetupScreen() {
                     )
                     val outputs = withContext(Dispatchers.IO) { lsPatch.patchSplits(listOf(downloaded)) }
                     val patched = outputs["base.apk"] ?: outputs.values.firstOrNull()
-                        ?: throw IllegalStateException("Patched apk not produced")
+                        ?: throw IllegalStateException(translation["setup.patch.patched_not_produced_error"])
                     patchedApkPath = patched.absolutePath
-                    pushStatus("Patched build ready. Install to finish.")
+                    pushStatus(translation["setup.patch.patched_ready_status"])
                 }.onFailure {
+                    val message = it.message ?: it.toString()
                     error = it.message ?: it.toString()
                     it.stackTraceToString()
                         .lineSequence()
                         .filter { line -> line.isNotBlank() }
                         .forEach { line -> pushLog(line) }
-                    pushStatus("Failed: ${it.message}")
+                    pushStatus(
+                        translation.format(
+                            "setup.patch.failed_status",
+                            "message" to message
+                        )
+                    )
                 }
                 isRunning = false
                 progress = -1f
@@ -282,7 +300,7 @@ class PatchSnapchatScreen : SetupScreen() {
         fun markAlreadyInstalled() {
             installRequested = false
             installVerified = true
-            pushLog("Marked as installed manually. You're cleared to continue.")
+            pushLog(translation["setup.patch.mark_installed_log"])
         }
 
         val accent = remember {
@@ -297,10 +315,10 @@ class PatchSnapchatScreen : SetupScreen() {
         if (showIssuesDialog) {
             AestheticDialog(
                 onDismissRequest = { showIssuesDialog = false },
-                title = "Facing issues?",
+                title = translation["setup.patch.issues_title"],
                 text = "",
                 icon = Icons.Filled.Info,
-                confirmButtonText = "Got it",
+                confirmButtonText = translation["setup.patch.issues_confirm"],
                 onConfirm = { showIssuesDialog = false },
                 showCloseButton = false,
                 customContent = {
@@ -316,36 +334,36 @@ class PatchSnapchatScreen : SetupScreen() {
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
-                            text = "How to fix installation errors",
+                            text = translation["setup.patch.issues_heading"],
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
                             textAlign = TextAlign.Start,
                             modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = "Issue: App cannot be installed because it conflicts with an existing package.",
+                            text = translation["setup.patch.issues_conflict_issue"],
                             style = bodyStyle,
                             textAlign = TextAlign.Start
                         )
                         Text(
-                            text = "Fix: Download Snapchat from the Play Store and uninstall it without keeping data. Run Auto Patcher again. If it still does not work, run:",
+                            text = translation["setup.patch.issues_conflict_fix"],
                             style = bodyStyle,
                             textAlign = TextAlign.Start
                         )
                         Text(
-                            text = "adb uninstall com.snapchat.android",
+                            text = translation["setup.patch.issues_adb_command"],
                             style = bodyStyle,
                             textAlign = TextAlign.Start,
                             softWrap = false,
                             modifier = Modifier.horizontalScroll(rememberScrollState())
                         )
                         Text(
-                            text = "Issue: App not installed because the package appears to be invalid.",
+                            text = translation["setup.patch.issues_invalid_issue"],
                             style = bodyStyle,
                             textAlign = TextAlign.Start
                         )
                         Text(
-                            text = "Fix: Download and install JingMatrix LSPatch, then patch a Snapchat version (any one) from this range, i.e. between 13.65.1.0 and 13.71.0.51, in Integrated mode. Select Embed Modules and embed the PurrfectSnap APK. Then choose Skip auto setup during PurrfectSnap setup to skip Auto Patcher.",
+                            text = translation["setup.patch.issues_invalid_fix"],
                             style = bodyStyle,
                             textAlign = TextAlign.Start
                         )
@@ -356,12 +374,12 @@ class PatchSnapchatScreen : SetupScreen() {
 
         SetupCard {
             StepTitle(
-                title = "Auto Patcher",
+                title = translation["setup.patch.title"],
                 subtitle = null,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 textAlign = TextAlign.Center
             )
-            JingmatrixBadge(accent)
+            JingmatrixBadge(accent, translation)
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
@@ -392,9 +410,12 @@ class PatchSnapchatScreen : SetupScreen() {
                             val isPatching = isRunning && downloadFinished && !isDownloading
                             Text(
                                 text = when {
-                                    isDownloading -> "Downloading Snapchat ${(progress * 100).toInt()}%"
-                                    isPatching -> "Patching..."
-                                    else -> "Initializing..."
+                                    isDownloading -> translation.format(
+                                        "setup.patch.status_downloading",
+                                        "percent" to (progress * 100).toInt().toString()
+                                    )
+                                    isPatching -> translation["setup.patch.status_patching"]
+                                    else -> translation["setup.patch.status_initializing"]
                                 },
                                 color = PurrfectPalette.textPrimary,
                                 fontWeight = FontWeight.Medium
@@ -426,9 +447,10 @@ class PatchSnapchatScreen : SetupScreen() {
                         logs = logs,
                         pulse = logPulse,
                         accent = accent,
+                        translation = translation,
                         onCopy = {
                             clipboard.setText(AnnotatedString(logs.joinToString("\n")))
-                            pushLog("Logs copied to clipboard.")
+                            pushLog(translation["setup.patch.logs_copied"])
                         }
                     )
 
@@ -463,7 +485,7 @@ class PatchSnapchatScreen : SetupScreen() {
                                         tint = Color.White
                                     )
                                     Text(
-                                        text = "Patched APK installed",
+                                        text = translation["setup.patch.install_success"],
                                         color = Color.White,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -472,7 +494,7 @@ class PatchSnapchatScreen : SetupScreen() {
                         } else {
                             if (patchedApk == null) {
                                 GradientActionButton(
-                                    label = "Start auto patch",
+                                    label = translation["setup.patch.start_button"],
                                     icon = Icons.Filled.Download,
                                     onClick = { startPatch() },
                                     enabled = !isRunning
@@ -480,7 +502,7 @@ class PatchSnapchatScreen : SetupScreen() {
                             }
                             if (patchedApk != null) {
                                 GradientActionButton(
-                                    label = "Install patched Snapchat",
+                                    label = translation["setup.patch.install_button"],
                                     icon = Icons.Filled.Verified,
                                     onClick = { installPatchedApk() },
                                     enabled = true
@@ -509,7 +531,7 @@ class PatchSnapchatScreen : SetupScreen() {
                                             tint = Color.White.copy(alpha = 0.9f)
                                         )
                                         Text(
-                                            text = "Facing issues?",
+                                            text = translation["setup.patch.issues_title"],
                                             color = Color.White,
                                             fontWeight = FontWeight.SemiBold
                                         )
@@ -539,7 +561,7 @@ class PatchSnapchatScreen : SetupScreen() {
                                             tint = Color.White.copy(alpha = 0.9f)
                                         )
                                         Text(
-                                            text = "Already Installed?",
+                                            text = translation["setup.patch.already_installed_button"],
                                             color = Color.White,
                                             fontWeight = FontWeight.SemiBold
                                         )
@@ -555,7 +577,10 @@ class PatchSnapchatScreen : SetupScreen() {
 }
 
 @Composable
-private fun JingmatrixBadge(accent: Brush) {
+private fun JingmatrixBadge(
+    accent: Brush,
+    translation: LocaleWrapper
+) {
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = Color.White.copy(alpha = 0.06f),
@@ -581,7 +606,7 @@ private fun JingmatrixBadge(accent: Brush) {
                 )
             }
             Text(
-                text = "Powered by Jingmatrix Lspatch",
+                text = translation["setup.patch.powered_by_label"],
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold
             )
@@ -647,6 +672,7 @@ private fun LogsPanel(
     logs: List<String>,
     pulse: Float,
     accent: Brush,
+    translation: LocaleWrapper,
     onCopy: () -> Unit
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -685,7 +711,7 @@ private fun LogsPanel(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = "Logs",
+                        text = translation["setup.patch.logs_title"],
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -715,7 +741,7 @@ private fun LogsPanel(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "Copy",
+                            text = translation["setup.patch.copy_button"],
                             color = Color.White,
                             fontWeight = FontWeight.Medium,
                             fontSize = 12.sp
@@ -727,7 +753,10 @@ private fun LogsPanel(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     logs.forEach { line ->
                         Text(
-                            text = "- $line",
+                            text = translation.format(
+                                "setup.patch.log_line_prefix",
+                                "line" to line
+                            ),
                             color = PurrfectPalette.textPrimary,
                             fontSize = 13.sp,
                             lineHeight = 16.sp

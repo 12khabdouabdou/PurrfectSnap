@@ -151,7 +151,7 @@ class PickLanguageScreen : SetupScreen() {
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Current selection",
+                            text = context.translation["setup.pick_language.current_selection"],
                             fontSize = 14.sp,
                             color = PurrfectPalette.textSecondary
                         )
@@ -180,9 +180,9 @@ class PickLanguageScreen : SetupScreen() {
                     contentColor = Color.White
                 )
             ) {
-                Text(text = "Browse languages")
+                Text(text = context.translation["setup.pick_language.browse_languages"])
             }
-            DialogText(text = "You can change this anytime from PurrfectSnap settings.")
+            DialogText(text = context.translation["setup.pick_language.change_anytime_hint"])
         }
 
         if (isDialog) {
@@ -196,7 +196,7 @@ class PickLanguageScreen : SetupScreen() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         StepTitle(
-                            title = "Available Languages",
+                            title = context.translation["setup.pick_language.available_languages"],
                             subtitle = null,
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center

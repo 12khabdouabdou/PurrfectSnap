@@ -66,6 +66,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.eternal.purrfectsnap.common.bridge.wrapper.LocaleWrapper
 import me.eternal.purrfectsnap.setup.patch.AutoPatchServer
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.setup.screens.SetupScreen
@@ -86,7 +87,8 @@ class RootInstallSnapchatScreen : SetupScreen() {
     @Composable
     override fun Content() {
         val coroutineScope = rememberCoroutineScope()
-        val logs = remember { mutableStateListOf("Snapchat installer is ready.") }
+        val translation = context.translation
+        val logs = remember { mutableStateListOf(translation["setup.root_install.ready_log"]) }
         @Suppress("DEPRECATION")
         val clipboard = LocalClipboardManager.current
         var progress by remember { mutableFloatStateOf(-1f) }
@@ -136,7 +138,7 @@ class RootInstallSnapchatScreen : SetupScreen() {
                 repeat(80) {
                     if (isSnapchatInstalledAfter(downloadStartedAt)) {
                         installVerified = true
-                        pushLog("Snapchat install confirmed. You're cleared to continue.")
+                        pushLog(translation["setup.root_install.install_confirmed_log"])
                         return@launch
                     }
                     delay(1200)
@@ -168,7 +170,12 @@ class RootInstallSnapchatScreen : SetupScreen() {
 
         suspend fun downloadSnapchatFromAutoPatchServer(): File? = withContext(Dispatchers.IO) {
             val latestApk = autoPatchServer.fetchLatestSnapchatApk() ?: return@withContext null
-            pushStatus("Downloading recommended Snapchat version (${latestApk.tagName})...")
+            pushStatus(
+                translation.format(
+                    "setup.root_install.download_recommended_status",
+                    "version" to latestApk.tagName
+                )
+            )
 
             okHttpClient.newCall(Request.Builder().url(latestApk.downloadUrl).build()).execute().use { response ->
                 if (!response.isSuccessful) return@withContext null
@@ -218,7 +225,7 @@ class RootInstallSnapchatScreen : SetupScreen() {
         fun markAlreadyInstalled() {
             installRequested = false
             installVerified = true
-            pushLog("Marked as installed manually. You're cleared to continue.")
+            pushLog(translation["setup.root_install.mark_installed_log"])
         }
 
         fun startDownloadAndInstall() {
@@ -233,27 +240,38 @@ class RootInstallSnapchatScreen : SetupScreen() {
                 downloadFinished = false
                 downloadStartedAt = System.currentTimeMillis()
                 logs.clear()
-                pushLog("Starting Snapchat download for rooted install.")
+                pushLog(translation["setup.root_install.start_download_log"])
                 runCatching {
                     if (isSnapchatInstalled()) {
-                        pushStatus("Snapchat is installed. Please uninstall it first (don't keep data), then try again.")
-                        throw IllegalStateException("Snapchat still installed. Uninstall it first, to continue.")
+                        pushStatus(translation["setup.root_install.uninstall_prompt_status"])
+                        throw IllegalStateException(translation["setup.root_install.uninstall_prompt_error"])
                     }
-                    pushStatus("Fetching recommended Snapchat APK...")
+                    pushStatus(translation["setup.root_install.fetching_apk_status"])
                     val downloaded = downloadSnapchatFromAutoPatchServer()
-                        ?: throw IllegalStateException("Download failed")
+                        ?: throw IllegalStateException(translation["setup.root_install.download_failed_error"])
                     downloadedApkPath = downloaded.absolutePath
-                    pushStatus("Download completed: ${downloaded.name}")
+                    pushStatus(
+                        translation.format(
+                            "setup.root_install.download_completed_status",
+                            "fileName" to downloaded.name
+                        )
+                    )
                     downloadFinished = true
-                    pushStatus("Launching installer...")
+                    pushStatus(translation["setup.root_install.launching_installer_status"])
                     installDownloadedApk()
                 }.onFailure {
+                    val message = it.message ?: it.toString()
                     error = it.message ?: it.toString()
                     it.stackTraceToString()
                         .lineSequence()
                         .filter { line -> line.isNotBlank() }
                         .forEach { line -> pushLog(line) }
-                    pushStatus("Failed: ${it.message}")
+                    pushStatus(
+                        translation.format(
+                            "setup.root_install.failed_status",
+                            "message" to message
+                        )
+                    )
                 }
                 isRunning = false
                 progress = -1f
@@ -271,7 +289,7 @@ class RootInstallSnapchatScreen : SetupScreen() {
 
         SetupCard {
             StepTitle(
-                title = "Snapchat Installer",
+                title = translation["setup.root_install.title"],
                 subtitle = null,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 textAlign = TextAlign.Center
@@ -305,9 +323,12 @@ class RootInstallSnapchatScreen : SetupScreen() {
                             val isDownloading = progress >= 0f
                             Text(
                                 text = if (isDownloading) {
-                                    "Downloading Snapchat ${(progress * 100).toInt()}%"
+                                    translation.format(
+                                        "setup.root_install.status_downloading",
+                                        "percent" to (progress * 100).toInt().toString()
+                                    )
                                 } else {
-                                    "Preparing installer..."
+                                    translation["setup.root_install.status_preparing"]
                                 },
                                 color = PurrfectPalette.textPrimary,
                                 fontWeight = FontWeight.Medium
@@ -339,9 +360,10 @@ class RootInstallSnapchatScreen : SetupScreen() {
                         logs = logs,
                         pulse = logPulse,
                         accent = accent,
+                        translation = translation,
                         onCopy = {
                             clipboard.setText(AnnotatedString(logs.joinToString("\n")))
-                            pushLog("Logs copied to clipboard.")
+                            pushLog(translation["setup.root_install.logs_copied"])
                         }
                     )
 
@@ -376,7 +398,7 @@ class RootInstallSnapchatScreen : SetupScreen() {
                                         tint = Color.White
                                     )
                                     Text(
-                                        text = "Snapchat installed",
+                                        text = translation["setup.root_install.install_success"],
                                         color = Color.White,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -385,7 +407,7 @@ class RootInstallSnapchatScreen : SetupScreen() {
                         } else {
                             if (downloadedApk == null) {
                                 GradientActionButton(
-                                    label = "Download Snapchat",
+                                    label = translation["setup.root_install.download_button"],
                                     icon = Icons.Filled.Download,
                                     onClick = { startDownloadAndInstall() },
                                     enabled = !isRunning
@@ -393,7 +415,7 @@ class RootInstallSnapchatScreen : SetupScreen() {
                             }
                             if (downloadedApk != null) {
                                 GradientActionButton(
-                                    label = "Install Snapchat",
+                                    label = translation["setup.root_install.install_button"],
                                     icon = Icons.Filled.Verified,
                                     onClick = { installDownloadedApk() },
                                     enabled = true
@@ -422,7 +444,7 @@ class RootInstallSnapchatScreen : SetupScreen() {
                                             tint = Color.White.copy(alpha = 0.9f)
                                         )
                                         Text(
-                                            text = "Already Installed?",
+                                            text = translation["setup.root_install.already_installed_button"],
                                             color = Color.White,
                                             fontWeight = FontWeight.SemiBold
                                         )
@@ -495,6 +517,7 @@ private fun LogsPanel(
     logs: List<String>,
     pulse: Float,
     accent: Brush,
+    translation: LocaleWrapper,
     onCopy: () -> Unit
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -533,7 +556,7 @@ private fun LogsPanel(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = "Logs",
+                        text = translation["setup.root_install.logs_title"],
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
@@ -563,7 +586,7 @@ private fun LogsPanel(
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
-                            text = "Copy",
+                            text = translation["setup.root_install.copy_button"],
                             color = Color.White,
                             fontWeight = FontWeight.Medium,
                             fontSize = 12.sp
@@ -575,7 +598,10 @@ private fun LogsPanel(
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     logs.forEach { line ->
                         Text(
-                            text = "- $line",
+                            text = translation.format(
+                                "setup.root_install.log_line_prefix",
+                                "line" to line
+                            ),
                             color = PurrfectPalette.textPrimary,
                             fontSize = 13.sp,
                             lineHeight = 16.sp

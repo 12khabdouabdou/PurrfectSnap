@@ -396,7 +396,7 @@ class AutoDeleteSentMessages : MessagingRuleFeature("Auto Delete Sent Messages",
         notificationManager.cancel(9999)
         
         Handler(Looper.getMainLooper()).post {
-            context.shortToast("Auto delete queue cleared")
+            context.shortToast(translation["queue_cleared_toast"])
         }
     }
 }

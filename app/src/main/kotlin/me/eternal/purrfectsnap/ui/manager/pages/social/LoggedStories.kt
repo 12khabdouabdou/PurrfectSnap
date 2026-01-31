@@ -192,7 +192,7 @@ class LoggedStories : Routes.Route() {
                                             content = context.imageLoader.diskCache?.openSnapshot(story.url)?.use {
                                                 it.data.toFile().absolutePath
                                             } ?: run {
-                                                context.shortToast("Failed to get file")
+                                                context.shortToast(translation["failed_to_get_file"])
                                                 return@Button
                                             },
                                             type = DownloadMediaType.LOCAL_MEDIA,

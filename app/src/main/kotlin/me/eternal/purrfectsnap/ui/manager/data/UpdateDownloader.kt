@@ -91,6 +91,7 @@ object UpdateDownloader {
         scope: CoroutineScope
     ) {
         val context = remoteContext.androidContext
+        val translation = remoteContext.translation.getCategory("manager.sections.home")
         val fetch = getInstance(remoteContext)
         val filePath = File(context.externalCacheDir, fileName).path
         remoteContext.log.info("Starting update download from $downloadUrl -> $filePath", TAG)
@@ -107,7 +108,7 @@ object UpdateDownloader {
 
             override fun onQueued(download: Download, waitingOnNetwork: Boolean) {
                 downloadState.value = DownloadState.DOWNLOADING
-                Toast.makeText(context, "Download started", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, translation["update_download_started_toast"], Toast.LENGTH_SHORT).show()
             }
 
             override fun onProgress(download: Download, etaInMilliSeconds: Long, downloadedBytesPerSecond: Long) {
@@ -122,7 +123,7 @@ object UpdateDownloader {
                         "Download completed -> ${downloadedFile.absolutePath} (${downloadedFile.length()} bytes)",
                         TAG
                     )
-                    Toast.makeText(context, "Download completed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, translation["update_download_completed_toast"], Toast.LENGTH_SHORT).show()
                     val apkFile = resolveDownloadedApk(remoteContext, downloadedFile)
                     val uri = FileProvider.getUriForFile(
                         context,
@@ -144,7 +145,7 @@ object UpdateDownloader {
                         remoteContext.log.info("Cleaned downloaded update files", TAG)
                     }
                 }.onFailure {
-                    Toast.makeText(context, "Failed to install update. Check logs for more details.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, translation["update_install_failed_toast"], Toast.LENGTH_SHORT).show()
                     remoteContext.log.error("Failed to install downloaded update", it, TAG)
                     downloadState.value = DownloadState.FAILED
                 }
@@ -157,7 +158,11 @@ object UpdateDownloader {
 
             override fun onError(download: Download, error: Error, throwable: Throwable?) {
                 downloadState.value = DownloadState.FAILED
-                Toast.makeText(context, "Download failed: $error", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    translation.format("update_download_failed_toast", "error" to error.toString()),
+                    Toast.LENGTH_SHORT
+                ).show()
                 throwable?.let { remoteContext.log.error("Update download failed: $error", it, TAG) }
                     ?: remoteContext.log.error("Update download failed: $error", TAG)
                 fetch.removeListener(this)

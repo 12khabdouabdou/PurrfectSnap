@@ -87,7 +87,7 @@ class ManageFriendList : AbstractAction() {
     private fun addFriend(userId: String) {
         val friendRelationshipChangerInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
             ?: run {
-                context.longToast("Failed to add friend: FriendRelationshipChanger instance not available")
+                context.longToast(context.translation["toast_friend_add_unavailable"])
                 return
             }
 
@@ -153,7 +153,9 @@ class ManageFriendList : AbstractAction() {
                 }
             }.onFailure {
                 context.log.error("Failed to add friend $userId", it)
-                context.longToast("Failed to add friend: ${it.message}")
+                context.longToast(
+                    context.translation.format("toast_friend_add_failed", "message" to (it.message ?: ""))
+                )
             }
         }
     }
@@ -173,7 +175,9 @@ class ManageFriendList : AbstractAction() {
             context.androidContext.contentResolver.openOutputStream(data)?.bufferedWriter()?.use { writer ->
                 userIds.forEach { writer.write(it); writer.newLine() }
             }
-            context.longToast("Exported ${userIds.size} friends!")
+            context.longToast(
+                context.translation.format("toast_friends_exported", "count" to userIds.size.toString())
+            )
         }
         context.mainActivity?.startActivityForResult(
             Intent.createChooser(Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
@@ -303,7 +307,12 @@ class ManageFriendList : AbstractAction() {
                                         fetchedFriends = context.androidContext.contentResolver.openInputStream(data)?.bufferedReader()?.readLines()?.filter { it.matches(uuidRegex) }?.map { it.trim() }?.toMutableList() ?: mutableListOf()
                                     }.onFailure {
                                         context.log.error("Failed to import friends", it)
-                                        context.longToast("Failed to import friends: ${it.message}")
+                                        context.longToast(
+                                            context.translation.format(
+                                                "toast_friends_import_failed",
+                                                "message" to (it.message ?: "")
+                                            )
+                                        )
                                     }
                                 }
                                 context.mainActivity?.startActivityForResult(Intent.createChooser(Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*" }, "Select a file"), pendingPickerAction!!.first)

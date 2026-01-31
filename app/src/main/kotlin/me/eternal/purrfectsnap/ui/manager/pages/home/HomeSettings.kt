@@ -661,7 +661,12 @@ class HomeSettings : Routes.Route() {
                                                 }
                                             }.onFailure {
                                                 context.log.error("Failed to open file", it)
-                                                context.longToast("Failed to open file! ${it.localizedMessage}")
+                                                context.longToast(
+                                                    translation.format(
+                                                        "open_file_failed_toast",
+                                                        "message" to (it.localizedMessage ?: "")
+                                                    )
+                                                )
                                             }
                                         },
                                         colors = sharedButtonColors,
@@ -728,12 +733,22 @@ class HomeSettings : Routes.Route() {
                                                         context.log.info("Imported message logger from $uri", "MessageLogger")
                                                     }.onFailure {
                                                         context.log.error("Failed to import message logger", it)
-                                                        context.longToast("Import failed: ${it.localizedMessage ?: it.message}")
+                                                        context.longToast(
+                                                            translation.format(
+                                                                "import_failed_toast",
+                                                                "message" to (it.localizedMessage ?: it.message ?: "")
+                                                            )
+                                                        )
                                                     }
                                                 }
                                             }.onFailure {
                                                 context.log.error("Failed to launch import picker", it)
-                                                context.longToast("Import failed: ${it.localizedMessage ?: it.message}")
+                                                context.longToast(
+                                                    translation.format(
+                                                        "import_failed_toast",
+                                                        "message" to (it.localizedMessage ?: it.message ?: "")
+                                                    )
+                                                )
                                             }
                                         }) {
                                             Text(translation["button.import"] ?: "Import")

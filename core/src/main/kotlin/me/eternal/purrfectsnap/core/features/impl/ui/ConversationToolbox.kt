@@ -113,7 +113,7 @@ class ConversationToolbox : Feature("Conversation Toolbox") {
 
     private fun openToolbox() {
         val openedConversationId = context.feature(Messaging::class).openedConversationUUID?.toString() ?: run {
-            context.shortToast("You must open a conversation first")
+            context.shortToast(context.translation["toast_open_conversation_first"])
             return
         }
 

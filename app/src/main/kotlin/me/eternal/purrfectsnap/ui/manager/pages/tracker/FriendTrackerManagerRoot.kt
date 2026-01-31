@@ -248,7 +248,9 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     routes.friendTrackerConfigJsonForImport = content
                     routes.friendTrackerConfigImport.navigate()
                 }.onFailure {
-                    context.longToast("Failed to read file: ${it.message}")
+                    context.longToast(
+                        translation.format("read_file_failed_toast", "message" to (it.message ?: ""))
+                    )
                 }
             }
         }
@@ -591,7 +593,9 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     routes.friendTrackerConfigJsonForImport = content
                     routes.friendTrackerConfigImport.navigate()
                 }.onFailure {
-                    context.longToast("Failed to read file: ${it.message}")
+                    context.longToast(
+                        translation.format("read_file_failed_toast", "message" to (it.message ?: ""))
+                    )
                 }
             }
         }

@@ -58,7 +58,7 @@ class SaveFolderScreen : SetupScreen() {
                 title = context.translation["setup.dialogs.save_folder"],
                 subtitle = null
             )
-            DialogText(text = "Please choose the location where media should be downloaded to.")
+            DialogText(text = context.translation["setup.save_folder.description"])
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(22.dp),
@@ -99,12 +99,12 @@ class SaveFolderScreen : SetupScreen() {
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "Destination",
+                            text = context.translation["setup.save_folder.destination_label"],
                             fontSize = 13.sp,
                             color = PurrfectPalette.textSecondary
                         )
                         Text(
-                            text = if (currentFolder.isBlank()) "System default" else currentFolder,
+                            text = if (currentFolder.isBlank()) context.translation["setup.save_folder.system_default_label"] else currentFolder,
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
@@ -162,7 +162,7 @@ class SaveFolderScreen : SetupScreen() {
                 ),
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f))
             ) {
-                Text(text = "Use default location")
+                Text(text = context.translation["setup.save_folder.use_default_location_button"])
             }
 
             if (showNoPickerDialog) {
@@ -204,13 +204,13 @@ class SaveFolderScreen : SetupScreen() {
                                 }
                             }
                             Text(
-                                text = "Folder picker unavailable",
+                                text = context.translation["setup.save_folder.no_picker_title"],
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Color.White
                             )
                             Text(
-                                text = "Some cloned/dual-app environments block the system folder picker. You can continue using the system default save location, or open the app outside clone mode to select a custom folder.",
+                                text = context.translation["setup.save_folder.no_picker_message"],
                                 fontSize = 14.sp,
                                 lineHeight = 18.sp,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -230,7 +230,7 @@ class SaveFolderScreen : SetupScreen() {
                                     ),
                                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f))
                                 ) {
-                                    Text("Cancel")
+                                    Text(context.translation["button.cancel"])
                                 }
                                 Button(
                                     onClick = {
@@ -248,7 +248,7 @@ class SaveFolderScreen : SetupScreen() {
                                         contentColor = Color.White
                                     )
                                 ) {
-                                    Text("Use default")
+                                    Text(context.translation["setup.save_folder.use_default_button"])
                                 }
                             }
                         }
@@ -256,7 +256,7 @@ class SaveFolderScreen : SetupScreen() {
                 }
             }
             DialogText(
-                text = "PurrfectSnap requires Storage permissions to download and Save Media from Snapchat."
+                text = context.translation["setup.save_folder.permission_hint"]
             )
         }
     }

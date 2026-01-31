@@ -99,7 +99,12 @@ class DatabaseAccess(
                 context.log.error("Failed to execute query $query", it)
                 return@onFailure
             }
-            context.longToast("Database ${this.path} is corrupted! Restarting ...")
+            context.longToast(
+                context.translation.format(
+                    "toast_database_corrupted",
+                    "path" to this.path
+                )
+            )
             context.androidContext.deleteDatabase(this.path)
             context.crash("Database ${this.path} is corrupted!", it)
         }.getOrNull()

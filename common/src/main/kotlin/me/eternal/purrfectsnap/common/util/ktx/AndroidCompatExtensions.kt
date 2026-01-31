@@ -42,7 +42,7 @@ fun Context.getUrlFromClipboard(): String? {
     return getTextFromClipboard()?.takeIf { it.startsWith("http") }
 }
 
-fun Context.openLink(url: String, shouldThrow: Boolean = false) {
+fun Context.openLink(url: String, failureMessage: String, shouldThrow: Boolean = false) {
     runCatching {
         startActivity(Intent(Intent.ACTION_VIEW).apply {
             data = url.toUri()
@@ -50,7 +50,7 @@ fun Context.openLink(url: String, shouldThrow: Boolean = false) {
         })
     }.onFailure {
         if (shouldThrow) throw it
-        Toast.makeText(this, "Failed to open link", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, failureMessage, Toast.LENGTH_SHORT).show()
     }
 }
 

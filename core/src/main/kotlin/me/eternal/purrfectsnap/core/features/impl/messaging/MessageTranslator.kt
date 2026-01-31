@@ -91,7 +91,7 @@ class MessageTranslator : Feature("Instant Translation") {
                         if (config.pauseOnError.get()) {
                             isPaused = true
                             context.log.warn("Translation paused due to errors")
-                            context.shortToast("Translation service temporarily unavailable")
+                            context.shortToast(context.translation["toast_translation_service_unavailable"])
                         }
                     }
                 }

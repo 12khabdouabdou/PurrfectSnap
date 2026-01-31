@@ -198,7 +198,7 @@ class PurrfectSnap {
                 log.verbose("Features initialized successfully")
             }.onFailure { throwable ->
                 log.error("Failed to initialize features", throwable)
-                longToast("Failed to initialize features! Some functionality may not work properly.")
+                longToast(appContext.translation["toast_init_features_failed"])
                 // Continue with other initializations even if features fail
             }
             
@@ -209,7 +209,7 @@ class PurrfectSnap {
                 log.verbose("Script runtime initialized successfully")
             }.onFailure { throwable ->
                 log.error("Failed to initialize script runtime", throwable)
-                longToast("Failed to initialize script runtime!")
+                longToast(appContext.translation["toast_init_script_runtime_failed"])
             }
         }
     }

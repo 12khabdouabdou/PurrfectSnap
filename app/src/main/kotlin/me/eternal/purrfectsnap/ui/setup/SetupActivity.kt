@@ -206,6 +206,7 @@ class SetupActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
+            val translation = setupContext.translation
             val navController = rememberNavController()
             var canGoNext by remember { mutableStateOf(false) }
             var lastRoute by rememberSaveable { mutableStateOf("") }
@@ -226,16 +227,16 @@ class SetupActivity : ComponentActivity() {
             if (shouldShowAbiWarning) {
                 AestheticDialog(
                     onDismissRequest = {},
-                    title = "Wrong APK installed",
+                    title = translation["setup.activity.wrong_apk_title"],
                     text = "",
                     icon = Icons.Filled.Warning,
-                    confirmButtonText = "Close",
+                    confirmButtonText = translation["setup.activity.close_button"],
                     onConfirm = { (context as? Activity)?.finishAffinity() },
                     showCloseButton = false,
                     opaque = true,
                     customContent = {
                         Text(
-                            text = "Your device is armv8, please download the armv8 apk, not armv7.",
+                            text = translation["setup.activity.wrong_apk_message"],
                             color = PurrfectPalette.textSecondary,
                             lineHeight = 18.sp
                         )
@@ -344,7 +345,14 @@ class SetupActivity : ComponentActivity() {
                         .background(Color.Transparent)
                 ) {
                     if (showImportantDialog) {
-                        val confirmLabel = if (importantTimeout > 0) "I understand (${importantTimeout}s)" else "I understand"
+                        val confirmLabel = if (importantTimeout > 0) {
+                            translation.format(
+                                "setup.activity.important_confirm_timeout",
+                                "seconds" to importantTimeout.toString()
+                            )
+                        } else {
+                            translation["setup.activity.important_confirm"]
+                        }
                         AestheticDialog(
                             onDismissRequest = {
                                 if (importantTimeout == 0) {
@@ -352,7 +360,7 @@ class SetupActivity : ComponentActivity() {
                                     setupPrefs.edit().putBoolean("setup_important_notice_shown", true).apply()
                                 }
                             },
-                            title = "Important!",
+                            title = translation["setup.activity.important_title"],
                             text = "",
                             icon = Icons.Filled.Warning,
                             confirmButtonText = confirmLabel,
@@ -366,7 +374,7 @@ class SetupActivity : ComponentActivity() {
                             showCloseButton = false,
                             customContent = {
                                 Text(
-                                    text = "If you have used SnapEnhance or any other mod besides PurrfectSnap, we recommend uninstalling everything and staying on stock Snapchat for one week. Then switch to PurrfectSnap after next Friday.",
+                                    text = translation["setup.activity.important_message"],
                                     color = PurrfectPalette.textSecondary,
                                     lineHeight = 18.sp
                                 )
@@ -471,50 +479,50 @@ private fun SetupScreen.meta(context: RemoteSideContext): SetupStepMeta {
     return when (this) {
         is PickLanguageScreen -> SetupStepMeta(
             route = route,
-            title = translation["setup.dialogs.select_language"] ?: "Choose your language",
-            subtitle = "Tune PurrfectSnap to speak your voice before anything else.",
+            title = translation["setup.dialogs.select_language"],
+            subtitle = translation["setup.activity.language_subtitle"],
             icon = Icons.Filled.Language
         )
 
         is InstallModeScreen -> SetupStepMeta(
             route = route,
-            title = "Choose your device",
-            subtitle = "Pick the path that matches how you'll install PurrfectSnap.",
+            title = translation["setup.activity.install_mode_title"],
+            subtitle = translation["setup.activity.install_mode_subtitle"],
             icon = Icons.Filled.VerifiedUser
         )
 
         is PermissionsScreen -> SetupStepMeta(
             route = route,
-            title = translation["setup.permissions.dialog"] ?: "Essential permissions",
-            subtitle = "Grant the essentials so overlays, downloads, and alerts stay reliable.",
+            title = translation["setup.permissions.dialog"],
+            subtitle = translation["setup.activity.permissions_subtitle"],
             icon = Icons.Filled.VerifiedUser
         )
 
         is PatchSnapchatScreen -> SetupStepMeta(
             route = route,
-            title = "Auto Patcher",
-            subtitle = "Streamlined download, patch, and install with a single flow.",
+            title = translation["setup.activity.patch_title"],
+            subtitle = translation["setup.activity.patch_subtitle"],
             icon = Icons.Filled.Download
         )
 
         is RootInstallSnapchatScreen -> SetupStepMeta(
             route = route,
-            title = "Snapchat Installer",
-            subtitle = "Download and install the recommended Snapchat build.",
+            title = translation["setup.activity.root_install_title"],
+            subtitle = translation["setup.activity.root_install_subtitle"],
             icon = Icons.Filled.Download
         )
 
         is SaveFolderScreen -> SetupStepMeta(
             route = route,
-            title = translation["setup.dialogs.save_folder"] ?: "Where should we save?",
-            subtitle = "Pick your personal vault so snaps land exactly where you expect.",
+            title = translation["setup.dialogs.save_folder"],
+            subtitle = translation["setup.activity.save_folder_subtitle"],
             icon = Icons.Filled.Folder
         )
 
         is MappingsScreen -> SetupStepMeta(
             route = route,
-            title = translation["setup.mappings.dialog"] ?: "Mapping your Snapchat",
-            subtitle = "We calibrate everything to your install so the magic works flawlessly.",
+            title = translation["setup.mappings.dialog"],
+            subtitle = translation["setup.activity.mappings_subtitle"],
             icon = Icons.Filled.AutoAwesome
         )
 
@@ -648,7 +656,11 @@ private fun SetupHeader(
                         tint = Color.White
                     )
                     Text(
-                        text = "Step ${currentIndex + 1} of $total",
+                        text = translation.format(
+                            "setup.activity.step_counter",
+                            "current" to (currentIndex + 1).toString(),
+                            "total" to total.toString()
+                        ),
                         color = Color.White,
                         fontWeight = FontWeight.Medium,
                         fontSize = 13.sp
@@ -723,6 +735,7 @@ private fun StepBadgesRow(steps: List<SetupStepMeta>, currentStep: Int) {
 
 @Composable
 private fun StepBadge(step: SetupStepMeta, state: StepState) {
+    val translation = SharedContextHolder.remote(LocalContext.current).translation
     val baseColor = when (state) {
         StepState.COMPLETE -> PurrfectPalette.glowSecondary
         StepState.ACTIVE -> PurrfectPalette.glowPrimary
@@ -774,9 +787,9 @@ private fun StepBadge(step: SetupStepMeta, state: StepState) {
                     overflow = TextOverflow.Ellipsis
                 )
                 val hint = when (state) {
-                    StepState.COMPLETE -> "Checked off"
-                    StepState.ACTIVE -> "In progress"
-                    StepState.UPCOMING -> "Ready next"
+                    StepState.COMPLETE -> translation["setup.activity.step_complete"]
+                    StepState.ACTIVE -> translation["setup.activity.step_active"]
+                    StepState.UPCOMING -> translation["setup.activity.step_upcoming"]
                 }
                 Text(
                     text = hint,
@@ -868,6 +881,7 @@ private fun NextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val translation = SharedContextHolder.remote(LocalContext.current).translation
     val alpha by animateFloatAsState(targetValue = if (enabled) 1f else 0.6f, label = "NextButtonAlpha")
     val gradient = Brush.horizontalGradient(
         listOf(
@@ -903,7 +917,11 @@ private fun NextButton(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = if (isFinalStep) "Finish setup" else "Continue",
+                    text = if (isFinalStep) {
+                        translation["setup.activity.finish_button"]
+                    } else {
+                        translation["setup.activity.continue_button"]
+                    },
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp

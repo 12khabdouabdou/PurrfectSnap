@@ -292,8 +292,7 @@ class SocialRootSection : Routes.Route() {
                             IconButton(onClick = { searchQuery = "" }) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = context.translation["close_button_description"]
-                                        ?: "Clear search",
+                                    contentDescription = translation["clear_search_button_description"],
                                     tint = Color.White
                                 )
                             }
@@ -532,12 +531,12 @@ class SocialRootSection : Routes.Route() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        StatPill(label = "Friends", value = friendCount)
-                        StatPill(label = "Groups", value = groupCount)
+                        StatPill(label = translation["friends_tab"], value = friendCount)
+                        StatPill(label = translation["groups_tab"], value = groupCount)
                         IconButton(onClick = onSearchToggle) {
                             Icon(
                                 imageVector = if (searchActive) Icons.Filled.Close else Icons.Filled.Search,
-                                contentDescription = if (searchActive) "Close search" else "Search",
+                                contentDescription = if (searchActive) translation["close_search_button_description"] else translation["search_button_description"],
                                 tint = Color.White
                             )
                         }

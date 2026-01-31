@@ -299,13 +299,15 @@ class ExportMemories : AbstractAction() {
         val exportedPath = runCatching { outputTarget.finalize(outputZip) }
             .getOrElse { error ->
                 context.log.error("Failed to finalize memories export", error)
-                context.longToast("Failed to export memories")
+                context.longToast(context.translation["toast_export_memories_failed"])
                 return
             }
         if (outputZip.parentFile == context.androidContext.cacheDir) {
             outputZip.delete()
         }
-        context.longToast("Exported to $exportedPath")
+        context.longToast(
+            context.translation.format("toast_exported_to_path", "path" to exportedPath)
+        )
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -863,7 +865,7 @@ class ExportMemories : AbstractAction() {
             }.getOrNull()
 
             if (database == null) {
-                context.longToast("Failed to open memories database")
+                context.longToast(context.translation["toast_open_memories_db_failed"])
                 return@launch
             }
 

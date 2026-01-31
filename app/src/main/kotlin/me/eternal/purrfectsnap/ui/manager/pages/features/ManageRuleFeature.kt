@@ -203,7 +203,7 @@ class ManageRuleFeature : Routes.Route()  {
                 title = translation["clear_list_button"],
                 text = translation["dialog_clear_confirmation_text"],
                 icon = Icons.Default.DeleteSweep,
-                confirmButtonText = "Clear",
+                confirmButtonText = context.translation["clear"],
                 dismissButtonText = context.translation["button.cancel"],
                 onDismiss = { confirmationDialog = false },
                 onConfirm = {
@@ -390,7 +390,7 @@ class ManageRuleFeature : Routes.Route()  {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(text = "Clear")
+                            Text(text = context.translation["clear"])
                         }
                     }
                 }

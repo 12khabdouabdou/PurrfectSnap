@@ -414,7 +414,7 @@ class TasksRootSection : Routes.Route() {
         IconButton(onClick = {
             showConfirmDialog = true
         }) {
-            Icon(Icons.Filled.Delete, contentDescription = "Clear tasks")
+            Icon(Icons.Filled.Delete, contentDescription = translation["clear_button_description"])
         }
 
         if (showConfirmDialog) {
@@ -917,7 +917,18 @@ class TasksRootSection : Routes.Route() {
                                 fontSize = 18.sp
                             )
                             Text(
-                                text = if (activeTasks.isNotEmpty()) "${activeTasks.size} active · ${recentTasks.size} recent" else "Idle · ${recentTasks.size} recent",
+                                text = if (activeTasks.isNotEmpty()) {
+                                    translation.format(
+                                        "summary_active",
+                                        "active" to activeTasks.size.toString(),
+                                        "recent" to recentTasks.size.toString()
+                                    )
+                                } else {
+                                    translation.format(
+                                        "summary_idle",
+                                        "recent" to recentTasks.size.toString()
+                                    )
+                                },
                                 color = PurrfectPalette.textSecondary,
                                 fontSize = 12.sp
                             )
@@ -964,11 +975,16 @@ class TasksRootSection : Routes.Route() {
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Icon(Icons.Filled.PlaylistAddCheckCircle, contentDescription = null, tint = Color.White)
-                                    Text(text = "${activeTasks.size} running", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                                    Text(
+                                        text = translation.format("running_count", "count" to activeTasks.size.toString()),
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 12.sp
+                                    )
                                 }
                             }
                             IconButton(onClick = { showConfirmDialog = true }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Clear tasks", tint = Color.White)
+                                Icon(Icons.Filled.Delete, contentDescription = translation["clear_button_description"], tint = Color.White)
                             }
                         }
                     }

@@ -543,10 +543,24 @@ class ScriptingRootSection : Routes.Route() {
                     if (scriptingFolder == null) showToast = true else showImportDialog = true
                 },
                 onOpenFolder = {
-                    if (scriptingFolder == null) showToast = true else scriptingFolder?.let { context.androidContext.openLink(it.uri.toString()) }
+                    if (scriptingFolder == null) {
+                        showToast = true
+                    } else {
+                        scriptingFolder?.let {
+                            context.androidContext.openLink(
+                                it.uri.toString(),
+                                context.translation["toast_open_link_failed"]
+                            )
+                        }
+                    }
                 },
                 onManageRepos = { routes.manageScriptRepos.navigate() },
-                onDocs = { context.androidContext.openLink("https://github.com/SnapEnhance/scripting-docs") },
+                onDocs = {
+                    context.androidContext.openLink(
+                        "https://github.com/SnapEnhance/scripting-docs",
+                        context.translation["toast_open_link_failed"]
+                    )
+                },
                 folderSelected = scriptingFolder != null
             )
             Spacer(Modifier.height(12.dp))

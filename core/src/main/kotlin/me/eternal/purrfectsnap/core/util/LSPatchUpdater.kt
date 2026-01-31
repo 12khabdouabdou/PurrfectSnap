@@ -59,19 +59,19 @@ object LSPatchUpdater {
         }
 
         context.log.verbose("updating", TAG)
-        context.shortToast("Updating PurrfectSnap. Please wait...")
+        context.shortToast(context.translation["toast_updating_purrfectsnap"])
         // copy embedded module to cache
         runCatching {
             seAppApk.copyTo(embeddedModule, overwrite = true)
         }.onFailure {
             seAppApk.delete()
             context.log.error("Failed to copy embedded module", it, TAG)
-            context.longToast("Failed to update PurrfectSnap. Please check logcat for more details.")
+            context.longToast(context.translation["toast_update_purrfectsnap_failed"])
             context.forceCloseApp()
             return
         }
 
-        context.longToast("PurrfectSnap updated!")
+        context.longToast(context.translation["toast_purrfectsnap_updated"])
         context.log.verbose("updated", TAG)
         context.softRestartApp()
     }
