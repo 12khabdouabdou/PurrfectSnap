@@ -1,21 +1,160 @@
 {
     "setup": {
+        "activity": {
+            "wrong_apk_title": "Wrong APK installed",
+            "wrong_apk_message": "Your device is armv8, please download the armv8 apk, not armv7.",
+            "close_button": "Close",
+            "important_confirm_timeout": "I understand ({seconds}s)",
+            "important_confirm": "I understand",
+            "important_title": "Important!",
+            "important_message": "If you have used SnapEnhance or any other mod besides PurrfectSnap, we recommend uninstalling everything and staying on stock Snapchat for one week. Then switch to PurrfectSnap after next Friday.",
+            "language_subtitle": "Tune PurrfectSnap to speak your voice before anything else.",
+            "install_mode_title": "Choose your device",
+            "install_mode_subtitle": "Pick the path that matches how you'll install PurrfectSnap.",
+            "permissions_subtitle": "Grant the essentials so overlays, downloads, and alerts stay reliable.",
+            "patch_title": "Auto Patcher",
+            "patch_subtitle": "Streamlined download, patch, and install with a single flow.",
+            "root_install_title": "Snapchat Installer",
+            "root_install_subtitle": "Download and install the recommended Snapchat build.",
+            "save_folder_subtitle": "Pick your personal vault so snaps land exactly where you expect.",
+            "mappings_subtitle": "We calibrate everything to your install so the magic works flawlessly.",
+            "step_counter": "Step {current} of {total}",
+            "step_complete": "Checked off",
+            "step_active": "In progress",
+            "step_upcoming": "Ready next",
+            "finish_button": "Finish setup",
+            "continue_button": "Continue"
+        },
         "dialogs": {
             "select_language": "Izberi jezik",
             "save_folder": "Izberi mesto za shranjevanje prenosov",
             "select_save_folder_button": "Izberi mapo"
         },
+        "install_mode": {
+            "confirm_timeout": "I understand ({seconds}s)",
+            "confirm": "I understand",
+            "notice_title": "Please note!",
+            "notice_intro": "Select the type of device you have: rooted or non-rooted. If you are unsure, choose Non-root and continue.",
+            "notice_non_root_title": "Non-rooted devices",
+            "notice_non_root_body": "Select Non-root and the app will handle everything. Tap Install Patched Snapchat when it appears. After it installs, do not open Snapchat yet. Continue the PurrfectSnap setup; once it finishes, you can open Snapchat and enjoy.",
+            "notice_root_title": "Rooted devices",
+            "notice_root_body": "Make sure you have flashed LSPosed first. We recommend JingMatrix LSPosed or LSPosed Irena. After you select Root, the app will install the recommended Snapchat version. Do not open it yet; continue the PurrfectSnap setup. When setup finishes, enable PurrfectSnap in LSPosed and reboot your phone. Then start using Snapchat. We highly recommend detaching Snapchat from the Play Store with the Zygisk Detach module to prevent auto-updates.",
+            "notice_issues_hint": "If you run into any installation issues, the solution will appear here. Please read it carefully.",
+            "notice_note_prefix": "Note: ",
+            "notice_note_body": "New Accounts easily get locked! It is recommended to use an older account with PurrfectSnap.",
+            "step_title": "Choose your device",
+            "step_subtitle": "If you don't know, select Non-rooted device and proceed.",
+            "root_option_title": "Rooted device",
+            "root_option_subtitle": "Use Lsposed and skip auto patching.",
+            "non_root_option_title": "Non-rooted device",
+            "non_root_option_subtitle": "Use included auto patcher to install patched Snapchat.",
+            "skip_auto_setup": "Skip Auto Setup"
+        },
         "mappings": {
             "dialog": "Ustvarjanje preslikav...",
             "generate_failure_no_snapchat": "PurrfectSnap ni mogel zaznati Snapchata, prosimo, poskusite znova namestiti Snapchat.",
-            "generate_failure": "Pri poskusu ustvarjanja preslikav je prišlo do napake, poskusite znova."
+            "generate_failure": "Pri poskusu ustvarjanja preslikav je prišlo do napake, poskusite znova.",
+            "confirm_understand_timeout": "I understand ({seconds}s)",
+            "confirm_understand": "I understand",
+            "notice_title": "Please note!",
+            "notice_intro": "If you see the \"Account temporarily disabled\" error while logging in, do not worry. Follow these steps in order:",
+            "notice_step_1": "1. Reopen Snapchat and log in. This fixes it most of the time.",
+            "notice_step_2": "2. If it still fails, tap the login button repeatedly. This usually covers the next chunk.",
+            "notice_step_3": "3. If it still fails, clear Snapchat's data, disable any VPN, and log in again.",
+            "notice_rooted_title": "For rooted users:",
+            "notice_rooted_body": "Reopen Snapchat and log in. If it still fails, disable PurrfectSnap in LSPosed, log in, then re-enable PurrfectSnap.",
+            "warnings_info": "{count} warning(s) occurred while generating mappings:\n\n{warnings}",
+            "progress_hint": "This only takes a moment. Keep the app open while magic happens!"
+        },
+        "patch": {
+            "title": "Auto Patcher",
+            "ready_log": "Auto Patcher is ready.",
+            "install_confirmed_log": "Snapchat install confirmed. You're cleared to continue.",
+            "download_recommended_status": "Downloading recommended Snapchat version ({version})...",
+            "starting_log": "Starting Auto Patcher for recommended Snapchat version.",
+            "uninstall_prompt_status": "Snapchat is installed. Please uninstall it first (don't keep data), then start Auto Patcher again.",
+            "uninstall_prompt_error": "Snapchat still installed. Uninstall it first, to continue.",
+            "module_apk_not_found_error": "Module apk not found",
+            "fetching_apk_status": "Fetching recommended Snapchat APK...",
+            "download_failed_error": "Download failed",
+            "download_completed_status": "Download completed: {fileName}",
+            "starting_patch_status": "Starting patch powered by Jingmatrix Lspatch",
+            "patched_not_produced_error": "Patched apk not produced",
+            "patched_ready_status": "Patched build ready. Install to finish.",
+            "failed_status": "Failed: {message}",
+            "mark_installed_log": "Marked as installed manually. You're cleared to continue.",
+            "issues_title": "Facing issues?",
+            "issues_confirm": "Got it",
+            "issues_heading": "How to fix installation errors",
+            "issues_conflict_issue": "Issue: App cannot be installed because it conflicts with an existing package.",
+            "issues_conflict_fix": "Fix: Download Snapchat from the Play Store and uninstall it without keeping data. Run Auto Patcher again. If it still does not work, run:",
+            "issues_adb_command": "adb uninstall com.snapchat.android",
+            "issues_invalid_issue": "Issue: App not installed because the package appears to be invalid.",
+            "issues_invalid_fix": "Fix: Download and install JingMatrix LSPatch, then patch a Snapchat version (any one) from this range, i.e. between 13.65.1.0 and 13.71.0.51, in Integrated mode. Select Embed Modules and embed the PurrfectSnap APK. Then choose Skip auto setup during PurrfectSnap setup to skip Auto Patcher.",
+            "status_downloading": "Downloading Snapchat {percent}%",
+            "status_patching": "Patching...",
+            "status_initializing": "Initializing...",
+            "logs_copied": "Logs copied to clipboard.",
+            "install_success": "Patched APK installed",
+            "start_button": "Start auto patch",
+            "install_button": "Install patched Snapchat",
+            "already_installed_button": "Already Installed?",
+            "powered_by_label": "Powered by Jingmatrix Lspatch",
+            "logs_title": "Logs",
+            "copy_button": "Copy",
+            "log_line_prefix": "- {line}"
         },
         "permissions": {
             "dialog": "Za nadaljevanje dokončajte te bistvene korake:",
             "notification_access": "Dostop do obvestil",
             "battery_optimization": "Optimizacija baterije",
             "display_over_other_apps": "Prikaz preko drugih aplikacij",
-            "request_button": "Zahtevaj"
+            "request_button": "Zahtevaj",
+            "notification_access_description": "Alerts you the second downloads finish.",
+            "battery_optimization_description": "Keeps background tasks alive without being killed.",
+            "display_over_other_apps_description": "Enables floating overlays while you are in Snapchat.",
+            "granted_label": "Granted"
+        },
+        "pick_language": {
+            "current_selection": "Current selection",
+            "browse_languages": "Browse languages",
+            "change_anytime_hint": "You can change this anytime from PurrfectSnap settings.",
+            "available_languages": "Available Languages"
+        },
+        "root_install": {
+            "title": "Snapchat Installer",
+            "ready_log": "Snapchat installer is ready.",
+            "install_confirmed_log": "Snapchat install confirmed. You're cleared to continue.",
+            "download_recommended_status": "Downloading recommended Snapchat version ({version})...",
+            "mark_installed_log": "Marked as installed manually. You're cleared to continue.",
+            "start_download_log": "Starting Snapchat download for rooted install.",
+            "uninstall_prompt_status": "Snapchat is installed. Please uninstall it first (don't keep data), then try again.",
+            "uninstall_prompt_error": "Snapchat still installed. Uninstall it first, to continue.",
+            "fetching_apk_status": "Fetching recommended Snapchat APK...",
+            "download_failed_error": "Download failed",
+            "download_completed_status": "Download completed: {fileName}",
+            "launching_installer_status": "Launching installer...",
+            "failed_status": "Failed: {message}",
+            "status_downloading": "Downloading Snapchat {percent}%",
+            "status_preparing": "Preparing installer...",
+            "logs_copied": "Logs copied to clipboard.",
+            "install_success": "Snapchat installed",
+            "download_button": "Download Snapchat",
+            "install_button": "Install Snapchat",
+            "already_installed_button": "Already Installed?",
+            "logs_title": "Logs",
+            "copy_button": "Copy",
+            "log_line_prefix": "- {line}"
+        },
+        "save_folder": {
+            "description": "Please choose the location where media should be downloaded to.",
+            "destination_label": "Destination",
+            "system_default_label": "System default",
+            "use_default_location_button": "Use default location",
+            "no_picker_title": "Folder picker unavailable",
+            "no_picker_message": "Some cloned/dual-app environments block the system folder picker. You can continue using the system default save location, or open the app outside clone mode to select a custom folder.",
+            "use_default_button": "Use default",
+            "permission_hint": "PurrfectSnap requires Storage permissions to download and Save Media from Snapchat."
         }
     },
     "scopes": {
@@ -57,14 +196,48 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 avtor Eternal",
+                "version_title": "v{versionName} · avtor Eternal",
                 "update_title": "Posodobitev PurrfectSnap",
                 "update_content": "Različica {version} je na voljo!",
                 "update_button": "Prenesi",
+                "hero_tagline": "An Xposed Module meant to enhance your Snapchat experience",
+                "hero_version_label": "Version: {version} - {channel}",
+                "hero_build_label": "Build: {build}",
+                "update_ready_label": "Ready to install",
+                "purr_aura_active_label": "PurrAura Active!",
+                "purr_aura_inactive_label": "PurrAura Inactive",
+                "open_settings_button": "Open Settings",
+                "wiki_button": "Wiki",
+                "github_button": "GitHub",
+                "telegram_button": "Telegram",
+                "channel_label_stable": "Stable",
+                "channel_label_prerelease": "Pre-release",
+                "announcements_button_description": "Announcements",
+                "update_arch_not_supported_toast": "Your device architecture is not supported for automatic updates.",
+                "update_download_started_toast": "Download started",
+                "update_download_completed_toast": "Download completed",
+                "update_install_failed_toast": "Failed to install update. Check logs for more details.",
+                "update_download_failed_toast": "Download failed: {error}",
                 "debug_build_summary_title": "Uporabljate različico za razhroščevanje (debug) aplikacije PurrfectSnap",
                 "debug_build_summary_content": "Različica {versionName} ({versionCode})",
                 "debug_build_summary_date": "Datum gradnje: {date} ({days} dni nazaj)",
-                "quick_actions_title": "Hitra dejanja"
+                "quick_actions_title": "Hitra dejanja",
+                "quick_actions_empty_title": "No quick tiles yet",
+                "quick_actions_empty_subtitle": "Design your dream grid with the actions you use the most.",
+                "quick_actions_add_tile_button": "Add tile",
+                "quick_actions_manage_button": "Manage",
+                "quick_actions_count_label": "{count} curated shortcuts"
+            },
+            "home_about": {
+                "about_title": "PurrfectSnap",
+                "about_tagline": "An Xposed Module meant to enhance your Snapchat experience!",
+                "about_lead_developers_title": "Lead Developers",
+                "about_story_title": "Our Story",
+                "about_story": "PurrfectSnap was founded on 2nd of October, 2025, as a fork of SnapEnhance by IzTIzRNAL with a vision to provide users the quality Snapchat experience they deserve. This app was just meant to be a minor update in the SnapEnhance repository, but it soon became a separate app wherein the contributors kept adding features. Then the developer <RSR/> joined the team, and this app soon became a huge success. We received much love and support and gained 1K+ downloads in just two days! We thank all users and contributors; without your support, we wouldn't have reached this place. We would also like to convey our huge thanks to rhunk, the lead developer of SnapEnhance, as without him, this app wouldn't even exist. We are immensely grateful to him. Lastly, we would like to thank all our admins, notably: CLASSIC GENIUS, Harry, SUJI>L, Zain & scrodingerspet, who were right there with us from the very beginning. We would also like to thank all testers, notably Leo & Toxic, who tested and reported bugs continuously. We are immensely grateful for your contribution.",
+                "about_thanks_title": "With love, PurrfectSnap Team",
+                "about_magic_toast": "Tap 5 times in this screen to see some magic 😉!",
+                "github_button": "GitHub",
+                "telegram_button": "Telegram"
             },
             "home_logs": {
                 "no_logs_hint": "Ni razpoložljivih dnevnikov",
@@ -72,7 +245,8 @@
                 "export_logs_button": "Izvozi dnevnike",
                 "saving_logs_toast": "Shranjevanje dnevnikov, to lahko traja nekaj časa...",
                 "saved_logs_success_toast": "Dnevniki uspešno shranjeni",
-                "saved_logs_failure_toast": "Shranjevanje dnevnikov ni uspelo"
+                "saved_logs_failure_toast": "Shranjevanje dnevnikov ni uspelo",
+                "read_logs_failed_toast": "Failed to read logs!"
             },
             "home_settings": {
                 "actions_title": "Dejanja",
@@ -119,11 +293,17 @@
                 "test_mode_label": "Omogoči PurrAura",
                 "disable_feature_loading_label": "Onemogoči nalaganje funkcij",
                 "disable_auto_mapper_label": "Onemogoči samodejni preslikovalnik",
-                "disable_bypass_indicator_label": "Onemogoči indikator obhoda"
+                "disable_bypass_indicator_label": "Onemogoči indikator obhoda",
+                "open_file_failed_toast": "Failed to open file! {message}",
+                "import_failed_toast": "Import failed: {message}"
             },
             "tasks": {
                 "no_tasks": "Ni opravil",
                 "merge_button": "Združi",
+                "summary_active": "{active} active · {recent} recent",
+                "summary_idle": "Idle · {recent} recent",
+                "running_count": "{count} running",
+                "clear_button_description": "Clear tasks",
                 "failed_to_open_file": "Datoteke ni bilo mogoče odpreti",
                 "merge_files_toast": "Združevanje {count} datotek",
                 "remove_selected_tasks_title": "Ali ste prepričani, da želite odstraniti izbrana opravila?",
@@ -132,22 +312,22 @@
                 "remove_selected_tasks_confirm": "Odstrani {count} opravil?",
                 "remove_all_tasks_confirm": "Odstrani vsa opravila?"
             },
-        "features": {
-            "disabled": "Onemogočeno",
-            "export_option": "Izvozi",
-            "import_option": "Uvozi",
-            "reset_option": "Ponastavi",
-            "config_export_success_toast": "Konfiguracija uspešno izvožena",
-            "config_import_success_toast": "Konfiguracija uspešno uvožena",
-            "config_import_failure_toast": "Uvoz konfiguracije ni uspel: {error}",
-            "config_export_failure_toast": "Izvoz konfiguracije ni uspel: {error}",
-            "saved_config_snackbar": "Konfiguracija shranjena",
-            "older_required": "Ta funkcija za pravilno delovanje zahteva Snapchat v{version} ali starejši",
-            "newer_required": "Ta funkcija za pravilno delovanje zahteva Snapchat v{version} ali novejši",
-            "search_button": "Išči",
-            "clear_history": "Počisti zgodovino iskanja",
-            "subtitle": "Iskanje in upravljanje funkcij"
-        },
+            "features": {
+                "disabled": "Onemogočeno",
+                "export_option": "Izvozi",
+                "import_option": "Uvozi",
+                "reset_option": "Ponastavi",
+                "config_export_success_toast": "Konfiguracija uspešno izvožena",
+                "config_import_success_toast": "Konfiguracija uspešno uvožena",
+                "config_import_failure_toast": "Uvoz konfiguracije ni uspel: {error}",
+                "config_export_failure_toast": "Izvoz konfiguracije ni uspel: {error}",
+                "saved_config_snackbar": "Konfiguracija shranjena",
+                "older_required": "Ta funkcija za pravilno delovanje zahteva Snapchat v{version} ali starejši",
+                "newer_required": "Ta funkcija za pravilno delovanje zahteva Snapchat v{version} ali novejši",
+                "search_button": "Išči",
+                "clear_history": "Počisti zgodovino iskanja",
+                "subtitle": "Iskanje in upravljanje funkcij"
+            },
             "bypass_status": {
                 "active": "PurrAura aktiven",
                 "inactive": "PurrAura neaktiven"
@@ -167,6 +347,9 @@
             "social": {
                 "friends_tab": "Prijatelji",
                 "groups_tab": "Skupine",
+                "search_button_description": "Search",
+                "close_search_button_description": "Close search",
+                "clear_search_button_description": "Clear search",
                 "empty_hint": "Vaš seznam je trenutno prazen",
                 "friends_empty_title": "Prijatelji še niso dodani",
                 "groups_empty_title": "Skupine še niso sinhronizirane",
@@ -317,6 +500,7 @@
             "import_button": "Uvozi",
             "import_from_url_button": "Uvozi iz URL-ja",
             "import_script_from_url_title": "Uvozi skript iz URL-ja",
+            "import_failed": "Import failed: {message}",
             "import_script_warning": "Nameščajte skripte samo iz virov, ki jim zaupate.",
             "installed_scripts_tab": "Nameščeno",
             "manage_repos_button": "Upravljanje repozitorijev",
@@ -420,6 +604,7 @@
             "delete_rule_dialog_text": "Ali ste prepričani, da želite izbrisati to pravilo?",
             "no_repos_added": "Repozitoriji niso dodani",
             "import_dialog_title": "Uvozi pravila",
+            "read_file_failed_toast": "Failed to read file: {message}",
             "bulk_import_button": "Množični uvoz",
             "individual_import_button": "Posamični uvoz",
             "invalid_import_type_dialog_title": "Neveljaven uvoz",
@@ -641,91 +826,658 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 Nestabilno",
-            "ban_risk": "\u26a0 Ta funkcija lahko povzroči prepoved",
-            "internal_behavior": "\u26a0 To lahko pokvari notranje delovanje Snapchata"
+            "unstable": "⚠ Nestabilno",
+            "ban_risk": "⚠ Ta funkcija lahko povzroči prepoved",
+            "internal_behavior": "⚠ To lahko pokvari notranje delovanje Snapchata"
         },
         "options": {
-            "empty": "Prazno",
+            "app_appearance": {
+                "always_light": "Vedno svetla",
+                "always_dark": "Vedno temna",
+                "null": "Ujemanje s sistemom"
+            },
+            "auto_reload": {
+                "snapchat_only": "Ponovno naloži samo Snapchat",
+                "all": "Ponovno naloži Snapchat + PurrfectSnap",
+                "null": "Privzeto"
+            },
             "walk_radius": {
-                "empty": "Prazno"
+                "null": "Uporabi privzet polmer"
             },
             "spoof_battery_level": {
-                "empty": "Prazno"
+                "null": "Uporabi dejansko raven baterije"
+            },
+            "friend_feed_menu_buttons": {
+                "auto_download": "⬇️ Samodejni prenos",
+                "auto_save": "💬 Samodejno shranjevanje sporočil",
+                "unsaveable_messages": "⬇️ Sporočila, ki jih ni mogoče shraniti",
+                "auto_open_snaps": "📷 Samodejno odpiranje Snapov",
+                "stealth": "👻 Način nevidnosti",
+                "auto_reply": "📨 Samodejni odgovor",
+                "auto_delete_sent_messages": "🗑️ Samodejno brisanje poslanih sporočil",
+                "mark_snaps_as_seen": "👀 Označi Snape kot videne",
+                "mark_stories_as_seen_locally": "👀 Označi zgodbe kot videne lokalno",
+                "conversation_info": "👤 Informacije o pogovoru",
+                "e2e_encryption": "🔒 Uporabi E2E šifriranje",
+                "message_logger": "📝 Beležnik sporočil",
+                "auto_read": "✅ Samodejno branje",
+                "hide_typing_indicator": "🙈 Skrij indikator tipkanja"
+            },
+            "schedule_scheduled_for": "Načrtovano za {name} ob {time}",
+            "schedule_sending_in": "Pošiljanje čez {time}",
+            "schedule_sent_to": "Poslano osebi {name}",
+            "schedule_sent": "Načrtovan Snap poslan",
+            "schedule_failed_to": "Pošiljanje osebi {name} ni uspelo",
+            "schedule_failed": "Načrtovan Snap ni uspel",
+            "schedule_cancelled_for": "Preklicano za {name}",
+            "device_model": {
+                "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
+                "google_pixel_10_pro": "Google Pixel 10 Pro",
+                "oneplus_13": "OnePlus 13",
+                "xiaomi_15_ultra": "Xiaomi 15 Ultra",
+                "null": "Privzeto naprave"
+            },
+            "settings_menu": {
+                "default": "Privzeto",
+                "legacy": "Podedovano"
+            },
+            "path_format": {
+                "create_author_folder": "Ustvari mapo za vsakega avtorja",
+                "create_source_folder": "Ustvari mapo za vsako vrsto vira medija",
+                "append_hash": "Dodaj edinstven hash imenu datoteke",
+                "append_source": "Dodaj vir medija imenu datoteke",
+                "append_username": "Dodaj uporabniško ime imenu datoteke",
+                "append_date_time": "Dodaj datum in čas imenu datoteke",
+                "append_type": "Dodaj vrsto medija imenu datoteke"
+            },
+            "auto_download_sources": {
+                "friend_snaps": "Snapi prijateljev",
+                "friend_stories": "Zgodbe prijateljev",
+                "public_stories": "Javne zgodbe",
+                "spotlight": "Spotlight"
+            },
+            "logging": {
+                "started": "Začeto",
+                "success": "Uspeh",
+                "progress": "Napredek",
+                "failure": "Napaka"
+            },
+            "notifications": {
+                "chat_screenshot": "Posnetek zaslona",
+                "chat_screen_record": "Snemanje zaslona",
+                "snap_replay": "Ponovno predvajanje Snapa",
+                "camera_roll_save": "Shranjeno v kamero",
+                "chat": "Klepet",
+                "chat_reply": "Odgovor na klepet",
+                "snap": "Snap",
+                "typing": "Tipkanje",
+                "stories": "Zgodbe",
+                "speaking": "Govori",
+                "chat_reaction": "Reakcija DM",
+                "group_chat_reaction": "Reakcija skupine",
+                "initiate_audio": "Dohodni zvočni klic",
+                "abandon_audio": "Zgrešen zvočni klic",
+                "initiate_video": "Dohodni video klic",
+                "abandon_video": "Zgrešen video klic",
+                "map_live_location": "Lokacija v živo na zemljevidu"
+            },
+            "auto_read": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
+            },
+            "hide_typing_indicator": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
+            },
+            "auto_delete_sent_messages": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
+            },
+            "auto_download": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
+            },
+            "stealth": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
+            },
+            "auto_save": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
+            },
+            "message_logger": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
+            },
+            "auto_reply": {
+                "blacklist": "Črni seznam",
+                "whitelist": "Beli seznam",
+                "disabled": "Onemogočeno"
             },
             "custom_android_id": {
-                "empty": "Prazno"
+                "null": "Uporabi pravi Android ID"
+            },
+            "add_friend_source_spoof": {
+                "added_by_username": "Po uporabniškem imenu",
+                "added_by_mention": "Po omembi",
+                "added_by_group_chat": "Po skupinskem klepetu",
+                "added_by_qr_code": "Po QR kodi",
+                "added_by_community": "Po skupnosti",
+                "added_by_quick_add": "S hitrim dodajanjem (Visoko tveganje prepovedi)",
+                "added_by_spotlight": "Po Spotlightu",
+                "null": "Ne lažno predstavljaj vira"
             },
             "custom_streaks_expiration_format": {
-                "empty": "Prazno"
+                "null": "Sistemska privzeta nastavitev"
             },
             "preferred_transcription_lang": {
-                "empty": "Prazno"
+                "null": "Uporabi privzeto Snapchat"
             },
             "custom_emoji_font": {
-                "empty": "Prazno"
+                "null": "Privzeta pisava emojijev"
             },
             "custom_shared_library": {
-                "empty": "Prazno"
+                "null": "Uporabi privzeto knjižnico"
+            },
+            "override_front_resolution": {
+                "null": "Uporabi privzeto naprave"
+            },
+            "override_back_resolution": {
+                "null": "Uporabi privzeto naprave"
             },
             "custom_resolution": {
-                "empty": "Prazno"
+                "null": "Uporabi samodejno ločljivost"
+            },
+            "startup_default_camera": {
+                "front": "Sprednja kamera",
+                "back": "Zadnja kamera",
+                "null": "Zapomni si zadnje uporabljeno"
+            },
+            "call_recorder": {
+                "only_record_self": "Snemaj samo sebe",
+                "only_record_others": "Snemaj samo druge",
+                "record_both": "Snemaj obe strani"
+            },
+            "call_recorder_ui_design": {
+                "default": "Privzeto",
+                "snapchat": "Snapchat",
+                "cyber": "Cyber",
+                "frost": "Frost"
+            },
+            "front_custom_frame_rate": {
+                "null": "Privzeto FPS naprave"
+            },
+            "back_custom_frame_rate": {
+                "null": "Privzeto FPS naprave"
+            },
+            "force_voice_note_format": {
+                "null": "Uporabi privzeto Snapchat"
             },
             "custom_path_format": {
-                "empty": "Prazno"
+                "null": "Uporabi privzet vzorec"
+            },
+            "force_image_format": {
+                "null": "Uporabi privzeto Snapchat"
             },
             "custom_video_codec": {
-                "empty": "Prazno"
+                "null": "Privzeti kodek"
             },
             "custom_audio_codec": {
-                "empty": "Prazno"
+                "null": "Privzeti kodek"
             },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Prazno"
+            "preset": {
+                "null": "Privzeta prednastavitev"
             },
-            "unsaveable_messages": {
-                "blacklist": "Način črnega seznama",
-                "whitelist": "Način belega seznama",
-                "null": "Onemogočeno"
+            "app_appearance_override": {
+                "title": "Videz"
+            },
+            "gallery_media_send_override": {
+                "always_ask": "Vedno vprašaj",
+                "ORIGINAL": "Originalni medij",
+                "NOTE": "Zvočni zapisek",
+                "SNAP": "Snap",
+                "SAVEABLE_SNAP": "Snap, ki ga je mogoče shraniti",
+                "null": "Privzeto Snapchat",
+                "multiple_media_toast": "Pošljete lahko samo en medij naenkrat"
+            },
+            "strip_media_metadata": {
+                "hide_caption_text": "Skrij besedilo napisa",
+                "hide_snap_filters": "Skrij filtre snapa",
+                "hide_extras": "Skrij dodatke (npr. omembe)",
+                "remove_audio_note_duration": "Odstrani trajanje zvočnega zapiska",
+                "remove_audio_note_transcript_capability": "Odstrani zmožnost prepisa zvočnega zapiska"
+            },
+            "hide_ui_components": {
+                "hide_profile_call_buttons": "Odstrani gumbe za klic v profilu",
+                "hide_chat_call_buttons": "Odstrani gumbe za klic v klepetu",
+                "hide_live_location_share_button": "Odstrani gumb za deljenje lokacije v živo",
+                "hide_stickers_button": "Odstrani gumb za nalepke",
+                "hide_voice_record_button": "Odstrani gumb za snemanje glasu",
+                "hide_unread_chat_hint": "Odstrani namig za neprebran klepet",
+                "hide_post_to_story_buttons": "Odstrani gumb 'Objavi v zgodbi' pred pošiljanjem Snapa",
+                "hide_billboard_prompt": "Odstrani poziv oglasne deske v viru prijateljev",
+                "hide_snapchat_plus_gift_reminders": "Odstrani opomnike za darila Snapchat Plus v pogovorih",
+                "hide_map_reactions": "Odstrani reakcije na zemljevidu"
+            },
+            "hide_story_suggestions": {
+                "hide_suggested_friend_stories": "Skrij predlagane zgodbe prijateljev",
+                "hide_my_stories": "Skrij moje zgodbe"
+            },
+            "home_tab": {
+                "map": "Zemljevid",
+                "chat": "Klepet",
+                "camera": "Kamera",
+                "discover": "Odkrij",
+                "spotlight": "Spotlight",
+                "null": "Privzeto Snapchat"
+            },
+            "spotlight_comments_username_icon": {
+                "user": "Ikona uporabniškega imena",
+                "👤": "Ikona uporabniškega imena",
+                "[👤]": "Ikona uporabniškega imena",
+                "default": "Ikona uporabniškega imena",
+                "no_icon": "Brez ikone"
+            },
+            "custom_image_upload_format": {
+                "null": "Samodejno"
             },
             "update_check_frequency": {
-                "daily": "Dnevno",
-                "weekly": "Tedensko",
-                "monthly": "Mesečno"
+                "null": "Samodejno"
+            },
+            "snapchat_plus": {
+                "not_subscribed": "Ni naročen",
+                "basic": "Osnovno",
+                "ad_free": "Brez oglasov",
+                "null": "Privzeto"
+            },
+            "bypass_video_length_restriction": {
+                "single": "Posamezen medij",
+                "split": "Razdeljen medij",
+                "null": "Privzeto"
+            },
+            "old_bitmoji_selfie": {
+                "2d": "2D Bitmoji",
+                "3d": "3D Bitmoji",
+                "null": "Privzeti Bitmoji"
+            },
+            "disable_confirmation_dialogs": {
+                "erase_message": "Izbriši sporočilo",
+                "remove_friend": "Odstrani prijatelja",
+                "block_friend": "Blokiraj prijatelja",
+                "ignore_friend": "Prezri prijatelja",
+                "hide_friend": "Skrij prijatelja",
+                "hide_conversation": "Skrij pogovor",
+                "clear_conversation": "Počisti pogovor iz vira prijateljev"
+            },
+            "edit_text_override": {
+                "multi_line_chat_input": "Večvrstični vnos klepeta",
+                "bypass_text_input_limit": "Obid omejitve vnosa besedila"
+            },
+            "auto_purge": {
+                "never": "Nikoli",
+                "1_hour": "1 ura",
+                "3_hours": "3 ure",
+                "6_hours": "6 ur",
+                "12_hours": "12 ur",
+                "1_day": "1 dan",
+                "3_days": "3 dni",
+                "1_week": "1 teden",
+                "2_weeks": "2 tedna",
+                "1_month": "1 mesec",
+                "3_months": "3 meseci",
+                "6_months": "6 mesecev"
+            },
+            "delete_after_unit": {
+                "seconds": "Sekunde",
+                "minutes": "Minute",
+                "hours": "Ure"
+            },
+            "disable_story_sections": {
+                "friends": "Prijatelji",
+                "suggested_stories": "Predlagane zgodbe",
+                "following": "Sledim",
+                "discover": "Odkrij"
+            },
+            "disable_cameras": {
+                "front": "Sprednja kamera",
+                "back": "Zadnja kamera"
+            },
+            "disable_permission_requests": {
+                "notifications": "Obvestila",
+                "read_media_images": "Branje slik medijev",
+                "read_media_video": "Branje videoposnetkov medijev",
+                "camera": "Kamera",
+                "microphone": "Mikrofon",
+                "location": "Lokacija",
+                "read_contacts": "Branje stikov",
+                "nearby_devices": "Naprave v bližini",
+                "phone_calls": "Telefonski klici"
+            },
+            "message_indicators": {
+                "encryption_indicator": "Doda ikono 🔒 poleg sporočil, ki so poslana samo vam",
+                "platform_indicator": "Doda ikono platforme, s katere je bil medij poslan (npr. Android, iOS, Web)",
+                "location_indicator": "Doda ikono 📍 k snapom, ko so poslani z omogočeno lokacijo",
+                "ovf_editor_indicator": "Prikaže, ali je bil snap poslan z uporabo urejevalnika OVF",
+                "director_mode_indicator": "Doda ikono ✏️ k snapom, ko so poslani z uporabo načina režiserja, ki se lahko uporabi za pošiljanje slik iz galerije kot snapov"
+            },
+            "auto_mark_as_read": {
+                "conversation_read": "Označi pogovor kot prebran ob pošiljanju sporočila",
+                "snap_reply": "Označi snape kot prebrane ob odgovoru nanje",
+                "save_snap_in_chat": "Označi snape kot prebrane ob shranjevanju v klepet v načinu nevidnosti"
+            },
+            "friend_mutation_notifier": {
+                "remove_friend": "Obvesti, ko te nekdo odstrani kot prijatelja",
+                "birthday_changes": "Obvesti, ko nekdo spremeni svoj rojstni dan",
+                "bitmoji_selfie_changes": "Obvesti, ko nekdo spremeni svoj Bitmoji selfi",
+                "bitmoji_avatar_changes": "Obvesti, ko nekdo spremeni svoj Bitmoji avatar",
+                "bitmoji_background_changes": "Obvesti, ko nekdo spremeni svoje Bitmoji ozadje",
+                "bitmoji_scene_changes": "Obvesti, ko nekdo spremeni svojo Bitmoji sceno"
+            },
+            "double_tap_chat_action": {
+                "like_message": "Všečkaj sporočilo",
+                "copy_text": "Kopiraj besedilo v odložišče",
+                "delete_message": "Izbriši sporočilo",
+                "mark_as_read": "Označi kot prebrano",
+                "custom_emoji_reaction": "Reakcija s čustvenim simbolom po meri",
+                "null": "Privzeto"
+            },
+            "message_types": {
+                "CHAT": "Klepet",
+                "SNAP": "Snap",
+                "NOTE": "Opomba",
+                "EXTERNAL_MEDIA": "Zunanji medij",
+                "STICKER": "Nalepka"
+            },
+            "double_tap_chat_action_custom_emoji": {
+                "Custom emoji reaction": "Reakcija s čustvenim simbolom po meri"
+            },
+            "ai_model": {
+                "gemini-2.5-flash": "Gemini 2.5 Flash"
+            },
+            "ai_api_key": {
+                "": "Ni nastavljeno"
+            },
+            "ai_system_prompt": {
+                "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Ste ustrežljiv in prijazen pomočnik, ki odgovarja na sporočila na Snapchatu. Naj bodo odgovori naravni, sproščeni in pogovorni. Izogibajte se pretirani formalnosti ali robotskosti. Odgovorite, kot da ste resnična oseba, ki ima normalen pogovor."
+            },
+            "ai_provider": {
+                "gemini": "Gemini",
+                "deepseek": "DeepSeek",
+                "openai": "OpenAI",
+                "openrouter": "OpenRouter"
+            },
+            "ai_personality_traits": {
+                "friendly, casual, helpful, empathetic": "prijazen, sproščen, ustrežljiv, empatičen"
+            },
+            "ai_response_style": {
+                "casual": "Sproščen",
+                "formal": "Formalen",
+                "friendly": "Prijazen",
+                "humorous": "Humoren",
+                "empathetic": "Empatičen",
+                "toxic": "Strupen (Toxic)",
+                "busy": "Zaseden"
+            },
+            "ai_temperature": {
+                "0.7": "Uravnoteženo (0.7)"
+            },
+            "ai_response_language": {
+                "auto": "Samodejno (Enako kot prejeto)",
+                "en": "Angleščina",
+                "es": "Španščina",
+                "fr": "Francoščina",
+                "de": "Nemščina",
+                "it": "Italijanščina",
+                "pt": "Portugalščina",
+                "ru": "Ruščina",
+                "ja": "Japonščina",
+                "ko": "Korejščina",
+                "zh": "Kitajščina",
+                "ar": "Arabščina",
+                "hi": "Hindi",
+                "tr": "Turščina",
+                "pl": "Poljščina",
+                "nl": "Nizozemščina",
+                "sv": "Švedščina",
+                "da": "Danščina",
+                "no": "Norveščina",
+                "fi": "Finščina"
+            },
+            "friendGreeting": {
+                "Hey": "Hej"
+            },
+            "half_swipe_messages": {
+                "[\"I noticed you half-swiped! I'll respond soon.\"]": "Opazil sem, da si na pol potegnil! Kmalu bom odgovoril."
+            },
+            "tiny_snap_messages": {
+                "Thanks for the tiny snap!": "Hvala za mali snap!"
+            },
+            "voice_note_messages": {
+                "Thanks for the voice note!": "Hvala za glasovno beležko!"
+            },
+            "chat_messages": {
+                "Hello! How are you?": "Pozdravljeni! Kako ste?"
+            },
+            "story_reply_messages": {
+                "Thanks for the story reply!": "Hvala za odgovor na zgodbo!"
+            },
+            "external_media_messages": {
+                "Nice media!": "Lep medij!"
+            },
+            "sticker_messages": {
+                "Cool sticker!": "Kul nalepka!"
+            },
+            "snap_messages": {
+                "Thanks for the snap!": "Hvala za snap!"
+            },
+            "story_share_messages": {
+                "Thanks for sharing!": "Hvala za deljenje!"
+            },
+            "map_reaction_messages": {
+                "Thanks for the map reaction!": "Hvala za reakcijo na zemljevidu!"
+            },
+            "auto_reply_content_types": {
+                "chat_messages": "Sporočila klepeta",
+                "snap_messages": "Snapi",
+                "story_share_messages": "Delitve zgodb",
+                "story_reply_messages": "Odgovori na zgodbo",
+                "external_media_messages": "Zunanji mediji",
+                "voice_note_messages": "Glasovne beležke",
+                "sticker_messages": "Nalepke",
+                "tiny_snap_messages": "Mali Snapi",
+                "map_reaction_messages": "Reakcije na zemljevidu",
+                "half_swipes": "Polovični potegi"
+            },
+            "supported_languages": {
+                "en": "Angleščina",
+                "es": "Španščina",
+                "fr": "Francoščina",
+                "de": "Nemščina",
+                "it": "Italijanščina",
+                "pt": "Portugalščina",
+                "ru": "Ruščina",
+                "ja": "Japonščina",
+                "ko": "Korejščina",
+                "zh": "Kitajščina",
+                "ar": "Arabščina",
+                "hi": "Hindi",
+                "tr": "Turščina"
+            },
+            "translation_position": {
+                "above": "Zgoraj",
+                "below": "Spodaj",
+                "inline": "V vrstici"
+            },
+            "source_language": {
+                "auto": "Samodejno zaznaj"
+            },
+            "target_language": {
+                "en": "Angleščina"
             }
         },
         "properties": {
             "global": {
                 "name": "Globalno",
-                "description": "Splošne preference modula in privzete nastavitve",
+                "description": "Prilagodi globalne nastavitve Snapchata",
                 "properties": {
-                    "ui_settings": {
-                        "name": "Nastavitve UI",
-                        "description": "Prilagodite povratne informacije in vedenje obvestil",
+                    "better_location": {
+                        "name": "Boljša lokacija",
+                        "description": "Izboljša lokacijo Snapchata",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptični odziv",
-                                "description": "Vibriraj ob podprtih interakcijah"
+                            "spoof_location": {
+                                "name": "Lažna lokacija",
+                                "description": "Lažno prikaže vašo lokacijo na določenem mestu"
                             },
-                            "use_system_toasts": {
-                                "name": "Uporabi sistemska obvestila",
-                                "description": "Prikaži Android obvestila namesto prekrivanj v aplikaciji"
+                            "coordinates": {
+                                "name": "Koordinate",
+                                "description": "Nastavi koordinate lažne lokacije"
+                            },
+                            "walk_radius": {
+                                "name": "Radij hoje",
+                                "description": "Naključno hojo znotraj tega radija (čevlji)"
+                            },
+                            "always_update_location": {
+                                "name": "Vedno posodobi lokacijo",
+                                "description": "Prisili Snapchat, da posodobi lokacijo, tudi če ni prejetih podatkov GPS"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Zaustavi posodobitve lokacije",
+                                "description": "Prepreči posodobitev vaše lokacije"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Lažna raven baterije",
+                                "description": "Lažno prikaže raven baterije vaše naprave na zemljevidu\nVrednost mora biti med 0 in 100"
+                            },
+                            "spoof_headphones": {
+                                "name": "Lažne slušalke",
+                                "description": "Lažno prikaže status poslušanja glasbe na zemljevidu"
+                            },
+                            "show_battery_level": {
+                                "name": "Prikaži raven baterije",
+                                "description": "Prikaže raven baterije vaših prijateljev na zemljevidu"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "Nastavitve posodobitev",
-                        "description": "Nadzor samodejnega preverjanja posodobitev",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Omogoči funkcije Snapchat Plus\nNekatere strežniške funkcije morda ne bodo delovale"
+                    },
+                    "media_upload_quality": {
+                        "name": "Kakovost nalaganja medijev",
+                        "description": "Preglasi kakovost nalaganja medijev",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "Samodejno preverjanje posodobitev",
-                                "description": "Samodejno preveri za nove gradnje"
+                            "force_video_upload_source_quality": {
+                                "name": "Vsili izvorno kakovost nalaganja videa",
+                                "description": "Prisili Snapchat, da pri nalaganju videoposnetkov uporabi izvorno kakovost\nUpoštevajte, da to morda ne odstrani metapodatkov iz medijev"
                             },
-                            "update_check_frequency": {
-                                "name": "Pogostost preverjanja posodobitev",
-                                "description": "Kako pogosto preverjati posodobitve"
+                            "disable_image_compression": {
+                                "name": "Onemogoči stiskanje slik",
+                                "description": "Onemogoči stiskanje slik pri nalaganju medijev"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Format nalaganja slik po meri",
+                                "description": "Nastavi format nalaganja slik po meri\nIzberite format brez izgub (kot PNG) za najboljšo kakovost"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Onemogoči potrditvena pogovorna okna",
+                        "description": "Samodejno potrdi izbrana dejanja"
+                    },
+                    "auto_updater": {
+                        "name": "Samodejni posodabljalnik",
+                        "description": "Samodejno preveri za nove posodobitve"
+                    },
+                    "update_settings": {
+                        "name": "Nastavitve posodobitev",
+                        "description": "Nadzor, kako PurrfectSnap preverja posodobitve",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Samodejno preverjanje posodobitev"
+                            },
+                            "update_check_frequency": {
+                                "name": "Pogostost preverjanja posodobitev"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "Nastavitve UI",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptični odziv"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Onemogoči meritve",
+                        "description": "Blokira pošiljanje določenih analitičnih podatkov Snapchatu"
+                    },
+                    "disable_story_sections": {
+                        "name": "Onemogoči razdelke zgodb",
+                        "description": "Odstrani razdelke s strani Zgodbe\nZa pravilno delovanje bo morda potrebna osvežitev"
+                    },
+                    "block_ads": {
+                        "name": "Blokiraj oglase",
+                        "description": "Prepreči prikazovanje oglasov"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Onemogoči zavihke po meri",
+                        "description": "Odpre povezave v podprtih aplikacijah namesto v spletnem brskalniku"
+                    },
+                    "disable_permission_requests": {
+                        "name": "Onemogoči zahteve za dovoljenja",
+                        "description": "Prepreči Snapchatu, da bi zahteval določena dovoljenja"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Onemogoči vir Snapov spominov",
+                        "description": "Prepreči Snapchatu prikazovanje nedavnih spominov ob potegu navzgor v kameri"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Uporabniško ime komentarjev Spotlight",
+                        "description": "Prikaže uporabniško ime avtorja v komentarjih Spotlight"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Ikona uporabniškega imena komentarjev Spotlight",
+                        "description": "Izberite, katera ikona se prikaže poleg uporabniških imen v komentarjih Spotlight"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Obidi omejitev dolžine videa",
+                        "description": "Eno: pošlje en sam video\nRazdeli: razdeli videoposnetke po urejanju"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Privzeta hitrost predvajanja videa",
+                        "description": "Nastavi privzeto hitrost predvajanja videoposnetkov\nVrednost mora biti med 0.1 in 4.0"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Drsnik hitrosti predvajanja videa",
+                        "description": "Doda drsnik v kontekstni meni opera za spreminjanje hitrosti predvajanja videa\nOpomba: Spremembe veljajo samo za naslednje videoposnetke"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Onemogoči pogovorna okna storitev Google Play",
+                        "description": "Prepreči prikazovanje pogovornih oken o razpoložljivosti storitev Google Play"
+                    },
+                    "default_volume_controls": {
+                        "name": "Privzeti kontrolniki glasnosti",
+                        "description": "Prisili Snapchat, da uporablja sistemske kontrolnike glasnosti"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Onemogoči telekomunikacijski okvir",
+                        "description": "Prepreči Snapchatu uporabo ogrodja Android Telecom\nTo vam omogoča poslušanje glasbe med klicem"
+                    },
+                    "hide_active_music": {
+                        "name": "Skrij aktivno glasbo",
+                        "description": "Prepreči Snapchatu, da bi vedel, da poslušate glasbo\nTo vam bo omogočilo snemanje snapov z uporabo gumbov za glasnost med poslušanjem glasbe"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Onemogoči delitev Snapa",
+                        "description": "Prepreči, da bi se Snapi razdelili na več delov\nSlike, ki jih pošljete, se bodo spremenile v videoposnetke"
                     }
                 }
             },
@@ -752,6 +1504,10 @@
                     "allow_duplicate": {
                         "name": "Dovoli dvojnike",
                         "description": "Dovoli prenos istega medija večkrat"
+                    },
+                    "file_hash_check": {
+                        "name": "File Hash Check",
+                        "description": "Verify downloaded media with file hashes"
                     },
                     "merge_overlays": {
                         "name": "Združi prekrivanja",
@@ -954,7 +1710,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Indikator načina nevidnosti",
-                        "description": "Doda \ud83d\udc7b emoji poleg pogovorov v načinu nevidnosti"
+                        "description": "Doda 👻 emoji poleg pogovorov v načinu nevidnosti"
                     },
                     "edit_text_override": {
                         "name": "Preglasitev urejanja besedila",
@@ -1482,161 +2238,36 @@
                     }
                 }
             },
-            "global": {
-                "name": "Globalno",
-                "description": "Prilagodi globalne nastavitve Snapchata",
+            "rules": {
+                "name": "Rules",
+                "description": "Configure automation rules",
                 "properties": {
-                    "better_location": {
-                        "name": "Boljša lokacija",
-                        "description": "Izboljša lokacijo Snapchata",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "Lažna lokacija",
-                                "description": "Lažno prikaže vašo lokacijo na določenem mestu"
-                            },
-                            "coordinates": {
-                                "name": "Koordinate",
-                                "description": "Nastavi koordinate lažne lokacije"
-                            },
-                            "walk_radius": {
-                                "name": "Radij hoje",
-                                "description": "Naključno hojo znotraj tega radija (čevlji)"
-                            },
-                            "always_update_location": {
-                                "name": "Vedno posodobi lokacijo",
-                                "description": "Prisili Snapchat, da posodobi lokacijo, tudi če ni prejetih podatkov GPS"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Zaustavi posodobitve lokacije",
-                                "description": "Prepreči posodobitev vaše lokacije"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Lažna raven baterije",
-                                "description": "Lažno prikaže raven baterije vaše naprave na zemljevidu\nVrednost mora biti med 0 in 100"
-                            },
-                            "spoof_headphones": {
-                                "name": "Lažne slušalke",
-                                "description": "Lažno prikaže status poslušanja glasbe na zemljevidu"
-                            },
-                            "show_battery_level": {
-                                "name": "Prikaži raven baterije",
-                                "description": "Prikaže raven baterije vaših prijateljev na zemljevidu"
-                            }
-                        }
+                    "auto_read": {
+                        "name": "Auto Read"
                     },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Omogoči funkcije Snapchat Plus\nNekatere strežniške funkcije morda ne bodo delovale"
+                    "hide_typing_indicator": {
+                        "name": "Hide Typing Indicator"
                     },
-                    "media_upload_quality": {
-                        "name": "Kakovost nalaganja medijev",
-                        "description": "Preglasi kakovost nalaganja medijev",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Vsili izvorno kakovost nalaganja videa",
-                                "description": "Prisili Snapchat, da pri nalaganju videoposnetkov uporabi izvorno kakovost\nUpoštevajte, da to morda ne odstrani metapodatkov iz medijev"
-                            },
-                            "disable_image_compression": {
-                                "name": "Onemogoči stiskanje slik",
-                                "description": "Onemogoči stiskanje slik pri nalaganju medijev"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Format nalaganja slik po meri",
-                                "description": "Nastavi format nalaganja slik po meri\nIzberite format brez izgub (kot PNG) za najboljšo kakovost"
-                            }
-                        }
+                    "auto_reply": {
+                        "name": "Auto Reply"
                     },
-                    "disable_confirmation_dialogs": {
-                        "name": "Onemogoči potrditvena pogovorna okna",
-                        "description": "Samodejno potrdi izbrana dejanja"
+                    "auto_delete_sent_messages": {
+                        "name": "Auto Delete Sent Messages"
                     },
-                    "auto_updater": {
-                        "name": "Samodejni posodabljalnik",
-                        "description": "Samodejno preveri za nove posodobitve"
+                    "auto_download": {
+                        "name": "Auto Download"
                     },
-                    "update_settings": {
-                        "name": "Nastavitve posodobitev",
-                        "description": "Nadzor, kako PurrfectSnap preverja posodobitve",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Samodejno preverjanje posodobitev"
-                            },
-                            "update_check_frequency": {
-                                "name": "Pogostost preverjanja posodobitev"
-                            }
-                        }
+                    "stealth": {
+                        "name": "Stealth Mode"
                     },
-                    "ui_settings": {
-                        "name": "Nastavitve UI",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptični odziv"
-                            }
-                        }
+                    "auto_save": {
+                        "name": "Auto Save"
                     },
-                    "disable_metrics": {
-                        "name": "Onemogoči meritve",
-                        "description": "Blokira pošiljanje določenih analitičnih podatkov Snapchatu"
+                    "message_logger": {
+                        "name": "Message Logger"
                     },
-                    "disable_story_sections": {
-                        "name": "Onemogoči razdelke zgodb",
-                        "description": "Odstrani razdelke s strani Zgodbe\nZa pravilno delovanje bo morda potrebna osvežitev"
-                    },
-                    "block_ads": {
-                        "name": "Blokiraj oglase",
-                        "description": "Prepreči prikazovanje oglasov"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Onemogoči zavihke po meri",
-                        "description": "Odpre povezave v podprtih aplikacijah namesto v spletnem brskalniku"
-                    },
-                    "disable_permission_requests": {
-                        "name": "Onemogoči zahteve za dovoljenja",
-                        "description": "Prepreči Snapchatu, da bi zahteval določena dovoljenja"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Onemogoči vir Snapov spominov",
-                        "description": "Prepreči Snapchatu prikazovanje nedavnih spominov ob potegu navzgor v kameri"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Uporabniško ime komentarjev Spotlight",
-                        "description": "Prikaže uporabniško ime avtorja v komentarjih Spotlight"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Ikona uporabniškega imena komentarjev Spotlight",
-                        "description": "Izberite, katera ikona se prikaže poleg uporabniških imen v komentarjih Spotlight"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Obidi omejitev dolžine videa",
-                        "description": "Eno: pošlje en sam video\nRazdeli: razdeli videoposnetke po urejanju"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Privzeta hitrost predvajanja videa",
-                        "description": "Nastavi privzeto hitrost predvajanja videoposnetkov\nVrednost mora biti med 0.1 in 4.0"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Drsnik hitrosti predvajanja videa",
-                        "description": "Doda drsnik v kontekstni meni opera za spreminjanje hitrosti predvajanja videa\nOpomba: Spremembe veljajo samo za naslednje videoposnetke"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Onemogoči pogovorna okna storitev Google Play",
-                        "description": "Prepreči prikazovanje pogovornih oken o razpoložljivosti storitev Google Play"
-                    },
-                    "default_volume_controls": {
-                        "name": "Privzeti kontrolniki glasnosti",
-                        "description": "Prisili Snapchat, da uporablja sistemske kontrolnike glasnosti"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Onemogoči telekomunikacijski okvir",
-                        "description": "Prepreči Snapchatu uporabo ogrodja Android Telecom\nTo vam omogoča poslušanje glasbe med klicem"
-                    },
-                    "hide_active_music": {
-                        "name": "Skrij aktivno glasbo",
-                        "description": "Prepreči Snapchatu, da bi vedel, da poslušate glasbo\nTo vam bo omogočilo snemanje snapov z uporabo gumbov za glasnost med poslušanjem glasbe"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Onemogoči delitev Snapa",
-                        "description": "Prepreči, da bi se Snapi razdelili na več delov\nSlike, ki jih pošljete, se bodo spremenile v videoposnetke"
+                    "unsaveable_messages": {
+                        "name": "Unsaveable Messages"
                     }
                 }
             },
@@ -1888,7 +2519,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Indikator šifriranega sporočila",
-                                "description": "Doda \ud83d\udd12 emoji poleg šifriranih sporočil"
+                                "description": "Doda 🔒 emoji poleg šifriranih sporočil"
                             },
                             "force_message_encryption": {
                                 "name": "Vsili šifriranje sporočil",
@@ -1967,498 +2598,6 @@
                 }
             }
         },
-        "options": {
-            "app_appearance": {
-                "always_light": "Vedno svetla",
-                "always_dark": "Vedno temna",
-                "null": "Ujemanje s sistemom"
-            },
-            "auto_reload": {
-                "snapchat_only": "Ponovno naloži samo Snapchat",
-                "all": "Ponovno naloži Snapchat + PurrfectSnap",
-                "null": "Privzeto"
-            },
-            "walk_radius": {
-                "null": "Uporabi privzet polmer"
-            },
-            "spoof_battery_level": {
-                "null": "Uporabi dejansko raven baterije"
-            },
-            "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f Samodejni prenos",
-                "auto_save": "\ud83d\udcac Samodejno shranjevanje sporočil",
-                "unsaveable_messages": "\u2b07\ufe0f Sporočila, ki jih ni mogoče shraniti",
-                "auto_open_snaps": "\ud83d\udcf7 Samodejno odpiranje Snapov",
-                "stealth": "\ud83d\udc7b Način nevidnosti",
-                "auto_reply": "\ud83d\udce8 Samodejni odgovor",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Samodejno brisanje poslanih sporočil",
-                "mark_snaps_as_seen": "\ud83d\udc40 Označi Snape kot videne",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 Označi zgodbe kot videne lokalno",
-                "conversation_info": "\ud83d\udc64 Informacije o pogovoru",
-                "e2e_encryption": "\ud83d\udd12 Uporabi E2E šifriranje",
-                "message_logger": "\ud83d\udcdd Beležnik sporočil",
-                "auto_read": "\u2705 Samodejno branje",
-                "hide_typing_indicator": "\ud83d\ude48 Skrij indikator tipkanja"
-            },
-            "schedule_scheduled_for": "Načrtovano za {name} ob {time}",
-            "schedule_sending_in": "Pošiljanje čez {time}",
-            "schedule_sent_to": "Poslano osebi {name}",
-            "schedule_sent": "Načrtovan Snap poslan",
-            "schedule_failed_to": "Pošiljanje osebi {name} ni uspelo",
-            "schedule_failed": "Načrtovan Snap ni uspel",
-            "schedule_cancelled_for": "Preklicano za {name}",
-            "device_model": {
-                "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
-                "google_pixel_10_pro": "Google Pixel 10 Pro",
-                "oneplus_13": "OnePlus 13",
-                "xiaomi_15_ultra": "Xiaomi 15 Ultra",
-                "null": "Privzeto naprave"
-            },
-            "settings_menu": {
-                "default": "Privzeto",
-                "legacy": "Podedovano"
-            },
-            "path_format": {
-                "create_author_folder": "Ustvari mapo za vsakega avtorja",
-                "create_source_folder": "Ustvari mapo za vsako vrsto vira medija",
-                "append_hash": "Dodaj edinstven hash imenu datoteke",
-                "append_source": "Dodaj vir medija imenu datoteke",
-                "append_username": "Dodaj uporabniško ime imenu datoteke",
-                "append_date_time": "Dodaj datum in čas imenu datoteke",
-                "append_type": "Dodaj vrsto medija imenu datoteke"
-            },
-            "auto_download_sources": {
-                "friend_snaps": "Snapi prijateljev",
-                "friend_stories": "Zgodbe prijateljev",
-                "public_stories": "Javne zgodbe",
-                "spotlight": "Spotlight"
-            },
-            "logging": {
-                "started": "Začeto",
-                "success": "Uspeh",
-                "progress": "Napredek",
-                "failure": "Napaka"
-            },
-            "notifications": {
-                "chat_screenshot": "Posnetek zaslona",
-                "chat_screen_record": "Snemanje zaslona",
-                "snap_replay": "Ponovno predvajanje Snapa",
-                "camera_roll_save": "Shranjeno v kamero",
-                "chat": "Klepet",
-                "chat_reply": "Odgovor na klepet",
-                "snap": "Snap",
-                "typing": "Tipkanje",
-                "stories": "Zgodbe",
-                "speaking": "Govori",
-                "chat_reaction": "Reakcija DM",
-                "group_chat_reaction": "Reakcija skupine",
-                "initiate_audio": "Dohodni zvočni klic",
-                "abandon_audio": "Zgrešen zvočni klic",
-                "initiate_video": "Dohodni video klic",
-                "abandon_video": "Zgrešen video klic",
-                "map_live_location": "Lokacija v živo na zemljevidu"
-            },
-            "auto_read": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "hide_typing_indicator": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "auto_delete_sent_messages": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "auto_download": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "stealth": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "auto_save": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "message_logger": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "auto_reply": {
-                "blacklist": "Črni seznam",
-                "whitelist": "Beli seznam",
-                "disabled": "Onemogočeno"
-            },
-            "custom_android_id": {
-                "null": "Uporabi pravi Android ID"
-            },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "Po uporabniškem imenu",
-	                "added_by_mention": "Po omembi",
-	                "added_by_group_chat": "Po skupinskem klepetu",
-	                "added_by_qr_code": "Po QR kodi",
-	                "added_by_community": "Po skupnosti",
-	                "added_by_quick_add": "S hitrim dodajanjem (Visoko tveganje prepovedi)",
-	                "added_by_spotlight": "Po Spotlightu",
-	                "null": "Ne lažno predstavljaj vira"
-	            },
-            "custom_streaks_expiration_format": {
-                "null": "Sistemska privzeta nastavitev"
-            },
-            "preferred_transcription_lang": {
-                "null": "Uporabi privzeto Snapchat"
-            },
-            "custom_emoji_font": {
-                "null": "Privzeta pisava emojijev"
-            },
-            "custom_shared_library": {
-                "null": "Uporabi privzeto knjižnico"
-            },
-            "override_front_resolution": {
-                "null": "Uporabi privzeto naprave"
-            },
-            "override_back_resolution": {
-                "null": "Uporabi privzeto naprave"
-            },
-            "custom_resolution": {
-                "null": "Uporabi samodejno ločljivost"
-            },
-            "startup_default_camera": {
-                "front": "Sprednja kamera",
-                "back": "Zadnja kamera",
-                "null": "Zapomni si zadnje uporabljeno"
-            },
-            "call_recorder": {
-                "only_record_self": "Snemaj samo sebe",
-                "only_record_others": "Snemaj samo druge",
-                "record_both": "Snemaj obe strani"
-            },
-            "call_recorder_ui_design": {
-                "default": "Privzeto",
-                "snapchat": "Snapchat",
-                "cyber": "Cyber",
-                "frost": "Frost"
-            },
-            "front_custom_frame_rate": {
-                "null": "Privzeto FPS naprave"
-            },
-            "back_custom_frame_rate": {
-                "null": "Privzeto FPS naprave"
-            },
-            "force_voice_note_format": {
-                "null": "Uporabi privzeto Snapchat"
-            },
-            "custom_path_format": {
-                "null": "Uporabi privzet vzorec"
-            },
-            "force_image_format": {
-                "null": "Uporabi privzeto Snapchat"
-            },
-            "custom_video_codec": {
-                "null": "Privzeti kodek"
-            },
-            "custom_audio_codec": {
-                "null": "Privzeti kodek"
-            },
-            "preset": {
-                "null": "Privzeta prednastavitev"
-            },
-            "app_appearance_override": {
-                "title": "Videz"
-            },
-            "gallery_media_send_override": {
-                "always_ask": "Vedno vprašaj",
-                "ORIGINAL": "Originalni medij",
-                "NOTE": "Zvočni zapisek",
-                "SNAP": "Snap",
-                "SAVEABLE_SNAP": "Snap, ki ga je mogoče shraniti",
-                "null": "Privzeto Snapchat",
-                "multiple_media_toast": "Pošljete lahko samo en medij naenkrat"
-            },
-            "strip_media_metadata": {
-                "hide_caption_text": "Skrij besedilo napisa",
-                "hide_snap_filters": "Skrij filtre snapa",
-                "hide_extras": "Skrij dodatke (npr. omembe)",
-                "remove_audio_note_duration": "Odstrani trajanje zvočnega zapiska",
-                "remove_audio_note_transcript_capability": "Odstrani zmožnost prepisa zvočnega zapiska"
-            },
-            "hide_ui_components": {
-                "hide_profile_call_buttons": "Odstrani gumbe za klic v profilu",
-                "hide_chat_call_buttons": "Odstrani gumbe za klic v klepetu",
-                "hide_live_location_share_button": "Odstrani gumb za deljenje lokacije v živo",
-                "hide_stickers_button": "Odstrani gumb za nalepke",
-                "hide_voice_record_button": "Odstrani gumb za snemanje glasu",
-                "hide_unread_chat_hint": "Odstrani namig za neprebran klepet",
-                "hide_post_to_story_buttons": "Odstrani gumb 'Objavi v zgodbi' pred pošiljanjem Snapa",
-                "hide_billboard_prompt": "Odstrani poziv oglasne deske v viru prijateljev",
-                "hide_snapchat_plus_gift_reminders": "Odstrani opomnike za darila Snapchat Plus v pogovorih",
-                "hide_map_reactions": "Odstrani reakcije na zemljevidu"
-            },
-            "hide_story_suggestions": {
-                "hide_suggested_friend_stories": "Skrij predlagane zgodbe prijateljev",
-                "hide_my_stories": "Skrij moje zgodbe"
-            },
-            "home_tab": {
-                "map": "Zemljevid",
-                "chat": "Klepet",
-                "camera": "Kamera",
-                "discover": "Odkrij",
-                "spotlight": "Spotlight",
-                "null": "Privzeto Snapchat"
-            },
-            "spotlight_comments_username_icon": {
-                "user": "Ikona uporabniškega imena",
-                "\ud83d\udc64": "Ikona uporabniškega imena",
-                "[\ud83d\udc64]": "Ikona uporabniškega imena",
-                "default": "Ikona uporabniškega imena",
-                "no_icon": "Brez ikone"
-            },
-            "custom_image_upload_format": {
-                "null": "Samodejno"
-            },
-            "update_check_frequency": {
-                "null": "Samodejno"
-            },
-            "snapchat_plus": {
-                "not_subscribed": "Ni naročen",
-                "basic": "Osnovno",
-                "ad_free": "Brez oglasov",
-                "null": "Privzeto"
-            },
-            "bypass_video_length_restriction": {
-                "single": "Posamezen medij",
-                "split": "Razdeljen medij",
-                "null": "Privzeto"
-            },
-            "old_bitmoji_selfie": {
-                "2d": "2D Bitmoji",
-                "3d": "3D Bitmoji",
-                "null": "Privzeti Bitmoji"
-            },
-            "disable_confirmation_dialogs": {
-                "erase_message": "Izbriši sporočilo",
-                "remove_friend": "Odstrani prijatelja",
-                "block_friend": "Blokiraj prijatelja",
-                "ignore_friend": "Prezri prijatelja",
-                "hide_friend": "Skrij prijatelja",
-                "hide_conversation": "Skrij pogovor",
-                "clear_conversation": "Počisti pogovor iz vira prijateljev"
-            },
-            "edit_text_override": {
-                "multi_line_chat_input": "Večvrstični vnos klepeta",
-                "bypass_text_input_limit": "Obid omejitve vnosa besedila"
-            },
-            "auto_purge": {
-                "never": "Nikoli",
-                "1_hour": "1 ura",
-                "3_hours": "3 ure",
-                "6_hours": "6 ur",
-                "12_hours": "12 ur",
-                "1_day": "1 dan",
-                "3_days": "3 dni",
-                "1_week": "1 teden",
-                "2_weeks": "2 tedna",
-                "1_month": "1 mesec",
-                "3_months": "3 meseci",
-                "6_months": "6 mesecev"
-            },
-            "delete_after_unit": {
-                "seconds": "Sekunde",
-                "minutes": "Minute",
-                "hours": "Ure"
-            },
-            "disable_story_sections": {
-                "friends": "Prijatelji",
-                "suggested_stories": "Predlagane zgodbe",
-                "following": "Sledim",
-                "discover": "Odkrij"
-            },
-            "disable_cameras": {
-                "front": "Sprednja kamera",
-                "back": "Zadnja kamera"
-            },
-            "disable_permission_requests": {
-                "notifications": "Obvestila",
-                "read_media_images": "Branje slik medijev",
-                "read_media_video": "Branje videoposnetkov medijev",
-                "camera": "Kamera",
-                "microphone": "Mikrofon",
-                "location": "Lokacija",
-                "read_contacts": "Branje stikov",
-                "nearby_devices": "Naprave v bližini",
-                "phone_calls": "Telefonski klici"
-            },
-            "message_indicators": {
-                "encryption_indicator": "Doda ikono \ud83d\udd12 poleg sporočil, ki so poslana samo vam",
-                "platform_indicator": "Doda ikono platforme, s katere je bil medij poslan (npr. Android, iOS, Web)",
-                "location_indicator": "Doda ikono \ud83d\udccd k snapom, ko so poslani z omogočeno lokacijo",
-                "ovf_editor_indicator": "Prikaže, ali je bil snap poslan z uporabo urejevalnika OVF",
-                "director_mode_indicator": "Doda ikono \u270f\ufe0f k snapom, ko so poslani z uporabo načina režiserja, ki se lahko uporabi za pošiljanje slik iz galerije kot snapov"
-            },
-            "auto_mark_as_read": {
-                "conversation_read": "Označi pogovor kot prebran ob pošiljanju sporočila",
-                "snap_reply": "Označi snape kot prebrane ob odgovoru nanje",
-                "save_snap_in_chat": "Označi snape kot prebrane ob shranjevanju v klepet v načinu nevidnosti"
-            },
-            "friend_mutation_notifier": {
-                "remove_friend": "Obvesti, ko te nekdo odstrani kot prijatelja",
-                "birthday_changes": "Obvesti, ko nekdo spremeni svoj rojstni dan",
-                "bitmoji_selfie_changes": "Obvesti, ko nekdo spremeni svoj Bitmoji selfi",
-                "bitmoji_avatar_changes": "Obvesti, ko nekdo spremeni svoj Bitmoji avatar",
-                "bitmoji_background_changes": "Obvesti, ko nekdo spremeni svoje Bitmoji ozadje",
-                "bitmoji_scene_changes": "Obvesti, ko nekdo spremeni svojo Bitmoji sceno"
-            },
-            "double_tap_chat_action": {
-                "like_message": "Všečkaj sporočilo",
-                "copy_text": "Kopiraj besedilo v odložišče",
-                "delete_message": "Izbriši sporočilo",
-                "mark_as_read": "Označi kot prebrano",
-                "custom_emoji_reaction": "Reakcija s čustvenim simbolom po meri",
-                "null": "Privzeto"
-            },
-            "message_types": {
-                "CHAT": "Klepet",
-                "SNAP": "Snap",
-                "NOTE": "Opomba",
-                "EXTERNAL_MEDIA": "Zunanji medij",
-                "STICKER": "Nalepka"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "Custom emoji reaction": "Reakcija s čustvenim simbolom po meri"
-            },
-            "ai_model": {
-                "gemini-2.5-flash": "Gemini 2.5 Flash"
-            },
-            "ai_api_key": {
-                "": "Ni nastavljeno"
-            },
-            "ai_system_prompt": {
-                "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "Ste ustrežljiv in prijazen pomočnik, ki odgovarja na sporočila na Snapchatu. Naj bodo odgovori naravni, sproščeni in pogovorni. Izogibajte se pretirani formalnosti ali robotskosti. Odgovorite, kot da ste resnična oseba, ki ima normalen pogovor."
-            },
-            "ai_provider": {
-                "gemini": "Gemini",
-                "deepseek": "DeepSeek",
-                "openai": "OpenAI",
-                "openrouter": "OpenRouter"
-            },
-            "ai_personality_traits": {
-                "friendly, casual, helpful, empathetic": "prijazen, sproščen, ustrežljiv, empatičen"
-            },
-            "ai_response_style": {
-                "casual": "Sproščen",
-                "formal": "Formalen",
-                "friendly": "Prijazen",
-                "humorous": "Humoren",
-                "empathetic": "Empatičen",
-                "toxic": "Strupen (Toxic)",
-                "busy": "Zaseden"
-            },
-            "ai_temperature": {
-                "0.7": "Uravnoteženo (0.7)"
-            },
-            "ai_response_language": {
-                "auto": "Samodejno (Enako kot prejeto)",
-                "en": "Angleščina",
-                "es": "Španščina",
-                "fr": "Francoščina",
-                "de": "Nemščina",
-                "it": "Italijanščina",
-                "pt": "Portugalščina",
-                "ru": "Ruščina",
-                "ja": "Japonščina",
-                "ko": "Korejščina",
-                "zh": "Kitajščina",
-                "ar": "Arabščina",
-                "hi": "Hindi",
-                "tr": "Turščina",
-                "pl": "Poljščina",
-                "nl": "Nizozemščina",
-                "sv": "Švedščina",
-                "da": "Danščina",
-                "no": "Norveščina",
-                "fi": "Finščina"
-            },
-            "friendGreeting": {
-                "Hey": "Hej"
-            },
-            "half_swipe_messages": {
-                "[\"I noticed you half-swiped! I'll respond soon.\"]": "Opazil sem, da si na pol potegnil! Kmalu bom odgovoril."
-            },
-            "tiny_snap_messages": {
-                "Thanks for the tiny snap!": "Hvala za mali snap!"
-            },
-            "voice_note_messages": {
-                "Thanks for the voice note!": "Hvala za glasovno beležko!"
-            },
-            "chat_messages": {
-                "Hello! How are you?": "Pozdravljeni! Kako ste?"
-            },
-            "story_reply_messages": {
-                "Thanks for the story reply!": "Hvala za odgovor na zgodbo!"
-            },
-            "external_media_messages": {
-                "Nice media!": "Lep medij!"
-            },
-            "sticker_messages": {
-                "Cool sticker!": "Kul nalepka!"
-            },
-            "snap_messages": {
-                "Thanks for the snap!": "Hvala za snap!"
-            },
-            "story_share_messages": {
-                "Thanks for sharing!": "Hvala za deljenje!"
-            },
-            "map_reaction_messages": {
-                "Thanks for the map reaction!": "Hvala za reakcijo na zemljevidu!"
-            },
-            "auto_reply_content_types": {
-                "chat_messages": "Sporočila klepeta",
-                "snap_messages": "Snapi",
-                "story_share_messages": "Delitve zgodb",
-                "story_reply_messages": "Odgovori na zgodbo",
-                "external_media_messages": "Zunanji mediji",
-                "voice_note_messages": "Glasovne beležke",
-                "sticker_messages": "Nalepke",
-                "tiny_snap_messages": "Mali Snapi",
-                "map_reaction_messages": "Reakcije na zemljevidu",
-                "half_swipes": "Polovični potegi"
-            },
-            "supported_languages": {
-                "en": "Angleščina",
-                "es": "Španščina",
-                "fr": "Francoščina",
-                "de": "Nemščina",
-                "it": "Italijanščina",
-                "pt": "Portugalščina",
-                "ru": "Ruščina",
-                "ja": "Japonščina",
-                "ko": "Korejščina",
-                "zh": "Kitajščina",
-                "ar": "Arabščina",
-                "hi": "Hindi",
-                "tr": "Turščina"
-            },
-            "translation_position": {
-                "above": "Zgoraj",
-                "below": "Spodaj",
-                "inline": "V vrstici"
-            },
-            "source_language": {
-                "auto": "Samodejno zaznaj"
-            },
-            "target_language": {
-                "en": "Angleščina"
-            }
-        },
         "friend_notes": {
             "placeholder": "Dodaj opombo..."
         }
@@ -2526,7 +2665,6 @@
         "show_chat_edit_history": "Prikaži zgodovino urejanja klepeta",
         "convert_message": "Pretvori sporočilo"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Prenesi ozadje klepeta"
     },
@@ -2685,10 +2823,10 @@
         "exporting_message": "Izvažanje {conversation}..."
     },
     "button": {
+        "cancel": "Prekliči",
         "ok": "V redu",
         "positive": "Da",
         "negative": "Ne",
-        "cancel": "Prekliči",
         "save": "Shrani",
         "open": "Odpri",
         "download": "Prenesi",
@@ -2802,6 +2940,8 @@
         "native_hooks_send_failure_toast": "Pošiljanje ni uspelo! Prosimo, omogočite Izvorne kljuke v nastavitvah.",
         "no_participants_to_encrypt_toast": "V tem pogovoru nimate prijateljev za šifriranje sporočil!",
         "encryption_failed_toast": "Šifriranje sporočila ni uspelo! Preverite logcat za več podrobnosti.",
+        "missing_friend_id_toast": "Can't find friendId for conversationId {conversationId}",
+        "key_exchange_failed_toast": "Can't create key exchange for friendId {friendId}",
         "accept_public_key_success_toast": "Javni ključ uspešno sprejet!",
         "accept_secret_key_success_toast": "Končano! Zdaj lahko pošiljate in prejemate šifrirana sporočila s tem prijateljem.",
         "accept_public_key_failure_toast": "Sprejemanje javnega ključa ni uspelo",
@@ -2812,6 +2952,21 @@
         "outgoing_secret_message": "Odgovor na izmenjavo ključev",
         "incoming_pk_message": "Pravkar ste prejeli zahtevo za javni ključ. Kliknite spodaj za sprejem.",
         "incoming_secret_message": "Vaš prijatelj je pravkar sprejel vaš javni ključ. Kliknite spodaj za sprejem skrivnosti."
+    },
+    "account_switcher_ui": {
+        "already_logged_in": "Already logged in as {username}",
+        "login_failed_toast": "Failed to login. Check logs for more info.",
+        "logged_out_toast": "Logged out",
+        "data_not_found_toast": "Account data not found",
+        "restore_failed_toast": "Failed to restore account data",
+        "logged_in_as_toast": "Logged in as {username}",
+        "backup_success_toast": "Account backed up!",
+        "backup_failure_toast": "Failed to backup account. Check logs for more info.",
+        "import_success_toast": "Imported {username}!",
+        "import_failure_toast": "Failed to import account: {message}",
+        "export_success_toast": "Account exported!",
+        "export_failed_toast": "Failed to export account. Check logs for more info.",
+        "forced_logout_toast": "Removed account due to forced logout"
     },
     "auto_open_snaps": {
         "title": "Samodejno odpiranje Snapov",
@@ -2839,7 +2994,7 @@
         "queue_cleared": "Čakalna vrsta počiščena in statistika ponastavljena",
         "queue_cleared_title": "Čakalna vrsta počiščena",
         "queue_cleared_reset": "Čakalna vrsta počiščena & ponastavljena",
-        "queue_cleared_feedback": "Počiščenih {count} snapov v čakalni vrsti \u2022 Ponastavljeno štetje obdelanih {processed}",
+        "queue_cleared_feedback": "Počiščenih {count} snapov v čakalni vrsti • Ponastavljeno štetje obdelanih {processed}",
         "queue_cleared_feedback_simple": "Ponastavljeno štetje obdelanih {processed}",
         "unknown_sender": "Neznan",
         "unknown_user": "Neznan uporabnik",
@@ -2972,7 +3127,8 @@
     "auto_delete_sent_messages": {
         "countdown_toast": "Sporočilo bo izbrisano čez {time}",
         "delete_success_toast": "Sporočilo uspešno izbrisano",
-        "delete_failed_toast": "Brisanje sporočila ni uspelo"
+        "delete_failed_toast": "Brisanje sporočila ni uspelo",
+        "queue_cleared_toast": "Auto delete queue cleared"
     },
     "translation_position": {
         "above": "Zgoraj",
@@ -3277,6 +3433,32 @@
         "failed_to_fetch_message": "Pridobivanje sporočila ni uspelo: {error}",
         "failed_to_edit_message": "Urejanje sporočila ni uspelo: {error}"
     },
+    "toast_snapchat_not_installed": "Can't execute action: Snapchat is not installed",
+    "invalid_input_toast": "Invalid input! Make sure you entered a valid value.",
+    "toast_async_task_failed": "Async task failed: {message}",
+    "toast_snapchat_crashed": "Snapchat has crashed! Please check logs for more details.",
+    "toast_init_features_failed": "Failed to initialize features! Some functionality may not work properly.",
+    "toast_init_script_runtime_failed": "Failed to initialize script runtime!",
+    "toast_database_corrupted": "Database {path} is corrupted! Restarting ...",
+    "toast_feature_init_failed": "Failed to init feature {feature}! Check logcat for more details.",
+    "toast_updating_purrfectsnap": "Updating PurrfectSnap. Please wait...",
+    "toast_update_purrfectsnap_failed": "Failed to update PurrfectSnap. Please check logcat for more details.",
+    "toast_purrfectsnap_updated": "PurrfectSnap updated!",
+    "toast_export_memories_failed": "Failed to export memories",
+    "toast_exported_to_path": "Exported to {path}",
+    "toast_open_memories_db_failed": "Failed to open memories database",
+    "toast_friend_add_unavailable": "Failed to add friend: FriendRelationshipChanger instance not available",
+    "toast_friend_add_failed": "Failed to add friend: {message}",
+    "toast_friends_exported": "Exported {count} friends!",
+    "toast_friends_import_failed": "Failed to import friends: {message}",
+    "toast_translation_service_unavailable": "Translation service temporarily unavailable",
+    "toast_send_message_failed": "Failed to send message: {error}",
+    "toast_mark_conversation_read_failed": "Failed to mark conversation as read",
+    "toast_fetch_conversation_failed": "Failed to fetch conversation",
+    "toast_open_snap_failed": "Failed to open snap",
+    "toast_mark_message_read_failed": "Failed to mark message as read. Check logs for more details",
+    "toast_open_conversation_first": "You must open a conversation first",
+    "toast_open_link_failed": "Failed to open link",
     "ai_response_style": {
         "casual": "Sproščen",
         "formal": "Formalen",
