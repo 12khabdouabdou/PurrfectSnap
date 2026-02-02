@@ -93,7 +93,7 @@
             "issues_invalid_fix": "Fix: Download and install JingMatrix LSPatch, then patch a Snapchat version (any one) from this range, i.e. between 13.65.1.0 and 13.71.0.51, in Integrated mode. Select Embed Modules and embed the PurrfectSnap APK. Then choose Skip auto setup during PurrfectSnap setup to skip Auto Patcher.",
             "status_downloading": "Downloading Snapchat {percent}%",
             "status_patching": "Patching...",
-            "status_initializing": "Initializing...",
+            "status_initializing": "Initialising...",
             "logs_copied": "Logs copied to clipboard.",
             "install_success": "Patched APK installed",
             "start_button": "Start auto patch",
@@ -107,7 +107,7 @@
         "permissions": {
             "dialog": "Complete these essentials to continue:",
             "notification_access": "Notification Access",
-            "battery_optimization": "Battery Optimization",
+            "battery_optimization": "Battery Optimisation",
             "display_over_other_apps": "Display Over Other Apps",
             "request_button": "Request",
             "notification_access_description": "Alerts you the second downloads finish.",
@@ -173,7 +173,7 @@
             "logger_history": "Logger History",
             "logged_stories": "Logged Stories",
             "friend_tracker": "Friend Tracker",
-            "friend_tracker_catalog": "Friend Tracker Catalog",
+            "friend_tracker_catalog": "Friend Tracker Catalogue",
             "manage_friend_tracker_repos": "Manage Friend Tracker Repositories",
             "edit_rule": "Edit Rule",
             "file_imports": "File Imports",
@@ -187,7 +187,7 @@
             "better_location": "Better Location"
         },
         "navigation": {
-            "customize_bottom_bar_title": "Customize Bottom Bar",
+            "customize_bottom_bar_title": "Customise Bottom Bar",
             "customize_bottom_bar_subtitle": "Pick which tabs show on your home screen",
             "available_tabs_title": "Available Tabs",
             "shown_tabs_title": "Shown Tabs",
@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} · by Eternal",
+                "version_title": "v{versionName} \u00b7 by Eternal",
                 "update_title": "PurrfectSnap Update",
                 "update_content": "Version {version} is available!",
                 "update_button": "Download",
@@ -284,7 +284,7 @@
                 "backup_button": "Backup",
                 "restore_button": "Restore",
                 "view_button": "View",
-                "customize_bottom_bar_title": "Customize Bottom Bar",
+                "customize_bottom_bar_title": "Customise Bottom Bar",
                 "customize_bottom_bar_subtitle": "Pick which tabs show on your home screen",
                 "available_tabs_title": "Available Tabs",
                 "reset_button": "Reset",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "No tasks",
                 "merge_button": "Merge",
-                "summary_active": "{active} active · {recent} recent",
-                "summary_idle": "Idle · {recent} recent",
+                "summary_active": "{active} active \u00b7 {recent} recent",
+                "summary_idle": "Idle \u00b7 {recent} recent",
                 "running_count": "{count} running",
                 "clear_button_description": "Clear tasks",
                 "failed_to_open_file": "Failed to open file",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "Remove {count} tasks?",
                 "remove_all_tasks_confirm": "Remove all tasks?"
             },
-            "features": {
-                "disabled": "Disabled",
-                "export_option": "Export",
-                "import_option": "Import",
-                "reset_option": "Reset",
-                "config_export_success_toast": "Config exported successfully",
-                "config_import_success_toast": "Config imported successfully",
-                "config_import_failure_toast": "Failed to import config {error}",
-                "config_export_failure_toast": "Failed to export config {error}",
-                "saved_config_snackbar": "Config saved",
-                "older_required": "This feature requires Snapchat v{version} or older to work correctly",
-                "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
-                "search_button": "Search",
-                "clear_history": "Clear search history",
-                "subtitle": "Search and manage features"
-            },
+        "features": {
+            "disabled": "Disabled",
+            "export_option": "Export",
+            "import_option": "Import",
+            "reset_option": "Reset",
+            "config_export_success_toast": "Config exported successfully",
+            "config_import_success_toast": "Config imported successfully",
+            "config_import_failure_toast": "Failed to import config {error}",
+            "config_export_failure_toast": "Failed to export config {error}",
+            "saved_config_snackbar": "Config saved",
+            "older_required": "This feature requires Snapchat v{version} or older to work correctly",
+            "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
+            "search_button": "Search",
+            "clear_history": "Clear search history",
+            "subtitle": "Search and manage features"
+        },
             "bypass_status": {
                 "active": "PurrAura Active",
                 "inactive": "PurrAura Inactive"
@@ -385,7 +385,7 @@
             "messaging_preview": {
                 "bridge_connection_failed": "Failed to connect to bridge. Make sure Snapchat is running in the background",
                 "bridge_connection_error": "Failed to connect to bridge. Make sure Snapchat is running in the background",
-                "bridge_init_failed": "Failed to initialize messaging bridge. Make sure Snapchat is running in the background",
+                "bridge_init_failed": "Failed to initialise messaging bridge. Make sure Snapchat is running in the background",
                 "message_fetch_failed": "Failed to fetch messages",
                 "no_message_hint": "No message",
                 "subtitle": "Hold to select",
@@ -469,7 +469,7 @@
             },
             "quick_actions_dialog": {
                 "title": "Quick Actions",
-                "subtitle": "Access your favorite tools faster"
+                "subtitle": "Access your favourite tools faster"
             },
             "export_config": {
                 "title": "Export Sensitive Data?",
@@ -487,7 +487,7 @@
         "scripting": {
             "actions_button": "Actions",
             "actions_title": "Actions",
-            "catalog_tab": "Catalog",
+            "catalog_tab": "Catalogue",
             "clear_module_data_button": "Clear data",
             "clear_module_data_failed": "Failed to clear module data",
             "delete_module_button": "Delete",
@@ -517,7 +517,7 @@
             "select_scripts_folder_toast": "Please select a scripts folder first",
             "update_module_button": "Update module",
             "update_module_failed": "Failed to update module",
-            "use_catalog_to_add_scripts": "Use the catalog to add scripts",
+            "use_catalog_to_add_scripts": "Use the catalogue to add scripts",
             "ok_button_timeout": "OK {timeout}",
             "catalog": {
                 "no_repos_added": "No repositories added",
@@ -549,7 +549,7 @@
         "friend_tracker": {
             "rules_tab": "Rules",
             "logs_tab": "Logs",
-            "catalog_button": "Catalog",
+            "catalog_button": "Catalogue",
             "add_rule_button": "Add Rule",
             "import_button": "Import",
             "filters_title": "Filters",
@@ -634,7 +634,7 @@
             "import_failed_toast": "Failed to import tracker: {message}"
         },
         "friend_tracker_catalog": {
-            "title": "Friend Tracker Catalog",
+            "title": "Friend Tracker Catalogue",
             "no_repos_added": "No repositories added",
             "manage_repos_description": "Manage repositories"
         },
@@ -826,657 +826,91 @@
     },
     "features": {
         "notices": {
-            "unstable": "⚠ Unstable",
-            "ban_risk": "⚠ This feature may cause bans",
-            "internal_behavior": "⚠ This may break Snapchat internal behavior"
+            "unstable": "\u26a0 Unstable",
+            "ban_risk": "\u26a0 This feature may cause bans",
+            "internal_behavior": "\u26a0 This may break Snapchat internal behaviour"
         },
         "options": {
-            "app_appearance": {
-                "always_light": "Always Light",
-                "always_dark": "Always Dark",
-                "null": "Match System"
-            },
-            "auto_reload": {
-                "snapchat_only": "Reload Snapchat only",
-                "all": "Reload Snapchat + PurrfectSnap",
-                "null": "Default"
-            },
+            "empty": "Empty",
             "walk_radius": {
-                "null": "Use default radius"
+                "empty": "Empty"
             },
             "spoof_battery_level": {
-                "null": "Use real battery level"
-            },
-            "friend_feed_menu_buttons": {
-                "auto_download": "⬇️ Auto Download",
-                "auto_save": "💬 Auto Save Messages",
-                "unsaveable_messages": "⬇️ Unsaveable Messages",
-                "auto_open_snaps": "📷 Auto Open Snaps",
-                "stealth": "👻 Stealth Mode",
-                "auto_reply": "📨 Auto Reply",
-                "auto_delete_sent_messages": "🗑️ Auto Delete Sent Messages",
-                "mark_snaps_as_seen": "👀 Mark Snaps as seen",
-                "mark_stories_as_seen_locally": "👀 Mark Stories as seen locally",
-                "conversation_info": "👤 Conversation Info",
-                "e2e_encryption": "🔒 Use E2E Encryption",
-                "message_logger": "📝 Message Logger",
-                "auto_read": "✅ Auto Read",
-                "hide_typing_indicator": "🙈 Hide Typing Indicator"
-            },
-            "schedule_scheduled_for": "Scheduled for {name} in {time}",
-            "schedule_sending_in": "Sending in {time}",
-            "schedule_sent_to": "Sent to {name}",
-            "schedule_sent": "Scheduled snap sent",
-            "schedule_failed_to": "Failed to send to {name}",
-            "schedule_failed": "Scheduled snap failed",
-            "schedule_cancelled_for": "Cancelled for {name}",
-            "device_model": {
-                "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
-                "google_pixel_10_pro": "Google Pixel 10 Pro",
-                "oneplus_13": "OnePlus 13",
-                "xiaomi_15_ultra": "Xiaomi 15 Ultra",
-                "null": "Device Default"
-            },
-            "settings_menu": {
-                "default": "Default",
-                "legacy": "Legacy"
-            },
-            "path_format": {
-                "create_author_folder": "Create folder for each author",
-                "create_source_folder": "Create folder for each media source type",
-                "append_hash": "Add a unique hash to the file name",
-                "append_source": "Add the media source to the file name",
-                "append_username": "Add the username to the file name",
-                "append_date_time": "Add the date and time to the file name",
-                "append_type": "Add the media type to the file name"
-            },
-            "auto_download_sources": {
-                "friend_snaps": "Friend Snaps",
-                "friend_stories": "Friend Stories",
-                "public_stories": "Public Stories",
-                "spotlight": "Spotlight"
-            },
-            "logging": {
-                "started": "Started",
-                "success": "Success",
-                "progress": "Progress",
-                "failure": "Failure"
-            },
-            "notifications": {
-                "chat_screenshot": "Screenshot",
-                "chat_screen_record": "Screen Record",
-                "snap_replay": "Snap Replay",
-                "camera_roll_save": "Camera Roll Save",
-                "chat": "Chat",
-                "chat_reply": "Chat Reply",
-                "snap": "Snap",
-                "typing": "Typing",
-                "stories": "Stories",
-                "speaking": "Speaking",
-                "chat_reaction": "DM Reaction",
-                "group_chat_reaction": "Group Reaction",
-                "initiate_audio": "Incoming Audio Call",
-                "abandon_audio": "Missed Audio Call",
-                "initiate_video": "Incoming Video Call",
-                "abandon_video": "Missed Video Call",
-                "map_live_location": "Map Live Location"
-            },
-            "auto_read": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
-            },
-            "hide_typing_indicator": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
-            },
-            "auto_delete_sent_messages": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
-            },
-            "auto_download": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
-            },
-            "stealth": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
-            },
-            "auto_save": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
-            },
-            "message_logger": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
-            },
-            "auto_reply": {
-                "blacklist": "Blacklist",
-                "whitelist": "Whitelist",
-                "disabled": "Disabled"
+                "empty": "Empty"
             },
             "custom_android_id": {
-                "null": "Use real Android ID"
-            },
-            "add_friend_source_spoof": {
-                "added_by_username": "By Username",
-                "added_by_mention": "By Mention",
-                "added_by_group_chat": "By Group Chat",
-                "added_by_qr_code": "By QR Code",
-                "added_by_community": "By Community",
-                "added_by_quick_add": "By Quick Add (high risk of being banned)",
-                "added_by_spotlight": "By Spotlight",
-                "null": "Don't spoof source"
+                "empty": "Empty"
             },
             "custom_streaks_expiration_format": {
-                "null": "System Default"
+                "empty": "Empty"
             },
             "preferred_transcription_lang": {
-                "null": "Use Snapchat Default"
+                "empty": "Empty"
             },
             "custom_emoji_font": {
-                "null": "Default Emoji Font"
+                "empty": "Empty"
             },
             "custom_shared_library": {
-                "null": "Use default library"
-            },
-            "override_front_resolution": {
-                "null": "Use device default"
-            },
-            "override_back_resolution": {
-                "null": "Use device default"
+                "empty": "Empty"
             },
             "custom_resolution": {
-                "null": "Use automatic resolution"
-            },
-            "startup_default_camera": {
-                "front": "Front Camera",
-                "back": "Back Camera",
-                "null": "Remember last used"
-            },
-            "call_recorder": {
-                "only_record_self": "Only Record Self",
-                "only_record_others": "Only Record Others",
-                "record_both": "Record Both Sides"
-            },
-            "call_recorder_ui_design": {
-                "default": "Default",
-                "snapchat": "Snapchat",
-                "cyber": "Cyber",
-                "frost": "Frost"
-            },
-            "front_custom_frame_rate": {
-                "null": "Device default FPS"
-            },
-            "back_custom_frame_rate": {
-                "null": "Device default FPS"
-            },
-            "force_voice_note_format": {
-                "null": "Use Snapchat default"
+                "empty": "Empty"
             },
             "custom_path_format": {
-                "null": "Use default pattern"
-            },
-            "force_image_format": {
-                "null": "Use Snapchat default"
+                "empty": "Empty"
             },
             "custom_video_codec": {
-                "null": "Default Codec"
+                "empty": "Empty"
             },
             "custom_audio_codec": {
-                "null": "Default Codec"
-            },
-            "preset": {
-                "null": "Default Preset"
-            },
-            "app_appearance_override": {
-                "title": "Appearance"
-            },
-            "gallery_media_send_override": {
-                "always_ask": "Always Ask",
-                "ORIGINAL": "Original Media",
-                "NOTE": "Audio Note",
-                "SNAP": "Snap",
-                "SAVEABLE_SNAP": "Saveable Snap",
-                "null": "Snapchat Default"
-            },
-            "strip_media_metadata": {
-                "hide_caption_text": "Hide Caption Text",
-                "hide_snap_filters": "Hide Snap Filters",
-                "hide_extras": "Hide Extras (e.g. mentions)",
-                "remove_audio_note_duration": "Remove Audio Note Duration",
-                "remove_audio_note_transcript_capability": "Remove Audio Note Transcript Capability"
-            },
-            "hide_ui_components": {
-                "hide_profile_call_buttons": "Remove Profile Call Buttons",
-                "hide_chat_call_buttons": "Remove Chat Call Buttons",
-                "hide_live_location_share_button": "Remove Live Location Share Button",
-                "hide_stickers_button": "Remove Stickers Button",
-                "hide_voice_record_button": "Remove Voice Record Button",
-                "hide_unread_chat_hint": "Remove Unread Chat Hint",
-                "hide_post_to_story_buttons": "Remove Post to Story buttons before sending a Snap",
-                "hide_billboard_prompt": "Remove Billboard Prompt In Friends Feed",
-                "hide_snapchat_plus_gift_reminders": "Remove Snapchat Plus gift reminders in conversations",
-                "hide_map_reactions": "Remove Map Reactions"
-            },
-            "hide_story_suggestions": {
-                "hide_suggested_friend_stories": "Hide suggested friend stories",
-                "hide_my_stories": "Hide My Stories"
-            },
-            "home_tab": {
-                "map": "Map",
-                "chat": "Chat",
-                "camera": "Camera",
-                "discover": "Discover",
-                "spotlight": "Spotlight",
-                "null": "Snapchat Default"
-            },
-            "spotlight_comments_username_icon": {
-                "user": "Username Icon",
-                "👤": "Username Icon",
-                "[👤]": "Username Icon",
-                "default": "Username Icon",
-                "no_icon": "No icon"
-            },
-            "custom_image_upload_format": {
-                "null": "Automatic"
-            },
-            "update_check_frequency": {
-                "null": "Auto"
-            },
-            "snapchat_plus": {
-                "not_subscribed": "Not Subscribed",
-                "basic": "Basic",
-                "ad_free": "Ad Free",
-                "null": "Default"
-            },
-            "bypass_video_length_restriction": {
-                "single": "Single media",
-                "split": "Split media",
-                "null": "Default"
-            },
-            "old_bitmoji_selfie": {
-                "2d": "2D Bitmoji",
-                "3d": "3D Bitmoji",
-                "null": "Default Bitmoji"
-            },
-            "disable_confirmation_dialogs": {
-                "erase_message": "Erase Message",
-                "remove_friend": "Remove Friend",
-                "block_friend": "Block Friend",
-                "ignore_friend": "Ignore Friend",
-                "hide_friend": "Hide Friend",
-                "hide_conversation": "Hide Conversation",
-                "clear_conversation": "Clear Conversation from Friend Feed"
-            },
-            "edit_text_override": {
-                "multi_line_chat_input": "Multi Line Chat Input",
-                "bypass_text_input_limit": "Bypass Text Input Limit"
-            },
-            "auto_purge": {
-                "never": "Never",
-                "1_hour": "1 Hour",
-                "3_hours": "3 Hours",
-                "6_hours": "6 Hours",
-                "12_hours": "12 Hours",
-                "1_day": "1 Day",
-                "3_days": "3 Days",
-                "1_week": "1 Week",
-                "2_weeks": "2 Weeks",
-                "1_month": "1 Month",
-                "3_months": "3 Months",
-                "6_months": "6 Months"
-            },
-            "delete_after_unit": {
-                "seconds": "Seconds",
-                "minutes": "Minutes",
-                "hours": "Hours"
-            },
-            "disable_story_sections": {
-                "friends": "Friends",
-                "suggested_stories": "Suggested Stories",
-                "following": "Following",
-                "discover": "Discover"
-            },
-            "disable_cameras": {
-                "front": "Front Camera",
-                "back": "Back Camera"
-            },
-            "disable_permission_requests": {
-                "notifications": "Notifications",
-                "read_media_images": "Read Media Images",
-                "read_media_video": "Read Media Video",
-                "camera": "Camera",
-                "microphone": "Microphone",
-                "location": "Location",
-                "read_contacts": "Read Contacts",
-                "nearby_devices": "Nearby Devices",
-                "phone_calls": "Phone Calls"
-            },
-            "message_indicators": {
-                "encryption_indicator": "Adds a 🔒 icon next to messages that have been sent only to you",
-                "platform_indicator": "Adds the platform icon from which a media was sent (e.g. Android, iOS, Web)",
-                "location_indicator": "Adds a 📍 icon to snaps when they have been sent with location enabled",
-                "ovf_editor_indicator": "Indicates if a snap has been sent using OVF Editor",
-                "director_mode_indicator": "Adds a ✏️ icon to snaps when they have been sent using Director Mode, which can be used to send gallery images as snaps"
-            },
-            "auto_mark_as_read": {
-                "conversation_read": "Mark conversation as read when sending a message",
-                "snap_reply": "Mark snaps as read when replying to them",
-                "save_snap_in_chat": "Mark snaps as read when saving them in chat while in Stealth Mode"
-            },
-            "friend_mutation_notifier": {
-                "remove_friend": "Notify when someone removes you as a friend",
-                "birthday_changes": "Notify when someone changes their birthday",
-                "bitmoji_selfie_changes": "Notify when someone changes their Bitmoji selfie",
-                "bitmoji_avatar_changes": "Notify when someone changes their Bitmoji avatar",
-                "bitmoji_background_changes": "Notify when someone changes their Bitmoji background",
-                "bitmoji_scene_changes": "Notify when someone changes their Bitmoji scene"
-            },
-            "double_tap_chat_action": {
-                "like_message": "Like Message",
-                "copy_text": "Copy Text to Clipboard",
-                "delete_message": "Delete Message",
-                "mark_as_read": "Mark as Read",
-                "custom_emoji_reaction": "Custom Emoji Reaction",
-                "null": "Default"
-            },
-            "message_types": {
-                "CHAT": "Chat",
-                "SNAP": "Snap",
-                "NOTE": "Note",
-                "EXTERNAL_MEDIA": "External Media",
-                "STICKER": "Sticker"
+                "empty": "Empty"
             },
             "double_tap_chat_action_custom_emoji": {
-                "Custom emoji reaction": "Custom emoji reaction"
+                "empty": "Empty"
             },
-            "ai_model": {
-                "gemini-2.5-flash": "Gemini 2.5 Flash"
+            "unsaveable_messages": {
+                "blacklist": "Blacklist mode",
+                "whitelist": "Whitelist mode",
+                "null": "Disabled"
             },
-            "ai_api_key": {
-                "": "Not set"
-            },
-            "ai_system_prompt": {
-                "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation."
-            },
-            "ai_provider": {
-                "gemini": "Gemini",
-                "deepseek": "DeepSeek",
-                "openai": "OpenAI",
-                "openrouter": "OpenRouter"
-            },
-            "ai_personality_traits": {
-                "friendly, casual, helpful, empathetic": "friendly, casual, helpful, empathetic"
-            },
-            "ai_response_style": {
-                "casual": "Casual",
-                "formal": "Formal",
-                "friendly": "Friendly",
-                "humorous": "Humorous",
-                "empathetic": "Empathetic",
-                "toxic": "Edgy",
-                "busy": "Busy"
-            },
-            "ai_temperature": {
-                "0.7": "Balanced (0.7)"
-            },
-            "ai_response_language": {
-                "auto": "Auto",
-                "en": "English",
-                "es": "Spanish",
-                "fr": "French",
-                "de": "German",
-                "it": "Italian",
-                "pt": "Portuguese",
-                "ru": "Russian",
-                "ja": "Japanese",
-                "ko": "Korean",
-                "zh": "Chinese",
-                "ar": "Arabic",
-                "hi": "Hindi",
-                "tr": "Turkish",
-                "pl": "Polish",
-                "nl": "Dutch",
-                "sv": "Swedish",
-                "da": "Danish",
-                "no": "Norwegian",
-                "fi": "Finnish"
-            },
-            "friendGreeting": {
-                "Hey": "Hey"
-            },
-            "half_swipe_messages": {
-                "[\"I noticed you half-swiped! I'll respond soon.\"]": "I noticed you half-swiped! I'll respond soon."
-            },
-            "tiny_snap_messages": {
-                "Thanks for the tiny snap!": "Thanks for the tiny snap!"
-            },
-            "voice_note_messages": {
-                "Thanks for the voice note!": "Thanks for the voice note!"
-            },
-            "chat_messages": {
-                "Hello! How are you?": "Hello! How are you?"
-            },
-            "story_reply_messages": {
-                "Thanks for the story reply!": "Thanks for the story reply!"
-            },
-            "external_media_messages": {
-                "Nice media!": "Nice media!"
-            },
-            "sticker_messages": {
-                "Cool sticker!": "Cool sticker!"
-            },
-            "snap_messages": {
-                "Thanks for the snap!": "Thanks for the snap!"
-            },
-            "story_share_messages": {
-                "Thanks for sharing!": "Thanks for sharing!"
-            },
-            "map_reaction_messages": {
-                "Thanks for the map reaction!": "Thanks for the map reaction!"
-            },
-            "auto_reply_content_types": {
-                "chat_messages": "Chat Messages",
-                "snap_messages": "Snaps",
-                "story_share_messages": "Story Shares",
-                "story_reply_messages": "Story Replies",
-                "external_media_messages": "External Media",
-                "voice_note_messages": "Voice Notes",
-                "sticker_messages": "Stickers",
-                "tiny_snap_messages": "Tiny Snaps",
-                "map_reaction_messages": "Map Reactions",
-                "half_swipes": "Half Swipes"
-            },
-            "supported_languages": {
-                "en": "English",
-                "es": "Spanish",
-                "fr": "French",
-                "de": "German",
-                "it": "Italian",
-                "pt": "Portuguese",
-                "ru": "Russian",
-                "ja": "Japanese",
-                "ko": "Korean",
-                "zh": "Chinese",
-                "ar": "Arabic",
-                "hi": "Hindi",
-                "tr": "Turkish"
-            },
-            "translation_position": {
-                "above": "Above text",
-                "below": "Below text",
-                "inline": "Inline"
-            },
-            "source_language": {
-                "auto": "Detect automatically"
-            },
-            "target_language": {
-                "en": "English"
+            "update_check_frequency": {
+                "daily": "Daily",
+                "weekly": "Weekly",
+                "monthly": "Monthly"
             }
         },
         "properties": {
             "global": {
                 "name": "Global",
-                "description": "Tweak Global Snapchat Settings",
+                "description": "General module preferences and defaults",
                 "properties": {
-                    "better_location": {
-                        "name": "Better Location",
-                        "description": "Enhances the Snapchat Location",
+                    "ui_settings": {
+                        "name": "UI Settings",
+                        "description": "Tune feedback and toast behaviour",
                         "properties": {
-                            "spoof_location": {
-                                "name": "Spoof Location",
-                                "description": "Spoofs your location to a specified one"
+                            "haptic_feedback": {
+                                "name": "Haptic Feedback",
+                                "description": "Vibrate on supported interactions"
                             },
-                            "coordinates": {
-                                "name": "Coordinates",
-                                "description": "Set the coordinates of the spoofed location"
-                            },
-                            "walk_radius": {
-                                "name": "Walk Radius",
-                                "description": "Randomly walk around within this radius (ft)"
-                            },
-                            "always_update_location": {
-                                "name": "Always Update Location",
-                                "description": "Force Snapchat to update location even if no GPS data is received"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Suspend Location Updates",
-                                "description": "Prevents your location from being updated"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Spoof Battery Level",
-                                "description": "Spoofs the battery level of your device on map\nValue must be between 0 and 100"
-                            },
-                            "spoof_headphones": {
-                                "name": "Spoof Headphones",
-                                "description": "Spoofs the status of listening to music on map"
-                            },
-                            "show_battery_level": {
-                                "name": "Show Battery Level",
-                                "description": "Shows the battery level of your friends on the map"
+                            "use_system_toasts": {
+                                "name": "Use System Toasts",
+                                "description": "Show Android toasts instead of in-app overlays"
                             }
                         }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Enables Snapchat Plus features\nSome Server-sided features may not work"
-                    },
-                    "media_upload_quality": {
-                        "name": "Media Upload Quality",
-                        "description": "Overrides the media upload quality",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Force Video Upload Source Quality",
-                                "description": "Forces Snapchat to use the source quality when uploading videos\nPlease note that this may not remove metadata from media"
-                            },
-                            "disable_image_compression": {
-                                "name": "Disable Image Compression",
-                                "description": "Disables image compression when uploading media"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Custom Image Upload Format",
-                                "description": "Sets a custom image upload format\nSelect a lossless format (like PNG) for the best quality"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "Disable Confirmation Dialogs",
-                        "description": "Automatically confirms selected actions"
-                    },
-                    "auto_updater": {
-                        "name": "Auto Updater",
-                        "description": "Automatically checks for new updates"
                     },
                     "update_settings": {
                         "name": "Update Settings",
-                        "description": "Control how PurrfectSnap checks for updates",
+                        "description": "Control automatic update checks",
                         "properties": {
                             "auto_update_check": {
-                                "name": "Auto Update Check"
+                                "name": "Auto Update Check",
+                                "description": "Check for new builds automatically"
                             },
                             "update_check_frequency": {
-                                "name": "Update Check Frequency"
+                                "name": "Update Check Frequency",
+                                "description": "How often to check for updates"
                             }
                         }
-                    },
-                    "ui_settings": {
-                        "name": "UI Settings",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptic Feedback"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "Disable Metrics",
-                        "description": "Blocks sending specific analytic data to Snapchat"
-                    },
-                    "disable_story_sections": {
-                        "name": "Disable Story Sections",
-                        "description": "Removes sections from the Stories page\nMay require a refresh to work properly"
-                    },
-                    "block_ads": {
-                        "name": "Block Ads",
-                        "description": "Prevents Advertisements from being displayed"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Disable Custom Tabs",
-                        "description": "Opens links in supported applications rather than in the Web Browser"
-                    },
-                    "disable_permission_requests": {
-                        "name": "Disable Permission Requests",
-                        "description": "Prevents Snapchat from asking for specific permissions"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Disable Memories Snap Feed",
-                        "description": "Prevents Snapchat from showing recent memories when you swipe up in camera"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Spotlight Comments Username",
-                        "description": "Shows author username in Spotlight comments"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Spotlight Comments Username Icon",
-                        "description": "Choose which icon is displayed next to usernames in Spotlight comments"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Bypass Video Length Restrictions",
-                        "description": "Single: sends a single video\nSplit: split videos after editing"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Default Video Playback Rate",
-                        "description": "Sets the default speed for the playback of videos\nValue must be between 0.1 and 4.0"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Video Playback Rate Slider",
-                        "description": "Adds a slider in opera context menu to change the video playback rate\nNote: Changes only apply to subsequent videos"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Disable Google Play Services Dialogs",
-                        "description": "Prevent Google Play Services availability dialogs from being shown"
-                    },
-                    "default_volume_controls": {
-                        "name": "Default Volume Controls",
-                        "description": "Forces Snapchat to use system volume controls"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Disable Telecom Framework",
-                        "description": "Prevents Snapchat from using the Android Telecom framework\nThis allows you to listen to music while on a call"
-                    },
-                    "hide_active_music": {
-                        "name": "Hide Active Music",
-                        "description": "Prevents Snapchat from knowing you're listening to music\nThis will allow you to take snaps using control volume buttons while listening to music"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Disable Snap Splitting",
-                        "description": "Prevents Snaps from being split into multiple parts\nPictures you send will turn into videos"
                     }
                 }
             },
@@ -1709,11 +1143,11 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Stealth Mode Indicator",
-                        "description": "Adds a 👻 emoji next to conversations in stealth mode"
+                        "description": "Adds a \ud83d\udc7b emoji next to conversations in stealth mode"
                     },
                     "edit_text_override": {
                         "name": "Edit Text Override",
-                        "description": "Overrides text field behavior"
+                        "description": "Overrides text field behaviour"
                     },
                     "prevent_forced_keyboard": {
                         "name": "Prevent Forced Keyboard",
@@ -1797,7 +1231,7 @@
                     },
                     "call_start_confirmation": {
                         "name": "Call Start Confirmation",
-                        "description": "Shows a confirmation dialog when starting a call"
+                        "description": "Shows a confirmation dialogue when starting a call"
                     },
                     "unlimited_conversation_pinning": {
                         "name": "Unlimited Conversation Pinning",
@@ -1886,8 +1320,8 @@
                                 "description": "Select which messages should get logged (empty for all messages)"
                             },
                             "deleted_message_color": {
-                                "name": "Deleted Message Color",
-                                "description": "Sets the color of deleted messages"
+                                "name": "Deleted Message Colour",
+                                "description": "Sets the colour of deleted messages"
                             }
                         }
                     },
@@ -1939,7 +1373,7 @@
                             },
                             "include_camera_snaps": {
                                 "name": "Include Camera Snaps",
-                                "description": "Also show the override dialog for camera snaps"
+                                "description": "Also show the override dialogue for camera snaps"
                             }
                         }
                     },
@@ -2009,7 +1443,7 @@
                                     },
                                     "ai_system_prompt": {
                                         "name": "AI System Prompt",
-                                        "description": "System prompt that defines the AI's personality and behavior"
+                                        "description": "System prompt that defines the AI's personality and behaviour"
                                     },
                                     "ai_max_tokens": {
                                         "name": "AI Max Tokens",
@@ -2063,7 +1497,7 @@
                                 "properties": {
                                     "friendSpecificGreeting": {
                                         "name": "Friend Specific Greeting",
-                                        "description": "Add friend's name to auto-replies for personalization"
+                                        "description": "Add friend's name to auto-replies for personalisation"
                                     },
                                     "friendGreeting": {
                                         "name": "Friend Greeting",
@@ -2234,6 +1668,164 @@
                     "scheduled_send_allow_running_in_background": {
                         "name": "Allow Scheduled Send to Run in Background",
                         "description": "Keep scheduled messages processing while Snapchat is in the background"
+                    }
+                }
+            },
+            "global": {
+                "name": "Global",
+                "description": "Tweak Global Snapchat Settings",
+                "properties": {
+                    "better_location": {
+                        "name": "Better Location",
+                        "description": "Enhances the Snapchat Location",
+                        "properties": {
+                            "spoof_location": {
+                                "name": "Spoof Location",
+                                "description": "Spoofs your location to a specified one"
+                            },
+                            "coordinates": {
+                                "name": "Coordinates",
+                                "description": "Set the coordinates of the spoofed location"
+                            },
+                            "walk_radius": {
+                                "name": "Walk Radius",
+                                "description": "Randomly walk around within this radius (ft)"
+                            },
+                            "always_update_location": {
+                                "name": "Always Update Location",
+                                "description": "Force Snapchat to update location even if no GPS data is received"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Suspend Location Updates",
+                                "description": "Prevents your location from being updated"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Spoof Battery Level",
+                                "description": "Spoofs the battery level of your device on map\nValue must be between 0 and 100"
+                            },
+                            "spoof_headphones": {
+                                "name": "Spoof Headphones",
+                                "description": "Spoofs the status of listening to music on map"
+                            },
+                            "show_battery_level": {
+                                "name": "Show Battery Level",
+                                "description": "Shows the battery level of your friends on the map"
+                            }
+                        }
+                    },
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Enables Snapchat Plus features\nSome Server-sided features may not work"
+                    },
+                    "media_upload_quality": {
+                        "name": "Media Upload Quality",
+                        "description": "Overrides the media upload quality",
+                        "properties": {
+                            "force_video_upload_source_quality": {
+                                "name": "Force Video Upload Source Quality",
+                                "description": "Forces Snapchat to use the source quality when uploading videos\nPlease note that this may not remove metadata from media"
+                            },
+                            "disable_image_compression": {
+                                "name": "Disable Image Compression",
+                                "description": "Disables image compression when uploading media"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Custom Image Upload Format",
+                                "description": "Sets a custom image upload format\nSelect a lossless format (like PNG) for the best quality"
+                            }
+                        }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Disable Confirmation Dialogues",
+                        "description": "Automatically confirms selected actions"
+                    },
+                    "auto_updater": {
+                        "name": "Auto Updater",
+                        "description": "Automatically checks for new updates"
+                    },
+                    "update_settings": {
+                        "name": "Update Settings",
+                        "description": "Control how PurrfectSnap checks for updates",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Auto Update Check"
+                            },
+                            "update_check_frequency": {
+                                "name": "Update Check Frequency"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "UI Settings",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptic Feedback"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Disable Metrics",
+                        "description": "Blocks sending specific analytic data to Snapchat"
+                    },
+                    "disable_story_sections": {
+                        "name": "Disable Story Sections",
+                        "description": "Removes sections from the Stories page\nMay require a refresh to work properly"
+                    },
+                    "block_ads": {
+                        "name": "Block Ads",
+                        "description": "Prevents Advertisements from being displayed"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Disable Custom Tabs",
+                        "description": "Opens links in supported applications rather than in the Web Browser"
+                    },
+                    "disable_permission_requests": {
+                        "name": "Disable Permission Requests",
+                        "description": "Prevents Snapchat from asking for specific permissions"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Disable Memories Snap Feed",
+                        "description": "Prevents Snapchat from showing recent memories when you swipe up in camera"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Spotlight Comments Username",
+                        "description": "Shows author username in Spotlight comments"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Spotlight Comments Username Icon",
+                        "description": "Choose which icon is displayed next to usernames in Spotlight comments"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Bypass Video Length Restrictions",
+                        "description": "Single: sends a single video\nSplit: split videos after editing"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Default Video Playback Rate",
+                        "description": "Sets the default speed for the playback of videos\nValue must be between 0.1 and 4.0"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Video Playback Rate Slider",
+                        "description": "Adds a slider in opera context menu to change the video playback rate\nNote: Changes only apply to subsequent videos"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Disable Google Play Services Dialogues",
+                        "description": "Prevent Google Play Services availability dialogues from being shown"
+                    },
+                    "default_volume_controls": {
+                        "name": "Default Volume Controls",
+                        "description": "Forces Snapchat to use system volume controls"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Disable Telecom Framework",
+                        "description": "Prevents Snapchat from using the Android Telecom framework\nThis allows you to listen to music while on a call"
+                    },
+                    "hide_active_music": {
+                        "name": "Hide Active Music",
+                        "description": "Prevents Snapchat from knowing you're listening to music\nThis will allow you to take snaps using control volume buttons while listening to music"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Disable Snap Splitting",
+                        "description": "Prevents Snaps from being split into multiple parts\nPictures you send will turn into videos"
                     }
                 }
             },
@@ -2518,7 +2110,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Encrypted Message Indicator",
-                                "description": "Adds a 🔒 emoji next to encrypted messages"
+                                "description": "Adds a \ud83d\udd12 emoji next to encrypted messages"
                             },
                             "force_message_encryption": {
                                 "name": "Force Message Encryption",
@@ -2536,7 +2128,7 @@
                     },
                     "custom_streaks_expiration_format": {
                         "name": "Custom Streaks Expiration Format",
-                        "description": "Customizes the Streaks Expiration format\n\nAvailable variables:\n - %c: Streaks Count\n - %e: Hourglass Emoji\n - %d: Days\n - %h: Hours\n - %m: Minutes\n - %s: Seconds\n - %w: Remaining Time"
+                        "description": "Customises the Streaks Expiration format\n\nAvailable variables:\n - %c: Streaks Count\n - %e: Hourglass Emoji\n - %d: Days\n - %h: Hours\n - %m: Minutes\n - %s: Seconds\n - %w: Remaining Time"
                     },
                     "prevent_forced_logout": {
                         "name": "Prevent Forced Logout",
@@ -2545,29 +2137,6 @@
                     "snapscore_changes": {
                         "name": "Snapscore Changes",
                         "description": "Tracks changes in friends Snapscore\nUse this feature in newer versions of Snapchat only"
-                    },
-                    "call_recorder": {
-                        "name": "Call Recorder",
-                        "description": "Manage call recording settings",
-                        "properties": {
-                            "call_recorder": {
-                                "name": "Mode",
-                                "description": "Select what should be recorded"
-                            },
-                            "auto_start_recording": {
-                                "name": "Auto Start Recording",
-                                "description": "Automatically start recording when a call starts"
-                            },
-                            "call_recorder_ui": {
-                                "name": "Call Recorder UI",
-                                "description": "Show the recording overlay UI during calls"
-                            },
-                            "call_recorder_ui_design": {
-                                "name": "UI Design",
-                                "description": "Select the design for the call recorder overlay"
-                            },
-                            "call_recording_saved_toast": "Saved"
-                        }
                     }
                 }
             },
@@ -2592,12 +2161,12 @@
                         "description": "Allows scripts to add custom UI components to Snapchat"
                     },
                     "disable_log_anonymization": {
-                        "name": "Disable Log Anonymization",
-                        "description": "Disables the anonymization of logs"
+                        "name": "Disable Log Anonymisation",
+                        "description": "Disables the anonymisation of logs"
                     },
                     "disable_optimization": {
-                        "name": "Disable Optimization",
-                        "description": "Disables the optimization of scripts. This may cause performance issues."
+                        "name": "Disable Optimisation",
+                        "description": "Disables the optimisation of scripts. This may cause performance issues."
                     }
                 }
             },
@@ -2618,6 +2187,497 @@
                         "description": "Automatically deletes cached events that are older than the specified amount of time"
                     }
                 }
+            }
+        },
+        "options": {
+            "app_appearance": {
+                "always_light": "Always Light",
+                "always_dark": "Always Dark",
+                "null": "Match System"
+            },
+            "auto_reload": {
+                "snapchat_only": "Reload Snapchat only",
+                "all": "Reload Snapchat + PurrfectSnap",
+                "null": "Default"
+            },
+            "walk_radius": {
+                "null": "Use default radius"
+            },
+            "spoof_battery_level": {
+                "null": "Use real battery level"
+            },
+            "friend_feed_menu_buttons": {
+                "auto_download": "\u2b07\ufe0f Auto Download",
+                "auto_save": "\ud83d\udcac Auto Save Messages",
+                "unsaveable_messages": "\u2b07\ufe0f Unsaveable Messages",
+                "auto_open_snaps": "\ud83d\udcf7 Auto Open Snaps",
+                "stealth": "\ud83d\udc7b Stealth Mode",
+                "auto_reply": "\ud83d\udce8 Auto Reply",
+                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Auto Delete Sent Messages",
+                "mark_snaps_as_seen": "\ud83d\udc40 Mark Snaps as seen",
+                "mark_stories_as_seen_locally": "\ud83d\udc40 Mark Stories as seen locally",
+                "conversation_info": "\ud83d\udc64 Conversation Info",
+                "e2e_encryption": "\ud83d\udd12 Use E2E Encryption",
+                "message_logger": "\ud83d\udcdd Message Logger",
+                "auto_read": "\u2705 Auto Read",
+                "hide_typing_indicator": "\ud83d\ude48 Hide Typing Indicator"
+            },
+            "schedule_scheduled_for": "Scheduled for {name} in {time}",
+            "schedule_sending_in": "Sending in {time}",
+            "schedule_sent_to": "Sent to {name}",
+            "schedule_sent": "Scheduled snap sent",
+            "schedule_failed_to": "Failed to send to {name}",
+            "schedule_failed": "Scheduled snap failed",
+            "schedule_cancelled_for": "Cancelled for {name}",
+            "device_model": {
+                "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
+                "google_pixel_10_pro": "Google Pixel 10 Pro",
+                "oneplus_13": "OnePlus 13",
+                "xiaomi_15_ultra": "Xiaomi 15 Ultra",
+                "null": "Device Default"
+            },
+            "settings_menu": {
+                "default": "Default",
+                "legacy": "Legacy"
+            },
+            "path_format": {
+                "create_author_folder": "Create folder for each author",
+                "create_source_folder": "Create folder for each media source type",
+                "append_hash": "Add a unique hash to the file name",
+                "append_source": "Add the media source to the file name",
+                "append_username": "Add the username to the file name",
+                "append_date_time": "Add the date and time to the file name",
+                "append_type": "Add the media type to the file name"
+            },
+            "auto_download_sources": {
+                "friend_snaps": "Friend Snaps",
+                "friend_stories": "Friend Stories",
+                "public_stories": "Public Stories",
+                "spotlight": "Spotlight"
+            },
+            "logging": {
+                "started": "Started",
+                "success": "Success",
+                "progress": "Progress",
+                "failure": "Failure"
+            },
+            "notifications": {
+                "chat_screenshot": "Screenshot",
+                "chat_screen_record": "Screen Record",
+                "snap_replay": "Snap Replay",
+                "camera_roll_save": "Camera Roll Save",
+                "chat": "Chat",
+                "chat_reply": "Chat Reply",
+                "snap": "Snap",
+                "typing": "Typing",
+                "stories": "Stories",
+                "speaking": "Speaking",
+                "chat_reaction": "DM Reaction",
+                "group_chat_reaction": "Group Reaction",
+                "initiate_audio": "Incoming Audio Call",
+                "abandon_audio": "Missed Audio Call",
+                "initiate_video": "Incoming Video Call",
+                "abandon_video": "Missed Video Call",
+                "map_live_location": "Map Live Location"
+            },
+            "auto_read": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "hide_typing_indicator": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "auto_delete_sent_messages": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "auto_download": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "stealth": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "auto_save": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "message_logger": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "auto_reply": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "custom_android_id": {
+                "null": "Use real Android ID"
+            },
+	            "add_friend_source_spoof": {
+	                "added_by_username": "By Username",
+	                "added_by_mention": "By Mention",
+	                "added_by_group_chat": "By Group Chat",
+	                "added_by_qr_code": "By QR Code",
+	                "added_by_community": "By Community",
+	                "added_by_quick_add": "By Quick Add (high risk of being banned)",
+	                "added_by_spotlight": "By Spotlight",
+	                "null": "Don't spoof source"
+	            },
+            "custom_streaks_expiration_format": {
+                "null": "System Default"
+            },
+            "preferred_transcription_lang": {
+                "null": "Use Snapchat Default"
+            },
+            "custom_emoji_font": {
+                "null": "Default Emoji Font"
+            },
+            "custom_shared_library": {
+                "null": "Use default library"
+            },
+            "override_front_resolution": {
+                "null": "Use device default"
+            },
+            "override_back_resolution": {
+                "null": "Use device default"
+            },
+            "custom_resolution": {
+                "null": "Use automatic resolution"
+            },
+            "startup_default_camera": {
+                "front": "Front Camera",
+                "back": "Back Camera",
+                "null": "Remember last used"
+            },
+            "call_recorder": {
+                "only_record_self": "Only Record Self",
+                "only_record_others": "Only Record Others",
+                "record_both": "Record Both Sides"
+            },
+            "call_recorder_ui_design": {
+                "default": "Default",
+                "snapchat": "Snapchat",
+                "cyber": "Cyber",
+                "frost": "Frost"
+            },
+            "front_custom_frame_rate": {
+                "null": "Device default FPS"
+            },
+            "back_custom_frame_rate": {
+                "null": "Device default FPS"
+            },
+            "force_voice_note_format": {
+                "null": "Use Snapchat default"
+            },
+            "custom_path_format": {
+                "null": "Use default pattern"
+            },
+            "force_image_format": {
+                "null": "Use Snapchat default"
+            },
+            "custom_video_codec": {
+                "null": "Default Codec"
+            },
+            "custom_audio_codec": {
+                "null": "Default Codec"
+            },
+            "preset": {
+                "null": "Default Preset"
+            },
+            "app_appearance_override": {
+                "title": "Appearance"
+            },
+            "gallery_media_send_override": {
+                "always_ask": "Always Ask",
+                "ORIGINAL": "Original Media",
+                "NOTE": "Audio Note",
+                "SNAP": "Snap",
+                "SAVEABLE_SNAP": "Saveable Snap",
+                "null": "Snapchat Default"
+            },
+            "strip_media_metadata": {
+                "hide_caption_text": "Hide Caption Text",
+                "hide_snap_filters": "Hide Snap Filters",
+                "hide_extras": "Hide Extras (e.g. mentions)",
+                "remove_audio_note_duration": "Remove Audio Note Duration",
+                "remove_audio_note_transcript_capability": "Remove Audio Note Transcript Capability"
+            },
+            "hide_ui_components": {
+                "hide_profile_call_buttons": "Remove Profile Call Buttons",
+                "hide_chat_call_buttons": "Remove Chat Call Buttons",
+                "hide_live_location_share_button": "Remove Live Location Share Button",
+                "hide_stickers_button": "Remove Stickers Button",
+                "hide_voice_record_button": "Remove Voice Record Button",
+                "hide_unread_chat_hint": "Remove Unread Chat Hint",
+                "hide_post_to_story_buttons": "Remove Post to Story buttons before sending a Snap",
+                "hide_billboard_prompt": "Remove Billboard Prompt In Friends Feed",
+                "hide_snapchat_plus_gift_reminders": "Remove Snapchat Plus gift reminders in conversations",
+                "hide_map_reactions": "Remove Map Reactions"
+            },
+            "hide_story_suggestions": {
+                "hide_suggested_friend_stories": "Hide suggested friend stories",
+                "hide_my_stories": "Hide My Stories"
+            },
+            "home_tab": {
+                "map": "Map",
+                "chat": "Chat",
+                "camera": "Camera",
+                "discover": "Discover",
+                "spotlight": "Spotlight",
+                "null": "Snapchat Default"
+            },
+            "spotlight_comments_username_icon": {
+                "user": "Username Icon",
+                "\ud83d\udc64": "Username Icon",
+                "[\ud83d\udc64]": "Username Icon",
+                "default": "Username Icon",
+                "no_icon": "No icon"
+            },
+            "custom_image_upload_format": {
+                "null": "Automatic"
+            },
+            "update_check_frequency": {
+                "null": "Auto"
+            },
+            "snapchat_plus": {
+                "not_subscribed": "Not Subscribed",
+                "basic": "Basic",
+                "ad_free": "Ad Free",
+                "null": "Default"
+            },
+            "bypass_video_length_restriction": {
+                "single": "Single media",
+                "split": "Split media",
+                "null": "Default"
+            },
+            "old_bitmoji_selfie": {
+                "2d": "2D Bitmoji",
+                "3d": "3D Bitmoji",
+                "null": "Default Bitmoji"
+            },
+            "disable_confirmation_dialogs": {
+                "erase_message": "Erase Message",
+                "remove_friend": "Remove Friend",
+                "block_friend": "Block Friend",
+                "ignore_friend": "Ignore Friend",
+                "hide_friend": "Hide Friend",
+                "hide_conversation": "Hide Conversation",
+                "clear_conversation": "Clear Conversation from Friend Feed"
+            },
+            "edit_text_override": {
+                "multi_line_chat_input": "Multi Line Chat Input",
+                "bypass_text_input_limit": "Bypass Text Input Limit"
+            },
+            "auto_purge": {
+                "never": "Never",
+                "1_hour": "1 Hour",
+                "3_hours": "3 Hours",
+                "6_hours": "6 Hours",
+                "12_hours": "12 Hours",
+                "1_day": "1 Day",
+                "3_days": "3 Days",
+                "1_week": "1 Week",
+                "2_weeks": "2 Weeks",
+                "1_month": "1 Month",
+                "3_months": "3 Months",
+                "6_months": "6 Months"
+            },
+            "delete_after_unit": {
+                "seconds": "Seconds",
+                "minutes": "Minutes",
+                "hours": "Hours"
+            },
+            "disable_story_sections": {
+                "friends": "Friends",
+                "suggested_stories": "Suggested Stories",
+                "following": "Following",
+                "discover": "Discover"
+            },
+            "disable_cameras": {
+                "front": "Front Camera",
+                "back": "Back Camera"
+            },
+            "disable_permission_requests": {
+                "notifications": "Notifications",
+                "read_media_images": "Read Media Images",
+                "read_media_video": "Read Media Video",
+                "camera": "Camera",
+                "microphone": "Microphone",
+                "location": "Location",
+                "read_contacts": "Read Contacts",
+                "nearby_devices": "Nearby Devices",
+                "phone_calls": "Phone Calls"
+            },
+            "message_indicators": {
+                "encryption_indicator": "Adds a \ud83d\udd12 icon next to messages that have been sent only to you",
+                "platform_indicator": "Adds the platform icon from which a media was sent (e.g. Android, iOS, Web)",
+                "location_indicator": "Adds a \ud83d\udccd icon to snaps when they have been sent with location enabled",
+                "ovf_editor_indicator": "Indicates if a snap has been sent using OVF Editor",
+                "director_mode_indicator": "Adds a \u270f\ufe0f icon to snaps when they have been sent using Director Mode, which can be used to send gallery images as snaps"
+            },
+            "auto_mark_as_read": {
+                "conversation_read": "Mark conversation as read when sending a message",
+                "snap_reply": "Mark snaps as read when replying to them",
+                "save_snap_in_chat": "Mark snaps as read when saving them in chat while in Stealth Mode"
+            },
+            "friend_mutation_notifier": {
+                "remove_friend": "Notify when someone removes you as a friend",
+                "birthday_changes": "Notify when someone changes their birthday",
+                "bitmoji_selfie_changes": "Notify when someone changes their Bitmoji selfie",
+                "bitmoji_avatar_changes": "Notify when someone changes their Bitmoji avatar",
+                "bitmoji_background_changes": "Notify when someone changes their Bitmoji background",
+                "bitmoji_scene_changes": "Notify when someone changes their Bitmoji scene"
+            },
+            "double_tap_chat_action": {
+                "like_message": "Like Message",
+                "copy_text": "Copy Text to Clipboard",
+                "delete_message": "Delete Message",
+                "mark_as_read": "Mark as Read",
+                "custom_emoji_reaction": "Custom Emoji Reaction",
+                "null": "Default"
+            },
+            "message_types": {
+                "CHAT": "Chat",
+                "SNAP": "Snap",
+                "NOTE": "Note",
+                "EXTERNAL_MEDIA": "External Media",
+                "STICKER": "Sticker"
+            },
+            "double_tap_chat_action_custom_emoji": {
+                "Custom emoji reaction": "Custom emoji reaction"
+            },
+            "ai_model": {
+                "gemini-2.5-flash": "Gemini 2.5 Flash"
+            },
+            "ai_api_key": {
+                "": "Not set"
+            },
+            "ai_system_prompt": {
+                "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation."
+            },
+            "ai_provider": {
+                "gemini": "Gemini",
+                "deepseek": "DeepSeek",
+                "openai": "OpenAI",
+                "openrouter": "OpenRouter"
+            },
+            "ai_personality_traits": {
+                "friendly, casual, helpful, empathetic": "friendly, casual, helpful, empathetic"
+            },
+            "ai_response_style": {
+                "casual": "Casual",
+                "formal": "Formal",
+                "friendly": "Friendly",
+                "humorous": "Humorous",
+                "empathetic": "Empathetic",
+                "toxic": "Edgy",
+                "busy": "Busy"
+            },
+            "ai_temperature": {
+                "0.7": "Balanced (0.7)"
+            },
+            "ai_response_language": {
+                "auto": "Auto",
+                "en": "English",
+                "es": "Spanish",
+                "fr": "French",
+                "de": "German",
+                "it": "Italian",
+                "pt": "Portuguese",
+                "ru": "Russian",
+                "ja": "Japanese",
+                "ko": "Korean",
+                "zh": "Chinese",
+                "ar": "Arabic",
+                "hi": "Hindi",
+                "tr": "Turkish",
+                "pl": "Polish",
+                "nl": "Dutch",
+                "sv": "Swedish",
+                "da": "Danish",
+                "no": "Norwegian",
+                "fi": "Finnish"
+            },
+            "friendGreeting": {
+                "Hey": "Hey"
+            },
+            "half_swipe_messages": {
+                "[\"I noticed you half-swiped! I'll respond soon.\"]": "I noticed you half-swiped! I'll respond soon."
+            },
+            "tiny_snap_messages": {
+                "Thanks for the tiny snap!": "Thanks for the tiny snap!"
+            },
+            "voice_note_messages": {
+                "Thanks for the voice note!": "Thanks for the voice note!"
+            },
+            "chat_messages": {
+                "Hello! How are you?": "Hello! How are you?"
+            },
+            "story_reply_messages": {
+                "Thanks for the story reply!": "Thanks for the story reply!"
+            },
+            "external_media_messages": {
+                "Nice media!": "Nice media!"
+            },
+            "sticker_messages": {
+                "Cool sticker!": "Cool sticker!"
+            },
+            "snap_messages": {
+                "Thanks for the snap!": "Thanks for the snap!"
+            },
+            "story_share_messages": {
+                "Thanks for sharing!": "Thanks for sharing!"
+            },
+            "map_reaction_messages": {
+                "Thanks for the map reaction!": "Thanks for the map reaction!"
+            },
+            "auto_reply_content_types": {
+                "chat_messages": "Chat Messages",
+                "snap_messages": "Snaps",
+                "story_share_messages": "Story Shares",
+                "story_reply_messages": "Story Replies",
+                "external_media_messages": "External Media",
+                "voice_note_messages": "Voice Notes",
+                "sticker_messages": "Stickers",
+                "tiny_snap_messages": "Tiny Snaps",
+                "map_reaction_messages": "Map Reactions",
+                "half_swipes": "Half Swipes"
+            },
+            "supported_languages": {
+                "en": "English",
+                "es": "Spanish",
+                "fr": "French",
+                "de": "German",
+                "it": "Italian",
+                "pt": "Portuguese",
+                "ru": "Russian",
+                "ja": "Japanese",
+                "ko": "Korean",
+                "zh": "Chinese",
+                "ar": "Arabic",
+                "hi": "Hindi",
+                "tr": "Turkish"
+            },
+            "translation_position": {
+                "above": "Above text",
+                "below": "Below text",
+                "inline": "Inline"
+            },
+            "source_language": {
+                "auto": "Detect automatically"
+            },
+            "target_language": {
+                "en": "English"
             }
         },
         "friend_notes": {
@@ -2648,9 +2708,9 @@
         "STATUS_CALL_MISSED_AUDIO": "Missed Audio Call",
         "LIVE_LOCATION_SHARE": "Live Location Share",
         "CREATIVE_TOOL_ITEM": "Creative Tool Item",
-        "FAMILY_CENTER_INVITE": "Family Center Invite",
-        "FAMILY_CENTER_ACCEPT": "Family Center Accept",
-        "FAMILY_CENTER_LEAVE": "Family Center Leave",
+        "FAMILY_CENTER_INVITE": "Family Centre Invite",
+        "FAMILY_CENTER_ACCEPT": "Family Centre Accept",
+        "FAMILY_CENTER_LEAVE": "Family Centre Leave",
         "STATUS_PLUS_GIFT": "Status Plus Gift",
         "TINY_SNAP": "Tiny Snap",
         "STATUS_COUNTDOWN": "Countdown",
@@ -2687,6 +2747,7 @@
         "show_chat_edit_history": "Show Chat Edit History",
         "convert_message": "Convert Message"
     },
+
     "chat_wallpaper_downloader": {
         "download_button": "Download Chat Wallpaper"
     },
@@ -2840,15 +2901,15 @@
         "processing_chats": "Processing {amount} conversations...",
         "export_fail": "Failed to export conversation {conversation}",
         "writing_output": "Writing output...",
-        "finished": "Done! You now can close this dialog.",
+        "finished": "Done! You now can close this dialogue.",
         "no_messages_found": "No messages found!",
         "exporting_message": "Exporting {conversation}..."
     },
     "button": {
-        "cancel": "Cancel",
         "ok": "OK",
         "positive": "Yes",
         "negative": "No",
+        "cancel": "Cancel",
         "save": "Save",
         "open": "Open",
         "download": "Download",
@@ -3016,7 +3077,7 @@
         "queue_cleared": "Queue cleared and statistics reset",
         "queue_cleared_title": "Queue cleared",
         "queue_cleared_reset": "Queue Cleared & Reset",
-        "queue_cleared_feedback": "Cleared {count} queued snaps • Reset {processed} processed count",
+        "queue_cleared_feedback": "Cleared {count} queued snaps \u2022 Reset {processed} processed count",
         "queue_cleared_feedback_simple": "Reset {processed} processed count",
         "unknown_sender": "Unknown",
         "unknown_user": "Unknown User",
@@ -3068,7 +3129,7 @@
     "script_ok_timeout": "OK {timeout}",
     "scripting_tagline": "Manage scripts, imports, and folders",
     "installed_scripts_tab": "Installed",
-    "catalog_tab": "Catalog",
+    "catalog_tab": "Catalogue",
     "no_scripts_folder_selected_title": "Select your scripts folder to get started",
     "select_folder_button": "Choose Folder",
     "select_scripts_folder_toast": "Please select a scripts folder first",
@@ -3389,6 +3450,9 @@
         "cancel": "Cancel",
         "documentation": "Documentation"
     },
+    "button": {
+        "cancel": "Cancel"
+    },
     "common": {
         "cancel": "Cancel",
         "add": "Add",
@@ -3459,8 +3523,8 @@
     "invalid_input_toast": "Invalid input! Make sure you entered a valid value.",
     "toast_async_task_failed": "Async task failed: {message}",
     "toast_snapchat_crashed": "Snapchat has crashed! Please check logs for more details.",
-    "toast_init_features_failed": "Failed to initialize features! Some functionality may not work properly.",
-    "toast_init_script_runtime_failed": "Failed to initialize script runtime!",
+    "toast_init_features_failed": "Failed to initialise features! Some functionality may not work properly.",
+    "toast_init_script_runtime_failed": "Failed to initialise script runtime!",
     "toast_database_corrupted": "Database {path} is corrupted! Restarting ...",
     "toast_feature_init_failed": "Failed to init feature {feature}! Check logcat for more details.",
     "toast_updating_purrfectsnap": "Updating PurrfectSnap. Please wait...",
