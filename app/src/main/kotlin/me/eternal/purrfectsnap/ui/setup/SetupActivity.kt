@@ -631,6 +631,7 @@ private fun SetupHeader(
     currentIndex: Int,
     total: Int
 ) {
+    val translation = SharedContextHolder.remote(LocalContext.current).translation
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxWidth(),
