@@ -1,6 +1,10 @@
 <div align="center">
 
-<img src="https://github.com/particle-box/PurrfectSnap/blob/dev/logo.png" alt="PurrfectSnap" width="180"/>
+<div align="center">
+  <img src="https://github.com/particle-box/PurrfectSnap/blob/dev/banner.jpg" alt="PurrfectSnap" width="100%"/>
+</div>
+
+
 
 # PurrfectSnap
 
