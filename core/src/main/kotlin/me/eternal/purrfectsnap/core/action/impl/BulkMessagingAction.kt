@@ -95,6 +95,8 @@ class BulkMessagingAction : AbstractAction() {
         STREAKS,
         NON_STREAKS,
         FOLLOWING,
+        INCOMING,
+        INCOMING_FOLLOWER,
         LOCATION_ON_MAP
     }
 
@@ -300,6 +302,8 @@ class BulkMessagingAction : AbstractAction() {
                     }
                     isFollowing
                 }
+                Filter.INCOMING -> friend.friendLinkType == FriendLinkType.INCOMING.value
+                Filter.INCOMING_FOLLOWER -> friend.friendLinkType == FriendLinkType.INCOMING_FOLLOWER.value
                 Filter.LOCATION_ON_MAP -> betterLocation.locationHistory.contains(friend.userId)
             } && nameFilter.takeIf { it.isNotBlank() }?.let { name ->
                 friend.mutableUsername?.contains(
@@ -346,11 +350,31 @@ class BulkMessagingAction : AbstractAction() {
             val myLocation = betterLocation.locationHistory[context.database.myUserId]
 
             withContext(Dispatchers.IO) {
-                // Load friends if needed
+                val friendIdsStillInFeed = runCatching {
+                    context.database.getFeedEntries(Int.MAX_VALUE)
+                        .filter { it.conversationType == 0 && it.participantsSize == 2 }
+                        .mapNotNull { it.participants?.firstOrNull { id -> id != context.database.myUserId } }
+                        .toSet()
+                }.getOrElse { emptySet() }
+
+                val incomingRequestUserIds = if (filter == Filter.INCOMING || filter == Filter.INCOMING_FOLLOWER) {
+                    runCatching { context.database.getIncomingRequestUserIds() }.getOrElse { emptySet() }
+                } else emptySet()
+
                 val newFriends = if (conversationType == ConversationType.FRIENDS_ONLY || conversationType == ConversationType.BOTH) {
                     context.database.getAllFriends().let { friends ->
                         filterFriends(friends, filter, nameFilter)
-                    }.filter { it.userId?.let { id -> !hiddenFriendIds.contains(id) } == true }.toMutableList()
+                    }
+                        .filter { it.userId?.let { id -> !hiddenFriendIds.contains(id) } == true }
+                        .filter { friend ->
+                            when {
+                                filter == Filter.INCOMING || filter == Filter.INCOMING_FOLLOWER ->
+                                    friend.userId != null && friend.userId in incomingRequestUserIds
+                                else ->
+                                    friendIdsStillInFeed.isEmpty() || friend.userId in friendIdsStillInFeed
+                            }
+                        }
+                        .toMutableList()
                 } else mutableListOf()
                 
                 val newGroups = if (conversationType == ConversationType.GROUPS_ONLY || conversationType == ConversationType.BOTH) {
@@ -1053,10 +1077,31 @@ class BulkMessagingAction : AbstractAction() {
                             }
                         }
                     }
+                    val incomingRequests = filter == Filter.INCOMING || filter == Filter.INCOMING_FOLLOWER
                     when (conversationType) {
-                        ConversationType.FRIENDS_ONLY -> if (following) {
-                            addUnfollowActions("failed_to_fetch_conversations")
-                        } else {
+                        ConversationType.FRIENDS_ONLY -> when {
+                            following -> addUnfollowActions("failed_to_fetch_conversations")
+                            incomingRequests -> {
+                                put({ "${translation["accept_requests"]} (${selectedFriends.size})" }) {
+                                    val ids = selectedFriends.toList()
+                                    selectedFriends.clear()
+                                    removeAction(ctx, ids, 500L to 1200L) { userId, setDialogMessage ->
+                                        acceptFriendRequest(userId)
+                                        setDialogMessage(translation["actions.accept"])
+                                        markRemoval(userId, null)
+                                    }.invokeOnCompletion { coroutineScope.launch { refreshList() } }
+                                }
+                                put({ "${translation["ignore_requests"]} (${selectedFriends.size})" }) {
+                                    val ids = selectedFriends.toList()
+                                    selectedFriends.clear()
+                                    removeAction(ctx, ids, 500L to 1200L) { userId, setDialogMessage ->
+                                        ignoreFriendRequest(userId)
+                                        setDialogMessage(translation["actions.ignore"])
+                                        markRemoval(userId, null)
+                                    }.invokeOnCompletion { coroutineScope.launch { refreshList() } }
+                                }
+                            }
+                            else -> {
                             put({ translation.format("clean_conversations", "count" to selectedFriends.size.toString()) }) {
                                 context.feature(Messaging::class).conversationManager?.getOneOnOneConversationIds(selectedFriends.toList().also { selectedFriends.clear() }, onError = { error ->
                                     context.shortToast(translation.format("failed_to_fetch_conversations", "error" to error))
@@ -1116,6 +1161,7 @@ class BulkMessagingAction : AbstractAction() {
                                         }
                                     }.invokeOnCompletion { coroutineScope.launch { refreshList() } }
                                 })
+                            }
                             }
                         }
                         ConversationType.GROUPS_ONLY -> if (!following) {
@@ -1407,6 +1453,56 @@ class BulkMessagingAction : AbstractAction() {
                 it.name == "subscribe" && it.parameterTypes.isEmpty()
             }.invoke(completable)
         }
+    }
+
+    private fun acceptFriendRequest(userId: String) {
+        val friendRelationshipChangerInstance = context.feature(AddFriendSourceSpoof::class).friendRelationshipChangerInstance
+            ?: run {
+                context.log.error("Accept friend: FriendRelationshipChanger instance not available")
+                return
+            }
+        context.mappings.useMapper(FriendRelationshipChangerMapper::class) {
+            runCatching {
+                val f9lClass = helperClass.getAsClass() ?: return@runCatching context.log.error("Could not find FriendRelationshipChanger helper class")
+                val addFriendMethodName = addFriend14Method.get() ?: return@runCatching context.log.error("Could not find add friend method name")
+                val sourceTypeClass = sourceType.getAsClass() ?: return@runCatching context.log.error("Could not find source type class")
+                val pageTypeClass = pageType.getAsClass() ?: return@runCatching context.log.error("Could not find page type class")
+                val method = f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
+                    ?: return@runCatching context.log.error("Could not find $addFriendMethodName method")
+                fun findStaticField(clazz: Class<*>): Any? = clazz.declaredFields.firstOrNull { field ->
+                    java.lang.reflect.Modifier.isStatic(field.modifiers) && field.type == clazz
+                }?.let { field ->
+                    runCatching { field.isAccessible = true; field.get(null)?.takeIf { it.javaClass == clazz } }.getOrNull()
+                }
+                val enumClass = method.parameterTypes[2]
+                val enumConstants = enumClass.enumConstants ?: enumClass.getMethod("values").invoke(null) as? Array<*>
+                    ?: return@runCatching context.log.error("Could not get enum constants")
+                val addedByUsername = enumConstants.firstOrNull { it.toString().contains("USERNAME", ignoreCase = true) }
+                    ?: return@runCatching context.log.error("Could not find ADDED_BY_USERNAME enum")
+                val sourceTypeDefault = findStaticField(sourceTypeClass) ?: return@runCatching context.log.error("Could not find source type static field")
+                val pageTypeDefault = findStaticField(pageTypeClass) ?: return@runCatching context.log.error("Could not find page type static field")
+                method.isAccessible = true
+                val paramCount = method.parameterTypes.size
+                val args = arrayOfNulls<Any?>(paramCount).apply {
+                    if (paramCount >= 1) set(0, friendRelationshipChangerInstance)
+                    if (paramCount >= 2) set(1, userId)
+                    if (paramCount >= 3) set(2, addedByUsername)
+                    if (paramCount >= 4) set(3, sourceTypeDefault)
+                    if (paramCount >= 5) set(4, pageTypeDefault)
+                    for (i in 5 until paramCount - 1) set(i, null)
+                    if (paramCount >= 14) set(13, 4064)
+                    else if (paramCount >= 13) set(paramCount - 1, 4064)
+                }
+                val result = method.invoke(null, *args)
+                result?.javaClass?.methods?.firstOrNull { it.name == "subscribe" && it.parameterCount == 0 }?.let { it.isAccessible = true; it.invoke(result) }
+            }.onFailure {
+                context.log.error("Failed to accept friend request $userId", it)
+            }
+        }
+    }
+
+    private fun ignoreFriendRequest(userId: String) {
+        context.database.setIncomingRequestIgnored(userId)
     }
 
     private suspend fun cleanConversation(
