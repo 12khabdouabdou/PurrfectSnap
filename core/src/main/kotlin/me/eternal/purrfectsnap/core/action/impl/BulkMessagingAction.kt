@@ -3,11 +3,14 @@ package me.eternal.purrfectsnap.core.action.impl
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color as AndroidColor
+import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.content.res.ColorStateList
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -145,8 +148,11 @@ class BulkMessagingAction : AbstractAction() {
         action: suspend (id: String, setDialogMessage: (String) -> Unit) -> Unit = { _, _ -> }
     ) = context.coroutineScope.launch {
         val statusTextView = TextView(ctx)
+        val progressBar = ProgressBar(ctx).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        }
         val dialog = withContext(Dispatchers.Main) {
-            ViewAppearanceHelper.newAlertDialogBuilder(ctx)
+            val d = ViewAppearanceHelper.newAlertDialogBuilder(ctx)
                 .setTitle("...")
                 .setView(LinearLayout(ctx).apply {
                     val padding = (16 * ctx.resources.displayMetrics.density).toInt()
@@ -160,12 +166,28 @@ class BulkMessagingAction : AbstractAction() {
                         setSingleLine(false)
                         setPadding(0, 0, 0, spacing)
                     })
-                    addView(ProgressBar(ctx).apply {
-                        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-                    })
+                    addView(progressBar)
                 })
                 .setCancelable(false)
                 .show()
+            // Style dialog to match app UI (gradient, app colors)
+            val density = ctx.resources.displayMetrics.density
+            d.window?.setBackgroundDrawable(GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(
+                    AndroidColor.parseColor("#2A2452"),
+                    AndroidColor.parseColor("#1A143A")
+                )
+            ).apply {
+                cornerRadius = (20 * density).toFloat()
+            })
+            val titleId = ctx.resources.getIdentifier("alertTitle", "id", "android")
+            if (titleId != 0) {
+                (d.window?.decorView?.findViewById<View>(titleId) as? TextView)?.setTextColor(AndroidColor.WHITE)
+            }
+            statusTextView.setTextColor(AndroidColor.parseColor("#E0E0E0"))
+            progressBar.indeterminateTintList = ColorStateList.valueOf(AndroidColor.parseColor("#8C7BFF"))
+            d
         }
 
         ids.forEachIndexed { index, id ->
@@ -350,12 +372,19 @@ class BulkMessagingAction : AbstractAction() {
             val myLocation = betterLocation.locationHistory[context.database.myUserId]
 
             withContext(Dispatchers.IO) {
-                val friendIdsStillInFeed = runCatching {
-                    context.database.getFeedEntries(Int.MAX_VALUE)
-                        .filter { it.conversationType == 0 && it.participantsSize == 2 }
-                        .mapNotNull { it.participants?.firstOrNull { id -> id != context.database.myUserId } }
-                        .toSet()
-                }.getOrElse { emptySet() }
+                // Sync with Snapchat feed: only show friends whose DM conversation still exists in feed
+                // (FriendsFeedView excludes cleared via "clearedTimestamp < lastInteractionTimestamp")
+                // BUT: only apply this filtering to certain filters that specifically need it
+                val friendIdsStillInFeed = if (filter in setOf(Filter.MY_FRIENDS)) {
+                    runCatching {
+                        context.database.getFeedEntries(Int.MAX_VALUE)
+                            .filter { it.conversationType == 0 && it.participantsSize == 2 }
+                            .mapNotNull { it.participants?.firstOrNull { id -> id != context.database.myUserId } }
+                            .toSet()
+                    }.getOrElse { emptySet() }
+                } else {
+                    emptySet()
+                }
 
                 val incomingRequestUserIds = if (filter == Filter.INCOMING || filter == Filter.INCOMING_FOLLOWER) {
                     runCatching { context.database.getIncomingRequestUserIds() }.getOrElse { emptySet() }
@@ -368,10 +397,14 @@ class BulkMessagingAction : AbstractAction() {
                         .filter { it.userId?.let { id -> !hiddenFriendIds.contains(id) } == true }
                         .filter { friend ->
                             when {
+                                // Only show incoming/follower requests that exist in FriendWhoAddedMe (real pending requests)
                                 filter == Filter.INCOMING || filter == Filter.INCOMING_FOLLOWER ->
                                     friend.userId != null && friend.userId in incomingRequestUserIds
-                                else ->
+                                // Only apply feed filtering to MY_FRIENDS filter
+                                filter == Filter.MY_FRIENDS ->
                                     friendIdsStillInFeed.isEmpty() || friend.userId in friendIdsStillInFeed
+                                // All other filters: don't restrict by feed presence
+                                else -> true
                             }
                         }
                         .toMutableList()

@@ -257,6 +257,18 @@ class SendOverride : Feature("Send Override") {
                                         }
                                     }
                                 }
+                                ContentType.NOTE -> {
+                                    if (stripMediaMetadata.contains("remove_audio_note_duration")) {
+                                        edit(6, 1, 1) {
+                                            remove(13)
+                                        }
+                                    }
+                                    if (stripMediaMetadata.contains("remove_audio_note_transcript_capability")) {
+                                        edit(6, 1) {
+                                            remove(3)
+                                        }
+                                    }
+                                }
                                 else -> {}
                             }
                         }
@@ -368,6 +380,12 @@ class SendOverride : Feature("Send Override") {
 
             event.canceled = true
 
+            fun invokeOriginalAndRestoreResult(ev: SendMessageWithContentEvent) {
+                val result = ev.adapter.invokeOriginal()
+                ev.adapter.setResult(result)
+                ev.canceled = false
+            }
+
             fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
                 val bypassLimit = context.config.experimental.nativeHooks.valdiHooks.bypassCameraRollLimit.get()
                 if (overrideType != "ORIGINAL" && !bypassLimit && (messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
@@ -412,7 +430,7 @@ class SendOverride : Feature("Send Override") {
                             edit(11, 5, 2) {
                                 arrayOf(6, 7, 8).forEach { remove(it) }
                                 addVarInt(5, messageProtoReader.getVarInt(3, 3, 5, 2, 5) ?: messageProtoReader.getVarInt(11, 5, 2, 5) ?: 1)
-                                if (snapDurationMs != null) {
+                                if (snapDurationMs != null && overrideType != "SAVEABLE_SNAP") {
                                     addVarInt(8, snapDurationMs / 1000)
                                     if (snapDurationMs / 1000 <= 0) {
                                         addVarInt(99, snapDurationMs)
@@ -422,53 +440,12 @@ class SendOverride : Feature("Send Override") {
                                 }
                             }
 
+                            // set app source (same as SnapEnhance - no save policy in proto for story+chat)
                             edit(11, 22) {
                                 remove(4)
-                                addVarInt(4, 5)
-                            }
-
-                            edit(11, 5) {
-                                if (getOrNull(7) != null) {
-                                    remove(7)
-                                }
-                                addVarInt(7, savePolicyValue)
-                            }
-                            // also set at root of snap doc
-                            edit(11) {
-                                if (getOrNull(7) != null) {
-                                    remove(7)
-                                }
-                                addVarInt(7, savePolicyValue)
+                                addVarInt(4, 5) // APP_SOURCE_CAMERA
                             }
                         }.toByteArray()
-
-                        try {
-                            val savePolicyEnumClass = runCatching {
-                                XposedHelpers.findClass("com.snapchat.client.messaging.SavePolicy", 
-                                    localMessageContent.instanceNonNull().javaClass.classLoader)
-                            }.getOrNull()
-                            
-                            if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
-                                @Suppress("UNCHECKED_CAST")
-                                val enumClass = savePolicyEnumClass as Class<out Enum<*>>
-                                val enumName = if (overrideType == "SAVEABLE_SNAP") "LIFETIME" else "PROHIBITED"
-                                val targetEnum = runCatching {
-                                    java.lang.Enum.valueOf(enumClass, enumName)
-                                }.getOrNull()
-                                
-                                if (targetEnum != null) {
-                                    val savePolicyField = localMessageContent.instanceNonNull().javaClass.declaredFields
-                                        .find { it.name == "mSavePolicy" }
-                                    
-                                    if (savePolicyField != null) {
-                                        savePolicyField.isAccessible = true
-                                        XposedHelpers.setObjectField(localMessageContent.instanceNonNull(), "mSavePolicy", targetEnum)
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            context.log.warn("SendOverride: Failed to set mSavePolicy: ${e.message}")
-                        }
                     }
                     "NOTE" -> {
                         // Check if "prevent audio" is enabled in UnsaveableMessages
@@ -477,9 +454,15 @@ class SendOverride : Feature("Send Override") {
                             postSavePolicy = 1 // PROHIBITED
                         }
                         localMessageContent.contentType = ContentType.NOTE
+                        val stripMeta = context.config.messaging.stripMediaMetadata.get()
+                        val omitTranscript = stripMeta.contains("remove_audio_note_transcript_capability")
+                        val rawDurationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
+                            ?: messageProtoReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000)
+                            ?: (context.feature(MediaFilePicker::class).lastMediaDuration ?: 0).toLong()
+                        val durationForProto = minOf(rawDurationMs, MessageSender.VOICE_NOTE_MAX_DURATION_MS)
                         val audioNoteProto = MessageSender.audioNoteProto(
-                            messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15) ?: context.feature(MediaFilePicker::class).lastMediaDuration ?: 0,
-                            Locale.getDefault().toLanguageTag()
+                            durationForProto,
+                            if (omitTranscript) null else Locale.getDefault().toLanguageTag()
                         )
                         
                         // Set save policy in the proto if prevent audio is enabled
@@ -543,8 +526,8 @@ class SendOverride : Feature("Send Override") {
 
             val resolvedOverrideType = configOverrideType?.takeIf { it != "always_ask" }
             if (resolvedOverrideType != null) {
-                if (sendMedia(resolvedOverrideType, 10)) {
-                    event.invokeOriginal()
+                if (sendMedia(resolvedOverrideType, 10000)) {
+                    invokeOriginalAndRestoreResult(event)
                 }
                 return@subscribe
             }
@@ -953,7 +936,7 @@ class SendOverride : Feature("Send Override") {
                                         context.bridgeClient.getTaskInterface().updateTaskProgress(taskHash, "Sending...", 100)
 
                                         if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                            event.invokeOriginal()
+                                            invokeOriginalAndRestoreResult(event)
                                             val successText = context.translation.format("schedule_sent_to", "name" to recipientNameForTask) ?: "Sent to $recipientNameForTask"
                                             context.inAppOverlay.showStatusToast(
                                                 icon = Icons.Filled.CheckCircle,
@@ -1001,7 +984,7 @@ class SendOverride : Feature("Send Override") {
                                     }
                                 } else {
                                     if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                        event.invokeOriginal()
+                                        invokeOriginalAndRestoreResult(event)
                                     }
                                 }
                             }) {

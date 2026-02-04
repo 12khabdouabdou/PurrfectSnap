@@ -568,6 +568,12 @@ class InAppOverlay(
         modifier: Modifier = Modifier
     ) {
         val progress = remember { Animatable(1f) }
+        val progressGradient = Brush.horizontalGradient(
+            listOf(
+                Color(0xFF6F28A8).copy(alpha = 0.7f),
+                Color(0xFF0059B7).copy(alpha = 0.7f)
+            )
+        )
 
         LaunchedEffect(Unit) {
             progress.animateTo(
@@ -576,10 +582,19 @@ class InAppOverlay(
             )
         }
 
-        LinearProgressIndicator(
-            progress = { progress.value },
+        Box(
             modifier = modifier
-        )
+                .height(3.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(Color(0xFF6F28A8).copy(alpha = 0.25f))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(progress.value)
+                    .fillMaxHeight()
+                    .background(brush = progressGradient, shape = RoundedCornerShape(2.dp))
+            )
+        }
     }
 
     fun showStatusToast(
@@ -688,7 +703,7 @@ class InAppOverlay(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 16.dp)
+                    .padding(top = 12.dp)
                     .graphicsLayer {
                         translationX = offsetX
                         translationY = offsetY
@@ -697,23 +712,33 @@ class InAppOverlay(
                         alpha = progress
                     }
             ) {
-                val backgroundColor = if (isWorking) Color(0xFF1B5E20).copy(alpha = 0.8f) else Color(0xFFB71C1C).copy(alpha = 0.8f)
+                val bypassGradient = if (isWorking) Brush.horizontalGradient(
+                    listOf(
+                        Color(0xFF6F28A8).copy(alpha = 0.7f),
+                        Color(0xFF0059B7).copy(alpha = 0.7f)
+                    )
+                ) else Brush.horizontalGradient(
+                    listOf(
+                        Color(0xFF8B1538).copy(alpha = 0.7f),
+                        Color(0xFFB71C1C).copy(alpha = 0.7f)
+                    )
+                )
 
                 Row(
                     modifier = Modifier
                         .background(
-                            color = backgroundColor,
-                            shape = MaterialTheme.shapes.large
+                            brush = bypassGradient,
+                            shape = MaterialTheme.shapes.medium
                         )
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
                         imageVector = if (isWorking) Icons.Filled.Check else Icons.Filled.Close,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(14.dp)
                     )
                     
                     Text(
@@ -722,8 +747,8 @@ class InAppOverlay(
                         else 
                             context.translation["manager.sections.bypass_status.inactive"],
                         color = Color.White,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
