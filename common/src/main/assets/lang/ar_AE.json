@@ -2832,8 +2832,13 @@
             "clear_conversations": "مسح المحادثات",
             "clear_friend_feed": "مسح موجز الأصدقاء ({count})",
             "unfollow": "إلغاء المتابعة",
-            "remove": "إزالة"
+            "remove": "إزالة",
+            "accept": "تم القبول",
+            "ignore": "تم التجاهل"
         },
+        "accept_requests": "قبول الطلبات",
+        "ignore_requests": "تجاهل الطلبات",
+        "cleared_from_feed": "تم المسح من الخلاصة",
         "leave_groups": "مغادرة {count} مجموعات",
         "left_group_success": "تمت مغادرة المجموعة بنجاح",
         "failed_to_leave_group": "فشل مغادرة المجموعة: {error}",
@@ -2872,6 +2877,8 @@
             "non_streaks": "بدون سلاسل",
             "followed": "المتابَعين",
             "following": "تتابعهم",
+            "incoming": "طلبات صداقة",
+            "incoming_follower": "طلبات متابعة",
             "location_on_map": "الموقع على الخريطة"
         },
         "sort_options": {

@@ -2831,8 +2831,13 @@
             "clear_conversations": "Clear Conversations",
             "clear_friend_feed": "Clear Friend Feed ({count})",
             "unfollow": "Unfollow",
-            "remove": "Remove"
+            "remove": "Remove",
+            "accept": "Accepted",
+            "ignore": "Ignored"
         },
+        "accept_requests": "Accept requests",
+        "ignore_requests": "Ignore requests",
+        "cleared_from_feed": "Cleared from feed",
         "leave_groups": "Leave {count} groups",
         "left_group_success": "Left group successfully",
         "failed_to_leave_group": "Failed to leave group: {error}",
@@ -2871,6 +2876,8 @@
             "non_streaks": "Non Streaks",
             "followed": "Followed",
             "following": "Following",
+            "incoming": "Friend requests",
+            "incoming_follower": "Follower requests",
             "location_on_map": "Location on Map"
         },
         "sort_options": {

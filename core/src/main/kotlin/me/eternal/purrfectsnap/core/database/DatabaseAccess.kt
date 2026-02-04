@@ -487,6 +487,39 @@ class DatabaseAccess(
         }
     }
 
+    /** User IDs in FriendWhoAddedMe with added=0 and ignored=0 (real pending requests as shown in Snapchat). */
+    fun getIncomingRequestUserIds(): Set<String> {
+        return useDatabase(DatabaseType.MAIN)?.performOperation {
+            safeRawQuery(
+                "SELECT userId FROM FriendWhoAddedMe WHERE userId IS NOT NULL AND COALESCE(added, 0) = 0 AND COALESCE(ignored, 0) = 0",
+                null
+            )?.use { query ->
+                val set = mutableSetOf<String>()
+                while (query.moveToNext()) {
+                    query.getStringOrNull("userId")?.let { set.add(it) }
+                }
+                set
+            }
+        } ?: emptySet()
+    }
+
+    /** Mark an incoming request as ignored locally (FriendWhoAddedMe.ignored = 1). */
+    fun setIncomingRequestIgnored(userId: String): Boolean {
+        var updated = false
+        useDatabase(DatabaseType.MAIN, writeMode = true)?.apply {
+            performOperation {
+                updated = update(
+                    "FriendWhoAddedMe",
+                    ContentValues().apply { put("ignored", 1) },
+                    "userId = ?",
+                    arrayOf(userId)
+                ) > 0
+            }
+            close()
+        }
+        return updated
+    }
+
     fun setStoriesViewedState(userId: String, viewed: Boolean): Boolean {
         var success = false
         useDatabase(DatabaseType.MAIN, writeMode = true)?.apply {
