@@ -357,6 +357,7 @@ class BetterLocationRoot : Routes.Route() {
                                     marker = marker,
                                     mapView = mapView,
                                     locationSearchProvider = context.config.root.global.betterLocation.locationSearchProvider.get(),
+                                    googleMapsApiKey = context.config.root.global.betterLocation.googleMapsApiKey.get(),
                                     saveCoordinates = {
                                         addSavedCoordinateDialog = true
                                     }
