@@ -28,7 +28,7 @@ class Global : ConfigContainer() {
         val spoofBatteryLevel = string("spoof_battery_level") { requireRestart(); inputCheck = { it.isEmpty() || it.toIntOrNull() in 0..100 } }
         val spoofHeadphones = boolean("spoof_headphones") { requireRestart() }
         val showBatteryLevel = boolean("show_battery_level") { requireRestart() }
-        val locationSearchProvider = unique("location_search_provider", "osm", "google_maps")
+         val locationSearchProvider = unique("location_search_provider", "osm", "google_maps") { addFlags(ConfigFlag.NO_DISABLE_KEY) }
         val googleMapsApiKey = string("google_maps_api_key") { addFlags(ConfigFlag.SENSITIVE) }
     }
 

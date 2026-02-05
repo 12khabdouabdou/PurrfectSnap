@@ -234,6 +234,8 @@ class BetterLocationRoot : Routes.Route() {
         val coordinatesProperty = remember {
             context.config.root.global.betterLocation.getPropertyPair("coordinates")
         }
+        val providerProperty = remember { context.config.root.global.betterLocation.getPropertyPair("location_search_provider") }
+        val apiKeyProperty = remember { context.config.root.global.betterLocation.getPropertyPair("google_maps_api_key") }
 
         val updateDispatcher = rememberAsyncUpdateDispatcher()
         val savedCoordinates = rememberAsyncMutableStateList(
@@ -245,6 +247,8 @@ class BetterLocationRoot : Routes.Route() {
         var showMap by remember { mutableStateOf(false) }
         var addSavedCoordinateDialog by remember { mutableStateOf(false) }
         var showTeleportDialog by remember { mutableStateOf(false) }
+        var showProviderDialog by remember { mutableStateOf(false) }
+        var showApiKeyDialog by remember { mutableStateOf(false) }
 
         val marker = remember { mutableStateOf<Marker?>(null) }
         val mapView = remember { mutableStateOf<MapView?>(null) }
@@ -269,6 +273,17 @@ class BetterLocationRoot : Routes.Route() {
                     }
                 }
             )
+        }
+
+        if (showProviderDialog) {
+            me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { showProviderDialog = false }) {
+                alertDialogs.UniqueSelectionDialog(providerProperty)
+            }
+        }
+        if (showApiKeyDialog) {
+            me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { showApiKeyDialog = false }) {
+                alertDialogs.KeyboardInputDialog(apiKeyProperty) { showApiKeyDialog = false }
+            }
         }
 
         Column(
@@ -400,6 +415,39 @@ class BetterLocationRoot : Routes.Route() {
                         remember { mutableStateOf(context.config.root.global.betterLocation.suspendLocationUpdates.get()) }
                     ) {
                         context.config.root.global.betterLocation.suspendLocationUpdates.set(it)
+                    }
+
+                    @Composable
+                    fun ConfigSelector(text: String, value: String, onClick: () -> Unit) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onClick)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = text)
+                            Spacer(modifier = Modifier.weight(1f))
+                            Text(text = value, color = PurrfectPalette.textSecondary, fontSize = 14.sp)
+                        }
+                    }
+
+                    @Composable
+                    fun ConfigInput(text: String, value: String, onClick: () -> Unit) {
+                        ConfigSelector(text, if (value.isNotEmpty()) "********" else translation["options.empty"], onClick)
+                    }
+
+                    val currentProvider = context.config.root.global.betterLocation.locationSearchProvider.get()
+                    ConfigSelector(
+                        text = translation["properties.location_search_provider.name"],
+                        value = context.translation["options.location_search_provider.$currentProvider"]
+                    ) { showProviderDialog = true }
+
+                    if (currentProvider == "google_maps") {
+                        ConfigInput(
+                            text = translation["properties.google_maps_api_key.name"],
+                            value = context.config.root.global.betterLocation.googleMapsApiKey.get()
+                        ) { showApiKeyDialog = true }
                     }
                 }
                 item {
