@@ -46,17 +46,18 @@ import me.eternal.purrfectsnap.core.wrapper.impl.media.dash.SnapPlaylistItem
 import me.eternal.purrfectsnap.core.wrapper.impl.media.opera.Layer
 import me.eternal.purrfectsnap.core.wrapper.impl.media.opera.ParamMap
 import me.eternal.purrfectsnap.core.wrapper.impl.media.toKeyPair
+import me.eternal.purrfectsnap.core.wrapper.impl.media.EncryptionWrapper
 import me.eternal.purrfectsnap.mapper.impl.OperaPageViewControllerMapper
 import java.nio.file.Paths
 import java.util.UUID
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.absoluteValue
+import android.util.Base64
 
 class SnapChapterInfo(
     val offset: Long,
     val duration: Long?
 )
-
 
 class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleType.AUTO_DOWNLOAD) {
     private var lastSeenMediaInfoMap: MutableMap<SplitMediaAssetType, MediaInfo>? = null
@@ -204,49 +205,107 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         }
     }
 
-    private fun downloadOperaMedia(downloadManagerClient: DownloadManagerClient, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>, paramMap: ParamMap) {
+    private fun extractStoryEncryption(paramMap: ParamMap): MediaEncryptionKeyPair? {
+
+        val keyRaw = paramMap["CONTEXT_REPLY_MEDIA_KEY"] as? String
+            ?: paramMap["REPLY_MEDIA_KEY"] as? String
+            ?: return null
+
+        val ivRaw = paramMap["CONTEXT_REPLY_MEDIA_IV"] as? String
+            ?: paramMap["REPLY_MEDIA_IV"] as? String
+            ?: return null
+
+        return try {
+
+            val keyBytes = android.util.Base64.decode(keyRaw, android.util.Base64.DEFAULT)
+            val ivBytes  = android.util.Base64.decode(ivRaw,  android.util.Base64.DEFAULT)
+
+            if (keyBytes.size != 32 || ivBytes.size != 16) {
+                return null
+            }
+
+            MediaEncryptionKeyPair(
+                key = android.util.Base64.encodeToString(keyBytes, android.util.Base64.NO_WRAP),
+                iv  = android.util.Base64.encodeToString(ivBytes,  android.util.Base64.NO_WRAP),
+                urlSafe = false
+            )
+
+        } catch (e: Exception) {
+            context.log.error("Story AES decode failed", e)
+            null
+        }
+    }
+
+    private fun downloadOperaMedia(
+        downloadManagerClient: DownloadManagerClient,
+        mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>,
+        paramMap: ParamMap
+    ) {
         if (mediaInfoMap.isEmpty()) return
 
-        paramMap["SNAP_ID"]?.toString()?.let { snapId ->
-            context.database.getStorySnapEntry(snapId)?.let { storySnapEntry ->
-                downloadManagerClient.downloadSingleMedia(
-                    storySnapEntry.mediaUrl ?: throw Exception("Media URL not found"),
-                    DownloadMediaType.fromUri(Uri.parse(storySnapEntry.mediaUrl)),
-                    (storySnapEntry.mediaKey to storySnapEntry.mediaIv).takeIf { it.first != null && it.second != null }?.let { (key, iv) ->
-                        MediaEncryptionKeyPair(key!!, iv!!, urlSafe = false)
-                    }
-                )
-                return
-            }
-        }
+        val storyKeyPair = extractStoryEncryption(paramMap)
 
         val originalMediaInfo = mediaInfoMap[SplitMediaAssetType.ORIGINAL]!!
         val originalMediaInfoReference = handleLocalReferences(originalMediaInfo.uri)
 
+        paramMap["SNAP_ID"]?.toString()?.let { snapId ->
+            context.database.getStorySnapEntry(snapId)?.let { storySnapEntry ->
+
+                val urlToDownload = storySnapEntry?.mediaUrl ?: originalMediaInfo.uri
+                val encryptionPair =
+                    safeGetEncryptionPair(originalMediaInfo)
+                        ?: extractStoryEncryption(paramMap)
+
+                downloadManagerClient.downloadSingleMedia(
+                    originalMediaInfoReference,
+                    DownloadMediaType.fromUri(Uri.parse(originalMediaInfoReference)),
+                    encryptionPair
+                )
+
+                return
+            }
+        }
+
         mediaInfoMap[SplitMediaAssetType.OVERLAY]?.let { overlay ->
             val overlayReference = handleLocalReferences(overlay.uri)
+
+            val originalEncryption = safeGetEncryptionPair(originalMediaInfo)
+            val overlayEncryption = overlay.encryption?.toKeyPair()
 
             downloadManagerClient.downloadMediaWithOverlay(
                 original = InputMedia(
                     originalMediaInfoReference,
                     DownloadMediaType.fromUri(Uri.parse(originalMediaInfoReference)),
-                    originalMediaInfo.encryption?.toKeyPair()
+                    encryption = originalEncryption
                 ),
                 overlay = InputMedia(
                     overlayReference,
                     DownloadMediaType.fromUri(Uri.parse(overlayReference)),
-                    overlay.encryption?.toKeyPair(),
+                    encryption = overlayEncryption,
                     isOverlay = true
                 )
             )
             return
         }
 
+        // fallback to single media download
+        val encryptionPair =
+            storyKeyPair ?: safeGetEncryptionPair(originalMediaInfo)
+
         downloadManagerClient.downloadSingleMedia(
             originalMediaInfoReference,
             DownloadMediaType.fromUri(Uri.parse(originalMediaInfoReference)),
-            originalMediaInfo.encryption?.toKeyPair()
+            encryptionPair
         )
+
+    }
+
+    private fun safeGetEncryptionPair(info: MediaInfo?): MediaEncryptionKeyPair? {
+        val enc = info?.encryption ?: return null
+        return runCatching {
+            enc.toKeyPair()
+        }.onFailure { context.log.verbose("Failed to parse encryption key pair → ${info.uri}")
+        }.getOrNull()
     }
 
     fun canAutoDownloadMessage(databaseMessage: ConversationMessage): Boolean {
@@ -254,6 +313,32 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         return canUseRule(databaseMessage.clientConversationId!!)
     }
 
+    private fun resolveMediaUrl(raw: String): String {
+            var url = raw.trim()
+
+            // Remove garbage prefix/suffix sometimes present
+            if (url.contains("https://")) {
+                url = url.substringAfter("https://")
+                url = "https://$url"
+            }
+
+            val knownGoodPrefixes = listOf(
+                "https://cf-st.sc-cdn.net",
+                "https://bolt-gcdn.sc-cdn.net",
+                "https://app.snapchat.com",
+                "https://cf-st-nl1.sc-cdn.net"  // sometimes region specific
+            )
+
+            return when {
+                url.startsWith("http") -> url
+                knownGoodPrefixes.any { url.contains(it) } -> url.substringAfterLast("http")
+                else -> "${RemoteMediaResolver.CF_ST_CDN_D}/$url"
+            }.also { resolved ->
+                if (resolved != raw) {
+                    context.log.debug("URL rewritten: $raw → $resolved")
+                }
+            }
+        }
     /**
      * Handles the media from the opera viewer
      *
@@ -262,11 +347,13 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
      * @param forceDownload if the media should be downloaded
      */
     private fun handleOperaMedia(
-        paramMap: ParamMap,
-        mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>,
-        forceDownload: Boolean,
+        paramMap: ParamMap, 
+        mediaInfoMap: Map<SplitMediaAssetType, 
+        MediaInfo>, 
+        forceDownload: Boolean, 
         forceAllowDuplicate: Boolean = false
     ) {
+
         //messages
         paramMap["MESSAGE_ID"]?.toString()?.takeIf { forceDownload || shouldAutoDownload("friend_snaps") }?.let { id ->
             val messageId = id.substring(id.lastIndexOf(":") + 1).toLong()
@@ -307,28 +394,40 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         }?.let { playlistGroup ->
             val playlistGroupString = playlistGroup.toString()
 
-            val storyUserId = paramMap["TOPIC_SNAP_CREATOR_USER_ID"]?.toString() ?: paramMap["PLAYABLE_STORY_SNAP_RECORD"]?.toString()?.let {
-                if (it.contains("userId=")) it.substringAfter("userId=").substringBefore(",") else null
-            } ?: if (playlistGroupString.contains("storyUserId=")) {
-                playlistGroupString.substringAfter("storyUserId=").substringBefore(",")
-            } else {
-                //story replies
-                val arroyoMessageId = playlistGroup::class.java.methods.firstOrNull { it.name == "getId" }
-                    ?.invoke(playlistGroup)?.toString()
-                    ?.split(":")?.getOrNull(2) ?: return@let
+            // Try multiple possible keys/paths in order of likelihood
+            val storyUserId = sequenceOf(
+                // Most common new locations
+                { paramMap["STORY_USER_ID"]?.toString() },
+                { paramMap["CREATOR_USER_ID"]?.toString() },
+                { paramMap["USER_ID"]?.toString() },
+                { paramMap["TOPIC_SNAP_CREATOR_USER_ID"]?.toString() },
+                // Old ones as fallback
+                { paramMap["PLAYABLE_STORY_SNAP_RECORD"]
+                    ?.toString()
+                    ?.substringAfter("userId=")
+                    ?.substringBefore(",") },
+                // Parse playlistGroup string more carefully
+                { playlistGroupString.substringAfter("userId=", missingDelimiterValue = "").substringBefore(",") },
+                { playlistGroupString.substringAfter("storyUserId=", missingDelimiterValue = "").substringBefore(",") },
+                // Last desperate fallback — sometimes it's in nested snap record
+                { paramMap["SNAP_PLAYLIST_ITEM"]
+                    ?.toString()
+                    ?.substringAfter("userId=")
+                    ?.substringBefore(",") }
+            ).mapNotNull { it() }.firstOrNull { it.isNotBlank() && it != "null" }
 
-                val conversationMessage = context.database.getConversationMessageFromId(arroyoMessageId.toLong()) ?: return@let
-                val conversationParticipants = context.database.getConversationParticipants(conversationMessage.clientConversationId.toString()) ?: return@let
+            // ──────────────────────────────────────────────
 
-                conversationParticipants.firstOrNull { it != conversationMessage.senderId }
+            val authorUserId = storyUserId ?: run {
+                context.log.warn("[FriendStories] Could not extract user ID — falling back to current user")
+                context.database.myUserId   // prevents crash, but will tag as self
             }
 
-            val author = context.database.getFriendInfo(
-                if (storyUserId == null || storyUserId == "null")
-                    context.database.myUserId
-                else storyUserId
-            ) ?: throw Exception("Friend not found in database")
-            val authorName = author.usernameForSorting!!
+            val author = context.database.getFriendInfo(authorUserId)
+                ?: context.database.getFriendInfoByUsername(authorUserId)   // sometimes it's username
+                ?: throw Exception("No friend info for ID: $authorUserId")
+
+            val authorName = author.usernameForSorting ?: author.displayName ?: "UnknownFriend"
 
             if (!forceDownload) {
                 if (context.config.downloader.preventSelfAutoDownload.get() && author.userId == context.database.myUserId) return
@@ -381,13 +480,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                 return "${(hours % 24).toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}"
             }
 
-            val playlistUrl = paramMap["MEDIA_ID"].toString().let {
-                val urlIndexes = arrayOf(it.indexOf("https://cf-st.sc-cdn.net"), it.indexOf("https://bolt-gcdn.sc-cdn.net"))
-
-                urlIndexes.firstOrNull { index -> index != -1 }?.let { validIndex ->
-                    it.substring(validIndex)
-                } ?: "${RemoteMediaResolver.CF_ST_CDN_D}$it"
-            }
+            val playlistUrl = resolveMediaUrl(paramMap["MEDIA_ID"].toString())
 
             context.runOnUiThread {
                 val selectedChapters = mutableListOf<Int>()

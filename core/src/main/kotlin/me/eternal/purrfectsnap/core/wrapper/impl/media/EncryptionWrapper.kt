@@ -10,10 +10,19 @@ import javax.crypto.CipherInputStream
 import javax.crypto.CipherOutputStream
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import android.util.Base64
 
-class EncryptionWrapper(instance: Any?) : AbstractWrapper(instance) {
+enum class SnapCipherMode {
+    CBC,
+    CTR
+}
+
+class EncryptionWrapper(
+    instance: Any?,
+    private val mode: SnapCipherMode = SnapCipherMode.CBC
+) : AbstractWrapper(instance) {
+
     fun decrypt(data: ByteArray?): ByteArray {
         return newCipher(Cipher.DECRYPT_MODE).doFinal(data)
     }
@@ -26,56 +35,58 @@ class EncryptionWrapper(instance: Any?) : AbstractWrapper(instance) {
         return CipherOutputStream(outputStream, newCipher(Cipher.DECRYPT_MODE))
     }
 
-    /**
-     * Search for a byte[] field with the specified length
-     *
-     * @param arrayLength the length of the byte[] field
-     * @return the field
-     */
-    private fun searchByteArrayField(arrayLength: Int): Field {
-        return instanceNonNull()::class.java.fields.first { f ->
-            try {
-                if (!f.type.isArray || f.type
-                        .componentType != Byte::class.javaPrimitiveType
-                ) return@first false
-                return@first (f.get(instanceNonNull()) as ByteArray).size == arrayLength
-            } catch (e: Exception) {
-                return@first false
-            }
-        }
-    }
-
-    /**
-     * Create a new cipher with the specified mode
-     */
-    fun newCipher(mode: Int): Cipher {
+    fun newCipher(modeInt: Int): Cipher {
         val cipher = cipher
-        cipher.init(mode, SecretKeySpec(keySpec, "AES"), IvParameterSpec(ivKeyParameterSpec))
+        cipher.init(
+            modeInt,
+            SecretKeySpec(keySpec, "AES"),
+            IvParameterSpec(ivKeyParameterSpec)
+        )
         return cipher
     }
 
     /**
-     * Get the cipher from the encryption wrapper
+     * Dynamic cipher selection
      */
     private val cipher: Cipher
-        get() = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        get() = when (mode) {
+            SnapCipherMode.CBC ->
+                Cipher.getInstance("AES/CBC/PKCS5Padding")
 
-    /**
-     * Get the key spec from the encryption wrapper
-     */
+            SnapCipherMode.CTR ->
+                Cipher.getInstance("AES/CTR/NoPadding")
+        }
+
     val keySpec: ByteArray by lazy {
         searchByteArrayField(32)[instance] as ByteArray
     }
 
-    /**
-     * Get the iv key parameter spec from the encryption wrapper
-     */
     val ivKeyParameterSpec: ByteArray by lazy {
         searchByteArrayField(16)[instance] as ByteArray
     }
+
+    private fun searchByteArrayField(arrayLength: Int): Field {
+        return instanceNonNull()::class.java.fields.first { f ->
+            try {
+                if (!f.type.isArray ||
+                    f.type.componentType != Byte::class.javaPrimitiveType
+                ) return@first false
+
+                (f.get(instanceNonNull()) as ByteArray).size == arrayLength
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalEncodingApi::class)
+fun EncryptionWrapper.toKeyPair(): MediaEncryptionKeyPair {
+    return MediaEncryptionKeyPair(
+        key = android.util.Base64.encodeToString(this.keySpec, android.util.Base64.NO_WRAP),
+        iv  = android.util.Base64.encodeToString(this.ivKeyParameterSpec, android.util.Base64.NO_WRAP),
+        urlSafe = true
+    )
 }
 
 
-@OptIn(ExperimentalEncodingApi::class)
-fun EncryptionWrapper.toKeyPair()
-        = MediaEncryptionKeyPair(Base64.UrlSafe.encode(this.keySpec), Base64.UrlSafe.encode(this.ivKeyParameterSpec))
