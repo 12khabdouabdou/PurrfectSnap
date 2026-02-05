@@ -58,6 +58,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
@@ -592,6 +593,7 @@ class AlertDialogs(
         property: PropertyPair<*>,
         marker: MutableState<Marker?> = remember { mutableStateOf(null) },
         mapView: MutableState<MapView?> = remember { mutableStateOf(null) },
+        locationSearchProvider: String = "osm",
         saveCoordinates: (() -> Unit)? = null,
         dismiss: () -> Unit = {}
     ) {
@@ -611,7 +613,16 @@ class AlertDialogs(
             MapView(context).apply {
                 setMultiTouchControls(true)
                 zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
-                setTileSource(TileSourceFactory.MAPNIK)
+                val tileSource = if (locationSearchProvider == "google_maps") {
+                    XYTileSource(
+                        "GoogleMaps",
+                        0, 19, 256, ".png",
+                        arrayOf("https://mt0.google.com/vt/lyrs=m&x=", "https://mt1.google.com/vt/lyrs=m&x=")
+                    )
+                } else {
+                    TileSourceFactory.MAPNIK
+                }
+                setTileSource(tileSource)
 
                 val startPoint = GeoPoint(coordinates.first, coordinates.second)
                 controller.setZoom(10.0)

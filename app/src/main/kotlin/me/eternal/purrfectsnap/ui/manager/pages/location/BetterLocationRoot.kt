@@ -337,9 +337,15 @@ class BetterLocationRoot : Routes.Route() {
                             )
                         ) {
                             Box(modifier = Modifier.background(PurrfectPalette.cardOverlay)) {
-                                alertDialogs.ChooseLocationDialog(property = coordinatesProperty, marker, mapView, saveCoordinates = {
-                                    addSavedCoordinateDialog = true
-                                }) {
+                                alertDialogs.ChooseLocationDialog(
+                                    property = coordinatesProperty,
+                                    marker = marker,
+                                    mapView = mapView,
+                                    locationSearchProvider = context.config.root.global.betterLocation.locationSearchProvider.get(),
+                                    saveCoordinates = {
+                                        addSavedCoordinateDialog = true
+                                    }
+                                ) {
                                     showMap = false
                                     context.config.writeConfig()
                                 }
