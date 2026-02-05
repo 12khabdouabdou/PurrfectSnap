@@ -427,9 +427,13 @@ class BetterLocationRoot : Routes.Route() {
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = text)
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(text = value, color = PurrfectPalette.textSecondary, fontSize = 14.sp)
+                            Text(text = text, modifier = Modifier.weight(1f))
+                            Text(
+                                text = value,
+                                color = PurrfectPalette.textSecondary,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
                         }
                     }
 
@@ -440,13 +444,13 @@ class BetterLocationRoot : Routes.Route() {
 
                     val currentProvider = context.config.root.global.betterLocation.locationSearchProvider.get()
                     ConfigSelector(
-                        text = translation["properties.location_search_provider.name"],
-                        value = context.translation["options.location_search_provider.$currentProvider"]
+                        text = translation["location_search_provider_title"],
+                        value = translation["option_$currentProvider"]
                     ) { showProviderDialog = true }
 
                     if (currentProvider == "google_maps") {
                         ConfigInput(
-                            text = translation["properties.google_maps_api_key.name"],
+                            text = translation["google_maps_api_key_title"],
                             value = context.config.root.global.betterLocation.googleMapsApiKey.get()
                         ) { showApiKeyDialog = true }
                     }

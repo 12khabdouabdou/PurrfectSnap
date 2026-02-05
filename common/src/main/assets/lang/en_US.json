@@ -444,7 +444,11 @@
                 "no_friends_map": "No friends on the map",
                 "no_friends_found": "No friends found",
                 "include_saved_locations": "Include Saved Locations",
-                "include_saved_locations_description": "Export your saved location coordinates"
+                "include_saved_locations_description": "Export your saved location coordinates",
+                "location_search_provider_title": "Location Search Provider",
+                "google_maps_api_key_title": "Google Maps API Key",
+                "option_osm": "OpenStreetMap (Free)",
+                "option_google_maps": "Google Maps"
             }
         },
         "dialogs": {
