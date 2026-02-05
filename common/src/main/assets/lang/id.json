@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Fitur ini dapat menyebabkan pemblokiran (ban)",
             "internal_behavior": "\u26a0 Ini dapat merusak perilaku internal Snapchat"
         },
-        "options": {
-            "empty": "Kosong",
-            "walk_radius": {
-                "empty": "Kosong"
-            },
-            "spoof_battery_level": {
-                "empty": "Kosong"
-            },
-            "custom_android_id": {
-                "empty": "Kosong"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Kosong"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Kosong"
-            },
-            "custom_emoji_font": {
-                "empty": "Kosong"
-            },
-            "custom_shared_library": {
-                "empty": "Kosong"
-            },
-            "custom_resolution": {
-                "empty": "Kosong"
-            },
-            "custom_path_format": {
-                "empty": "Kosong"
-            },
-            "custom_video_codec": {
-                "empty": "Kosong"
-            },
-            "custom_audio_codec": {
-                "empty": "Kosong"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Kosong"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Mode daftar hitam",
-                "whitelist": "Mode daftar putih",
-                "null": "Dinonaktifkan"
-            },
-            "update_check_frequency": {
-                "daily": "Harian",
-                "weekly": "Mingguan",
-                "monthly": "Bulanan"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Global",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Selalu Terang",
                 "always_dark": "Selalu Gelap",

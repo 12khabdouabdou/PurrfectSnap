@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Ця функція може призвести до банів",
             "internal_behavior": "\u26a0 Це може порушити внутрішню поведінку Snapchat"
         },
-        "options": {
-            "empty": "Порожньо",
-            "walk_radius": {
-                "empty": "Порожньо"
-            },
-            "spoof_battery_level": {
-                "empty": "Порожньо"
-            },
-            "custom_android_id": {
-                "empty": "Порожньо"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Порожньо"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Порожньо"
-            },
-            "custom_emoji_font": {
-                "empty": "Порожньо"
-            },
-            "custom_shared_library": {
-                "empty": "Порожньо"
-            },
-            "custom_resolution": {
-                "empty": "Порожньо"
-            },
-            "custom_path_format": {
-                "empty": "Порожньо"
-            },
-            "custom_video_codec": {
-                "empty": "Порожньо"
-            },
-            "custom_audio_codec": {
-                "empty": "Порожньо"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Порожньо"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Режим чорного списку",
-                "whitelist": "Режим білого списку",
-                "null": "Вимкнено"
-            },
-            "update_check_frequency": {
-                "daily": "Щодня",
-                "weekly": "Щотижня",
-                "monthly": "Щомісяця"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Глобальні",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Завжди світла",
                 "always_dark": "Завжди темна",

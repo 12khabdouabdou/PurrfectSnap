@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Bu özellik yasaklanmalara neden olabilir",
             "internal_behavior": "\u26a0 Bu, Snapchat'in dahili davranışını bozabilir"
         },
-        "options": {
-            "empty": "Boş",
-            "walk_radius": {
-                "empty": "Boş"
-            },
-            "spoof_battery_level": {
-                "empty": "Boş"
-            },
-            "custom_android_id": {
-                "empty": "Boş"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Boş"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Boş"
-            },
-            "custom_emoji_font": {
-                "empty": "Boş"
-            },
-            "custom_shared_library": {
-                "empty": "Boş"
-            },
-            "custom_resolution": {
-                "empty": "Boş"
-            },
-            "custom_path_format": {
-                "empty": "Boş"
-            },
-            "custom_video_codec": {
-                "empty": "Boş"
-            },
-            "custom_audio_codec": {
-                "empty": "Boş"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Boş"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Kara liste modu",
-                "whitelist": "Beyaz liste modu",
-                "null": "Devre Dışı"
-            },
-            "update_check_frequency": {
-                "daily": "Günlük",
-                "weekly": "Haftalık",
-                "monthly": "Aylık"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Küresel",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Her Zaman Açık",
                 "always_dark": "Her Zaman Koyu",

@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Ta funkcja może spowodować bana",
             "internal_behavior": "\u26a0 To może zepsuć wewnętrzne działanie Snapchata"
         },
-        "options": {
-            "empty": "Puste",
-            "walk_radius": {
-                "empty": "Puste"
-            },
-            "spoof_battery_level": {
-                "empty": "Puste"
-            },
-            "custom_android_id": {
-                "empty": "Puste"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Puste"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Puste"
-            },
-            "custom_emoji_font": {
-                "empty": "Puste"
-            },
-            "custom_shared_library": {
-                "empty": "Puste"
-            },
-            "custom_resolution": {
-                "empty": "Puste"
-            },
-            "custom_path_format": {
-                "empty": "Puste"
-            },
-            "custom_video_codec": {
-                "empty": "Puste"
-            },
-            "custom_audio_codec": {
-                "empty": "Puste"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Puste"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Tryb czarnej listy",
-                "whitelist": "Tryb białej listy",
-                "null": "Wyłączone"
-            },
-            "update_check_frequency": {
-                "daily": "Codziennie",
-                "weekly": "Co tydzień",
-                "monthly": "Co miesiąc"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Globalne",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Zawsze jasny",
                 "always_dark": "Zawsze ciemny",

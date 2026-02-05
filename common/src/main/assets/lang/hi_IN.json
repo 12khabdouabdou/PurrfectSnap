@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 इस फीचर से प्रतिबंध (Ban) लग सकता है",
             "internal_behavior": "\u26a0 यह स्नैपचैट के आंतरिक व्यवहार को तोड़ सकता है"
         },
-        "options": {
-            "empty": "खाली",
-            "walk_radius": {
-                "empty": "खाली"
-            },
-            "spoof_battery_level": {
-                "empty": "खाली"
-            },
-            "custom_android_id": {
-                "empty": "खाली"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "खाली"
-            },
-            "preferred_transcription_lang": {
-                "empty": "खाली"
-            },
-            "custom_emoji_font": {
-                "empty": "खाली"
-            },
-            "custom_shared_library": {
-                "empty": "खाली"
-            },
-            "custom_resolution": {
-                "empty": "खाली"
-            },
-            "custom_path_format": {
-                "empty": "खाली"
-            },
-            "custom_video_codec": {
-                "empty": "खाली"
-            },
-            "custom_audio_codec": {
-                "empty": "खाली"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "खाली"
-            },
-            "unsaveable_messages": {
-                "blacklist": "ब्लैकलिस्ट मोड",
-                "whitelist": "व्हाइटलिस्ट मोड",
-                "null": "अक्षम (Disabled)"
-            },
-            "update_check_frequency": {
-                "daily": "दैनिक",
-                "weekly": "साप्ताहिक",
-                "monthly": "मासिक"
-            }
-        },
         "properties": {
             "global": {
                 "name": "वैश्विक (Global)",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "हमेशा लाइट",
                 "always_dark": "हमेशा डार्क",

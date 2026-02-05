@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Deze functie kan leiden tot bans",
             "internal_behavior": "\u26a0 Dit kan intern gedrag van Snapchat verstoren"
         },
-        "options": {
-            "empty": "Leeg",
-            "walk_radius": {
-                "empty": "Leeg"
-            },
-            "spoof_battery_level": {
-                "empty": "Leeg"
-            },
-            "custom_android_id": {
-                "empty": "Leeg"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Leeg"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Leeg"
-            },
-            "custom_emoji_font": {
-                "empty": "Leeg"
-            },
-            "custom_shared_library": {
-                "empty": "Leeg"
-            },
-            "custom_resolution": {
-                "empty": "Leeg"
-            },
-            "custom_path_format": {
-                "empty": "Leeg"
-            },
-            "custom_video_codec": {
-                "empty": "Leeg"
-            },
-            "custom_audio_codec": {
-                "empty": "Leeg"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Leeg"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Zwarte-lijstmodus",
-                "whitelist": "Witte-lijstmodus",
-                "null": "Uitgeschakeld"
-            },
-            "update_check_frequency": {
-                "daily": "Dagelijks",
-                "weekly": "Wekelijks",
-                "monthly": "Maandelijks"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Algemeen",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Altijd licht",
                 "always_dark": "Altijd donker",

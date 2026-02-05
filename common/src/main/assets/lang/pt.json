@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Este recurso pode causar banimentos",
             "internal_behavior": "\u26a0 Isso pode quebrar o comportamento interno do Snapchat"
         },
-        "options": {
-            "empty": "Vazio",
-            "walk_radius": {
-                "empty": "Vazio"
-            },
-            "spoof_battery_level": {
-                "empty": "Vazio"
-            },
-            "custom_android_id": {
-                "empty": "Vazio"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Vazio"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Vazio"
-            },
-            "custom_emoji_font": {
-                "empty": "Vazio"
-            },
-            "custom_shared_library": {
-                "empty": "Vazio"
-            },
-            "custom_resolution": {
-                "empty": "Vazio"
-            },
-            "custom_path_format": {
-                "empty": "Vazio"
-            },
-            "custom_video_codec": {
-                "empty": "Vazio"
-            },
-            "custom_audio_codec": {
-                "empty": "Vazio"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Vazio"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Modo Lista Negra",
-                "whitelist": "Modo Lista Branca",
-                "null": "Desativado"
-            },
-            "update_check_frequency": {
-                "daily": "Diariamente",
-                "weekly": "Semanalmente",
-                "monthly": "Mensalmente"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Global",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Sempre Claro",
                 "always_dark": "Sempre Escuro",

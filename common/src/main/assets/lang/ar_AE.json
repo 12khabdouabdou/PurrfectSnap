@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 هذه الميزة قد تسبب حظراً",
             "internal_behavior": "\u26a0 قد يكسر هذا السلوك الداخلي لـ Snapchat"
         },
-        "options": {
-            "empty": "فارغ",
-            "walk_radius": {
-                "empty": "فارغ"
-            },
-            "spoof_battery_level": {
-                "empty": "فارغ"
-            },
-            "custom_android_id": {
-                "empty": "فارغ"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "فارغ"
-            },
-            "preferred_transcription_lang": {
-                "empty": "فارغ"
-            },
-            "custom_emoji_font": {
-                "empty": "فارغ"
-            },
-            "custom_shared_library": {
-                "empty": "فارغ"
-            },
-            "custom_resolution": {
-                "empty": "فارغ"
-            },
-            "custom_path_format": {
-                "empty": "فارغ"
-            },
-            "custom_video_codec": {
-                "empty": "فارغ"
-            },
-            "custom_audio_codec": {
-                "empty": "فارغ"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "فارغ"
-            },
-            "unsaveable_messages": {
-                "blacklist": "وضع القائمة السوداء",
-                "whitelist": "وضع القائمة البيضاء",
-                "null": "معطل"
-            },
-            "update_check_frequency": {
-                "daily": "يومياً",
-                "weekly": "أسبوعياً",
-                "monthly": "شهرياً"
-            }
-        },
         "properties": {
             "global": {
                 "name": "عالمي",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "دائماً فاتح",
                 "always_dark": "دائماً داكن",

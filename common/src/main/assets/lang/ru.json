@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Эта функция может привести к бану",
             "internal_behavior": "\u26a0 Это может нарушить внутреннюю работу Snapchat"
         },
-        "options": {
-            "empty": "Пусто",
-            "walk_radius": {
-                "empty": "Пусто"
-            },
-            "spoof_battery_level": {
-                "empty": "Пусто"
-            },
-            "custom_android_id": {
-                "empty": "Пусто"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Пусто"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Пусто"
-            },
-            "custom_emoji_font": {
-                "empty": "Пусто"
-            },
-            "custom_shared_library": {
-                "empty": "Пусто"
-            },
-            "custom_resolution": {
-                "empty": "Пусто"
-            },
-            "custom_path_format": {
-                "empty": "Пусто"
-            },
-            "custom_video_codec": {
-                "empty": "Пусто"
-            },
-            "custom_audio_codec": {
-                "empty": "Пусто"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Пусто"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Черный список",
-                "whitelist": "Белый список",
-                "null": "Отключено"
-            },
-            "update_check_frequency": {
-                "daily": "Ежедневно",
-                "weekly": "Еженедельно",
-                "monthly": "Ежемесячно"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Глобальные",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Всегда светлая",
                 "always_dark": "Всегда темная",

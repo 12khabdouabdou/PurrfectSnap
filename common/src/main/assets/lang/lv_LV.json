@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Šī funkcija var izraisīt bloķēšanu",
             "internal_behavior": "\u26a0 Tas var izjaukt Snapchat iekšējo darbību"
         },
-        "options": {
-            "empty": "Tukšs",
-            "walk_radius": {
-                "empty": "Tukšs"
-            },
-            "spoof_battery_level": {
-                "empty": "Tukšs"
-            },
-            "custom_android_id": {
-                "empty": "Tukšs"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Tukšs"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Tukšs"
-            },
-            "custom_emoji_font": {
-                "empty": "Tukšs"
-            },
-            "custom_shared_library": {
-                "empty": "Tukšs"
-            },
-            "custom_resolution": {
-                "empty": "Tukšs"
-            },
-            "custom_path_format": {
-                "empty": "Tukšs"
-            },
-            "custom_video_codec": {
-                "empty": "Tukšs"
-            },
-            "custom_audio_codec": {
-                "empty": "Tukšs"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Tukšs"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Melnā saraksta režīms",
-                "whitelist": "Baltā saraksta režīms",
-                "null": "Atspējots"
-            },
-            "update_check_frequency": {
-                "daily": "Katru dienu",
-                "weekly": "Katru nedēļu",
-                "monthly": "Katru mēnesi"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Globāli",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Vienmēr gaišs",
                 "always_dark": "Vienmēr tumšs",

@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 This feature may cause bans",
             "internal_behavior": "\u26a0 This may break Snapchat internal behaviour"
         },
-        "options": {
-            "empty": "Empty",
-            "walk_radius": {
-                "empty": "Empty"
-            },
-            "spoof_battery_level": {
-                "empty": "Empty"
-            },
-            "custom_android_id": {
-                "empty": "Empty"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Empty"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Empty"
-            },
-            "custom_emoji_font": {
-                "empty": "Empty"
-            },
-            "custom_shared_library": {
-                "empty": "Empty"
-            },
-            "custom_resolution": {
-                "empty": "Empty"
-            },
-            "custom_path_format": {
-                "empty": "Empty"
-            },
-            "custom_video_codec": {
-                "empty": "Empty"
-            },
-            "custom_audio_codec": {
-                "empty": "Empty"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Empty"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Blacklist mode",
-                "whitelist": "Whitelist mode",
-                "null": "Disabled"
-            },
-            "update_check_frequency": {
-                "daily": "Daily",
-                "weekly": "Weekly",
-                "monthly": "Monthly"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Global",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Always Light",
                 "always_dark": "Always Dark",

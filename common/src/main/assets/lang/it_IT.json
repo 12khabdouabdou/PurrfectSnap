@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Questa funzionalità può causare ban",
             "internal_behavior": "\u26a0 Questo potrebbe interrompere il comportamento interno di Snapchat"
         },
-        "options": {
-            "empty": "Vuoto",
-            "walk_radius": {
-                "empty": "Vuoto"
-            },
-            "spoof_battery_level": {
-                "empty": "Vuoto"
-            },
-            "custom_android_id": {
-                "empty": "Vuoto"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Vuoto"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Vuoto"
-            },
-            "custom_emoji_font": {
-                "empty": "Vuoto"
-            },
-            "custom_shared_library": {
-                "empty": "Vuoto"
-            },
-            "custom_resolution": {
-                "empty": "Vuoto"
-            },
-            "custom_path_format": {
-                "empty": "Vuoto"
-            },
-            "custom_video_codec": {
-                "empty": "Vuoto"
-            },
-            "custom_audio_codec": {
-                "empty": "Vuoto"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Vuoto"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Modalità Blacklist",
-                "whitelist": "Modalità Whitelist",
-                "null": "Disabilitato"
-            },
-            "update_check_frequency": {
-                "daily": "Giornaliero",
-                "weekly": "Settimanale",
-                "monthly": "Mensile"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Globale",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Sempre Chiaro",
                 "always_dark": "Sempre Scuro",

@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Denna funktion kan orsaka bannlysningar",
             "internal_behavior": "\u26a0 Detta kan bryta Snapchats interna beteende"
         },
-        "options": {
-            "empty": "Tom",
-            "walk_radius": {
-                "empty": "Tom"
-            },
-            "spoof_battery_level": {
-                "empty": "Tom"
-            },
-            "custom_android_id": {
-                "empty": "Tom"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Tom"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Tom"
-            },
-            "custom_emoji_font": {
-                "empty": "Tom"
-            },
-            "custom_shared_library": {
-                "empty": "Tom"
-            },
-            "custom_resolution": {
-                "empty": "Tom"
-            },
-            "custom_path_format": {
-                "empty": "Tom"
-            },
-            "custom_video_codec": {
-                "empty": "Tom"
-            },
-            "custom_audio_codec": {
-                "empty": "Tom"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Tom"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Svartlistningsläge",
-                "whitelist": "Vitlistningsläge",
-                "null": "Inaktiverad"
-            },
-            "update_check_frequency": {
-                "daily": "Dagligen",
-                "weekly": "Veckovis",
-                "monthly": "Månadsvis"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Globalt",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Alltid ljus",
                 "always_dark": "Alltid mörk",

@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Tämä ominaisuus voi aiheuttaa porttikieltoja",
             "internal_behavior": "\u26a0 Tämä voi rikkoa Snapchatin sisäisen toiminnan"
         },
-        "options": {
-            "empty": "Tyhjä",
-            "walk_radius": {
-                "empty": "Tyhjä"
-            },
-            "spoof_battery_level": {
-                "empty": "Tyhjä"
-            },
-            "custom_android_id": {
-                "empty": "Tyhjä"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Tyhjä"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Tyhjä"
-            },
-            "custom_emoji_font": {
-                "empty": "Tyhjä"
-            },
-            "custom_shared_library": {
-                "empty": "Tyhjä"
-            },
-            "custom_resolution": {
-                "empty": "Tyhjä"
-            },
-            "custom_path_format": {
-                "empty": "Tyhjä"
-            },
-            "custom_video_codec": {
-                "empty": "Tyhjä"
-            },
-            "custom_audio_codec": {
-                "empty": "Tyhjä"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Tyhjä"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Estolista-tila",
-                "whitelist": "Sallittu-tila",
-                "null": "Pois käytöstä"
-            },
-            "update_check_frequency": {
-                "daily": "Päivittäin",
-                "weekly": "Viikoittain",
-                "monthly": "Kuukausittain"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Globaali",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Aina vaalea",
                 "always_dark": "Aina tumma",

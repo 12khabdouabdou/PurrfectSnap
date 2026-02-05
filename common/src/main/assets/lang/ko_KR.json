@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 이 기능은 계정 정지를 유발할 수 있음",
             "internal_behavior": "\u26a0 이 기능은 Snapchat 내부 동작을 깨뜨릴 수 있음"
         },
-        "options": {
-            "empty": "비어 있음",
-            "walk_radius": {
-                "empty": "비어 있음"
-            },
-            "spoof_battery_level": {
-                "empty": "비어 있음"
-            },
-            "custom_android_id": {
-                "empty": "비어 있음"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "비어 있음"
-            },
-            "preferred_transcription_lang": {
-                "empty": "비어 있음"
-            },
-            "custom_emoji_font": {
-                "empty": "비어 있음"
-            },
-            "custom_shared_library": {
-                "empty": "비어 있음"
-            },
-            "custom_resolution": {
-                "empty": "비어 있음"
-            },
-            "custom_path_format": {
-                "empty": "비어 있음"
-            },
-            "custom_video_codec": {
-                "empty": "비어 있음"
-            },
-            "custom_audio_codec": {
-                "empty": "비어 있음"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "비어 있음"
-            },
-            "unsaveable_messages": {
-                "blacklist": "블랙리스트 모드",
-                "whitelist": "화이트리스트 모드",
-                "null": "비활성화됨"
-            },
-            "update_check_frequency": {
-                "daily": "매일",
-                "weekly": "매주",
-                "monthly": "매월"
-            }
-        },
         "properties": {
             "global": {
                 "name": "전역(Global)",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "항상 라이트",
                 "always_dark": "항상 다크",

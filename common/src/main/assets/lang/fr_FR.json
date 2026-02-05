@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Cette fonctionnalité peut causer des bannissements",
             "internal_behavior": "\u26a0 Ceci peut casser le comportement interne de Snapchat"
         },
-        "options": {
-            "empty": "Vide",
-            "walk_radius": {
-                "empty": "Vide"
-            },
-            "spoof_battery_level": {
-                "empty": "Vide"
-            },
-            "custom_android_id": {
-                "empty": "Vide"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Vide"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Vide"
-            },
-            "custom_emoji_font": {
-                "empty": "Vide"
-            },
-            "custom_shared_library": {
-                "empty": "Vide"
-            },
-            "custom_resolution": {
-                "empty": "Vide"
-            },
-            "custom_path_format": {
-                "empty": "Vide"
-            },
-            "custom_video_codec": {
-                "empty": "Vide"
-            },
-            "custom_audio_codec": {
-                "empty": "Vide"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Vide"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Mode liste noire",
-                "whitelist": "Mode liste blanche",
-                "null": "Désactivé"
-            },
-            "update_check_frequency": {
-                "daily": "Quotidien",
-                "weekly": "Hebdomadaire",
-                "monthly": "Mensuel"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Global",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Toujours clair",
                 "always_dark": "Toujours sombre",

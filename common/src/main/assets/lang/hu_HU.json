@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Ez a funkció kitiltást okozhat",
             "internal_behavior": "\u26a0 Ez megtörheti a Snapchat belső működését"
         },
-        "options": {
-            "empty": "Üres",
-            "walk_radius": {
-                "empty": "Üres"
-            },
-            "spoof_battery_level": {
-                "empty": "Üres"
-            },
-            "custom_android_id": {
-                "empty": "Üres"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Üres"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Üres"
-            },
-            "custom_emoji_font": {
-                "empty": "Üres"
-            },
-            "custom_shared_library": {
-                "empty": "Üres"
-            },
-            "custom_resolution": {
-                "empty": "Üres"
-            },
-            "custom_path_format": {
-                "empty": "Üres"
-            },
-            "custom_video_codec": {
-                "empty": "Üres"
-            },
-            "custom_audio_codec": {
-                "empty": "Üres"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Üres"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Tiltólista mód",
-                "whitelist": "Engedélyezési lista mód",
-                "null": "Letiltva"
-            },
-            "update_check_frequency": {
-                "daily": "Naponta",
-                "weekly": "Hetente",
-                "monthly": "Havonta"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Globális",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Mindig világos",
                 "always_dark": "Mindig sötét",

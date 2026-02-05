@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Această funcție poate cauza ban-uri",
             "internal_behavior": "\u26a0 Asta poate strica comportamentul intern Snapchat"
         },
-        "options": {
-            "empty": "Gol",
-            "walk_radius": {
-                "empty": "Gol"
-            },
-            "spoof_battery_level": {
-                "empty": "Gol"
-            },
-            "custom_android_id": {
-                "empty": "Gol"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Gol"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Gol"
-            },
-            "custom_emoji_font": {
-                "empty": "Gol"
-            },
-            "custom_shared_library": {
-                "empty": "Gol"
-            },
-            "custom_resolution": {
-                "empty": "Gol"
-            },
-            "custom_path_format": {
-                "empty": "Gol"
-            },
-            "custom_video_codec": {
-                "empty": "Gol"
-            },
-            "custom_audio_codec": {
-                "empty": "Gol"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Gol"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Mod listă neagră",
-                "whitelist": "Mod listă albă",
-                "null": "Dezactivat"
-            },
-            "update_check_frequency": {
-                "daily": "Zilnic",
-                "weekly": "Săptămânal",
-                "monthly": "Lunar"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Global",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Mereu Luminos",
                 "always_dark": "Mereu Întunecat",

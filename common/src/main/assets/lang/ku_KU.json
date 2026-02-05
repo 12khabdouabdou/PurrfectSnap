@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 ئەم تایبەتمەندییە ڕەنگە ببێتە هۆی باندکردن",
             "internal_behavior": "\u26a0 ئەمە ڕەنگە ڕەفتاری ناوخۆیی سناپچات تێک بدات"
         },
-        "options": {
-            "empty": "بەتاڵ",
-            "walk_radius": {
-                "empty": "بەتاڵ"
-            },
-            "spoof_battery_level": {
-                "empty": "بەتاڵ"
-            },
-            "custom_android_id": {
-                "empty": "بەتاڵ"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "بەتاڵ"
-            },
-            "preferred_transcription_lang": {
-                "empty": "بەتاڵ"
-            },
-            "custom_emoji_font": {
-                "empty": "بەتاڵ"
-            },
-            "custom_shared_library": {
-                "empty": "بەتاڵ"
-            },
-            "custom_resolution": {
-                "empty": "بەتاڵ"
-            },
-            "custom_path_format": {
-                "empty": "بەتاڵ"
-            },
-            "custom_video_codec": {
-                "empty": "بەتاڵ"
-            },
-            "custom_audio_codec": {
-                "empty": "بەتاڵ"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "بەتاڵ"
-            },
-            "unsaveable_messages": {
-                "blacklist": "دۆخی لیستی ڕەش",
-                "whitelist": "دۆخی لیستی سپی",
-                "null": "ناچالاک کراوە"
-            },
-            "update_check_frequency": {
-                "daily": "ڕۆژانە",
-                "weekly": "هەفتانە",
-                "monthly": "مانگانە"
-            }
-        },
         "properties": {
             "global": {
                 "name": "گشتی",
@@ -2170,6 +2121,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "هەمیشە ڕۆشن",
                 "always_dark": "هەمیشە تاریک",

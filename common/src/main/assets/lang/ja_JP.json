@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 この機能はBANの原因になる可能性があります",
             "internal_behavior": "\u26a0 これはSnapchatの内部動作を壊す可能性があります"
         },
-        "options": {
-            "empty": "空",
-            "walk_radius": {
-                "empty": "空"
-            },
-            "spoof_battery_level": {
-                "empty": "空"
-            },
-            "custom_android_id": {
-                "empty": "空"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "空"
-            },
-            "preferred_transcription_lang": {
-                "empty": "空"
-            },
-            "custom_emoji_font": {
-                "empty": "空"
-            },
-            "custom_shared_library": {
-                "empty": "空"
-            },
-            "custom_resolution": {
-                "empty": "空"
-            },
-            "custom_path_format": {
-                "empty": "空"
-            },
-            "custom_video_codec": {
-                "empty": "空"
-            },
-            "custom_audio_codec": {
-                "empty": "空"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "空"
-            },
-            "unsaveable_messages": {
-                "blacklist": "ブラックリストモード",
-                "whitelist": "ホワイトリストモード",
-                "null": "無効"
-            },
-            "update_check_frequency": {
-                "daily": "毎日",
-                "weekly": "毎週",
-                "monthly": "毎月"
-            }
-        },
         "properties": {
             "global": {
                 "name": "グローバル",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "常にライト",
                 "always_dark": "常にダーク",

@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Esta función puede causar baneos",
             "internal_behavior": "\u26a0 Esto puede romper el comportamiento interno de Snapchat"
         },
-        "options": {
-            "empty": "Vacío",
-            "walk_radius": {
-                "empty": "Vacío"
-            },
-            "spoof_battery_level": {
-                "empty": "Vacío"
-            },
-            "custom_android_id": {
-                "empty": "Vacío"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Vacío"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Vacío"
-            },
-            "custom_emoji_font": {
-                "empty": "Vacío"
-            },
-            "custom_shared_library": {
-                "empty": "Vacío"
-            },
-            "custom_resolution": {
-                "empty": "Vacío"
-            },
-            "custom_path_format": {
-                "empty": "Vacío"
-            },
-            "custom_video_codec": {
-                "empty": "Vacío"
-            },
-            "custom_audio_codec": {
-                "empty": "Vacío"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Vacío"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Modo lista negra",
-                "whitelist": "Modo lista blanca",
-                "null": "Deshabilitado"
-            },
-            "update_check_frequency": {
-                "daily": "Diariamente",
-                "weekly": "Semanalmente",
-                "monthly": "Mensualmente"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Global",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Siempre Claro",
                 "always_dark": "Siempre Oscuro",

@@ -830,55 +830,6 @@
             "ban_risk": "\u26a0 Ta funkcija lahko povzroči blokade računa",
             "internal_behavior": "\u26a0 To lahko pokvari notranje delovanje Snapchata"
         },
-        "options": {
-            "empty": "Prazno",
-            "walk_radius": {
-                "empty": "Prazno"
-            },
-            "spoof_battery_level": {
-                "empty": "Prazno"
-            },
-            "custom_android_id": {
-                "empty": "Prazno"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Prazno"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Prazno"
-            },
-            "custom_emoji_font": {
-                "empty": "Prazno"
-            },
-            "custom_shared_library": {
-                "empty": "Prazno"
-            },
-            "custom_resolution": {
-                "empty": "Prazno"
-            },
-            "custom_path_format": {
-                "empty": "Prazno"
-            },
-            "custom_video_codec": {
-                "empty": "Prazno"
-            },
-            "custom_audio_codec": {
-                "empty": "Prazno"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Prazno"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Način črnega seznama",
-                "whitelist": "Način belega seznama",
-                "null": "Onemogočeno"
-            },
-            "update_check_frequency": {
-                "daily": "Dnevno",
-                "weekly": "Tedensko",
-                "monthly": "Mesečno"
-            }
-        },
         "properties": {
             "global": {
                 "name": "Globalno",
@@ -2190,6 +2141,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Vedno svetlo",
                 "always_dark": "Vedno temno",
