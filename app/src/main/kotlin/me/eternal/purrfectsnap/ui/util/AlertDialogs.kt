@@ -57,9 +57,10 @@ import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -614,11 +615,15 @@ class AlertDialogs(
                 setMultiTouchControls(true)
                 zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                 val tileSource = if (locationSearchProvider == "google_maps") {
-                    XYTileSource(
+                    object : OnlineTileSourceBase(
                         "GoogleMaps",
                         0, 19, 256, ".png",
-                        arrayOf("https://mt0.google.com/vt/lyrs=m&x=", "https://mt1.google.com/vt/lyrs=m&x=")
-                    )
+                        arrayOf("https://mt0.google.com/vt/lyrs=m", "https://mt1.google.com/vt/lyrs=m", "https://mt2.google.com/vt/lyrs=m", "https://mt3.google.com/vt/lyrs=m")
+                    ) {
+                        override fun getTileURLString(pMapTileIndex: Long): String {
+                            return baseUrl + "&x=" + MapTileIndex.getX(pMapTileIndex) + "&y=" + MapTileIndex.getY(pMapTileIndex) + "&z=" + MapTileIndex.getZoom(pMapTileIndex)
+                        }
+                    }
                 } else {
                     TileSourceFactory.MAPNIK
                 }
