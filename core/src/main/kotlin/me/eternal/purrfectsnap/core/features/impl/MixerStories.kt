@@ -50,7 +50,7 @@ class MixerStories : Feature("MixerStories") {
                     ProtoEditor(buffer).apply {
                         edit {
                             getOrNull(2)?.removeIf {
-                                it.toReader().getVarInt(7, 4) == 1L
+                                (it.toReader().getVarInt(7, 4) ?: 0L) > 1L
                             }
                         }
                     }.toByteArray()
