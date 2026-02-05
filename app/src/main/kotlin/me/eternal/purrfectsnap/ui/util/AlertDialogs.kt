@@ -688,7 +688,7 @@ class AlertDialogs(
                     suspend fun search() {
                         okHttpClient.newCall(Request.Builder()
                             .url("https://nominatim.openstreetmap.org/search".toUri().buildUpon().appendQueryParameter("q", locationName).appendQueryParameter("format", "jsonv2").build().toString())
-                            .header("User-Agent", "PurrfectSnap/1.0")
+                            .header("User-Agent", Constants.OSM_USER_AGENT)
                             .build()
                         ).await().use { response ->
                             if (!response.isSuccessful) {
