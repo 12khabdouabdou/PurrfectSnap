@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ import me.eternal.purrfectsnap.storage.getAllScopeNotes
 import me.eternal.purrfectsnap.storage.setAllScopeNotes
 import me.eternal.purrfectsnap.task.UpdateCheckWorker
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.setup.Requirements
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
@@ -143,17 +145,40 @@ class HomeSettings : Routes.Route() {
         sharedPreferences: SharedPreferences,
         key: String,
         text: String,
-        defaultValue: Boolean = false
+        defaultValue: Boolean = false,
+        confirmDisableTitle: String? = null,
+        confirmDisableText: String? = null
     ) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, defaultValue)) }
+        var showDisableDialog by remember { mutableStateOf(false) }
         val hapticFeedback = LocalHapticFeedback.current
+        val positiveLabel = context.translation["button.positive"] ?: "Yes"
+        val negativeLabel = context.translation["button.negative"] ?: "No"
 
         LaunchedEffect(realKey) {
             if (!sharedPreferences.contains(realKey)) {
                 sharedPreferences.edit().putBoolean(realKey, defaultValue).apply()
                 value = defaultValue
             }
+        }
+
+        if (showDisableDialog) {
+            AestheticDialog(
+                onDismissRequest = { showDisableDialog = false },
+                title = confirmDisableTitle ?: "Are you sure?",
+                text = confirmDisableText.orEmpty(),
+                icon = Icons.Filled.Warning,
+                confirmButtonText = positiveLabel,
+                dismissButtonText = negativeLabel,
+                onConfirm = {
+                    value = false
+                    sharedPreferences.edit().putBoolean(realKey, false).apply()
+                    showDisableDialog = false
+                },
+                onDismiss = { showDisableDialog = false },
+                showCloseButton = false
+            )
         }
 
         Row(
@@ -164,11 +189,15 @@ class HomeSettings : Routes.Route() {
                     if (context.config.root.global.uiSettings.hapticFeedback.get()) {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
-                    value = !value
-                    sharedPreferences
-                        .edit() {
+                    val nextValue = !value
+                    if (!nextValue && confirmDisableTitle != null) {
+                        showDisableDialog = true
+                    } else {
+                        value = nextValue
+                        sharedPreferences.edit() {
                             putBoolean(realKey, value)
                         }
+                    }
                 },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -283,11 +312,14 @@ class HomeSettings : Routes.Route() {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
         val scrollState = rememberScrollState()
+        val positiveLabel = context.translation["button.positive"] ?: "Yes"
+        val negativeLabel = context.translation["button.negative"] ?: "No"
         val sharedButtonColors = ButtonDefaults.buttonColors(
             containerColor = Color.White.copy(alpha = 0.12f),
             contentColor = Color.White
         )
         val sharedOutlinedColors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+        var showResetSetupDialog by remember { mutableStateOf(false) }
 
         @Composable
         fun GlassCard(
@@ -343,6 +375,39 @@ class HomeSettings : Routes.Route() {
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
+            if (showResetSetupDialog) {
+                AestheticDialog(
+                    onDismissRequest = { showResetSetupDialog = false },
+                    title = "Are you sure?",
+                    text = "This will reset PurrfectSnap and restart setup.",
+                    icon = Icons.Filled.Warning,
+                    confirmButtonText = positiveLabel,
+                    dismissButtonText = negativeLabel,
+                    onConfirm = {
+                        showResetSetupDialog = false
+                        context.sharedPreferences.edit()
+                            .remove("setup_in_progress")
+                            .remove("setup_current_route")
+                            .remove("setup_skip_patch")
+                            .remove("setup_install_mode")
+                            .apply()
+
+                        context.config.reset()
+                        context.config.writeConfig()
+
+                        val intent = android.content.Intent(
+                            context.androidContext,
+                            me.eternal.purrfectsnap.ui.setup.SetupActivity::class.java
+                        )
+                        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                            android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.androidContext.startActivity(intent)
+                        routes.navController.popBackStack()
+                    },
+                    onDismiss = { showResetSetupDialog = false },
+                    showCloseButton = false
+                )
+            }
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -552,25 +617,7 @@ class HomeSettings : Routes.Route() {
                                 .fillMaxWidth()
                                 .heightIn(min = 55.dp)
                                 .clickable {
-                                    // Clear setup progress and route back to SetupActivity
-                                    context.sharedPreferences.edit()
-                                        .remove("setup_in_progress")
-                                        .remove("setup_current_route")
-                                        .remove("setup_skip_patch")
-                                        .remove("setup_install_mode")
-                                        .apply()
-
-                                    // Clear config to defaults
-                                    context.config.reset()
-                                    context.config.writeConfig()
-
-                                    // Launch setup activity fresh
-                                    val intent = android.content.Intent(context.androidContext, me.eternal.purrfectsnap.ui.setup.SetupActivity::class.java)
-                                    intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    context.androidContext.startActivity(intent)
-
-                                    // Close current manager activity
-                                    routes.navController.popBackStack()
+                                    showResetSetupDialog = true
                                 },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
@@ -901,7 +948,9 @@ class HomeSettings : Routes.Route() {
                                         context.sharedPreferences,
                                         key = "test_mode",
                                         text = translation["test_mode_label"],
-                                        defaultValue = true
+                                        defaultValue = true,
+                                        confirmDisableTitle = "Are you sure?",
+                                        confirmDisableText = "Doing this will put your account at risk and cause bans!"
                                     )
                                     PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = translation["disable_feature_loading_label"])
                                     PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = translation["disable_auto_mapper_label"])
