@@ -1698,26 +1698,6 @@
                         "name": "Auto Updater",
                         "description": "Automatically checks for new updates"
                     },
-                    "update_settings": {
-                        "name": "Update Settings",
-                        "description": "Control how PurrfectSnap checks for updates",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Auto Update Check"
-                            },
-                            "update_check_frequency": {
-                                "name": "Update Check Frequency"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI Settings",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptic Feedback"
-                            }
-                        }
-                    },
                     "disable_metrics": {
                         "name": "Disable Metrics",
                         "description": "Blocks sending specific analytic data to Snapchat"
