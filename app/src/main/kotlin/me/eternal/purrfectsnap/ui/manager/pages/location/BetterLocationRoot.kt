@@ -276,13 +276,19 @@ class BetterLocationRoot : Routes.Route() {
         }
 
         if (showProviderDialog) {
-            me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { showProviderDialog = false }) {
+            me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = {
+                showProviderDialog = false
+                context.config.writeConfig()
+            }) {
                 alertDialogs.UniqueSelectionDialog(providerProperty)
             }
         }
         if (showApiKeyDialog) {
             me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { showApiKeyDialog = false }) {
-                alertDialogs.KeyboardInputDialog(apiKeyProperty) { showApiKeyDialog = false }
+                alertDialogs.KeyboardInputDialog(apiKeyProperty) {
+                    showApiKeyDialog = false
+                    context.config.writeConfig()
+                }
             }
         }
 
