@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 készítette: Eternal",
+                "version_title": "v{versionName} · készítette: Eternal",
                 "update_title": "PurrfectSnap Frissítés",
                 "update_content": "A(z) {version} verzió elérhető!",
                 "update_button": "Letöltés",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "Nincsenek feladatok",
                 "merge_button": "Összevonás",
-                "summary_active": "{active} aktív \u00b7 {recent} legutóbbi",
-                "summary_idle": "Tétlen \u00b7 {recent} legutóbbi",
+                "summary_active": "{active} aktív · {recent} legutóbbi",
+                "summary_idle": "Tétlen · {recent} legutóbbi",
                 "running_count": "{count} fut",
                 "clear_button_description": "Feladatok törlése",
                 "failed_to_open_file": "Fájl megnyitása sikertelen",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "{count} feladat eltávolítása?",
                 "remove_all_tasks_confirm": "Összes feladat eltávolítása?"
             },
-        "features": {
-            "disabled": "Letiltva",
-            "export_option": "Exportálás",
-            "import_option": "Importálás",
-            "reset_option": "Visszaállítás",
-            "config_export_success_toast": "Konfiguráció exportálása sikeres",
-            "config_import_success_toast": "Konfiguráció importálása sikeres",
-            "config_import_failure_toast": "Konfiguráció importálása sikertelen: {error}",
-            "config_export_failure_toast": "Konfiguráció exportálása sikertelen: {error}",
-            "saved_config_snackbar": "Konfiguráció mentve",
-            "older_required": "Ennek a funkciónak a helyes működéséhez Snapchat v{version} vagy régebbi verzió szükséges",
-            "newer_required": "Ennek a funkciónak a helyes működéséhez Snapchat v{version} vagy újabb verzió szükséges",
-            "search_button": "Keresés",
-            "clear_history": "Keresési előzmények törlése",
-            "subtitle": "Funkciók keresése és kezelése"
-        },
+            "features": {
+                "disabled": "Letiltva",
+                "export_option": "Exportálás",
+                "import_option": "Importálás",
+                "reset_option": "Visszaállítás",
+                "config_export_success_toast": "Konfiguráció exportálása sikeres",
+                "config_import_success_toast": "Konfiguráció importálása sikeres",
+                "config_import_failure_toast": "Konfiguráció importálása sikertelen: {error}",
+                "config_export_failure_toast": "Konfiguráció exportálása sikertelen: {error}",
+                "saved_config_snackbar": "Konfiguráció mentve",
+                "older_required": "Ennek a funkciónak a helyes működéséhez Snapchat v{version} vagy régebbi verzió szükséges",
+                "newer_required": "Ennek a funkciónak a helyes működéséhez Snapchat v{version} vagy újabb verzió szükséges",
+                "search_button": "Keresés",
+                "clear_history": "Keresési előzmények törlése",
+                "subtitle": "Funkciók keresése és kezelése"
+            },
             "bypass_status": {
                 "active": "PurrAura Aktív",
                 "inactive": "PurrAura Inaktív"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "Teleportálás baráthoz",
                 "search_bar": "Keresés",
                 "no_friends_map": "Nincsenek barátok a térképen",
-                "no_friends_found": "Nem található barát"
+                "no_friends_found": "Nem található barát",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 Instabil",
-            "ban_risk": "\u26a0 Ez a funkció kitiltást okozhat",
-            "internal_behavior": "\u26a0 Ez megtörheti a Snapchat belső működését"
+            "unstable": "⚠ Instabil",
+            "ban_risk": "⚠ Ez a funkció kitiltást okozhat",
+            "internal_behavior": "⚠ Ez megtörheti a Snapchat belső működését"
         },
         "properties": {
             "global": {
                 "name": "Globális",
-                "description": "Általános modul beállítások és alapértelmezések",
+                "description": "Globális Snapchat beállítások finomhangolása",
                 "properties": {
-                    "ui_settings": {
-                        "name": "Felület beállításai",
-                        "description": "Visszajelzések és üzenetek hangolása",
+                    "better_location": {
+                        "name": "Jobb Helymeghatározás",
+                        "description": "Javítja a Snapchat Helymeghatározását",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptikus visszajelzés",
-                                "description": "Rezgés a támogatott interakcióknál"
+                            "spoof_location": {
+                                "name": "Helyszín hamisítása",
+                                "description": "Egy adott helyre hamisítja a tartózkodási helyedet"
                             },
-                            "use_system_toasts": {
-                                "name": "Rendszerüzenetek használata",
-                                "description": "Androidos rendszerüzenetek (toast) megjelenítése az alkalmazáson belüli fedvények helyett"
+                            "coordinates": {
+                                "name": "Koordináták",
+                                "description": "Állítsd be a hamisított hely koordinátáit"
+                            },
+                            "walk_radius": {
+                                "name": "Séta sugár",
+                                "description": "Véletlenszerű séta ezen a sugáron belül (láb)"
+                            },
+                            "always_update_location": {
+                                "name": "Helyszín mindig frissítése",
+                                "description": "Kényszeríti a Snapchatet a helyszín frissítésére még akkor is, ha nincs GPS adat"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Helyfrissítések felfüggesztése",
+                                "description": "Megakadályozza a helyzeted frissítését"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Akkumulátorszint hamisítása",
+                                "description": "Meghamisítja az eszközöd akkumulátorszintjét a térképen\nAz értéknek 0 és 100 között kell lennie"
+                            },
+                            "spoof_headphones": {
+                                "name": "Fejhallgató hamisítása",
+                                "description": "Meghamisítja a zenehallgatás állapotát a térképen"
+                            },
+                            "show_battery_level": {
+                                "name": "Akkumulátorszint mutatása",
+                                "description": "Mutatja a barátaid akkumulátorszintjét a térképen"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "Frissítési beállítások",
-                        "description": "Automatikus frissítés-ellenőrzés vezérlése",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Engedélyezi a Snapchat Plus funkciókat\nNéhány szerveroldali funkció nem feltétlenül működik"
+                    },
+                    "media_upload_quality": {
+                        "name": "Média feltöltési minőség",
+                        "description": "Felülbírálja a média feltöltési minőségét",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "Automatikus frissítés keresés",
-                                "description": "Automatikusan keresi az új buildeket"
+                            "force_video_upload_source_quality": {
+                                "name": "Videó feltöltés forrásminőség kényszerítése",
+                                "description": "Kényszeríti a Snapchatet a forrásminőség használatára videók feltöltésekor\nKérlek vedd figyelembe, hogy ez nem feltétlenül távolítja el a metaadatokat a médiából"
                             },
-                            "update_check_frequency": {
-                                "name": "Frissítés gyakorisága",
-                                "description": "Milyen gyakran keressen frissítéseket"
+                            "disable_image_compression": {
+                                "name": "Képtömörítés letiltása",
+                                "description": "Letiltja a képtömörítést média feltöltésekor"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Egyéni képfeltöltési formátum",
+                                "description": "Beállít egy egyéni képfeltöltési formátumot\nVálassz veszteségmentes formátumot (mint a PNG) a legjobb minőséghez"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Megerősítő ablakok letiltása",
+                        "description": "Automatikusan megerősíti a kiválasztott műveleteket"
+                    },
+                    "auto_updater": {
+                        "name": "Automatikus frissítő",
+                        "description": "Automatikusan keresi az új frissítéseket"
+                    },
+                    "update_settings": {
+                        "name": "Frissítési beállítások",
+                        "description": "A PurrfectSnap frissítés-ellenőrzésének vezérlése",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Automatikus frissítés keresés"
+                            },
+                            "update_check_frequency": {
+                                "name": "Frissítés gyakorisága"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "Felület beállításai",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptikus visszajelzés"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Metrikák letiltása",
+                        "description": "Blokkolja bizonyos analitikai adatok küldését a Snapchatnek"
+                    },
+                    "disable_story_sections": {
+                        "name": "Sztori szekciók letiltása",
+                        "description": "Eltávolít szekciókat a Sztorik oldalról\nLehetséges, hogy frissítés szükséges a megfelelő működéshez"
+                    },
+                    "block_ads": {
+                        "name": "Hirdetések blokkolása",
+                        "description": "Megakadályozza a hirdetések megjelenítését"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Egyéni lapok letiltása",
+                        "description": "A linkeket a támogatott alkalmazásokban nyitja meg a Web Böngésző helyett"
+                    },
+                    "disable_permission_requests": {
+                        "name": "Engedélykérések letiltása",
+                        "description": "Megakadályozza, hogy a Snapchat specifikus engedélyeket kérjen"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Emlékek snap feed letiltása",
+                        "description": "Megakadályozza, hogy a Snapchat megjelenítse a legutóbbi emlékeket, amikor felfelé húzol a kamerában"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Spotlight kommentek felhasználónév",
+                        "description": "Megjeleníti a szerző felhasználónevét a Spotlight kommentekben"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Spotlight kommentek felhasználónév ikon",
+                        "description": "Válaszd ki, melyik ikon jelenjen meg a felhasználónevek mellett a Spotlight kommentekben"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Videó hossz korlátozások megkerülése",
+                        "description": "Single: egyetlen videót küld\nSplit: szerkesztés után szétvágja a videókat"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Alapértelmezett videó lejátszási sebesség",
+                        "description": "Beállítja a videók lejátszásának alapértelmezett sebességét\nAz értéknek 0.1 és 4.0 között kell lennie"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Videó lejátszási sebesség csúszka",
+                        "description": "Hozzáad egy csúszkát az opera helyi menühöz a videó lejátszási sebességének módosítására\nMegjegyzés: A változtatások csak a következő videókra vonatkoznak"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Google Play Szolgáltatások ablakok letiltása",
+                        "description": "Megakadályozza a Google Play Szolgáltatások elérhetőségére vonatkozó ablakok megjelenését"
+                    },
+                    "default_volume_controls": {
+                        "name": "Alapértelmezett hangerőszabályzók",
+                        "description": "Kényszeríti a Snapchatet a rendszer hangerőszabályzóinak használatára"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Telecom Framework letiltása",
+                        "description": "Megakadályozza, hogy a Snapchat az Android Telecom keretrendszert használja\nEz lehetővé teszi, hogy zenét hallgass hívás közben"
+                    },
+                    "hide_active_music": {
+                        "name": "Aktív zene elrejtése",
+                        "description": "Megakadályozza, hogy a Snapchat megtudja, hogy zenét hallgatsz\nEz lehetővé teszi, hogy snapeket készíts a hangerőgombok használatával zenehallgatás közben"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Snap darabolás letiltása",
+                        "description": "Megakadályozza, hogy a Snapek több részre legyenek osztva\nAz elküldött képek videóvá alakulnak"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Lopakodó mód jelző",
-                        "description": "Hozzáad egy \ud83d\udc7b emojit a Lopakodó módban lévő beszélgetések mellé"
+                        "description": "Hozzáad egy 👻 emojit a Lopakodó módban lévő beszélgetések mellé"
                     },
                     "edit_text_override": {
                         "name": "Szövegszerkesztés felülbírálása",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "Globális",
-                "description": "Globális Snapchat beállítások finomhangolása",
-                "properties": {
-                    "better_location": {
-                        "name": "Jobb Helymeghatározás",
-                        "description": "Javítja a Snapchat Helymeghatározását",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "Helyszín hamisítása",
-                                "description": "Egy adott helyre hamisítja a tartózkodási helyedet"
-                            },
-                            "coordinates": {
-                                "name": "Koordináták",
-                                "description": "Állítsd be a hamisított hely koordinátáit"
-                            },
-                            "walk_radius": {
-                                "name": "Séta sugár",
-                                "description": "Véletlenszerű séta ezen a sugáron belül (láb)"
-                            },
-                            "always_update_location": {
-                                "name": "Helyszín mindig frissítése",
-                                "description": "Kényszeríti a Snapchatet a helyszín frissítésére még akkor is, ha nincs GPS adat"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Helyfrissítések felfüggesztése",
-                                "description": "Megakadályozza a helyzeted frissítését"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Akkumulátorszint hamisítása",
-                                "description": "Meghamisítja az eszközöd akkumulátorszintjét a térképen\nAz értéknek 0 és 100 között kell lennie"
-                            },
-                            "spoof_headphones": {
-                                "name": "Fejhallgató hamisítása",
-                                "description": "Meghamisítja a zenehallgatás állapotát a térképen"
-                            },
-                            "show_battery_level": {
-                                "name": "Akkumulátorszint mutatása",
-                                "description": "Mutatja a barátaid akkumulátorszintjét a térképen"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Engedélyezi a Snapchat Plus funkciókat\nNéhány szerveroldali funkció nem feltétlenül működik"
-                    },
-                    "media_upload_quality": {
-                        "name": "Média feltöltési minőség",
-                        "description": "Felülbírálja a média feltöltési minőségét",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Videó feltöltés forrásminőség kényszerítése",
-                                "description": "Kényszeríti a Snapchatet a forrásminőség használatára videók feltöltésekor\nKérlek vedd figyelembe, hogy ez nem feltétlenül távolítja el a metaadatokat a médiából"
-                            },
-                            "disable_image_compression": {
-                                "name": "Képtömörítés letiltása",
-                                "description": "Letiltja a képtömörítést média feltöltésekor"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Egyéni képfeltöltési formátum",
-                                "description": "Beállít egy egyéni képfeltöltési formátumot\nVálassz veszteségmentes formátumot (mint a PNG) a legjobb minőséghez"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "Megerősítő ablakok letiltása",
-                        "description": "Automatikusan megerősíti a kiválasztott műveleteket"
-                    },
-                    "auto_updater": {
-                        "name": "Automatikus frissítő",
-                        "description": "Automatikusan keresi az új frissítéseket"
-                    },
-                    "update_settings": {
-                        "name": "Frissítési beállítások",
-                        "description": "A PurrfectSnap frissítés-ellenőrzésének vezérlése",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Automatikus frissítés keresés"
-                            },
-                            "update_check_frequency": {
-                                "name": "Frissítés gyakorisága"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "Felület beállításai",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptikus visszajelzés"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "Metrikák letiltása",
-                        "description": "Blokkolja bizonyos analitikai adatok küldését a Snapchatnek"
-                    },
-                    "disable_story_sections": {
-                        "name": "Sztori szekciók letiltása",
-                        "description": "Eltávolít szekciókat a Sztorik oldalról\nLehetséges, hogy frissítés szükséges a megfelelő működéshez"
-                    },
-                    "block_ads": {
-                        "name": "Hirdetések blokkolása",
-                        "description": "Megakadályozza a hirdetések megjelenítését"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Egyéni lapok letiltása",
-                        "description": "A linkeket a támogatott alkalmazásokban nyitja meg a Web Böngésző helyett"
-                    },
-                    "disable_permission_requests": {
-                        "name": "Engedélykérések letiltása",
-                        "description": "Megakadályozza, hogy a Snapchat specifikus engedélyeket kérjen"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Emlékek snap feed letiltása",
-                        "description": "Megakadályozza, hogy a Snapchat megjelenítse a legutóbbi emlékeket, amikor felfelé húzol a kamerában"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Spotlight kommentek felhasználónév",
-                        "description": "Megjeleníti a szerző felhasználónevét a Spotlight kommentekben"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Spotlight kommentek felhasználónév ikon",
-                        "description": "Válaszd ki, melyik ikon jelenjen meg a felhasználónevek mellett a Spotlight kommentekben"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Videó hossz korlátozások megkerülése",
-                        "description": "Single: egyetlen videót küld\nSplit: szerkesztés után szétvágja a videókat"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Alapértelmezett videó lejátszási sebesség",
-                        "description": "Beállítja a videók lejátszásának alapértelmezett sebességét\nAz értéknek 0.1 és 4.0 között kell lennie"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Videó lejátszási sebesség csúszka",
-                        "description": "Hozzáad egy csúszkát az opera helyi menühöz a videó lejátszási sebességének módosítására\nMegjegyzés: A változtatások csak a következő videókra vonatkoznak"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Google Play Szolgáltatások ablakok letiltása",
-                        "description": "Megakadályozza a Google Play Szolgáltatások elérhetőségére vonatkozó ablakok megjelenését"
-                    },
-                    "default_volume_controls": {
-                        "name": "Alapértelmezett hangerőszabályzók",
-                        "description": "Kényszeríti a Snapchatet a rendszer hangerőszabályzóinak használatára"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Telecom Framework letiltása",
-                        "description": "Megakadályozza, hogy a Snapchat az Android Telecom keretrendszert használja\nEz lehetővé teszi, hogy zenét hallgass hívás közben"
-                    },
-                    "hide_active_music": {
-                        "name": "Aktív zene elrejtése",
-                        "description": "Megakadályozza, hogy a Snapchat megtudja, hogy zenét hallgatsz\nEz lehetővé teszi, hogy snapeket készíts a hangerőgombok használatával zenehallgatás közben"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Snap darabolás letiltása",
-                        "description": "Megakadályozza, hogy a Snapek több részre legyenek osztva\nAz elküldött képek videóvá alakulnak"
-                    }
-                }
-            },
             "rules": {
                 "name": "Szabályok",
                 "description": "Automatizálási szabályok konfigurálása",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Titkosított üzenet jelző",
-                                "description": "Hozzáad egy \ud83d\udd12 emojit a titkosított üzenetek mellé"
+                                "description": "Hozzáad egy 🔒 emojit a titkosított üzenetek mellé"
                             },
                             "force_message_encryption": {
                                 "name": "Üzenettitkosítás kényszerítése",
@@ -2162,20 +2130,20 @@
                 "null": "Valós akkumulátorszint használata"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f Automatikus letöltés",
-                "auto_save": "\ud83d\udcac Üzenetek automatikus mentése",
-                "unsaveable_messages": "\u2b07\ufe0f Menthetetlen üzenetek",
-                "auto_open_snaps": "\ud83d\udcf7 Snapek automatikus megnyitása",
-                "stealth": "\ud83d\udc7b Lopakodó mód",
-                "auto_reply": "\ud83d\udce8 Automatikus válasz",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Elküldött üzenetek automatikus törlése",
-                "mark_snaps_as_seen": "\ud83d\udc40 Snapek látottnak jelölése",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 Sztorik látottnak jelölése helyileg",
-                "conversation_info": "\ud83d\udc64 Beszélgetés infó",
-                "e2e_encryption": "\ud83d\udd12 E2E Titkosítás használata",
-                "message_logger": "\ud83d\udcdd Üzenetnaplózó",
-                "auto_read": "\u2705 Automatikus olvasott",
-                "hide_typing_indicator": "\ud83d\ude48 Gépelésjelző elrejtése"
+                "auto_download": "⬇️ Automatikus letöltés",
+                "auto_save": "💬 Üzenetek automatikus mentése",
+                "unsaveable_messages": "⬇️ Menthetetlen üzenetek",
+                "auto_open_snaps": "📷 Snapek automatikus megnyitása",
+                "stealth": "👻 Lopakodó mód",
+                "auto_reply": "📨 Automatikus válasz",
+                "auto_delete_sent_messages": "🗑️ Elküldött üzenetek automatikus törlése",
+                "mark_snaps_as_seen": "👀 Snapek látottnak jelölése",
+                "mark_stories_as_seen_locally": "👀 Sztorik látottnak jelölése helyileg",
+                "conversation_info": "👤 Beszélgetés infó",
+                "e2e_encryption": "🔒 E2E Titkosítás használata",
+                "message_logger": "📝 Üzenetnaplózó",
+                "auto_read": "✅ Automatikus olvasott",
+                "hide_typing_indicator": "🙈 Gépelésjelző elrejtése"
             },
             "schedule_scheduled_for": "Időzítve {name} számára ekkorra: {time}",
             "schedule_sending_in": "Küldés ekkor: {time}",
@@ -2278,16 +2246,16 @@
             "custom_android_id": {
                 "null": "Valós Android ID használata"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "Felhasználónév alapján",
-	                "added_by_mention": "Említés alapján",
-	                "added_by_group_chat": "Csoportos chat által",
-	                "added_by_qr_code": "QR kód által",
-	                "added_by_community": "Közösség által",
-	                "added_by_quick_add": "Gyors hozzáadással (nagy a kitiltás kockázata)",
-	                "added_by_spotlight": "Spotlight által",
-	                "null": "Ne hamisítsa a forrást"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "Felhasználónév alapján",
+                "added_by_mention": "Említés alapján",
+                "added_by_group_chat": "Csoportos chat által",
+                "added_by_qr_code": "QR kód által",
+                "added_by_community": "Közösség által",
+                "added_by_quick_add": "Gyors hozzáadással (nagy a kitiltás kockázata)",
+                "added_by_spotlight": "Spotlight által",
+                "null": "Ne hamisítsa a forrást"
+            },
             "custom_streaks_expiration_format": {
                 "null": "Rendszer alapértelmezett"
             },
@@ -2394,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "Felhasználónév ikon",
-                "\ud83d\udc64": "Felhasználónév ikon",
-                "[\ud83d\udc64]": "Felhasználónév ikon",
+                "👤": "Felhasználónév ikon",
+                "[👤]": "Felhasználónév ikon",
                 "default": "Felhasználónév ikon",
                 "no_icon": "Nincs ikon"
             },
@@ -2475,11 +2443,11 @@
                 "phone_calls": "Telefonhívások"
             },
             "message_indicators": {
-                "encryption_indicator": "Hozzáad egy \ud83d\udd12 ikont azokhoz az üzenetekhez, amelyeket csak neked küldtek",
+                "encryption_indicator": "Hozzáad egy 🔒 ikont azokhoz az üzenetekhez, amelyeket csak neked küldtek",
                 "platform_indicator": "Hozzáadja a platform ikonját, ahonnan a médiát küldték (pl. Android, iOS, Web)",
-                "location_indicator": "Hozzáad egy \ud83d\udccd ikont a snapekhez, ha azokat bekapcsolt helymeghatározással küldték",
+                "location_indicator": "Hozzáad egy 📍 ikont a snapekhez, ha azokat bekapcsolt helymeghatározással küldték",
                 "ovf_editor_indicator": "Jelzi, ha egy snapet az OVF szerkesztővel küldtek",
-                "director_mode_indicator": "Hozzáad egy \u270f\ufe0f ikont a snapekhez, ha azokat Director Mode-dal küldték, ami lehetővé teszi galéria képek snapként való küldését"
+                "director_mode_indicator": "Hozzáad egy ✏️ ikont a snapekhez, ha azokat Director Mode-dal küldték, ami lehetővé teszi galéria képek snapként való küldését"
             },
             "auto_mark_as_read": {
                 "conversation_read": "Beszélgetés olvasottnak jelölése üzenet küldésekor",
@@ -2703,7 +2671,6 @@
         "show_chat_edit_history": "Chat szerkesztési előzmények mutatása",
         "convert_message": "Üzenet konvertálása"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Chat háttérkép letöltése"
     },
@@ -3033,7 +3000,7 @@
         "queue_cleared": "Sor törölve és statisztika visszaállítva",
         "queue_cleared_title": "Sor törölve",
         "queue_cleared_reset": "Sor törölve és visszaállítva",
-        "queue_cleared_feedback": "{count} várakozó snap törölve \u2022 {processed} feldolgozott számláló visszaállítva",
+        "queue_cleared_feedback": "{count} várakozó snap törölve • {processed} feldolgozott számláló visszaállítva",
         "queue_cleared_feedback_simple": "{processed} feldolgozott számláló visszaállítva",
         "unknown_sender": "Ismeretlen",
         "unknown_user": "Ismeretlen felhasználó",

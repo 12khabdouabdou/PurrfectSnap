@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 Eternal দ্বারা",
+                "version_title": "v{versionName} · Eternal দ্বারা",
                 "update_title": "PurrfectSnap আপডেট",
                 "update_content": "ভার্সন {version} উপলব্ধ!",
                 "update_button": "ডাউনলোড",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "কোনো টাস্ক নেই",
                 "merge_button": "মার্জ",
-                "summary_active": "{active} সক্রিয় \u00b7 {recent} সাম্প্রতিক",
-                "summary_idle": "অলস \u00b7 {recent} সাম্প্রতিক",
+                "summary_active": "{active} সক্রিয় · {recent} সাম্প্রতিক",
+                "summary_idle": "অলস · {recent} সাম্প্রতিক",
                 "running_count": "{count} চলছে",
                 "clear_button_description": "টাস্ক পরিষ্কার করুন",
                 "failed_to_open_file": "ফাইল খুলতে ব্যর্থ",
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "বন্ধুর কাছে টেলিপোর্ট করুন",
                 "search_bar": "অনুসন্ধান",
                 "no_friends_map": "ম্যাপে কোনো বন্ধু নেই",
-                "no_friends_found": "কোনো বন্ধু পাওয়া যায়নি"
+                "no_friends_found": "কোনো বন্ধু পাওয়া যায়নি",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 অস্থির",
-            "ban_risk": "\u26a0 এই ফিচারটি ব্যান ঘটাতে পারে",
-            "internal_behavior": "\u26a0 এটি Snapchat-এর অভ্যন্তরীণ আচরণ নষ্ট করতে পারে"
+            "unstable": "⚠ অস্থির",
+            "ban_risk": "⚠ এই ফিচারটি ব্যান ঘটাতে পারে",
+            "internal_behavior": "⚠ এটি Snapchat-এর অভ্যন্তরীণ আচরণ নষ্ট করতে পারে"
         },
         "properties": {
             "global": {
                 "name": "গ্লোবাল",
-                "description": "সাধারণ মডিউল পছন্দ এবং ডিফল্ট",
+                "description": "গ্লোবাল Snapchat সেটিংস টুইক করুন",
                 "properties": {
-                    "ui_settings": {
-                        "name": "UI সেটিংস",
-                        "description": "ফিডব্যাক এবং টোস্ট আচরণ টিউন করুন",
+                    "better_location": {
+                        "name": "বেটার লোকেশন",
+                        "description": "Snapchat লোকেশন উন্নত করে",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "হ্যাপটিক ফিডব্যাক",
-                                "description": "সমর্থিত ইন্টারঅ্যাকশনে ভাইব্রেট করুন"
+                            "spoof_location": {
+                                "name": "লোকেশন স্পুফ করুন",
+                                "description": "আপনার লোকেশন একটি নির্দিষ্ট স্থানে স্পুফ করে"
                             },
-                            "use_system_toasts": {
-                                "name": "সিস্টেম টোস্ট ব্যবহার করুন",
-                                "description": "ইন-অ্যাপ ওভারলে-এর পরিবর্তে অ্যান্ড্রয়েড টোস্ট দেখান"
+                            "coordinates": {
+                                "name": "স্থানাঙ্ক",
+                                "description": "স্পুফ করা লোকেশনের স্থানাঙ্ক সেট করুন"
+                            },
+                            "walk_radius": {
+                                "name": "হাঁটার ব্যাসার্ধ",
+                                "description": "এই ব্যাসার্ধের মধ্যে এলোমেলোভাবে হাঁটুন (ft)"
+                            },
+                            "always_update_location": {
+                                "name": "সর্বদা লোকেশন আপডেট করুন",
+                                "description": "GPS ডেটা না পেলেও Snapchat-কে লোকেশন আপডেট করতে বাধ্য করুন"
+                            },
+                            "suspend_location_updates": {
+                                "name": "লোকেশন আপডেট স্থগিত করুন",
+                                "description": "আপনার লোকেশন আপডেট হওয়া থেকে প্রতিরোধ করে"
+                            },
+                            "spoof_battery_level": {
+                                "name": "ব্যাটারি লেভেল স্পুফ করুন",
+                                "description": "ম্যাপে আপনার ডিভাইসের ব্যাটারি লেভেল স্পুফ করে\nমান অবশ্যই ০ এবং ১০০ এর মধ্যে হতে হবে"
+                            },
+                            "spoof_headphones": {
+                                "name": "হেডফোন স্পুফ করুন",
+                                "description": "ম্যাপে গান শোনার স্ট্যাটাস স্পুফ করে"
+                            },
+                            "show_battery_level": {
+                                "name": "ব্যাটারি লেভেল দেখান",
+                                "description": "ম্যাপে আপনার বন্ধুদের ব্যাটারি লেভেল দেখায়"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "আপডেট সেটিংস",
-                        "description": "স্বয়ংক্রিয় আপডেট চেক নিয়ন্ত্রণ করুন",
+                    "snapchat_plus": {
+                        "name": "Snapchat প্লাস",
+                        "description": "Snapchat প্লাস ফিচার সক্ষম করে\nকিছু সার্ভার-সাইড ফিচার কাজ নাও করতে পারে"
+                    },
+                    "media_upload_quality": {
+                        "name": "মিডিয়া আপলোড কোয়ালিটি",
+                        "description": "মিডিয়া আপলোড কোয়ালিটি ওভাররাইড করে",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "অটো আপডেট চেক",
-                                "description": "স্বয়ংক্রিয়ভাবে নতুন বিল্ড চেক করুন"
+                            "force_video_upload_source_quality": {
+                                "name": "ভিডিও আপলোড সোর্স কোয়ালিটি ফোর্স করুন",
+                                "description": "ভিডিও আপলোড করার সময় Snapchat-কে সোর্স কোয়ালিটি ব্যবহার করতে বাধ্য করে\nঅনুগ্রহ করে লক্ষ্য করুন যে এটি মিডিয়া থেকে মেটাডেটা নাও সরাতে পারে"
                             },
-                            "update_check_frequency": {
-                                "name": "আপডেট চেক ফ্রিকোয়েন্সি",
-                                "description": "কত ঘন ঘন আপডেটের জন্য চেক করা হবে"
+                            "disable_image_compression": {
+                                "name": "ইমেজ কমপ্রেশন নিষ্ক্রিয় করুন",
+                                "description": "মিডিয়া আপলোড করার সময় ইমেজ কমপ্রেশন নিষ্ক্রিয় করে"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "কাস্টম ইমেজ আপলোড ফরম্যাট",
+                                "description": "একটি কাস্টম ইমেজ আপলোড ফরম্যাট সেট করে\nসেরা মানের জন্য একটি লসলেস ফরম্যাট (যেমন PNG) নির্বাচন করুন"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "কনফার্মেশন ডায়ালগ নিষ্ক্রিয় করুন",
+                        "description": "নির্বাচিত অ্যাকশনগুলি স্বয়ংক্রিয়ভাবে নিশ্চিত করে"
+                    },
+                    "auto_updater": {
+                        "name": "অটো আপডেটার",
+                        "description": "স্বয়ংক্রিয়ভাবে নতুন আপডেটের জন্য চেক করে"
+                    },
+                    "update_settings": {
+                        "name": "আপডেট সেটিংস",
+                        "description": "PurrfectSnap কীভাবে আপডেটের জন্য চেক করে তা নিয়ন্ত্রণ করুন",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "অটো আপডেট চেক"
+                            },
+                            "update_check_frequency": {
+                                "name": "আপডেট চেক ফ্রিকোয়েন্সি"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "UI সেটিংস",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "হ্যাপটিক ফিডব্যাক"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "মেট্রিক্স নিষ্ক্রিয় করুন",
+                        "description": "Snapchat-এ নির্দিষ্ট অ্যানালিটিক ডেটা পাঠানো ব্লক করে"
+                    },
+                    "disable_story_sections": {
+                        "name": "স্টোরি সেকশন নিষ্ক্রিয় করুন",
+                        "description": "স্টোরি পেজ থেকে সেকশনগুলি সরিয়ে ফেলে\nসঠিকভাবে কাজ করার জন্য রিফ্রেশ করার প্রয়োজন হতে পারে"
+                    },
+                    "block_ads": {
+                        "name": "বিজ্ঞাপন ব্লক করুন",
+                        "description": "বিজ্ঞাপন প্রদর্শন করা থেকে বিরত রাখে"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "কাস্টম ট্যাব নিষ্ক্রিয় করুন",
+                        "description": "ওয়েব ব্রাউজারের পরিবর্তে সমর্থিত অ্যাপ্লিকেশনগুলিতে লিঙ্ক খোলে"
+                    },
+                    "disable_permission_requests": {
+                        "name": "অনুমতি অনুরোধ নিষ্ক্রিয় করুন",
+                        "description": "Snapchat-কে নির্দিষ্ট অনুমতির জন্য জিজ্ঞাসা করা থেকে বিরত রাখে"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "মেমরি স্ন্যাপ ফিড নিষ্ক্রিয় করুন",
+                        "description": "ক্যামেরায় সোয়াইপ আপ করার সময় Snapchat-কে সাম্প্রতিক মেমরি দেখানো থেকে বিরত রাখে"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "স্পটলাইট কমেন্টস ইউজারনেম",
+                        "description": "স্পটলাইট কমেন্টে লেখকের ইউজারনেম দেখায়"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "স্পটলাইট কমেন্টস ইউজারনেম আইকন",
+                        "description": "স্পটলাইট কমেন্টে ইউজারনেমের পাশে কোন আইকন প্রদর্শিত হবে তা বাছুন"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "ভিডিও দৈর্ঘ্যের সীমাবদ্ধতা বাইপাস",
+                        "description": "সিঙ্গেল: একটি একক ভিডিও পাঠায়\nস্প্লিট: এডিট করার পরে ভিডিও ভাগ করে"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "ডিফল্ট ভিডিও প্লেব্যাক রেট",
+                        "description": "ভিডিও প্লেব্যাকের জন্য ডিফল্ট গতি সেট করে\nমান অবশ্যই ০.১ এবং ৪.০ এর মধ্যে হতে হবে"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "ভিডিও প্লেব্যাক রেট স্লাইডার",
+                        "description": "ভিডিও প্লেব্যাক রেট পরিবর্তন করতে অপেরা কনটেক্সট মেনুতে একটি স্লাইডার যোগ করে\nদ্রষ্টব্য: পরিবর্তনগুলি শুধুমাত্র পরবর্তী ভিডিওগুলিতে প্রযোজ্য"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "গুগল প্লে সার্ভিসেস ডায়ালগ নিষ্ক্রিয় করুন",
+                        "description": "গুগল প্লে সার্ভিসেস উপলব্ধতা ডায়ালগ দেখানো থেকে বিরত রাখুন"
+                    },
+                    "default_volume_controls": {
+                        "name": "ডিফল্ট ভলিউম কন্ট্রোল",
+                        "description": "Snapchat-কে সিস্টেম ভলিউম কন্ট্রোল ব্যবহার করতে বাধ্য করে"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "টেলিকম ফ্রেমওয়ার্ক নিষ্ক্রিয় করুন",
+                        "description": "Snapchat-কে অ্যান্ড্রয়েড টেলিকম ফ্রেমওয়ার্ক ব্যবহার করা থেকে বিরত রাখে\nএটি আপনাকে কলে থাকার সময় গান শোনার অনুমতি দেয়"
+                    },
+                    "hide_active_music": {
+                        "name": "অ্যাক্টিভ মিউজিক লুকান",
+                        "description": "Snapchat-কে জানতে দেয় না যে আপনি গান শুনছেন\nএটি আপনাকে গান শোনার সময় ভলিউম বোতাম ব্যবহার করে স্ন্যাপ নেওয়ার অনুমতি দেবে"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "স্ন্যাপ স্প্লিটিং নিষ্ক্রিয় করুন",
+                        "description": "স্ন্যাপগুলিকে একাধিক অংশে ভাগ করা থেকে বিরত রাখে\nআপনার পাঠানো ছবিগুলি ভিডিওতে পরিণত হবে"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "স্টিলথ মোড ইন্ডিকেটর",
-                        "description": "স্টিলথ মোডে থাকা কনভারসেশনের পাশে একটি \ud83d\udc7b ইমোজি যোগ করে"
+                        "description": "স্টিলথ মোডে থাকা কনভারসেশনের পাশে একটি 👻 ইমোজি যোগ করে"
                     },
                     "edit_text_override": {
                         "name": "এডিট টেক্সট ওভাররাইড",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "গ্লোবাল",
-                "description": "গ্লোবাল Snapchat সেটিংস টুইক করুন",
-                "properties": {
-                    "better_location": {
-                        "name": "বেটার লোকেশন",
-                        "description": "Snapchat লোকেশন উন্নত করে",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "লোকেশন স্পুফ করুন",
-                                "description": "আপনার লোকেশন একটি নির্দিষ্ট স্থানে স্পুফ করে"
-                            },
-                            "coordinates": {
-                                "name": "স্থানাঙ্ক",
-                                "description": "স্পুফ করা লোকেশনের স্থানাঙ্ক সেট করুন"
-                            },
-                            "walk_radius": {
-                                "name": "হাঁটার ব্যাসার্ধ",
-                                "description": "এই ব্যাসার্ধের মধ্যে এলোমেলোভাবে হাঁটুন (ft)"
-                            },
-                            "always_update_location": {
-                                "name": "সর্বদা লোকেশন আপডেট করুন",
-                                "description": "GPS ডেটা না পেলেও Snapchat-কে লোকেশন আপডেট করতে বাধ্য করুন"
-                            },
-                            "suspend_location_updates": {
-                                "name": "লোকেশন আপডেট স্থগিত করুন",
-                                "description": "আপনার লোকেশন আপডেট হওয়া থেকে প্রতিরোধ করে"
-                            },
-                            "spoof_battery_level": {
-                                "name": "ব্যাটারি লেভেল স্পুফ করুন",
-                                "description": "ম্যাপে আপনার ডিভাইসের ব্যাটারি লেভেল স্পুফ করে\nমান অবশ্যই ০ এবং ১০০ এর মধ্যে হতে হবে"
-                            },
-                            "spoof_headphones": {
-                                "name": "হেডফোন স্পুফ করুন",
-                                "description": "ম্যাপে গান শোনার স্ট্যাটাস স্পুফ করে"
-                            },
-                            "show_battery_level": {
-                                "name": "ব্যাটারি লেভেল দেখান",
-                                "description": "ম্যাপে আপনার বন্ধুদের ব্যাটারি লেভেল দেখায়"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat প্লাস",
-                        "description": "Snapchat প্লাস ফিচার সক্ষম করে\nকিছু সার্ভার-সাইড ফিচার কাজ নাও করতে পারে"
-                    },
-                    "media_upload_quality": {
-                        "name": "মিডিয়া আপলোড কোয়ালিটি",
-                        "description": "মিডিয়া আপলোড কোয়ালিটি ওভাররাইড করে",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "ভিডিও আপলোড সোর্স কোয়ালিটি ফোর্স করুন",
-                                "description": "ভিডিও আপলোড করার সময় Snapchat-কে সোর্স কোয়ালিটি ব্যবহার করতে বাধ্য করে\nঅনুগ্রহ করে লক্ষ্য করুন যে এটি মিডিয়া থেকে মেটাডেটা নাও সরাতে পারে"
-                            },
-                            "disable_image_compression": {
-                                "name": "ইমেজ কমপ্রেশন নিষ্ক্রিয় করুন",
-                                "description": "মিডিয়া আপলোড করার সময় ইমেজ কমপ্রেশন নিষ্ক্রিয় করে"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "কাস্টম ইমেজ আপলোড ফরম্যাট",
-                                "description": "একটি কাস্টম ইমেজ আপলোড ফরম্যাট সেট করে\nসেরা মানের জন্য একটি লসলেস ফরম্যাট (যেমন PNG) নির্বাচন করুন"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "কনফার্মেশন ডায়ালগ নিষ্ক্রিয় করুন",
-                        "description": "নির্বাচিত অ্যাকশনগুলি স্বয়ংক্রিয়ভাবে নিশ্চিত করে"
-                    },
-                    "auto_updater": {
-                        "name": "অটো আপডেটার",
-                        "description": "স্বয়ংক্রিয়ভাবে নতুন আপডেটের জন্য চেক করে"
-                    },
-                    "update_settings": {
-                        "name": "আপডেট সেটিংস",
-                        "description": "PurrfectSnap কীভাবে আপডেটের জন্য চেক করে তা নিয়ন্ত্রণ করুন",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "অটো আপডেট চেক"
-                            },
-                            "update_check_frequency": {
-                                "name": "আপডেট চেক ফ্রিকোয়েন্সি"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI সেটিংস",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "হ্যাপটিক ফিডব্যাক"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "মেট্রিক্স নিষ্ক্রিয় করুন",
-                        "description": "Snapchat-এ নির্দিষ্ট অ্যানালিটিক ডেটা পাঠানো ব্লক করে"
-                    },
-                    "disable_story_sections": {
-                        "name": "স্টোরি সেকশন নিষ্ক্রিয় করুন",
-                        "description": "স্টোরি পেজ থেকে সেকশনগুলি সরিয়ে ফেলে\nসঠিকভাবে কাজ করার জন্য রিফ্রেশ করার প্রয়োজন হতে পারে"
-                    },
-                    "block_ads": {
-                        "name": "বিজ্ঞাপন ব্লক করুন",
-                        "description": "বিজ্ঞাপন প্রদর্শন করা থেকে বিরত রাখে"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "কাস্টম ট্যাব নিষ্ক্রিয় করুন",
-                        "description": "ওয়েব ব্রাউজারের পরিবর্তে সমর্থিত অ্যাপ্লিকেশনগুলিতে লিঙ্ক খোলে"
-                    },
-                    "disable_permission_requests": {
-                        "name": "অনুমতি অনুরোধ নিষ্ক্রিয় করুন",
-                        "description": "Snapchat-কে নির্দিষ্ট অনুমতির জন্য জিজ্ঞাসা করা থেকে বিরত রাখে"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "মেমরি স্ন্যাপ ফিড নিষ্ক্রিয় করুন",
-                        "description": "ক্যামেরায় সোয়াইপ আপ করার সময় Snapchat-কে সাম্প্রতিক মেমরি দেখানো থেকে বিরত রাখে"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "স্পটলাইট কমেন্টস ইউজারনেম",
-                        "description": "স্পটলাইট কমেন্টে লেখকের ইউজারনেম দেখায়"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "স্পটলাইট কমেন্টস ইউজারনেম আইকন",
-                        "description": "স্পটলাইট কমেন্টে ইউজারনেমের পাশে কোন আইকন প্রদর্শিত হবে তা বাছুন"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "ভিডিও দৈর্ঘ্যের সীমাবদ্ধতা বাইপাস",
-                        "description": "সিঙ্গেল: একটি একক ভিডিও পাঠায়\nস্প্লিট: এডিট করার পরে ভিডিও ভাগ করে"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "ডিফল্ট ভিডিও প্লেব্যাক রেট",
-                        "description": "ভিডিও প্লেব্যাকের জন্য ডিফল্ট গতি সেট করে\nমান অবশ্যই ০.১ এবং ৪.০ এর মধ্যে হতে হবে"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "ভিডিও প্লেব্যাক রেট স্লাইডার",
-                        "description": "ভিডিও প্লেব্যাক রেট পরিবর্তন করতে অপেরা কনটেক্সট মেনুতে একটি স্লাইডার যোগ করে\nদ্রষ্টব্য: পরিবর্তনগুলি শুধুমাত্র পরবর্তী ভিডিওগুলিতে প্রযোজ্য"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "গুগল প্লে সার্ভিসেস ডায়ালগ নিষ্ক্রিয় করুন",
-                        "description": "গুগল প্লে সার্ভিসেস উপলব্ধতা ডায়ালগ দেখানো থেকে বিরত রাখুন"
-                    },
-                    "default_volume_controls": {
-                        "name": "ডিফল্ট ভলিউম কন্ট্রোল",
-                        "description": "Snapchat-কে সিস্টেম ভলিউম কন্ট্রোল ব্যবহার করতে বাধ্য করে"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "টেলিকম ফ্রেমওয়ার্ক নিষ্ক্রিয় করুন",
-                        "description": "Snapchat-কে অ্যান্ড্রয়েড টেলিকম ফ্রেমওয়ার্ক ব্যবহার করা থেকে বিরত রাখে\nএটি আপনাকে কলে থাকার সময় গান শোনার অনুমতি দেয়"
-                    },
-                    "hide_active_music": {
-                        "name": "অ্যাক্টিভ মিউজিক লুকান",
-                        "description": "Snapchat-কে জানতে দেয় না যে আপনি গান শুনছেন\nএটি আপনাকে গান শোনার সময় ভলিউম বোতাম ব্যবহার করে স্ন্যাপ নেওয়ার অনুমতি দেবে"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "স্ন্যাপ স্প্লিটিং নিষ্ক্রিয় করুন",
-                        "description": "স্ন্যাপগুলিকে একাধিক অংশে ভাগ করা থেকে বিরত রাখে\nআপনার পাঠানো ছবিগুলি ভিডিওতে পরিণত হবে"
-                    }
-                }
-            },
             "rules": {
                 "name": "রুল",
                 "description": "অটোমেশন রুল কনফিগার করুন",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "এনক্রিপ্টেড মেসেজ ইন্ডিকেটর",
-                                "description": "এনক্রিপ্ট করা মেসেজের পাশে একটি \ud83d\udd12 ইমোজি যোগ করে"
+                                "description": "এনক্রিপ্ট করা মেসেজের পাশে একটি 🔒 ইমোজি যোগ করে"
                             },
                             "force_message_encryption": {
                                 "name": "মেসেজ এনক্রিপশন ফোর্স করুন",
@@ -2162,20 +2130,20 @@
                 "null": "আসল ব্যাটারি লেভেল ব্যবহার করুন"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f অটো ডাউনলোড",
-                "auto_save": "\ud83d\udcac অটো সেভ মেসেজ",
-                "unsaveable_messages": "\u2b07\ufe0f আনসেভেবল মেসেজ",
-                "auto_open_snaps": "\ud83d\udcf7 অটো ওপেন স্ন্যাপ",
-                "stealth": "\ud83d\udc7b স্টিলথ মোড",
-                "auto_reply": "\ud83d\udce8 অটো রিপ্লাই",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f পাঠানো মেসেজ অটো ডিলিট",
-                "mark_snaps_as_seen": "\ud83d\udc40 স্ন্যাপ দেখা হয়েছে হিসেবে চিহ্নিত করুন",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 স্থানীয়ভাবে স্টোরি দেখা হয়েছে হিসেবে চিহ্নিত করুন",
-                "conversation_info": "\ud83d\udc64 কনভারসেশন ইনফো",
-                "e2e_encryption": "\ud83d\udd12 E2E এনক্রিপশন ব্যবহার করুন",
-                "message_logger": "\ud83d\udcdd মেসেজ লগার",
-                "auto_read": "\u2705 অটো রিড",
-                "hide_typing_indicator": "\ud83d\ude48 টাইপিং ইন্ডিকেটর লুকান"
+                "auto_download": "⬇️ অটো ডাউনলোড",
+                "auto_save": "💬 অটো সেভ মেসেজ",
+                "unsaveable_messages": "⬇️ আনসেভেবল মেসেজ",
+                "auto_open_snaps": "📷 অটো ওপেন স্ন্যাপ",
+                "stealth": "👻 স্টিলথ মোড",
+                "auto_reply": "📨 অটো রিপ্লাই",
+                "auto_delete_sent_messages": "🗑️ পাঠানো মেসেজ অটো ডিলিট",
+                "mark_snaps_as_seen": "👀 স্ন্যাপ দেখা হয়েছে হিসেবে চিহ্নিত করুন",
+                "mark_stories_as_seen_locally": "👀 স্থানীয়ভাবে স্টোরি দেখা হয়েছে হিসেবে চিহ্নিত করুন",
+                "conversation_info": "👤 কনভারসেশন ইনফো",
+                "e2e_encryption": "🔒 E2E এনক্রিপশন ব্যবহার করুন",
+                "message_logger": "📝 মেসেজ লগার",
+                "auto_read": "✅ অটো রিড",
+                "hide_typing_indicator": "🙈 টাইপিং ইন্ডিকেটর লুকান"
             },
             "schedule_scheduled_for": "{name}-এর জন্য {time}-এ নির্ধারিত",
             "schedule_sending_in": "{time}-এ পাঠানো হচ্ছে",
@@ -2278,16 +2246,16 @@
             "custom_android_id": {
                 "null": "আসল অ্যান্ড্রয়েড ID ব্যবহার করুন"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "ইউজারনেম দ্বারা",
-	                "added_by_mention": "মেনশন দ্বারা",
-	                "added_by_group_chat": "গ্রুপ চ্যাট দ্বারা",
-	                "added_by_qr_code": "QR কোড দ্বারা",
-	                "added_by_community": "কমিউনিটি দ্বারা",
-	                "added_by_quick_add": "কুইক অ্যাড দ্বারা (ব্যান হওয়ার উচ্চ ঝুঁকি)",
-	                "added_by_spotlight": "স্পটলাইট দ্বারা",
-	                "null": "উৎস স্পুফ করবেন না"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "ইউজারনেম দ্বারা",
+                "added_by_mention": "মেনশন দ্বারা",
+                "added_by_group_chat": "গ্রুপ চ্যাট দ্বারা",
+                "added_by_qr_code": "QR কোড দ্বারা",
+                "added_by_community": "কমিউনিটি দ্বারা",
+                "added_by_quick_add": "কুইক অ্যাড দ্বারা (ব্যান হওয়ার উচ্চ ঝুঁকি)",
+                "added_by_spotlight": "স্পটলাইট দ্বারা",
+                "null": "উৎস স্পুফ করবেন না"
+            },
             "custom_streaks_expiration_format": {
                 "null": "সিস্টেম ডিফল্ট"
             },
@@ -2394,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "ইউজারনেম আইকন",
-                "\ud83d\udc64": "ইউজারনেম আইকন",
-                "[\ud83d\udc64]": "ইউজারনেম আইকন",
+                "👤": "ইউজারনেম আইকন",
+                "[👤]": "ইউজারনেম আইকন",
                 "default": "ইউজারনেম আইকন",
                 "no_icon": "কোনো আইকন নেই"
             },
@@ -2475,11 +2443,11 @@
                 "phone_calls": "ফোন কল"
             },
             "message_indicators": {
-                "encryption_indicator": "শুধুমাত্র আপনার কাছে পাঠানো মেসেজের পাশে একটি \ud83d\udd12 আইকন যোগ করে",
+                "encryption_indicator": "শুধুমাত্র আপনার কাছে পাঠানো মেসেজের পাশে একটি 🔒 আইকন যোগ করে",
                 "platform_indicator": "মিডিয়াটি কোন প্ল্যাটফর্ম থেকে পাঠানো হয়েছে তার আইকন যোগ করে (যেমন Android, iOS, Web)",
-                "location_indicator": "লোকেশন সক্ষম করে পাঠানো হলে স্ন্যাপগুলিতে একটি \ud83d\udccd আইকন যোগ করে",
+                "location_indicator": "লোকেশন সক্ষম করে পাঠানো হলে স্ন্যাপগুলিতে একটি 📍 আইকন যোগ করে",
                 "ovf_editor_indicator": "OVF এডিটর ব্যবহার করে কোনো স্ন্যাপ পাঠানো হয়েছে কিনা তা নির্দেশ করে",
-                "director_mode_indicator": "ডিরেক্টর মোড ব্যবহার করে পাঠানো হলে স্ন্যাপগুলিতে একটি \u270f\ufe0f আইকন যোগ করে, যা স্ন্যাপ হিসেবে গ্যালারি ছবি পাঠাতে ব্যবহার করা যেতে পারে"
+                "director_mode_indicator": "ডিরেক্টর মোড ব্যবহার করে পাঠানো হলে স্ন্যাপগুলিতে একটি ✏️ আইকন যোগ করে, যা স্ন্যাপ হিসেবে গ্যালারি ছবি পাঠাতে ব্যবহার করা যেতে পারে"
             },
             "auto_mark_as_read": {
                 "conversation_read": "মেসেজ পাঠানোর সময় কনভারসেশন পড়া হয়েছে হিসেবে চিহ্নিত করুন",
@@ -2703,7 +2671,6 @@
         "show_chat_edit_history": "চ্যাট এডিট ইতিহাস দেখান",
         "convert_message": "মেসেজ কনভার্ট করুন"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "চ্যাট ওয়ালপেপার ডাউনলোড করুন"
     },
@@ -3033,7 +3000,7 @@
         "queue_cleared": "কিউ পরিষ্কার এবং পরিসংখ্যান রিসেট করা হয়েছে",
         "queue_cleared_title": "কিউ পরিষ্কার করা হয়েছে",
         "queue_cleared_reset": "কিউ পরিষ্কার এবং রিসেট করা হয়েছে",
-        "queue_cleared_feedback": "{count} কিউতে থাকা স্ন্যাপ পরিষ্কার করা হয়েছে \u2022 {processed} প্রসেসড কাউন্ট রিসেট করা হয়েছে",
+        "queue_cleared_feedback": "{count} কিউতে থাকা স্ন্যাপ পরিষ্কার করা হয়েছে • {processed} প্রসেসড কাউন্ট রিসেট করা হয়েছে",
         "queue_cleared_feedback_simple": "{processed} প্রসেসড কাউন্ট রিসেট করা হয়েছে",
         "unknown_sender": "অজানা",
         "unknown_user": "অজানা ব্যবহারকারী",

@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 izveidoja Eternal",
+                "version_title": "v{versionName} · izveidoja Eternal",
                 "update_title": "PurrfectSnap atjauninājums",
                 "update_content": "Versija {version} ir pieejama!",
                 "update_button": "Lejupielādēt",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "Nav uzdevumu",
                 "merge_button": "Apvienot",
-                "summary_active": "{active} aktīvi \u00b7 {recent} neseni",
-                "summary_idle": "Dīkstāve \u00b7 {recent} neseni",
+                "summary_active": "{active} aktīvi · {recent} neseni",
+                "summary_idle": "Dīkstāve · {recent} neseni",
                 "running_count": "{count} darbojas",
                 "clear_button_description": "Notīrīt uzdevumus",
                 "failed_to_open_file": "Neizdevās atvērt failu",
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "Teleportēties pie drauga",
                 "search_bar": "Meklēt",
                 "no_friends_map": "Kartē nav draugu",
-                "no_friends_found": "Draugi nav atrasti"
+                "no_friends_found": "Draugi nav atrasti",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 Nestabils",
-            "ban_risk": "\u26a0 Šī funkcija var izraisīt bloķēšanu",
-            "internal_behavior": "\u26a0 Tas var izjaukt Snapchat iekšējo darbību"
+            "unstable": "⚠ Nestabils",
+            "ban_risk": "⚠ Šī funkcija var izraisīt bloķēšanu",
+            "internal_behavior": "⚠ Tas var izjaukt Snapchat iekšējo darbību"
         },
         "properties": {
             "global": {
                 "name": "Globāli",
-                "description": "Vispārīgas moduļa preferences un noklusējumi",
+                "description": "Pielāgot globālos Snapchat iestatījumus",
                 "properties": {
-                    "ui_settings": {
-                        "name": "UI iestatījumi",
-                        "description": "Pielāgot atgriezenisko saiti un paziņojumu uzvedību",
+                    "better_location": {
+                        "name": "Labāka atrašanās vieta",
+                        "description": "Uzlabo Snapchat atrašanās vietu",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptiskā atgriezeniskā saite",
-                                "description": "Vibrēt atbalstītajās mijiedarbībās"
+                            "spoof_location": {
+                                "name": "Viltot atrašanās vietu",
+                                "description": "Vilto jūsu atrašanās vietu uz norādīto"
                             },
-                            "use_system_toasts": {
-                                "name": "Izmantot sistēmas paziņojumus",
-                                "description": "Rādīt Android paziņojumus (toasts), nevis lietotnes pārklājumus"
+                            "coordinates": {
+                                "name": "Koordinātas",
+                                "description": "Iestatīt viltotās atrašanās vietas koordinātas"
+                            },
+                            "walk_radius": {
+                                "name": "Staigāšanas rādiuss",
+                                "description": "Nejauši staigāt šajā rādiusā (pēdas)"
+                            },
+                            "always_update_location": {
+                                "name": "Vienmēr atjaunināt atrašanās vietu",
+                                "description": "Piespiest Snapchat atjaunināt atrašanās vietu pat tad, ja nav saņemti GPS dati"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Apturēt atrašanās vietas atjauninājumus",
+                                "description": "Neļauj atjaunināt jūsu atrašanās vietu"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Viltot akumulatora līmeni",
+                                "description": "Vilto ierīces akumulatora līmeni kartē\nVērtībai jābūt no 0 līdz 100"
+                            },
+                            "spoof_headphones": {
+                                "name": "Viltot austiņas",
+                                "description": "Vilto mūzikas klausīšanās statusu kartē"
+                            },
+                            "show_battery_level": {
+                                "name": "Rādīt akumulatora līmeni",
+                                "description": "Rāda jūsu draugu akumulatora līmeni kartē"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "Atjauninājumu iestatījumi",
-                        "description": "Kontrolēt automātiskās atjauninājumu pārbaudes",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Iespējo Snapchat Plus funkcijas\nDažas servera puses funkcijas var nedarboties"
+                    },
+                    "media_upload_quality": {
+                        "name": "Multivides augšupielādes kvalitāte",
+                        "description": "Ignorē multivides augšupielādes kvalitāti",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "Auto atjauninājumu pārbaude",
-                                "description": "Pārbaudīt jaunus būvējumus automātiski"
+                            "force_video_upload_source_quality": {
+                                "name": "Piespiest video augšupielādes avota kvalitāti",
+                                "description": "Piespiež Snapchat izmantot avota kvalitāti, augšupielādējot video\nLūdzu, ņemiet vērā, ka tas var nenoņemt metadatus no multivides"
                             },
-                            "update_check_frequency": {
-                                "name": "Atjauninājumu pārbaudes biežums",
-                                "description": "Cik bieži pārbaudīt atjauninājumus"
+                            "disable_image_compression": {
+                                "name": "Atspējot attēlu saspiešanu",
+                                "description": "Atspējo attēlu saspiešanu, augšupielādējot multividi"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Pielāgots attēlu augšupielādes formāts",
+                                "description": "Iestata pielāgotu attēlu augšupielādes formātu\nIzvēlieties bezzudumu formātu (piemēram, PNG) labākajai kvalitātei"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Atspējot apstiprinājuma logus",
+                        "description": "Automātiski apstiprina atlasītās darbības"
+                    },
+                    "auto_updater": {
+                        "name": "Automātiskais atjauninātājs",
+                        "description": "Automātiski pārbauda jaunus atjauninājumus"
+                    },
+                    "update_settings": {
+                        "name": "Atjauninājumu iestatījumi",
+                        "description": "Kontrolēt, kā PurrfectSnap pārbauda atjauninājumus",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Auto atjauninājumu pārbaude"
+                            },
+                            "update_check_frequency": {
+                                "name": "Atjauninājumu pārbaudes biežums"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "UI iestatījumi",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptiskā atgriezeniskā saite"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Atspējot metriku",
+                        "description": "Bloķē specifisku analītisko datu sūtīšanu uz Snapchat"
+                    },
+                    "disable_story_sections": {
+                        "name": "Atspējot stāstu sadaļas",
+                        "description": "Noņem sadaļas no stāstu lapas\nVar būt nepieciešama atsvaidzināšana, lai darbotos pareizi"
+                    },
+                    "block_ads": {
+                        "name": "Bloķēt reklāmas",
+                        "description": "Neļauj rādīt reklāmas"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Atspējot pielāgotās cilnes",
+                        "description": "Atver saites atbalstītajās lietotnēs, nevis tīmekļa pārlūkā"
+                    },
+                    "disable_permission_requests": {
+                        "name": "Atspējot atļauju pieprasījumus",
+                        "description": "Neļauj Snapchat prasīt noteiktas atļaujas"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Atspējot atmiņu snap plūsmu",
+                        "description": "Neļauj Snapchat rādīt nesenās atmiņas, kad pavelkat uz augšu kamerā"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Spotlight komentāru lietotājvārds",
+                        "description": "Rāda autora lietotājvārdu Spotlight komentāros"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Spotlight komentāru lietotājvārda ikona",
+                        "description": "Izvēlieties, kura ikona tiek rādīta blakus lietotājvārdiem Spotlight komentāros"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Apiet video garuma ierobežojumus",
+                        "description": "Viens: sūta vienu video\nSadalīt: sadala video pēc rediģēšanas"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Noklusējuma video atskaņošanas ātrums",
+                        "description": "Iestata noklusējuma ātrumu video atskaņošanai\nVērtībai jābūt no 0.1 līdz 4.0"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Video atskaņošanas ātruma slīdnis",
+                        "description": "Pievieno slīdni opera konteksta izvēlnē, lai mainītu video atskaņošanas ātrumu\nPiezīme: Izmaiņas attiecas tikai uz sekojošiem video"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Atspējot Google Play Services dialogus",
+                        "description": "Novērš Google Play Services pieejamības dialogu rādīšanu"
+                    },
+                    "default_volume_controls": {
+                        "name": "Noklusējuma skaļuma kontrole",
+                        "description": "Piespiež Snapchat izmantot sistēmas skaļuma kontroli"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Atspējot Telecom Framework",
+                        "description": "Neļauj Snapchat izmantot Android Telecom ietvaru\nTas ļauj klausīties mūziku zvana laikā"
+                    },
+                    "hide_active_music": {
+                        "name": "Slēpt aktīvo mūziku",
+                        "description": "Neļauj Snapchat uzzināt, ka klausāties mūziku\nTas ļaus jums uzņemt Snap'us, izmantojot skaļuma kontroles pogas, kamēr klausāties mūziku"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Atspējot Snap sadalīšanu",
+                        "description": "Neļauj Snap'iem tikt sadalītiem vairākās daļās\nAttēli, ko sūtāt, pārvērtīsies par video"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Maskēšanās režīma indikators",
-                        "description": "Pievieno \ud83d\udc7b emocijzīmi blakus sarunām maskēšanās režīmā"
+                        "description": "Pievieno 👻 emocijzīmi blakus sarunām maskēšanās režīmā"
                     },
                     "edit_text_override": {
                         "name": "Teksta rediģēšanas ignorēšana",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "Globāli",
-                "description": "Pielāgot globālos Snapchat iestatījumus",
-                "properties": {
-                    "better_location": {
-                        "name": "Labāka atrašanās vieta",
-                        "description": "Uzlabo Snapchat atrašanās vietu",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "Viltot atrašanās vietu",
-                                "description": "Vilto jūsu atrašanās vietu uz norādīto"
-                            },
-                            "coordinates": {
-                                "name": "Koordinātas",
-                                "description": "Iestatīt viltotās atrašanās vietas koordinātas"
-                            },
-                            "walk_radius": {
-                                "name": "Staigāšanas rādiuss",
-                                "description": "Nejauši staigāt šajā rādiusā (pēdas)"
-                            },
-                            "always_update_location": {
-                                "name": "Vienmēr atjaunināt atrašanās vietu",
-                                "description": "Piespiest Snapchat atjaunināt atrašanās vietu pat tad, ja nav saņemti GPS dati"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Apturēt atrašanās vietas atjauninājumus",
-                                "description": "Neļauj atjaunināt jūsu atrašanās vietu"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Viltot akumulatora līmeni",
-                                "description": "Vilto ierīces akumulatora līmeni kartē\nVērtībai jābūt no 0 līdz 100"
-                            },
-                            "spoof_headphones": {
-                                "name": "Viltot austiņas",
-                                "description": "Vilto mūzikas klausīšanās statusu kartē"
-                            },
-                            "show_battery_level": {
-                                "name": "Rādīt akumulatora līmeni",
-                                "description": "Rāda jūsu draugu akumulatora līmeni kartē"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Iespējo Snapchat Plus funkcijas\nDažas servera puses funkcijas var nedarboties"
-                    },
-                    "media_upload_quality": {
-                        "name": "Multivides augšupielādes kvalitāte",
-                        "description": "Ignorē multivides augšupielādes kvalitāti",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Piespiest video augšupielādes avota kvalitāti",
-                                "description": "Piespiež Snapchat izmantot avota kvalitāti, augšupielādējot video\nLūdzu, ņemiet vērā, ka tas var nenoņemt metadatus no multivides"
-                            },
-                            "disable_image_compression": {
-                                "name": "Atspējot attēlu saspiešanu",
-                                "description": "Atspējo attēlu saspiešanu, augšupielādējot multividi"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Pielāgots attēlu augšupielādes formāts",
-                                "description": "Iestata pielāgotu attēlu augšupielādes formātu\nIzvēlieties bezzudumu formātu (piemēram, PNG) labākajai kvalitātei"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "Atspējot apstiprinājuma logus",
-                        "description": "Automātiski apstiprina atlasītās darbības"
-                    },
-                    "auto_updater": {
-                        "name": "Automātiskais atjauninātājs",
-                        "description": "Automātiski pārbauda jaunus atjauninājumus"
-                    },
-                    "update_settings": {
-                        "name": "Atjauninājumu iestatījumi",
-                        "description": "Kontrolēt, kā PurrfectSnap pārbauda atjauninājumus",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Auto atjauninājumu pārbaude"
-                            },
-                            "update_check_frequency": {
-                                "name": "Atjauninājumu pārbaudes biežums"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI iestatījumi",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptiskā atgriezeniskā saite"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "Atspējot metriku",
-                        "description": "Bloķē specifisku analītisko datu sūtīšanu uz Snapchat"
-                    },
-                    "disable_story_sections": {
-                        "name": "Atspējot stāstu sadaļas",
-                        "description": "Noņem sadaļas no stāstu lapas\nVar būt nepieciešama atsvaidzināšana, lai darbotos pareizi"
-                    },
-                    "block_ads": {
-                        "name": "Bloķēt reklāmas",
-                        "description": "Neļauj rādīt reklāmas"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Atspējot pielāgotās cilnes",
-                        "description": "Atver saites atbalstītajās lietotnēs, nevis tīmekļa pārlūkā"
-                    },
-                    "disable_permission_requests": {
-                        "name": "Atspējot atļauju pieprasījumus",
-                        "description": "Neļauj Snapchat prasīt noteiktas atļaujas"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Atspējot atmiņu snap plūsmu",
-                        "description": "Neļauj Snapchat rādīt nesenās atmiņas, kad pavelkat uz augšu kamerā"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Spotlight komentāru lietotājvārds",
-                        "description": "Rāda autora lietotājvārdu Spotlight komentāros"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Spotlight komentāru lietotājvārda ikona",
-                        "description": "Izvēlieties, kura ikona tiek rādīta blakus lietotājvārdiem Spotlight komentāros"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Apiet video garuma ierobežojumus",
-                        "description": "Viens: sūta vienu video\nSadalīt: sadala video pēc rediģēšanas"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Noklusējuma video atskaņošanas ātrums",
-                        "description": "Iestata noklusējuma ātrumu video atskaņošanai\nVērtībai jābūt no 0.1 līdz 4.0"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Video atskaņošanas ātruma slīdnis",
-                        "description": "Pievieno slīdni opera konteksta izvēlnē, lai mainītu video atskaņošanas ātrumu\nPiezīme: Izmaiņas attiecas tikai uz sekojošiem video"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Atspējot Google Play Services dialogus",
-                        "description": "Novērš Google Play Services pieejamības dialogu rādīšanu"
-                    },
-                    "default_volume_controls": {
-                        "name": "Noklusējuma skaļuma kontrole",
-                        "description": "Piespiež Snapchat izmantot sistēmas skaļuma kontroli"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Atspējot Telecom Framework",
-                        "description": "Neļauj Snapchat izmantot Android Telecom ietvaru\nTas ļauj klausīties mūziku zvana laikā"
-                    },
-                    "hide_active_music": {
-                        "name": "Slēpt aktīvo mūziku",
-                        "description": "Neļauj Snapchat uzzināt, ka klausāties mūziku\nTas ļaus jums uzņemt Snap'us, izmantojot skaļuma kontroles pogas, kamēr klausāties mūziku"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Atspējot Snap sadalīšanu",
-                        "description": "Neļauj Snap'iem tikt sadalītiem vairākās daļās\nAttēli, ko sūtāt, pārvērtīsies par video"
-                    }
-                }
-            },
             "rules": {
                 "name": "Noteikumi",
                 "description": "Konfigurēt automatizācijas noteikumus",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Šifrēta ziņojuma indikators",
-                                "description": "Pievieno \ud83d\udd12 emocijzīmi blakus šifrētiem ziņojumiem"
+                                "description": "Pievieno 🔒 emocijzīmi blakus šifrētiem ziņojumiem"
                             },
                             "force_message_encryption": {
                                 "name": "Piespiest ziņojumu šifrēšanu",
@@ -2162,20 +2130,20 @@
                 "null": "Izmantot reālo akumulatora līmeni"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f Automātiskā lejupielāde",
-                "auto_save": "\ud83d\udcac Automātiskā ziņojumu saglabāšana",
-                "unsaveable_messages": "\u2b07\ufe0f Nesaglabājami ziņojumi",
-                "auto_open_snaps": "\ud83d\udcf7 Automātiski atvērt Snap'us",
-                "stealth": "\ud83d\udc7b Maskēšanās režīms",
-                "auto_reply": "\ud83d\udce8 Automātiskā atbilde",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Automātiski dzēst nosūtītos ziņojumus",
-                "mark_snaps_as_seen": "\ud83d\udc40 Atzīmēt Snap'us kā redzētus",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 Atzīmēt stāstus kā redzētus lokāli",
-                "conversation_info": "\ud83d\udc64 Sarunas informācija",
-                "e2e_encryption": "\ud83d\udd12 Izmantot E2E šifrēšanu",
-                "message_logger": "\ud83d\udcdd Ziņojumu reģistrētājs",
-                "auto_read": "\u2705 Automātiski lasīt",
-                "hide_typing_indicator": "\ud83d\ude48 Slēpt rakstīšanas indikatoru"
+                "auto_download": "⬇️ Automātiskā lejupielāde",
+                "auto_save": "💬 Automātiskā ziņojumu saglabāšana",
+                "unsaveable_messages": "⬇️ Nesaglabājami ziņojumi",
+                "auto_open_snaps": "📷 Automātiski atvērt Snap'us",
+                "stealth": "👻 Maskēšanās režīms",
+                "auto_reply": "📨 Automātiskā atbilde",
+                "auto_delete_sent_messages": "🗑️ Automātiski dzēst nosūtītos ziņojumus",
+                "mark_snaps_as_seen": "👀 Atzīmēt Snap'us kā redzētus",
+                "mark_stories_as_seen_locally": "👀 Atzīmēt stāstus kā redzētus lokāli",
+                "conversation_info": "👤 Sarunas informācija",
+                "e2e_encryption": "🔒 Izmantot E2E šifrēšanu",
+                "message_logger": "📝 Ziņojumu reģistrētājs",
+                "auto_read": "✅ Automātiski lasīt",
+                "hide_typing_indicator": "🙈 Slēpt rakstīšanas indikatoru"
             },
             "schedule_scheduled_for": "Ieplānots priekš {name} pēc {time}",
             "schedule_sending_in": "Sūta pēc {time}",
@@ -2278,16 +2246,16 @@
             "custom_android_id": {
                 "null": "Izmantot reālo Android ID"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "Pēc lietotājvārda",
-	                "added_by_mention": "Pēc pieminēšanas",
-	                "added_by_group_chat": "No grupas tērzēšanas",
-	                "added_by_qr_code": "Ar QR kodu",
-	                "added_by_community": "No kopienas",
-	                "added_by_quick_add": "Ar ātro pievienošanu (augsts bloķēšanas risks)",
-	                "added_by_spotlight": "No Spotlight",
-	                "null": "Neviltot avotu"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "Pēc lietotājvārda",
+                "added_by_mention": "Pēc pieminēšanas",
+                "added_by_group_chat": "No grupas tērzēšanas",
+                "added_by_qr_code": "Ar QR kodu",
+                "added_by_community": "No kopienas",
+                "added_by_quick_add": "Ar ātro pievienošanu (augsts bloķēšanas risks)",
+                "added_by_spotlight": "No Spotlight",
+                "null": "Neviltot avotu"
+            },
             "custom_streaks_expiration_format": {
                 "null": "Sistēmas noklusējums"
             },
@@ -2393,8 +2361,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "Lietotājvārda ikona",
-                "\ud83d\udc64": "Lietotājvārda ikona",
-                "[\ud83d\udc64]": "Lietotājvārda ikona",
+                "👤": "Lietotājvārda ikona",
+                "[👤]": "Lietotājvārda ikona",
                 "default": "Lietotājvārda ikona",
                 "no_icon": "Nav ikonas"
             },
@@ -2474,11 +2442,11 @@
                 "phone_calls": "Tālruņa zvani"
             },
             "message_indicators": {
-                "encryption_indicator": "Pievieno \ud83d\udd12 ikonu blakus ziņojumiem, kas nosūtīti tikai jums",
+                "encryption_indicator": "Pievieno 🔒 ikonu blakus ziņojumiem, kas nosūtīti tikai jums",
                 "platform_indicator": "Pievieno platformas ikonu, no kuras multivide tika nosūtīta (piem., Android, iOS, Web)",
-                "location_indicator": "Pievieno \ud83d\udccd ikonu snap'iem, kad tie nosūtīti ar iespējotu atrašanās vietu",
+                "location_indicator": "Pievieno 📍 ikonu snap'iem, kad tie nosūtīti ar iespējotu atrašanās vietu",
                 "ovf_editor_indicator": "Norāda, vai snap ir nosūtīts, izmantojot OVF redaktoru",
-                "director_mode_indicator": "Pievieno \u270f\ufe0f ikonu snap'iem, kad tie nosūtīti, izmantojot Director Mode, ko var izmantot, lai sūtītu galerijas attēlus kā snap'us"
+                "director_mode_indicator": "Pievieno ✏️ ikonu snap'iem, kad tie nosūtīti, izmantojot Director Mode, ko var izmantot, lai sūtītu galerijas attēlus kā snap'us"
             },
             "auto_mark_as_read": {
                 "conversation_read": "Atzīmēt sarunu kā lasītu, sūtot ziņojumu",
@@ -2702,7 +2670,6 @@
         "show_chat_edit_history": "Rādīt tērzēšanas rediģēšanas vēsturi",
         "convert_message": "Konvertēt ziņojumu"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Lejupielādēt tērzēšanas fonu"
     },
@@ -3032,7 +2999,7 @@
         "queue_cleared": "Rinda notīrīta un statistika atiestatīta",
         "queue_cleared_title": "Rinda notīrīta",
         "queue_cleared_reset": "Rinda notīrīta un atiestatīta",
-        "queue_cleared_feedback": "Notīrīti {count} snap'i rindā \u2022 Atiestatīts {processed} apstrādāto skaits",
+        "queue_cleared_feedback": "Notīrīti {count} snap'i rindā • Atiestatīts {processed} apstrādāto skaits",
         "queue_cleared_feedback_simple": "Atiestatīts {processed} apstrādāto skaits",
         "unknown_sender": "Nezināms",
         "unknown_user": "Nezināms lietotājs",

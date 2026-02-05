@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 av Eternal",
+                "version_title": "v{versionName} · av Eternal",
                 "update_title": "PurrfectSnap-uppdatering",
                 "update_content": "Version {version} är tillgänglig!",
                 "update_button": "Ladda ner",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "Inga uppgifter",
                 "merge_button": "Sammanfoga",
-                "summary_active": "{active} aktiva \u00b7 {recent} senaste",
-                "summary_idle": "Inaktiv \u00b7 {recent} senaste",
+                "summary_active": "{active} aktiva · {recent} senaste",
+                "summary_idle": "Inaktiv · {recent} senaste",
                 "running_count": "{count} körs",
                 "clear_button_description": "Rensa uppgifter",
                 "failed_to_open_file": "Misslyckades att öppna fil",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "Ta bort {count} uppgifter?",
                 "remove_all_tasks_confirm": "Ta bort alla uppgifter?"
             },
-        "features": {
-            "disabled": "Inaktiverad",
-            "export_option": "Exportera",
-            "import_option": "Importera",
-            "reset_option": "Återställ",
-            "config_export_success_toast": "Konfiguration exporterades framgångsrikt",
-            "config_import_success_toast": "Konfiguration importerades framgångsrikt",
-            "config_import_failure_toast": "Misslyckades att importera konfiguration {error}",
-            "config_export_failure_toast": "Misslyckades att exportera konfiguration {error}",
-            "saved_config_snackbar": "Konfiguration sparad",
-            "older_required": "Denna funktion kräver Snapchat v{version} eller äldre för att fungera korrekt",
-            "newer_required": "Denna funktion kräver Snapchat v{version} eller nyare för att fungera korrekt",
-            "search_button": "Sök",
-            "clear_history": "Rensa sökhistorik",
-            "subtitle": "Sök och hantera funktioner"
-        },
+            "features": {
+                "disabled": "Inaktiverad",
+                "export_option": "Exportera",
+                "import_option": "Importera",
+                "reset_option": "Återställ",
+                "config_export_success_toast": "Konfiguration exporterades framgångsrikt",
+                "config_import_success_toast": "Konfiguration importerades framgångsrikt",
+                "config_import_failure_toast": "Misslyckades att importera konfiguration {error}",
+                "config_export_failure_toast": "Misslyckades att exportera konfiguration {error}",
+                "saved_config_snackbar": "Konfiguration sparad",
+                "older_required": "Denna funktion kräver Snapchat v{version} eller äldre för att fungera korrekt",
+                "newer_required": "Denna funktion kräver Snapchat v{version} eller nyare för att fungera korrekt",
+                "search_button": "Sök",
+                "clear_history": "Rensa sökhistorik",
+                "subtitle": "Sök och hantera funktioner"
+            },
             "bypass_status": {
                 "active": "PurrAura Aktiv",
                 "inactive": "PurrAura Inaktiv"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "Teleportera till vän",
                 "search_bar": "Sök",
                 "no_friends_map": "Inga vänner på kartan",
-                "no_friends_found": "Inga vänner hittades"
+                "no_friends_found": "Inga vänner hittades",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 Instabil",
-            "ban_risk": "\u26a0 Denna funktion kan orsaka bannlysningar",
-            "internal_behavior": "\u26a0 Detta kan bryta Snapchats interna beteende"
+            "unstable": "⚠ Instabil",
+            "ban_risk": "⚠ Denna funktion kan orsaka bannlysningar",
+            "internal_behavior": "⚠ Detta kan bryta Snapchats interna beteende"
         },
         "properties": {
             "global": {
                 "name": "Globalt",
-                "description": "Allmänna modulpreferenser och standardvärden",
+                "description": "Justera globala Snapchat-inställningar",
                 "properties": {
-                    "ui_settings": {
-                        "name": "UI-inställningar",
-                        "description": "Justera feedback och toast-beteende",
+                    "better_location": {
+                        "name": "Bättre plats",
+                        "description": "Förbättrar Snapchats plats",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptisk återkoppling",
-                                "description": "Vibrera vid interaktioner som stöds"
+                            "spoof_location": {
+                                "name": "Spoofa plats",
+                                "description": "Spoofar din plats till en angiven sådan"
                             },
-                            "use_system_toasts": {
-                                "name": "Använd system-toasts",
-                                "description": "Visa Android-toasts istället för överlägg i appen"
+                            "coordinates": {
+                                "name": "Koordinater",
+                                "description": "Ställ in koordinaterna för den spoofade platsen"
+                            },
+                            "walk_radius": {
+                                "name": "Gångradie",
+                                "description": "Gå slumpmässigt runt inom denna radie (fot)"
+                            },
+                            "always_update_location": {
+                                "name": "Uppdatera alltid plats",
+                                "description": "Tvinga Snapchat att uppdatera plats även om ingen GPS-data tas emot"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Pausa platsuppdateringar",
+                                "description": "Förhindrar att din plats uppdateras"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Spoofa batterinivå",
+                                "description": "Spoofar batterinivån för din enhet på kartan\nVärdet måste vara mellan 0 och 100"
+                            },
+                            "spoof_headphones": {
+                                "name": "Spoofa hörlurar",
+                                "description": "Spoofar statusen för att lyssna på musik på kartan"
+                            },
+                            "show_battery_level": {
+                                "name": "Visa batterinivå",
+                                "description": "Visar batterinivån för dina vänner på kartan"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "Uppdateringsinställningar",
-                        "description": "Kontrollera automatiska uppdateringskontroller",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Aktiverar Snapchat Plus-funktioner\nVissa server-sido-funktioner kanske inte fungerar"
+                    },
+                    "media_upload_quality": {
+                        "name": "Mediauppladdningskvalitet",
+                        "description": "Överskrider mediauppladdningskvaliteten",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "Automatisk uppdateringskontroll",
-                                "description": "Kontrollera efter nya byggen automatiskt"
+                            "force_video_upload_source_quality": {
+                                "name": "Tvinga källkvalitet vid videouppladdning",
+                                "description": "Tvingar Snapchat att använda källkvaliteten vid uppladdning av videor\nObservera att detta kanske inte tar bort metadata från media"
                             },
-                            "update_check_frequency": {
-                                "name": "Uppdateringskontrollfrekvens",
-                                "description": "Hur ofta uppdateringar ska kontrolleras"
+                            "disable_image_compression": {
+                                "name": "Inaktivera bildkomprimering",
+                                "description": "Inaktiverar bildkomprimering vid uppladdning av media"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Anpassat bilduppladdningsformat",
+                                "description": "Ställer in ett anpassat bilduppladdningsformat\nVälj ett förlustfritt format (som PNG) för bästa kvalitet"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Inaktivera bekräftelsedialoger",
+                        "description": "Bekräftar automatiskt valda åtgärder"
+                    },
+                    "auto_updater": {
+                        "name": "Auto-uppdaterare",
+                        "description": "Kontrollerar automatiskt efter nya uppdateringar"
+                    },
+                    "update_settings": {
+                        "name": "Uppdateringsinställningar",
+                        "description": "Kontrollera hur PurrfectSnap letar efter uppdateringar",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Automatisk uppdateringskontroll"
+                            },
+                            "update_check_frequency": {
+                                "name": "Uppdateringskontrollfrekvens"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "UI-inställningar",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptisk återkoppling"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Inaktivera mätvärden",
+                        "description": "Blockerar sändning av specifik analytisk data till Snapchat"
+                    },
+                    "disable_story_sections": {
+                        "name": "Inaktivera story-sektioner",
+                        "description": "Tar bort sektioner från Stories-sidan\nKan kräva en uppdatering för att fungera korrekt"
+                    },
+                    "block_ads": {
+                        "name": "Blockera annonser",
+                        "description": "Förhindrar att reklam visas"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Inaktivera anpassade flikar",
+                        "description": "Öppnar länkar i appar som stöds snarare än i webbläsaren"
+                    },
+                    "disable_permission_requests": {
+                        "name": "Inaktivera behörighetsförfrågningar",
+                        "description": "Förhindrar Snapchat från att be om specifika behörigheter"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Inaktivera minnen i snap-flöde",
+                        "description": "Förhindrar Snapchat från att visa senaste minnen när du sveper upp i kameran"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Användarnamn i Spotlight-kommentarer",
+                        "description": "Visar författarens användarnamn i Spotlight-kommentarer"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Ikon för användarnamn i Spotlight-kommentarer",
+                        "description": "Välj vilken ikon som visas bredvid användarnamn i Spotlight-kommentarer"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Kringgå videolängdsbegränsningar",
+                        "description": "Singel: skickar en enda video\nDela upp: dela upp videor efter redigering"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Standard videouppspelningshastighet",
+                        "description": "Ställer in standardhastigheten för uppspelning av videor\nVärdet måste vara mellan 0.1 och 4.0"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Reglage för videouppspelningshastighet",
+                        "description": "Lägger till ett reglage i opera-kontextmenyn för att ändra videouppspelningshastigheten\nObs: Ändringar gäller endast efterföljande videor"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Inaktivera Google Play Services-dialoger",
+                        "description": "Förhindra att dialoger om Google Play Services tillgänglighet visas"
+                    },
+                    "default_volume_controls": {
+                        "name": "Standard volymkontroller",
+                        "description": "Tvingar Snapchat att använda systemets volymkontroller"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Inaktivera Telecom Framework",
+                        "description": "Förhindrar Snapchat från att använda Android Telecom-ramverket\nDetta låter dig lyssna på musik medan du är i ett samtal"
+                    },
+                    "hide_active_music": {
+                        "name": "Dölj aktiv musik",
+                        "description": "Förhindrar Snapchat från att veta att du lyssnar på musik\nDetta låter dig ta snaps med volymknapparna medan du lyssnar på musik"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Inaktivera Snap-uppdelning",
+                        "description": "Förhindrar Snaps från att delas upp i flera delar\nBilder du skickar kommer att bli videor"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Smyglägesindikator",
-                        "description": "Lägger till en \ud83d\udc7b emoji bredvid konversationer i smygläge"
+                        "description": "Lägger till en 👻 emoji bredvid konversationer i smygläge"
                     },
                     "edit_text_override": {
                         "name": "Redigera text-överskridning",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "Globalt",
-                "description": "Justera globala Snapchat-inställningar",
-                "properties": {
-                    "better_location": {
-                        "name": "Bättre plats",
-                        "description": "Förbättrar Snapchats plats",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "Spoofa plats",
-                                "description": "Spoofar din plats till en angiven sådan"
-                            },
-                            "coordinates": {
-                                "name": "Koordinater",
-                                "description": "Ställ in koordinaterna för den spoofade platsen"
-                            },
-                            "walk_radius": {
-                                "name": "Gångradie",
-                                "description": "Gå slumpmässigt runt inom denna radie (fot)"
-                            },
-                            "always_update_location": {
-                                "name": "Uppdatera alltid plats",
-                                "description": "Tvinga Snapchat att uppdatera plats även om ingen GPS-data tas emot"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Pausa platsuppdateringar",
-                                "description": "Förhindrar att din plats uppdateras"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Spoofa batterinivå",
-                                "description": "Spoofar batterinivån för din enhet på kartan\nVärdet måste vara mellan 0 och 100"
-                            },
-                            "spoof_headphones": {
-                                "name": "Spoofa hörlurar",
-                                "description": "Spoofar statusen för att lyssna på musik på kartan"
-                            },
-                            "show_battery_level": {
-                                "name": "Visa batterinivå",
-                                "description": "Visar batterinivån för dina vänner på kartan"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Aktiverar Snapchat Plus-funktioner\nVissa server-sido-funktioner kanske inte fungerar"
-                    },
-                    "media_upload_quality": {
-                        "name": "Mediauppladdningskvalitet",
-                        "description": "Överskrider mediauppladdningskvaliteten",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Tvinga källkvalitet vid videouppladdning",
-                                "description": "Tvingar Snapchat att använda källkvaliteten vid uppladdning av videor\nObservera att detta kanske inte tar bort metadata från media"
-                            },
-                            "disable_image_compression": {
-                                "name": "Inaktivera bildkomprimering",
-                                "description": "Inaktiverar bildkomprimering vid uppladdning av media"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Anpassat bilduppladdningsformat",
-                                "description": "Ställer in ett anpassat bilduppladdningsformat\nVälj ett förlustfritt format (som PNG) för bästa kvalitet"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "Inaktivera bekräftelsedialoger",
-                        "description": "Bekräftar automatiskt valda åtgärder"
-                    },
-                    "auto_updater": {
-                        "name": "Auto-uppdaterare",
-                        "description": "Kontrollerar automatiskt efter nya uppdateringar"
-                    },
-                    "update_settings": {
-                        "name": "Uppdateringsinställningar",
-                        "description": "Kontrollera hur PurrfectSnap letar efter uppdateringar",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Automatisk uppdateringskontroll"
-                            },
-                            "update_check_frequency": {
-                                "name": "Uppdateringskontrollfrekvens"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI-inställningar",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptisk återkoppling"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "Inaktivera mätvärden",
-                        "description": "Blockerar sändning av specifik analytisk data till Snapchat"
-                    },
-                    "disable_story_sections": {
-                        "name": "Inaktivera story-sektioner",
-                        "description": "Tar bort sektioner från Stories-sidan\nKan kräva en uppdatering för att fungera korrekt"
-                    },
-                    "block_ads": {
-                        "name": "Blockera annonser",
-                        "description": "Förhindrar att reklam visas"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Inaktivera anpassade flikar",
-                        "description": "Öppnar länkar i appar som stöds snarare än i webbläsaren"
-                    },
-                    "disable_permission_requests": {
-                        "name": "Inaktivera behörighetsförfrågningar",
-                        "description": "Förhindrar Snapchat från att be om specifika behörigheter"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Inaktivera minnen i snap-flöde",
-                        "description": "Förhindrar Snapchat från att visa senaste minnen när du sveper upp i kameran"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Användarnamn i Spotlight-kommentarer",
-                        "description": "Visar författarens användarnamn i Spotlight-kommentarer"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Ikon för användarnamn i Spotlight-kommentarer",
-                        "description": "Välj vilken ikon som visas bredvid användarnamn i Spotlight-kommentarer"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Kringgå videolängdsbegränsningar",
-                        "description": "Singel: skickar en enda video\nDela upp: dela upp videor efter redigering"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Standard videouppspelningshastighet",
-                        "description": "Ställer in standardhastigheten för uppspelning av videor\nVärdet måste vara mellan 0.1 och 4.0"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Reglage för videouppspelningshastighet",
-                        "description": "Lägger till ett reglage i opera-kontextmenyn för att ändra videouppspelningshastigheten\nObs: Ändringar gäller endast efterföljande videor"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Inaktivera Google Play Services-dialoger",
-                        "description": "Förhindra att dialoger om Google Play Services tillgänglighet visas"
-                    },
-                    "default_volume_controls": {
-                        "name": "Standard volymkontroller",
-                        "description": "Tvingar Snapchat att använda systemets volymkontroller"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Inaktivera Telecom Framework",
-                        "description": "Förhindrar Snapchat från att använda Android Telecom-ramverket\nDetta låter dig lyssna på musik medan du är i ett samtal"
-                    },
-                    "hide_active_music": {
-                        "name": "Dölj aktiv musik",
-                        "description": "Förhindrar Snapchat från att veta att du lyssnar på musik\nDetta låter dig ta snaps med volymknapparna medan du lyssnar på musik"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Inaktivera Snap-uppdelning",
-                        "description": "Förhindrar Snaps från att delas upp i flera delar\nBilder du skickar kommer att bli videor"
-                    }
-                }
-            },
             "rules": {
                 "name": "Regler",
                 "description": "Konfigurera automatiseringsregler",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Krypterad meddelandeindikator",
-                                "description": "Lägger till en \ud83d\udd12 emoji bredvid krypterade meddelanden"
+                                "description": "Lägger till en 🔒 emoji bredvid krypterade meddelanden"
                             },
                             "force_message_encryption": {
                                 "name": "Tvinga meddelandekryptering",
@@ -2162,20 +2130,20 @@
                 "null": "Använd verklig batterinivå"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f Auto-nedladdning",
-                "auto_save": "\ud83d\udcac Autospara meddelanden",
-                "unsaveable_messages": "\u2b07\ufe0f Icke-sparade meddelanden",
-                "auto_open_snaps": "\ud83d\udcf7 Auto-öppna Snaps",
-                "stealth": "\ud83d\udc7b Smygläge",
-                "auto_reply": "\ud83d\udce8 Autosvar",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Ta bort skickade meddelanden automatiskt",
-                "mark_snaps_as_seen": "\ud83d\udc40 Markera Snaps som sedda",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 Markera Stories som sedda lokalt",
-                "conversation_info": "\ud83d\udc64 Konversationsinfo",
-                "e2e_encryption": "\ud83d\udd12 Använd E2E-kryptering",
-                "message_logger": "\ud83d\udcdd Meddelandelogg",
-                "auto_read": "\u2705 Auto-läs",
-                "hide_typing_indicator": "\ud83d\ude48 Dölj skrivindikator"
+                "auto_download": "⬇️ Auto-nedladdning",
+                "auto_save": "💬 Autospara meddelanden",
+                "unsaveable_messages": "⬇️ Icke-sparade meddelanden",
+                "auto_open_snaps": "📷 Auto-öppna Snaps",
+                "stealth": "👻 Smygläge",
+                "auto_reply": "📨 Autosvar",
+                "auto_delete_sent_messages": "🗑️ Ta bort skickade meddelanden automatiskt",
+                "mark_snaps_as_seen": "👀 Markera Snaps som sedda",
+                "mark_stories_as_seen_locally": "👀 Markera Stories som sedda lokalt",
+                "conversation_info": "👤 Konversationsinfo",
+                "e2e_encryption": "🔒 Använd E2E-kryptering",
+                "message_logger": "📝 Meddelandelogg",
+                "auto_read": "✅ Auto-läs",
+                "hide_typing_indicator": "🙈 Dölj skrivindikator"
             },
             "schedule_scheduled_for": "Schemalagd för {name} om {time}",
             "schedule_sending_in": "Skickar om {time}",
@@ -2278,16 +2246,16 @@
             "custom_android_id": {
                 "null": "Använd verkligt Android-ID"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "Via Användarnamn",
-	                "added_by_mention": "Via Omnämnande",
-	                "added_by_group_chat": "Via Gruppchatt",
-	                "added_by_qr_code": "Via QR-kod",
-	                "added_by_community": "Via Community",
-	                "added_by_quick_add": "Via Snabbtillägg (hög risk att bli bannad)",
-	                "added_by_spotlight": "Via Spotlight",
-	                "null": "Spoofa inte källa"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "Via Användarnamn",
+                "added_by_mention": "Via Omnämnande",
+                "added_by_group_chat": "Via Gruppchatt",
+                "added_by_qr_code": "Via QR-kod",
+                "added_by_community": "Via Community",
+                "added_by_quick_add": "Via Snabbtillägg (hög risk att bli bannad)",
+                "added_by_spotlight": "Via Spotlight",
+                "null": "Spoofa inte källa"
+            },
             "custom_streaks_expiration_format": {
                 "null": "Systemstandard"
             },
@@ -2394,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "Användarnamnsikon",
-                "\ud83d\udc64": "Användarnamnsikon",
-                "[\ud83d\udc64]": "Användarnamnsikon",
+                "👤": "Användarnamnsikon",
+                "[👤]": "Användarnamnsikon",
                 "default": "Användarnamnsikon",
                 "no_icon": "Ingen ikon"
             },
@@ -2475,11 +2443,11 @@
                 "phone_calls": "Telefonsamtal"
             },
             "message_indicators": {
-                "encryption_indicator": "Lägger till en \ud83d\udd12 ikon bredvid meddelanden som endast har skickats till dig",
+                "encryption_indicator": "Lägger till en 🔒 ikon bredvid meddelanden som endast har skickats till dig",
                 "platform_indicator": "Lägger till plattformsikonen från vilken media skickades (t.ex. Android, iOS, Webb)",
-                "location_indicator": "Lägger till en \ud83d\udccd ikon på snaps när de har skickats med plats aktiverad",
+                "location_indicator": "Lägger till en 📍 ikon på snaps när de har skickats med plats aktiverad",
                 "ovf_editor_indicator": "Indikerar om en snap har skickats med OVF Editor",
-                "director_mode_indicator": "Lägger till en \u270f\ufe0f ikon på snaps när de har skickats med Director Mode, som kan användas för att skicka galleribilder som snaps"
+                "director_mode_indicator": "Lägger till en ✏️ ikon på snaps när de har skickats med Director Mode, som kan användas för att skicka galleribilder som snaps"
             },
             "auto_mark_as_read": {
                 "conversation_read": "Markera konversation som läst när du skickar ett meddelande",
@@ -2703,7 +2671,6 @@
         "show_chat_edit_history": "Visa chattredigeringshistorik",
         "convert_message": "Konvertera meddelande"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Ladda ner chattbakgrund"
     },
@@ -3033,7 +3000,7 @@
         "queue_cleared": "Kö rensad och statistik återställd",
         "queue_cleared_title": "Kö rensad",
         "queue_cleared_reset": "Kö rensad & återställd",
-        "queue_cleared_feedback": "Rensade {count} köade snaps \u2022 Återställde {processed} behandlat antal",
+        "queue_cleared_feedback": "Rensade {count} köade snaps • Återställde {processed} behandlat antal",
         "queue_cleared_feedback_simple": "Återställde {processed} behandlat antal",
         "unknown_sender": "Okänd",
         "unknown_user": "Okänd användare",

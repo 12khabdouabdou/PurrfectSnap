@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 لەلایەن Eternal",
+                "version_title": "v{versionName} · لەلایەن Eternal",
                 "update_title": "نوێکردنەوەی PurrfectSnap",
                 "update_content": "وەشانی {version} بەردەستە!",
                 "update_button": "دابەزاندن",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "هیچ ئەرکێک نییە",
                 "merge_button": "تێکەڵکردن",
-                "summary_active": "{active} چالاک \u00b7 {recent} کۆتاکان",
-                "summary_idle": "بێکار \u00b7 {recent} کۆتاکان",
+                "summary_active": "{active} چالاک · {recent} کۆتاکان",
+                "summary_idle": "بێکار · {recent} کۆتاکان",
                 "running_count": "{count} کار دەکات",
                 "clear_button_description": "پاککردنەوەی ئەرکەکان",
                 "failed_to_open_file": "کردنەوەی فایل سەرکەوتوو نەبوو",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "{count} ئەرک دەسڕیتەوە؟",
                 "remove_all_tasks_confirm": "هەموو ئەرکەکان دەسڕیتەوە؟"
             },
-        "features": {
-            "disabled": "ناچالاک کراوە",
-            "export_option": "هەناردەکردن",
-            "import_option": "هاوردەکردن",
-            "reset_option": "ڕیست",
-            "config_export_success_toast": "ڕێکخستنەکان بە سەرکەوتوویی هەناردەکران",
-            "config_import_success_toast": "ڕێکخستنەکان بە سەرکەوتوویی هاوردەکران",
-            "config_import_failure_toast": "هاوردەکردنی ڕێکخستنەکان سەرکەوتوو نەبوو {error}",
-            "config_export_failure_toast": "هەناردەکردنی ڕێکخستنەکان سەرکەوتوو نەبوو {error}",
-            "saved_config_snackbar": "ڕێکخستن پاشەکەوت کرا",
-            "older_required": "ئەم تایبەتمەندییە پێویستی بە سناپچاتی وەشانی {version} یان کۆنتر هەیە بۆ ئەوەی بە دروستی کار بکات",
-            "newer_required": "ئەم تایبەتمەندییە پێویستی بە سناپچاتی وەشانی {version} یان نوێتر هەیە بۆ ئەوەی بە دروستی کار بکات",
-            "search_button": "گەڕان",
-            "clear_history": "پاککردنەوەی مێژووی گەڕان",
-            "subtitle": "گەڕان و بەڕێوەبردنی تایبەتمەندییەکان"
-        },
+            "features": {
+                "disabled": "ناچالاک کراوە",
+                "export_option": "هەناردەکردن",
+                "import_option": "هاوردەکردن",
+                "reset_option": "ڕیست",
+                "config_export_success_toast": "ڕێکخستنەکان بە سەرکەوتوویی هەناردەکران",
+                "config_import_success_toast": "ڕێکخستنەکان بە سەرکەوتوویی هاوردەکران",
+                "config_import_failure_toast": "هاوردەکردنی ڕێکخستنەکان سەرکەوتوو نەبوو {error}",
+                "config_export_failure_toast": "هەناردەکردنی ڕێکخستنەکان سەرکەوتوو نەبوو {error}",
+                "saved_config_snackbar": "ڕێکخستن پاشەکەوت کرا",
+                "older_required": "ئەم تایبەتمەندییە پێویستی بە سناپچاتی وەشانی {version} یان کۆنتر هەیە بۆ ئەوەی بە دروستی کار بکات",
+                "newer_required": "ئەم تایبەتمەندییە پێویستی بە سناپچاتی وەشانی {version} یان نوێتر هەیە بۆ ئەوەی بە دروستی کار بکات",
+                "search_button": "گەڕان",
+                "clear_history": "پاککردنەوەی مێژووی گەڕان",
+                "subtitle": "گەڕان و بەڕێوەبردنی تایبەتمەندییەکان"
+            },
             "bypass_status": {
                 "active": "PurrAura چالاکە",
                 "inactive": "PurrAura ناچالاکە"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "گواستنەوە بۆ لای هاوڕێ",
                 "search_bar": "گەڕان",
                 "no_friends_map": "هیچ هاوڕێیەک لەسەر نەخشە نییە",
-                "no_friends_found": "هیچ هاوڕێیەک نەدۆزرایەوە"
+                "no_friends_found": "هیچ هاوڕێیەک نەدۆزرایەوە",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,146 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 جێگیر نییە (Unstable)",
-            "ban_risk": "\u26a0 ئەم تایبەتمەندییە ڕەنگە ببێتە هۆی باندکردن",
-            "internal_behavior": "\u26a0 ئەمە ڕەنگە ڕەفتاری ناوخۆیی سناپچات تێک بدات"
+            "unstable": "⚠ جێگیر نییە (Unstable)",
+            "ban_risk": "⚠ ئەم تایبەتمەندییە ڕەنگە ببێتە هۆی باندکردن",
+            "internal_behavior": "⚠ ئەمە ڕەنگە ڕەفتاری ناوخۆیی سناپچات تێک بدات"
         },
         "properties": {
             "global": {
                 "name": "گشتی",
-                "description": "پەسەندکراوە گشتییەکانی مۆدیوڵ",
+                "description": "دەستکاریکردنی ڕێکخستنە گشتییەکانی سناپچات",
                 "properties": {
-                    "ui_settings": {
-                        "name": "ڕێکخستنەکانی ڕووکار (UI)",
-                        "description": "ڕێکخستنی کاردانەوە و پەیامەکان",
+                    "better_location": {
+                        "name": "شوێنی باشتر",
+                        "description": "شوێنی سناپچات باشتر دەکات",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "لەرینەوە (Haptic Feedback)",
-                                "description": "لەرینەوە لە کاتی کارلێکە پشتگیریکراوەکان"
+                            "spoof_location": {
+                                "name": "ساختەکردنی شوێن (Spoof)",
+                                "description": "شوێنەکەت دەگۆڕێت بۆ شوێنێکی دیاریکراو"
                             },
-                            "use_system_toasts": {
-                                "name": "بەکارهێنانی پەیامی سیستەم",
-                                "description": "نیشاندانی پەیامی ئەندرۆید لە جیاتی پەیامی ناو بەرنامە"
+                            "coordinates": {
+                                "name": "شوێن (Coordinates)",
+                                "description": "شوێنی ساختەکراوەکە دیاری دەکات"
+                            },
+                            "walk_radius": {
+                                "name": "بازنەی ڕۆیشتن",
+                                "description": "بە هەڕەمەکی دەسوڕێتەوە لەم بازنەیەدا (پێ ft)"
+                            },
+                            "always_update_location": {
+                                "name": "هەمیشە نوێکردنەوەی شوێن",
+                                "description": "سناپچات ناچار دەکات شوێن نوێ بکاتەوە تەنانەت ئەگەر داتای GPS وەرنەگیرێت"
+                            },
+                            "suspend_location_updates": {
+                                "name": "ڕاگرتنی نوێبوونەوەی شوێن",
+                                "description": "ڕێگری دەکات لە نوێبوونەوەی شوێنەکەت"
+                            },
+                            "spoof_battery_level": {
+                                "name": "ساختەکردنی ئاستی باتری",
+                                "description": "ئاستی باتری ئامێرەکەت ساختە دەکات لەسەر نەخشە\nبەها دەبێت لە نێوان ٠ و ١٠٠ بێت"
+                            },
+                            "spoof_headphones": {
+                                "name": "ساختەکردنی هێدفۆن",
+                                "description": "دۆخی گوێگرتن لە مۆسیقا ساختە دەکات لەسەر نەخشە"
+                            },
+                            "show_battery_level": {
+                                "name": "نیشاندانی ئاستی باتری",
+                                "description": "ئاستی باتری هاوڕێکانت نیشان دەدات لەسەر نەخشە"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "ڕێکخستنەکانی نوێکردنەوە",
-                        "description": "کۆنترۆڵی پشکنینی نوێکردنەوەی خۆکار",
+                    "snapchat_plus": {
+                        "name": "سناپچات پڵەس",
+                        "description": "تایبەتمەندییەکانی سناپچات پڵەس چالاک دەکات\nهەندێک تایبەتمەندی لای سێرڤەر ڕەنگە کار نەکەن"
+                    },
+                    "media_upload_quality": {
+                        "name": "کوالیتی ئەپلۆدی میدیا",
+                        "description": "کوالیتی ئەپلۆدی میدیا دەگۆڕێت",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "پشکنینی نوێکردنەوەی خۆکار",
-                                "description": "پشکنین بۆ وەشانی نوێ بە خۆکاری"
+                            "force_video_upload_source_quality": {
+                                "name": "سەپاندنی کوالیتی سەرچاوە بۆ ئەپلۆدی ڤیدیۆ",
+                                "description": "سناپچات ناچار دەکات کوالیتی سەرچاوە بەکاربهێنێت کاتێک ڤیدیۆ ئەپلۆد دەکات\nتکایە تێبینی بکە ئەمە ڕەنگە مێتاداتای میدیاکە لانەبات"
                             },
-                            "update_check_frequency": {
-                                "name": "ماوەی پشکنینی نوێکردنەوە",
-                                "description": "چەند جار پشکنین بکرێت بۆ نوێکردنەوە"
+                            "disable_image_compression": {
+                                "name": "ناچالاککردنی کەمکردنەوەی قەبارەی وێنە",
+                                "description": "پەستاندنی (compression) وێنە ناچالاک دەکات کاتێک میدیا ئەپلۆد دەکات"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "فۆرماتی ئەپلۆدی وێنەی تایبەت",
+                                "description": "فۆرماتێکی تایبەت دادەنێت بۆ ئەپلۆدی وێنە\nفۆرماتێکی بێ زیان (وەک PNG) هەڵبژێرە بۆ باشترین کوالیتی"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "ناچالاککردنی پەنجەرەی پشتڕاستکردنەوە",
+                        "description": "بە خۆکاری کردارە هەڵبژێردراوەکان پشتڕاست دەکاتەوە"
+                    },
+                    "auto_updater": {
+                        "name": "نوێکەرەوەی خۆکار",
+                        "description": "بە خۆکاری دەگەڕێت بۆ نوێکردنەوەی نوێ"
+                    },
+                    "disable_metrics": {
+                        "name": "ناچالاککردنی پێوەرەکان (Metrics)",
+                        "description": "ڕێگری دەکات لە ناردنی داتای شیکاری دیاریکراو بۆ سناپچات"
+                    },
+                    "disable_story_sections": {
+                        "name": "ناچالاککردنی بەشەکانی ستۆری",
+                        "description": "بەشەکان لادەبات لە پەڕەی ستۆرییەکان\nڕەنگە پێویستی بە نوێکردنەوەیەک (refresh) بێت بۆ کارکردن"
+                    },
+                    "block_ads": {
+                        "name": "بلۆککردنی ڕیکلام",
+                        "description": "ڕێگری دەکات لە دەرکەوتنی ڕیکلامەکان"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "ناچالاککردنی تابی تایبەت",
+                        "description": "لینکەکان لە بەرنامە پشتگیریکراوەکان دەکاتەوە لە جیاتی وێبگەڕی ناوخۆ"
+                    },
+                    "disable_permission_requests": {
+                        "name": "ناچالاککردنی داواکاری مۆڵەت",
+                        "description": "ڕێگری دەکات لە سناپچات بۆ داواکردنی مۆڵەتی دیاریکراو"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "ناچالاککردنی لیستی میمۆری سناپ",
+                        "description": "ڕێگری لە سناپچات دەکات لە نیشاندانی میمۆرییە نوێکان کاتێک لە کامێرا swipe up دەکەیت"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "ناوی بەکارهێنەر لە کۆمێنتەکانی سپۆتلایت",
+                        "description": "ناوی بەکارهێنەر نیشان دەدات لە کۆمێنتەکانی سپۆتلایت"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "ئایکۆنی ناوی بەکارهێنەر لە کۆمێنتەکانی سپۆتلایت",
+                        "description": "هەڵبژێرە کام ئایکۆن نیشان بدرێت لە تەنیشت ناوی بەکارهێنەر"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "تێپەڕاندنی سنووردارکردنی درێژی ڤیدیۆ",
+                        "description": "تاک: یەک ڤیدیۆ دەنێرێت\nدابەشکراو: ڤیدیۆکان دابەش دەکات دوای دەستکاریکردن"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "خێرایی لێدانی ڤیدیۆی بەنێردراو",
+                        "description": "خێرایی بەنێردراو دادەنێت بۆ لێدانی ڤیدیۆکان\nبەها دەبێت لە نێوان ٠.١ و ٤.٠ بێت"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "سلایدەری خێرایی لێدانی ڤیدیۆ",
+                        "description": "سلایدەرێک زیاد دەکات لە لیستی opera بۆ گۆڕینی خێرایی ڤیدیۆ\nتێبینی: گۆڕانکارییەکان تەنها بۆ ڤیدیۆکانی دواتر جێبەجێ دەبن"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "ناچالاککردنی پەیامەکانی Google Play Services",
+                        "description": "ڕێگری دەکات لە دەرکەوتنی پەیامەکانی بەردەستبوونی Google Play Services"
+                    },
+                    "default_volume_controls": {
+                        "name": "کۆنترۆڵی دەنگی بەنێردراو",
+                        "description": "سناپچات ناچار دەکات کۆنترۆڵی دەنگی سیستەم بەکاربهێنێت"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "ناچالاککردنی چوارچێوەی پەیوەندی (Telecom)",
+                        "description": "ڕێگری دەکات لە سناپچات بۆ بەکارهێنانی Android Telecom framework\nئەمە ڕێگەت دەدات گوێ لە مۆسیقا بگریت لە کاتی پەیوەندیدا"
+                    },
+                    "hide_active_music": {
+                        "name": "شاردنەوەی مۆسیقای چالاک",
+                        "description": "ڕێگری دەکات لە سناپچات بزانێت کە گوێ لە مۆسیقا دەگریت\nئەمە ڕێگەت دەدات سناپ بگریت بە بەکارهێنانی دوگمەکانی دەنگ لە کاتی گوێگرتن لە مۆسیقا"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "ناچالاککردنی دابەشکردنی سناپ",
+                        "description": "ڕێگری دەکات لە دابەشکردنی سناپەکان بۆ چەند بەشێک\nئەو وێنانەی دەینێریت دەبن بە ڤیدیۆ"
                     }
                 }
             },
@@ -1094,7 +1200,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "نیشاندەری دۆخی شاراوە",
-                        "description": "ئیمۆجی \ud83d\udc7b زیاد دەکات لە تەنیشت گفتوگۆکان لە دۆخی شاراوە"
+                        "description": "ئیمۆجی 👻 زیاد دەکات لە تەنیشت گفتوگۆکان لە دۆخی شاراوە"
                     },
                     "edit_text_override": {
                         "name": "گۆڕینی دەستکاریکردنی دەق",
@@ -1622,144 +1728,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "گشتی",
-                "description": "دەستکاریکردنی ڕێکخستنە گشتییەکانی سناپچات",
-                "properties": {
-                    "better_location": {
-                        "name": "شوێنی باشتر",
-                        "description": "شوێنی سناپچات باشتر دەکات",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "ساختەکردنی شوێن (Spoof)",
-                                "description": "شوێنەکەت دەگۆڕێت بۆ شوێنێکی دیاریکراو"
-                            },
-                            "coordinates": {
-                                "name": "شوێن (Coordinates)",
-                                "description": "شوێنی ساختەکراوەکە دیاری دەکات"
-                            },
-                            "walk_radius": {
-                                "name": "بازنەی ڕۆیشتن",
-                                "description": "بە هەڕەمەکی دەسوڕێتەوە لەم بازنەیەدا (پێ ft)"
-                            },
-                            "always_update_location": {
-                                "name": "هەمیشە نوێکردنەوەی شوێن",
-                                "description": "سناپچات ناچار دەکات شوێن نوێ بکاتەوە تەنانەت ئەگەر داتای GPS وەرنەگیرێت"
-                            },
-                            "suspend_location_updates": {
-                                "name": "ڕاگرتنی نوێبوونەوەی شوێن",
-                                "description": "ڕێگری دەکات لە نوێبوونەوەی شوێنەکەت"
-                            },
-                            "spoof_battery_level": {
-                                "name": "ساختەکردنی ئاستی باتری",
-                                "description": "ئاستی باتری ئامێرەکەت ساختە دەکات لەسەر نەخشە\nبەها دەبێت لە نێوان ٠ و ١٠٠ بێت"
-                            },
-                            "spoof_headphones": {
-                                "name": "ساختەکردنی هێدفۆن",
-                                "description": "دۆخی گوێگرتن لە مۆسیقا ساختە دەکات لەسەر نەخشە"
-                            },
-                            "show_battery_level": {
-                                "name": "نیشاندانی ئاستی باتری",
-                                "description": "ئاستی باتری هاوڕێکانت نیشان دەدات لەسەر نەخشە"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "سناپچات پڵەس",
-                        "description": "تایبەتمەندییەکانی سناپچات پڵەس چالاک دەکات\nهەندێک تایبەتمەندی لای سێرڤەر ڕەنگە کار نەکەن"
-                    },
-                    "media_upload_quality": {
-                        "name": "کوالیتی ئەپلۆدی میدیا",
-                        "description": "کوالیتی ئەپلۆدی میدیا دەگۆڕێت",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "سەپاندنی کوالیتی سەرچاوە بۆ ئەپلۆدی ڤیدیۆ",
-                                "description": "سناپچات ناچار دەکات کوالیتی سەرچاوە بەکاربهێنێت کاتێک ڤیدیۆ ئەپلۆد دەکات\nتکایە تێبینی بکە ئەمە ڕەنگە مێتاداتای میدیاکە لانەبات"
-                            },
-                            "disable_image_compression": {
-                                "name": "ناچالاککردنی کەمکردنەوەی قەبارەی وێنە",
-                                "description": "پەستاندنی (compression) وێنە ناچالاک دەکات کاتێک میدیا ئەپلۆد دەکات"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "فۆرماتی ئەپلۆدی وێنەی تایبەت",
-                                "description": "فۆرماتێکی تایبەت دادەنێت بۆ ئەپلۆدی وێنە\nفۆرماتێکی بێ زیان (وەک PNG) هەڵبژێرە بۆ باشترین کوالیتی"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "ناچالاککردنی پەنجەرەی پشتڕاستکردنەوە",
-                        "description": "بە خۆکاری کردارە هەڵبژێردراوەکان پشتڕاست دەکاتەوە"
-                    },
-                    "auto_updater": {
-                        "name": "نوێکەرەوەی خۆکار",
-                        "description": "بە خۆکاری دەگەڕێت بۆ نوێکردنەوەی نوێ"
-                    },
-                    "disable_metrics": {
-                        "name": "ناچالاککردنی پێوەرەکان (Metrics)",
-                        "description": "ڕێگری دەکات لە ناردنی داتای شیکاری دیاریکراو بۆ سناپچات"
-                    },
-                    "disable_story_sections": {
-                        "name": "ناچالاککردنی بەشەکانی ستۆری",
-                        "description": "بەشەکان لادەبات لە پەڕەی ستۆرییەکان\nڕەنگە پێویستی بە نوێکردنەوەیەک (refresh) بێت بۆ کارکردن"
-                    },
-                    "block_ads": {
-                        "name": "بلۆککردنی ڕیکلام",
-                        "description": "ڕێگری دەکات لە دەرکەوتنی ڕیکلامەکان"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "ناچالاککردنی تابی تایبەت",
-                        "description": "لینکەکان لە بەرنامە پشتگیریکراوەکان دەکاتەوە لە جیاتی وێبگەڕی ناوخۆ"
-                    },
-                    "disable_permission_requests": {
-                        "name": "ناچالاککردنی داواکاری مۆڵەت",
-                        "description": "ڕێگری دەکات لە سناپچات بۆ داواکردنی مۆڵەتی دیاریکراو"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "ناچالاککردنی لیستی میمۆری سناپ",
-                        "description": "ڕێگری لە سناپچات دەکات لە نیشاندانی میمۆرییە نوێکان کاتێک لە کامێرا swipe up دەکەیت"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "ناوی بەکارهێنەر لە کۆمێنتەکانی سپۆتلایت",
-                        "description": "ناوی بەکارهێنەر نیشان دەدات لە کۆمێنتەکانی سپۆتلایت"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "ئایکۆنی ناوی بەکارهێنەر لە کۆمێنتەکانی سپۆتلایت",
-                        "description": "هەڵبژێرە کام ئایکۆن نیشان بدرێت لە تەنیشت ناوی بەکارهێنەر"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "تێپەڕاندنی سنووردارکردنی درێژی ڤیدیۆ",
-                        "description": "تاک: یەک ڤیدیۆ دەنێرێت\nدابەشکراو: ڤیدیۆکان دابەش دەکات دوای دەستکاریکردن"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "خێرایی لێدانی ڤیدیۆی بەنێردراو",
-                        "description": "خێرایی بەنێردراو دادەنێت بۆ لێدانی ڤیدیۆکان\nبەها دەبێت لە نێوان ٠.١ و ٤.٠ بێت"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "سلایدەری خێرایی لێدانی ڤیدیۆ",
-                        "description": "سلایدەرێک زیاد دەکات لە لیستی opera بۆ گۆڕینی خێرایی ڤیدیۆ\nتێبینی: گۆڕانکارییەکان تەنها بۆ ڤیدیۆکانی دواتر جێبەجێ دەبن"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "ناچالاککردنی پەیامەکانی Google Play Services",
-                        "description": "ڕێگری دەکات لە دەرکەوتنی پەیامەکانی بەردەستبوونی Google Play Services"
-                    },
-                    "default_volume_controls": {
-                        "name": "کۆنترۆڵی دەنگی بەنێردراو",
-                        "description": "سناپچات ناچار دەکات کۆنترۆڵی دەنگی سیستەم بەکاربهێنێت"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "ناچالاککردنی چوارچێوەی پەیوەندی (Telecom)",
-                        "description": "ڕێگری دەکات لە سناپچات بۆ بەکارهێنانی Android Telecom framework\nئەمە ڕێگەت دەدات گوێ لە مۆسیقا بگریت لە کاتی پەیوەندیدا"
-                    },
-                    "hide_active_music": {
-                        "name": "شاردنەوەی مۆسیقای چالاک",
-                        "description": "ڕێگری دەکات لە سناپچات بزانێت کە گوێ لە مۆسیقا دەگریت\nئەمە ڕێگەت دەدات سناپ بگریت بە بەکارهێنانی دوگمەکانی دەنگ لە کاتی گوێگرتن لە مۆسیقا"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "ناچالاککردنی دابەشکردنی سناپ",
-                        "description": "ڕێگری دەکات لە دابەشکردنی سناپەکان بۆ چەند بەشێک\nئەو وێنانەی دەینێریت دەبن بە ڤیدیۆ"
-                    }
-                }
-            },
             "rules": {
                 "name": "یاساکان",
                 "description": "ڕێکخستنی یاساکانی ئۆتۆماتیک",
@@ -2041,7 +2009,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "نیشاندەری نامەی کۆدکراو",
-                                "description": "ئیمۆجی \ud83d\udd12 زیاد دەکات لە تەنیشت نامە کۆدکراوەکان"
+                                "description": "ئیمۆجی 🔒 زیاد دەکات لە تەنیشت نامە کۆدکراوەکان"
                             },
                             "force_message_encryption": {
                                 "name": "سەپاندنی کۆدکردنی نامە",
@@ -2142,20 +2110,20 @@
                 "null": "بەکارهێنانی ئاستی ڕاستەقینەی باتری"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f دابەزاندنی خۆکار",
-                "auto_save": "\ud83d\udcac پاشەکەوتکردنی خۆکاری نامە",
-                "unsaveable_messages": "\u2b07\ufe0f نامە پاشەکەوت نەکراوەکان",
-                "auto_open_snaps": "\ud83d\udcf7 کردنەوەی خۆکاری سناپ",
-                "stealth": "\ud83d\udc7b دۆخی شاراوە",
-                "auto_reply": "\ud83d\udce8 وەڵامدانەوەی خۆکار",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f سڕینەوەی خۆکاری نامە نێردراوەکان",
-                "mark_snaps_as_seen": "\ud83d\udc40 دیاریکردنی سناپ وەک بینراو",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 دیاریکردنی ستۆری وەک بینراو (Local)",
-                "conversation_info": "\ud83d\udc64 زانیاری گفتوگۆ",
-                "e2e_encryption": "\ud83d\udd12 بەکارهێنانی E2E Encryption",
-                "message_logger": "\ud83d\udcdd تۆمارکەری نامە",
-                "auto_read": "\u2705 خوێندنەوەی خۆکار",
-                "hide_typing_indicator": "\ud83d\ude48 شاردنەوەی نیشاندەری نووسین"
+                "auto_download": "⬇️ دابەزاندنی خۆکار",
+                "auto_save": "💬 پاشەکەوتکردنی خۆکاری نامە",
+                "unsaveable_messages": "⬇️ نامە پاشەکەوت نەکراوەکان",
+                "auto_open_snaps": "📷 کردنەوەی خۆکاری سناپ",
+                "stealth": "👻 دۆخی شاراوە",
+                "auto_reply": "📨 وەڵامدانەوەی خۆکار",
+                "auto_delete_sent_messages": "🗑️ سڕینەوەی خۆکاری نامە نێردراوەکان",
+                "mark_snaps_as_seen": "👀 دیاریکردنی سناپ وەک بینراو",
+                "mark_stories_as_seen_locally": "👀 دیاریکردنی ستۆری وەک بینراو (Local)",
+                "conversation_info": "👤 زانیاری گفتوگۆ",
+                "e2e_encryption": "🔒 بەکارهێنانی E2E Encryption",
+                "message_logger": "📝 تۆمارکەری نامە",
+                "auto_read": "✅ خوێندنەوەی خۆکار",
+                "hide_typing_indicator": "🙈 شاردنەوەی نیشاندەری نووسین"
             },
             "schedule_scheduled_for": "خشتەکراوە بۆ {name} لە {time}",
             "schedule_sending_in": "دەنێردرێت لە {time}",
@@ -2258,16 +2226,16 @@
             "custom_android_id": {
                 "null": "بەکارهێنانی Android ID ڕاستەقینە"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "بە ناوی بەکارهێنەر",
-	                "added_by_mention": "بە مێنشن",
-	                "added_by_group_chat": "بە چاتی گرووپ",
-	                "added_by_qr_code": "بە کۆدی QR",
-	                "added_by_community": "بە کۆمەڵگە (Community)",
-	                "added_by_quick_add": "بە Quick Add (مەترسی بەرزی باندبوون)",
-	                "added_by_spotlight": "بە سپۆتلایت",
-	                "null": "سەرچاوە ساختە مەکە"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "بە ناوی بەکارهێنەر",
+                "added_by_mention": "بە مێنشن",
+                "added_by_group_chat": "بە چاتی گرووپ",
+                "added_by_qr_code": "بە کۆدی QR",
+                "added_by_community": "بە کۆمەڵگە (Community)",
+                "added_by_quick_add": "بە Quick Add (مەترسی بەرزی باندبوون)",
+                "added_by_spotlight": "بە سپۆتلایت",
+                "null": "سەرچاوە ساختە مەکە"
+            },
             "custom_streaks_expiration_format": {
                 "null": "بەنێردراوی سیستەم"
             },
@@ -2374,8 +2342,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "ئایکۆنی ناوی بەکارهێنەر",
-                "\ud83d\udc64": "ئایکۆنی ناوی بەکارهێنەر",
-                "[\ud83d\udc64]": "ئایکۆنی ناوی بەکارهێنەر",
+                "👤": "ئایکۆنی ناوی بەکارهێنەر",
+                "[👤]": "ئایکۆنی ناوی بەکارهێنەر",
                 "default": "ئایکۆنی ناوی بەکارهێنەر",
                 "no_icon": "ئایکۆن نییە"
             },
@@ -2455,11 +2423,11 @@
                 "phone_calls": "پەیوەندی تەلەفۆنی"
             },
             "message_indicators": {
-                "encryption_indicator": "ئایکۆنی \ud83d\udd12 زیاد دەکات لە تەنیشت ئەو نامانەی کە تەنها بۆ تۆ نێردراون",
+                "encryption_indicator": "ئایکۆنی 🔒 زیاد دەکات لە تەنیشت ئەو نامانەی کە تەنها بۆ تۆ نێردراون",
                 "platform_indicator": "ئایکۆنی پلاتفۆرم زیاد دەکات کە میدیاکەی لێوە نێردراوە (e.g. Android, iOS, Web)",
-                "location_indicator": "ئایکۆنی \ud83d\udccd زیاد دەکات بۆ سناپەکان کاتێک بە شوێنەوە (location enabled) نێردراون",
+                "location_indicator": "ئایکۆنی 📍 زیاد دەکات بۆ سناپەکان کاتێک بە شوێنەوە (location enabled) نێردراون",
                 "ovf_editor_indicator": "نیشانی دەدات ئەگەر سناپێک بە OVF Editor نێردرابێت",
-                "director_mode_indicator": "ئایکۆنی \u270f\ufe0f زیاد دەکات بۆ سناپەکان کاتێک بە Director Mode نێردراون"
+                "director_mode_indicator": "ئایکۆنی ✏️ زیاد دەکات بۆ سناپەکان کاتێک بە Director Mode نێردراون"
             },
             "auto_mark_as_read": {
                 "conversation_read": "دیاریکردنی گفتوگۆ وەک خوێندراو کاتێک نامەیەک دەنێریت",
@@ -2683,7 +2651,6 @@
         "show_chat_edit_history": "نیشاندانی مێژووی دەستکاری چات",
         "convert_message": "گۆڕینی نامە"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "دابەزاندنی باکگراوندی چات"
     },
@@ -3013,7 +2980,7 @@
         "queue_cleared": "ڕیز پاککرایەوە و ئامارەکان ڕیست کرانەوە",
         "queue_cleared_title": "ڕیز پاککرایەوە",
         "queue_cleared_reset": "ڕیز پاککرایەوە & ڕیست",
-        "queue_cleared_feedback": "پاککردنەوەی {count} سناپی ڕیزکراو \u2022 ڕیستکردنی {processed} ژمارەی پرۆسەکراو",
+        "queue_cleared_feedback": "پاککردنەوەی {count} سناپی ڕیزکراو • ڕیستکردنی {processed} ژمارەی پرۆسەکراو",
         "queue_cleared_feedback_simple": "ڕیستکردنی {processed} ژمارەی پرۆسەکراو",
         "unknown_sender": "نەناسراو",
         "unknown_user": "بەکارهێنەری نەناسراو",

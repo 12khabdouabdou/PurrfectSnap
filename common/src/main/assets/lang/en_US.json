@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "Teleport to Friend",
                 "search_bar": "Search",
                 "no_friends_map": "No friends on the map",
-                "no_friends_found": "No friends found"
+                "no_friends_found": "No friends found",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {

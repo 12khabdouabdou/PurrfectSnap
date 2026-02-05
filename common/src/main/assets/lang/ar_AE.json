@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 بواسطة Eternal",
+                "version_title": "v{versionName} · بواسطة Eternal",
                 "update_title": "تحديث PurrfectSnap",
                 "update_content": "الإصدار {version} متاح!",
                 "update_button": "تنزيل",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "لا توجد مهام",
                 "merge_button": "دمج",
-                "summary_active": "{active} نشط \u00b7 {recent} حديث",
-                "summary_idle": "خامل \u00b7 {recent} حديث",
+                "summary_active": "{active} نشط · {recent} حديث",
+                "summary_idle": "خامل · {recent} حديث",
                 "running_count": "{count} قيد التشغيل",
                 "clear_button_description": "مسح المهام",
                 "failed_to_open_file": "فشل فتح الملف",
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "انتقال فوري لصديق",
                 "search_bar": "بحث",
                 "no_friends_map": "لا يوجد أصدقاء على الخريطة",
-                "no_friends_found": "لم يتم العثور على أصدقاء"
+                "no_friends_found": "لم يتم العثور على أصدقاء",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 غير مستقر",
-            "ban_risk": "\u26a0 هذه الميزة قد تسبب حظراً",
-            "internal_behavior": "\u26a0 قد يكسر هذا السلوك الداخلي لـ Snapchat"
+            "unstable": "⚠ غير مستقر",
+            "ban_risk": "⚠ هذه الميزة قد تسبب حظراً",
+            "internal_behavior": "⚠ قد يكسر هذا السلوك الداخلي لـ Snapchat"
         },
         "properties": {
             "global": {
                 "name": "عالمي",
-                "description": "تفضيلات وافتراضيات الوحدة العامة",
+                "description": "تعديل إعدادات Snapchat العالمية",
                 "properties": {
-                    "ui_settings": {
-                        "name": "إعدادات الواجهة",
-                        "description": "ضبط سلوك الملاحظات والإشعارات",
+                    "better_location": {
+                        "name": "موقع أفضل",
+                        "description": "يحسن موقع Snapchat",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "الاهتزاز اللمسي",
-                                "description": "الاهتزاز عند التفاعلات المدعومة"
+                            "spoof_location": {
+                                "name": "محاكاة الموقع",
+                                "description": "يحاكي موقعك إلى موقع محدد"
                             },
-                            "use_system_toasts": {
-                                "name": "استخدام إشعارات النظام (Toasts)",
-                                "description": "إظهار إشعارات Android بدلاً من التراكبات داخل التطبيق"
+                            "coordinates": {
+                                "name": "الإحداثيات",
+                                "description": "تعيين إحداثيات الموقع المحاكى"
+                            },
+                            "walk_radius": {
+                                "name": "نصف قطر المشي",
+                                "description": "المشي عشوائياً ضمن هذا النصف قطر (قدم)"
+                            },
+                            "always_update_location": {
+                                "name": "تحديث الموقع دائماً",
+                                "description": "إجبار Snapchat على تحديث الموقع حتى إذا لم يتم استلام بيانات GPS"
+                            },
+                            "suspend_location_updates": {
+                                "name": "تعليق تحديثات الموقع",
+                                "description": "يمنع تحديث موقعك"
+                            },
+                            "spoof_battery_level": {
+                                "name": "محاكاة مستوى البطارية",
+                                "description": "يحاكي مستوى بطارية جهازك على الخريطة\nيجب أن تكون القيمة بين 0 و 100"
+                            },
+                            "spoof_headphones": {
+                                "name": "محاكاة سماعات الرأس",
+                                "description": "يحاكي حالة الاستماع إلى الموسيقى على الخريطة"
+                            },
+                            "show_battery_level": {
+                                "name": "إظهار مستوى البطارية",
+                                "description": "يظهر مستوى بطارية أصدقائك على الخريطة"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "إعدادات التحديث",
-                        "description": "التحكم في فحوصات التحديث التلقائية",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "يمكّن ميزات Snapchat Plus\nبعض الميزات التي تعتمد على الخادم قد لا تعمل"
+                    },
+                    "media_upload_quality": {
+                        "name": "جودة رفع الوسائط",
+                        "description": "يتجاوز جودة رفع الوسائط",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "فحص التحديث التلقائي",
-                                "description": "التحقق من وجود إصدارات جديدة تلقائياً"
+                            "force_video_upload_source_quality": {
+                                "name": "فرض جودة المصدر لرفع الفيديو",
+                                "description": "يفرض على Snapchat استخدام جودة المصدر عند رفع مقاطع الفيديو\nيرجى ملاحظة أن هذا قد لا يزيل البيانات الوصفية من الوسائط"
                             },
-                            "update_check_frequency": {
-                                "name": "تكرار فحص التحديث",
-                                "description": "كم مرة يتم التحقق من التحديثات"
+                            "disable_image_compression": {
+                                "name": "تعطيل ضغط الصور",
+                                "description": "يعطل ضغط الصور عند رفع الوسائط"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "تنسيق رفع صورة مخصص",
+                                "description": "يحدد تنسيق رفع صورة مخصص\nاختر تنسيقاً غير ضائع (مثل PNG) للحصول على أفضل جودة"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "تعطيل مربعات حوار التأكيد",
+                        "description": "يؤكد تلقائياً الإجراءات المحددة"
+                    },
+                    "auto_updater": {
+                        "name": "المحدث التلقائي",
+                        "description": "يتحقق تلقائياً من وجود تحديثات جديدة"
+                    },
+                    "update_settings": {
+                        "name": "إعدادات التحديث",
+                        "description": "التحكم في كيفية تحقق PurrfectSnap من التحديثات",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "فحص التحديث التلقائي"
+                            },
+                            "update_check_frequency": {
+                                "name": "تكرار فحص التحديث"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "إعدادات الواجهة",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "الاهتزاز اللمسي"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "تعطيل المقاييس",
+                        "description": "يحظر إرسال بيانات تحليلية محددة إلى Snapchat"
+                    },
+                    "disable_story_sections": {
+                        "name": "تعطيل أقسام القصة",
+                        "description": "يزيل الأقسام من صفحة القصص\nقد يتطلب تحديثاً للعمل بشكل صحيح"
+                    },
+                    "block_ads": {
+                        "name": "حظر الإعلانات",
+                        "description": "يمنع عرض الإعلانات"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "تعطيل علامات التبويب المخصصة",
+                        "description": "يفتح الروابط في التطبيقات المدعومة بدلاً من متصفح الويب"
+                    },
+                    "disable_permission_requests": {
+                        "name": "تعطيل طلبات الأذونات",
+                        "description": "يمنع Snapchat من طلب أذونات محددة"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "تعطيل موجز سناب الذكريات",
+                        "description": "يمنع Snapchat من إظهار الذكريات الحديثة عند التمرير لأعلى في الكاميرا"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "اسم مستخدم تعليقات منصة الأضواء",
+                        "description": "يظهر اسم مستخدم المؤلف في تعليقات منصة الأضواء"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "أيقونة اسم مستخدم تعليقات منصة الأضواء",
+                        "description": "اختر الأيقونة التي يتم عرضها بجانب أسماء المستخدمين في تعليقات منصة الأضواء"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "تجاوز قيود طول الفيديو",
+                        "description": "مفرد: يرسل فيديو واحد\nمقسم: يقسم الفيديو بعد التحرير"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "معدل تشغيل الفيديو الافتراضي",
+                        "description": "يحدد السرعة الافتراضية لتشغيل مقاطع الفيديو\nيجب أن تكون القيمة بين 0.1 و 4.0"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "شريط تمرير معدل تشغيل الفيديو",
+                        "description": "يضيف شريط تمرير في قائمة سياق أوبرا لتغيير معدل تشغيل الفيديو\nملاحظة: التغييرات تنطبق فقط على مقاطع الفيديو اللاحقة"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "تعطيل حوارات خدمات Google Play",
+                        "description": "منع ظهور مربعات حوار توفر خدمات Google Play"
+                    },
+                    "default_volume_controls": {
+                        "name": "عناصر التحكم في الصوت الافتراضية",
+                        "description": "يفرض على Snapchat استخدام عناصر التحكم في الصوت الخاصة بالنظام"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "تعطيل إطار الاتصالات",
+                        "description": "يمنع Snapchat من استخدام إطار عمل Android Telecom\nهذا يسمح لك بالاستماع إلى الموسيقى أثناء المكالمة"
+                    },
+                    "hide_active_music": {
+                        "name": "إخفاء الموسيقى النشطة",
+                        "description": "يمنع Snapchat من معرفة أنك تستمع إلى الموسيقى\nسيسمح لك هذا بأخذ سنابات باستخدام أزرار التحكم في الصوت أثناء الاستماع إلى الموسيقى"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "تعطيل تقسيم السناب",
+                        "description": "يمنع تقسيم السنابات إلى أجزاء متعددة\nالصور التي ترسلها ستتحول إلى مقاطع فيديو"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "مؤشر وضع التخفي",
-                        "description": "يضيف رمز تعبيري \ud83d\udc7b بجانب المحادثات في وضع التخفي"
+                        "description": "يضيف رمز تعبيري 👻 بجانب المحادثات في وضع التخفي"
                     },
                     "edit_text_override": {
                         "name": "تجاوز تحرير النص",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "عالمي",
-                "description": "تعديل إعدادات Snapchat العالمية",
-                "properties": {
-                    "better_location": {
-                        "name": "موقع أفضل",
-                        "description": "يحسن موقع Snapchat",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "محاكاة الموقع",
-                                "description": "يحاكي موقعك إلى موقع محدد"
-                            },
-                            "coordinates": {
-                                "name": "الإحداثيات",
-                                "description": "تعيين إحداثيات الموقع المحاكى"
-                            },
-                            "walk_radius": {
-                                "name": "نصف قطر المشي",
-                                "description": "المشي عشوائياً ضمن هذا النصف قطر (قدم)"
-                            },
-                            "always_update_location": {
-                                "name": "تحديث الموقع دائماً",
-                                "description": "إجبار Snapchat على تحديث الموقع حتى إذا لم يتم استلام بيانات GPS"
-                            },
-                            "suspend_location_updates": {
-                                "name": "تعليق تحديثات الموقع",
-                                "description": "يمنع تحديث موقعك"
-                            },
-                            "spoof_battery_level": {
-                                "name": "محاكاة مستوى البطارية",
-                                "description": "يحاكي مستوى بطارية جهازك على الخريطة\nيجب أن تكون القيمة بين 0 و 100"
-                            },
-                            "spoof_headphones": {
-                                "name": "محاكاة سماعات الرأس",
-                                "description": "يحاكي حالة الاستماع إلى الموسيقى على الخريطة"
-                            },
-                            "show_battery_level": {
-                                "name": "إظهار مستوى البطارية",
-                                "description": "يظهر مستوى بطارية أصدقائك على الخريطة"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "يمكّن ميزات Snapchat Plus\nبعض الميزات التي تعتمد على الخادم قد لا تعمل"
-                    },
-                    "media_upload_quality": {
-                        "name": "جودة رفع الوسائط",
-                        "description": "يتجاوز جودة رفع الوسائط",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "فرض جودة المصدر لرفع الفيديو",
-                                "description": "يفرض على Snapchat استخدام جودة المصدر عند رفع مقاطع الفيديو\nيرجى ملاحظة أن هذا قد لا يزيل البيانات الوصفية من الوسائط"
-                            },
-                            "disable_image_compression": {
-                                "name": "تعطيل ضغط الصور",
-                                "description": "يعطل ضغط الصور عند رفع الوسائط"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "تنسيق رفع صورة مخصص",
-                                "description": "يحدد تنسيق رفع صورة مخصص\nاختر تنسيقاً غير ضائع (مثل PNG) للحصول على أفضل جودة"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "تعطيل مربعات حوار التأكيد",
-                        "description": "يؤكد تلقائياً الإجراءات المحددة"
-                    },
-                    "auto_updater": {
-                        "name": "المحدث التلقائي",
-                        "description": "يتحقق تلقائياً من وجود تحديثات جديدة"
-                    },
-                    "update_settings": {
-                        "name": "إعدادات التحديث",
-                        "description": "التحكم في كيفية تحقق PurrfectSnap من التحديثات",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "فحص التحديث التلقائي"
-                            },
-                            "update_check_frequency": {
-                                "name": "تكرار فحص التحديث"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "إعدادات الواجهة",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "الاهتزاز اللمسي"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "تعطيل المقاييس",
-                        "description": "يحظر إرسال بيانات تحليلية محددة إلى Snapchat"
-                    },
-                    "disable_story_sections": {
-                        "name": "تعطيل أقسام القصة",
-                        "description": "يزيل الأقسام من صفحة القصص\nقد يتطلب تحديثاً للعمل بشكل صحيح"
-                    },
-                    "block_ads": {
-                        "name": "حظر الإعلانات",
-                        "description": "يمنع عرض الإعلانات"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "تعطيل علامات التبويب المخصصة",
-                        "description": "يفتح الروابط في التطبيقات المدعومة بدلاً من متصفح الويب"
-                    },
-                    "disable_permission_requests": {
-                        "name": "تعطيل طلبات الأذونات",
-                        "description": "يمنع Snapchat من طلب أذونات محددة"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "تعطيل موجز سناب الذكريات",
-                        "description": "يمنع Snapchat من إظهار الذكريات الحديثة عند التمرير لأعلى في الكاميرا"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "اسم مستخدم تعليقات منصة الأضواء",
-                        "description": "يظهر اسم مستخدم المؤلف في تعليقات منصة الأضواء"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "أيقونة اسم مستخدم تعليقات منصة الأضواء",
-                        "description": "اختر الأيقونة التي يتم عرضها بجانب أسماء المستخدمين في تعليقات منصة الأضواء"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "تجاوز قيود طول الفيديو",
-                        "description": "مفرد: يرسل فيديو واحد\nمقسم: يقسم الفيديو بعد التحرير"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "معدل تشغيل الفيديو الافتراضي",
-                        "description": "يحدد السرعة الافتراضية لتشغيل مقاطع الفيديو\nيجب أن تكون القيمة بين 0.1 و 4.0"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "شريط تمرير معدل تشغيل الفيديو",
-                        "description": "يضيف شريط تمرير في قائمة سياق أوبرا لتغيير معدل تشغيل الفيديو\nملاحظة: التغييرات تنطبق فقط على مقاطع الفيديو اللاحقة"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "تعطيل حوارات خدمات Google Play",
-                        "description": "منع ظهور مربعات حوار توفر خدمات Google Play"
-                    },
-                    "default_volume_controls": {
-                        "name": "عناصر التحكم في الصوت الافتراضية",
-                        "description": "يفرض على Snapchat استخدام عناصر التحكم في الصوت الخاصة بالنظام"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "تعطيل إطار الاتصالات",
-                        "description": "يمنع Snapchat من استخدام إطار عمل Android Telecom\nهذا يسمح لك بالاستماع إلى الموسيقى أثناء المكالمة"
-                    },
-                    "hide_active_music": {
-                        "name": "إخفاء الموسيقى النشطة",
-                        "description": "يمنع Snapchat من معرفة أنك تستمع إلى الموسيقى\nسيسمح لك هذا بأخذ سنابات باستخدام أزرار التحكم في الصوت أثناء الاستماع إلى الموسيقى"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "تعطيل تقسيم السناب",
-                        "description": "يمنع تقسيم السنابات إلى أجزاء متعددة\nالصور التي ترسلها ستتحول إلى مقاطع فيديو"
-                    }
-                }
-            },
             "rules": {
                 "name": "القواعد",
                 "description": "تكوين قواعد الأتمتة",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "مؤشر الرسالة المشفرة",
-                                "description": "يضيف رمز تعبيري \ud83d\udd12 بجانب الرسائل المشفرة"
+                                "description": "يضيف رمز تعبيري 🔒 بجانب الرسائل المشفرة"
                             },
                             "force_message_encryption": {
                                 "name": "فرض تشفير الرسالة",
@@ -2162,20 +2130,20 @@
                 "null": "استخدام مستوى البطارية الحقيقي"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f تنزيل تلقائي",
-                "auto_save": "\ud83d\udcac حفظ الرسائل تلقائياً",
-                "unsaveable_messages": "\u2b07\ufe0f رسائل غير قابلة للحفظ",
-                "auto_open_snaps": "\ud83d\udcf7 فتح السنابات تلقائياً",
-                "stealth": "\ud83d\udc7b وضع التخفي",
-                "auto_reply": "\ud83d\udce8 رد تلقائي",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f حذف الرسائل المرسلة تلقائياً",
-                "mark_snaps_as_seen": "\ud83d\udc40 تعليم السنابات كمشاهدة",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 تعليم القصص كمشاهدة محلياً",
-                "conversation_info": "\ud83d\udc64 معلومات المحادثة",
-                "e2e_encryption": "\ud83d\udd12 استخدام التشفير من طرف لطرف",
-                "message_logger": "\ud83d\udcdd سجل الرسائل",
-                "auto_read": "\u2705 قراءة تلقائية",
-                "hide_typing_indicator": "\ud83d\ude48 إخفاء مؤشر الكتابة"
+                "auto_download": "⬇️ تنزيل تلقائي",
+                "auto_save": "💬 حفظ الرسائل تلقائياً",
+                "unsaveable_messages": "⬇️ رسائل غير قابلة للحفظ",
+                "auto_open_snaps": "📷 فتح السنابات تلقائياً",
+                "stealth": "👻 وضع التخفي",
+                "auto_reply": "📨 رد تلقائي",
+                "auto_delete_sent_messages": "🗑️ حذف الرسائل المرسلة تلقائياً",
+                "mark_snaps_as_seen": "👀 تعليم السنابات كمشاهدة",
+                "mark_stories_as_seen_locally": "👀 تعليم القصص كمشاهدة محلياً",
+                "conversation_info": "👤 معلومات المحادثة",
+                "e2e_encryption": "🔒 استخدام التشفير من طرف لطرف",
+                "message_logger": "📝 سجل الرسائل",
+                "auto_read": "✅ قراءة تلقائية",
+                "hide_typing_indicator": "🙈 إخفاء مؤشر الكتابة"
             },
             "schedule_scheduled_for": "مجدول لـ {name} في {time}",
             "schedule_sending_in": "إرسال في {time}",
@@ -2278,16 +2246,16 @@
             "custom_android_id": {
                 "null": "استخدام معرف Android الحقيقي"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "بواسطة اسم المستخدم",
-	                "added_by_mention": "بواسطة الإشارة (Mention)",
-	                "added_by_group_chat": "بواسطة دردشة المجموعة",
-	                "added_by_qr_code": "بواسطة رمز QR",
-	                "added_by_community": "بواسطة المجتمع",
-	                "added_by_quick_add": "بواسطة الإضافة السريعة (خطر عالي للحظر)",
-	                "added_by_spotlight": "بواسطة منصة الأضواء",
-	                "null": "عدم محاكاة المصدر"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "بواسطة اسم المستخدم",
+                "added_by_mention": "بواسطة الإشارة (Mention)",
+                "added_by_group_chat": "بواسطة دردشة المجموعة",
+                "added_by_qr_code": "بواسطة رمز QR",
+                "added_by_community": "بواسطة المجتمع",
+                "added_by_quick_add": "بواسطة الإضافة السريعة (خطر عالي للحظر)",
+                "added_by_spotlight": "بواسطة منصة الأضواء",
+                "null": "عدم محاكاة المصدر"
+            },
             "custom_streaks_expiration_format": {
                 "null": "افتراضي النظام"
             },
@@ -2394,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "أيقونة اسم المستخدم",
-                "\ud83d\udc64": "أيقونة اسم المستخدم",
-                "[\ud83d\udc64]": "أيقونة اسم المستخدم",
+                "👤": "أيقونة اسم المستخدم",
+                "[👤]": "أيقونة اسم المستخدم",
                 "default": "أيقونة اسم المستخدم",
                 "no_icon": "بدون أيقونة"
             },
@@ -2475,11 +2443,11 @@
                 "phone_calls": "المكالمات الهاتفية"
             },
             "message_indicators": {
-                "encryption_indicator": "يضيف أيقونة \ud83d\udd12 بجانب الرسائل التي تم إرسالها إليك فقط",
+                "encryption_indicator": "يضيف أيقونة 🔒 بجانب الرسائل التي تم إرسالها إليك فقط",
                 "platform_indicator": "يضيف أيقونة المنصة التي تم إرسال الوسائط منها (مثل Android, iOS, Web)",
-                "location_indicator": "يضيف أيقونة \ud83d\udccd للسنابات عندما يتم إرسالها مع تمكين الموقع",
+                "location_indicator": "يضيف أيقونة 📍 للسنابات عندما يتم إرسالها مع تمكين الموقع",
                 "ovf_editor_indicator": "يشير إلى ما إذا كان السناب قد تم إرساله باستخدام محرر OVF",
-                "director_mode_indicator": "يضيف أيقونة \u270f\ufe0f للسنابات عندما يتم إرسالها باستخدام وضع المخرج (Director Mode)، والذي يمكن استخدامه لإرسال صور المعرض كسنابات"
+                "director_mode_indicator": "يضيف أيقونة ✏️ للسنابات عندما يتم إرسالها باستخدام وضع المخرج (Director Mode)، والذي يمكن استخدامه لإرسال صور المعرض كسنابات"
             },
             "auto_mark_as_read": {
                 "conversation_read": "تعليم المحادثة كمقروءة عند إرسال رسالة",
@@ -2703,7 +2671,6 @@
         "show_chat_edit_history": "عرض تاريخ تعديل الدردشة",
         "convert_message": "تحويل الرسالة"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "تنزيل خلفية الدردشة"
     },
@@ -3040,7 +3007,7 @@
         "queue_cleared": "تم مسح قائمة الانتظار وإعادة تعيين الإحصائيات",
         "queue_cleared_title": "تم مسح قائمة الانتظار",
         "queue_cleared_reset": "مسح وإعادة تعيين قائمة الانتظار",
-        "queue_cleared_feedback": "تم مسح {count} سنابات في الانتظار \u2022 إعادة تعيين {processed} عداد المعالجة",
+        "queue_cleared_feedback": "تم مسح {count} سنابات في الانتظار • إعادة تعيين {processed} عداد المعالجة",
         "queue_cleared_feedback_simple": "إعادة تعيين {processed} عداد المعالجة",
         "unknown_sender": "مجهول",
         "unknown_user": "مستخدم مجهول",

@@ -49,10 +49,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import me.eternal.purrfectsnap.bridge.location.LocationCoordinates
+import me.eternal.purrfectsnap.storage.addOrUpdateLocationCoordinate
+import me.eternal.purrfectsnap.storage.getLocationCoordinates
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlin.math.abs
 
 class ConfigImportConfirmationScreen : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.features.config_import") }
@@ -64,6 +68,44 @@ class ConfigImportConfirmationScreen : Routes.Route() {
         val value: Any,
         val indentation: Int
     )
+
+    companion object {
+        private const val COORDINATE_TOLERANCE = 0.0001 // ~11 meters tolerance for de-duplication
+    }
+
+    /**
+     * Imports saved locations from JSON array into database with de-duplication.
+     * Only adds locations that don't already exist (within coordinate tolerance).
+     */
+    private fun importSavedLocations(locationsArray: com.google.gson.JsonArray) {
+        val existingLocations = context.database.getLocationCoordinates()
+        
+        for (i in 0 until locationsArray.size()) {
+            val locationObj = locationsArray.get(i).asJsonObject
+            val name = locationObj.get("name")?.asString ?: continue
+            val latitude = locationObj.get("latitude")?.asDouble ?: continue
+            val longitude = locationObj.get("longitude")?.asDouble ?: continue
+            val radius = locationObj.get("radius")?.asDouble ?: 100.0
+            
+            // Check for existing location with similar coordinates (de-duplication)
+            val existingMatch = existingLocations.find { existing ->
+                abs(existing.latitude - latitude) < COORDINATE_TOLERANCE &&
+                abs(existing.longitude - longitude) < COORDINATE_TOLERANCE
+            }
+            
+            if (existingMatch == null) {
+                // No duplicate found, add as new location
+                val newLocation = LocationCoordinates().apply {
+                    this.name = name
+                    this.latitude = latitude
+                    this.longitude = longitude
+                    this.radius = radius
+                }
+                context.database.addOrUpdateLocationCoordinate(null, newLocation)
+            }
+            // If duplicate exists, skip (do not update or delete existing)
+        }
+    }
 
     private inner class ConfigParser {
         fun parse(configJson: String): Map<String, List<ImportedFeature>> {
@@ -256,7 +298,12 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                             onClick = {
                                 routes.configJsonForImport?.let { json ->
                                     runCatching {
-                                        context.config.loadFromString(json)
+                                        val savedLocationsJson = context.config.loadFromString(json)
+                                        
+                                        // Import saved locations if present in the JSON
+                                        savedLocationsJson?.let { locationsArray ->
+                                            importSavedLocations(locationsArray)
+                                        }
                                     }.onFailure { err ->
                                         context.longToast(
                                             context.translation.format(

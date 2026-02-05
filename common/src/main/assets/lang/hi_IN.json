@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 Eternal द्वारा",
+                "version_title": "v{versionName} · Eternal द्वारा",
                 "update_title": "PurrfectSnap अपडेट",
                 "update_content": "संस्करण {version} उपलब्ध है!",
                 "update_button": "डाउनलोड",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "कोई कार्य नहीं",
                 "merge_button": "मर्ज करें",
-                "summary_active": "{active} सक्रिय \u00b7 {recent} हाल ही में",
-                "summary_idle": "निष्क्रिय \u00b7 {recent} हाल ही में",
+                "summary_active": "{active} सक्रिय · {recent} हाल ही में",
+                "summary_idle": "निष्क्रिय · {recent} हाल ही में",
                 "running_count": "{count} चल रहे हैं",
                 "clear_button_description": "कार्य साफ़ करें",
                 "failed_to_open_file": "फ़ाइल खोलने में विफल",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "{count} कार्यों को हटाएँ?",
                 "remove_all_tasks_confirm": "सभी कार्यों को हटाएँ?"
             },
-        "features": {
-            "disabled": "अक्षम (Disabled)",
-            "export_option": "एक्सपोर्ट",
-            "import_option": "इम्पोर्ट",
-            "reset_option": "रीसेट",
-            "config_export_success_toast": "कॉन्फ़िगरेशन सफलतापूर्वक एक्सपोर्ट किया गया",
-            "config_import_success_toast": "कॉन्फ़िगरेशन सफलतापूर्वक इम्पोर्ट किया गया",
-            "config_import_failure_toast": "कॉन्फ़िगरेशन इम्पोर्ट करने में विफल {error}",
-            "config_export_failure_toast": "कॉन्फ़िगरेशन एक्सपोर्ट करने में विफल {error}",
-            "saved_config_snackbar": "कॉन्फ़िगरेशन सहेजा गया",
-            "older_required": "इस फीचर को सही ढंग से काम करने के लिए स्नैपचैट v{version} या पुराने की आवश्यकता है",
-            "newer_required": "इस फीचर को सही ढंग से काम करने के लिए स्नैपचैट v{version} या नए की आवश्यकता है",
-            "search_button": "खोजें",
-            "clear_history": "खोज इतिहास साफ़ करें",
-            "subtitle": "फीचर्स खोजें और प्रबंधित करें"
-        },
+            "features": {
+                "disabled": "अक्षम (Disabled)",
+                "export_option": "एक्सपोर्ट",
+                "import_option": "इम्पोर्ट",
+                "reset_option": "रीसेट",
+                "config_export_success_toast": "कॉन्फ़िगरेशन सफलतापूर्वक एक्सपोर्ट किया गया",
+                "config_import_success_toast": "कॉन्फ़िगरेशन सफलतापूर्वक इम्पोर्ट किया गया",
+                "config_import_failure_toast": "कॉन्फ़िगरेशन इम्पोर्ट करने में विफल {error}",
+                "config_export_failure_toast": "कॉन्फ़िगरेशन एक्सपोर्ट करने में विफल {error}",
+                "saved_config_snackbar": "कॉन्फ़िगरेशन सहेजा गया",
+                "older_required": "इस फीचर को सही ढंग से काम करने के लिए स्नैपचैट v{version} या पुराने की आवश्यकता है",
+                "newer_required": "इस फीचर को सही ढंग से काम करने के लिए स्नैपचैट v{version} या नए की आवश्यकता है",
+                "search_button": "खोजें",
+                "clear_history": "खोज इतिहास साफ़ करें",
+                "subtitle": "फीचर्स खोजें और प्रबंधित करें"
+            },
             "bypass_status": {
                 "active": "PurrAura सक्रिय",
                 "inactive": "PurrAura निष्क्रिय"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "मित्र के पास टेलीपोर्ट करें",
                 "search_bar": "खोजें",
                 "no_friends_map": "मानचित्र पर कोई मित्र नहीं",
-                "no_friends_found": "कोई मित्र नहीं मिला"
+                "no_friends_found": "कोई मित्र नहीं मिला",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 अस्थिर (Unstable)",
-            "ban_risk": "\u26a0 इस फीचर से प्रतिबंध (Ban) लग सकता है",
-            "internal_behavior": "\u26a0 यह स्नैपचैट के आंतरिक व्यवहार को तोड़ सकता है"
+            "unstable": "⚠ अस्थिर (Unstable)",
+            "ban_risk": "⚠ इस फीचर से प्रतिबंध (Ban) लग सकता है",
+            "internal_behavior": "⚠ यह स्नैपचैट के आंतरिक व्यवहार को तोड़ सकता है"
         },
         "properties": {
             "global": {
                 "name": "वैश्विक (Global)",
-                "description": "सामान्य मॉड्यूल प्राथमिकताएं और डिफ़ॉल्ट",
+                "description": "वैश्विक स्नैपचैट सेटिंग्स को ट्वीक करें",
                 "properties": {
-                    "ui_settings": {
-                        "name": "यूआई सेटिंग्स",
-                        "description": "फीडबैक और टोस्ट व्यवहार को ट्यून करें",
+                    "better_location": {
+                        "name": "बेहतर लोकेशन",
+                        "description": "स्नैपचैट लोकेशन को बढ़ाता है",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "हैप्टिक फीडबैक",
-                                "description": "समर्थित इंटरैक्शन पर वाइब्रेट करें"
+                            "spoof_location": {
+                                "name": "स्पूफ लोकेशन",
+                                "description": "आपकी लोकेशन को एक निर्दिष्ट स्थान पर स्पूफ करता है"
                             },
-                            "use_system_toasts": {
-                                "name": "सिस्टम टोस्ट का उपयोग करें",
-                                "description": "इन-ऐप ओवरले के बजाय एंड्रॉइड टोस्ट दिखाएं"
+                            "coordinates": {
+                                "name": "निर्देशांक",
+                                "description": "स्पूफ लोकेशन के निर्देशांक सेट करें"
+                            },
+                            "walk_radius": {
+                                "name": "वॉक रेडियस",
+                                "description": "इस दायरे (ft) के भीतर यादृच्छिक रूप से चलें"
+                            },
+                            "always_update_location": {
+                                "name": "हमेशा लोकेशन अपडेट करें",
+                                "description": "जीपीएस डेटा प्राप्त न होने पर भी स्नैपचैट को लोकेशन अपडेट करने के लिए बाध्य करें"
+                            },
+                            "suspend_location_updates": {
+                                "name": "लोकेशन अपडेट निलंबित करें",
+                                "description": "आपकी लोकेशन को अपडेट होने से रोकता है"
+                            },
+                            "spoof_battery_level": {
+                                "name": "स्पूफ बैटरी लेवल",
+                                "description": "मानचित्र पर आपके डिवाइस के बैटरी स्तर को स्पूफ करता है\nमान 0 और 100 के बीच होना चाहिए"
+                            },
+                            "spoof_headphones": {
+                                "name": "स्पूफ हेडफ़ोन",
+                                "description": "मानचित्र पर संगीत सुनने की स्थिति को स्पूफ करता है"
+                            },
+                            "show_battery_level": {
+                                "name": "बैटरी लेवल दिखाएं",
+                                "description": "मानचित्र पर आपके दोस्तों का बैटरी स्तर दिखाता है"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "अपडेट सेटिंग्स",
-                        "description": "स्वचालित अपडेट चेक को नियंत्रित करें",
+                    "snapchat_plus": {
+                        "name": "स्नैपचैट प्लस",
+                        "description": "स्नैपचैट प्लस सुविधाओं को इनेबल करता है\nकुछ सर्वर-साइड सुविधाएं काम नहीं कर सकती हैं"
+                    },
+                    "media_upload_quality": {
+                        "name": "मीडिया अपलोड गुणवत्ता",
+                        "description": "मीडिया अपलोड गुणवत्ता को ओवरराइड करता है",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "ऑटो अपडेट चेक",
-                                "description": "स्वचालित रूप से नए बिल्ड की जांच करें"
+                            "force_video_upload_source_quality": {
+                                "name": "वीडियो अपलोड स्रोत गुणवत्ता बाध्य करें",
+                                "description": "वीडियो अपलोड करते समय स्नैपचैट को स्रोत गुणवत्ता का उपयोग करने के लिए बाध्य करता है\nकृपया ध्यान दें कि यह मीडिया से मेटाडेटा नहीं हटा सकता है"
                             },
-                            "update_check_frequency": {
-                                "name": "अपडेट चेक आवृत्ति",
-                                "description": "अपडेट के लिए कितनी बार जांच करें"
+                            "disable_image_compression": {
+                                "name": "छवि संपीड़न (Compression) डिसेबल करें",
+                                "description": "मीडिया अपलोड करते समय छवि संपीड़न को डिसेबल करता है"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "कस्टम छवि अपलोड प्रारूप",
+                                "description": "एक कस्टम छवि अपलोड प्रारूप सेट करता है\nसर्वोत्तम गुणवत्ता के लिए दोषरहित (lossless) प्रारूप (जैसे PNG) चुनें"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "पुष्टिकरण संवाद डिसेबल करें",
+                        "description": "चयनित क्रियाओं की स्वचालित रूप से पुष्टि करता है"
+                    },
+                    "auto_updater": {
+                        "name": "ऑटो अपडेटर",
+                        "description": "स्वचालित रूप से नए अपडेट की जांच करता है"
+                    },
+                    "update_settings": {
+                        "name": "अपडेट सेटिंग्स",
+                        "description": "नियंत्रित करें कि PurrfectSnap अपडेट की जांच कैसे करता है",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "ऑटो अपडेट चेक"
+                            },
+                            "update_check_frequency": {
+                                "name": "अपडेट चेक आवृत्ति"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "यूआई सेटिंग्स",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "हैप्टिक फीडबैक"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "मेट्रिक्स डिसेबल करें",
+                        "description": "विशिष्ट एनालिटिक डेटा को स्नैपचैट को भेजने से रोकता है"
+                    },
+                    "disable_story_sections": {
+                        "name": "स्टोरी अनुभाग डिसेबल करें",
+                        "description": "स्टोरीज पेज से अनुभाग हटाता है\nठीक से काम करने के लिए रिफ्रेश की आवश्यकता हो सकती है"
+                    },
+                    "block_ads": {
+                        "name": "विज्ञापन ब्लॉक करें",
+                        "description": "विज्ञापनों को प्रदर्शित होने से रोकता है"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "कस्टम टैब डिसेबल करें",
+                        "description": "वेब ब्राउज़र के बजाय समर्थित अनुप्रयोगों में लिंक खोलता है"
+                    },
+                    "disable_permission_requests": {
+                        "name": "अनुमति अनुरोध डिसेबल करें",
+                        "description": "स्नैपचैट को विशिष्ट अनुमतियां मांगने से रोकता है"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "मेमोरीज स्नैप फ़ीड डिसेबल करें",
+                        "description": "कैमरा में ऊपर स्वाइप करने पर स्नैपचैट को हाल की यादें (memories) दिखाने से रोकता है"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "स्पॉटलाइट टिप्पणियाँ उपयोगकर्ता नाम",
+                        "description": "स्पॉटलाइट टिप्पणियों में लेखक का उपयोगकर्ता नाम दिखाता है"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "स्पॉटलाइट टिप्पणियाँ उपयोगकर्ता नाम आइकन",
+                        "description": "चुनें कि स्पॉटलाइट टिप्पणियों में उपयोगकर्ता नाम के आगे कौन सा आइकन प्रदर्शित किया जाए"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "वीडियो लंबाई प्रतिबंध बाईपास करें",
+                        "description": "Single: एक एकल वीडियो भेजता है\nSplit: संपादन के बाद वीडियो विभाजित करता है"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "डिफ़ॉल्ट वीडियो प्लेबैक दर",
+                        "description": "वीडियो के प्लेबैक के लिए डिफ़ॉल्ट गति सेट करता है\nमान 0.1 और 4.0 के बीच होना चाहिए"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "वीडियो प्लेबैक दर स्लाइडर",
+                        "description": "वीडियो प्लेबैक दर बदलने के लिए ओपेरा संदर्भ मेनू में एक स्लाइडर जोड़ता है\nनोट: परिवर्तन केवल बाद के वीडियो पर लागू होते हैं"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Google Play Services संवाद डिसेबल करें",
+                        "description": "Google Play Services उपलब्धता संवादों को दिखाए जाने से रोकें"
+                    },
+                    "default_volume_controls": {
+                        "name": "डिफ़ॉल्ट वॉल्यूम नियंत्रण",
+                        "description": "स्नैपचैट को सिस्टम वॉल्यूम नियंत्रण का उपयोग करने के लिए बाध्य करता है"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "टेलीकॉम फ्रेमवर्क डिसेबल करें",
+                        "description": "स्नैपचैट को एंड्रॉइड टेलीकॉम फ्रेमवर्क का उपयोग करने से रोकता है\nयह आपको कॉल पर रहते हुए संगीत सुनने की अनुमति देता है"
+                    },
+                    "hide_active_music": {
+                        "name": "सक्रिय संगीत छिपाएं",
+                        "description": "स्नैपचैट को यह जानने से रोकता है कि आप संगीत सुन रहे हैं\nयह आपको संगीत सुनते समय वॉल्यूम बटन को नियंत्रित करके स्नैप लेने की अनुमति देगा"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "स्नैप विभाजन डिसेबल करें",
+                        "description": "स्नैप्स को कई भागों में विभाजित होने से रोकता है\nजो तस्वीरें आप भेजेंगे वे वीडियो में बदल जाएंगी"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "स्टेल्थ मोड संकेतक",
-                        "description": "स्टेल्थ मोड में वार्तालापों के बगल में एक \ud83d\udc7b इमोजी जोड़ता है"
+                        "description": "स्टेल्थ मोड में वार्तालापों के बगल में एक 👻 इमोजी जोड़ता है"
                     },
                     "edit_text_override": {
                         "name": "एडिट टेक्स्ट ओवरराइड",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "वैश्विक (Global)",
-                "description": "वैश्विक स्नैपचैट सेटिंग्स को ट्वीक करें",
-                "properties": {
-                    "better_location": {
-                        "name": "बेहतर लोकेशन",
-                        "description": "स्नैपचैट लोकेशन को बढ़ाता है",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "स्पूफ लोकेशन",
-                                "description": "आपकी लोकेशन को एक निर्दिष्ट स्थान पर स्पूफ करता है"
-                            },
-                            "coordinates": {
-                                "name": "निर्देशांक",
-                                "description": "स्पूफ लोकेशन के निर्देशांक सेट करें"
-                            },
-                            "walk_radius": {
-                                "name": "वॉक रेडियस",
-                                "description": "इस दायरे (ft) के भीतर यादृच्छिक रूप से चलें"
-                            },
-                            "always_update_location": {
-                                "name": "हमेशा लोकेशन अपडेट करें",
-                                "description": "जीपीएस डेटा प्राप्त न होने पर भी स्नैपचैट को लोकेशन अपडेट करने के लिए बाध्य करें"
-                            },
-                            "suspend_location_updates": {
-                                "name": "लोकेशन अपडेट निलंबित करें",
-                                "description": "आपकी लोकेशन को अपडेट होने से रोकता है"
-                            },
-                            "spoof_battery_level": {
-                                "name": "स्पूफ बैटरी लेवल",
-                                "description": "मानचित्र पर आपके डिवाइस के बैटरी स्तर को स्पूफ करता है\nमान 0 और 100 के बीच होना चाहिए"
-                            },
-                            "spoof_headphones": {
-                                "name": "स्पूफ हेडफ़ोन",
-                                "description": "मानचित्र पर संगीत सुनने की स्थिति को स्पूफ करता है"
-                            },
-                            "show_battery_level": {
-                                "name": "बैटरी लेवल दिखाएं",
-                                "description": "मानचित्र पर आपके दोस्तों का बैटरी स्तर दिखाता है"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "स्नैपचैट प्लस",
-                        "description": "स्नैपचैट प्लस सुविधाओं को इनेबल करता है\nकुछ सर्वर-साइड सुविधाएं काम नहीं कर सकती हैं"
-                    },
-                    "media_upload_quality": {
-                        "name": "मीडिया अपलोड गुणवत्ता",
-                        "description": "मीडिया अपलोड गुणवत्ता को ओवरराइड करता है",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "वीडियो अपलोड स्रोत गुणवत्ता बाध्य करें",
-                                "description": "वीडियो अपलोड करते समय स्नैपचैट को स्रोत गुणवत्ता का उपयोग करने के लिए बाध्य करता है\nकृपया ध्यान दें कि यह मीडिया से मेटाडेटा नहीं हटा सकता है"
-                            },
-                            "disable_image_compression": {
-                                "name": "छवि संपीड़न (Compression) डिसेबल करें",
-                                "description": "मीडिया अपलोड करते समय छवि संपीड़न को डिसेबल करता है"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "कस्टम छवि अपलोड प्रारूप",
-                                "description": "एक कस्टम छवि अपलोड प्रारूप सेट करता है\nसर्वोत्तम गुणवत्ता के लिए दोषरहित (lossless) प्रारूप (जैसे PNG) चुनें"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "पुष्टिकरण संवाद डिसेबल करें",
-                        "description": "चयनित क्रियाओं की स्वचालित रूप से पुष्टि करता है"
-                    },
-                    "auto_updater": {
-                        "name": "ऑटो अपडेटर",
-                        "description": "स्वचालित रूप से नए अपडेट की जांच करता है"
-                    },
-                    "update_settings": {
-                        "name": "अपडेट सेटिंग्स",
-                        "description": "नियंत्रित करें कि PurrfectSnap अपडेट की जांच कैसे करता है",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "ऑटो अपडेट चेक"
-                            },
-                            "update_check_frequency": {
-                                "name": "अपडेट चेक आवृत्ति"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "यूआई सेटिंग्स",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "हैप्टिक फीडबैक"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "मेट्रिक्स डिसेबल करें",
-                        "description": "विशिष्ट एनालिटिक डेटा को स्नैपचैट को भेजने से रोकता है"
-                    },
-                    "disable_story_sections": {
-                        "name": "स्टोरी अनुभाग डिसेबल करें",
-                        "description": "स्टोरीज पेज से अनुभाग हटाता है\nठीक से काम करने के लिए रिफ्रेश की आवश्यकता हो सकती है"
-                    },
-                    "block_ads": {
-                        "name": "विज्ञापन ब्लॉक करें",
-                        "description": "विज्ञापनों को प्रदर्शित होने से रोकता है"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "कस्टम टैब डिसेबल करें",
-                        "description": "वेब ब्राउज़र के बजाय समर्थित अनुप्रयोगों में लिंक खोलता है"
-                    },
-                    "disable_permission_requests": {
-                        "name": "अनुमति अनुरोध डिसेबल करें",
-                        "description": "स्नैपचैट को विशिष्ट अनुमतियां मांगने से रोकता है"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "मेमोरीज स्नैप फ़ीड डिसेबल करें",
-                        "description": "कैमरा में ऊपर स्वाइप करने पर स्नैपचैट को हाल की यादें (memories) दिखाने से रोकता है"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "स्पॉटलाइट टिप्पणियाँ उपयोगकर्ता नाम",
-                        "description": "स्पॉटलाइट टिप्पणियों में लेखक का उपयोगकर्ता नाम दिखाता है"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "स्पॉटलाइट टिप्पणियाँ उपयोगकर्ता नाम आइकन",
-                        "description": "चुनें कि स्पॉटलाइट टिप्पणियों में उपयोगकर्ता नाम के आगे कौन सा आइकन प्रदर्शित किया जाए"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "वीडियो लंबाई प्रतिबंध बाईपास करें",
-                        "description": "Single: एक एकल वीडियो भेजता है\nSplit: संपादन के बाद वीडियो विभाजित करता है"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "डिफ़ॉल्ट वीडियो प्लेबैक दर",
-                        "description": "वीडियो के प्लेबैक के लिए डिफ़ॉल्ट गति सेट करता है\nमान 0.1 और 4.0 के बीच होना चाहिए"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "वीडियो प्लेबैक दर स्लाइडर",
-                        "description": "वीडियो प्लेबैक दर बदलने के लिए ओपेरा संदर्भ मेनू में एक स्लाइडर जोड़ता है\nनोट: परिवर्तन केवल बाद के वीडियो पर लागू होते हैं"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Google Play Services संवाद डिसेबल करें",
-                        "description": "Google Play Services उपलब्धता संवादों को दिखाए जाने से रोकें"
-                    },
-                    "default_volume_controls": {
-                        "name": "डिफ़ॉल्ट वॉल्यूम नियंत्रण",
-                        "description": "स्नैपचैट को सिस्टम वॉल्यूम नियंत्रण का उपयोग करने के लिए बाध्य करता है"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "टेलीकॉम फ्रेमवर्क डिसेबल करें",
-                        "description": "स्नैपचैट को एंड्रॉइड टेलीकॉम फ्रेमवर्क का उपयोग करने से रोकता है\nयह आपको कॉल पर रहते हुए संगीत सुनने की अनुमति देता है"
-                    },
-                    "hide_active_music": {
-                        "name": "सक्रिय संगीत छिपाएं",
-                        "description": "स्नैपचैट को यह जानने से रोकता है कि आप संगीत सुन रहे हैं\nयह आपको संगीत सुनते समय वॉल्यूम बटन को नियंत्रित करके स्नैप लेने की अनुमति देगा"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "स्नैप विभाजन डिसेबल करें",
-                        "description": "स्नैप्स को कई भागों में विभाजित होने से रोकता है\nजो तस्वीरें आप भेजेंगे वे वीडियो में बदल जाएंगी"
-                    }
-                }
-            },
             "rules": {
                 "name": "नियम",
                 "description": "स्वचालन नियम कॉन्फ़िगर करें",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "एन्क्रिप्टेड संदेश संकेतक",
-                                "description": "एन्क्रिप्टेड संदेशों के बगल में एक \ud83d\udd12 इमोजी जोड़ता है"
+                                "description": "एन्क्रिप्टेड संदेशों के बगल में एक 🔒 इमोजी जोड़ता है"
                             },
                             "force_message_encryption": {
                                 "name": "संदेश एन्क्रिप्शन बाध्य करें",
@@ -2162,20 +2130,20 @@
                 "null": "वास्तविक बैटरी स्तर का उपयोग करें"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f ऑटो डाउनलोड",
-                "auto_save": "\ud83d\udcac ऑटो सेव मैसेज",
-                "unsaveable_messages": "\u2b07\ufe0f न सहेजने योग्य संदेश",
-                "auto_open_snaps": "\ud83d\udcf7 ऑटो ओपन स्नैप्स",
-                "stealth": "\ud83d\udc7b स्टेल्थ मोड",
-                "auto_reply": "\ud83d\udce8 ऑटो रिप्लाई",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f भेजे गए संदेशों को ऑटो डिलीट करें",
-                "mark_snaps_as_seen": "\ud83d\udc40 स्नैप्स को 'देखा गया' चिह्नित करें",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 स्टोरीज को स्थानीय रूप से 'देखा गया' चिह्नित करें",
-                "conversation_info": "\ud83d\udc64 वार्तालाप जानकारी",
-                "e2e_encryption": "\ud83d\udd12 E2E एन्क्रिप्शन का उपयोग करें",
-                "message_logger": "\ud83d\udcdd मैसेज लॉगर",
-                "auto_read": "\u2705 ऑटो रीड",
-                "hide_typing_indicator": "\ud83d\ude48 टाइपिंग संकेतक छिपाएं"
+                "auto_download": "⬇️ ऑटो डाउनलोड",
+                "auto_save": "💬 ऑटो सेव मैसेज",
+                "unsaveable_messages": "⬇️ न सहेजने योग्य संदेश",
+                "auto_open_snaps": "📷 ऑटो ओपन स्नैप्स",
+                "stealth": "👻 स्टेल्थ मोड",
+                "auto_reply": "📨 ऑटो रिप्लाई",
+                "auto_delete_sent_messages": "🗑️ भेजे गए संदेशों को ऑटो डिलीट करें",
+                "mark_snaps_as_seen": "👀 स्नैप्स को 'देखा गया' चिह्नित करें",
+                "mark_stories_as_seen_locally": "👀 स्टोरीज को स्थानीय रूप से 'देखा गया' चिह्नित करें",
+                "conversation_info": "👤 वार्तालाप जानकारी",
+                "e2e_encryption": "🔒 E2E एन्क्रिप्शन का उपयोग करें",
+                "message_logger": "📝 मैसेज लॉगर",
+                "auto_read": "✅ ऑटो रीड",
+                "hide_typing_indicator": "🙈 टाइपिंग संकेतक छिपाएं"
             },
             "schedule_scheduled_for": "{name} के लिए {time} में निर्धारित है",
             "schedule_sending_in": "{time} में भेज रहा है",
@@ -2278,16 +2246,16 @@
             "custom_android_id": {
                 "null": "वास्तविक Android ID का उपयोग करें"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "उपयोगकर्ता नाम द्वारा",
-	                "added_by_mention": "उल्लेख द्वारा",
-	                "added_by_group_chat": "समूह चैट द्वारा",
-	                "added_by_qr_code": "QR कोड द्वारा",
-	                "added_by_community": "समुदाय द्वारा",
-	                "added_by_quick_add": "क्विक ऐड द्वारा (प्रतिबंधित होने का उच्च जोखिम)",
-	                "added_by_spotlight": "स्पॉटलाइट द्वारा",
-	                "null": "स्रोत स्पूफ न करें"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "उपयोगकर्ता नाम द्वारा",
+                "added_by_mention": "उल्लेख द्वारा",
+                "added_by_group_chat": "समूह चैट द्वारा",
+                "added_by_qr_code": "QR कोड द्वारा",
+                "added_by_community": "समुदाय द्वारा",
+                "added_by_quick_add": "क्विक ऐड द्वारा (प्रतिबंधित होने का उच्च जोखिम)",
+                "added_by_spotlight": "स्पॉटलाइट द्वारा",
+                "null": "स्रोत स्पूफ न करें"
+            },
             "custom_streaks_expiration_format": {
                 "null": "सिस्टम डिफ़ॉल्ट"
             },
@@ -2394,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "उपयोगकर्ता नाम आइकन",
-                "\ud83d\udc64": "उपयोगकर्ता नाम आइकन",
-                "[\ud83d\udc64]": "उपयोगकर्ता नाम आइकन",
+                "👤": "उपयोगकर्ता नाम आइकन",
+                "[👤]": "उपयोगकर्ता नाम आइकन",
                 "default": "उपयोगकर्ता नाम आइकन",
                 "no_icon": "कोई आइकन नहीं"
             },
@@ -2475,11 +2443,11 @@
                 "phone_calls": "फोन कॉल"
             },
             "message_indicators": {
-                "encryption_indicator": "उन संदेशों के बगल में एक \ud83d\udd12 आइकन जोड़ता है जो केवल आपको भेजे गए हैं",
+                "encryption_indicator": "उन संदेशों के बगल में एक 🔒 आइकन जोड़ता है जो केवल आपको भेजे गए हैं",
                 "platform_indicator": "उस प्लेटफ़ॉर्म का आइकन जोड़ता है जिससे मीडिया भेजा गया था (जैसे Android, iOS, Web)",
-                "location_indicator": "स्नैप्स के बगल में एक \ud83d\udccd आइकन जोड़ता है जब उन्हें लोकेशन इनेबल के साथ भेजा गया हो",
+                "location_indicator": "स्नैप्स के बगल में एक 📍 आइकन जोड़ता है जब उन्हें लोकेशन इनेबल के साथ भेजा गया हो",
                 "ovf_editor_indicator": "इंगित करता है कि क्या स्नैप OVF संपादक का उपयोग करके भेजा गया है",
-                "director_mode_indicator": "स्नैप्स के बगल में एक \u270f\ufe0f आइकन जोड़ता है जब उन्हें डायरेक्टर मोड का उपयोग करके भेजा गया हो, जिसका उपयोग गैलरी छवियों को स्नैप के रूप में भेजने के लिए किया जा सकता है"
+                "director_mode_indicator": "स्नैप्स के बगल में एक ✏️ आइकन जोड़ता है जब उन्हें डायरेक्टर मोड का उपयोग करके भेजा गया हो, जिसका उपयोग गैलरी छवियों को स्नैप के रूप में भेजने के लिए किया जा सकता है"
             },
             "auto_mark_as_read": {
                 "conversation_read": "संदेश भेजते समय वार्तालाप को 'पढ़ा गया' के रूप में चिह्नित करें",
@@ -2703,7 +2671,6 @@
         "show_chat_edit_history": "चैट संपादन इतिहास दिखाएं",
         "convert_message": "संदेश परिवर्तित करें"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "चैट वॉलपेपर डाउनलोड करें"
     },
@@ -3033,7 +3000,7 @@
         "queue_cleared": "कतार साफ़ की गई और आंकड़े रीसेट किए गए",
         "queue_cleared_title": "कतार साफ़ की गई",
         "queue_cleared_reset": "कतार साफ़ और रीसेट",
-        "queue_cleared_feedback": "{count} कतारबद्ध स्नैप साफ़ किए \u2022 {processed} संसाधित गिनती रीसेट की",
+        "queue_cleared_feedback": "{count} कतारबद्ध स्नैप साफ़ किए • {processed} संसाधित गिनती रीसेट की",
         "queue_cleared_feedback_simple": "{processed} संसाधित गिनती रीसेट की",
         "unknown_sender": "अज्ञात",
         "unknown_user": "अज्ञात उपयोगकर्ता",

@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 by Eternal",
+                "version_title": "v{versionName} · by Eternal",
                 "update_title": "PurrfectSnap アップデート",
                 "update_content": "バージョン {version} が利用可能です！",
                 "update_button": "ダウンロード",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "タスクなし",
                 "merge_button": "結合",
-                "summary_active": "{active} 件がアクティブ \u00b7 {recent} 件が最近",
-                "summary_idle": "待機中 \u00b7 {recent} 件が最近",
+                "summary_active": "{active} 件がアクティブ · {recent} 件が最近",
+                "summary_idle": "待機中 · {recent} 件が最近",
                 "running_count": "{count} 件実行中",
                 "clear_button_description": "タスクを消去",
                 "failed_to_open_file": "ファイルを開けませんでした",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "{count} 件のタスクを削除しますか？",
                 "remove_all_tasks_confirm": "すべてのタスクを削除しますか？"
             },
-        "features": {
-            "disabled": "無効",
-            "export_option": "エクスポート",
-            "import_option": "インポート",
-            "reset_option": "リセット",
-            "config_export_success_toast": "設定が正常にエクスポートされました",
-            "config_import_success_toast": "設定が正常にインポートされました",
-            "config_import_failure_toast": "設定のインポートに失敗しました {error}",
-            "config_export_failure_toast": "設定のエクスポートに失敗しました {error}",
-            "saved_config_snackbar": "設定が保存されました",
-            "older_required": "この機能が正しく動作するにはSnapchat v{version}以前が必要です",
-            "newer_required": "この機能が正しく動作するにはSnapchat v{version}以降が必要です",
-            "search_button": "検索",
-            "clear_history": "検索履歴を消去",
-            "subtitle": "機能の検索と管理"
-        },
+            "features": {
+                "disabled": "無効",
+                "export_option": "エクスポート",
+                "import_option": "インポート",
+                "reset_option": "リセット",
+                "config_export_success_toast": "設定が正常にエクスポートされました",
+                "config_import_success_toast": "設定が正常にインポートされました",
+                "config_import_failure_toast": "設定のインポートに失敗しました {error}",
+                "config_export_failure_toast": "設定のエクスポートに失敗しました {error}",
+                "saved_config_snackbar": "設定が保存されました",
+                "older_required": "この機能が正しく動作するにはSnapchat v{version}以前が必要です",
+                "newer_required": "この機能が正しく動作するにはSnapchat v{version}以降が必要です",
+                "search_button": "検索",
+                "clear_history": "検索履歴を消去",
+                "subtitle": "機能の検索と管理"
+            },
             "bypass_status": {
                 "active": "PurrAura 有効",
                 "inactive": "PurrAura 無効"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "フレンドの場所へテレポート",
                 "search_bar": "検索",
                 "no_friends_map": "マップ上にフレンドがいません",
-                "no_friends_found": "フレンドが見つかりません"
+                "no_friends_found": "フレンドが見つかりません",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 不安定",
-            "ban_risk": "\u26a0 この機能はBANの原因になる可能性があります",
-            "internal_behavior": "\u26a0 これはSnapchatの内部動作を壊す可能性があります"
+            "unstable": "⚠ 不安定",
+            "ban_risk": "⚠ この機能はBANの原因になる可能性があります",
+            "internal_behavior": "⚠ これはSnapchatの内部動作を壊す可能性があります"
         },
         "properties": {
             "global": {
                 "name": "グローバル",
-                "description": "一般的なモジュールの設定とデフォルト",
+                "description": "グローバルなSnapchat設定を調整",
                 "properties": {
-                    "ui_settings": {
-                        "name": "UI設定",
-                        "description": "フィードバックとトーストの動作を調整",
+                    "better_location": {
+                        "name": "位置情報の改善",
+                        "description": "Snapchatの位置情報を強化します",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "触覚フィードバック",
-                                "description": "サポートされている操作で振動させる"
+                            "spoof_location": {
+                                "name": "位置情報偽装",
+                                "description": "位置情報を指定したものに偽装します"
                             },
-                            "use_system_toasts": {
-                                "name": "システムトーストを使用",
-                                "description": "アプリ内オーバーレイの代わりにAndroidのトーストを表示する"
+                            "coordinates": {
+                                "name": "座標",
+                                "description": "偽装場所の座標を設定します"
+                            },
+                            "walk_radius": {
+                                "name": "歩行半径",
+                                "description": "この半径内（フィート）をランダムに歩き回ります"
+                            },
+                            "always_update_location": {
+                                "name": "常に位置情報を更新",
+                                "description": "GPSデータが受信されない場合でもSnapchatに位置情報の更新を強制します"
+                            },
+                            "suspend_location_updates": {
+                                "name": "位置情報の更新を一時停止",
+                                "description": "位置情報が更新されるのを防ぎます"
+                            },
+                            "spoof_battery_level": {
+                                "name": "バッテリーレベルの偽装",
+                                "description": "マップ上のデバイスのバッテリーレベルを偽装します\n値は0から100の間でなければなりません"
+                            },
+                            "spoof_headphones": {
+                                "name": "ヘッドフォンの偽装",
+                                "description": "マップ上の音楽を聴いている状態を偽装します"
+                            },
+                            "show_battery_level": {
+                                "name": "バッテリーレベルを表示",
+                                "description": "マップ上にフレンドのバッテリーレベルを表示します"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "アップデート設定",
-                        "description": "自動アップデートチェックを制御",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Snapchat Plusの機能を有効にします\n一部のサーバーサイド機能は動作しない場合があります"
+                    },
+                    "media_upload_quality": {
+                        "name": "メディアアップロード品質",
+                        "description": "メディアのアップロード品質を上書きします",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "自動アップデート確認",
-                                "description": "新しいビルドを自動的に確認する"
+                            "force_video_upload_source_quality": {
+                                "name": "ビデオアップロード時にソース品質を強制",
+                                "description": "ビデオをアップロードする際にSnapchatにソース品質の使用を強制します\nこれによりメディアからメタデータが削除されない場合があります"
                             },
-                            "update_check_frequency": {
-                                "name": "アップデート確認頻度",
-                                "description": "アップデートを確認する頻度"
+                            "disable_image_compression": {
+                                "name": "画像圧縮を無効化",
+                                "description": "メディアアップロード時の画像圧縮を無効にします"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "カスタム画像アップロード形式",
+                                "description": "カスタム画像アップロード形式を設定します\n最高品質を得るにはロスレス形式（PNGなど）を選択してください"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "確認ダイアログの無効化",
+                        "description": "選択したアクションを自動的に確認します"
+                    },
+                    "auto_updater": {
+                        "name": "自動アップデーター",
+                        "description": "新しいアップデートを自動的に確認します"
+                    },
+                    "update_settings": {
+                        "name": "アップデート設定",
+                        "description": "PurrfectSnapのアップデート確認方法を制御",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "自動アップデート確認"
+                            },
+                            "update_check_frequency": {
+                                "name": "アップデート確認頻度"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "UI設定",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "触覚フィードバック"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "メトリクスの無効化",
+                        "description": "特定の分析データのSnapchatへの送信をブロックします"
+                    },
+                    "disable_story_sections": {
+                        "name": "ストーリーセクションの無効化",
+                        "description": "ストーリーページからセクションを削除します\n正しく動作させるにはリフレッシュが必要な場合があります"
+                    },
+                    "block_ads": {
+                        "name": "広告ブロック",
+                        "description": "広告が表示されるのを防ぎます"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "カスタムタブの無効化",
+                        "description": "ウェブブラウザではなくサポートされているアプリケーションでリンクを開きます"
+                    },
+                    "disable_permission_requests": {
+                        "name": "権限リクエストの無効化",
+                        "description": "Snapchatが特定の権限を要求するのを防ぎます"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "思い出スナップフィードの無効化",
+                        "description": "カメラで上にスワイプしたときに最近の思い出が表示されるのを防ぎます"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "スポットライトコメントのユーザー名",
+                        "description": "スポットライトのコメントに作成者のユーザー名を表示します"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "スポットライトコメントのユーザー名アイコン",
+                        "description": "スポットライトコメントのユーザー名の横に表示するアイコンを選択します"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "動画の長さ制限の回避",
+                        "description": "シングル: 単一の動画を送信します\n分割: 編集後に動画を分割します"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "デフォルト動画再生速度",
+                        "description": "動画再生のデフォルト速度を設定します\n値は0.1から4.0の間でなければなりません"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "動画再生速度スライダー",
+                        "description": "Operaコンテキストメニューに動画再生速度を変更するスライダーを追加します\n注: 変更はその後の動画にのみ適用されます"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Google Play開発者サービスダイアログの無効化",
+                        "description": "Google Play開発者サービスの利用可能性ダイアログが表示されるのを防ぎます"
+                    },
+                    "default_volume_controls": {
+                        "name": "デフォルト音量コントロール",
+                        "description": "Snapchatにシステム音量コントロールの使用を強制します"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Telecomフレームワークの無効化",
+                        "description": "SnapchatがAndroid Telecomフレームワークを使用するのを防ぎます\nこれにより、通話中に音楽を聴くことができます"
+                    },
+                    "hide_active_music": {
+                        "name": "アクティブな音楽を隠す",
+                        "description": "音楽を聴いていることをSnapchatに知られないようにします\nこれにより、音楽を聴きながら音量ボタンでSnapを撮影できるようになります"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Snap分割の無効化",
+                        "description": "Snapが複数のパートに分割されるのを防ぎます\n送信する写真は動画になります"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "ステルスモードインジケーター",
-                        "description": "ステルスモードの会話の横に\ud83d\udc7b絵文字を追加します"
+                        "description": "ステルスモードの会話の横に👻絵文字を追加します"
                     },
                     "edit_text_override": {
                         "name": "テキスト編集のオーバーライド",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "グローバル",
-                "description": "グローバルなSnapchat設定を調整",
-                "properties": {
-                    "better_location": {
-                        "name": "位置情報の改善",
-                        "description": "Snapchatの位置情報を強化します",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "位置情報偽装",
-                                "description": "位置情報を指定したものに偽装します"
-                            },
-                            "coordinates": {
-                                "name": "座標",
-                                "description": "偽装場所の座標を設定します"
-                            },
-                            "walk_radius": {
-                                "name": "歩行半径",
-                                "description": "この半径内（フィート）をランダムに歩き回ります"
-                            },
-                            "always_update_location": {
-                                "name": "常に位置情報を更新",
-                                "description": "GPSデータが受信されない場合でもSnapchatに位置情報の更新を強制します"
-                            },
-                            "suspend_location_updates": {
-                                "name": "位置情報の更新を一時停止",
-                                "description": "位置情報が更新されるのを防ぎます"
-                            },
-                            "spoof_battery_level": {
-                                "name": "バッテリーレベルの偽装",
-                                "description": "マップ上のデバイスのバッテリーレベルを偽装します\n値は0から100の間でなければなりません"
-                            },
-                            "spoof_headphones": {
-                                "name": "ヘッドフォンの偽装",
-                                "description": "マップ上の音楽を聴いている状態を偽装します"
-                            },
-                            "show_battery_level": {
-                                "name": "バッテリーレベルを表示",
-                                "description": "マップ上にフレンドのバッテリーレベルを表示します"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Snapchat Plusの機能を有効にします\n一部のサーバーサイド機能は動作しない場合があります"
-                    },
-                    "media_upload_quality": {
-                        "name": "メディアアップロード品質",
-                        "description": "メディアのアップロード品質を上書きします",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "ビデオアップロード時にソース品質を強制",
-                                "description": "ビデオをアップロードする際にSnapchatにソース品質の使用を強制します\nこれによりメディアからメタデータが削除されない場合があります"
-                            },
-                            "disable_image_compression": {
-                                "name": "画像圧縮を無効化",
-                                "description": "メディアアップロード時の画像圧縮を無効にします"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "カスタム画像アップロード形式",
-                                "description": "カスタム画像アップロード形式を設定します\n最高品質を得るにはロスレス形式（PNGなど）を選択してください"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "確認ダイアログの無効化",
-                        "description": "選択したアクションを自動的に確認します"
-                    },
-                    "auto_updater": {
-                        "name": "自動アップデーター",
-                        "description": "新しいアップデートを自動的に確認します"
-                    },
-                    "update_settings": {
-                        "name": "アップデート設定",
-                        "description": "PurrfectSnapのアップデート確認方法を制御",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "自動アップデート確認"
-                            },
-                            "update_check_frequency": {
-                                "name": "アップデート確認頻度"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI設定",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "触覚フィードバック"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "メトリクスの無効化",
-                        "description": "特定の分析データのSnapchatへの送信をブロックします"
-                    },
-                    "disable_story_sections": {
-                        "name": "ストーリーセクションの無効化",
-                        "description": "ストーリーページからセクションを削除します\n正しく動作させるにはリフレッシュが必要な場合があります"
-                    },
-                    "block_ads": {
-                        "name": "広告ブロック",
-                        "description": "広告が表示されるのを防ぎます"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "カスタムタブの無効化",
-                        "description": "ウェブブラウザではなくサポートされているアプリケーションでリンクを開きます"
-                    },
-                    "disable_permission_requests": {
-                        "name": "権限リクエストの無効化",
-                        "description": "Snapchatが特定の権限を要求するのを防ぎます"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "思い出スナップフィードの無効化",
-                        "description": "カメラで上にスワイプしたときに最近の思い出が表示されるのを防ぎます"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "スポットライトコメントのユーザー名",
-                        "description": "スポットライトのコメントに作成者のユーザー名を表示します"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "スポットライトコメントのユーザー名アイコン",
-                        "description": "スポットライトコメントのユーザー名の横に表示するアイコンを選択します"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "動画の長さ制限の回避",
-                        "description": "シングル: 単一の動画を送信します\n分割: 編集後に動画を分割します"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "デフォルト動画再生速度",
-                        "description": "動画再生のデフォルト速度を設定します\n値は0.1から4.0の間でなければなりません"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "動画再生速度スライダー",
-                        "description": "Operaコンテキストメニューに動画再生速度を変更するスライダーを追加します\n注: 変更はその後の動画にのみ適用されます"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Google Play開発者サービスダイアログの無効化",
-                        "description": "Google Play開発者サービスの利用可能性ダイアログが表示されるのを防ぎます"
-                    },
-                    "default_volume_controls": {
-                        "name": "デフォルト音量コントロール",
-                        "description": "Snapchatにシステム音量コントロールの使用を強制します"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Telecomフレームワークの無効化",
-                        "description": "SnapchatがAndroid Telecomフレームワークを使用するのを防ぎます\nこれにより、通話中に音楽を聴くことができます"
-                    },
-                    "hide_active_music": {
-                        "name": "アクティブな音楽を隠す",
-                        "description": "音楽を聴いていることをSnapchatに知られないようにします\nこれにより、音楽を聴きながら音量ボタンでSnapを撮影できるようになります"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Snap分割の無効化",
-                        "description": "Snapが複数のパートに分割されるのを防ぎます\n送信する写真は動画になります"
-                    }
-                }
-            },
             "rules": {
                 "name": "ルール",
                 "description": "自動化ルールの設定",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "暗号化メッセージインジケーター",
-                                "description": "暗号化されたメッセージの横に\ud83d\udd12絵文字を追加します"
+                                "description": "暗号化されたメッセージの横に🔒絵文字を追加します"
                             },
                             "force_message_encryption": {
                                 "name": "メッセージ暗号化の強制",
@@ -2162,20 +2130,20 @@
                 "null": "実際のバッテリーレベルを使用"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f 自動ダウンロード",
-                "auto_save": "\ud83d\udcac メッセージ自動保存",
-                "unsaveable_messages": "\u2b07\ufe0f 保存不可メッセージ",
-                "auto_open_snaps": "\ud83d\udcf7 Snap自動開封",
-                "stealth": "\ud83d\udc7b ステルスモード",
-                "auto_reply": "\ud83d\udce8 自動返信",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f 送信メッセージの自動削除",
-                "mark_snaps_as_seen": "\ud83d\udc40 Snapを既読にする",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 ストーリーをローカルで既読にする",
-                "conversation_info": "\ud83d\udc64 会話情報",
-                "e2e_encryption": "\ud83d\udd12 E2E暗号化を使用",
-                "message_logger": "\ud83d\udcdd メッセージロガー",
-                "auto_read": "\u2705 自動既読",
-                "hide_typing_indicator": "\ud83d\ude48 入力中インジケータを隠す"
+                "auto_download": "⬇️ 自動ダウンロード",
+                "auto_save": "💬 メッセージ自動保存",
+                "unsaveable_messages": "⬇️ 保存不可メッセージ",
+                "auto_open_snaps": "📷 Snap自動開封",
+                "stealth": "👻 ステルスモード",
+                "auto_reply": "📨 自動返信",
+                "auto_delete_sent_messages": "🗑️ 送信メッセージの自動削除",
+                "mark_snaps_as_seen": "👀 Snapを既読にする",
+                "mark_stories_as_seen_locally": "👀 ストーリーをローカルで既読にする",
+                "conversation_info": "👤 会話情報",
+                "e2e_encryption": "🔒 E2E暗号化を使用",
+                "message_logger": "📝 メッセージロガー",
+                "auto_read": "✅ 自動既読",
+                "hide_typing_indicator": "🙈 入力中インジケータを隠す"
             },
             "schedule_scheduled_for": "{name} に {time} 後に予定されています",
             "schedule_sending_in": "{time} 後に送信します",
@@ -2394,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "ユーザー名アイコン",
-                "\ud83d\udc64": "ユーザー名アイコン",
-                "[\ud83d\udc64]": "ユーザー名アイコン",
+                "👤": "ユーザー名アイコン",
+                "[👤]": "ユーザー名アイコン",
                 "default": "ユーザー名アイコン",
                 "no_icon": "アイコンなし"
             },
@@ -2475,11 +2443,11 @@
                 "phone_calls": "通話"
             },
             "message_indicators": {
-                "encryption_indicator": "あなただけに送信されたメッセージの横に\ud83d\udd12アイコンを追加します",
+                "encryption_indicator": "あなただけに送信されたメッセージの横に🔒アイコンを追加します",
                 "platform_indicator": "メディアが送信されたプラットフォームのアイコンを追加します（例: Android, iOS, Web）",
-                "location_indicator": "位置情報を有効にして送信されたSnapに\ud83d\udccdアイコンを追加します",
+                "location_indicator": "位置情報を有効にして送信されたSnapに📍アイコンを追加します",
                 "ovf_editor_indicator": "SnapがOVF Editorを使用して送信されたかどうかを示します",
-                "director_mode_indicator": "Director Mode（ギャラリー画像をSnapとして送信するために使用可能）を使用して送信されたSnapに\u270f\ufe0fアイコンを追加します"
+                "director_mode_indicator": "Director Mode（ギャラリー画像をSnapとして送信するために使用可能）を使用して送信されたSnapに✏️アイコンを追加します"
             },
             "auto_mark_as_read": {
                 "conversation_read": "メッセージ送信時に会話を既読にする",
@@ -3032,7 +3000,7 @@
         "queue_cleared": "キューを消去し統計をリセットしました",
         "queue_cleared_title": "キュー消去済み",
         "queue_cleared_reset": "キュー消去 & リセット",
-        "queue_cleared_feedback": "{count} 件のキュー内Snapを消去 \u2022 {processed} 件の処理済みカウントをリセット",
+        "queue_cleared_feedback": "{count} 件のキュー内Snapを消去 • {processed} 件の処理済みカウントをリセット",
         "queue_cleared_feedback_simple": "{processed} 件の処理済みカウントをリセット",
         "unknown_sender": "不明",
         "unknown_user": "不明なユーザー",

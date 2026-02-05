@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 oleh Eternal",
+                "version_title": "v{versionName} · oleh Eternal",
                 "update_title": "Pembaruan PurrfectSnap",
                 "update_content": "Versi {version} tersedia!",
                 "update_button": "Unduh",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "Tidak ada tugas",
                 "merge_button": "Gabung",
-                "summary_active": "{active} aktif \u00b7 {recent} baru",
-                "summary_idle": "Idle \u00b7 {recent} baru",
+                "summary_active": "{active} aktif · {recent} baru",
+                "summary_idle": "Idle · {recent} baru",
                 "running_count": "{count} berjalan",
                 "clear_button_description": "Bersihkan tugas",
                 "failed_to_open_file": "Gagal membuka file",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "Hapus {count} tugas?",
                 "remove_all_tasks_confirm": "Hapus semua tugas?"
             },
-        "features": {
-            "disabled": "Dinonaktifkan",
-            "export_option": "Ekspor",
-            "import_option": "Impor",
-            "reset_option": "Reset",
-            "config_export_success_toast": "Konfigurasi berhasil diekspor",
-            "config_import_success_toast": "Konfigurasi berhasil diimpor",
-            "config_import_failure_toast": "Gagal mengimpor konfigurasi {error}",
-            "config_export_failure_toast": "Gagal mengekspor konfigurasi {error}",
-            "saved_config_snackbar": "Konfigurasi disimpan",
-            "older_required": "Fitur ini memerlukan Snapchat v{version} atau lebih lama agar berfungsi dengan benar",
-            "newer_required": "Fitur ini memerlukan Snapchat v{version} atau lebih baru agar berfungsi dengan benar",
-            "search_button": "Cari",
-            "clear_history": "Hapus riwayat pencarian",
-            "subtitle": "Cari dan kelola fitur"
-        },
+            "features": {
+                "disabled": "Dinonaktifkan",
+                "export_option": "Ekspor",
+                "import_option": "Impor",
+                "reset_option": "Reset",
+                "config_export_success_toast": "Konfigurasi berhasil diekspor",
+                "config_import_success_toast": "Konfigurasi berhasil diimpor",
+                "config_import_failure_toast": "Gagal mengimpor konfigurasi {error}",
+                "config_export_failure_toast": "Gagal mengekspor konfigurasi {error}",
+                "saved_config_snackbar": "Konfigurasi disimpan",
+                "older_required": "Fitur ini memerlukan Snapchat v{version} atau lebih lama agar berfungsi dengan benar",
+                "newer_required": "Fitur ini memerlukan Snapchat v{version} atau lebih baru agar berfungsi dengan benar",
+                "search_button": "Cari",
+                "clear_history": "Hapus riwayat pencarian",
+                "subtitle": "Cari dan kelola fitur"
+            },
             "bypass_status": {
                 "active": "PurrAura Aktif",
                 "inactive": "PurrAura Tidak Aktif"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "Teleportasi ke Teman",
                 "search_bar": "Cari",
                 "no_friends_map": "Tidak ada teman di peta",
-                "no_friends_found": "Teman tidak ditemukan"
+                "no_friends_found": "Teman tidak ditemukan",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,42 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 Tidak Stabil",
-            "ban_risk": "\u26a0 Fitur ini dapat menyebabkan pemblokiran (ban)",
-            "internal_behavior": "\u26a0 Ini dapat merusak perilaku internal Snapchat"
+            "unstable": "⚠ Tidak Stabil",
+            "ban_risk": "⚠ Fitur ini dapat menyebabkan pemblokiran (ban)",
+            "internal_behavior": "⚠ Ini dapat merusak perilaku internal Snapchat"
         },
         "properties": {
             "global": {
                 "name": "Global",
-                "description": "Preferensi dan default modul umum",
+                "description": "Tweak Pengaturan Global Snapchat",
                 "properties": {
-                    "ui_settings": {
-                        "name": "Pengaturan UI",
-                        "description": "Atur umpan balik dan perilaku toast",
+                    "better_location": {
+                        "name": "Lokasi Lebih Baik",
+                        "description": "Meningkatkan Lokasi Snapchat",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "Umpan Balik Haptic",
-                                "description": "Bergetar pada interaksi yang didukung"
+                            "spoof_location": {
+                                "name": "Palsukan Lokasi",
+                                "description": "Memalsukan lokasi Anda ke lokasi tertentu"
                             },
-                            "use_system_toasts": {
-                                "name": "Gunakan Toast Sistem",
-                                "description": "Tampilkan toast Android alih-alih overlay dalam aplikasi"
+                            "coordinates": {
+                                "name": "Koordinat",
+                                "description": "Atur koordinat lokasi palsu"
+                            },
+                            "walk_radius": {
+                                "name": "Radius Jalan",
+                                "description": "Berjalan secara acak di dalam radius ini (ft)"
+                            },
+                            "always_update_location": {
+                                "name": "Selalu Perbarui Lokasi",
+                                "description": "Paksa Snapchat memperbarui lokasi meskipun tidak ada data GPS yang diterima"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Tangguhkan Pembaruan Lokasi",
+                                "description": "Mencegah lokasi Anda diperbarui"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Palsukan Tingkat Baterai",
+                                "description": "Memalsukan tingkat baterai perangkat Anda di peta\nNilai harus antara 0 dan 100"
+                            },
+                            "spoof_headphones": {
+                                "name": "Palsukan Headphone",
+                                "description": "Memalsukan status mendengarkan musik di peta"
+                            },
+                            "show_battery_level": {
+                                "name": "Tampilkan Tingkat Baterai",
+                                "description": "Menampilkan tingkat baterai teman Anda di peta"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "Pengaturan Pembaruan",
-                        "description": "Kontrol pemeriksaan pembaruan otomatis",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Mengaktifkan fitur Snapchat Plus\nBeberapa fitur sisi-Server mungkin tidak berfungsi"
+                    },
+                    "media_upload_quality": {
+                        "name": "Kualitas Unggah Media",
+                        "description": "Mengganti kualitas unggah media",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "Cek Pembaruan Otomatis",
-                                "description": "Periksa build baru secara otomatis"
+                            "force_video_upload_source_quality": {
+                                "name": "Paksa Kualitas Sumber Unggah Video",
+                                "description": "Memaksa Snapchat menggunakan kualitas sumber saat mengunggah video\nHarap diperhatikan bahwa ini mungkin tidak menghapus metadata dari media"
                             },
-                            "update_check_frequency": {
-                                "name": "Frekuensi Cek Pembaruan",
-                                "description": "Seberapa sering memeriksa pembaruan"
+                            "disable_image_compression": {
+                                "name": "Nonaktifkan Kompresi Gambar",
+                                "description": "Menonaktifkan kompresi gambar saat mengunggah media"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Format Unggah Gambar Kustom",
+                                "description": "Mengatur format unggah gambar kustom\nPilih format lossless (seperti PNG) untuk kualitas terbaik"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Nonaktifkan Dialog Konfirmasi",
+                        "description": "Secara otomatis mengonfirmasi tindakan yang dipilih"
+                    },
+                    "auto_updater": {
+                        "name": "Pembaruan Otomatis",
+                        "description": "Secara otomatis memeriksa pembaruan baru"
+                    },
+                    "update_settings": {
+                        "name": "Pengaturan Pembaruan",
+                        "description": "Kontrol bagaimana PurrfectSnap memeriksa pembaruan",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Cek Pembaruan Otomatis"
+                            },
+                            "update_check_frequency": {
+                                "name": "Frekuensi Cek Pembaruan"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "Pengaturan UI",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Umpan Balik Haptic"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Nonaktifkan Metrik",
+                        "description": "Memblokir pengiriman data analitik tertentu ke Snapchat"
+                    },
+                    "disable_story_sections": {
+                        "name": "Nonaktifkan Bagian Cerita",
+                        "description": "Menghapus bagian dari halaman Cerita\nMungkin memerlukan penyegaran agar berfungsi dengan benar"
+                    },
+                    "block_ads": {
+                        "name": "Blokir Iklan",
+                        "description": "Mencegah Iklan ditampilkan"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Nonaktifkan Tab Kustom",
+                        "description": "Membuka tautan di aplikasi yang didukung alih-alih di Browser Web"
+                    },
+                    "disable_permission_requests": {
+                        "name": "Nonaktifkan Permintaan Izin",
+                        "description": "Mencegah Snapchat meminta izin tertentu"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Nonaktifkan Umpan Snap Kenangan",
+                        "description": "Mencegah Snapchat menampilkan kenangan terbaru saat Anda menggeser ke atas di kamera"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Nama Pengguna Komentar Spotlight",
+                        "description": "Menampilkan nama pengguna penulis di komentar Spotlight"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Ikon Nama Pengguna Komentar Spotlight",
+                        "description": "Pilih ikon mana yang ditampilkan di sebelah nama pengguna dalam komentar Spotlight"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Bypass Pembatasan Panjang Video",
+                        "description": "Tunggal: mengirim satu video\nTerpisah: memisahkan video setelah diedit"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Kecepatan Pemutaran Video Default",
+                        "description": "Mengatur kecepatan default untuk pemutaran video\nNilai harus antara 0.1 dan 4.0"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Slider Kecepatan Pemutaran Video",
+                        "description": "Menambahkan slider di menu konteks opera untuk mengubah kecepatan pemutaran video\nCatatan: Perubahan hanya berlaku untuk video berikutnya"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Nonaktifkan Dialog Layanan Google Play",
+                        "description": "Mencegah dialog ketersediaan Layanan Google Play ditampilkan"
+                    },
+                    "default_volume_controls": {
+                        "name": "Kontrol Volume Default",
+                        "description": "Memaksa Snapchat menggunakan kontrol volume sistem"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Nonaktifkan Kerangka Kerja Telekomunikasi",
+                        "description": "Mencegah Snapchat menggunakan kerangka kerja Telekomunikasi Android\nIni memungkinkan Anda mendengarkan musik saat sedang menelepon"
+                    },
+                    "hide_active_music": {
+                        "name": "Sembunyikan Musik Aktif",
+                        "description": "Mencegah Snapchat mengetahui Anda sedang mendengarkan musik\nIni akan memungkinkan Anda mengambil snap menggunakan tombol kontrol volume sambil mendengarkan musik"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Nonaktifkan Pemisahan Snap",
+                        "description": "Mencegah Snap dipisahkan menjadi beberapa bagian\nGambar yang Anda kirim akan berubah menjadi video"
                     }
                 }
             },
@@ -1094,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Indikator Mode Siluman",
-                        "description": "Menambahkan emoji \ud83d\udc7b di sebelah percakapan dalam mode siluman"
+                        "description": "Menambahkan emoji 👻 di sebelah percakapan dalam mode siluman"
                     },
                     "edit_text_override": {
                         "name": "Override Teks Edit",
@@ -1622,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "Global",
-                "description": "Tweak Pengaturan Global Snapchat",
-                "properties": {
-                    "better_location": {
-                        "name": "Lokasi Lebih Baik",
-                        "description": "Meningkatkan Lokasi Snapchat",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "Palsukan Lokasi",
-                                "description": "Memalsukan lokasi Anda ke lokasi tertentu"
-                            },
-                            "coordinates": {
-                                "name": "Koordinat",
-                                "description": "Atur koordinat lokasi palsu"
-                            },
-                            "walk_radius": {
-                                "name": "Radius Jalan",
-                                "description": "Berjalan secara acak di dalam radius ini (ft)"
-                            },
-                            "always_update_location": {
-                                "name": "Selalu Perbarui Lokasi",
-                                "description": "Paksa Snapchat memperbarui lokasi meskipun tidak ada data GPS yang diterima"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Tangguhkan Pembaruan Lokasi",
-                                "description": "Mencegah lokasi Anda diperbarui"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Palsukan Tingkat Baterai",
-                                "description": "Memalsukan tingkat baterai perangkat Anda di peta\nNilai harus antara 0 dan 100"
-                            },
-                            "spoof_headphones": {
-                                "name": "Palsukan Headphone",
-                                "description": "Memalsukan status mendengarkan musik di peta"
-                            },
-                            "show_battery_level": {
-                                "name": "Tampilkan Tingkat Baterai",
-                                "description": "Menampilkan tingkat baterai teman Anda di peta"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Mengaktifkan fitur Snapchat Plus\nBeberapa fitur sisi-Server mungkin tidak berfungsi"
-                    },
-                    "media_upload_quality": {
-                        "name": "Kualitas Unggah Media",
-                        "description": "Mengganti kualitas unggah media",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Paksa Kualitas Sumber Unggah Video",
-                                "description": "Memaksa Snapchat menggunakan kualitas sumber saat mengunggah video\nHarap diperhatikan bahwa ini mungkin tidak menghapus metadata dari media"
-                            },
-                            "disable_image_compression": {
-                                "name": "Nonaktifkan Kompresi Gambar",
-                                "description": "Menonaktifkan kompresi gambar saat mengunggah media"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Format Unggah Gambar Kustom",
-                                "description": "Mengatur format unggah gambar kustom\nPilih format lossless (seperti PNG) untuk kualitas terbaik"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "Nonaktifkan Dialog Konfirmasi",
-                        "description": "Secara otomatis mengonfirmasi tindakan yang dipilih"
-                    },
-                    "auto_updater": {
-                        "name": "Pembaruan Otomatis",
-                        "description": "Secara otomatis memeriksa pembaruan baru"
-                    },
-                    "update_settings": {
-                        "name": "Pengaturan Pembaruan",
-                        "description": "Kontrol bagaimana PurrfectSnap memeriksa pembaruan",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Cek Pembaruan Otomatis"
-                            },
-                            "update_check_frequency": {
-                                "name": "Frekuensi Cek Pembaruan"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "Pengaturan UI",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Umpan Balik Haptic"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "Nonaktifkan Metrik",
-                        "description": "Memblokir pengiriman data analitik tertentu ke Snapchat"
-                    },
-                    "disable_story_sections": {
-                        "name": "Nonaktifkan Bagian Cerita",
-                        "description": "Menghapus bagian dari halaman Cerita\nMungkin memerlukan penyegaran agar berfungsi dengan benar"
-                    },
-                    "block_ads": {
-                        "name": "Blokir Iklan",
-                        "description": "Mencegah Iklan ditampilkan"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Nonaktifkan Tab Kustom",
-                        "description": "Membuka tautan di aplikasi yang didukung alih-alih di Browser Web"
-                    },
-                    "disable_permission_requests": {
-                        "name": "Nonaktifkan Permintaan Izin",
-                        "description": "Mencegah Snapchat meminta izin tertentu"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Nonaktifkan Umpan Snap Kenangan",
-                        "description": "Mencegah Snapchat menampilkan kenangan terbaru saat Anda menggeser ke atas di kamera"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Nama Pengguna Komentar Spotlight",
-                        "description": "Menampilkan nama pengguna penulis di komentar Spotlight"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Ikon Nama Pengguna Komentar Spotlight",
-                        "description": "Pilih ikon mana yang ditampilkan di sebelah nama pengguna dalam komentar Spotlight"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Bypass Pembatasan Panjang Video",
-                        "description": "Tunggal: mengirim satu video\nTerpisah: memisahkan video setelah diedit"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Kecepatan Pemutaran Video Default",
-                        "description": "Mengatur kecepatan default untuk pemutaran video\nNilai harus antara 0.1 dan 4.0"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Slider Kecepatan Pemutaran Video",
-                        "description": "Menambahkan slider di menu konteks opera untuk mengubah kecepatan pemutaran video\nCatatan: Perubahan hanya berlaku untuk video berikutnya"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Nonaktifkan Dialog Layanan Google Play",
-                        "description": "Mencegah dialog ketersediaan Layanan Google Play ditampilkan"
-                    },
-                    "default_volume_controls": {
-                        "name": "Kontrol Volume Default",
-                        "description": "Memaksa Snapchat menggunakan kontrol volume sistem"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Nonaktifkan Kerangka Kerja Telekomunikasi",
-                        "description": "Mencegah Snapchat menggunakan kerangka kerja Telekomunikasi Android\nIni memungkinkan Anda mendengarkan musik saat sedang menelepon"
-                    },
-                    "hide_active_music": {
-                        "name": "Sembunyikan Musik Aktif",
-                        "description": "Mencegah Snapchat mengetahui Anda sedang mendengarkan musik\nIni akan memungkinkan Anda mengambil snap menggunakan tombol kontrol volume sambil mendengarkan musik"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Nonaktifkan Pemisahan Snap",
-                        "description": "Mencegah Snap dipisahkan menjadi beberapa bagian\nGambar yang Anda kirim akan berubah menjadi video"
-                    }
-                }
-            },
             "rules": {
                 "name": "Aturan",
                 "description": "Konfigurasikan aturan otomatisasi",
@@ -2061,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Indikator Pesan Terenkripsi",
-                                "description": "Menambahkan emoji \ud83d\udd12 di sebelah pesan terenkripsi"
+                                "description": "Menambahkan emoji 🔒 di sebelah pesan terenkripsi"
                             },
                             "force_message_encryption": {
                                 "name": "Paksa Enkripsi Pesan",
@@ -2162,20 +2130,20 @@
                 "null": "Gunakan tingkat baterai nyata"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f Unduh Otomatis",
-                "auto_save": "\ud83d\udcac Simpan Pesan Otomatis",
-                "unsaveable_messages": "\u2b07\ufe0f Pesan Tak Dapat Disimpan",
-                "auto_open_snaps": "\ud83d\udcf7 Buka Snap Otomatis",
-                "stealth": "\ud83d\udc7b Mode Siluman",
-                "auto_reply": "\ud83d\udce8 Balas Otomatis",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Hapus Pesan Terkirim Otomatis",
-                "mark_snaps_as_seen": "\ud83d\udc40 Tandai Snap sebagai dilihat",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 Tandai Cerita sebagai dilihat secara lokal",
-                "conversation_info": "\ud83d\udc64 Info Percakapan",
-                "e2e_encryption": "\ud83d\udd12 Gunakan Enkripsi E2E",
-                "message_logger": "\ud83d\udcdd Pencatat Pesan",
-                "auto_read": "\u2705 Baca Otomatis",
-                "hide_typing_indicator": "\ud83d\ude48 Sembunyikan Indikator Mengetik"
+                "auto_download": "⬇️ Unduh Otomatis",
+                "auto_save": "💬 Simpan Pesan Otomatis",
+                "unsaveable_messages": "⬇️ Pesan Tak Dapat Disimpan",
+                "auto_open_snaps": "📷 Buka Snap Otomatis",
+                "stealth": "👻 Mode Siluman",
+                "auto_reply": "📨 Balas Otomatis",
+                "auto_delete_sent_messages": "🗑️ Hapus Pesan Terkirim Otomatis",
+                "mark_snaps_as_seen": "👀 Tandai Snap sebagai dilihat",
+                "mark_stories_as_seen_locally": "👀 Tandai Cerita sebagai dilihat secara lokal",
+                "conversation_info": "👤 Info Percakapan",
+                "e2e_encryption": "🔒 Gunakan Enkripsi E2E",
+                "message_logger": "📝 Pencatat Pesan",
+                "auto_read": "✅ Baca Otomatis",
+                "hide_typing_indicator": "🙈 Sembunyikan Indikator Mengetik"
             },
             "schedule_scheduled_for": "Dijadwalkan untuk {name} dalam {time}",
             "schedule_sending_in": "Mengirim dalam {time}",
@@ -2278,16 +2246,16 @@
             "custom_android_id": {
                 "null": "Gunakan ID Android asli"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "Berdasarkan Nama Pengguna",
-	                "added_by_mention": "Berdasarkan Sebutan (Mention)",
-	                "added_by_group_chat": "Berdasarkan Obrolan Grup",
-	                "added_by_qr_code": "Berdasarkan Kode QR",
-	                "added_by_community": "Berdasarkan Komunitas",
-	                "added_by_quick_add": "Berdasarkan Tambah Cepat (risiko tinggi diblokir)",
-	                "added_by_spotlight": "Berdasarkan Spotlight",
-	                "null": "Jangan palsukan sumber"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "Berdasarkan Nama Pengguna",
+                "added_by_mention": "Berdasarkan Sebutan (Mention)",
+                "added_by_group_chat": "Berdasarkan Obrolan Grup",
+                "added_by_qr_code": "Berdasarkan Kode QR",
+                "added_by_community": "Berdasarkan Komunitas",
+                "added_by_quick_add": "Berdasarkan Tambah Cepat (risiko tinggi diblokir)",
+                "added_by_spotlight": "Berdasarkan Spotlight",
+                "null": "Jangan palsukan sumber"
+            },
             "custom_streaks_expiration_format": {
                 "null": "Default Sistem"
             },
@@ -2394,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "Ikon Nama Pengguna",
-                "\ud83d\udc64": "Ikon Nama Pengguna",
-                "[\ud83d\udc64]": "Ikon Nama Pengguna",
+                "👤": "Ikon Nama Pengguna",
+                "[👤]": "Ikon Nama Pengguna",
                 "default": "Ikon Nama Pengguna",
                 "no_icon": "Tidak ada ikon"
             },
@@ -2475,11 +2443,11 @@
                 "phone_calls": "Panggilan Telepon"
             },
             "message_indicators": {
-                "encryption_indicator": "Menambahkan ikon \ud83d\udd12 di sebelah pesan yang dikirim hanya kepada Anda",
+                "encryption_indicator": "Menambahkan ikon 🔒 di sebelah pesan yang dikirim hanya kepada Anda",
                 "platform_indicator": "Menambahkan ikon platform tempat media dikirim (mis. Android, iOS, Web)",
-                "location_indicator": "Menambahkan ikon \ud83d\udccd ke snap jika dikirim dengan lokasi diaktifkan",
+                "location_indicator": "Menambahkan ikon 📍 ke snap jika dikirim dengan lokasi diaktifkan",
                 "ovf_editor_indicator": "Menunjukkan jika snap dikirim menggunakan OVF Editor",
-                "director_mode_indicator": "Menambahkan ikon \u270f\ufe0f ke snap jika dikirim menggunakan Mode Sutradara, yang dapat digunakan untuk mengirim gambar galeri sebagai snap"
+                "director_mode_indicator": "Menambahkan ikon ✏️ ke snap jika dikirim menggunakan Mode Sutradara, yang dapat digunakan untuk mengirim gambar galeri sebagai snap"
             },
             "auto_mark_as_read": {
                 "conversation_read": "Tandai percakapan sebagai dibaca saat mengirim pesan",
@@ -2703,7 +2671,6 @@
         "show_chat_edit_history": "Tampilkan Riwayat Edit Obrolan",
         "convert_message": "Konversi Pesan"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Unduh Wallpaper Obrolan"
     },
@@ -3033,7 +3000,7 @@
         "queue_cleared": "Antrian dibersihkan dan statistik direset",
         "queue_cleared_title": "Antrian dibersihkan",
         "queue_cleared_reset": "Antrian Dibersihkan & Direset",
-        "queue_cleared_feedback": "Dibersihkan {count} snap antri \u2022 Reset {processed} jumlah diproses",
+        "queue_cleared_feedback": "Dibersihkan {count} snap antri • Reset {processed} jumlah diproses",
         "queue_cleared_feedback_simple": "Reset {processed} jumlah diproses",
         "unknown_sender": "Tidak Diketahui",
         "unknown_user": "Pengguna Tidak Diketahui",
