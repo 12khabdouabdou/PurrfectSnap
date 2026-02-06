@@ -57,8 +57,10 @@ import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -592,6 +594,8 @@ class AlertDialogs(
         property: PropertyPair<*>,
         marker: MutableState<Marker?> = remember { mutableStateOf(null) },
         mapView: MutableState<MapView?> = remember { mutableStateOf(null) },
+        locationSearchProvider: String = "osm",
+        googleMapsApiKey: String = "",
         saveCoordinates: (() -> Unit)? = null,
         dismiss: () -> Unit = {}
     ) {
@@ -611,7 +615,20 @@ class AlertDialogs(
             MapView(context).apply {
                 setMultiTouchControls(true)
                 zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
-                setTileSource(TileSourceFactory.MAPNIK)
+                val tileSource = if (locationSearchProvider == "google_maps") {
+                    object : OnlineTileSourceBase(
+                        "GoogleMaps",
+                        0, 19, 256, ".png",
+                        arrayOf("https://mt0.google.com/vt/lyrs=m", "https://mt1.google.com/vt/lyrs=m", "https://mt2.google.com/vt/lyrs=m", "https://mt3.google.com/vt/lyrs=m")
+                    ) {
+                        override fun getTileURLString(pMapTileIndex: Long): String {
+                            return baseUrl + "&x=" + MapTileIndex.getX(pMapTileIndex) + "&y=" + MapTileIndex.getY(pMapTileIndex) + "&z=" + MapTileIndex.getZoom(pMapTileIndex)
+                        }
+                    }
+                } else {
+                    TileSourceFactory.MAPNIK
+                }
+                setTileSource(tileSource)
 
                 val startPoint = GeoPoint(coordinates.first, coordinates.second)
                 controller.setZoom(10.0)
@@ -686,28 +703,56 @@ class AlertDialogs(
                     val resultsScrollState = rememberScrollState()
 
                     suspend fun search() {
-                        okHttpClient.newCall(Request.Builder()
-                            .url("https://nominatim.openstreetmap.org/search".toUri().buildUpon().appendQueryParameter("q", locationName).appendQueryParameter("format", "jsonv2").build().toString())
-                            .header("User-Agent", Constants.OSM_USER_AGENT)
-                            .build()
-                        ).await().use { response ->
-                            if (!response.isSuccessful) {
-                                return@use
+                        if (locationSearchProvider == "google_maps") {
+                            // Google Maps Search
+                            okHttpClient.newCall(Request.Builder()
+                                .url("https://maps.googleapis.com/maps/api/geocode/json".toUri().buildUpon()
+                                    .appendQueryParameter("address", locationName)
+                                    .appendQueryParameter("key", googleMapsApiKey)
+                                    .build().toString())
+                                .build()
+                            ).await().use { response ->
+                                if (!response.isSuccessful) return@use
+                                runCatching {
+                                    val jsonResponse = JsonParser.parseString(response.body?.string() ?: "{}").asJsonObject
+                                    if (jsonResponse.has("results")) {
+                                        val results = jsonResponse.getAsJsonArray("results")
+                                        addressResults = results.take(5).map { jsonElement ->
+                                            val result = jsonElement.asJsonObject
+                                            val geometry = result.getAsJsonObject("geometry").getAsJsonObject("location")
+                                            Triple(
+                                                result.get("formatted_address").asString,
+                                                geometry.get("lat").asString,
+                                                geometry.get("lng").asString
+                                            )
+                                        }
+                                    }
+                                }
                             }
-
-                            runCatching {
-                                val body = JsonParser.parseString(response.body?.string() ?: "[]").asJsonArray
-                                addressResults = body.take(5).map { jsonElement ->
-                                    val jsonObject = jsonElement.asJsonObject
-                                    Triple(
-                                        jsonObject.get("display_name").asString,
-                                        jsonObject.get("lat").asString,
-                                        jsonObject.get("lon").asString
-                                    )
+                        } else {
+                            // OSM Nominatim Search (Existing Logic)
+                            okHttpClient.newCall(Request.Builder()
+                                .url("https://nominatim.openstreetmap.org/search".toUri().buildUpon()
+                                    .appendQueryParameter("q", locationName)
+                                    .appendQueryParameter("format", "jsonv2")
+                                    .build().toString())
+                                .header("User-Agent", Constants.OSM_USER_AGENT)
+                                .build()
+                            ).await().use { response ->
+                                if (!response.isSuccessful) return@use
+                                runCatching {
+                                    val body = JsonParser.parseString(response.body?.string() ?: "[]").asJsonArray
+                                    addressResults = body.take(5).map { jsonElement ->
+                                        val jsonObject = jsonElement.asJsonObject
+                                        Triple(
+                                            jsonObject.get("display_name").asString,
+                                            jsonObject.get("lat").asString,
+                                            jsonObject.get("lon").asString
+                                        )
+                                    }
                                 }
                             }
                         }
-
                         searchJob = null
                     }
 

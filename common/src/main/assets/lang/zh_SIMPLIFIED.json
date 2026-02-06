@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 由 Eternal 开发",
+                "version_title": "v{versionName} · 由 Eternal 开发",
                 "update_title": "PurrfectSnap 更新",
                 "update_content": "版本 {version} 可用！",
                 "update_button": "下载",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "无任务",
                 "merge_button": "合并",
-                "summary_active": "{active} 个活跃 \u00b7 {recent} 个最近",
-                "summary_idle": "空闲 \u00b7 {recent} 个最近",
+                "summary_active": "{active} 个活跃 · {recent} 个最近",
+                "summary_idle": "空闲 · {recent} 个最近",
                 "running_count": "{count} 个正在运行",
                 "clear_button_description": "清除任务",
                 "failed_to_open_file": "打开文件失败",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "移除 {count} 个任务？",
                 "remove_all_tasks_confirm": "移除所有任务？"
             },
-        "features": {
-            "disabled": "已禁用",
-            "export_option": "导出",
-            "import_option": "导入",
-            "reset_option": "重置",
-            "config_export_success_toast": "配置导出成功",
-            "config_import_success_toast": "配置导入成功",
-            "config_import_failure_toast": "导入配置失败 {error}",
-            "config_export_failure_toast": "导出配置失败 {error}",
-            "saved_config_snackbar": "配置已保存",
-            "older_required": "此功能需要 Snapchat v{version} 或更旧版本才能正常工作",
-            "newer_required": "此功能需要 Snapchat v{version} 或更新版本才能正常工作",
-            "search_button": "搜索",
-            "clear_history": "清除搜索历史",
-            "subtitle": "搜索和管理功能"
-        },
+            "features": {
+                "disabled": "已禁用",
+                "export_option": "导出",
+                "import_option": "导入",
+                "reset_option": "重置",
+                "config_export_success_toast": "配置导出成功",
+                "config_import_success_toast": "配置导入成功",
+                "config_import_failure_toast": "导入配置失败 {error}",
+                "config_export_failure_toast": "导出配置失败 {error}",
+                "saved_config_snackbar": "配置已保存",
+                "older_required": "此功能需要 Snapchat v{version} 或更旧版本才能正常工作",
+                "newer_required": "此功能需要 Snapchat v{version} 或更新版本才能正常工作",
+                "search_button": "搜索",
+                "clear_history": "清除搜索历史",
+                "subtitle": "搜索和管理功能"
+            },
             "bypass_status": {
                 "active": "PurrAura 已激活",
                 "inactive": "PurrAura 未激活"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "传送到好友",
                 "search_bar": "搜索",
                 "no_friends_map": "地图上没有好友",
-                "no_friends_found": "未找到好友"
+                "no_friends_found": "未找到好友",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,91 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 不稳定",
-            "ban_risk": "\u26a0 此功能可能导致封号",
-            "internal_behavior": "\u26a0 这可能会破坏 Snapchat 的内部行为"
-        },
-        "options": {
-            "empty": "空",
-            "walk_radius": {
-                "empty": "空"
-            },
-            "spoof_battery_level": {
-                "empty": "空"
-            },
-            "custom_android_id": {
-                "empty": "空"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "空"
-            },
-            "preferred_transcription_lang": {
-                "empty": "空"
-            },
-            "custom_emoji_font": {
-                "empty": "空"
-            },
-            "custom_shared_library": {
-                "empty": "空"
-            },
-            "custom_resolution": {
-                "empty": "空"
-            },
-            "custom_path_format": {
-                "empty": "空"
-            },
-            "custom_video_codec": {
-                "empty": "空"
-            },
-            "custom_audio_codec": {
-                "empty": "空"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "空"
-            },
-            "unsaveable_messages": {
-                "blacklist": "黑名单模式",
-                "whitelist": "白名单模式",
-                "null": "已禁用"
-            },
-            "update_check_frequency": {
-                "daily": "每天",
-                "weekly": "每周",
-                "monthly": "每月"
-            }
+            "unstable": "⚠ 不稳定",
+            "ban_risk": "⚠ 此功能可能导致封号",
+            "internal_behavior": "⚠ 这可能会破坏 Snapchat 的内部行为"
         },
         "properties": {
             "global": {
                 "name": "全局",
-                "description": "通用模块偏好和默认值",
+                "description": "调整全局 Snapchat 设置",
                 "properties": {
-                    "ui_settings": {
-                        "name": "界面设置",
-                        "description": "调整反馈和 Toast 行为",
+                    "better_location": {
+                        "name": "更好的定位",
+                        "description": "增强 Snapchat 定位",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "触觉反馈",
-                                "description": "在支持的交互上振动"
+                            "spoof_location": {
+                                "name": "伪装位置",
+                                "description": "将您的位置伪装到指定位置"
                             },
-                            "use_system_toasts": {
-                                "name": "使用系统 Toast",
-                                "description": "显示 Android 系统 Toast 而不是应用内悬浮提示"
+                            "coordinates": {
+                                "name": "坐标",
+                                "description": "设置伪装位置的坐标"
+                            },
+                            "walk_radius": {
+                                "name": "行走半径",
+                                "description": "在此半径内随机走动 (ft)"
+                            },
+                            "always_update_location": {
+                                "name": "始终更新位置",
+                                "description": "即使没有收到 GPS 数据也强制 Snapchat 更新位置"
+                            },
+                            "suspend_location_updates": {
+                                "name": "暂停位置更新",
+                                "description": "防止您的位置被更新"
+                            },
+                            "spoof_battery_level": {
+                                "name": "伪装电池电量",
+                                "description": "在地图上伪装您设备的电池电量\n值必须在 0 到 100 之间"
+                            },
+                            "spoof_headphones": {
+                                "name": "伪装耳机",
+                                "description": "在地图上伪装听音乐的状态"
+                            },
+                            "show_battery_level": {
+                                "name": "显示电池电量",
+                                "description": "在地图上显示您好友的电池电量"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "更新设置",
-                        "description": "控制自动更新检查",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "启用 Snapchat Plus 功能\n某些服务器端功能可能无法工作"
+                    },
+                    "media_upload_quality": {
+                        "name": "媒体上传质量",
+                        "description": "覆盖媒体上传质量",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "自动更新检查",
-                                "description": "自动检查新版本"
+                            "force_video_upload_source_quality": {
+                                "name": "强制视频上传源质量",
+                                "description": "上传视频时强制 Snapchat 使用源质量\n请注意，这可能不会从媒体中移除元数据"
                             },
-                            "update_check_frequency": {
-                                "name": "更新检查频率",
-                                "description": "检查更新的频率"
+                            "disable_image_compression": {
+                                "name": "禁用图像压缩",
+                                "description": "上传媒体时禁用图像压缩"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "自定义图像上传格式",
+                                "description": "设置自定义图像上传格式\n选择无损格式（如 PNG）以获得最佳质量"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "禁用确认对话框",
+                        "description": "自动确认选定的操作"
+                    },
+                    "auto_updater": {
+                        "name": "自动更新器",
+                        "description": "自动检查新更新"
+                    },
+                    "update_settings": {
+                        "name": "更新设置",
+                        "description": "控制 PurrfectSnap 如何检查更新",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "自动更新检查"
+                            },
+                            "update_check_frequency": {
+                                "name": "更新检查频率"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "界面设置",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "触觉反馈"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "禁用指标",
+                        "description": "阻止向 Snapchat 发送特定的分析数据"
+                    },
+                    "disable_story_sections": {
+                        "name": "禁用故事部分",
+                        "description": "从故事页面移除部分\n可能需要刷新才能正常工作"
+                    },
+                    "block_ads": {
+                        "name": "拦截广告",
+                        "description": "防止显示广告"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "禁用自定义标签页",
+                        "description": "在支持的应用程序中打开链接，而不是在内置浏览器中"
+                    },
+                    "disable_permission_requests": {
+                        "name": "禁用权限请求",
+                        "description": "防止 Snapchat 请求特定权限"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "禁用回忆 Snap 流",
+                        "description": "在相机界面向上滑动时，防止 Snapchat 显示最近的回忆"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "聚光灯评论用户名",
+                        "description": "在聚光灯评论中显示作者用户名"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "聚光灯评论用户名图标",
+                        "description": "选择在聚光灯评论中用户名旁边显示的图标"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "绕过视频长度限制",
+                        "description": "单一：发送单个视频\n拆分：编辑后拆分视频"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "默认视频播放速率",
+                        "description": "设置视频播放的默认速度\n值必须在 0.1 和 4.0 之间"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "视频播放速率滑块",
+                        "description": "在 Opera 上下文菜单中添加滑块以更改视频播放速率\n注意：更改仅适用于后续视频"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "禁用 Google Play 服务对话框",
+                        "description": "防止显示 Google Play 服务可用性对话框"
+                    },
+                    "default_volume_controls": {
+                        "name": "默认音量控制",
+                        "description": "强制 Snapchat 使用系统音量控制"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "禁用电信框架",
+                        "description": "防止 Snapchat 使用 Android 电信框架\n这允许您在通话时听音乐"
+                    },
+                    "hide_active_music": {
+                        "name": "隐藏活跃音乐",
+                        "description": "防止 Snapchat 知道您正在听音乐\n这将允许您在听音乐时使用音量键拍摄 Snap"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "禁用 Snap 拆分",
+                        "description": "防止 Snap 被拆分成多个部分\n您发送的图片将变成视频"
                     }
                 }
             },
@@ -1143,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "隐身模式指示器",
-                        "description": "在处于隐身模式的对话旁边添加 \ud83d\udc7b 表情符号"
+                        "description": "在处于隐身模式的对话旁边添加 👻 表情符号"
                     },
                     "edit_text_override": {
                         "name": "编辑文本覆盖",
@@ -1671,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "全局",
-                "description": "调整全局 Snapchat 设置",
-                "properties": {
-                    "better_location": {
-                        "name": "更好的定位",
-                        "description": "增强 Snapchat 定位",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "伪装位置",
-                                "description": "将您的位置伪装到指定位置"
-                            },
-                            "coordinates": {
-                                "name": "坐标",
-                                "description": "设置伪装位置的坐标"
-                            },
-                            "walk_radius": {
-                                "name": "行走半径",
-                                "description": "在此半径内随机走动 (ft)"
-                            },
-                            "always_update_location": {
-                                "name": "始终更新位置",
-                                "description": "即使没有收到 GPS 数据也强制 Snapchat 更新位置"
-                            },
-                            "suspend_location_updates": {
-                                "name": "暂停位置更新",
-                                "description": "防止您的位置被更新"
-                            },
-                            "spoof_battery_level": {
-                                "name": "伪装电池电量",
-                                "description": "在地图上伪装您设备的电池电量\n值必须在 0 到 100 之间"
-                            },
-                            "spoof_headphones": {
-                                "name": "伪装耳机",
-                                "description": "在地图上伪装听音乐的状态"
-                            },
-                            "show_battery_level": {
-                                "name": "显示电池电量",
-                                "description": "在地图上显示您好友的电池电量"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "启用 Snapchat Plus 功能\n某些服务器端功能可能无法工作"
-                    },
-                    "media_upload_quality": {
-                        "name": "媒体上传质量",
-                        "description": "覆盖媒体上传质量",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "强制视频上传源质量",
-                                "description": "上传视频时强制 Snapchat 使用源质量\n请注意，这可能不会从媒体中移除元数据"
-                            },
-                            "disable_image_compression": {
-                                "name": "禁用图像压缩",
-                                "description": "上传媒体时禁用图像压缩"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "自定义图像上传格式",
-                                "description": "设置自定义图像上传格式\n选择无损格式（如 PNG）以获得最佳质量"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "禁用确认对话框",
-                        "description": "自动确认选定的操作"
-                    },
-                    "auto_updater": {
-                        "name": "自动更新器",
-                        "description": "自动检查新更新"
-                    },
-                    "update_settings": {
-                        "name": "更新设置",
-                        "description": "控制 PurrfectSnap 如何检查更新",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "自动更新检查"
-                            },
-                            "update_check_frequency": {
-                                "name": "更新检查频率"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "界面设置",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "触觉反馈"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "禁用指标",
-                        "description": "阻止向 Snapchat 发送特定的分析数据"
-                    },
-                    "disable_story_sections": {
-                        "name": "禁用故事部分",
-                        "description": "从故事页面移除部分\n可能需要刷新才能正常工作"
-                    },
-                    "block_ads": {
-                        "name": "拦截广告",
-                        "description": "防止显示广告"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "禁用自定义标签页",
-                        "description": "在支持的应用程序中打开链接，而不是在内置浏览器中"
-                    },
-                    "disable_permission_requests": {
-                        "name": "禁用权限请求",
-                        "description": "防止 Snapchat 请求特定权限"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "禁用回忆 Snap 流",
-                        "description": "在相机界面向上滑动时，防止 Snapchat 显示最近的回忆"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "聚光灯评论用户名",
-                        "description": "在聚光灯评论中显示作者用户名"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "聚光灯评论用户名图标",
-                        "description": "选择在聚光灯评论中用户名旁边显示的图标"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "绕过视频长度限制",
-                        "description": "单一：发送单个视频\n拆分：编辑后拆分视频"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "默认视频播放速率",
-                        "description": "设置视频播放的默认速度\n值必须在 0.1 和 4.0 之间"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "视频播放速率滑块",
-                        "description": "在 Opera 上下文菜单中添加滑块以更改视频播放速率\n注意：更改仅适用于后续视频"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "禁用 Google Play 服务对话框",
-                        "description": "防止显示 Google Play 服务可用性对话框"
-                    },
-                    "default_volume_controls": {
-                        "name": "默认音量控制",
-                        "description": "强制 Snapchat 使用系统音量控制"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "禁用电信框架",
-                        "description": "防止 Snapchat 使用 Android 电信框架\n这允许您在通话时听音乐"
-                    },
-                    "hide_active_music": {
-                        "name": "隐藏活跃音乐",
-                        "description": "防止 Snapchat 知道您正在听音乐\n这将允许您在听音乐时使用音量键拍摄 Snap"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "禁用 Snap 拆分",
-                        "description": "防止 Snap 被拆分成多个部分\n您发送的图片将变成视频"
-                    }
-                }
-            },
             "rules": {
                 "name": "规则",
                 "description": "配置自动化规则",
@@ -2110,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "加密消息指示器",
-                                "description": "在加密消息旁边添加 \ud83d\udd12 表情符号"
+                                "description": "在加密消息旁边添加 🔒 表情符号"
                             },
                             "force_message_encryption": {
                                 "name": "强制消息加密",
@@ -2190,6 +2109,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "始终浅色",
                 "always_dark": "始终深色",
@@ -2207,20 +2130,20 @@
                 "null": "使用真实电池电量"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f 自动下载",
-                "auto_save": "\ud83d\udcac 自动保存消息",
-                "unsaveable_messages": "\u2b07\ufe0f 不可保存的消息",
-                "auto_open_snaps": "\ud83d\udcf7 自动打开 Snap",
-                "stealth": "\ud83d\udc7b 隐身模式",
-                "auto_reply": "\ud83d\udce8 自动回复",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f 自动删除已发送消息",
-                "mark_snaps_as_seen": "\ud83d\udc40 标记 Snap 为已查看",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 本地标记故事为已查看",
-                "conversation_info": "\ud83d\udc64 对话信息",
-                "e2e_encryption": "\ud83d\udd12 使用端到端加密",
-                "message_logger": "\ud83d\udcdd 消息记录器",
-                "auto_read": "\u2705 自动已读",
-                "hide_typing_indicator": "\ud83d\ude48 隐藏输入指示器"
+                "auto_download": "⬇️ 自动下载",
+                "auto_save": "💬 自动保存消息",
+                "unsaveable_messages": "⬇️ 不可保存的消息",
+                "auto_open_snaps": "📷 自动打开 Snap",
+                "stealth": "👻 隐身模式",
+                "auto_reply": "📨 自动回复",
+                "auto_delete_sent_messages": "🗑️ 自动删除已发送消息",
+                "mark_snaps_as_seen": "👀 标记 Snap 为已查看",
+                "mark_stories_as_seen_locally": "👀 本地标记故事为已查看",
+                "conversation_info": "👤 对话信息",
+                "e2e_encryption": "🔒 使用端到端加密",
+                "message_logger": "📝 消息记录器",
+                "auto_read": "✅ 自动已读",
+                "hide_typing_indicator": "🙈 隐藏输入指示器"
             },
             "schedule_scheduled_for": "预定给 {name}，时间 {time}",
             "schedule_sending_in": "{time} 后发送",
@@ -2439,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "用户名图标",
-                "\ud83d\udc64": "用户名图标",
-                "[\ud83d\udc64]": "用户名图标",
+                "👤": "用户名图标",
+                "[👤]": "用户名图标",
                 "default": "用户名图标",
                 "no_icon": "无图标"
             },
@@ -2520,11 +2443,11 @@
                 "phone_calls": "电话"
             },
             "message_indicators": {
-                "encryption_indicator": "在仅发送给您的消息旁边添加 \ud83d\udd12 图标",
+                "encryption_indicator": "在仅发送给您的消息旁边添加 🔒 图标",
                 "platform_indicator": "添加媒体发送来源的平台图标 (例如 Android, iOS, Web)",
-                "location_indicator": "在启用位置发送的 Snap 上添加 \ud83d\udccd 图标",
+                "location_indicator": "在启用位置发送的 Snap 上添加 📍 图标",
                 "ovf_editor_indicator": "指示 Snap 是否使用 OVF 编辑器发送",
-                "director_mode_indicator": "在使用导演模式发送的 Snap 上添加 \u270f\ufe0f 图标，这可用于将相册图片作为 Snap 发送"
+                "director_mode_indicator": "在使用导演模式发送的 Snap 上添加 ✏️ 图标，这可用于将相册图片作为 Snap 发送"
             },
             "auto_mark_as_read": {
                 "conversation_read": "发送消息时将对话标记为已读",
@@ -2748,7 +2671,6 @@
         "show_chat_edit_history": "显示聊天编辑历史",
         "convert_message": "转换消息"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "下载聊天壁纸"
     },
@@ -3078,7 +3000,7 @@
         "queue_cleared": "队列已清除且统计数据已重置",
         "queue_cleared_title": "队列已清除",
         "queue_cleared_reset": "队列已清除并重置",
-        "queue_cleared_feedback": "清除了 {count} 个排队的 Snap \u2022 重置了 {processed} 个已处理计数",
+        "queue_cleared_feedback": "清除了 {count} 个排队的 Snap • 重置了 {processed} 个已处理计数",
         "queue_cleared_feedback_simple": "重置了 {processed} 个已处理计数",
         "unknown_sender": "未知",
         "unknown_user": "未知用户",

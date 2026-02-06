@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 Eternal tarafından",
+                "version_title": "v{versionName} · Eternal tarafından",
                 "update_title": "PurrfectSnap Güncellemesi",
                 "update_content": "Sürüm {version} mevcut!",
                 "update_button": "İndir",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "Görev yok",
                 "merge_button": "Birleştir",
-                "summary_active": "{active} aktif \u00b7 {recent} yeni",
-                "summary_idle": "Boşta \u00b7 {recent} yeni",
+                "summary_active": "{active} aktif · {recent} yeni",
+                "summary_idle": "Boşta · {recent} yeni",
                 "running_count": "{count} çalışıyor",
                 "clear_button_description": "Görevleri temizle",
                 "failed_to_open_file": "Dosya açılamadı",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "{count} görev kaldırılsın mı?",
                 "remove_all_tasks_confirm": "Tüm görevler kaldırılsın mı?"
             },
-        "features": {
-            "disabled": "Devre Dışı",
-            "export_option": "Dışa Aktar",
-            "import_option": "İçe Aktar",
-            "reset_option": "Sıfırla",
-            "config_export_success_toast": "Yapılandırma başarıyla dışa aktarıldı",
-            "config_import_success_toast": "Yapılandırma başarıyla içe aktarıldı",
-            "config_import_failure_toast": "Yapılandırma içe aktarılamadı {error}",
-            "config_export_failure_toast": "Yapılandırma dışa aktarılamadı {error}",
-            "saved_config_snackbar": "Yapılandırma kaydedildi",
-            "older_required": "Bu özellik, doğru çalışması için Snapchat v{version} veya daha eskisini gerektirir",
-            "newer_required": "Bu özellik, doğru çalışması için Snapchat v{version} veya daha yenisini gerektirir",
-            "search_button": "Ara",
-            "clear_history": "Arama geçmişini temizle",
-            "subtitle": "Özellikleri ara ve yönet"
-        },
+            "features": {
+                "disabled": "Devre Dışı",
+                "export_option": "Dışa Aktar",
+                "import_option": "İçe Aktar",
+                "reset_option": "Sıfırla",
+                "config_export_success_toast": "Yapılandırma başarıyla dışa aktarıldı",
+                "config_import_success_toast": "Yapılandırma başarıyla içe aktarıldı",
+                "config_import_failure_toast": "Yapılandırma içe aktarılamadı {error}",
+                "config_export_failure_toast": "Yapılandırma dışa aktarılamadı {error}",
+                "saved_config_snackbar": "Yapılandırma kaydedildi",
+                "older_required": "Bu özellik, doğru çalışması için Snapchat v{version} veya daha eskisini gerektirir",
+                "newer_required": "Bu özellik, doğru çalışması için Snapchat v{version} veya daha yenisini gerektirir",
+                "search_button": "Ara",
+                "clear_history": "Arama geçmişini temizle",
+                "subtitle": "Özellikleri ara ve yönet"
+            },
             "bypass_status": {
                 "active": "PurrAura Aktif",
                 "inactive": "PurrAura Devre Dışı"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "Arkadaşa Işınlan",
                 "search_bar": "Ara",
                 "no_friends_map": "Haritada arkadaş yok",
-                "no_friends_found": "Arkadaş bulunamadı"
+                "no_friends_found": "Arkadaş bulunamadı",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,91 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 Kararsız",
-            "ban_risk": "\u26a0 Bu özellik yasaklanmalara neden olabilir",
-            "internal_behavior": "\u26a0 Bu, Snapchat'in dahili davranışını bozabilir"
-        },
-        "options": {
-            "empty": "Boş",
-            "walk_radius": {
-                "empty": "Boş"
-            },
-            "spoof_battery_level": {
-                "empty": "Boş"
-            },
-            "custom_android_id": {
-                "empty": "Boş"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Boş"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Boş"
-            },
-            "custom_emoji_font": {
-                "empty": "Boş"
-            },
-            "custom_shared_library": {
-                "empty": "Boş"
-            },
-            "custom_resolution": {
-                "empty": "Boş"
-            },
-            "custom_path_format": {
-                "empty": "Boş"
-            },
-            "custom_video_codec": {
-                "empty": "Boş"
-            },
-            "custom_audio_codec": {
-                "empty": "Boş"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Boş"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Kara liste modu",
-                "whitelist": "Beyaz liste modu",
-                "null": "Devre Dışı"
-            },
-            "update_check_frequency": {
-                "daily": "Günlük",
-                "weekly": "Haftalık",
-                "monthly": "Aylık"
-            }
+            "unstable": "⚠ Kararsız",
+            "ban_risk": "⚠ Bu özellik yasaklanmalara neden olabilir",
+            "internal_behavior": "⚠ Bu, Snapchat'in dahili davranışını bozabilir"
         },
         "properties": {
             "global": {
                 "name": "Küresel",
-                "description": "Genel modül tercihleri ve varsayılanlar",
+                "description": "Küresel Snapchat Ayarlarını Düzenle",
                 "properties": {
-                    "ui_settings": {
-                        "name": "Arayüz Ayarları",
-                        "description": "Geri bildirim ve bildirim (toast) davranışını ayarla",
+                    "better_location": {
+                        "name": "Daha İyi Konum",
+                        "description": "Snapchat Konumunu Geliştirir",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "Dokunsal Geri Bildirim",
-                                "description": "Desteklenen etkileşimlerde titreşim"
+                            "spoof_location": {
+                                "name": "Konumu Taklit Et",
+                                "description": "Konumunuzu belirtilen bir konumla taklit eder"
                             },
-                            "use_system_toasts": {
-                                "name": "Sistem Bildirimlerini Kullan",
-                                "description": "Uygulama içi yer paylaşımları yerine Android bildirimlerini (toast) göster"
+                            "coordinates": {
+                                "name": "Koordinatlar",
+                                "description": "Taklit edilen konumun koordinatlarını ayarla"
+                            },
+                            "walk_radius": {
+                                "name": "Yürüme Yarıçapı",
+                                "description": "Bu yarıçap içinde rastgele dolaş (fit)"
+                            },
+                            "always_update_location": {
+                                "name": "Konumu Her Zaman Güncelle",
+                                "description": "GPS verisi alınmasa bile Snapchat'i konumu güncellemeye zorla"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Konum Güncellemelerini Askıya Al",
+                                "description": "Konumunuzun güncellenmesini engeller"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Pil Seviyesini Taklit Et",
+                                "description": "Haritada cihazınızın pil seviyesini taklit eder\nDeğer 0 ile 100 arasında olmalıdır"
+                            },
+                            "spoof_headphones": {
+                                "name": "Kulaklıkları Taklit Et",
+                                "description": "Haritada müzik dinleme durumunu taklit eder"
+                            },
+                            "show_battery_level": {
+                                "name": "Pil Seviyesini Göster",
+                                "description": "Haritada arkadaşlarınızın pil seviyesini gösterir"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "Güncelleme Ayarları",
-                        "description": "Otomatik güncelleme kontrollerini yönet",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Snapchat Plus özelliklerini etkinleştirir\nBazı sunucu taraflı özellikler çalışmayabilir"
+                    },
+                    "media_upload_quality": {
+                        "name": "Medya Yükleme Kalitesi",
+                        "description": "Medya yükleme kalitesini geçersiz kılar",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "Otomatik Güncelleme Kontrolü",
-                                "description": "Yeni yapıları otomatik olarak kontrol et"
+                            "force_video_upload_source_quality": {
+                                "name": "Video Yükleme Kaynak Kalitesini Zorla",
+                                "description": "Snapchat'i video yüklerken kaynak kalitesini kullanmaya zorlar\nBunun medyadaki üst verileri kaldırmayabileceğini lütfen unutmayın"
                             },
-                            "update_check_frequency": {
-                                "name": "Güncelleme Kontrol Sıklığı",
-                                "description": "Güncellemelerin ne sıklıkla kontrol edileceği"
+                            "disable_image_compression": {
+                                "name": "Görüntü Sıkıştırmayı Devre Dışı Bırak",
+                                "description": "Medya yüklerken görüntü sıkıştırmayı devre dışı bırakır"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Özel Görüntü Yükleme Formatı",
+                                "description": "Özel bir görüntü yükleme formatı ayarlar\nEn iyi kalite için kayıpsız bir format (PNG gibi) seçin"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Onay İletişim Kutularını Devre Dışı Bırak",
+                        "description": "Seçilen eylemleri otomatik olarak onaylar"
+                    },
+                    "auto_updater": {
+                        "name": "Otomatik Güncelleyici",
+                        "description": "Yeni güncellemeleri otomatik olarak kontrol eder"
+                    },
+                    "update_settings": {
+                        "name": "Güncelleme Ayarları",
+                        "description": "PurrfectSnap'in güncellemeleri nasıl kontrol edeceğini yönetin",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Otomatik Güncelleme Kontrolü"
+                            },
+                            "update_check_frequency": {
+                                "name": "Güncelleme Kontrol Sıklığı"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "Arayüz Ayarları",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Dokunsal Geri Bildirim"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Metrikleri Devre Dışı Bırak",
+                        "description": "Belirli analitik verilerin Snapchat'e gönderilmesini engeller"
+                    },
+                    "disable_story_sections": {
+                        "name": "Hikaye Bölümlerini Devre Dışı Bırak",
+                        "description": "Hikayeler sayfasındaki bölümleri kaldırır\nDoğru çalışması için yenileme gerekebilir"
+                    },
+                    "block_ads": {
+                        "name": "Reklamları Engelle",
+                        "description": "Reklamların görüntülenmesini engeller"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Özel Sekmeleri Devre Dışı Bırak",
+                        "description": "Bağlantıları Web Tarayıcısı yerine desteklenen uygulamalarda açar"
+                    },
+                    "disable_permission_requests": {
+                        "name": "İzin İsteklerini Devre Dışı Bırak",
+                        "description": "Snapchat'in belirli izinleri istemesini engeller"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Anılar Snap Akışını Devre Dışı Bırak",
+                        "description": "Kamerada yukarı kaydırdığınızda Snapchat'in son anıları göstermesini engeller"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Spotlight Yorumları Kullanıcı Adı",
+                        "description": "Spotlight yorumlarında yazar kullanıcı adını gösterir"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Spotlight Yorumları Kullanıcı Adı Simgesi",
+                        "description": "Spotlight yorumlarında kullanıcı adlarının yanında hangi simgenin görüntüleneceğini seçin"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Video Uzunluk Kısıtlamalarını Atla",
+                        "description": "Tek: tek bir video gönderir\nBöl: düzenlemeden sonra videoları böler"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Varsayılan Video Oynatma Hızı",
+                        "description": "Videoların oynatılması için varsayılan hızı ayarlar\nDeğer 0.1 ile 4.0 arasında olmalıdır"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Video Oynatma Hızı Kaydırıcısı",
+                        "description": "Video oynatma hızını değiştirmek için opera bağlam menüsüne bir kaydırıcı ekler\nNot: Değişiklikler yalnızca sonraki videolar için geçerlidir"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Google Play Hizmetleri İletişim Kutularını Devre Dışı Bırak",
+                        "description": "Google Play Hizmetleri kullanılabilirlik iletişim kutularının gösterilmesini önler"
+                    },
+                    "default_volume_controls": {
+                        "name": "Varsayılan Ses Kontrolleri",
+                        "description": "Snapchat'i sistem ses kontrollerini kullanmaya zorlar"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Telekom Çerçevesini Devre Dışı Bırak",
+                        "description": "Snapchat'in Android Telekom çerçevesini kullanmasını engeller\nBu, bir arama sırasındayken müzik dinlemenize olanak tanır"
+                    },
+                    "hide_active_music": {
+                        "name": "Aktif Müziği Gizle",
+                        "description": "Snapchat'in müzik dinlediğinizi bilmesini engeller\nBu, müzik dinlerken ses kontrol düğmelerini kullanarak snap çekmenize olanak tanır"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Snap Bölmeyi Devre Dışı Bırak",
+                        "description": "Snap'lerin birden fazla parçaya bölünmesini engeller\nGönderdiğiniz resimler videolara dönüşür"
                     }
                 }
             },
@@ -1143,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Gizli Mod Göstergesi",
-                        "description": "Gizli moddaki konuşmaların yanına bir \ud83d\udc7b emojisi ekler"
+                        "description": "Gizli moddaki konuşmaların yanına bir 👻 emojisi ekler"
                     },
                     "edit_text_override": {
                         "name": "Metin Düzenlemeyi Geçersiz Kıl",
@@ -1671,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "Küresel",
-                "description": "Küresel Snapchat Ayarlarını Düzenle",
-                "properties": {
-                    "better_location": {
-                        "name": "Daha İyi Konum",
-                        "description": "Snapchat Konumunu Geliştirir",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "Konumu Taklit Et",
-                                "description": "Konumunuzu belirtilen bir konumla taklit eder"
-                            },
-                            "coordinates": {
-                                "name": "Koordinatlar",
-                                "description": "Taklit edilen konumun koordinatlarını ayarla"
-                            },
-                            "walk_radius": {
-                                "name": "Yürüme Yarıçapı",
-                                "description": "Bu yarıçap içinde rastgele dolaş (fit)"
-                            },
-                            "always_update_location": {
-                                "name": "Konumu Her Zaman Güncelle",
-                                "description": "GPS verisi alınmasa bile Snapchat'i konumu güncellemeye zorla"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Konum Güncellemelerini Askıya Al",
-                                "description": "Konumunuzun güncellenmesini engeller"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Pil Seviyesini Taklit Et",
-                                "description": "Haritada cihazınızın pil seviyesini taklit eder\nDeğer 0 ile 100 arasında olmalıdır"
-                            },
-                            "spoof_headphones": {
-                                "name": "Kulaklıkları Taklit Et",
-                                "description": "Haritada müzik dinleme durumunu taklit eder"
-                            },
-                            "show_battery_level": {
-                                "name": "Pil Seviyesini Göster",
-                                "description": "Haritada arkadaşlarınızın pil seviyesini gösterir"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Snapchat Plus özelliklerini etkinleştirir\nBazı sunucu taraflı özellikler çalışmayabilir"
-                    },
-                    "media_upload_quality": {
-                        "name": "Medya Yükleme Kalitesi",
-                        "description": "Medya yükleme kalitesini geçersiz kılar",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Video Yükleme Kaynak Kalitesini Zorla",
-                                "description": "Snapchat'i video yüklerken kaynak kalitesini kullanmaya zorlar\nBunun medyadaki üst verileri kaldırmayabileceğini lütfen unutmayın"
-                            },
-                            "disable_image_compression": {
-                                "name": "Görüntü Sıkıştırmayı Devre Dışı Bırak",
-                                "description": "Medya yüklerken görüntü sıkıştırmayı devre dışı bırakır"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Özel Görüntü Yükleme Formatı",
-                                "description": "Özel bir görüntü yükleme formatı ayarlar\nEn iyi kalite için kayıpsız bir format (PNG gibi) seçin"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "Onay İletişim Kutularını Devre Dışı Bırak",
-                        "description": "Seçilen eylemleri otomatik olarak onaylar"
-                    },
-                    "auto_updater": {
-                        "name": "Otomatik Güncelleyici",
-                        "description": "Yeni güncellemeleri otomatik olarak kontrol eder"
-                    },
-                    "update_settings": {
-                        "name": "Güncelleme Ayarları",
-                        "description": "PurrfectSnap'in güncellemeleri nasıl kontrol edeceğini yönetin",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Otomatik Güncelleme Kontrolü"
-                            },
-                            "update_check_frequency": {
-                                "name": "Güncelleme Kontrol Sıklığı"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "Arayüz Ayarları",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Dokunsal Geri Bildirim"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "Metrikleri Devre Dışı Bırak",
-                        "description": "Belirli analitik verilerin Snapchat'e gönderilmesini engeller"
-                    },
-                    "disable_story_sections": {
-                        "name": "Hikaye Bölümlerini Devre Dışı Bırak",
-                        "description": "Hikayeler sayfasındaki bölümleri kaldırır\nDoğru çalışması için yenileme gerekebilir"
-                    },
-                    "block_ads": {
-                        "name": "Reklamları Engelle",
-                        "description": "Reklamların görüntülenmesini engeller"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Özel Sekmeleri Devre Dışı Bırak",
-                        "description": "Bağlantıları Web Tarayıcısı yerine desteklenen uygulamalarda açar"
-                    },
-                    "disable_permission_requests": {
-                        "name": "İzin İsteklerini Devre Dışı Bırak",
-                        "description": "Snapchat'in belirli izinleri istemesini engeller"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Anılar Snap Akışını Devre Dışı Bırak",
-                        "description": "Kamerada yukarı kaydırdığınızda Snapchat'in son anıları göstermesini engeller"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Spotlight Yorumları Kullanıcı Adı",
-                        "description": "Spotlight yorumlarında yazar kullanıcı adını gösterir"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Spotlight Yorumları Kullanıcı Adı Simgesi",
-                        "description": "Spotlight yorumlarında kullanıcı adlarının yanında hangi simgenin görüntüleneceğini seçin"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Video Uzunluk Kısıtlamalarını Atla",
-                        "description": "Tek: tek bir video gönderir\nBöl: düzenlemeden sonra videoları böler"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Varsayılan Video Oynatma Hızı",
-                        "description": "Videoların oynatılması için varsayılan hızı ayarlar\nDeğer 0.1 ile 4.0 arasında olmalıdır"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Video Oynatma Hızı Kaydırıcısı",
-                        "description": "Video oynatma hızını değiştirmek için opera bağlam menüsüne bir kaydırıcı ekler\nNot: Değişiklikler yalnızca sonraki videolar için geçerlidir"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Google Play Hizmetleri İletişim Kutularını Devre Dışı Bırak",
-                        "description": "Google Play Hizmetleri kullanılabilirlik iletişim kutularının gösterilmesini önler"
-                    },
-                    "default_volume_controls": {
-                        "name": "Varsayılan Ses Kontrolleri",
-                        "description": "Snapchat'i sistem ses kontrollerini kullanmaya zorlar"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Telekom Çerçevesini Devre Dışı Bırak",
-                        "description": "Snapchat'in Android Telekom çerçevesini kullanmasını engeller\nBu, bir arama sırasındayken müzik dinlemenize olanak tanır"
-                    },
-                    "hide_active_music": {
-                        "name": "Aktif Müziği Gizle",
-                        "description": "Snapchat'in müzik dinlediğinizi bilmesini engeller\nBu, müzik dinlerken ses kontrol düğmelerini kullanarak snap çekmenize olanak tanır"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Snap Bölmeyi Devre Dışı Bırak",
-                        "description": "Snap'lerin birden fazla parçaya bölünmesini engeller\nGönderdiğiniz resimler videolara dönüşür"
-                    }
-                }
-            },
             "rules": {
                 "name": "Kurallar",
                 "description": "Otomasyon kurallarını yapılandır",
@@ -2110,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Şifreli Mesaj Göstergesi",
-                                "description": "Şifreli mesajların yanına bir \ud83d\udd12 emojisi ekler"
+                                "description": "Şifreli mesajların yanına bir 🔒 emojisi ekler"
                             },
                             "force_message_encryption": {
                                 "name": "Mesaj Şifrelemeyi Zorla",
@@ -2190,6 +2109,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Her Zaman Açık",
                 "always_dark": "Her Zaman Koyu",
@@ -2207,20 +2130,20 @@
                 "null": "Gerçek pil seviyesini kullan"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f Otomatik İndir",
-                "auto_save": "\ud83d\udcac Mesajları Otomatik Kaydet",
-                "unsaveable_messages": "\u2b07\ufe0f Kaydedilemeyen Mesajlar",
-                "auto_open_snaps": "\ud83d\udcf7 Snap'leri Otomatik Aç",
-                "stealth": "\ud83d\udc7b Gizli Mod",
-                "auto_reply": "\ud83d\udce8 Otomatik Yanıt",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Gönderilen Mesajları Otomatik Sil",
-                "mark_snaps_as_seen": "\ud83d\udc40 Snap'leri Görüldü Olarak İşaretle",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 Hikayeleri Yerel Olarak Görüldü Olarak İşaretle",
-                "conversation_info": "\ud83d\udc64 Konuşma Bilgisi",
-                "e2e_encryption": "\ud83d\udd12 Uçtan Uca Şifreleme Kullan",
-                "message_logger": "\ud83d\udcdd Mesaj Kaydedici",
-                "auto_read": "\u2705 Otomatik Oku",
-                "hide_typing_indicator": "\ud83d\ude48 Yazıyor Göstergesini Gizle"
+                "auto_download": "⬇️ Otomatik İndir",
+                "auto_save": "💬 Mesajları Otomatik Kaydet",
+                "unsaveable_messages": "⬇️ Kaydedilemeyen Mesajlar",
+                "auto_open_snaps": "📷 Snap'leri Otomatik Aç",
+                "stealth": "👻 Gizli Mod",
+                "auto_reply": "📨 Otomatik Yanıt",
+                "auto_delete_sent_messages": "🗑️ Gönderilen Mesajları Otomatik Sil",
+                "mark_snaps_as_seen": "👀 Snap'leri Görüldü Olarak İşaretle",
+                "mark_stories_as_seen_locally": "👀 Hikayeleri Yerel Olarak Görüldü Olarak İşaretle",
+                "conversation_info": "👤 Konuşma Bilgisi",
+                "e2e_encryption": "🔒 Uçtan Uca Şifreleme Kullan",
+                "message_logger": "📝 Mesaj Kaydedici",
+                "auto_read": "✅ Otomatik Oku",
+                "hide_typing_indicator": "🙈 Yazıyor Göstergesini Gizle"
             },
             "schedule_scheduled_for": "{name} için {time} içinde zamanlandı",
             "schedule_sending_in": "{time} içinde gönderiliyor",
@@ -2439,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "Kullanıcı Adı Simgesi",
-                "\ud83d\udc64": "Kullanıcı Adı Simgesi",
-                "[\ud83d\udc64]": "Kullanıcı Adı Simgesi",
+                "👤": "Kullanıcı Adı Simgesi",
+                "[👤]": "Kullanıcı Adı Simgesi",
                 "default": "Kullanıcı Adı Simgesi",
                 "no_icon": "Simge yok"
             },
@@ -2520,11 +2443,11 @@
                 "phone_calls": "Telefon Aramaları"
             },
             "message_indicators": {
-                "encryption_indicator": "Yalnızca size gönderilen mesajların yanına bir \ud83d\udd12 simgesi ekler",
+                "encryption_indicator": "Yalnızca size gönderilen mesajların yanına bir 🔒 simgesi ekler",
                 "platform_indicator": "Bir medyanın gönderildiği platform simgesini ekler (ör. Android, iOS, Web)",
-                "location_indicator": "Konum etkinken gönderilen snap'lere bir \ud83d\udccd simgesi ekler",
+                "location_indicator": "Konum etkinken gönderilen snap'lere bir 📍 simgesi ekler",
                 "ovf_editor_indicator": "Bir snap'in OVF Editör kullanılarak gönderilip gönderilmediğini belirtir",
-                "director_mode_indicator": "Yönetmen Modu kullanılarak gönderilen snap'lere bir \u270f\ufe0f simgesi ekler, bu mod galeri görüntülerini snap olarak göndermek için kullanılabilir"
+                "director_mode_indicator": "Yönetmen Modu kullanılarak gönderilen snap'lere bir ✏️ simgesi ekler, bu mod galeri görüntülerini snap olarak göndermek için kullanılabilir"
             },
             "auto_mark_as_read": {
                 "conversation_read": "Mesaj gönderirken konuşmayı okundu olarak işaretle",
@@ -2748,7 +2671,6 @@
         "show_chat_edit_history": "Sohbet Düzenleme Geçmişini Göster",
         "convert_message": "Mesajı Dönüştür"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Sohbet Duvar Kağıdını İndir"
     },
@@ -3078,7 +3000,7 @@
         "queue_cleared": "Kuyruk temizlendi ve istatistikler sıfırlandı",
         "queue_cleared_title": "Kuyruk temizlendi",
         "queue_cleared_reset": "Kuyruk Temizlendi ve Sıfırlandı",
-        "queue_cleared_feedback": "{count} kuyruğa alınmış snap temizlendi \u2022 {processed} işlenmiş sayımı sıfırlandı",
+        "queue_cleared_feedback": "{count} kuyruğa alınmış snap temizlendi • {processed} işlenmiş sayımı sıfırlandı",
         "queue_cleared_feedback_simple": "{processed} işlenmiş sayımı sıfırlandı",
         "unknown_sender": "Bilinmiyor",
         "unknown_user": "Bilinmeyen Kullanıcı",

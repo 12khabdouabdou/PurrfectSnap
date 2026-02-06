@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 от Eternal",
+                "version_title": "v{versionName} · от Eternal",
                 "update_title": "Обновление PurrfectSnap",
                 "update_content": "Версия {version} доступна!",
                 "update_button": "Скачать",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "Нет задач",
                 "merge_button": "Объединить",
-                "summary_active": "{active} активных \u00b7 {recent} недавних",
-                "summary_idle": "Ожидание \u00b7 {recent} недавних",
+                "summary_active": "{active} активных · {recent} недавних",
+                "summary_idle": "Ожидание · {recent} недавних",
                 "running_count": "{count} выполняется",
                 "clear_button_description": "Очистить задачи",
                 "failed_to_open_file": "Не удалось открыть файл",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "Удалить {count} задач?",
                 "remove_all_tasks_confirm": "Удалить все задачи?"
             },
-        "features": {
-            "disabled": "Отключено",
-            "export_option": "Экспорт",
-            "import_option": "Импорт",
-            "reset_option": "Сброс",
-            "config_export_success_toast": "Конфигурация успешно экспортирована",
-            "config_import_success_toast": "Конфигурация успешно импортирована",
-            "config_import_failure_toast": "Не удалось импортировать конфигурацию {error}",
-            "config_export_failure_toast": "Не удалось экспортировать конфигурацию {error}",
-            "saved_config_snackbar": "Конфигурация сохранена",
-            "older_required": "Этой функции требуется Snapchat v{version} или старее для корректной работы",
-            "newer_required": "Этой функции требуется Snapchat v{version} или новее для корректной работы",
-            "search_button": "Поиск",
-            "clear_history": "Очистить историю поиска",
-            "subtitle": "Поиск и управление функциями"
-        },
+            "features": {
+                "disabled": "Отключено",
+                "export_option": "Экспорт",
+                "import_option": "Импорт",
+                "reset_option": "Сброс",
+                "config_export_success_toast": "Конфигурация успешно экспортирована",
+                "config_import_success_toast": "Конфигурация успешно импортирована",
+                "config_import_failure_toast": "Не удалось импортировать конфигурацию {error}",
+                "config_export_failure_toast": "Не удалось экспортировать конфигурацию {error}",
+                "saved_config_snackbar": "Конфигурация сохранена",
+                "older_required": "Этой функции требуется Snapchat v{version} или старее для корректной работы",
+                "newer_required": "Этой функции требуется Snapchat v{version} или новее для корректной работы",
+                "search_button": "Поиск",
+                "clear_history": "Очистить историю поиска",
+                "subtitle": "Поиск и управление функциями"
+            },
             "bypass_status": {
                 "active": "PurrAura Активна",
                 "inactive": "PurrAura Неактивна"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "Телепорт к другу",
                 "search_bar": "Поиск",
                 "no_friends_map": "Нет друзей на карте",
-                "no_friends_found": "Друзья не найдены"
+                "no_friends_found": "Друзья не найдены",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,91 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 Нестабильно",
-            "ban_risk": "\u26a0 Эта функция может привести к бану",
-            "internal_behavior": "\u26a0 Это может нарушить внутреннюю работу Snapchat"
-        },
-        "options": {
-            "empty": "Пусто",
-            "walk_radius": {
-                "empty": "Пусто"
-            },
-            "spoof_battery_level": {
-                "empty": "Пусто"
-            },
-            "custom_android_id": {
-                "empty": "Пусто"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Пусто"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Пусто"
-            },
-            "custom_emoji_font": {
-                "empty": "Пусто"
-            },
-            "custom_shared_library": {
-                "empty": "Пусто"
-            },
-            "custom_resolution": {
-                "empty": "Пусто"
-            },
-            "custom_path_format": {
-                "empty": "Пусто"
-            },
-            "custom_video_codec": {
-                "empty": "Пусто"
-            },
-            "custom_audio_codec": {
-                "empty": "Пусто"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Пусто"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Черный список",
-                "whitelist": "Белый список",
-                "null": "Отключено"
-            },
-            "update_check_frequency": {
-                "daily": "Ежедневно",
-                "weekly": "Еженедельно",
-                "monthly": "Ежемесячно"
-            }
+            "unstable": "⚠ Нестабильно",
+            "ban_risk": "⚠ Эта функция может привести к бану",
+            "internal_behavior": "⚠ Это может нарушить внутреннюю работу Snapchat"
         },
         "properties": {
             "global": {
                 "name": "Глобальные",
-                "description": "Общие настройки модуля и значения по умолчанию",
+                "description": "Настройка глобальных параметров Snapchat",
                 "properties": {
-                    "ui_settings": {
-                        "name": "Настройки UI",
-                        "description": "Настройка обратной связи и уведомлений",
+                    "better_location": {
+                        "name": "Улучшенное местоположение",
+                        "description": "Улучшает местоположение Snapchat",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "Виброотклик",
-                                "description": "Вибрация при поддерживаемых взаимодействиях"
+                            "spoof_location": {
+                                "name": "Подмена местоположения",
+                                "description": "Подменяет ваше местоположение на указанное"
                             },
-                            "use_system_toasts": {
-                                "name": "Использовать системные уведомления",
-                                "description": "Показывать системные тосты Android вместо встроенных оверлеев"
+                            "coordinates": {
+                                "name": "Координаты",
+                                "description": "Установите координаты поддельного местоположения"
+                            },
+                            "walk_radius": {
+                                "name": "Радиус прогулки",
+                                "description": "Случайным образом ходить в пределах этого радиуса (футы)"
+                            },
+                            "always_update_location": {
+                                "name": "Всегда обновлять местоположение",
+                                "description": "Заставлять Snapchat обновлять местоположение, даже если данные GPS не получены"
+                            },
+                            "suspend_location_updates": {
+                                "name": "Приостановить обновление местоположения",
+                                "description": "Предотвращает обновление вашего местоположения"
+                            },
+                            "spoof_battery_level": {
+                                "name": "Подмена уровня заряда",
+                                "description": "Подменяет уровень заряда вашего устройства на карте\nЗначение должно быть от 0 до 100"
+                            },
+                            "spoof_headphones": {
+                                "name": "Подмена наушников",
+                                "description": "Подменяет статус прослушивания музыки на карте"
+                            },
+                            "show_battery_level": {
+                                "name": "Показать уровень заряда",
+                                "description": "Показывает уровень заряда ваших друзей на карте"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "Настройки обновлений",
-                        "description": "Управление автоматическими проверками обновлений",
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "Включает функции Snapchat Plus\nНекоторые серверные функции могут не работать"
+                    },
+                    "media_upload_quality": {
+                        "name": "Качество загрузки медиа",
+                        "description": "Переопределяет качество загрузки медиа",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "Автопроверка обновлений",
-                                "description": "Проверять новые сборки автоматически"
+                            "force_video_upload_source_quality": {
+                                "name": "Принудительное качество источника при загрузке видео",
+                                "description": "Заставляет Snapchat использовать исходное качество при загрузке видео\nОбратите внимание, что это может не удалять метаданные из медиа"
                             },
-                            "update_check_frequency": {
-                                "name": "Частота проверки обновлений",
-                                "description": "Как часто проверять обновления"
+                            "disable_image_compression": {
+                                "name": "Отключить сжатие изображений",
+                                "description": "Отключает сжатие изображений при загрузке медиа"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "Кастомный формат загрузки изображений",
+                                "description": "Устанавливает пользовательский формат загрузки изображений\nВыберите формат без потерь (например, PNG) для наилучшего качества"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "Отключить диалоги подтверждения",
+                        "description": "Автоматически подтверждает выбранные действия"
+                    },
+                    "auto_updater": {
+                        "name": "Автообновление",
+                        "description": "Автоматически проверяет наличие новых обновлений"
+                    },
+                    "update_settings": {
+                        "name": "Настройки обновлений",
+                        "description": "Управление тем, как PurrfectSnap проверяет обновления",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Автопроверка обновлений"
+                            },
+                            "update_check_frequency": {
+                                "name": "Частота проверки обновлений"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "Настройки UI",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Виброотклик"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "Отключить метрики",
+                        "description": "Блокирует отправку определенных аналитических данных в Snapchat"
+                    },
+                    "disable_story_sections": {
+                        "name": "Отключить разделы историй",
+                        "description": "Удаляет разделы со страницы историй\nМожет потребоваться обновление для корректной работы"
+                    },
+                    "block_ads": {
+                        "name": "Блокировать рекламу",
+                        "description": "Предотвращает показ рекламы"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "Отключить Custom Tabs",
+                        "description": "Открывает ссылки в поддерживаемых приложениях, а не в веб-браузере"
+                    },
+                    "disable_permission_requests": {
+                        "name": "Отключить запросы разрешений",
+                        "description": "Запрещает Snapchat запрашивать определенные разрешения"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "Отключить ленту воспоминаний",
+                        "description": "Запрещает Snapchat показывать недавние воспоминания при свайпе вверх в камере"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "Имя пользователя в комментариях Spotlight",
+                        "description": "Показывает имя пользователя автора в комментариях Spotlight"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "Иконка имени пользователя в комментариях Spotlight",
+                        "description": "Выберите, какая иконка отображается рядом с именами пользователей в комментариях Spotlight"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "Обход ограничений длины видео",
+                        "description": "Одиночное: отправляет одно видео\nРазделенное: разделяет видео после редактирования"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "Скорость воспроизведения видео по умолчанию",
+                        "description": "Устанавливает скорость по умолчанию для воспроизведения видео\nЗначение должно быть между 0.1 и 4.0"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "Слайдер скорости воспроизведения видео",
+                        "description": "Добавляет слайдер в контекстное меню opera для изменения скорости воспроизведения видео\nПримечание: Изменения применяются только к последующим видео"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Отключить диалоги сервисов Google Play",
+                        "description": "Предотвращает показ диалогов о доступности сервисов Google Play"
+                    },
+                    "default_volume_controls": {
+                        "name": "Управление громкостью по умолчанию",
+                        "description": "Заставляет Snapchat использовать системные регуляторы громкости"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "Отключить Telecom Framework",
+                        "description": "Запрещает Snapchat использовать Android Telecom framework\nЭто позволяет слушать музыку во время звонка"
+                    },
+                    "hide_active_music": {
+                        "name": "Скрыть активную музыку",
+                        "description": "Не дает Snapchat знать, что вы слушаете музыку\nЭто позволит вам снимать снапы, используя кнопки громкости, во время прослушивания музыки"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "Отключить разделение снапов",
+                        "description": "Предотвращает разделение снапов на несколько частей\nИзображения, которые вы отправляете, станут видео"
                     }
                 }
             },
@@ -1143,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "Индикатор режима невидимки",
-                        "description": "Добавляет эмодзи \ud83d\udc7b рядом с диалогами в режиме невидимки"
+                        "description": "Добавляет эмодзи 👻 рядом с диалогами в режиме невидимки"
                     },
                     "edit_text_override": {
                         "name": "Переопределение редактирования текста",
@@ -1671,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "Глобальные",
-                "description": "Настройка глобальных параметров Snapchat",
-                "properties": {
-                    "better_location": {
-                        "name": "Улучшенное местоположение",
-                        "description": "Улучшает местоположение Snapchat",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "Подмена местоположения",
-                                "description": "Подменяет ваше местоположение на указанное"
-                            },
-                            "coordinates": {
-                                "name": "Координаты",
-                                "description": "Установите координаты поддельного местоположения"
-                            },
-                            "walk_radius": {
-                                "name": "Радиус прогулки",
-                                "description": "Случайным образом ходить в пределах этого радиуса (футы)"
-                            },
-                            "always_update_location": {
-                                "name": "Всегда обновлять местоположение",
-                                "description": "Заставлять Snapchat обновлять местоположение, даже если данные GPS не получены"
-                            },
-                            "suspend_location_updates": {
-                                "name": "Приостановить обновление местоположения",
-                                "description": "Предотвращает обновление вашего местоположения"
-                            },
-                            "spoof_battery_level": {
-                                "name": "Подмена уровня заряда",
-                                "description": "Подменяет уровень заряда вашего устройства на карте\nЗначение должно быть от 0 до 100"
-                            },
-                            "spoof_headphones": {
-                                "name": "Подмена наушников",
-                                "description": "Подменяет статус прослушивания музыки на карте"
-                            },
-                            "show_battery_level": {
-                                "name": "Показать уровень заряда",
-                                "description": "Показывает уровень заряда ваших друзей на карте"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "Включает функции Snapchat Plus\nНекоторые серверные функции могут не работать"
-                    },
-                    "media_upload_quality": {
-                        "name": "Качество загрузки медиа",
-                        "description": "Переопределяет качество загрузки медиа",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "Принудительное качество источника при загрузке видео",
-                                "description": "Заставляет Snapchat использовать исходное качество при загрузке видео\nОбратите внимание, что это может не удалять метаданные из медиа"
-                            },
-                            "disable_image_compression": {
-                                "name": "Отключить сжатие изображений",
-                                "description": "Отключает сжатие изображений при загрузке медиа"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "Кастомный формат загрузки изображений",
-                                "description": "Устанавливает пользовательский формат загрузки изображений\nВыберите формат без потерь (например, PNG) для наилучшего качества"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "Отключить диалоги подтверждения",
-                        "description": "Автоматически подтверждает выбранные действия"
-                    },
-                    "auto_updater": {
-                        "name": "Автообновление",
-                        "description": "Автоматически проверяет наличие новых обновлений"
-                    },
-                    "update_settings": {
-                        "name": "Настройки обновлений",
-                        "description": "Управление тем, как PurrfectSnap проверяет обновления",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Автопроверка обновлений"
-                            },
-                            "update_check_frequency": {
-                                "name": "Частота проверки обновлений"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "Настройки UI",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Виброотклик"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "Отключить метрики",
-                        "description": "Блокирует отправку определенных аналитических данных в Snapchat"
-                    },
-                    "disable_story_sections": {
-                        "name": "Отключить разделы историй",
-                        "description": "Удаляет разделы со страницы историй\nМожет потребоваться обновление для корректной работы"
-                    },
-                    "block_ads": {
-                        "name": "Блокировать рекламу",
-                        "description": "Предотвращает показ рекламы"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "Отключить Custom Tabs",
-                        "description": "Открывает ссылки в поддерживаемых приложениях, а не в веб-браузере"
-                    },
-                    "disable_permission_requests": {
-                        "name": "Отключить запросы разрешений",
-                        "description": "Запрещает Snapchat запрашивать определенные разрешения"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "Отключить ленту воспоминаний",
-                        "description": "Запрещает Snapchat показывать недавние воспоминания при свайпе вверх в камере"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "Имя пользователя в комментариях Spotlight",
-                        "description": "Показывает имя пользователя автора в комментариях Spotlight"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "Иконка имени пользователя в комментариях Spotlight",
-                        "description": "Выберите, какая иконка отображается рядом с именами пользователей в комментариях Spotlight"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "Обход ограничений длины видео",
-                        "description": "Одиночное: отправляет одно видео\nРазделенное: разделяет видео после редактирования"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "Скорость воспроизведения видео по умолчанию",
-                        "description": "Устанавливает скорость по умолчанию для воспроизведения видео\nЗначение должно быть между 0.1 и 4.0"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "Слайдер скорости воспроизведения видео",
-                        "description": "Добавляет слайдер в контекстное меню opera для изменения скорости воспроизведения видео\nПримечание: Изменения применяются только к последующим видео"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Отключить диалоги сервисов Google Play",
-                        "description": "Предотвращает показ диалогов о доступности сервисов Google Play"
-                    },
-                    "default_volume_controls": {
-                        "name": "Управление громкостью по умолчанию",
-                        "description": "Заставляет Snapchat использовать системные регуляторы громкости"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "Отключить Telecom Framework",
-                        "description": "Запрещает Snapchat использовать Android Telecom framework\nЭто позволяет слушать музыку во время звонка"
-                    },
-                    "hide_active_music": {
-                        "name": "Скрыть активную музыку",
-                        "description": "Не дает Snapchat знать, что вы слушаете музыку\nЭто позволит вам снимать снапы, используя кнопки громкости, во время прослушивания музыки"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "Отключить разделение снапов",
-                        "description": "Предотвращает разделение снапов на несколько частей\nИзображения, которые вы отправляете, станут видео"
-                    }
-                }
-            },
             "rules": {
                 "name": "Правила",
                 "description": "Настройка правил автоматизации",
@@ -2110,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "Индикатор зашифрованного сообщения",
-                                "description": "Добавляет эмодзи \ud83d\udd12 рядом с зашифрованными сообщениями"
+                                "description": "Добавляет эмодзи 🔒 рядом с зашифрованными сообщениями"
                             },
                             "force_message_encryption": {
                                 "name": "Принудительное шифрование сообщений",
@@ -2190,6 +2109,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "Всегда светлая",
                 "always_dark": "Всегда темная",
@@ -2207,20 +2130,20 @@
                 "null": "Использовать реальный уровень заряда"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f Автоскачивание",
-                "auto_save": "\ud83d\udcac Автосохранение сообщений",
-                "unsaveable_messages": "\u2b07\ufe0f Несохраняемые сообщения",
-                "auto_open_snaps": "\ud83d\udcf7 Автооткрытие снапов",
-                "stealth": "\ud83d\udc7b Режим невидимки",
-                "auto_reply": "\ud83d\udce8 Автоответ",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Автоудаление отправленных сообщений",
-                "mark_snaps_as_seen": "\ud83d\udc40 Пометить снапы как просмотренные",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 Пометить истории как просмотренные локально",
-                "conversation_info": "\ud83d\udc64 Инфо о диалоге",
-                "e2e_encryption": "\ud83d\udd12 Использовать E2E шифрование",
-                "message_logger": "\ud83d\udcdd Логгер сообщений",
-                "auto_read": "\u2705 Автопрочтение",
-                "hide_typing_indicator": "\ud83d\ude48 Скрыть индикатор набора"
+                "auto_download": "⬇️ Автоскачивание",
+                "auto_save": "💬 Автосохранение сообщений",
+                "unsaveable_messages": "⬇️ Несохраняемые сообщения",
+                "auto_open_snaps": "📷 Автооткрытие снапов",
+                "stealth": "👻 Режим невидимки",
+                "auto_reply": "📨 Автоответ",
+                "auto_delete_sent_messages": "🗑️ Автоудаление отправленных сообщений",
+                "mark_snaps_as_seen": "👀 Пометить снапы как просмотренные",
+                "mark_stories_as_seen_locally": "👀 Пометить истории как просмотренные локально",
+                "conversation_info": "👤 Инфо о диалоге",
+                "e2e_encryption": "🔒 Использовать E2E шифрование",
+                "message_logger": "📝 Логгер сообщений",
+                "auto_read": "✅ Автопрочтение",
+                "hide_typing_indicator": "🙈 Скрыть индикатор набора"
             },
             "schedule_scheduled_for": "Запланировано для {name} через {time}",
             "schedule_sending_in": "Отправка через {time}",
@@ -2439,8 +2362,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "Иконка пользователя",
-                "\ud83d\udc64": "Иконка пользователя",
-                "[\ud83d\udc64]": "Иконка пользователя",
+                "👤": "Иконка пользователя",
+                "[👤]": "Иконка пользователя",
                 "default": "Иконка пользователя",
                 "no_icon": "Без иконки"
             },
@@ -2520,11 +2443,11 @@
                 "phone_calls": "Телефонные звонки"
             },
             "message_indicators": {
-                "encryption_indicator": "Добавляет иконку \ud83d\udd12 рядом с сообщениями, которые были отправлены только вам",
+                "encryption_indicator": "Добавляет иконку 🔒 рядом с сообщениями, которые были отправлены только вам",
                 "platform_indicator": "Добавляет иконку платформы, с которой было отправлено медиа (например, Android, iOS, Web)",
-                "location_indicator": "Добавляет иконку \ud83d\udccd к снапам, когда они были отправлены с включенным местоположением",
+                "location_indicator": "Добавляет иконку 📍 к снапам, когда они были отправлены с включенным местоположением",
                 "ovf_editor_indicator": "Указывает, был ли снап отправлен с использованием редактора OVF",
-                "director_mode_indicator": "Добавляет иконку \u270f\ufe0f к снапам, когда они были отправлены с использованием режима режиссера, который можно использовать для отправки изображений из галереи как снапов"
+                "director_mode_indicator": "Добавляет иконку ✏️ к снапам, когда они были отправлены с использованием режима режиссера, который можно использовать для отправки изображений из галереи как снапов"
             },
             "auto_mark_as_read": {
                 "conversation_read": "Помечать диалог как прочитанный при отправке сообщения",
@@ -2748,7 +2671,6 @@
         "show_chat_edit_history": "Показать историю редактирования чата",
         "convert_message": "Конвертировать сообщение"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Скачать обои чата"
     },
@@ -3078,7 +3000,7 @@
         "queue_cleared": "Очередь очищена и статистика сброшена",
         "queue_cleared_title": "Очередь очищена",
         "queue_cleared_reset": "Очередь очищена и сброшена",
-        "queue_cleared_feedback": "Очищено {count} снапов в очереди \u2022 Сброшен счетчик {processed} обработанных",
+        "queue_cleared_feedback": "Очищено {count} снапов в очереди • Сброшен счетчик {processed} обработанных",
         "queue_cleared_feedback_simple": "Сброшен счетчик {processed} обработанных",
         "unknown_sender": "Неизвестный",
         "unknown_user": "Неизвестный пользователь",

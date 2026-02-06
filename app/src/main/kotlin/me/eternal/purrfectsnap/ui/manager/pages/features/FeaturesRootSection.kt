@@ -1060,9 +1060,11 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun SensitiveDataDialog(
         onDismiss: () -> Unit,
-        onConfirm: (exportSensitiveData: Boolean) -> Unit
+        onConfirm: (exportSensitiveData: Boolean, includeSavedLocations: Boolean) -> Unit
     ) {
         Dialog(onDismissRequest = onDismiss) {
+            val includeSavedLocations = remember { mutableStateOf(false) }
+            
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 color = Color.White.copy(alpha = 0.06f),
@@ -1100,12 +1102,36 @@ class FeaturesRootSection : Routes.Route() {
                             color = PurrfectPalette.textSecondary,
                             modifier = Modifier.padding(horizontal = 6.dp)
                         )
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Include Saved Locations",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                            val hapticFeedback = LocalHapticFeedback.current
+                            Switch(
+                                checked = includeSavedLocations.value,
+                                onCheckedChange = { 
+                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    includeSavedLocations.value = it 
+                                },
+                                colors = purrfectSwitchColors()
+                            )
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                         ) {
                             Button(
-                                onClick = { onConfirm(false) },
+                                onClick = { onConfirm(false, includeSavedLocations.value) },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.White.copy(alpha = 0.08f),
                                     contentColor = Color.White
@@ -1114,7 +1140,7 @@ class FeaturesRootSection : Routes.Route() {
                                 Text(context.translation["button.negative"])
                             }
                             Button(
-                                onClick = { onConfirm(true) },
+                                onClick = { onConfirm(true, includeSavedLocations.value) },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.32f),
                                     contentColor = Color.White
@@ -1244,10 +1270,11 @@ class FeaturesRootSection : Routes.Route() {
         if (showExportDialog) {
             SensitiveDataDialog(
                 onDismiss = { showExportDialog = false },
-                onConfirm = { exportSensitiveData ->
+                onConfirm = { exportSensitiveData, includeSavedLocations ->
                     showExportDialog = false
                     routes.configExportSummary.navigate {
                         put("exportSensitiveData", exportSensitiveData.toString())
+                        put("includeSavedLocations", includeSavedLocations.toString())
                     }
                 }
             )

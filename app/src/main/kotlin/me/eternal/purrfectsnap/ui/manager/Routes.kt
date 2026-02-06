@@ -54,7 +54,7 @@ class Routes(
 ) {
     companion object {
         const val CONFIG_IMPORT_CONFIRMATION_ROUTE = "config_import_confirmation"
-        const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary/?exportSensitiveData={exportSensitiveData}"
+        const val CONFIG_EXPORT_SUMMARY_ROUTE = "config_export_summary/?exportSensitiveData={exportSensitiveData}&includeSavedLocations={includeSavedLocations}"
         const val FRIEND_TRACKER_CONFIG_EXPORT_ROUTE = "friend_tracker_config_export/?rule_id={rule_id}"
         const val FRIEND_TRACKER_CONFIG_IMPORT_ROUTE = "friend_tracker_config_import"
         const val VIEW_LOGGER_HISTORY_ROUTE = "view_logger_history/{uri}"

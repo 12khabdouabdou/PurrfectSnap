@@ -471,7 +471,13 @@
                 "teleport_to_friend_title": "Teleport to Friend",
                 "search_bar": "Search",
                 "no_friends_map": "No friends on the map",
-                "no_friends_found": "No friends found"
+                "no_friends_found": "No friends found",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates",
+                "location_search_provider_title": "Location Search Provider",
+                "google_maps_api_key_title": "Google Maps API Key",
+                "option_osm": "OpenStreetMap (Free)",
+                "option_google_maps": "Google Maps"
             }
         },
         "dialogs": {
@@ -859,90 +865,7 @@
             "ban_risk": "\u26a0 This feature may cause bans",
             "internal_behavior": "\u26a0 This may break Snapchat internal behavior"
         },
-        "options": {
-            "empty": "Empty",
-            "walk_radius": {
-                "empty": "Empty"
-            },
-            "spoof_battery_level": {
-                "empty": "Empty"
-            },
-            "custom_android_id": {
-                "empty": "Empty"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Empty"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Empty"
-            },
-            "custom_emoji_font": {
-                "empty": "Empty"
-            },
-            "custom_shared_library": {
-                "empty": "Empty"
-            },
-            "custom_resolution": {
-                "empty": "Empty"
-            },
-            "custom_path_format": {
-                "empty": "Empty"
-            },
-            "custom_video_codec": {
-                "empty": "Empty"
-            },
-            "custom_audio_codec": {
-                "empty": "Empty"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Empty"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Blacklist mode",
-                "whitelist": "Whitelist mode",
-                "null": "Disabled"
-            },
-            "update_check_frequency": {
-                "daily": "Daily",
-                "weekly": "Weekly",
-                "monthly": "Monthly"
-            }
-        },
         "properties": {
-            "global": {
-                "name": "Global",
-                "description": "General module preferences and defaults",
-                "properties": {
-                    "ui_settings": {
-                        "name": "UI Settings",
-                        "description": "Tune feedback and toast behavior",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptic Feedback",
-                                "description": "Vibrate on supported interactions"
-                            },
-                            "use_system_toasts": {
-                                "name": "Use System Toasts",
-                                "description": "Show Android toasts instead of in-app overlays"
-                            }
-                        }
-                    },
-                    "update_settings": {
-                        "name": "Update Settings",
-                        "description": "Control automatic update checks",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Auto Update Check",
-                                "description": "Check for new builds automatically"
-                            },
-                            "update_check_frequency": {
-                                "name": "Update Check Frequency",
-                                "description": "How often to check for updates"
-                            }
-                        }
-                    }
-                }
-            },
             "downloader": {
                 "name": "Downloader",
                 "description": "Download Snapchat Media",
@@ -1704,6 +1627,34 @@
                 "name": "Global",
                 "description": "Tweak Global Snapchat Settings",
                 "properties": {
+                    "ui_settings": {
+                        "name": "UI Settings",
+                        "description": "Tune feedback and toast behavior",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptic Feedback",
+                                "description": "Vibrate on supported interactions"
+                            },
+                            "use_system_toasts": {
+                                "name": "Use System Toasts",
+                                "description": "Show Android toasts instead of in-app overlays"
+                            }
+                        }
+                    },
+                    "update_settings": {
+                        "name": "Update Settings",
+                        "description": "Control automatic update checks",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Auto Update Check",
+                                "description": "Check for new builds automatically"
+                            },
+                            "update_check_frequency": {
+                                "name": "Update Check Frequency",
+                                "description": "How often to check for updates"
+                            }
+                        }
+                    },
                     "better_location": {
                         "name": "Better Location",
                         "description": "Enhances the Snapchat Location",
@@ -1711,6 +1662,14 @@
                             "spoof_location": {
                                 "name": "Spoof Location",
                                 "description": "Spoofs your location to a specified one"
+                            },
+                            "location_search_provider": {
+                                "name": "Location Search Provider",
+                                "description": "Choose the provider for searching locations"
+                            },
+                            "google_maps_api_key": {
+                                "name": "Google Maps API Key",
+                                "description": "Required if using Google Maps provider"
                             },
                             "coordinates": {
                                 "name": "Coordinates",
@@ -1771,26 +1730,6 @@
                     "auto_updater": {
                         "name": "Auto Updater",
                         "description": "Automatically checks for new updates"
-                    },
-                    "update_settings": {
-                        "name": "Update Settings",
-                        "description": "Control how PurrfectSnap checks for updates",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Auto Update Check"
-                            },
-                            "update_check_frequency": {
-                                "name": "Update Check Frequency"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI Settings",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptic Feedback"
-                            }
-                        }
                     },
                     "disable_metrics": {
                         "name": "Disable Metrics",
@@ -2219,6 +2158,16 @@
             }
         },
         "options": {
+            "empty": "Empty",
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
+            "unsaveable_messages": {
+                "blacklist": "Blacklist mode",
+                "whitelist": "Whitelist mode",
+                "null": "Disabled"
+            },
             "app_appearance": {
                 "always_light": "Always Light",
                 "always_dark": "Always Dark",
@@ -2476,6 +2425,9 @@
                 "null": "Automatic"
             },
             "update_check_frequency": {
+                "daily": "Daily",
+                "weekly": "Weekly",
+                "monthly": "Monthly",
                 "null": "Auto"
             },
             "snapchat_plus": {
