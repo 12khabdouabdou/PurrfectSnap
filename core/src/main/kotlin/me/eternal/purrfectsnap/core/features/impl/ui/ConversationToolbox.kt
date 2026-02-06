@@ -99,9 +99,7 @@ class ConversationToolbox : Feature("Conversation Toolbox") {
                 val interfaceManager = getBinding(InterfaceManager::class)?.takeIf {
                     it.hasInterface(EnumScriptInterface.CONVERSATION_TOOLBOX)
                 } ?: return@eachModule
-                addComposable(
-                    "\uD83D\uDCDC ${context.translation["conversation_toolbox.loaded_script"]}: ${moduleInfo.displayName}"
-                ) { alertDialog, conversationId ->
+                addComposable("\uD83D\uDCDC ${moduleInfo.displayName}") { alertDialog, conversationId ->
                     ScriptInterface(remember {
                         interfaceManager.buildInterface(EnumScriptInterface.CONVERSATION_TOOLBOX, mapOf(
                             "alertDialog" to alertDialog,
