@@ -1634,6 +1634,14 @@
                                 "name": "Spoof Location",
                                 "description": "Spoofs your location to a specified one"
                             },
+                            "location_search_provider": {
+                                "name": "Location Search Provider",
+                                "description": "Choose the provider for searching locations"
+                            },
+                            "google_maps_api_key": {
+                                "name": "Google Maps API Key",
+                                "description": "Required if using Google Maps provider"
+                            },
                             "coordinates": {
                                 "name": "Coordinates",
                                 "description": "Set the coordinates of the spoofed location"
@@ -1661,14 +1669,6 @@
                             "show_battery_level": {
                                 "name": "Show Battery Level",
                                 "description": "Shows the battery level of your friends on the map"
-                            },
-                            "location_search_provider": {
-                                "name": "Location Search Provider",
-                                "description": "Choose the provider for searching locations"
-                            },
-                            "google_maps_api_key": {
-                                "name": "Google Maps API Key",
-                                "description": "Required if using Google Maps provider"
                             }
                         }
                     },
