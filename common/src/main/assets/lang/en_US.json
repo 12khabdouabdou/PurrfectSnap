@@ -547,6 +547,8 @@
             "no_settings_for_module": "This module does not have any settings",
             "open_module_failed": "Failed to open module file",
             "open_scripts_folder_button": "Open scripts folder",
+            "loaded_script": "Loaded script {name}",
+            "unloaded_script": "Unloaded script {name}",
             "script_already_installed": "Script already installed",
             "select_folder_button": "Choose Folder",
             "select_scripts_folder_toast": "Please select a scripts folder first",
@@ -558,6 +560,7 @@
                 "no_repos_added": "No repositories added",
                 "repo_list_info": "Find repositories here:",
                 "link_text": "Repository list",
+                "loading": "Loading catalog...",
                 "script_already_installed": "Script already installed",
                 "script_downloaded": "Script downloaded",
                 "could_not_create_file": "Could not create file",
@@ -3530,6 +3533,11 @@
     "toast_open_snap_failed": "Failed to open snap",
     "toast_mark_message_read_failed": "Failed to mark message as read. Check logs for more details",
     "toast_open_conversation_first": "You must open a conversation first",
+    "conversation_toolbox": {
+        "title": "Conversation Toolbox",
+        "loaded_script": "Loaded Script",
+        "failed_to_load": "Failed to load: {message}"
+    },
     "toast_open_link_failed": "Failed to open link",
     "ai_response_style": {
         "casual": "Casual",

@@ -2,7 +2,17 @@ package me.eternal.purrfectsnap.common.scripting.ui
 
 import android.app.Activity
 import android.app.AlertDialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import me.eternal.purrfectsnap.common.scripting.bindings.AbstractBinding
 import me.eternal.purrfectsnap.common.scripting.bindings.BindingSide
 import me.eternal.purrfectsnap.common.scripting.ktx.contextScope
@@ -125,13 +135,46 @@ class InterfaceManager : AbstractBinding("interface-manager", BindingSide.COMMON
 
     @JSFunction fun createAlertDialog(activity: Activity, builder: (AlertDialog.Builder) -> Unit, callback: (interfaceBuilder: InterfaceBuilder, alertDialog: AlertDialog) -> Unit): AlertDialog {
         return createComposeAlertDialog(activity, builder = builder) { alertDialog ->
-            ScriptInterface(interfaceBuilder = remember {
+            val interfaceBuilder = remember {
                 InterfaceBuilder().also {
                     contextScope {
                         callback(it, alertDialog)
                     }
                 }
-            })
+            }
+            val shape = RoundedCornerShape(22.dp)
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.linearGradient(
+                            listOf(
+                                Color(0xFF8C7BFF).copy(alpha = 0.52f),
+                                Color(0xFF5FD8FF).copy(alpha = 0.30f)
+                            )
+                        ),
+                        shape = shape
+                    ),
+                color = Color.Transparent,
+                shape = shape
+            ) {
+                androidx.compose.foundation.layout.Column(
+                    modifier = Modifier
+                        .background(
+                            brush = Brush.linearGradient(
+                                listOf(
+                                    Color(0xFF2A2452).copy(alpha = 0.97f),
+                                    Color(0xFF1A143A).copy(alpha = 0.94f),
+                                )
+                            ),
+                            shape = shape
+                        )
+                        .padding(10.dp)
+                ) {
+                    ScriptInterface(interfaceBuilder = interfaceBuilder)
+                }
+            }
         }
     }
 
