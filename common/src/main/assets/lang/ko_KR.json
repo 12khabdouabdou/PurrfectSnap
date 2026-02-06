@@ -196,7 +196,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 by Eternal",
+                "version_title": "v{versionName} · by Eternal",
                 "update_title": "PurrfectSnap 업데이트",
                 "update_content": "버전 {version}을(를) 사용할 수 있습니다!",
                 "update_button": "다운로드",
@@ -300,8 +300,8 @@
             "tasks": {
                 "no_tasks": "작업 없음",
                 "merge_button": "병합",
-                "summary_active": "활성 {active}개 \u00b7 최근 {recent}개",
-                "summary_idle": "유휴 \u00b7 최근 {recent}개",
+                "summary_active": "활성 {active}개 · 최근 {recent}개",
+                "summary_idle": "유휴 · 최근 {recent}개",
                 "running_count": "{count}개 실행 중",
                 "clear_button_description": "작업 지우기",
                 "failed_to_open_file": "파일 열기 실패",
@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "{count}개의 작업을 제거할까요?",
                 "remove_all_tasks_confirm": "모든 작업을 제거할까요?"
             },
-        "features": {
-            "disabled": "비활성화됨",
-            "export_option": "내보내기",
-            "import_option": "가져오기",
-            "reset_option": "초기화",
-            "config_export_success_toast": "구성이 성공적으로 내보내졌습니다",
-            "config_import_success_toast": "구성이 성공적으로 가져와졌습니다",
-            "config_import_failure_toast": "구성 가져오기 실패: {error}",
-            "config_export_failure_toast": "구성 내보내기 실패: {error}",
-            "saved_config_snackbar": "구성 저장됨",
-            "older_required": "이 기능이 올바르게 작동하려면 Snapchat v{version} 이하 버전이 필요합니다",
-            "newer_required": "이 기능이 올바르게 작동하려면 Snapchat v{version} 이상 버전이 필요합니다",
-            "search_button": "검색",
-            "clear_history": "검색 기록 지우기",
-            "subtitle": "기능 검색 및 관리"
-        },
+            "features": {
+                "disabled": "비활성화됨",
+                "export_option": "내보내기",
+                "import_option": "가져오기",
+                "reset_option": "초기화",
+                "config_export_success_toast": "구성이 성공적으로 내보내졌습니다",
+                "config_import_success_toast": "구성이 성공적으로 가져와졌습니다",
+                "config_import_failure_toast": "구성 가져오기 실패: {error}",
+                "config_export_failure_toast": "구성 내보내기 실패: {error}",
+                "saved_config_snackbar": "구성 저장됨",
+                "older_required": "이 기능이 올바르게 작동하려면 Snapchat v{version} 이하 버전이 필요합니다",
+                "newer_required": "이 기능이 올바르게 작동하려면 Snapchat v{version} 이상 버전이 필요합니다",
+                "search_button": "검색",
+                "clear_history": "검색 기록 지우기",
+                "subtitle": "기능 검색 및 관리"
+            },
             "bypass_status": {
                 "active": "PurrAura 활성",
                 "inactive": "PurrAura 비활성"
@@ -442,7 +442,9 @@
                 "teleport_to_friend_title": "친구에게 텔레포트",
                 "search_bar": "검색",
                 "no_friends_map": "지도에 친구 없음",
-                "no_friends_found": "친구를 찾을 수 없음"
+                "no_friends_found": "친구를 찾을 수 없음",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates"
             }
         },
         "dialogs": {
@@ -826,91 +828,166 @@
     },
     "features": {
         "notices": {
-            "unstable": "\u26a0 불안정함",
-            "ban_risk": "\u26a0 이 기능은 계정 정지를 유발할 수 있음",
-            "internal_behavior": "\u26a0 이 기능은 Snapchat 내부 동작을 깨뜨릴 수 있음"
-        },
-        "options": {
-            "empty": "비어 있음",
-            "walk_radius": {
-                "empty": "비어 있음"
-            },
-            "spoof_battery_level": {
-                "empty": "비어 있음"
-            },
-            "custom_android_id": {
-                "empty": "비어 있음"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "비어 있음"
-            },
-            "preferred_transcription_lang": {
-                "empty": "비어 있음"
-            },
-            "custom_emoji_font": {
-                "empty": "비어 있음"
-            },
-            "custom_shared_library": {
-                "empty": "비어 있음"
-            },
-            "custom_resolution": {
-                "empty": "비어 있음"
-            },
-            "custom_path_format": {
-                "empty": "비어 있음"
-            },
-            "custom_video_codec": {
-                "empty": "비어 있음"
-            },
-            "custom_audio_codec": {
-                "empty": "비어 있음"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "비어 있음"
-            },
-            "unsaveable_messages": {
-                "blacklist": "블랙리스트 모드",
-                "whitelist": "화이트리스트 모드",
-                "null": "비활성화됨"
-            },
-            "update_check_frequency": {
-                "daily": "매일",
-                "weekly": "매주",
-                "monthly": "매월"
-            }
+            "unstable": "⚠ 불안정함",
+            "ban_risk": "⚠ 이 기능은 계정 정지를 유발할 수 있음",
+            "internal_behavior": "⚠ 이 기능은 Snapchat 내부 동작을 깨뜨릴 수 있음"
         },
         "properties": {
             "global": {
                 "name": "전역(Global)",
-                "description": "일반 모듈 환경 설정 및 기본값",
+                "description": "전역 Snapchat 설정 조정",
                 "properties": {
-                    "ui_settings": {
-                        "name": "UI 설정",
-                        "description": "피드백 및 토스트 동작 조정",
+                    "better_location": {
+                        "name": "더 나은 위치(Better Location)",
+                        "description": "Snapchat 위치 기능 향상",
                         "properties": {
-                            "haptic_feedback": {
-                                "name": "햅틱 피드백",
-                                "description": "지원되는 상호 작용 시 진동"
+                            "spoof_location": {
+                                "name": "위치 위장",
+                                "description": "위치를 지정된 곳으로 위장합니다"
                             },
-                            "use_system_toasts": {
-                                "name": "시스템 토스트 사용",
-                                "description": "앱 내 오버레이 대신 안드로이드 시스템 토스트 표시"
+                            "coordinates": {
+                                "name": "좌표",
+                                "description": "위장 위치의 좌표 설정"
+                            },
+                            "walk_radius": {
+                                "name": "보행 반경",
+                                "description": "이 반경(피트) 내에서 무작위로 돌아다닙니다"
+                            },
+                            "always_update_location": {
+                                "name": "항상 위치 업데이트",
+                                "description": "GPS 데이터가 수신되지 않아도 Snapchat이 위치를 업데이트하도록 강제"
+                            },
+                            "suspend_location_updates": {
+                                "name": "위치 업데이트 중단",
+                                "description": "위치가 업데이트되는 것을 방지합니다"
+                            },
+                            "spoof_battery_level": {
+                                "name": "배터리 잔량 위장",
+                                "description": "지도상에서 기기의 배터리 잔량을 위장합니다\n값은 0에서 100 사이여야 합니다"
+                            },
+                            "spoof_headphones": {
+                                "name": "헤드폰 위장",
+                                "description": "지도상에서 음악 감상 상태를 위장합니다"
+                            },
+                            "show_battery_level": {
+                                "name": "배터리 잔량 표시",
+                                "description": "지도상에서 친구들의 배터리 잔량을 표시합니다"
                             }
                         }
                     },
-                    "update_settings": {
-                        "name": "업데이트 설정",
-                        "description": "자동 업데이트 확인 제어",
+                    "snapchat_plus": {
+                        "name": "Snapchat+",
+                        "description": "Snapchat+ 기능을 활성화합니다\n일부 서버 측 기능은 작동하지 않을 수 있습니다"
+                    },
+                    "media_upload_quality": {
+                        "name": "미디어 업로드 화질",
+                        "description": "미디어 업로드 화질을 재정의합니다",
                         "properties": {
-                            "auto_update_check": {
-                                "name": "자동 업데이트 확인",
-                                "description": "새 빌드를 자동으로 확인"
+                            "force_video_upload_source_quality": {
+                                "name": "비디오 업로드 원본 화질 강제",
+                                "description": "비디오 업로드 시 Snapchat이 원본 화질을 사용하도록 강제합니다\n이 기능은 미디어에서 메타데이터를 제거하지 않을 수 있습니다"
                             },
-                            "update_check_frequency": {
-                                "name": "업데이트 확인 빈도",
-                                "description": "업데이트 확인 주기"
+                            "disable_image_compression": {
+                                "name": "이미지 압축 비활성화",
+                                "description": "미디어 업로드 시 이미지 압축을 비활성화합니다"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "사용자 지정 이미지 업로드 형식",
+                                "description": "사용자 지정 이미지 업로드 형식 설정\n최고의 품질을 위해 무손실 형식(PNG 등)을 선택하세요"
                             }
                         }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "확인 대화 상자 비활성화",
+                        "description": "선택한 작업을 자동으로 확인합니다"
+                    },
+                    "auto_updater": {
+                        "name": "자동 업데이트",
+                        "description": "새 업데이트를 자동으로 확인합니다"
+                    },
+                    "update_settings": {
+                        "name": "업데이트 설정",
+                        "description": "PurrfectSnap 업데이트 확인 방식 제어",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "자동 업데이트 확인"
+                            },
+                            "update_check_frequency": {
+                                "name": "업데이트 확인 빈도"
+                            }
+                        }
+                    },
+                    "ui_settings": {
+                        "name": "UI 설정",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "햅틱 피드백"
+                            }
+                        }
+                    },
+                    "disable_metrics": {
+                        "name": "메트릭 비활성화",
+                        "description": "Snapchat으로 특정 분석 데이터를 보내는 것을 차단합니다"
+                    },
+                    "disable_story_sections": {
+                        "name": "스토리 섹션 비활성화",
+                        "description": "스토리 페이지에서 섹션을 제거합니다\n제대로 작동하려면 새로 고침이 필요할 수 있습니다"
+                    },
+                    "block_ads": {
+                        "name": "광고 차단",
+                        "description": "광고가 표시되는 것을 방지합니다"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "사용자 지정 탭 비활성화",
+                        "description": "웹 브라우저 대신 지원되는 애플리케이션에서 링크를 엽니다"
+                    },
+                    "disable_permission_requests": {
+                        "name": "권한 요청 비활성화",
+                        "description": "Snapchat이 특정 권한을 요청하는 것을 방지합니다"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "메모리 스냅 피드 비활성화",
+                        "description": "카메라에서 위로 스와이프할 때 Snapchat이 최근 메모리를 표시하는 것을 방지합니다"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "스포트라이트 댓글 사용자 이름",
+                        "description": "스포트라이트 댓글에 작성자 사용자 이름을 표시합니다"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "스포트라이트 댓글 사용자 이름 아이콘",
+                        "description": "스포트라이트 댓글에서 사용자 이름 옆에 표시할 아이콘을 선택합니다"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "비디오 길이 제한 우회",
+                        "description": "단일(Single): 단일 비디오 전송\n분할(Split): 편집 후 비디오 분할"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "기본 비디오 재생 속도",
+                        "description": "비디오 재생의 기본 속도를 설정합니다\n값은 0.1에서 4.0 사이여야 합니다"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "비디오 재생 속도 슬라이더",
+                        "description": "Opera 컨텍스트 메뉴에 비디오 재생 속도를 변경하는 슬라이더를 추가합니다\n참고: 변경 사항은 이후 비디오에만 적용됩니다"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "Google Play 서비스 대화 상자 비활성화",
+                        "description": "Google Play 서비스 가용성 대화 상자가 표시되는 것을 방지합니다"
+                    },
+                    "default_volume_controls": {
+                        "name": "기본 볼륨 컨트롤",
+                        "description": "Snapchat이 시스템 볼륨 컨트롤을 사용하도록 강제합니다"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "통신 프레임워크 비활성화",
+                        "description": "Snapchat이 Android 통신 프레임워크를 사용하는 것을 방지합니다\n통화 중에 음악을 들을 수 있게 합니다"
+                    },
+                    "hide_active_music": {
+                        "name": "재생 중인 음악 숨기기",
+                        "description": "Snapchat이 음악을 듣고 있다는 것을 알지 못하게 합니다\n음악을 듣는 동안 볼륨 버튼으로 스냅을 찍을 수 있게 합니다"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "스냅 분할 비활성화",
+                        "description": "스냅이 여러 부분으로 분할되는 것을 방지합니다\n전송한 사진이 비디오로 바뀝니다"
                     }
                 }
             },
@@ -1143,7 +1220,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "몰래 보기 모드 표시기",
-                        "description": "몰래 보기 모드인 대화 옆에 \ud83d\udc7b 이모지를 추가합니다"
+                        "description": "몰래 보기 모드인 대화 옆에 👻 이모지를 추가합니다"
                     },
                     "edit_text_override": {
                         "name": "텍스트 편집 재정의",
@@ -1671,164 +1748,6 @@
                     }
                 }
             },
-            "global": {
-                "name": "전역(Global)",
-                "description": "전역 Snapchat 설정 조정",
-                "properties": {
-                    "better_location": {
-                        "name": "더 나은 위치(Better Location)",
-                        "description": "Snapchat 위치 기능 향상",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "위치 위장",
-                                "description": "위치를 지정된 곳으로 위장합니다"
-                            },
-                            "coordinates": {
-                                "name": "좌표",
-                                "description": "위장 위치의 좌표 설정"
-                            },
-                            "walk_radius": {
-                                "name": "보행 반경",
-                                "description": "이 반경(피트) 내에서 무작위로 돌아다닙니다"
-                            },
-                            "always_update_location": {
-                                "name": "항상 위치 업데이트",
-                                "description": "GPS 데이터가 수신되지 않아도 Snapchat이 위치를 업데이트하도록 강제"
-                            },
-                            "suspend_location_updates": {
-                                "name": "위치 업데이트 중단",
-                                "description": "위치가 업데이트되는 것을 방지합니다"
-                            },
-                            "spoof_battery_level": {
-                                "name": "배터리 잔량 위장",
-                                "description": "지도상에서 기기의 배터리 잔량을 위장합니다\n값은 0에서 100 사이여야 합니다"
-                            },
-                            "spoof_headphones": {
-                                "name": "헤드폰 위장",
-                                "description": "지도상에서 음악 감상 상태를 위장합니다"
-                            },
-                            "show_battery_level": {
-                                "name": "배터리 잔량 표시",
-                                "description": "지도상에서 친구들의 배터리 잔량을 표시합니다"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat+",
-                        "description": "Snapchat+ 기능을 활성화합니다\n일부 서버 측 기능은 작동하지 않을 수 있습니다"
-                    },
-                    "media_upload_quality": {
-                        "name": "미디어 업로드 화질",
-                        "description": "미디어 업로드 화질을 재정의합니다",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "비디오 업로드 원본 화질 강제",
-                                "description": "비디오 업로드 시 Snapchat이 원본 화질을 사용하도록 강제합니다\n이 기능은 미디어에서 메타데이터를 제거하지 않을 수 있습니다"
-                            },
-                            "disable_image_compression": {
-                                "name": "이미지 압축 비활성화",
-                                "description": "미디어 업로드 시 이미지 압축을 비활성화합니다"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "사용자 지정 이미지 업로드 형식",
-                                "description": "사용자 지정 이미지 업로드 형식 설정\n최고의 품질을 위해 무손실 형식(PNG 등)을 선택하세요"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "확인 대화 상자 비활성화",
-                        "description": "선택한 작업을 자동으로 확인합니다"
-                    },
-                    "auto_updater": {
-                        "name": "자동 업데이트",
-                        "description": "새 업데이트를 자동으로 확인합니다"
-                    },
-                    "update_settings": {
-                        "name": "업데이트 설정",
-                        "description": "PurrfectSnap 업데이트 확인 방식 제어",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "자동 업데이트 확인"
-                            },
-                            "update_check_frequency": {
-                                "name": "업데이트 확인 빈도"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI 설정",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "햅틱 피드백"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "메트릭 비활성화",
-                        "description": "Snapchat으로 특정 분석 데이터를 보내는 것을 차단합니다"
-                    },
-                    "disable_story_sections": {
-                        "name": "스토리 섹션 비활성화",
-                        "description": "스토리 페이지에서 섹션을 제거합니다\n제대로 작동하려면 새로 고침이 필요할 수 있습니다"
-                    },
-                    "block_ads": {
-                        "name": "광고 차단",
-                        "description": "광고가 표시되는 것을 방지합니다"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "사용자 지정 탭 비활성화",
-                        "description": "웹 브라우저 대신 지원되는 애플리케이션에서 링크를 엽니다"
-                    },
-                    "disable_permission_requests": {
-                        "name": "권한 요청 비활성화",
-                        "description": "Snapchat이 특정 권한을 요청하는 것을 방지합니다"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "메모리 스냅 피드 비활성화",
-                        "description": "카메라에서 위로 스와이프할 때 Snapchat이 최근 메모리를 표시하는 것을 방지합니다"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "스포트라이트 댓글 사용자 이름",
-                        "description": "스포트라이트 댓글에 작성자 사용자 이름을 표시합니다"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "스포트라이트 댓글 사용자 이름 아이콘",
-                        "description": "스포트라이트 댓글에서 사용자 이름 옆에 표시할 아이콘을 선택합니다"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "비디오 길이 제한 우회",
-                        "description": "단일(Single): 단일 비디오 전송\n분할(Split): 편집 후 비디오 분할"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "기본 비디오 재생 속도",
-                        "description": "비디오 재생의 기본 속도를 설정합니다\n값은 0.1에서 4.0 사이여야 합니다"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "비디오 재생 속도 슬라이더",
-                        "description": "Opera 컨텍스트 메뉴에 비디오 재생 속도를 변경하는 슬라이더를 추가합니다\n참고: 변경 사항은 이후 비디오에만 적용됩니다"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "Google Play 서비스 대화 상자 비활성화",
-                        "description": "Google Play 서비스 가용성 대화 상자가 표시되는 것을 방지합니다"
-                    },
-                    "default_volume_controls": {
-                        "name": "기본 볼륨 컨트롤",
-                        "description": "Snapchat이 시스템 볼륨 컨트롤을 사용하도록 강제합니다"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "통신 프레임워크 비활성화",
-                        "description": "Snapchat이 Android 통신 프레임워크를 사용하는 것을 방지합니다\n통화 중에 음악을 들을 수 있게 합니다"
-                    },
-                    "hide_active_music": {
-                        "name": "재생 중인 음악 숨기기",
-                        "description": "Snapchat이 음악을 듣고 있다는 것을 알지 못하게 합니다\n음악을 듣는 동안 볼륨 버튼으로 스냅을 찍을 수 있게 합니다"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "스냅 분할 비활성화",
-                        "description": "스냅이 여러 부분으로 분할되는 것을 방지합니다\n전송한 사진이 비디오로 바뀝니다"
-                    }
-                }
-            },
             "rules": {
                 "name": "규칙",
                 "description": "자동화 규칙 구성",
@@ -2110,7 +2029,7 @@
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "암호화된 메시지 표시기",
-                                "description": "암호화된 메시지 옆에 \ud83d\udd12 이모지를 추가합니다"
+                                "description": "암호화된 메시지 옆에 🔒 이모지를 추가합니다"
                             },
                             "force_message_encryption": {
                                 "name": "메시지 암호화 강제",
@@ -2190,6 +2109,10 @@
             }
         },
         "options": {
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
             "app_appearance": {
                 "always_light": "항상 라이트",
                 "always_dark": "항상 다크",
@@ -2207,20 +2130,20 @@
                 "null": "실제 배터리 잔량 사용"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "\u2b07\ufe0f 자동 다운로드",
-                "auto_save": "\ud83d\udcac 메시지 자동 저장",
-                "unsaveable_messages": "\u2b07\ufe0f 저장 불가 메시지",
-                "auto_open_snaps": "\ud83d\udcf7 스냅 자동 열기",
-                "stealth": "\ud83d\udc7b 몰래 보기 모드",
-                "auto_reply": "\ud83d\udce8 자동 응답",
-                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f 보낸 메시지 자동 삭제",
-                "mark_snaps_as_seen": "\ud83d\udc40 스냅 본 것으로 표시",
-                "mark_stories_as_seen_locally": "\ud83d\udc40 스토리 로컬에서 본 것으로 표시",
-                "conversation_info": "\ud83d\udc64 대화 정보",
-                "e2e_encryption": "\ud83d\udd12 E2E 암호화 사용",
-                "message_logger": "\ud83d\udcdd 메시지 로거",
-                "auto_read": "\u2705 자동 읽음",
-                "hide_typing_indicator": "\ud83d\ude48 입력 표시 숨기기"
+                "auto_download": "⬇️ 자동 다운로드",
+                "auto_save": "💬 메시지 자동 저장",
+                "unsaveable_messages": "⬇️ 저장 불가 메시지",
+                "auto_open_snaps": "📷 스냅 자동 열기",
+                "stealth": "👻 몰래 보기 모드",
+                "auto_reply": "📨 자동 응답",
+                "auto_delete_sent_messages": "🗑️ 보낸 메시지 자동 삭제",
+                "mark_snaps_as_seen": "👀 스냅 본 것으로 표시",
+                "mark_stories_as_seen_locally": "👀 스토리 로컬에서 본 것으로 표시",
+                "conversation_info": "👤 대화 정보",
+                "e2e_encryption": "🔒 E2E 암호화 사용",
+                "message_logger": "📝 메시지 로거",
+                "auto_read": "✅ 자동 읽음",
+                "hide_typing_indicator": "🙈 입력 표시 숨기기"
             },
             "schedule_scheduled_for": "{time} 후 {name}에게 전송 예약됨",
             "schedule_sending_in": "{time} 후 전송",
@@ -2323,16 +2246,16 @@
             "custom_android_id": {
                 "null": "실제 Android ID 사용"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "사용자 이름으로 추가",
-	                "added_by_mention": "멘션으로 추가",
-	                "added_by_group_chat": "그룹 채팅으로 추가",
-	                "added_by_qr_code": "QR 코드로 추가",
-	                "added_by_community": "커뮤니티로 추가",
-	                "added_by_quick_add": "빠른 추가로 추가 (정지 위험 높음)",
-	                "added_by_spotlight": "스포트라이트로 추가",
-	                "null": "소스를 위장하지 않음"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "사용자 이름으로 추가",
+                "added_by_mention": "멘션으로 추가",
+                "added_by_group_chat": "그룹 채팅으로 추가",
+                "added_by_qr_code": "QR 코드로 추가",
+                "added_by_community": "커뮤니티로 추가",
+                "added_by_quick_add": "빠른 추가로 추가 (정지 위험 높음)",
+                "added_by_spotlight": "스포트라이트로 추가",
+                "null": "소스를 위장하지 않음"
+            },
             "custom_streaks_expiration_format": {
                 "null": "시스템 기본값"
             },
@@ -2438,8 +2361,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "사용자 이름 아이콘",
-                "\ud83d\udc64": "사용자 이름 아이콘",
-                "[\ud83d\udc64]": "사용자 이름 아이콘",
+                "👤": "사용자 이름 아이콘",
+                "[👤]": "사용자 이름 아이콘",
                 "default": "사용자 이름 아이콘",
                 "no_icon": "아이콘 없음"
             },
@@ -2519,11 +2442,11 @@
                 "phone_calls": "전화 통화"
             },
             "message_indicators": {
-                "encryption_indicator": "나에게만 전송된 메시지 옆에 \ud83d\udd12 아이콘을 추가합니다",
+                "encryption_indicator": "나에게만 전송된 메시지 옆에 🔒 아이콘을 추가합니다",
                 "platform_indicator": "미디어가 전송된 플랫폼 아이콘을 추가합니다(예: Android, iOS, 웹)",
-                "location_indicator": "위치가 활성화된 상태로 전송된 스냅에 \ud83d\udccd 아이콘을 추가합니다",
+                "location_indicator": "위치가 활성화된 상태로 전송된 스냅에 📍 아이콘을 추가합니다",
                 "ovf_editor_indicator": "스냅이 OVF Editor를 사용하여 전송되었는지 나타냅니다",
-                "director_mode_indicator": "디렉터 모드를 사용하여 전송된 스냅에 \u270f\ufe0f 아이콘을 추가합니다. 디렉터 모드를 사용하면 갤러리 이미지를 스냅으로 보낼 수 있습니다"
+                "director_mode_indicator": "디렉터 모드를 사용하여 전송된 스냅에 ✏️ 아이콘을 추가합니다. 디렉터 모드를 사용하면 갤러리 이미지를 스냅으로 보낼 수 있습니다"
             },
             "auto_mark_as_read": {
                 "conversation_read": "메시지를 보낼 때 대화를 읽음으로 표시",
@@ -2747,7 +2670,6 @@
         "show_chat_edit_history": "채팅 편집 기록 보기",
         "convert_message": "메시지 변환"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "채팅 배경화면 다운로드"
     },
@@ -3077,7 +2999,7 @@
         "queue_cleared": "대기열이 지워지고 통계가 초기화되었습니다",
         "queue_cleared_title": "대기열 지워짐",
         "queue_cleared_reset": "대기열 지워짐 및 초기화",
-        "queue_cleared_feedback": "{count}개의 대기 스냅 지움 \u2022 처리됨 카운트 {processed}개 초기화",
+        "queue_cleared_feedback": "{count}개의 대기 스냅 지움 • 처리됨 카운트 {processed}개 초기화",
         "queue_cleared_feedback_simple": "처리됨 카운트 {processed}개 초기화",
         "unknown_sender": "알 수 없음",
         "unknown_user": "알 수 없는 사용자",

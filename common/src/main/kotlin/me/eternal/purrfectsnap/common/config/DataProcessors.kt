@@ -22,17 +22,17 @@ object DataProcessors {
     class PropertyDataProcessor<T>
     internal constructor(
         val type: Type,
-        private val serialize: (T, exportSensitiveData: Boolean) -> JsonElement,
+        private val serialize: (T, exportSensitiveData: Boolean, includeSavedLocations: Boolean) -> JsonElement,
         private val deserialize: (JsonElement) -> T
     ) {
         @Suppress("UNCHECKED_CAST")
-        fun serializeAny(value: Any, exportSensitiveData: Boolean) = serialize(value as T, exportSensitiveData)
+        fun serializeAny(value: Any, exportSensitiveData: Boolean, includeSavedLocations: Boolean) = serialize(value as T, exportSensitiveData, includeSavedLocations)
         fun deserializeAny(value: JsonElement) = deserialize(value)
     }
 
     val STRING = PropertyDataProcessor(
         type = Type.STRING,
-        serialize = { it, _ ->
+        serialize = { it, _, _ ->
             if (it != null) JsonPrimitive(it)
             else JsonNull.INSTANCE
         },
@@ -44,7 +44,7 @@ object DataProcessors {
 
     val BOOLEAN = PropertyDataProcessor(
         type = Type.BOOLEAN,
-        serialize = { it, _ ->
+        serialize = { it, _, _ ->
             if (it) JsonPrimitive(true)
             else JsonPrimitive(false)
         },
@@ -53,19 +53,19 @@ object DataProcessors {
 
     val INTEGER = PropertyDataProcessor(
         type = Type.INTEGER,
-        serialize = { it, _ -> JsonPrimitive(it) },
+        serialize = { it, _, _ -> JsonPrimitive(it) },
         deserialize = { it.asInt },
     )
 
     val FLOAT = PropertyDataProcessor(
         type = Type.FLOAT,
-        serialize = { it, _ -> JsonPrimitive(it) },
+        serialize = { it, _, _ -> JsonPrimitive(it) },
         deserialize = { it.asFloat },
     )
 
     val STRING_MULTIPLE_SELECTION = PropertyDataProcessor(
         type = Type.STRING_MULTIPLE_SELECTION,
-        serialize = { it, _ -> JsonArray().apply { it.forEach { add(it) } } },
+        serialize = { it, _, _ -> JsonArray().apply { it.forEach { add(it) } } },
         deserialize = { obj ->
             obj.asJsonArray.map { it.asString }.toMutableList()
         },
@@ -73,13 +73,13 @@ object DataProcessors {
 
     val STRING_UNIQUE_SELECTION = PropertyDataProcessor(
         type = Type.STRING_UNIQUE_SELECTION,
-        serialize = { it, _ -> JsonPrimitive(it) },
+        serialize = { it, _, _ -> JsonPrimitive(it) },
         deserialize = { obj -> obj.takeIf { !it.isJsonNull }?.asString?.takeIf { it != "false" && it != "true" } }
     )
 
     val MAP_COORDINATES = PropertyDataProcessor(
         type = Type.MAP_COORDINATES,
-        serialize = { it, _ ->
+        serialize = { it, _, _ ->
             JsonObject().apply {
                 addProperty("lat", it.first.takeIf { it in -90.0..90.0 } ?: 0.0)
                 addProperty("lng", it.second.takeIf { it in -180.0..180.0 } ?: 0.0)
@@ -94,7 +94,7 @@ object DataProcessors {
 
     val INT_COLOR = PropertyDataProcessor(
         type = Type.INT_COLOR,
-        serialize = { it, _ ->
+        serialize = { it, _, _ ->
             it?.let { JsonPrimitive(it) } ?: JsonNull.INSTANCE
         },
         deserialize = { if (it.isJsonNull) null else it.asString.toIntOrNull() },
@@ -102,10 +102,10 @@ object DataProcessors {
 
     fun <T : ConfigContainer> container(container: T) = PropertyDataProcessor(
         type = Type.CONTAINER,
-        serialize = { it, exportSensitiveData ->
+        serialize = { it, exportSensitiveData, includeSavedLocations ->
             JsonObject().apply {
                 addProperty("state", it.globalState)
-                add("properties", it.toJson(exportSensitiveData))
+                add("properties", it.toJson(exportSensitiveData, includeSavedLocations))
             }
         },
         deserialize = { obj ->
