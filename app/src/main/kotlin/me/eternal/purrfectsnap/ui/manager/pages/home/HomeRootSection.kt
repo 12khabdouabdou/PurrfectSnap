@@ -1177,17 +1177,18 @@ class HomeRootSection : Routes.Route() {
         if (showChangelogDialog && latestUpdate != null) {
             AestheticDialog(
                 onDismissRequest = { showChangelogDialog = false },
-                title = "Changelog",
+                title = translation["changelog_dialog_title"],
                 text = "",
                 icon = Icons.Filled.Info,
-                confirmButtonText = "Update",
+                confirmButtonText = translation["changelog_dialog_update_button"],
                 onConfirm = {
                     showChangelogDialog = false
                     handleUpdateAction()
                 },
-                dismissButtonText = "Cancel",
+                dismissButtonText = translation["changelog_dialog_cancel_button"],
                 onDismiss = { showChangelogDialog = false },
                 confirmEnabled = !changelogLoading,
+                showCloseButton = false,
                 customContent = {
                     Column(
                         modifier = Modifier
@@ -1210,7 +1211,7 @@ class HomeRootSection : Routes.Route() {
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = "Loading changelog…",
+                                    text = translation["changelog_dialog_loading"],
                                     color = Color.White,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -1219,7 +1220,7 @@ class HomeRootSection : Routes.Route() {
 
                         changelogError != null -> {
                             Text(
-                                text = changelogError ?: "Failed to load changelog",
+                                text = changelogError ?: translation["changelog_dialog_error"],
                                 color = MaterialTheme.colorScheme.error,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -1227,7 +1228,7 @@ class HomeRootSection : Routes.Route() {
 
                         else -> {
                             Text(
-                                text = changelogText ?: "Changelog not available",
+                                text = changelogText ?: translation["changelog_dialog_empty"],
                                 color = PurrfectPalette.textPrimary,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp
@@ -1242,12 +1243,13 @@ class HomeRootSection : Routes.Route() {
         if (showAnnouncementsDialog) {
             AestheticDialog(
                 onDismissRequest = { showAnnouncementsDialog = false },
-                title = "Announcements",
+                title = translation["announcements_dialog_title"],
                 text = "",
                 icon = Icons.Filled.Info,
-                confirmButtonText = "Close",
+                confirmButtonText = translation["announcements_dialog_close_button"],
                 onConfirm = { showAnnouncementsDialog = false },
                 confirmEnabled = !announcementsLoading,
+                showCloseButton = false,
                 customContent = {
                     Column(
                         modifier = Modifier
@@ -1270,7 +1272,7 @@ class HomeRootSection : Routes.Route() {
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
-                                        text = "Loading announcements...",
+                                        text = translation["announcements_dialog_loading"],
                                         color = Color.White,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -1279,7 +1281,7 @@ class HomeRootSection : Routes.Route() {
 
                             announcementsError != null -> {
                                 Text(
-                                    text = announcementsError ?: "Failed to load announcements",
+                                    text = announcementsError ?: translation["announcements_dialog_error"],
                                     color = MaterialTheme.colorScheme.error,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -1287,7 +1289,7 @@ class HomeRootSection : Routes.Route() {
 
                             else -> {
                                 Text(
-                                    text = announcementsText ?: "Announcements not available",
+                                    text = announcementsText ?: translation["announcements_dialog_empty"],
                                     color = PurrfectPalette.textPrimary,
                                     fontSize = 14.sp,
                                     lineHeight = 20.sp
