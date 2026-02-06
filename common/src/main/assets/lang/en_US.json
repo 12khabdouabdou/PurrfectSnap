@@ -537,7 +537,8 @@
             },
             "file_imports": {
                 "no_files_settings_hint": "No files found. Make sure you have imported the required files in the File Imports section",
-                "settings_select_file_hint": "Select an imported file"
+                "settings_select_file_hint": "Select an imported file",
+                "settings_select_file_subtitle": "Choose a file from your imported files list"
             }
         },
         "scripting": {
@@ -2910,6 +2911,9 @@
             "text_field_selection": "{amount} selected",
             "text_field_selection_all": "All",
             "export_file_format_title": "Export File Format",
+            "sort_order_title": "Message Order",
+            "sort_order_newest_to_oldest": "Newest to Oldest",
+            "sort_order_oldest_to_newest": "Oldest to Newest",
             "message_type_filter_title": "Filter Messages by Type",
             "amount_of_messages_title": "Message Count (leave blank for all)",
             "download_medias_title": "Download Media"

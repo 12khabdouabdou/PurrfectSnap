@@ -11,6 +11,16 @@ object LSPatchUpdater {
     var HAS_LSPATCH = false
         private set
 
+    private fun ensureTranslationsLoaded(context: ModContext) {
+        if (context.translation.getOrNull("toast_purrfectsnap_updated") != null) return
+        runCatching {
+            context.translation.userLocale = context.getConfigLocale()
+            context.translation.load()
+        }.onFailure {
+            context.log.warn("Failed to load translations in updater: ${it.message}", TAG)
+        }
+    }
+
     private fun getModuleUniqueHash(module: ZipFile): String {
         return module.entries().asSequence()
             .filter { !it.isDirectory }
@@ -20,6 +30,8 @@ object LSPatchUpdater {
     }
 
     fun onBridgeConnected(context: ModContext) {
+        ensureTranslationsLoaded(context)
+
         val obfuscatedModulePath by lazy {
             (runCatching {
                 context::class.java.classLoader?.loadClass("org.lsposed.lspatch.share.Constants")
@@ -59,19 +71,19 @@ object LSPatchUpdater {
         }
 
         context.log.verbose("updating", TAG)
-        context.shortToast(context.translation["toast_updating_purrfectsnap"])
+        context.shortToast(context.translation.getOrNull("toast_updating_purrfectsnap") ?: "Updating PurrfectSnap. Please wait...")
         // copy embedded module to cache
         runCatching {
             seAppApk.copyTo(embeddedModule, overwrite = true)
         }.onFailure {
             seAppApk.delete()
             context.log.error("Failed to copy embedded module", it, TAG)
-            context.longToast(context.translation["toast_update_purrfectsnap_failed"])
+            context.longToast(context.translation.getOrNull("toast_update_purrfectsnap_failed") ?: "Failed to update PurrfectSnap. Please check logcat for more details.")
             context.forceCloseApp()
             return
         }
 
-        context.longToast(context.translation["toast_purrfectsnap_updated"])
+        context.longToast(context.translation.getOrNull("toast_purrfectsnap_updated") ?: "PurrfectSnap updated!")
         context.log.verbose("updated", TAG)
         context.softRestartApp()
     }

@@ -46,7 +46,7 @@ class CallDownloadSessionImpl(
         val job: Job
         val writePfd: ParcelFileDescriptor
 
-        val outputFile = context.androidContext.cacheDir.resolve("call_${UUID.randomUUID()}.mp3").apply {
+        val outputFile = context.androidContext.cacheDir.resolve("call_${UUID.randomUUID()}.wav").apply {
             if (exists()) delete()
         }
 
