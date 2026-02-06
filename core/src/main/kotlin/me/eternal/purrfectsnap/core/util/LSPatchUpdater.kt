@@ -11,6 +11,11 @@ object LSPatchUpdater {
     var HAS_LSPATCH = false
         private set
 
+    private fun translatedOrFallback(context: ModContext, key: String, fallback: String): String {
+        val value = context.translation.getOrNull(key) ?: return fallback
+        return if (value.equals(key, ignoreCase = false)) fallback else value
+    }
+
     private fun ensureTranslationsLoaded(context: ModContext) {
         if (context.translation.getOrNull("toast_purrfectsnap_updated") != null) return
         runCatching {
@@ -71,19 +76,37 @@ object LSPatchUpdater {
         }
 
         context.log.verbose("updating", TAG)
-        context.shortToast(context.translation.getOrNull("toast_updating_purrfectsnap") ?: "Updating PurrfectSnap. Please wait...")
+        context.shortToast(
+            translatedOrFallback(
+                context,
+                "toast_updating_purrfectsnap",
+                "Updating PurrfectSnap. Please wait..."
+            )
+        )
         // copy embedded module to cache
         runCatching {
             seAppApk.copyTo(embeddedModule, overwrite = true)
         }.onFailure {
             seAppApk.delete()
             context.log.error("Failed to copy embedded module", it, TAG)
-            context.longToast(context.translation.getOrNull("toast_update_purrfectsnap_failed") ?: "Failed to update PurrfectSnap. Please check logcat for more details.")
+            context.longToast(
+                translatedOrFallback(
+                    context,
+                    "toast_update_purrfectsnap_failed",
+                    "Failed to update PurrfectSnap. Please check logcat for more details."
+                )
+            )
             context.forceCloseApp()
             return
         }
 
-        context.longToast(context.translation.getOrNull("toast_purrfectsnap_updated") ?: "PurrfectSnap updated!")
+        context.longToast(
+            translatedOrFallback(
+                context,
+                "toast_purrfectsnap_updated",
+                "PurrfectSnap updated!"
+            )
+        )
         context.log.verbose("updated", TAG)
         context.softRestartApp()
     }
