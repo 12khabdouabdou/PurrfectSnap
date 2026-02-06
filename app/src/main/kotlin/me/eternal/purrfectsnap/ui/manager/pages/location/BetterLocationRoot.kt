@@ -275,22 +275,31 @@ class BetterLocationRoot : Routes.Route() {
             )
         }
 
-        if (showProviderDialog) {
-            me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = {
-                showProviderDialog = false
-                context.config.writeConfig()
-            }) {
-                alertDialogs.UniqueSelectionDialog(providerProperty)
-            }
-        }
-        if (showApiKeyDialog) {
-            me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { showApiKeyDialog = false }) {
-                alertDialogs.KeyboardInputDialog(apiKeyProperty) {
-                    showApiKeyDialog = false
-                    context.config.writeConfig()
-                }
-            }
-        }
+         var currentProvider by remember { mutableStateOf(context.config.root.global.betterLocation.locationSearchProvider.get()) }
+         var currentApiKey by remember { mutableStateOf(context.config.root.global.betterLocation.googleMapsApiKey.get()) }
+
+         if (showProviderDialog) {
+             me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = {
+                 showProviderDialog = false
+                 context.config.writeConfig()
+                 currentProvider = context.config.root.global.betterLocation.locationSearchProvider.get()
+             }) {
+                 alertDialogs.UniqueSelectionDialog(providerProperty)
+             }
+         }
+         if (showApiKeyDialog) {
+             me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { 
+                 showApiKeyDialog = false
+                 context.config.writeConfig()
+                 currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.get()
+             }) {
+                  alertDialogs.KeyboardInputDialog(apiKeyProperty) {
+                      showApiKeyDialog = false
+                      context.config.writeConfig()
+                      currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.get()
+                  }
+             }
+         }
 
         Column(
             modifier = Modifier
@@ -448,7 +457,6 @@ class BetterLocationRoot : Routes.Route() {
                         ConfigSelector(text, if (value.isNotEmpty()) "********" else translation["options.empty"], onClick)
                     }
 
-                    val currentProvider = context.config.root.global.betterLocation.locationSearchProvider.get()
                     ConfigSelector(
                         text = translation["location_search_provider_title"],
                         value = translation["option_$currentProvider"]
@@ -457,7 +465,7 @@ class BetterLocationRoot : Routes.Route() {
                     if (currentProvider == "google_maps") {
                         ConfigInput(
                             text = translation["google_maps_api_key_title"],
-                            value = context.config.root.global.betterLocation.googleMapsApiKey.get()
+                            value = currentApiKey
                         ) { showApiKeyDialog = true }
                     }
                 }
