@@ -115,7 +115,7 @@ class FriendTrackerConfigExportScreen : Routes.Route() {
                                             }
                                         }
                                     }.onFailure {
-                                        context.longToast(translation.format("export_failed_toast", "message" to (it.message ?: "Unknown")))
+                                        context.longToast(translation.format("export_failed_toast", "message" to (it.message ?: context.translation["common.unknown"])))
                                     }
                                 }
                             }) {

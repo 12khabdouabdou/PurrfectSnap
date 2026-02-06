@@ -499,7 +499,7 @@ class AlertDialogs(
                             currentColor = null
                         }
                     },
-                    label = { Text(text = "Hex Color") },
+                    label = { Text(text = translation["dialogs.hex_color_label"]) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp),
@@ -816,7 +816,7 @@ class AlertDialogs(
                                             color = Color.White
                                         )
                                         Text(
-                                            text = "Search or tap on the map",
+                                            text = betterLocationTranslation["search_or_tap_map_hint"],
                                             fontSize = 12.sp,
                                             color = PurrfectPalette.textSecondary
                                         )
@@ -870,11 +870,11 @@ class AlertDialogs(
                                     search()
                                 }
                             },
-                            placeholder = { Text(text = "Search location...") },
+                            placeholder = { Text(text = betterLocationTranslation["search_location_placeholder"]) },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
-                                    contentDescription = "Search",
+                                    contentDescription = betterLocationTranslation["search_icon_description"],
                                     tint = Color.White
                                 )
                             },
@@ -994,7 +994,7 @@ class AlertDialogs(
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = "Searching...",
+                                        text = betterLocationTranslation["searching_label"],
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = Color.White
                                     )
@@ -1142,7 +1142,7 @@ class AlertDialogs(
                                 .padding(horizontal = 6.dp),
                             value = lat.value,
                             onValueChange = { lat.value = it },
-                            label = { Text(text = "Latitude") },
+                            label = { Text(text = translation["latitude_dialog_hint"]) },
                             leadingIcon = { Icon(Icons.Filled.MyLocation, contentDescription = null) },
                             singleLine = true,
                             shape = RoundedCornerShape(14.dp),
@@ -1162,7 +1162,7 @@ class AlertDialogs(
                                 .padding(horizontal = 6.dp),
                             value = lon.value,
                             onValueChange = { lon.value = it },
-                            label = { Text(text = "Longitude") },
+                            label = { Text(text = translation["longitude_dialog_hint"]) },
                             leadingIcon = { Icon(Icons.Filled.Navigation, contentDescription = null) },
                             singleLine = true,
                             shape = RoundedCornerShape(14.dp),

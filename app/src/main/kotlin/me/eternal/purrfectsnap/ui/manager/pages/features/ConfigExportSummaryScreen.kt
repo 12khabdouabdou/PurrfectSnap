@@ -138,7 +138,7 @@ class ConfigExportSummaryScreen : Routes.Route() {
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val exportSensitiveData = it.arguments?.getString("exportSensitiveData")?.toBoolean() ?: false
         val includeSavedLocations = it.arguments?.getString("includeSavedLocations")?.toBoolean() ?: false
-        val exportLabel = context.translation["manager.sections.features.export_option"] ?: "Export"
+        val exportLabel = context.translation["manager.sections.features.export_option"]
         val parser = remember { ConfigParser() }
         val savedLocations = remember {
             if (includeSavedLocations) context.database.getLocationCoordinates() else null
@@ -196,14 +196,14 @@ class ConfigExportSummaryScreen : Routes.Route() {
                                 tint = Color.White,
                                 modifier = Modifier.padding(end = 6.dp)
                             )
-                            Text(context.translation["common.back"] ?: "Back")
+                            Text(context.translation["common.back"])
                         }
                         Box(
                             modifier = Modifier.weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Summary",
+                                text = translation["title"],
                                 color = Color.White,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 18.sp

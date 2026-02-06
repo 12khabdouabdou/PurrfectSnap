@@ -112,7 +112,7 @@ class FeaturesRootSection : Routes.Route() {
                 } ?: routeInfo.translatedKey?.value
             }
             SEARCH_FEATURE_ROUTE -> {
-                translation["search_button"] ?: "Search"
+                translation["search_button"]
             }
             else -> {
                 routeInfo.translatedKey?.value
@@ -668,7 +668,7 @@ class FeaturesRootSection : Routes.Route() {
                                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
                             ) {
                                 Text(
-                                    text = "$messageCount messages",
+                                    text = translation.format("search_results_count", "count" to messageCount.toString()),
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.White
@@ -1014,7 +1014,7 @@ class FeaturesRootSection : Routes.Route() {
         },
         placeholder = {
             Text(
-                text = translation["search_button"] ?: "Search",
+                text = translation["search_button"],
                 color = Color(0xFFE0DCFF)
             )
         },
@@ -1109,7 +1109,7 @@ class FeaturesRootSection : Routes.Route() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Include Saved Locations",
+                                text = context.translation["include_saved_locations"],
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White
                             )
@@ -1310,7 +1310,7 @@ class FeaturesRootSection : Routes.Route() {
 
         val headerTitle = activeSectionTitle ?: translation["manager.routes.features"]
         val subtitleText = when {
-            isSearchResults -> translation["search_button"] ?: "Search"
+            isSearchResults -> translation["search_button"]
             !activeSectionSubtitle.isNullOrBlank() -> activeSectionSubtitle
             else -> translation["manager.sections.features.subtitle"] ?: ""
         }
@@ -1364,7 +1364,7 @@ class FeaturesRootSection : Routes.Route() {
                                 IconButton(onClick = onBack) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = translation["button.back"] ?: "Back",
+                                        contentDescription = context.translation["common.back"],
                                         tint = Color.White
                                     )
                                 }
@@ -1385,7 +1385,7 @@ class FeaturesRootSection : Routes.Route() {
                                         .weight(1f)
                                         .focusRequester(focusRequester),
                                     singleLine = true,
-                                    placeholder = { Text(text = translation["search_button"] ?: "Search", color = Color(0xFFE0DCFF)) },
+                                    placeholder = { Text(text = translation["search_button"], color = Color(0xFFE0DCFF)) },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = Icons.Filled.Search,
@@ -1543,7 +1543,7 @@ class FeaturesRootSection : Routes.Route() {
                                     ) {
                                         Icon(Icons.Filled.Delete, contentDescription = null, tint = Color.White.copy(alpha = 0.85f))
                                         Spacer(Modifier.width(6.dp))
-                                        Text(text = translation["clear_history"] ?: "Clear history", color = Color.White)
+                                        Text(text = translation["clear_history"], color = Color.White)
                                     }
                                 }
                             }

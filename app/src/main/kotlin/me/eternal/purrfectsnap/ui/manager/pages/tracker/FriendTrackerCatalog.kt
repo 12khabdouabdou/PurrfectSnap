@@ -148,7 +148,7 @@ class FriendTrackerCatalog : Routes.Route() {
                                 contentColor = Color.White
                             )
                         ) {
-                            Text(translation["manage_repos_description"] ?: (context.translation["manager.routes.manage_friend_tracker_repos"] ?: "Manage repositories"))
+                            Text(translation["manage_repos_description"] ?: context.translation["manager.routes.manage_friend_tracker_repos"])
                         }
                     }
                 )
@@ -176,7 +176,7 @@ class FriendTrackerCatalog : Routes.Route() {
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
-                        context.shortToast(translation.format("error", "message" to (e.localizedMessage ?: "Unknown")))
+                        context.shortToast(translation.format("error", "message" to (e.localizedMessage ?: context.translation["common.unknown"])))
                     }
                 }
             }
@@ -341,7 +341,7 @@ class FriendTrackerCatalog : Routes.Route() {
                 .background(PurrfectPalette.backgroundGradient)
         ) {
             FloatingTopBar(
-                title = translation["title"] ?: (routeInfo.translatedKey?.value ?: "Catalog"),
+                title = translation["title"],
                 onBack = { routes.navController.popBackStack() },
                 actions = {
                     IconButton(onClick = { routes.manageFriendTrackerRepos.navigate() }) {

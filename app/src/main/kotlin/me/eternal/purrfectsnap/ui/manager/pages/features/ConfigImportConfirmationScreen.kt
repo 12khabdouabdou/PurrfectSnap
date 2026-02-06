@@ -232,7 +232,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
             routes.configJsonForImport?.let { parser.parse(it) } ?: emptyMap()
         }
         val expandedState = remember { mutableStateMapOf<String, Boolean>() }
-        val importLabel = translation["confirm_button"] ?: "Import"
+        val importLabel = translation["confirm_button"]
 
         Box(
             modifier = Modifier
@@ -281,14 +281,14 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                                 tint = Color.White,
                                 modifier = Modifier.padding(end = 6.dp)
                             )
-                            Text(context.translation["common.back"] ?: "Back")
+                            Text(context.translation["common.back"])
                         }
                         Box(
                             modifier = Modifier.weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Summary",
+                                text = translation["title"],
                                 color = Color.White,
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 18.sp
@@ -308,7 +308,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                                         context.longToast(
                                             context.translation.format(
                                                 "config_import_failure_toast",
-                                                "error" to (err.message ?: "Unknown error")
+                                                "error" to (err.message ?: context.translation["common.unknown_error"])
                                             )
                                         )
                                     }

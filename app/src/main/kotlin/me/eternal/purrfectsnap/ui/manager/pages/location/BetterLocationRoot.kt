@@ -127,7 +127,11 @@ class BetterLocationRoot : Routes.Route() {
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Lat ${friendLocation.latitude.toFloat()}, Lng ${friendLocation.longitude.toFloat()}",
+                        text = context.translation.format(
+                            "spoofed_coordinates_title",
+                            "latitude" to friendLocation.latitude.toFloat().toString(),
+                            "longitude" to friendLocation.longitude.toFloat().toString()
+                        ),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Light,
                         color = Color.White.copy(alpha = 0.8f)

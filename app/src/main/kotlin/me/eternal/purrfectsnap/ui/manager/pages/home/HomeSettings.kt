@@ -154,8 +154,8 @@ class HomeSettings : Routes.Route() {
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, defaultValue)) }
         var showDisableDialog by remember { mutableStateOf(false) }
         val hapticFeedback = LocalHapticFeedback.current
-        val positiveLabel = context.translation["button.positive"] ?: "Yes"
-        val negativeLabel = context.translation["button.negative"] ?: "No"
+        val positiveLabel = context.translation["button.positive"]
+        val negativeLabel = context.translation["button.negative"]
 
         LaunchedEffect(realKey) {
             if (!sharedPreferences.contains(realKey)) {
@@ -167,7 +167,7 @@ class HomeSettings : Routes.Route() {
         if (showDisableDialog) {
             AestheticDialog(
                 onDismissRequest = { showDisableDialog = false },
-                title = confirmDisableTitle ?: "Are you sure?",
+                title = confirmDisableTitle ?: translation["reset_setup_dialog_title"],
                 text = confirmDisableText.orEmpty(),
                 icon = Icons.Filled.Warning,
                 confirmButtonText = positiveLabel,
@@ -313,9 +313,9 @@ class HomeSettings : Routes.Route() {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
         val scrollState = rememberScrollState()
-        val positiveLabel = context.translation["button.positive"] ?: "Yes"
-        val negativeLabel = context.translation["button.negative"] ?: "No"
-        val importLabel = context.translation["button.import"] ?: "Import"
+        val positiveLabel = context.translation["button.positive"]
+        val negativeLabel = context.translation["button.negative"]
+        val importLabel = context.translation["button.import"]
         val sharedButtonColors = ButtonDefaults.buttonColors(
             containerColor = Color.White.copy(alpha = 0.12f),
             contentColor = Color.White

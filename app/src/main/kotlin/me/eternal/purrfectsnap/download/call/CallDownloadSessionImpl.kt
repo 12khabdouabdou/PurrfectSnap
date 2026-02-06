@@ -120,7 +120,7 @@ class CallDownloadSessionImpl(
         val pendingTask = context.taskManager.createPendingTask(
             Task(
                 type = TaskType.DOWNLOAD,
-                title = "Call Recording $author",
+                title = context.translation.format("task_call_recording_title", "author" to author),
                 author = author,
                 hash = UUID.randomUUID().toString()
             )

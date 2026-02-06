@@ -162,7 +162,7 @@ fun ScriptCatalog(root: ScriptingRootSection) {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    context.shortToast(translation.format("error", "message" to (e.localizedMessage ?: "Unknown")))
+                    context.shortToast(translation.format("error", "message" to (e.localizedMessage ?: context.translation["common.unknown"])))
                 }
             }
         }
@@ -238,7 +238,7 @@ fun ScriptCatalog(root: ScriptingRootSection) {
                                     color = Color.White
                                 )
                                 Text(
-                                    text = translation["loading"] ?: "Loading...",
+                                    text = translation["loading"],
                                     color = Color.White,
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 13.sp
@@ -348,7 +348,7 @@ fun ScriptCatalog(root: ScriptingRootSection) {
                                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
                             ) {
                                 Text(
-                                    text = translation.format("version", "version" to (entry.version ?: "N/A")),
+                                    text = translation.format("version", "version" to (entry.version ?: context.translation["common.not_available"])),
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 11.sp,

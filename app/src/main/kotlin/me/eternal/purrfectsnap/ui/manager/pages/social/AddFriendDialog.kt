@@ -375,8 +375,7 @@ class AddFriendDialog(
                                             enabled = !allFriendsSelected
                                         ) {
                                             Text(
-                                                text = context.translation["manager.dialogs.messaging_action.select_all_button"]
-                                                    ?: "Select All",
+                                                text = context.translation["manager.dialogs.messaging_action.select_all_button"],
                                                 color = if (allFriendsSelected) {
                                                     Color.White.copy(alpha = 0.45f)
                                                 } else {

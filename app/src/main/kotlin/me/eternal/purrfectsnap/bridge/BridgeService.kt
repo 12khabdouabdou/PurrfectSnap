@@ -121,7 +121,7 @@ class BridgeService : Service() {
                 val pendingTask = remoteSideContext.taskManager.createPendingTask(
                     Task(
                         type = TaskType.DOWNLOAD,
-                        title = "Media conversion",
+                        title = remoteSideContext.translation["task_media_conversion_title"],
                         author = null,
                         hash = taskId
                     )
