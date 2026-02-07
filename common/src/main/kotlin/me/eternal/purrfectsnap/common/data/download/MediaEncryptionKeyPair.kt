@@ -9,7 +9,6 @@ import javax.crypto.spec.SecretKeySpec
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
-// key and iv are base64 encoded into url safe strings
 data class MediaEncryptionKeyPair(
     val key: String,
     val iv: String,
