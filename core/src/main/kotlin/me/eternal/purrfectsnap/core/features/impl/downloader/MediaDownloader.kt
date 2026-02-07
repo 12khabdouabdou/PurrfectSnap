@@ -212,35 +212,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         }
     }
 
-    private fun extractStoryEncryption(paramMap: ParamMap): MediaEncryptionKeyPair? {
-        val keyRaw = paramMap["CONTEXT_REPLY_MEDIA_KEY"] as? String
-            ?: paramMap["REPLY_MEDIA_KEY"] as? String
-            ?: return null
-
-        val ivRaw = paramMap["CONTEXT_REPLY_MEDIA_IV"] as? String
-            ?: paramMap["REPLY_MEDIA_IV"] as? String
-            ?: return null
-
-        return try {
-            val keyBytes = android.util.Base64.decode(keyRaw, android.util.Base64.DEFAULT)
-            val ivBytes = android.util.Base64.decode(ivRaw, android.util.Base64.DEFAULT)
-
-            if (keyBytes.size != 32 || ivBytes.size != 16) {
-                context.log.verbose("Fallback encryption → invalid key/iv length")
-                return null
-            }
-
-            val encryptionWrapper = EncryptionWrapper(keyBytes, ivBytes, SnapCipherMode.CTR)
-            val keyPair = encryptionWrapper.toKeyPairUrlSafe()
-
-            keyPair
-
-        } catch (e: Exception) {
-            context.log.error("Story AES decode failed", e)
-            null
-        }
-    }
-
     private fun downloadOperaMedia(
         downloadManagerClient: DownloadManagerClient,
         mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>,
@@ -292,59 +263,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
             DownloadMediaType.fromUri(Uri.parse(originalMediaInfoReference)),
             originalMediaInfo.encryption?.toKeyPair()
         )
-    }
-
-    private fun getHybridEncryption(
-        mediaInfo: MediaInfo?,
-        paramMap: ParamMap?
-    ): MediaEncryptionKeyPair? {
-        // Try MediaInfo encryption first (works for videos, DASH, Opera)
-        mediaInfo?.encryption?.toKeyPair()?.let {
-            context.log.verbose(
-                "Encryption autodetect -> WRAPPER(${if (mediaInfo.uri.endsWith(".mp4")) "video" else "image"}/snap)"
-            )
-            return it
-        }
-
-        // Try story ParamMap keys (works for story images)
-        paramMap?.let { pm ->
-            val keyRaw = pm["CONTEXT_REPLY_MEDIA_KEY"] as? String
-                ?: pm["REPLY_MEDIA_KEY"] as? String
-            val ivRaw = pm["CONTEXT_REPLY_MEDIA_IV"] as? String
-                ?: pm["REPLY_MEDIA_IV"] as? String
-
-            if (keyRaw != null && ivRaw != null) {
-                runCatching {
-                    val keyBytes = try {
-                        android.util.Base64.decode(keyRaw, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-                    } catch (_: Exception) {
-                        android.util.Base64.decode(keyRaw, Base64.DEFAULT)
-                    }
-                    val ivBytes = try {
-                        android.util.Base64.decode(ivRaw, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-                    } catch (_: Exception) {
-                        android.util.Base64.decode(ivRaw, Base64.DEFAULT)
-                    }
-
-                    if (keyBytes.size == 32 && ivBytes.size == 16) {
-                        return MediaEncryptionKeyPair(
-                            android.util.Base64.encodeToString(keyBytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP),
-                            android.util.Base64.encodeToString(ivBytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP)
-                        )
-                    }
-                }.onFailure {
-                    context.log.verbose("Failed story key/IV decode: ${it.message}")
-                }
-            }
-
-            context.log.verbose("Encryption autodetect -> STORY PARAMMAP, HasEncryption=false")
-        }
-
-        return null
-    }
-
-    private fun safeGetEncryptionPair(info: MediaInfo?, paramMap: ParamMap? = null): MediaEncryptionKeyPair? {
-        return getHybridEncryption(info, paramMap)
     }
 
     fun canAutoDownloadMessage(databaseMessage: ConversationMessage): Boolean {
@@ -429,32 +347,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
             if (!forceDownload) {
                 if (context.config.downloader.preventSelfAutoDownload.get() && author.userId == context.database.myUserId) return
                 if (!canUseRule(author.userId!!)) return
-            }
-
-            // ─── Prepare encryption if needed ─────────────
-            val storyKeyPair: MediaEncryptionKeyPair? = try {
-                val keyRaw = paramMap["CONTEXT_REPLY_MEDIA_KEY"] as? String
-                    ?: paramMap["REPLY_MEDIA_KEY"] as? String
-                val ivRaw  = paramMap["CONTEXT_REPLY_MEDIA_IV"] as? String
-                    ?: paramMap["REPLY_MEDIA_IV"] as? String
-
-                if (keyRaw != null && ivRaw != null) {
-                    val keyBytes = android.util.Base64.decode(keyRaw, android.util.Base64.DEFAULT)
-                    val ivBytes  = android.util.Base64.decode(ivRaw, android.util.Base64.DEFAULT)
-
-                    if (keyBytes.size == 32 && ivBytes.size == 16) {
-                        EncryptionWrapper(keyBytes, ivBytes, SnapCipherMode.CTR).toKeyPairUrlSafe()
-                    } else null
-                } else null
-            } catch (e: Exception) {
-                context.log.error("Story AES decode failed", e)
-                null
-            }
-
-            if (storyKeyPair != null) {
-                context.log.verbose("Story encryption detected")
-            } else {
-                context.log.verbose("No story encryption detected")
             }
 
             downloadOperaMedia(

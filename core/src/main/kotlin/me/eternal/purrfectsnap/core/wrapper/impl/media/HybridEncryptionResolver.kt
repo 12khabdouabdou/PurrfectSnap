@@ -10,8 +10,7 @@ object HybridEncryptionResolver {
 
     fun resolve(
         mediaInfo: MediaInfo,
-        storyKeyPair: MediaEncryptionKeyPair?,
-        logger: (String) -> Unit
+        storyKeyPair: MediaEncryptionKeyPair?
     ): MediaEncryptionKeyPair? {
 
         // ────OLD WRAPPER (images/snaps)───────────────────
