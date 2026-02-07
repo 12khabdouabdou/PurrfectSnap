@@ -14,6 +14,8 @@ class MessageSender(
     private val context: ModContext,
 ) {
     companion object {
+        const val VOICE_NOTE_MAX_DURATION_MS = 100_000L
+
         val audioNoteProto: (Long, String?) -> ByteArray = { duration, userLocale ->
             ProtoWriter().apply {
                 from(6, 1) {
