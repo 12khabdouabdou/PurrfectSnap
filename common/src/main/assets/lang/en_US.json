@@ -1796,6 +1796,10 @@
                         "name": "Spotlight Comments Username Icon",
                         "description": "Choose which icon is displayed next to usernames in Spotlight comments"
                     },
+                    "spotlight_creator_info": {
+                        "name": "Spotlight Creator Info",
+                        "description": "Show an info button on Spotlight/Discover snaps to view creator display name, username, and user ID"
+                    },
                     "bypass_video_length_restriction": {
                         "name": "Bypass Video Length Restrictions",
                         "description": "Single: sends a single video\nSplit: split videos after editing"
@@ -3222,6 +3226,25 @@
         "select": "Select",
         "select_date_first": "Please select a date",
         "invalid_time": "Please select a future time"
+    },
+    "spotlight_creator_info": {
+        "title": "Creator Info",
+        "close": "Close",
+        "creator_info": "Creator Info",
+        "display_name": "Display name",
+        "username": "Username",
+        "user_id": "User ID",
+        "posted_on": "Posted",
+        "loading_username": "Loading…",
+        "username_copied": "Username copied",
+        "user_id_copied": "User ID copied",
+        "friend_status": "Friend status",
+        "mutual_friend": "Mutual friend",
+        "following": "Following",
+        "friend_request_sent": "Request sent",
+        "friend_request_received": "Request received",
+        "blocked": "Blocked",
+        "friend_removed": "Removed"
     },
     "auto_reply_messages": {
         "dialog": {

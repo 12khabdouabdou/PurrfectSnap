@@ -957,6 +957,10 @@
                         "name": "أيقونة اسم مستخدم تعليقات منصة الأضواء",
                         "description": "اختر الأيقونة التي يتم عرضها بجانب أسماء المستخدمين في تعليقات منصة الأضواء"
                     },
+                    "spotlight_creator_info": {
+                        "name": "معلومات منشئ منصة الأضواء",
+                        "description": "عرض زر معلومات على سنابات منصة الأضواء/اكتشف لرؤية اسم العرض واسم المستخدم ومعرف المستخدم للمنشئ"
+                    },
                     "bypass_video_length_restriction": {
                         "name": "تجاوز قيود طول الفيديو",
                         "description": "مفرد: يرسل فيديو واحد\nمقسم: يقسم الفيديو بعد التحرير"
@@ -3127,6 +3131,25 @@
         "select": "تحديد",
         "select_date_first": "يرجى تحديد تاريخ أولاً",
         "invalid_time": "يرجى تحديد وقت مستقبلي"
+    },
+    "spotlight_creator_info": {
+        "title": "معلومات المنشئ",
+        "close": "إغلاق",
+        "creator_info": "معلومات المنشئ",
+        "display_name": "اسم العرض",
+        "username": "اسم المستخدم",
+        "user_id": "معرف المستخدم",
+        "posted_on": "نُشر في",
+        "loading_username": "جاري التحميل…",
+        "username_copied": "تم نسخ اسم المستخدم",
+        "user_id_copied": "تم نسخ معرف المستخدم",
+        "friend_status": "حالة الصداقة",
+        "mutual_friend": "صديق مشترك",
+        "following": "متابَع",
+        "friend_request_sent": "تم إرسال الطلب",
+        "friend_request_received": "تم استلام الطلب",
+        "blocked": "محظور",
+        "friend_removed": "تمت إزالته"
     },
     "auto_reply_messages": {
         "dialog": {
