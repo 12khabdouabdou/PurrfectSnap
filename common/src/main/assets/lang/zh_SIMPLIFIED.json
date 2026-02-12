@@ -2,22 +2,22 @@
     "setup": {
         "activity": {
             "wrong_apk_title": "安装了错误的 APK",
-            "wrong_apk_message": "您的设备架构为 armv8，请下载 armv8 版本的 APK，而不是 armv7。",
+            "wrong_apk_message": "您的设备是 armv8，请下载 armv8 的 apk，而不是 armv7。",
             "close_button": "关闭",
             "important_confirm_timeout": "我明白了 ({seconds}秒)",
             "important_confirm": "我明白了",
-            "important_title": "重要提示！",
-            "important_message": "如果您之前使用过 SnapEnhance 或 PurrfectSnap 以外的任何其他模组，我们建议卸载所有相关内容并保留原版 Snapchat 一周。等到下周五之后再切换到 PurrfectSnap。",
-            "language_subtitle": "首先调整 PurrfectSnap 的语言以符合您的习惯。",
+            "important_title": "重要！",
+            "important_message": "如果您使用过 SnapEnhance 或除 PurrfectSnap 以外的任何其他模组，我们建议卸载所有内容并保持使用原版 Snapchat 一周。然后在下周五之后切换到 PurrfectSnap。",
+            "language_subtitle": "在开始之前，先调整 PurrfectSnap 的语言。",
             "install_mode_title": "选择您的设备",
             "install_mode_subtitle": "选择适合您安装 PurrfectSnap 的方式。",
-            "permissions_subtitle": "授予必要的权限，以确保悬浮窗、下载和提醒功能稳定运行。",
-            "patch_title": "自动修补器",
-            "patch_subtitle": "通过单一流程简化下载、修补和安装。",
-            "root_install_title": "Snapchat 安装器",
+            "permissions_subtitle": "授予必要的权限，以便覆盖层、下载和警报保持可靠。",
+            "patch_title": "自动修补程序",
+            "patch_subtitle": "只需一个流程即可简化下载、修补和安装。",
+            "root_install_title": "Snapchat 安装程序",
             "root_install_subtitle": "下载并安装推荐的 Snapchat 版本。",
-            "save_folder_subtitle": "选择您的个人保管库，让 Snap 准确保存到您期望的位置。",
-            "mappings_subtitle": "我们将根据您的安装进行校准，确保功能完美运行。",
+            "save_folder_subtitle": "选择您的个人保管库，以便 Snaps 准确保存在您期望的位置。",
+            "mappings_subtitle": "我们将根据您的安装校准一切，确神奇的功能完美运行。",
             "step_counter": "第 {current} 步，共 {total} 步",
             "step_complete": "已完成",
             "step_active": "进行中",
@@ -27,116 +27,117 @@
         },
         "dialogs": {
             "select_language": "选择语言",
-            "save_folder": "选择下载保存位置",
-            "select_save_folder_button": "选择文件夹"
+            "save_folder": "选择保存下载内容的位置",
+            "select_save_folder_button": "选择文件夹",
+            "hex_color_label": "十六进制颜色"
         },
         "install_mode": {
             "confirm_timeout": "我明白了 ({seconds}秒)",
             "confirm": "我明白了",
             "notice_title": "请注意！",
-            "notice_intro": "选择您的设备类型：已 Root 或 未 Root。如果不确定，请选择 未 Root 并继续。",
-            "notice_non_root_title": "未 Root 设备",
-            "notice_non_root_body": "选择“未 Root”，应用将处理所有事务。当出现提示时点击“安装已修补的 Snapchat”。安装完成后，请勿立即打开 Snapchat。继续完成 PurrfectSnap 设置；设置完成后，您即可打开 Snapchat 并开始使用。",
+            "notice_intro": "选择您的设备类型：已 Root 或未 Root。如果不确定，请选择“非 Root”并继续。",
+            "notice_non_root_title": "非 Root 设备",
+            "notice_non_root_body": "选择“非 Root”，应用将处理一切。当出现提示时，点击“安装修补后的 Snapchat”。安装后，请勿立即打开 Snapchat。继续 PurrfectSnap 设置；设置完成后，您可以打开 Snapchat 并享受。",
             "notice_root_title": "已 Root 设备",
-            "notice_root_body": "确保您已先刷入 LSPosed。我们推荐使用 JingMatrix LSPosed 或 LSPosed Irena。选择“Root”后，应用将安装推荐的 Snapchat 版本。请勿立即打开它；继续完成 PurrfectSnap 设置。设置完成后，在 LSPosed 中启用 PurrfectSnap 并重启手机。然后开始使用 Snapchat。我们强烈建议使用 Zygisk Detach 模块将 Snapchat 从 Play 商店分离，以防止自动更新。",
-            "notice_issues_hint": "如果遇到任何安装问题，解决方案将显示在这里。请仔细阅读。",
+            "notice_root_body": "确保您已先刷入 LSPosed。我们推荐 JingMatrix LSPosed 或 LSPosed Irena。选择“Root”后，应用将安装推荐的 Snapchat 版本。请勿立即打开它；继续 PurrfectSnap 设置。设置完成后，在 LSPosed 中启用 PurrfectSnap 并重启手机。然后开始使用 Snapchat。我们强烈建议使用 Zygisk Detach 模块将 Snapchat 从 Play 商店分离，以防止自动更新。",
+            "notice_issues_hint": "如果您遇到任何安装问题，解决方案将显示在这里。请仔细阅读。",
             "notice_note_prefix": "注意：",
-            "notice_note_body": "新账号很容易被锁定！建议在 PurrfectSnap 上使用老账号。",
+            "notice_note_body": "新账号很容易被锁定！建议在 PurrfectSnap 上使用旧账号。",
             "step_title": "选择您的设备",
-            "step_subtitle": "如果您不知道，请选择“未 Root 设备”并继续。",
+            "step_subtitle": "如果您不知道，请选择“非 Root 设备”并继续。",
             "root_option_title": "已 Root 设备",
             "root_option_subtitle": "使用 LSPosed 并跳过自动修补。",
-            "non_root_option_title": "未 Root 设备",
-            "non_root_option_subtitle": "使用内置的自动修补器安装已修补的 Snapchat。",
+            "non_root_option_title": "非 Root 设备",
+            "non_root_option_subtitle": "使用内置的自动修补程序安装修补后的 Snapchat。",
             "skip_auto_setup": "跳过自动设置"
         },
         "mappings": {
             "dialog": "正在生成映射...",
             "generate_failure_no_snapchat": "PurrfectSnap 无法检测到 Snapchat，请尝试重新安装 Snapchat。",
-            "generate_failure": "尝试生成映射时发生错误，请重试。",
+            "generate_failure": "生成映射时出错，请重试。",
             "confirm_understand_timeout": "我明白了 ({seconds}秒)",
             "confirm_understand": "我明白了",
             "notice_title": "请注意！",
             "notice_intro": "如果在登录时看到“帐户暂时禁用”错误，请不要担心。按顺序执行以下步骤：",
-            "notice_step_1": "1. 重新打开 Snapchat 并登录。这在大多数情况下能解决问题。",
-            "notice_step_2": "2. 如果仍然失败，请反复点击登录按钮。这通常能解决接下来的问题。",
-            "notice_step_3": "3. 如果仍然失败，请清除 Snapchat 数据，禁用任何 VPN，然后重新登录。",
+            "notice_step_1": "1. 重新打开 Snapchat 并登录。这通常能解决问题。",
+            "notice_step_2": "2. 如果仍然失败，请重复点击登录按钮。这通常能解决接下来的问题。",
+            "notice_step_3": "3. 如果仍然失败，请清除 Snapchat 的数据，禁用任何 VPN，然后重新登录。",
             "notice_rooted_title": "对于 Root 用户：",
             "notice_rooted_body": "重新打开 Snapchat 并登录。如果仍然失败，请在 LSPosed 中禁用 PurrfectSnap，登录后再重新启用 PurrfectSnap。",
             "warnings_info": "生成映射时发生 {count} 个警告：\n\n{warnings}",
             "progress_hint": "这只需要片刻。保持应用打开，见证奇迹发生！"
         },
         "patch": {
-            "title": "自动修补器",
-            "ready_log": "自动修补器已准备就绪。",
+            "title": "自动修补程序",
+            "ready_log": "自动修补程序已就绪。",
             "install_confirmed_log": "Snapchat 安装已确认。您可以继续。",
             "download_recommended_status": "正在下载推荐的 Snapchat 版本 ({version})...",
-            "starting_log": "正在为推荐的 Snapchat 版本启动自动修补器。",
-            "uninstall_prompt_status": "Snapchat 已安装。请先卸载它（不要保留数据），然后再次启动自动修补器。",
-            "uninstall_prompt_error": "Snapchat 仍然安装。请先卸载以继续。",
-            "module_apk_not_found_error": "未找到模块 APK",
+            "starting_log": "正在启动推荐 Snapchat 版本的自动修补程序。",
+            "uninstall_prompt_status": "Snapchat 已安装。请先卸载它（不要保留数据），然后再次启动自动修补程序。",
+            "uninstall_prompt_error": "Snapchat 仍已安装。请先卸载它以继续。",
+            "module_apk_not_found_error": "未找到模块 apk",
             "fetching_apk_status": "正在获取推荐的 Snapchat APK...",
             "download_failed_error": "下载失败",
             "download_completed_status": "下载完成：{fileName}",
-            "starting_patch_status": "正在开始修补，由 JingMatrix LSPatch 提供支持",
-            "patched_not_produced_error": "未生成已修补的 APK",
-            "patched_ready_status": "已修补版本准备就绪。安装以完成。",
+            "starting_patch_status": "正在启动由 Jingmatrix Lspatch 提供支持的修补",
+            "patched_not_produced_error": "未生成修补后的 apk",
+            "patched_ready_status": "修补版本已就绪。安装以完成。",
             "failed_status": "失败：{message}",
-            "mark_installed_log": "标记为手动安装。您可以继续。",
+            "mark_installed_log": "已标记为手动安装。您可以继续。",
             "issues_title": "遇到问题？",
             "issues_confirm": "知道了",
             "issues_heading": "如何修复安装错误",
-            "issues_conflict_issue": "问题：应用无法安装，因为它与现有包冲突。",
-            "issues_conflict_fix": "修复：从 Play 商店下载 Snapchat 并不保留数据地卸载它。再次运行自动修补器。如果仍然无效，请运行：",
+            "issues_conflict_issue": "问题：无法安装应用，因为它与现有软件包冲突。",
+            "issues_conflict_fix": "修复：从 Play 商店下载 Snapchat 并不保留数据地卸载它。再次运行自动修补程序。如果仍然无效，请运行：",
             "issues_adb_command": "adb uninstall com.snapchat.android",
-            "issues_invalid_issue": "问题：应用未安装，因为安装包似乎无效。",
-            "issues_invalid_fix": "修复：下载并安装 JingMatrix LSPatch，然后在集成模式下修补一个 Snapchat 版本（13.65.1.0 到 13.71.0.51 之间的任意版本）。选择“嵌入模块”并嵌入 PurrfectSnap APK。然后在 PurrfectSnap 设置期间选择“跳过自动设置”以跳过自动修补器。",
+            "issues_invalid_issue": "问题：应用未安装，因为软件包似乎无效。",
+            "issues_invalid_fix": "修复：下载并安装 JingMatrix LSPatch，然后在集成模式下修补此范围内的 Snapchat 版本（任意一个），即 13.65.1.0 到 13.71.0.51 之间。选择嵌入模块并嵌入 PurrfectSnap APK。然后在 PurrfectSnap 设置期间选择“跳过自动设置”以跳过自动修补程序。",
             "status_downloading": "正在下载 Snapchat {percent}%",
             "status_patching": "正在修补...",
             "status_initializing": "正在初始化...",
             "logs_copied": "日志已复制到剪贴板。",
-            "install_success": "已修补的 APK 已安装",
+            "install_success": "修补后的 APK 已安装",
             "start_button": "开始自动修补",
-            "install_button": "安装已修补的 Snapchat",
+            "install_button": "安装修补后的 Snapchat",
             "already_installed_button": "已经安装了？",
-            "powered_by_label": "由 JingMatrix LSPatch 提供支持",
+            "powered_by_label": "由 Jingmatrix Lspatch 提供支持",
             "logs_title": "日志",
             "copy_button": "复制",
             "log_line_prefix": "- {line}"
         },
         "permissions": {
-            "dialog": "完成这些基本设置以继续：",
+            "dialog": "完成这些必要步骤以继续：",
             "notification_access": "通知访问权限",
             "battery_optimization": "电池优化",
             "display_over_other_apps": "显示在其他应用上层",
             "request_button": "请求",
-            "notification_access_description": "下载完成后立即通知您。",
-            "battery_optimization_description": "保持后台任务存活，不被系统杀掉。",
-            "display_over_other_apps_description": "在 Snapchat 中启用悬浮窗覆盖。",
+            "notification_access_description": "在下载完成的瞬间通知您。",
+            "battery_optimization_description": "保持后台任务处于活动状态而不被终止。",
+            "display_over_other_apps_description": "在您使用 Snapchat 时启用浮动覆盖层。",
             "granted_label": "已授予"
         },
         "pick_language": {
             "current_selection": "当前选择",
             "browse_languages": "浏览语言",
-            "change_anytime_hint": "您可以随时在 PurrfectSnap 设置中更改此选项。",
+            "change_anytime_hint": "您可以随时从 PurrfectSnap 设置中更改此选项。",
             "available_languages": "可用语言"
         },
         "root_install": {
-            "title": "Snapchat 安装器",
-            "ready_log": "Snapchat 安装器已准备就绪。",
+            "title": "Snapchat 安装程序",
+            "ready_log": "Snapchat 安装程序已就绪。",
             "install_confirmed_log": "Snapchat 安装已确认。您可以继续。",
             "download_recommended_status": "正在下载推荐的 Snapchat 版本 ({version})...",
-            "mark_installed_log": "标记为手动安装。您可以继续。",
-            "start_download_log": "正在为 Root 安装启动 Snapchat 下载。",
+            "mark_installed_log": "已标记为手动安装。您可以继续。",
+            "start_download_log": "正在开始 Root 安装的 Snapchat 下载。",
             "uninstall_prompt_status": "Snapchat 已安装。请先卸载它（不要保留数据），然后重试。",
-            "uninstall_prompt_error": "Snapchat 仍然安装。请先卸载以继续。",
+            "uninstall_prompt_error": "Snapchat 仍已安装。请先卸载它以继续。",
             "fetching_apk_status": "正在获取推荐的 Snapchat APK...",
             "download_failed_error": "下载失败",
             "download_completed_status": "下载完成：{fileName}",
-            "launching_installer_status": "正在启动安装器...",
+            "launching_installer_status": "正在启动安装程序...",
             "failed_status": "失败：{message}",
             "status_downloading": "正在下载 Snapchat {percent}%",
-            "status_preparing": "正在准备安装器...",
+            "status_preparing": "正在准备安装程序...",
             "logs_copied": "日志已复制到剪贴板。",
             "install_success": "Snapchat 已安装",
             "download_button": "下载 Snapchat",
@@ -152,7 +153,7 @@
             "system_default_label": "系统默认",
             "use_default_location_button": "使用默认位置",
             "no_picker_title": "文件夹选择器不可用",
-            "no_picker_message": "某些分身/双开应用环境会阻止系统文件夹选择器。您可以继续使用系统默认保存位置，或者在分身模式外打开应用以选择自定义文件夹。",
+            "no_picker_message": "某些克隆/双开应用环境会阻止系统文件夹选择器。您可以继续使用系统默认保存位置，或在克隆模式之外打开应用以选择自定义文件夹。",
             "use_default_button": "使用默认",
             "permission_hint": "PurrfectSnap 需要存储权限才能从 Snapchat 下载和保存媒体。"
         }
@@ -188,21 +189,21 @@
         },
         "navigation": {
             "customize_bottom_bar_title": "自定义底部栏",
-            "customize_bottom_bar_subtitle": "选择在主屏幕上显示的标签页",
-            "available_tabs_title": "可用标签页",
-            "shown_tabs_title": "已显示标签页",
+            "customize_bottom_bar_subtitle": "选择在主屏幕上显示的标签",
+            "available_tabs_title": "可用标签",
+            "shown_tabs_title": "已显示标签",
             "reset_button": "重置",
             "done_button": "完成"
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} · 由 Eternal 开发",
+                "version_title": "v{versionName} \u00b7 作者：ΞTΞRNAL",
                 "update_title": "PurrfectSnap 更新",
                 "update_content": "版本 {version} 可用！",
                 "update_button": "下载",
-                "hero_tagline": "一个旨在增强您 Snapchat 体验的 Xposed 模块",
+                "hero_tagline": "一个旨在增强您的 Snapchat 体验的 Xposed 模块",
                 "hero_version_label": "版本：{version} - {channel}",
-                "hero_build_label": "构建版本：{build}",
+                "hero_build_label": "构建：{build}",
                 "update_ready_label": "准备安装",
                 "purr_aura_active_label": "PurrAura 已激活！",
                 "purr_aura_inactive_label": "PurrAura 未激活",
@@ -213,37 +214,51 @@
                 "channel_label_stable": "稳定版",
                 "channel_label_prerelease": "预发布版",
                 "announcements_button_description": "公告",
-                "update_arch_not_supported_toast": "您的设备架构不支持自动更新。",
+                "update_arch_not_supported_toast": "不支持您的设备架构进行自动更新。",
                 "update_download_started_toast": "下载已开始",
                 "update_download_completed_toast": "下载已完成",
-                "update_install_failed_toast": "更新安装失败。查看日志以获取更多详细信息。",
+                "update_install_failed_toast": "安装更新失败。查看日志以获取更多详细信息。",
                 "update_download_failed_toast": "下载失败：{error}",
                 "debug_build_summary_title": "您正在运行 PurrfectSnap 的调试版本",
                 "debug_build_summary_content": "版本 {versionName} ({versionCode})",
                 "debug_build_summary_date": "构建日期：{date} ({days} 天前)",
                 "quick_actions_title": "快捷操作",
                 "quick_actions_empty_title": "暂无快捷磁贴",
-                "quick_actions_empty_subtitle": "用您最常用的操作设计您的梦想网格。",
+                "quick_actions_empty_subtitle": "使用您最常用的操作设计您梦想的网格。",
                 "quick_actions_add_tile_button": "添加磁贴",
                 "quick_actions_manage_button": "管理",
-                "quick_actions_count_label": "{count} 个精选快捷方式"
+                "quick_actions_count_label": "{count} 个精选快捷方式",
+                "enabled": "已启用",
+                "disabled": "已禁用",
+                "changelog_dialog_title": "更新日志",
+                "changelog_dialog_update_button": "更新",
+                "changelog_dialog_cancel_button": "取消",
+                "changelog_dialog_loading": "正在加载更新日志...",
+                "changelog_dialog_error": "加载更新日志失败",
+                "changelog_dialog_empty": "更新日志不可用",
+                "announcements_dialog_title": "公告",
+                "announcements_dialog_close_button": "关闭",
+                "announcements_dialog_loading": "正在加载公告...",
+                "announcements_dialog_error": "加载公告失败",
+                "announcements_dialog_empty": "公告不可用"
             },
             "home_about": {
                 "about_title": "PurrfectSnap",
-                "about_tagline": "一个旨在增强您 Snapchat 体验的 Xposed 模块！",
+                "about_tagline": "一个旨在增强您的 Snapchat 体验的 Xposed 模块！",
                 "about_lead_developers_title": "首席开发者",
                 "about_story_title": "我们的故事",
-                "about_story": "PurrfectSnap 成立于 2025 年 10 月 2 日，作为 IzTIzRNAL 的 SnapEnhance 分支，愿景是为用户提供他们应得的高质量 Snapchat 体验。这个应用最初只是 SnapEnhance 仓库的一个小更新，但很快变成了一个独立的应用，贡献者们不断添加新功能。随后开发者 <RSR/> 加入了团队，这个应用很快取得了巨大的成功。我们收到了很多爱和支持，并在短短两天内获得了 1000+ 的下载量！我们感谢所有用户和贡献者；没有你们的支持，我们走不到这一步。我们还要向 SnapEnhance 的首席开发者 rhunk 致以巨大的感谢，没有他，这个应用甚至不会存在。我们对他感激不尽。最后，我们要感谢所有的管理员，特别是：CLASSIC GENIUS, Harry, SUJI>L, Zain & scrodingerspet，他们从一开始就和我们在一起。我们还要感谢所有的测试人员，特别是 Leo & Toxic，他们持续测试并报告 Bug。我们非常感谢你们的贡献。",
-                "about_thanks_title": "带着爱，PurrfectSnap 团队",
-                "about_magic_toast": "在此屏幕点击 5 次以查看一些魔法 😉！",
+                "about_story": "PurrfectSnap 成立于 2025 年 10 月 2 日，是 ΞTΞRNAL 基于 SnapEnhance 的分叉版本，旨在为用户提供他们应得的高质量 Snapchat 体验。这个应用原本只是 SnapEnhance 仓库中的一个小更新，但很快变成了一个独立的应用，贡献者们不断添加新功能。后来开发者 <RSR/> 加入了团队，这个应用很快取得了巨大的成功。我们收到了许多喜爱和支持，并在短短两天内获得了 1000+ 的下载量！我们感谢所有用户和贡献者；没有你们的支持，我们走不到这一步。我们还要向 SnapEnhance 的首席开发者 rhunk 表示衷心的感谢，没有他，这个应用甚至不会存在。我们对他感激不尽。最后，我们要感谢所有的管理员，特别是：CLASSIC GENIUS、Harry、Sujal、Zain 和 schrodingerspet，他们从一开始就和我们在一起。我们还要感谢所有的测试人员，特别是 Leo 和 Toxic，他们不断地测试和报告错误。我们非常感谢您的贡献。",
+                "about_thanks_title": "PurrfectSnap 团队敬上",
+                "about_magic_toast": "在这个屏幕上点击 5 次以查看一些魔法 😉！",
                 "github_button": "GitHub",
                 "telegram_button": "Telegram"
             },
             "home_logs": {
-                "no_logs_hint": "暂无日志",
+                "no_logs_hint": "没有可用的日志",
+                "refresh_hint": "下拉刷新或触发操作以查看新条目。",
                 "clear_logs_button": "清除日志",
                 "export_logs_button": "导出日志",
-                "saving_logs_toast": "正在保存日志，这可能需要一会儿...",
+                "saving_logs_toast": "正在保存日志，这可能需要一段时间...",
                 "saved_logs_success_toast": "日志保存成功",
                 "saved_logs_failure_toast": "保存日志失败",
                 "read_logs_failed_toast": "读取日志失败！"
@@ -255,76 +270,93 @@
                 "success_toast": "完成！",
                 "message_logger_summary": "{messageCount} 条消息\n{storyCount} 个故事",
                 "export_button": "导出",
+                "import_button": "导入",
                 "clear_button": "清除",
                 "view_logger_history_button": "查看日志记录历史",
-                "ui_settings_title": "界面设置",
+                "message_logger_import_title": "导入消息记录器",
+                "message_logger_import_text": "导入将覆盖您当前的消息记录器数据库。继续吗？",
+                "ui_settings_title": "UI 设置",
                 "haptic_feedback_label": "触觉反馈",
                 "use_system_toasts_label": "使用系统 Toast",
                 "updates_title": "更新",
-                "auto_update_check": "自动检查更新",
+                "auto_update_check": "自动更新检查",
                 "update_check_frequency_daily": "每天",
                 "update_check_frequency_weekly": "每周",
                 "update_check_frequency_monthly": "每月",
                 "update_channel_stable": "稳定版",
                 "update_channel_prerelease": "预发布版",
                 "update_notification_channel_name": "更新",
-                "update_notification_channel_description": "当有新版本可用时获取通知",
+                "update_notification_channel_description": "当有新版本可用时获得通知",
                 "update_notification_title": "有新更新可用",
                 "update_notification_text": "点击打开 PurrfectSnap 并下载最新版本。",
                 "app_theme_title": "应用主题",
                 "theme_icon_description": "打开主题选择器",
-                "theme_mode_system": "跟随系统",
+                "theme_mode_system": "系统",
                 "theme_mode_light": "浅色",
                 "theme_mode_dark": "深色",
                 "friend_notes_title": "好友备注",
                 "friend_notes_description": "管理和备份您的好友备注",
-                "friend_notes_no_notes_to_backup": "暂无备注可备份",
+                "friend_notes_no_notes_to_backup": "尚无备注可备份",
                 "friend_notes_backup_success": "好友备注已备份",
                 "friend_notes_restore_success": "好友备注已恢复",
                 "backup_button": "备份",
                 "restore_button": "恢复",
                 "view_button": "查看",
                 "customize_bottom_bar_title": "自定义底部栏",
-                "customize_bottom_bar_subtitle": "选择在主屏幕上显示的标签页",
-                "available_tabs_title": "可用标签页",
+                "customize_bottom_bar_subtitle": "选择在主屏幕上显示的标签",
+                "available_tabs_title": "可用标签",
+                "reset_setup_title": "重置 PurrfectSnap",
+                "reset_setup_action": "重置并重新开始设置",
+                "reset_setup_dialog_title": "您确定吗？",
+                "reset_setup_dialog_text": "这将重置 PurrfectSnap 并重新开始设置。",
                 "reset_button": "重置",
                 "done_button": "完成",
-                "clear_friend_feed": "清除好友列表",
+                "clear_friend_feed": "清除好友动态流",
                 "test_mode_label": "启用 PurrAura",
+                "purr_aura_disable_title": "您确定吗？",
+                "purr_aura_disable_text": "这样做会使您的帐户面临风险并导致封禁！",
                 "disable_feature_loading_label": "禁用功能加载",
                 "disable_auto_mapper_label": "禁用自动映射器",
                 "disable_bypass_indicator_label": "禁用绕过指示器",
                 "open_file_failed_toast": "打开文件失败！{message}",
                 "import_failed_toast": "导入失败：{message}"
             },
+            "retro_flight": {
+                "title": "复古飞行",
+                "game_over_label": "游戏结束",
+                "restart_button": "重新开始",
+                "left_button": "左",
+                "right_button": "右"
+            },
             "tasks": {
-                "no_tasks": "无任务",
+                "no_tasks": "没有任务",
                 "merge_button": "合并",
-                "summary_active": "{active} 个活跃 · {recent} 个最近",
-                "summary_idle": "空闲 · {recent} 个最近",
+                "summary_active": "{active} 个活跃 \u00b7 {recent} 个最近",
+                "summary_idle": "空闲 \u00b7 {recent} 个最近",
                 "running_count": "{count} 个正在运行",
                 "clear_button_description": "清除任务",
                 "failed_to_open_file": "打开文件失败",
                 "merge_files_toast": "正在合并 {count} 个文件",
-                "remove_selected_tasks_title": "您确定要移除选定的任务吗？",
-                "remove_all_tasks_title": "您确定要移除所有任务吗？",
+                "remove_selected_tasks_title": "您确定要删除选定的任务吗？",
+                "remove_all_tasks_title": "您确定要删除所有任务吗？",
                 "delete_files_option": "同时删除文件",
-                "remove_selected_tasks_confirm": "移除 {count} 个任务？",
-                "remove_all_tasks_confirm": "移除所有任务？"
+                "remove_selected_tasks_confirm": "删除 {count} 个任务？",
+                "remove_all_tasks_confirm": "删除所有任务？"
             },
             "features": {
-                "disabled": "已禁用",
-                "export_option": "导出",
-                "import_option": "导入",
-                "reset_option": "重置",
-                "config_export_success_toast": "配置导出成功",
-                "config_import_success_toast": "配置导入成功",
-                "config_import_failure_toast": "导入配置失败 {error}",
-                "config_export_failure_toast": "导出配置失败 {error}",
-                "saved_config_snackbar": "配置已保存",
-                "older_required": "此功能需要 Snapchat v{version} 或更旧版本才能正常工作",
-                "newer_required": "此功能需要 Snapchat v{version} 或更新版本才能正常工作",
+            "disabled": "已禁用",
+            "export_option": "导出",
+            "import_option": "导入",
+            "reset_option": "重置",
+            "config_export_success_toast": "配置导出成功",
+            "config_import_success_toast": "配置导入成功",
+            "config_import_failure_toast": "导入配置失败 {error}",
+            "config_export_failure_toast": "导出配置失败 {error}",
+            "saved_config_snackbar": "配置已保存",
+            "older_required": "此功能需要 Snapchat v{version} 或更旧版本才能正常工作",
+            "newer_required": "此功能需要 Snapchat v{version} 或更新版本才能正常工作",
                 "search_button": "搜索",
+                "search_results_count": "{count} 条消息",
                 "clear_history": "清除搜索历史",
                 "subtitle": "搜索和管理功能"
             },
@@ -335,14 +367,16 @@
             "manage_rule_feature": {
                 "disable_state_option": "已禁用",
                 "disable_state_subtext": "没有好友/群组会受到影响",
-                "whitelist_state_option": "除了...均不",
-                "whitelist_state_subtext": "只有 {count} 个好友/群组将受此规则影响",
+                "whitelist_state_option": "除了...之外没人",
+                "whitelist_state_subtext": "只有 {count} 个好友/群组会受此规则影响",
                 "whitelist_state_button": "选择允许的好友/群组",
-                "blacklist_state_option": "除了...均为",
-                "blacklist_state_subtext": "除了 {count} 个好友/群组外，其他人都会受此规则影响",
+                "blacklist_state_option": "除了...之外所有人",
+                "blacklist_state_subtext": "除了 {count} 个好友/群组外，所有人都将受此规则影响",
                 "blacklist_state_button": "选择排除的好友/群组",
                 "clear_list_button": "清除好友/群组列表",
-                "dialog_clear_confirmation_text": "您确定要清除列表吗？"
+                "dialog_clear_confirmation_text": "您确定要清除列表吗？",
+                "dialog_clear_confirm_button": "清除",
+                "dialog_clear_cancel_button": "取消"
             },
             "social": {
                 "friends_tab": "好友",
@@ -350,20 +384,21 @@
                 "search_button_description": "搜索",
                 "close_search_button_description": "关闭搜索",
                 "clear_search_button_description": "清除搜索",
-                "empty_hint": "您的列表暂时是空的",
-                "friends_empty_title": "暂未添加好友",
-                "groups_empty_title": "暂未同步群组",
+                "empty_hint": "您的列表暂时为空",
+                "friends_empty_title": "尚未添加好友",
+                "groups_empty_title": "尚未同步群组",
                 "streaks_expiration_short": "{hours}小时",
                 "social_tagline": "管理范围、火花和预览",
                 "social_empty_hint": "点击 + 按钮同步好友或群组。"
             },
             "manage_scope": {
+                "manage_scope_title": "管理",
                 "logged_stories_button": "显示已记录的故事",
                 "e2ee_title": "端到端加密",
-                "e2ee_subtitle": "管理您与此好友的共享密钥。",
+                "e2ee_subtitle": "管理此好友的共享密钥。",
                 "export_base64_button": "导出 Base64",
                 "import_base64_button": "导入 Base64",
-                "invalid_key_size_32_bytes": "无效的密钥大小。请提供 32 字节的密钥。",
+                "invalid_key_size_32_bytes": "密钥大小无效。请提供 32 字节密钥。",
                 "successfully_imported_key": "密钥导入成功。",
                 "failed_to_import_key": "导入密钥失败：{message}",
                 "rules_title": "规则",
@@ -371,7 +406,7 @@
                 "not_found": "未找到",
                 "streaks_title": "火花 (Streaks)",
                 "streaks_length_text": "长度：{length}",
-                "streaks_expiration_text": "{eta} 后过期",
+                "streaks_expiration_text": "过期时间：{eta}",
                 "streaks_expiration_text_expired": "已过期",
                 "reminder_button": "设置提醒",
                 "delete_scope_confirm_dialog_title": "您确定要删除 {scope} 吗？",
@@ -383,21 +418,32 @@
                 "save_from_cache_button": "从缓存保存"
             },
             "messaging_preview": {
-                "bridge_connection_failed": "连接桥接失败。请确保 Snapchat 在后台运行",
-                "bridge_connection_error": "连接桥接失败。请确保 Snapchat 在后台运行",
-                "bridge_init_failed": "初始化消息桥接失败。请确保 Snapchat 在后台运行",
+                "bridge_connection_failed": "连接到桥接器失败。请确保 Snapchat 正在后台运行",
+                "bridge_connection_error": "连接到桥接器失败。请确保 Snapchat 正在后台运行",
+                "bridge_init_failed": "初始化消息桥接器失败。请确保 Snapchat 正在后台运行",
                 "message_fetch_failed": "获取消息失败",
                 "no_message_hint": "无消息",
-                "subtitle": "长按选择",
+                "sender_unknown": "未知",
+                "sender_you": "您",
+                "sender_friend": "好友",
+                "subtitle": "按住以选择",
                 "actions_title": "对话操作",
+                "choose_message_types_subtitle": "选择消息类型",
                 "save_selection_option": "保存所选",
                 "save_all_option": "全部保存",
+                "save_selected_messages_subtitle": "保存选定的消息",
+                "save_by_content_type_subtitle": "按内容类型保存",
                 "unsave_selection_option": "取消保存所选",
                 "unsave_all_option": "全部取消保存",
-                "mark_selection_as_seen_option": "将所选 Snap 标记为已查看",
-                "mark_all_as_seen_option": "将所有 Snap 标记为已查看",
+                "unsave_selected_messages_subtitle": "取消保存选定的消息",
+                "unsave_by_content_type_subtitle": "按内容类型取消保存",
+                "mark_selection_as_seen_option": "将选定的 Snap 标记为已查看",
+                "mark_all_as_seen_option": "将所有 Snaps 标记为已查看",
+                "mark_as_seen_subtitle": "将 Snaps 标记为已查看",
                 "delete_selection_option": "删除所选",
-                "delete_all_option": "全部删除",
+                "delete_all_option": "删除全部",
+                "delete_selected_messages_subtitle": "删除选定的消息",
+                "delete_by_content_type_subtitle": "按内容类型删除",
                 "processed_message_toast": "已处理 {count} 条消息",
                 "processed_messages_toast": "已处理 {count} 条消息",
                 "processed_messages_text": "已处理 {count}",
@@ -420,16 +466,20 @@
                 "file_import_failed": "导入文件失败：{error}",
                 "file_imported": "文件导入成功",
                 "file_delete_failed": "删除文件失败",
-                "no_files_hint": "在这里您可以导入用于 Snapchat 的文件。点击下方按钮导入文件。"
+                "no_files_hint": "您可以在此处导入用于 Snapchat 的文件。按下面的按钮导入文件。"
             },
             "better_location": {
-                "spoofed_coordinates_title": "纬度 {latitude}, 经度 {longitude}",
+                "spoofed_coordinates_title": "纬度 {latitude}，经度 {longitude}",
                 "save_coordinates_dialog_title": "保存坐标",
-                "saved_name_dialog_hint": "保存名称",
+                "saved_name_dialog_hint": "保存的名称",
                 "latitude_dialog_hint": "纬度",
                 "longitude_dialog_hint": "经度",
                 "save_dialog_button": "保存",
                 "choose_location_button": "选择位置",
+                "search_or_tap_map_hint": "搜索或点击地图",
+                "search_location_placeholder": "搜索位置...",
+                "search_icon_description": "搜索",
+                "searching_label": "搜索中...",
                 "manual_coordinates_hint": "手动微调坐标。",
                 "saved_coordinates_subtitle": "管理您保存的伪装位置",
                 "teleport_to_friend_button": "传送到好友",
@@ -438,13 +488,17 @@
                 "saved_coordinates_title": "已保存的坐标",
                 "no_saved_coordinates_hint": "没有已保存的坐标",
                 "delete_dialog_title": "删除已保存的坐标",
-                "delete_dialog_message": "您确定要删除这个已保存的坐标吗？",
+                "delete_dialog_message": "您确定要删除此保存的坐标吗？",
                 "teleport_to_friend_title": "传送到好友",
                 "search_bar": "搜索",
                 "no_friends_map": "地图上没有好友",
                 "no_friends_found": "未找到好友",
-                "include_saved_locations": "Include Saved Locations",
-                "include_saved_locations_description": "Export your saved location coordinates"
+                "include_saved_locations": "包括已保存的位置",
+                "include_saved_locations_description": "导出您保存的位置坐标",
+                "location_search_provider_title": "位置搜索提供商",
+                "google_maps_api_key_title": "Google Maps API 密钥",
+                "option_osm": "OpenStreetMap (免费)",
+                "option_google_maps": "Google Maps"
             }
         },
         "dialogs": {
@@ -462,7 +516,7 @@
             },
             "scripting_warning": {
                 "title": "警告",
-                "content": "PurrfectSnap 包含脚本工具，允许在您的设备上执行用户定义的代码。请务必谨慎，仅安装来自已知、可靠来源的模块。未经授权或未验证的模块可能会对您的系统构成安全风险。"
+                "content": "PurrfectSnap 包含一个脚本工具，允许在您的设备上执行用户定义的代码。请务必小心，只安装来自已知、可靠来源的模块。未经授权或未经验证的模块可能会对您的系统构成安全风险。"
             },
             "reset_config": {
                 "title": "重置配置",
@@ -475,15 +529,16 @@
             },
             "export_config": {
                 "title": "导出敏感数据？",
-                "content": "您想要导出包含敏感数据（如位置坐标等）的配置吗？"
+                "content": "您要导出包含敏感数据的配置吗？（例如位置坐标等）"
             },
             "messaging_action": {
                 "title": "选择要处理的内容类型",
                 "select_all_button": "全选"
             },
             "file_imports": {
-                "no_files_settings_hint": "未找到文件。请确保您已在“文件导入”部分导入了所需文件",
-                "settings_select_file_hint": "选择已导入的文件"
+                "no_files_settings_hint": "未找到文件。请确保您已在“文件导入”部分导入所需的文件",
+                "settings_select_file_hint": "选择已导入的文件",
+                "settings_select_file_subtitle": "从已导入文件列表中选择一个文件"
             }
         },
         "scripting": {
@@ -514,6 +569,8 @@
             "no_settings_for_module": "此模块没有任何设置",
             "open_module_failed": "打开模块文件失败",
             "open_scripts_folder_button": "打开脚本文件夹",
+            "loaded_script": "已加载脚本 {name}",
+            "unloaded_script": "已卸载脚本 {name}",
             "script_already_installed": "脚本已安装",
             "select_folder_button": "选择文件夹",
             "select_scripts_folder_toast": "请先选择一个脚本文件夹",
@@ -525,11 +582,12 @@
                 "no_repos_added": "未添加仓库",
                 "repo_list_info": "在此处查找仓库：",
                 "link_text": "仓库列表",
+                "loading": "正在加载目录...",
                 "script_already_installed": "脚本已安装",
                 "script_downloaded": "脚本已下载",
                 "could_not_create_file": "无法创建文件",
-                "no_scripts_folder_selected": "先选择一个脚本文件夹",
-                "no_scripts_available": "无可用脚本",
+                "no_scripts_folder_selected": "请先选择一个脚本文件夹",
+                "no_scripts_available": "没有可用的脚本",
                 "installed_button": "已安装",
                 "download_button": "下载"
             },
@@ -540,7 +598,7 @@
                 "repo_url_label": "仓库 URL",
                 "add_button": "添加",
                 "invalid_repo_title": "无效仓库",
-                "invalid_repo_error": "此仓库缺少所需数据。",
+                "invalid_repo_error": "此仓库缺少必要数据。",
                 "repo_added_toast": "仓库已添加",
                 "add_repo_failed_toast": "添加仓库失败：{message}",
                 "remove_button": "移除",
@@ -554,7 +612,7 @@
             "catalog_button": "目录",
             "add_rule_button": "添加规则",
             "import_button": "导入",
-            "filters_title": "过滤器",
+            "filters_title": "筛选",
             "search_by_label": "搜索依据",
             "newest_first_label": "最新的在前",
             "since_label": "从",
@@ -567,7 +625,7 @@
             "no_logs_found": "未找到日志",
             "no_rules_found": "未找到规则",
             "export_logs_dialog_title": "导出日志",
-            "export_logs_dialog_confirm_text": "使用当前过滤器导出日志？",
+            "export_logs_dialog_confirm_text": "使用当前筛选条件导出日志？",
             "export_as_button": "导出为 {type}",
             "new_rule_title": "新规则",
             "edit_rule_title": "编辑规则",
@@ -577,11 +635,12 @@
             "author_name_label": "作者",
             "scope_section_title": "范围",
             "scope_all": "所有好友/群组",
-            "scope_whitelist": "除了...均不",
-            "scope_blacklist": "除了...均为",
+            "scope_whitelist": "除了...之外没人",
+            "scope_blacklist": "除了...之外所有人",
             "events_section_title": "事件",
             "events_suffix": "事件",
-            "no_events_text": "暂未添加事件",
+            "scopes_suffix": "范围",
+            "no_events_text": "尚未添加事件",
             "add_event_dialog_title": "添加事件",
             "event_type_label": "事件类型",
             "triggers_title": "触发器",
@@ -589,16 +648,16 @@
             "condition_only_inside_conversation": "仅当我在对话内时",
             "condition_only_outside_conversation": "仅当我在对话外时",
             "condition_only_when_app_active": "仅当 Snapchat 处于活动状态时",
-            "condition_only_when_app_inactive": "仅当 Snapchat 处于非活动状态时",
+            "condition_only_when_app_inactive": "仅当 Snapchat 不处于活动状态时",
             "condition_no_push_notification_when_app_active": "当 Snapchat 处于活动状态时不发送通知",
             "add_button": "添加",
             "cannot_save_rule_dialog_title": "无法保存规则",
             "cannot_save_rule_dialog_text": "填写缺失的字段以保存此规则。",
             "duplicate_rule_name_dialog_title": "重复的规则名称",
-            "duplicate_rule_name_dialog_text": "已存在具有此名称的规则。请选择一个新名称。",
+            "duplicate_rule_name_dialog_text": "已存在具有此名称的规则。请选择新名称。",
             "discard_changes_dialog_title": "放弃更改？",
-            "discard_changes_dialog_text": "您有未保存的更改。要放弃它们吗？",
-            "rule_subtitle": "为此规则配置触发器和范围。",
+            "discard_changes_dialog_text": "您有未保存的更改。放弃它们？",
+            "rule_subtitle": "配置此规则的触发器和范围。",
             "discard_button": "放弃",
             "enabled_label": "已启用",
             "disabled_label": "已禁用",
@@ -610,13 +669,13 @@
             "bulk_import_button": "批量导入",
             "individual_import_button": "单个导入",
             "invalid_import_type_dialog_title": "无效导入",
-            "invalid_import_type_dialog_text": "所选文件类型与导入模式不匹配。",
+            "invalid_import_type_dialog_text": "选定的文件类型与导入模式不匹配。",
             "export_dialog_title": "导出规则",
             "bulk_export_button": "批量导出",
             "individual_export_button": "单个导出",
             "reverse_order_checkbox": "反向排序",
             "delete_logs_dialog_title": "删除日志",
-            "delete_logs_dialog_confirm_text": "删除所有匹配当前过滤器的日志？",
+            "delete_logs_dialog_confirm_text": "删除所有符合当前筛选条件的日志？",
             "select_friends_groups_button": "选择好友 / 群组"
         },
         "friend_tracker_export": {
@@ -624,6 +683,10 @@
             "save_button": "保存",
             "back_button_description": "返回",
             "expand_button_description": "展开或折叠类别",
+            "tracker_author_label": "作者",
+            "tracker_enabled_label": "已启用",
+            "tracker_enabled_value": "已启用",
+            "tracker_disabled_value": "已禁用",
             "exported_toast": "追踪器配置已导出",
             "export_failed_toast": "导出追踪器失败：{message}"
         },
@@ -632,6 +695,10 @@
             "confirm_button": "导入",
             "back_button_description": "返回",
             "expand_button_description": "展开或折叠类别",
+            "tracker_author_label": "作者",
+            "tracker_enabled_label": "已启用",
+            "tracker_enabled_value": "已启用",
+            "tracker_disabled_value": "已禁用",
             "imported_toast": "追踪器已导入",
             "import_failed_toast": "导入追踪器失败：{message}"
         },
@@ -647,7 +714,7 @@
             "repo_url_label": "仓库 URL",
             "add_button": "添加",
             "invalid_repo_title": "无效仓库",
-            "invalid_repo_error": "此仓库缺少所需数据。",
+            "invalid_repo_error": "此仓库缺少必要数据。",
             "repo_added_toast": "仓库已添加",
             "add_repo_failed_toast": "添加仓库失败：{message}",
             "remove_button": "移除",
@@ -692,7 +759,7 @@
         "properties": {
             "auto_download": {
                 "name": "自动下载",
-                "description": "查看时自动下载 Snap",
+                "description": "查看 Snaps 时自动下载",
                 "options": {
                     "blacklist": "从自动下载中排除",
                     "whitelist": "自动下载"
@@ -700,7 +767,7 @@
             },
             "stealth": {
                 "name": "隐身模式",
-                "description": "防止任何人知道您打开了他们的 Snap/聊天和对话",
+                "description": "防止任何人知道您已打开他们的 Snaps/聊天和对话",
                 "options": {
                     "blacklist": "从隐身模式中排除",
                     "whitelist": "隐身模式"
@@ -708,7 +775,7 @@
             },
             "auto_save": {
                 "name": "自动保存",
-                "description": "查看时保存聊天消息",
+                "description": "查看聊天消息时自动保存",
                 "options": {
                     "blacklist": "从自动保存中排除",
                     "whitelist": "自动保存"
@@ -723,15 +790,15 @@
                 }
             },
             "auto_open_snaps": {
-                "name": "自动打开 Snap",
-                "description": "收到 Snap 时自动打开",
+                "name": "自动打开 Snaps",
+                "description": "收到 Snaps 时自动打开",
                 "options": {
-                    "blacklist": "从自动打开 Snap 中排除",
-                    "whitelist": "自动打开 Snap"
+                    "blacklist": "从自动打开 Snaps 中排除",
+                    "whitelist": "自动打开 Snaps"
                 }
             },
             "hide_friend_feed": {
-                "name": "从好友列表隐藏"
+                "name": "从好友动态流中隐藏"
             },
             "e2e_encryption": {
                 "name": "使用端到端加密"
@@ -760,7 +827,7 @@
             },
             "message_logger": {
                 "name": "消息记录器",
-                "description": "即使消息被删除也保留副本",
+                "description": "即使消息被删除，也保留副本",
                 "options": {
                     "blacklist": "从消息记录器中排除",
                     "whitelist": "消息记录器"
@@ -768,7 +835,7 @@
             },
             "auto_read": {
                 "name": "自动已读",
-                "description": "自动将 Snap 和聊天标记为已读",
+                "description": "自动将 Snaps 和聊天标记为已读",
                 "options": {
                     "blacklist": "从自动已读中排除",
                     "whitelist": "自动已读"
@@ -776,7 +843,7 @@
             },
             "hide_typing_indicator": {
                 "name": "隐藏输入指示器",
-                "description": "防止他人看到您正在输入",
+                "description": "防止其他人看到您正在输入",
                 "options": {
                     "blacklist": "从隐藏输入指示器中排除",
                     "whitelist": "隐藏输入指示器"
@@ -803,7 +870,7 @@
         },
         "bulk_messaging_action": {
             "name": "批量消息操作",
-            "description": "执行诸如删除好友或批量删除对话的操作"
+            "description": "执行删除好友或批量删除对话等操作"
         },
         "regen_mappings": {
             "name": "重新生成映射",
@@ -828,169 +895,11 @@
     },
     "features": {
         "notices": {
-            "unstable": "⚠ 不稳定",
-            "ban_risk": "⚠ 此功能可能导致封号",
-            "internal_behavior": "⚠ 这可能会破坏 Snapchat 的内部行为"
+            "unstable": "\u26a0 不稳定",
+            "ban_risk": "\u26a0 此功能可能导致封号",
+            "internal_behavior": "\u26a0 这可能会破坏 Snapchat 的内部行为"
         },
         "properties": {
-            "global": {
-                "name": "全局",
-                "description": "调整全局 Snapchat 设置",
-                "properties": {
-                    "better_location": {
-                        "name": "更好的定位",
-                        "description": "增强 Snapchat 定位",
-                        "properties": {
-                            "spoof_location": {
-                                "name": "伪装位置",
-                                "description": "将您的位置伪装到指定位置"
-                            },
-                            "coordinates": {
-                                "name": "坐标",
-                                "description": "设置伪装位置的坐标"
-                            },
-                            "walk_radius": {
-                                "name": "行走半径",
-                                "description": "在此半径内随机走动 (ft)"
-                            },
-                            "always_update_location": {
-                                "name": "始终更新位置",
-                                "description": "即使没有收到 GPS 数据也强制 Snapchat 更新位置"
-                            },
-                            "suspend_location_updates": {
-                                "name": "暂停位置更新",
-                                "description": "防止您的位置被更新"
-                            },
-                            "spoof_battery_level": {
-                                "name": "伪装电池电量",
-                                "description": "在地图上伪装您设备的电池电量\n值必须在 0 到 100 之间"
-                            },
-                            "spoof_headphones": {
-                                "name": "伪装耳机",
-                                "description": "在地图上伪装听音乐的状态"
-                            },
-                            "show_battery_level": {
-                                "name": "显示电池电量",
-                                "description": "在地图上显示您好友的电池电量"
-                            }
-                        }
-                    },
-                    "snapchat_plus": {
-                        "name": "Snapchat Plus",
-                        "description": "启用 Snapchat Plus 功能\n某些服务器端功能可能无法工作"
-                    },
-                    "media_upload_quality": {
-                        "name": "媒体上传质量",
-                        "description": "覆盖媒体上传质量",
-                        "properties": {
-                            "force_video_upload_source_quality": {
-                                "name": "强制视频上传源质量",
-                                "description": "上传视频时强制 Snapchat 使用源质量\n请注意，这可能不会从媒体中移除元数据"
-                            },
-                            "disable_image_compression": {
-                                "name": "禁用图像压缩",
-                                "description": "上传媒体时禁用图像压缩"
-                            },
-                            "custom_image_upload_format": {
-                                "name": "自定义图像上传格式",
-                                "description": "设置自定义图像上传格式\n选择无损格式（如 PNG）以获得最佳质量"
-                            }
-                        }
-                    },
-                    "disable_confirmation_dialogs": {
-                        "name": "禁用确认对话框",
-                        "description": "自动确认选定的操作"
-                    },
-                    "auto_updater": {
-                        "name": "自动更新器",
-                        "description": "自动检查新更新"
-                    },
-                    "update_settings": {
-                        "name": "更新设置",
-                        "description": "控制 PurrfectSnap 如何检查更新",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "自动更新检查"
-                            },
-                            "update_check_frequency": {
-                                "name": "更新检查频率"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "界面设置",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "触觉反馈"
-                            }
-                        }
-                    },
-                    "disable_metrics": {
-                        "name": "禁用指标",
-                        "description": "阻止向 Snapchat 发送特定的分析数据"
-                    },
-                    "disable_story_sections": {
-                        "name": "禁用故事部分",
-                        "description": "从故事页面移除部分\n可能需要刷新才能正常工作"
-                    },
-                    "block_ads": {
-                        "name": "拦截广告",
-                        "description": "防止显示广告"
-                    },
-                    "disable_custom_tabs": {
-                        "name": "禁用自定义标签页",
-                        "description": "在支持的应用程序中打开链接，而不是在内置浏览器中"
-                    },
-                    "disable_permission_requests": {
-                        "name": "禁用权限请求",
-                        "description": "防止 Snapchat 请求特定权限"
-                    },
-                    "disable_memories_snap_feed": {
-                        "name": "禁用回忆 Snap 流",
-                        "description": "在相机界面向上滑动时，防止 Snapchat 显示最近的回忆"
-                    },
-                    "spotlight_comments_username": {
-                        "name": "聚光灯评论用户名",
-                        "description": "在聚光灯评论中显示作者用户名"
-                    },
-                    "spotlight_comments_username_icon": {
-                        "name": "聚光灯评论用户名图标",
-                        "description": "选择在聚光灯评论中用户名旁边显示的图标"
-                    },
-                    "bypass_video_length_restriction": {
-                        "name": "绕过视频长度限制",
-                        "description": "单一：发送单个视频\n拆分：编辑后拆分视频"
-                    },
-                    "default_video_playback_rate": {
-                        "name": "默认视频播放速率",
-                        "description": "设置视频播放的默认速度\n值必须在 0.1 和 4.0 之间"
-                    },
-                    "video_playback_rate_slider": {
-                        "name": "视频播放速率滑块",
-                        "description": "在 Opera 上下文菜单中添加滑块以更改视频播放速率\n注意：更改仅适用于后续视频"
-                    },
-                    "disable_google_play_dialogs": {
-                        "name": "禁用 Google Play 服务对话框",
-                        "description": "防止显示 Google Play 服务可用性对话框"
-                    },
-                    "default_volume_controls": {
-                        "name": "默认音量控制",
-                        "description": "强制 Snapchat 使用系统音量控制"
-                    },
-                    "disable_telecom_framework": {
-                        "name": "禁用电信框架",
-                        "description": "防止 Snapchat 使用 Android 电信框架\n这允许您在通话时听音乐"
-                    },
-                    "hide_active_music": {
-                        "name": "隐藏活跃音乐",
-                        "description": "防止 Snapchat 知道您正在听音乐\n这将允许您在听音乐时使用音量键拍摄 Snap"
-                    },
-                    "disable_snap_splitting": {
-                        "name": "禁用 Snap 拆分",
-                        "description": "防止 Snap 被拆分成多个部分\n您发送的图片将变成视频"
-                    }
-                }
-            },
             "downloader": {
                 "name": "下载器",
                 "description": "下载 Snapchat 媒体",
@@ -1001,11 +910,11 @@
                     },
                     "auto_download_sources": {
                         "name": "自动下载来源",
-                        "description": "选择要自动下载的来源"
+                        "description": "选择自动下载的来源"
                     },
                     "prevent_self_auto_download": {
-                        "name": "防止自身自动下载",
-                        "description": "防止自动下载您自己的 Snap"
+                        "name": "防止自动下载自己",
+                        "description": "防止自动下载您自己的 Snaps"
                     },
                     "path_format": {
                         "name": "路径格式",
@@ -1013,7 +922,7 @@
                     },
                     "allow_duplicate": {
                         "name": "允许重复",
-                        "description": "允许同一媒体被多次下载"
+                        "description": "允许同一媒体多次下载"
                     },
                     "file_hash_check": {
                         "name": "文件哈希检查",
@@ -1025,11 +934,11 @@
                     },
                     "force_image_format": {
                         "name": "强制图像格式",
-                        "description": "强制图像以指定格式保存"
+                        "description": "强制将图像保存为指定格式"
                     },
                     "force_voice_note_format": {
                         "name": "强制语音笔记格式",
-                        "description": "强制语音笔记以指定格式保存"
+                        "description": "强制将语音笔记保存为指定格式"
                     },
                     "auto_download_voice_notes": {
                         "name": "自动下载语音笔记",
@@ -1048,12 +957,12 @@
                                 "description": "通话开始时自动开始录音"
                             },
                             "call_recorder_ui": {
-                                "name": "通话录音界面",
-                                "description": "通话期间显示录音悬浮界面"
+                                "name": "通话录音 UI",
+                                "description": "在通话期间显示录音覆盖层 UI"
                             },
                             "call_recorder_ui_design": {
-                                "name": "界面设计",
-                                "description": "选择通话录音悬浮层的设计"
+                                "name": "UI 设计",
+                                "description": "选择通话录音覆盖层的设计"
                             },
                             "call_recording_saved_toast": "已保存"
                         }
@@ -1068,26 +977,26 @@
                     },
                     "opera_download_button": {
                         "name": "Opera 下载按钮",
-                        "description": "查看 Snap 时在右上角添加下载按钮。\n长按按钮将强制下载"
+                        "description": "在查看 Snap 时在右上角添加下载按钮。\n长按按钮将强制下载"
                     },
                     "download_context_menu": {
                         "name": "下载上下文菜单",
-                        "description": "允许您使用上下文菜单下载/预览对话或故事中的消息。\n长按按钮将强制下载"
+                        "description": "允许您使用上下文菜单从对话或故事下载/预览消息。\n长按按钮将强制下载"
                     },
                     "ffmpeg_options": {
                         "name": "FFmpeg 选项",
-                        "description": "指定额外的 FFmpeg 选项",
+                        "description": "指定其他 FFmpeg 选项",
                         "properties": {
                             "threads": {
-                                "name": "线程数",
-                                "description": "使用的线程数量"
+                                "name": "线程",
+                                "description": "要使用的线程数"
                             },
                             "preset": {
                                 "name": "预设",
                                 "description": "设置转换速度"
                             },
                             "constant_rate_factor": {
-                                "name": "恒定速率因子 (CRF)",
+                                "name": "恒定速率因子",
                                 "description": "设置视频编码器的恒定速率因子\n对于 libx264，范围从 0 到 51"
                             },
                             "video_bitrate": {
@@ -1110,7 +1019,7 @@
                     },
                     "logging": {
                         "name": "日志记录",
-                        "description": "媒体下载时显示 Toast 提示"
+                        "description": "下载媒体时显示 Toast"
                     },
                     "custom_path_format": {
                         "name": "自定义路径格式",
@@ -1127,22 +1036,22 @@
                         "description": "启用隐藏的应用外观设置\n在较新的 Snapchat 版本上可能不需要"
                     },
                     "friend_feed_message_preview": {
-                        "name": "好友列表消息预览",
-                        "description": "在好友列表中显示最后一条消息的预览",
+                        "name": "好友动态流消息预览",
+                        "description": "在好友动态流中显示最后一条消息的预览",
                         "properties": {
                             "amount": {
                                 "name": "数量",
-                                "description": "要预览的消息数量"
+                                "description": "预览的消息数量"
                             }
                         }
                     },
                     "snap_preview": {
                         "name": "Snap 预览",
-                        "description": "在聊天中未查看的 Snap 旁边显示小预览图"
+                        "description": "在聊天中未查看的 Snap 旁边显示一个小预览"
                     },
                     "bootstrap_override": {
-                        "name": "启动覆盖",
-                        "description": "覆盖用户界面启动设置",
+                        "name": "引导程序覆盖",
+                        "description": "覆盖用户界面引导程序设置",
                         "properties": {
                             "app_appearance": {
                                 "name": "应用外观",
@@ -1155,8 +1064,8 @@
                         }
                     },
                     "map_friend_nametags": {
-                        "name": "增强的好友地图名牌",
-                        "description": "改进 Snap 地图上的好友名牌"
+                        "name": "增强的好友地图名称标签",
+                        "description": "改进 Snap 地图上的好友名称标签"
                     },
                     "prevent_message_list_auto_scroll": {
                         "name": "防止消息列表自动滚动",
@@ -1167,12 +1076,12 @@
                         "description": "在火花计数器旁边显示火花过期计时器"
                     },
                     "hide_friend_feed_entry": {
-                        "name": "隐藏好友列表条目",
-                        "description": "从好友列表中隐藏特定好友\n使用社交标签页管理此功能"
+                        "name": "隐藏好友动态流条目",
+                        "description": "从好友动态流中隐藏特定好友\n使用社交标签管理此功能"
                     },
                     "hide_streak_restore": {
                         "name": "隐藏火花恢复",
-                        "description": "隐藏好友列表中的恢复按钮"
+                        "description": "隐藏好友动态流中的恢复按钮"
                     },
                     "hide_quick_add_suggestions": {
                         "name": "隐藏快速添加建议",
@@ -1180,15 +1089,15 @@
                     },
                     "hide_story_suggestions": {
                         "name": "隐藏故事建议",
-                        "description": "从故事页面移除建议"
+                        "description": "移除故事页面中的建议"
                     },
                     "hide_ui_components": {
-                        "name": "隐藏界面组件",
-                        "description": "选择要隐藏的界面组件"
+                        "name": "隐藏 UI 组件",
+                        "description": "选择要隐藏的 UI 组件"
                     },
                     "opera_media_quick_info": {
                         "name": "Opera 媒体快速信息",
-                        "description": "在 Opera 查看器上下文菜单中显示媒体的有用信息，如创建日期"
+                        "description": "在 Opera 查看器上下文菜单中显示媒体的有用信息，例如创建日期"
                     },
                     "old_bitmoji_selfie": {
                         "name": "旧版 Bitmoji 自拍",
@@ -1199,20 +1108,20 @@
                         "description": "禁用聚光灯页面"
                     },
                     "friend_feed_menu_buttons": {
-                        "name": "好友列表菜单按钮",
-                        "description": "选择在好友列表菜单中显示的按钮"
+                        "name": "好友动态流菜单按钮",
+                        "description": "选择要在好友动态流菜单中显示的按钮"
                     },
                     "auto_close_friend_feed_menu": {
-                        "name": "自动关闭好友列表菜单",
-                        "description": "按下设置按钮后自动关闭好友列表菜单"
+                        "name": "自动关闭好友动态流菜单",
+                        "description": "按下设置按钮后自动关闭好友动态流菜单"
                     },
                     "vertical_story_viewer": {
                         "name": "垂直故事查看器",
                         "description": "为所有故事启用垂直故事查看器"
                     },
                     "enable_friend_feed_menu_bar": {
-                        "name": "好友列表菜单栏",
-                        "description": "启用新的好友列表菜单栏"
+                        "name": "好友动态流菜单栏",
+                        "description": "启用新的好友动态流菜单栏"
                     },
                     "message_indicators": {
                         "name": "消息指示器",
@@ -1220,7 +1129,7 @@
                     },
                     "stealth_mode_indicator": {
                         "name": "隐身模式指示器",
-                        "description": "在处于隐身模式的对话旁边添加 👻 表情符号"
+                        "description": "在隐身模式下的对话旁边添加 \ud83d\udc7b 表情符号"
                     },
                     "edit_text_override": {
                         "name": "编辑文本覆盖",
@@ -1232,25 +1141,25 @@
                     },
                     "force_amoled_theme": {
                         "name": "强制 AMOLED 主题",
-                        "description": "在整个应用界面强制使用纯黑 AMOLED 主题"
+                        "description": "在整个应用 UI 中强制使用纯黑 AMOLED 主题"
                     },
                     "settings_menu": {
                         "name": "设置菜单",
-                        "description": "在新版和旧版设置菜单布局之间选择"
+                        "description": "在新版和旧版设置菜单布局之间进行选择"
                     }
                 }
             },
             "messaging": {
-                "name": "消息",
+                "name": "消息传递",
                 "description": "更改您与好友互动的方式",
                 "properties": {
                     "bypass_screenshot_detection": {
                         "name": "绕过截图检测",
-                        "description": "防止 Snapchat 检测到您截图"
+                        "description": "防止 Snapchat 检测到您截屏"
                     },
                     "anonymous_story_viewing": {
                         "name": "匿名故事查看",
-                        "description": "防止任何人知道您看了他们的故事"
+                        "description": "防止任何人知道您看过他们的故事"
                     },
                     "prevent_story_rewatch_indicator": {
                         "name": "防止故事重看指示器",
@@ -1258,11 +1167,11 @@
                     },
                     "hide_peek_a_peek": {
                         "name": "隐藏偷看",
-                        "description": "当您半滑入聊天时，防止发送通知"
+                        "description": "防止在您半滑进入聊天时发送通知"
                     },
                     "hide_bitmoji_presence": {
-                        "name": "隐藏 Bitmoji 在场状态",
-                        "description": "防止您的 Bitmoji 在聊天中弹出"
+                        "name": "隐藏 Bitmoji 在场",
+                        "description": "防止您的 Bitmoji 在聊天时弹出"
                     },
                     "hide_typing_notifications": {
                         "name": "隐藏输入通知",
@@ -1270,31 +1179,31 @@
                     },
                     "unlimited_snap_view_time": {
                         "name": "无限 Snap 查看时间",
-                        "description": "移除查看 Snap 的时间限制"
+                        "description": "移除查看 Snaps 的时间限制"
                     },
                     "auto_mark_as_read": {
                         "name": "自动标记为已读",
-                        "description": "即使启用了隐身模式，也自动将消息/Snap 标记为已读"
+                        "description": "即使启用了隐身模式，也会自动将消息/Snaps 标记为已读"
                     },
                     "mark_snap_as_seen_button": {
                         "name": "“标记 Snap 为已查看”按钮",
-                        "description": "在查看 Snap 时添加一个按钮将其标记为已查看。\n即使启用了隐身模式，此功能也能工作"
+                        "description": "查看 Snap 时添加一个将其标记为已查看的按钮。\n即使启用了隐身模式，此功能也将起作用"
                     },
                     "skip_when_marking_as_seen": {
                         "name": "标记为已查看时跳过",
-                        "description": "将 Snap 标记为已查看时自动跳至下一个 Snap。\n与“标记 Snap 为已查看按钮”结合使用"
+                        "description": "将 Snap 标记为已查看时自动跳至下一个 Snap。\n与“标记 Snap 为已查看”按钮结合使用"
                     },
                     "loop_media_playback": {
                         "name": "循环媒体播放",
-                        "description": "查看 Snap/故事时循环播放媒体"
+                        "description": "查看 Snaps / 故事时循环播放媒体"
                     },
                     "disable_replay_in_ff": {
-                        "name": "禁用好友列表中的重播",
-                        "description": "禁用在好友列表中长按进行重播的功能"
+                        "name": "禁用好友动态流中的重播",
+                        "description": "禁用从好友动态流中长按重播的功能"
                     },
                     "half_swipe_notifier": {
                         "name": "半滑通知器",
-                        "description": "当有人半滑入对话时通知您",
+                        "description": "当有人半滑进入对话时通知您",
                         "properties": {
                             "min_duration": {
                                 "name": "最短持续时间",
@@ -1307,8 +1216,8 @@
                         }
                     },
                     "call_start_confirmation": {
-                        "name": "呼叫开始确认",
-                        "description": "开始呼叫时显示确认对话框"
+                        "name": "通话开始确认",
+                        "description": "开始通话时显示确认对话框"
                     },
                     "unlimited_conversation_pinning": {
                         "name": "无限对话置顶",
@@ -1316,19 +1225,19 @@
                     },
                     "disable_snap_mode_restrictions": {
                         "name": "禁用 Snap 模式限制",
-                        "description": "允许您无限制地查看自毁 Snap"
+                        "description": "允许您查看自毁 Snaps 而不受限制"
                     },
                     "prevent_message_sending": {
                         "name": "防止消息发送",
-                        "description": "防止发送特定类型的消息"
+                        "description": "防止发送某些类型的消息"
                     },
                     "friend_mutation_notifier": {
-                        "name": "好友变更通知器",
-                        "description": "当好友资料发生变化时通知您"
+                        "name": "好友变动通知器",
+                        "description": "当好友的个人资料发生更改时通知您"
                     },
                     "better_notifications": {
                         "name": "更好的通知",
-                        "description": "在接收到的通知中添加更多信息",
+                        "description": "在收到的通知中添加更多信息",
                         "properties": {
                             "group_notifications": {
                                 "name": "群组通知",
@@ -1336,7 +1245,7 @@
                             },
                             "chat_preview": {
                                 "name": "聊天预览",
-                                "description": "在通知中显示接收消息的预览"
+                                "description": "在通知中显示收到消息的预览"
                             },
                             "media_preview": {
                                 "name": "媒体预览",
@@ -1360,19 +1269,19 @@
                             },
                             "smart_replies": {
                                 "name": "智能回复",
-                                "description": "向通知添加建议回复 (Android 10+)。与回复按钮结合使用"
+                                "description": "向通知添加建议的回复 (Android 10+)。与回复按钮结合使用"
                             },
                             "download_button": {
                                 "name": "下载按钮",
-                                "description": "允许您从通知下载媒体"
+                                "description": "允许您从通知中下载媒体"
                             },
                             "mark_as_read_button": {
                                 "name": "标记为已读按钮",
-                                "description": "允许您从通知将消息标记为已读"
+                                "description": "允许您从通知中将消息标记为已读"
                             },
                             "mark_as_read_and_save_in_chat": {
-                                "name": "标记为已读并在聊天中保存",
-                                "description": "向通知添加“标记为已读并在聊天中保存”按钮"
+                                "name": "标记为已读并保存在聊天中",
+                                "description": "向通知添加“标记为已读并保存在聊天中”按钮"
                             }
                         }
                     },
@@ -1389,12 +1298,12 @@
                                 "description": "防止您自己的消息被删除"
                             },
                             "auto_purge": {
-                                "name": "自动清理",
+                                "name": "自动清除",
                                 "description": "自动删除早于指定时间的缓存消息"
                             },
                             "message_filter": {
                                 "name": "消息过滤器",
-                                "description": "选择应记录的消息（留空则记录所有消息）"
+                                "description": "选择应记录的消息（留空以记录所有消息）"
                             },
                             "deleted_message_color": {
                                 "name": "已删除消息颜色",
@@ -1408,15 +1317,15 @@
                     },
                     "unsaveable_messages": {
                         "name": "不可保存的消息",
-                        "description": "防止选定的消息类型在聊天中被保存",
+                        "description": "防止所选消息类型保存在聊天中",
                         "properties": {
                             "chat": {
                                 "name": "聊天消息",
                                 "description": "使聊天消息不可保存"
                             },
                             "snap": {
-                                "name": "Snap",
-                                "description": "使 Snap 不可保存"
+                                "name": "Snaps",
+                                "description": "使 Snaps 不可保存"
                             },
                             "external_media": {
                                 "name": "外部媒体",
@@ -1431,8 +1340,8 @@
                                 "description": "使分享内容不可保存"
                             },
                             "note": {
-                                "name": "音频笔记",
-                                "description": "使音频笔记不可保存"
+                                "name": "语音笔记",
+                                "description": "使语音笔记不可保存"
                             },
                             "story_reply": {
                                 "name": "故事回复",
@@ -1441,16 +1350,16 @@
                         }
                     },
                     "gallery_media_send_override": {
-                        "name": "相册媒体发送覆盖",
-                        "description": "从相册发送时伪装媒体来源",
+                        "name": "画廊媒体发送覆盖",
+                        "description": "从画廊发送时伪装媒体来源",
                         "properties": {
                             "mode": {
                                 "name": "覆盖模式",
-                                "description": "选择如何发送相册媒体"
+                                "description": "选择如何发送画廊媒体"
                             },
                             "include_camera_snaps": {
-                                "name": "包含相机 Snap",
-                                "description": "也为相机 Snap 显示覆盖对话框"
+                                "name": "包括相机 Snaps",
+                                "description": "也为相机 Snaps 显示覆盖对话框"
                             }
                         }
                     },
@@ -1464,7 +1373,7 @@
                     },
                     "bypass_message_action_restrictions": {
                         "name": "绕过消息操作限制",
-                        "description": "允许您在未打开 Snap 的情况下对其进行回应，或保存不可保存的消息"
+                        "description": "允许您在未打开 Snap 的情况下对其做出反应，或保存不可保存的消息"
                     },
                     "remove_groups_locked_status": {
                         "name": "移除群组锁定状态",
@@ -1475,8 +1384,8 @@
                         "description": "在聊天中双击消息时执行自定义操作"
                     },
                     "double_tap_chat_action_custom_emoji": {
-                        "name": "双击聊天操作自定义表情反应",
-                        "description": "为双击聊天操作设置自定义表情反应"
+                        "name": "双击聊天操作自定义表情符号反应",
+                        "description": "为双击聊天操作设置自定义表情符号反应"
                     },
                     "auto_reply": {
                         "name": "自动回复",
@@ -1484,11 +1393,11 @@
                         "properties": {
                             "allow_running_in_background": {
                                 "name": "允许在后台运行",
-                                "description": "允许自动回复在后台运行。注意：这将显著消耗电池"
+                                "description": "允许自动回复在后台运行。注意：这将显著消耗电池电量"
                             },
                             "cooldown_seconds": {
-                                "name": "冷却时间（秒）",
-                                "description": "对同一对话自动回复的最小间隔时间（秒）"
+                                "name": "冷却时间 (秒)",
+                                "description": "同一对话自动回复之间的最小时间（秒）"
                             },
                             "message_age_threshold": {
                                 "name": "消息时效阈值",
@@ -1524,31 +1433,31 @@
                                     },
                                     "ai_max_tokens": {
                                         "name": "AI 最大 Token 数",
-                                        "description": "AI 在回复中可以使用的最大 Token（单词）数量"
+                                        "description": "AI 在响应中可以使用的最大 Token 数（单词）"
                                     },
                                     "ai_temperature": {
                                         "name": "AI 温度",
-                                        "description": "控制 AI 回复的随机性（0.0 = 确定性，2.0 = 非常随机）"
+                                        "description": "控制 AI 响应的随机性（0.0 = 确定性，2.0 = 非常随机）"
                                     },
                                     "ai_context_length": {
                                         "name": "AI 上下文长度",
-                                        "description": "包含作为 AI 回复上下文的先前消息数量"
+                                        "description": "AI 响应上下文中包含的前几条消息的数量"
                                     },
                                     "ai_personality_traits": {
                                         "name": "AI 个性特征",
-                                        "description": "以逗号分隔的 AI 个性特征（例如：友好、随意、乐于助人）"
+                                        "description": "AI 的逗号分隔个性特征（例如友好、随意、乐于助人）"
                                     },
                                     "ai_response_style": {
-                                        "name": "AI 回复风格",
-                                        "description": "AI 回复的整体风格"
+                                        "name": "AI 响应风格",
+                                        "description": "AI 响应的整体风格"
                                     },
                                     "ai_response_language": {
-                                        "name": "AI 回复语言",
-                                        "description": "AI 回复的语言（自动 = 与接收到的消息相同）"
+                                        "name": "AI 响应语言",
+                                        "description": "AI 响应的语言（自动 = 与收到的消息相同）"
                                     },
                                     "ai_use_conversation_history": {
                                         "name": "使用对话历史",
-                                        "description": "包含之前的消息作为上下文，以获得更相关的 AI 回复"
+                                        "description": "包含之前的消息作为上下文以获得更相关的 AI 响应"
                                     },
                                     "ai_include_friend_info": {
                                         "name": "包含好友信息",
@@ -1556,15 +1465,15 @@
                                     },
                                     "ai_fallback_to_template": {
                                         "name": "回退到模板",
-                                        "description": "如果 AI 无法生成回复，则使用模板消息"
+                                        "description": "如果 AI 生成响应失败，则使用模板消息"
                                     },
                                     "ai_request_timeout": {
                                         "name": "AI 请求超时",
-                                        "description": "等待 AI 回复的最长时间（秒）"
+                                        "description": "等待 AI 响应的最长时间（秒）"
                                     },
                                     "ai_retry_attempts": {
-                                        "name": "AI 重试次数",
-                                        "description": "如果 AI 请求失败，重试的次数"
+                                        "name": "AI 重试尝试",
+                                        "description": "AI 请求失败时的重试次数"
                                     }
                                 }
                             },
@@ -1573,12 +1482,12 @@
                                 "description": "自动回复触发器和消息模板的设置",
                                 "properties": {
                                     "friendSpecificGreeting": {
-                                        "name": "好友特定问候",
-                                        "description": "在自动回复中添加好友姓名以实现个性化"
+                                        "name": "好友特定问候语",
+                                        "description": "在自动回复中添加好友姓名以进行个性化"
                                     },
                                     "friendGreeting": {
                                         "name": "好友问候语",
-                                        "description": "启用好友特定问候时使用的问候文本"
+                                        "description": "启用好友特定问候语时使用的问候文本"
                                     },
                                     "auto_reply_content_types": {
                                         "name": "自动回复触发器",
@@ -1586,71 +1495,71 @@
                                     },
                                     "chat_messages": {
                                         "name": "聊天消息回复",
-                                        "description": "针对文本聊天消息的自动回复消息"
+                                        "description": "文本聊天消息的自动回复消息"
                                     },
                                     "snap_messages": {
                                         "name": "Snap 回复",
-                                        "description": "针对 Snap 的自动回复消息"
+                                        "description": "Snap 的自动回复消息"
                                     },
                                     "story_share_messages": {
                                         "name": "故事分享回复",
-                                        "description": "针对故事分享的自动回复消息"
+                                        "description": "故事分享的自动回复消息"
                                     },
                                     "story_reply_messages": {
                                         "name": "故事回复响应",
-                                        "description": "针对故事回复的自动回复消息"
+                                        "description": "故事回复的自动回复消息"
                                     },
                                     "external_media_messages": {
                                         "name": "外部媒体回复",
-                                        "description": "针对外部媒体的自动回复消息"
+                                        "description": "外部媒体的自动回复消息"
                                     },
                                     "voice_note_messages": {
                                         "name": "语音笔记回复",
-                                        "description": "针对语音笔记的自动回复消息"
+                                        "description": "语音笔记的自动回复消息"
                                     },
                                     "sticker_messages": {
                                         "name": "贴纸回复",
-                                        "description": "针对贴纸的自动回复消息"
+                                        "description": "贴纸的自动回复消息"
                                     },
                                     "tiny_snap_messages": {
-                                        "name": "Tiny Snap 回复",
-                                        "description": "针对 Tiny Snap 的自动回复消息"
+                                        "name": "微小 Snap 回复",
+                                        "description": "微小 Snap 的自动回复消息"
                                     },
                                     "map_reaction_messages": {
                                         "name": "地图反应回复",
-                                        "description": "针对地图反应的自动回复消息"
+                                        "description": "地图反应的自动回复消息"
                                     },
                                     "half_swipe_messages": {
                                         "name": "半滑消息",
-                                        "description": "针对半滑的自动回复消息"
+                                        "description": "半滑的自动回复消息"
                                     }
                                 }
                             }
                         }
                     },
                     "auto_open_snaps": {
-                        "name": "自动打开 Snap 设置",
-                        "description": "配置自动打开 Snap 的延迟和队列设置",
+                        "name": "自动打开 Snaps 设置",
+                        "description": "配置自动打开 Snaps 的延迟和队列设置",
                         "properties": {
                             "allow_running_in_background": {
                                 "name": "允许在后台运行",
-                                "description": "允许自动打开 Snap 在后台运行。注意：这将显著消耗电池"
+                                "description": "允许自动打开 Snaps 在后台运行。注意：这将显著消耗电池电量"
                             },
                             "min_delay": {
                                 "name": "最小延迟 (ms)",
-                                "description": "打开 Snap 前的最小延迟（毫秒）"
+                                "description": "打开 Snap 之前的最小延迟（毫秒）"
                             },
                             "max_delay_ms": {
                                 "name": "最大延迟 (ms)",
-                                "description": "打开 Snap 前的最大延迟（毫秒）"
+                                "description": "打开 Snap 之前的最大延迟（毫秒）"
                             },
                             "queue_size": {
                                 "name": "队列大小",
-                                "description": "保留在队列中的最大 Snap 数量"
+                                "description": "队列中保留的最大 Snap 数量"
                             },
                             "retry_attempts": {
-                                "name": "重试次数",
-                                "description": "如果打开 Snap 失败，重试的次数"
+                                "name": "重试尝试",
+                                "description": "打开 Snap 失败时的重试次数"
                             },
                             "retry_delay": {
                                 "name": "重试延迟 (ms)",
@@ -1664,7 +1573,7 @@
                         "properties": {
                             "allow_running_in_background": {
                                 "name": "允许在后台运行",
-                                "description": "允许自动删除已发送消息在后台运行。注意：这将显著消耗电池"
+                                "description": "允许自动删除已发送消息在后台运行。注意：这将显著消耗电池电量"
                             },
                             "delete_after_value": {
                                 "name": "删除时间 (数值)",
@@ -1680,17 +1589,17 @@
                             },
                             "show_countdown": {
                                 "name": "显示倒计时",
-                                "description": "在删除消息前显示倒计时"
+                                "description": "删除消息前显示倒计时"
                             },
                             "show_notification": {
                                 "name": "显示通知",
-                                "description": "在倒计时期间显示通知"
+                                "description": "倒计时期间显示通知"
                             }
                         }
                     },
                     "instant_translation": {
                         "name": "消息翻译器",
-                        "description": "自动将传入消息翻译成您的首选语言",
+                        "description": "自动将传入消息翻译为您偏好的语言",
                         "properties": {
                             "enabled": {
                                 "name": "启用消息翻译器",
@@ -1698,7 +1607,7 @@
                             },
                             "source_language": {
                                 "name": "源语言",
-                                "description": "翻译源语言（使用“auto”进行自动检测）"
+                                "description": "翻译来源语言（使用“自动”进行自动检测）"
                             },
                             "target_language": {
                                 "name": "目标语言",
@@ -1730,7 +1639,7 @@
                             },
                             "pause_on_error": {
                                 "name": "出错时暂停",
-                                "description": "服务被阻止时暂停翻译"
+                                "description": "服务受阻时暂停翻译"
                             },
                             "max_retries": {
                                 "name": "最大重试次数",
@@ -1744,7 +1653,185 @@
                     },
                     "scheduled_send_allow_running_in_background": {
                         "name": "允许定时发送在后台运行",
-                        "description": "当 Snapchat 在后台时保持处理定时消息"
+                        "description": "当 Snapchat 在后台时保持定时消息处理"
+                    }
+                }
+            },
+            "global": {
+                "name": "全局",
+                "description": "调整全局 Snapchat 设置",
+                "properties": {
+                    "ui_settings": {
+                        "name": "UI 设置",
+                        "description": "调整反馈和 Toast 行为",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "触觉反馈",
+                                "description": "在支持的交互上振动"
+                            },
+                            "use_system_toasts": {
+                                "name": "使用系统 Toast",
+                                "description": "显示 Android 系统 Toast 而不是应用内覆盖层"
+                            }
+                        }
+                    },
+                    "update_settings": {
+                        "name": "更新设置",
+                        "description": "控制自动更新检查",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "自动更新检查",
+                                "description": "自动检查新版本"
+                            },
+                            "update_check_frequency": {
+                                "name": "更新检查频率",
+                                "description": "检查更新的频率"
+                            }
+                        }
+                    },
+                    "better_location": {
+                        "name": "更好的定位",
+                        "description": "增强 Snapchat 定位",
+                        "properties": {
+                            "spoof_location": {
+                                "name": "伪装位置",
+                                "description": "将您的位置伪装到指定位置"
+                            },
+                            "location_search_provider": {
+                                "name": "位置搜索提供商",
+                                "description": "选择搜索位置的提供商"
+                            },
+                            "google_maps_api_key": {
+                                "name": "Google Maps API 密钥",
+                                "description": "使用 Google Maps 提供商时必填"
+                            },
+                            "coordinates": {
+                                "name": "坐标",
+                                "description": "设置伪装位置的坐标"
+                            },
+                            "walk_radius": {
+                                "name": "漫步半径",
+                                "description": "在此半径内随机漫步 (英尺)"
+                            },
+                            "always_update_location": {
+                                "name": "始终更新位置",
+                                "description": "即使没有收到 GPS 数据也强制 Snapchat 更新位置"
+                            },
+                            "suspend_location_updates": {
+                                "name": "暂停位置更新",
+                                "description": "防止您的位置被更新"
+                            },
+                            "spoof_battery_level": {
+                                "name": "伪装电池电量",
+                                "description": "在地图上伪装您设备的电池电量\n值必须在 0 到 100 之间"
+                            },
+                            "spoof_headphones": {
+                                "name": "伪装耳机",
+                                "description": "在地图上伪装听音乐的状态"
+                            },
+                            "show_battery_level": {
+                                "name": "显示电池电量",
+                                "description": "在地图上显示好友的电池电量"
+                            }
+                        }
+                    },
+                    "snapchat_plus": {
+                        "name": "Snapchat Plus",
+                        "description": "启用 Snapchat Plus 功能\n某些服务器端功能可能无法工作"
+                    },
+                    "media_upload_quality": {
+                        "name": "媒体上传质量",
+                        "description": "覆盖媒体上传质量",
+                        "properties": {
+                            "force_video_upload_source_quality": {
+                                "name": "强制视频上传源质量",
+                                "description": "上传视频时强制 Snapchat 使用源质量\n请注意，这可能不会移除媒体的元数据"
+                            },
+                            "disable_image_compression": {
+                                "name": "禁用图像压缩",
+                                "description": "上传媒体时禁用图像压缩"
+                            },
+                            "custom_image_upload_format": {
+                                "name": "自定义图像上传格式",
+                                "description": "设置自定义图像上传格式\n选择无损格式（如 PNG）以获得最佳质量"
+                            }
+                        }
+                    },
+                    "disable_confirmation_dialogs": {
+                        "name": "禁用确认对话框",
+                        "description": "自动确认选定的操作"
+                    },
+                    "auto_updater": {
+                        "name": "自动更新器",
+                        "description": "自动检查新更新"
+                    },
+                    "disable_metrics": {
+                        "name": "禁用指标",
+                        "description": "阻止向 Snapchat 发送特定分析数据"
+                    },
+                    "disable_story_sections": {
+                        "name": "禁用故事部分",
+                        "description": "从故事页面移除部分\n可能需要刷新才能正常工作"
+                    },
+                    "block_ads": {
+                        "name": "拦截广告",
+                        "description": "防止广告显示"
+                    },
+                    "disable_custom_tabs": {
+                        "name": "禁用自定义标签",
+                        "description": "在支持的应用程序中而不是 Web 浏览器中打开链接"
+                    },
+                    "disable_permission_requests": {
+                        "name": "禁用权限请求",
+                        "description": "防止 Snapchat 请求特定权限"
+                    },
+                    "disable_memories_snap_feed": {
+                        "name": "禁用回忆 Snap 动态流",
+                        "description": "防止 Snapchat 在相机界面上滑时显示最近的回忆"
+                    },
+                    "spotlight_comments_username": {
+                        "name": "聚光灯评论用户名",
+                        "description": "在聚光灯评论中显示作者用户名"
+                    },
+                    "spotlight_comments_username_icon": {
+                        "name": "聚光灯评论用户名图标",
+                        "description": "选择在聚光灯评论中的用户名旁边显示哪个图标"
+                    },
+                    "spotlight_creator_info": {
+                        "name": "聚光灯创作者信息",
+                        "description": "在聚光灯/发现 Snaps 上显示信息按钮，以查看创作者显示名称、用户名和用户 ID"
+                    },
+                    "bypass_video_length_restriction": {
+                        "name": "绕过视频长度限制",
+                        "description": "单一：发送单个视频\n分割：编辑后分割视频"
+                    },
+                    "default_video_playback_rate": {
+                        "name": "默认视频播放速率",
+                        "description": "设置视频播放的默认速度\n值必须在 0.1 到 4.0 之间"
+                    },
+                    "video_playback_rate_slider": {
+                        "name": "视频播放速率滑块",
+                        "description": "在 opera 上下文菜单中添加滑块以更改视频播放速率\n注意：更改仅适用于后续视频"
+                    },
+                    "disable_google_play_dialogs": {
+                        "name": "禁用 Google Play 服务对话框",
+                        "description": "防止显示 Google Play 服务可用性对话框"
+                    },
+                    "default_volume_controls": {
+                        "name": "默认音量控制",
+                        "description": "强制 Snapchat 使用系统音量控制"
+                    },
+                    "disable_telecom_framework": {
+                        "name": "禁用电信框架",
+                        "description": "防止 Snapchat 使用 Android 电信框架\n这允许您在通话时听音乐"
+                    },
+                    "hide_active_music": {
+                        "name": "隐藏活动音乐",
+                        "description": "防止 Snapchat 知道您正在听音乐\n这将允许您在听音乐时使用音量控制按钮拍摄 Snaps"
+                    },
+                    "disable_snap_splitting": {
+                        "name": "禁用 Snap 分割",
+                        "description": "防止 Snap 被分割成多个部分\n您发送的图片将变成视频"
                     }
                 }
             },
@@ -1795,7 +1882,7 @@
                     },
                     "immersive_camera_preview": {
                         "name": "沉浸式预览",
-                        "description": "防止 Snapchat 裁剪相机预览\n这可能会导致某些设备上的相机闪烁"
+                        "description": "防止 Snapchat 裁剪相机预览\n这可能会导致相机在某些设备上闪烁"
                     },
                     "override_front_resolution": {
                         "name": "覆盖前置分辨率",
@@ -1807,7 +1894,7 @@
                     },
                     "custom_resolution": {
                         "name": "自定义分辨率",
-                        "description": "设置自定义相机分辨率，宽 x 高 (例如 1920x1080)。\n自定义分辨率必须受您的设备支持"
+                        "description": "设置自定义相机分辨率，宽度 x 高度（例如 1920x1080）。\n您的设备必须支持自定义分辨率"
                     },
                     "front_custom_frame_rate": {
                         "name": "前置自定义帧率",
@@ -1833,15 +1920,15 @@
             },
             "streaks_reminder": {
                 "name": "火花提醒",
-                "description": "定期通知您关于火花的状态",
+                "description": "定期通知您关于火花的情况",
                 "properties": {
                     "interval": {
                         "name": "间隔",
-                        "description": "每次提醒之间的间隔 (小时)"
+                        "description": "每次提醒之间的间隔（小时）"
                     },
                     "remaining_hours": {
                         "name": "剩余时间",
-                        "description": "显示通知前的剩余时间 (小时)"
+                        "description": "显示通知前的剩余时间（小时）"
                     },
                     "group_notifications": {
                         "name": "群组通知",
@@ -1855,15 +1942,15 @@
                 "properties": {
                     "native_hooks": {
                         "name": "原生 Hook",
-                        "description": "Hook 到 Snapchat 原生代码的不安全功能",
+                        "description": "Hook 进 Snapchat 原生代码的不安全功能",
                         "properties": {
                             "composer_hooks": {
                                 "name": "Composer Hook",
                                 "description": "将代码注入 Composer 跨平台 UI 框架",
                                 "properties": {
                                     "show_first_created_username": {
-                                        "name": "显示首次创建的用户名",
-                                        "description": "在个人资料页面当前用户名旁边显示首次创建的用户名"
+                                        "name": "显示最初创建的用户名",
+                                        "description": "在个人资料页面当前用户名旁边显示最初创建的用户名"
                                     },
                                     "bypass_camera_roll_limit": {
                                         "name": "绕过相册限制",
@@ -1875,7 +1962,7 @@
                                     },
                                     "composer_console": {
                                         "name": "Composer 控制台",
-                                        "description": "允许您在 Composer 中执行 JavaScript 代码 (仅限 arm64)"
+                                        "description": "允许您在 Composer 中执行 JavaScript 代码 (仅 arm64)"
                                     },
                                     "composer_logs": {
                                         "name": "Composer 日志",
@@ -1893,7 +1980,7 @@
                             },
                             "custom_shared_library": {
                                 "name": "自定义共享库",
-                                "description": "将自定义共享库加载到 Snapchat 中。此功能仅用于测试目的"
+                                "description": "将自定义共享库加载到 Snapchat。此功能仅用于测试目的"
                             }
                         }
                     },
@@ -1915,7 +2002,7 @@
                             },
                             "force_wifi_transport_flag": {
                                 "name": "强制 Wi-Fi 传输标志",
-                                "description": "强制网络传输报告为 Wi-Fi 而不是移动数据"
+                                "description": "强制网络传输报告 Wi-Fi 而不是移动数据"
                             },
                             "spoof_device_id": {
                                 "name": "伪装设备 ID",
@@ -1933,7 +2020,7 @@
                             },
                             "spoof_device": {
                                 "name": "伪装设备",
-                                "description": "将 Snapchat 呈现为在另一台设备型号上运行"
+                                "description": "将 Snapchat 显示为在另一个设备型号上运行"
                             },
                             "device_model": {
                                 "name": "设备型号",
@@ -1943,23 +2030,23 @@
                     },
                     "convert_message_locally": {
                         "name": "本地转换消息",
-                        "description": "在本地将 Snap 转换为聊天外部媒体。这会出现在聊天下载上下文菜单中"
+                        "description": "在本地将 Snaps 转换为聊天外部媒体。这会出现在聊天下载上下文菜单中"
                     },
                     "media_file_picker": {
                         "name": "媒体文件选择器",
-                        "description": "允许您从图库中选择任何视频/音频文件"
+                        "description": "允许您从画廊中选择任何视频/音频文件"
                     },
                     "story_logger": {
                         "name": "故事记录器",
                         "description": "提供好友故事的历史记录"
                     },
                     "account_switcher": {
-                        "name": "账号切换器",
-                        "description": "允许您在不登出的情况下切换账号\n长按 Bitmoji 个人资料旁边的搜索图标以打开菜单\n注意：此功能处于实验阶段，将来可能会更改",
+                        "name": "帐户切换器",
+                        "description": "允许您在不登出的情况下切换帐户\n长按 Bitmoji 个人资料旁边的搜索图标以打开菜单\n注意：此功能处于实验阶段，将来可能会更改",
                         "properties": {
                             "auto_backup_current_account": {
-                                "name": "自动备份当前账号",
-                                "description": "登出或切换账号时自动备份当前账号"
+                                "name": "自动备份当前帐户",
+                                "description": "登出或切换帐户时自动备份当前帐户"
                             }
                         }
                     },
@@ -1977,25 +2064,25 @@
                             },
                             "notification_transcript": {
                                 "name": "通知转录",
-                                "description": "在通知中转录语音笔记\n此功能需要在“更好的通知”中启用“聊天预览”功能"
+                                "description": "转录通知中的语音笔记\n此功能需要在“更好的通知”中启用聊天预览功能"
                             }
                         }
                     },
                     "voice_note_auto_play": {
                         "name": "语音笔记自动播放",
-                        "description": "当前语音笔记结束后自动播放下一条"
+                        "description": "当前语音笔记结束后自动播放下一个"
                     },
                     "friend_notes": {
                         "name": "好友备注",
-                        "description": "允许您向好友资料添加备注"
+                        "description": "允许您向好友个人资料添加备注"
                     },
                     "cof_experiments": {
                         "name": "COF 实验",
-                        "description": "启用未发布/Beta 版的 Snapchat 功能"
+                        "description": "启用未发布/测试版 Snapchat 功能"
                     },
                     "context_menu_fix": {
                         "name": "上下文菜单修复",
-                        "description": "尝试修复好友列表菜单，当设备离线时它无法正确显示的问题"
+                        "description": "尝试修复好友动态流菜单，因为设备离线时可能无法正确显示"
                     },
                     "app_lock": {
                         "name": "应用锁",
@@ -2013,27 +2100,27 @@
                     },
                     "meo_passcode_bypass": {
                         "name": "My Eyes Only 密码绕过",
-                        "description": "绕过 My Eyes Only 密码\n仅当之前已正确输入过密码时此功能才有效"
+                        "description": "绕过 My Eyes Only 密码\n这只有在之前正确输入过密码的情况下才有效"
                     },
                     "no_friend_score_delay": {
                         "name": "无好友分数延迟",
-                        "description": "查看好友分数时移除延迟"
+                        "description": "移除查看好友分数时的延迟"
                     },
                     "best_friend_pinning": {
                         "name": "最好的朋友置顶",
-                        "description": "允许您将好友置顶为您的头号最好朋友。注意：只有您能看到您置顶的最好朋友"
+                        "description": "允许您将一位好友置顶为您的头号最好朋友。注意：只有您能看到您置顶的最好朋友"
                     },
                     "e2ee": {
                         "name": "端到端加密",
-                        "description": "使用共享密钥通过 AES 加密您的消息\n请确保将您的密钥保存在安全的地方！",
+                        "description": "使用共享密钥通过 AES 加密您的消息\n请务必将您的密钥保存在安全的地方！",
                         "properties": {
                             "encrypted_message_indicator": {
                                 "name": "加密消息指示器",
-                                "description": "在加密消息旁边添加 🔒 表情符号"
+                                "description": "在加密消息旁边添加 \ud83d\udd12 表情符号"
                             },
                             "force_message_encryption": {
                                 "name": "强制消息加密",
-                                "description": "当选择多个对话时，防止向未启用端到端加密的人发送加密消息"
+                                "description": "仅当选择了多个对话时，防止向未启用端到端加密的人发送加密消息"
                             }
                         }
                     },
@@ -2043,7 +2130,7 @@
                     },
                     "hidden_snapchat_plus_features": {
                         "name": "隐藏的 Snapchat Plus 功能",
-                        "description": "启用未发布/Beta 版的 Snapchat Plus 功能\n在旧版 Snapchat 上可能无法工作"
+                        "description": "启用未发布/测试版 Snapchat Plus 功能\n可能无法在旧版 Snapchat 上工作"
                     },
                     "custom_streaks_expiration_format": {
                         "name": "自定义火花过期格式",
@@ -2051,11 +2138,11 @@
                     },
                     "prevent_forced_logout": {
                         "name": "防止强制登出",
-                        "description": "防止 Snapchat 在您于另一台设备登录时将您登出"
+                        "description": "防止 Snapchat 在您于其他设备上登录时将您登出"
                     },
                     "snapscore_changes": {
-                        "name": "Snap 分数变化",
-                        "description": "追踪好友 Snap 分数的变化\n仅在较新版本的 Snapchat 中使用此功能"
+                        "name": "Snapscore 变化",
+                        "description": "追踪好友 Snapscore 的变化\n仅在较新版本的 Snapchat 中使用此功能"
                     }
                 }
             },
@@ -2065,7 +2152,7 @@
                 "properties": {
                     "developer_mode": {
                         "name": "开发者模式",
-                        "description": "在 Snapchat 界面上显示调试信息"
+                        "description": "在 Snapchat UI 上显示调试信息"
                     },
                     "module_folder": {
                         "name": "模块文件夹",
@@ -2076,12 +2163,12 @@
                         "description": "当脚本更改时自动重新加载"
                     },
                     "integrated_ui": {
-                        "name": "集成界面",
-                        "description": "允许脚本向 Snapchat 添加自定义界面组件"
+                        "name": "集成 UI",
+                        "description": "允许脚本向 Snapchat 添加自定义 UI 组件"
                     },
                     "disable_log_anonymization": {
                         "name": "禁用日志匿名化",
-                        "description": "禁用日志的匿名化处理"
+                        "description": "禁用日志的匿名化"
                     },
                     "disable_optimization": {
                         "name": "禁用优化",
@@ -2099,24 +2186,30 @@
                     },
                     "allow_running_in_background": {
                         "name": "允许在后台运行",
-                        "description": "允许追踪器在后台运行。注意：这将显著消耗电池"
+                        "description": "允许追踪器在后台运行。注意：这将显著消耗电池电量"
                     },
                     "auto_purge": {
-                        "name": "自动清理",
+                        "name": "自动清除",
                         "description": "自动删除早于指定时间的缓存事件"
                     }
                 }
             }
         },
         "options": {
+            "empty": "空",
             "location_search_provider": {
-                "osm": "OpenStreetMap (Free)",
+                "osm": "OpenStreetMap (免费)",
                 "google_maps": "Google Maps"
+            },
+            "unsaveable_messages": {
+                "blacklist": "黑名单模式",
+                "whitelist": "白名单模式",
+                "null": "已禁用"
             },
             "app_appearance": {
                 "always_light": "始终浅色",
                 "always_dark": "始终深色",
-                "null": "跟随系统"
+                "null": "匹配系统"
             },
             "auto_reload": {
                 "snapchat_only": "仅重新加载 Snapchat",
@@ -2130,33 +2223,33 @@
                 "null": "使用真实电池电量"
             },
             "friend_feed_menu_buttons": {
-                "auto_download": "⬇️ 自动下载",
-                "auto_save": "💬 自动保存消息",
-                "unsaveable_messages": "⬇️ 不可保存的消息",
-                "auto_open_snaps": "📷 自动打开 Snap",
-                "stealth": "👻 隐身模式",
-                "auto_reply": "📨 自动回复",
-                "auto_delete_sent_messages": "🗑️ 自动删除已发送消息",
-                "mark_snaps_as_seen": "👀 标记 Snap 为已查看",
-                "mark_stories_as_seen_locally": "👀 本地标记故事为已查看",
-                "conversation_info": "👤 对话信息",
-                "e2e_encryption": "🔒 使用端到端加密",
-                "message_logger": "📝 消息记录器",
-                "auto_read": "✅ 自动已读",
-                "hide_typing_indicator": "🙈 隐藏输入指示器"
+                "auto_download": "\u2b07\ufe0f 自动下载",
+                "auto_save": "\ud83d\udcac 自动保存消息",
+                "unsaveable_messages": "\u2b07\ufe0f 不可保存的消息",
+                "auto_open_snaps": "\ud83d\udcf7 自动打开 Snaps",
+                "stealth": "\ud83d\udc7b 隐身模式",
+                "auto_reply": "\ud83d\udce8 自动回复",
+                "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f 自动删除已发送消息",
+                "mark_snaps_as_seen": "\ud83d\udc40 将 Snaps 标记为已查看",
+                "mark_stories_as_seen_locally": "\ud83d\udc40 在本地将故事标记为已查看",
+                "conversation_info": "\ud83d\udc64 对话信息",
+                "e2e_encryption": "\ud83d\udd12 使用端到端加密",
+                "message_logger": "\ud83d\udcdd 消息记录器",
+                "auto_read": "\u2705 自动已读",
+                "hide_typing_indicator": "\ud83d\ude48 隐藏输入指示器"
             },
-            "schedule_scheduled_for": "预定给 {name}，时间 {time}",
-            "schedule_sending_in": "{time} 后发送",
-            "schedule_sent_to": "已发送给 {name}",
-            "schedule_sent": "预定 Snap 已发送",
+            "schedule_scheduled_for": "已为 {name} 安排，时间 {time}",
+            "schedule_sending_in": "发送时间 {time}",
+            "schedule_sent_to": "发送给 {name}",
+            "schedule_sent": "计划的 snap 已发送",
             "schedule_failed_to": "发送给 {name} 失败",
-            "schedule_failed": "预定 Snap 失败",
-            "schedule_cancelled_for": "已取消给 {name} 的发送",
+            "schedule_failed": "计划的 snap 失败",
+            "schedule_cancelled_for": "已为 {name} 取消",
             "device_model": {
-                "samsung_s25_ultra": "三星 Galaxy S25 Ultra",
-                "google_pixel_10_pro": "谷歌 Pixel 10 Pro",
-                "oneplus_13": "一加 13",
-                "xiaomi_15_ultra": "小米 15 Ultra",
+                "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
+                "google_pixel_10_pro": "Google Pixel 10 Pro",
+                "oneplus_13": "OnePlus 13",
+                "xiaomi_15_ultra": "Xiaomi 15 Ultra",
                 "null": "设备默认"
             },
             "settings_menu": {
@@ -2164,16 +2257,16 @@
                 "legacy": "旧版"
             },
             "path_format": {
-                "create_author_folder": "为每个作者创建文件夹",
-                "create_source_folder": "为每个媒体源类型创建文件夹",
+                "create_author_folder": "为每位作者创建文件夹",
+                "create_source_folder": "为每种媒体源类型创建文件夹",
                 "append_hash": "向文件名添加唯一哈希",
-                "append_source": "向文件名添加媒体源",
+                "append_source": "向文件名添加媒体来源",
                 "append_username": "向文件名添加用户名",
                 "append_date_time": "向文件名添加日期和时间",
                 "append_type": "向文件名添加媒体类型"
             },
             "auto_download_sources": {
-                "friend_snaps": "好友 Snap",
+                "friend_snaps": "好友 Snaps",
                 "friend_stories": "好友故事",
                 "public_stories": "公开故事",
                 "spotlight": "聚光灯"
@@ -2185,10 +2278,10 @@
                 "failure": "失败"
             },
             "notifications": {
-                "chat_screenshot": "截图",
-                "chat_screen_record": "录屏",
+                "chat_screenshot": "截屏",
+                "chat_screen_record": "屏幕录制",
                 "snap_replay": "Snap 重播",
-                "camera_roll_save": "保存到相册",
+                "camera_roll_save": "相册保存",
                 "chat": "聊天",
                 "chat_reply": "聊天回复",
                 "snap": "Snap",
@@ -2246,16 +2339,16 @@
             "custom_android_id": {
                 "null": "使用真实 Android ID"
             },
-            "add_friend_source_spoof": {
-                "added_by_username": "通过用户名",
-                "added_by_mention": "通过提及",
-                "added_by_group_chat": "通过群聊",
-                "added_by_qr_code": "通过二维码",
-                "added_by_community": "通过社区",
-                "added_by_quick_add": "通过快速添加 (高封号风险)",
-                "added_by_spotlight": "通过聚光灯",
-                "null": "不伪装来源"
-            },
+	            "add_friend_source_spoof": {
+	                "added_by_username": "通过用户名",
+	                "added_by_mention": "通过提及",
+	                "added_by_group_chat": "通过群聊",
+	                "added_by_qr_code": "通过二维码",
+	                "added_by_community": "通过社区",
+	                "added_by_quick_add": "通过快速添加 (封号风险高)",
+	                "added_by_spotlight": "通过聚光灯",
+	                "null": "不伪装来源"
+	            },
             "custom_streaks_expiration_format": {
                 "null": "系统默认"
             },
@@ -2280,7 +2373,7 @@
             "startup_default_camera": {
                 "front": "前置相机",
                 "back": "后置相机",
-                "null": "记住上次使用"
+                "null": "记住上次使用的"
             },
             "call_recorder": {
                 "only_record_self": "仅录制自己",
@@ -2291,13 +2384,13 @@
                 "default": "默认",
                 "snapchat": "Snapchat",
                 "cyber": "赛博",
-                "frost": "冰霜"
+                "frost": "霜冻"
             },
             "front_custom_frame_rate": {
-                "null": "设备默认帧率"
+                "null": "设备默认 FPS"
             },
             "back_custom_frame_rate": {
-                "null": "设备默认帧率"
+                "null": "设备默认 FPS"
             },
             "force_voice_note_format": {
                 "null": "使用 Snapchat 默认"
@@ -2326,8 +2419,7 @@
                 "NOTE": "音频笔记",
                 "SNAP": "Snap",
                 "SAVEABLE_SNAP": "可保存的 Snap",
-                "null": "Snapchat 默认",
-                "multiple_media_toast": "您一次只能发送一个媒体"
+                "null": "Snapchat 默认"
             },
             "strip_media_metadata": {
                 "hide_caption_text": "隐藏标题文本",
@@ -2339,12 +2431,12 @@
             "hide_ui_components": {
                 "hide_profile_call_buttons": "移除个人资料通话按钮",
                 "hide_chat_call_buttons": "移除聊天通话按钮",
-                "hide_live_location_share_button": "移除实时位置分享按钮",
+                "hide_live_location_share_button": "移除实时位置共享按钮",
                 "hide_stickers_button": "移除贴纸按钮",
                 "hide_voice_record_button": "移除语音录制按钮",
                 "hide_unread_chat_hint": "移除未读聊天提示",
                 "hide_post_to_story_buttons": "发送 Snap 前移除发布到故事按钮",
-                "hide_billboard_prompt": "移除好友列表中的广告牌提示",
+                "hide_billboard_prompt": "移除好友动态流中的广告牌提示",
                 "hide_snapchat_plus_gift_reminders": "移除对话中的 Snapchat Plus 礼物提醒",
                 "hide_map_reactions": "移除地图反应"
             },
@@ -2362,8 +2454,8 @@
             },
             "spotlight_comments_username_icon": {
                 "user": "用户名图标",
-                "👤": "用户名图标",
-                "[👤]": "用户名图标",
+                "\ud83d\udc64": "用户名图标",
+                "[\ud83d\udc64]": "用户名图标",
                 "default": "用户名图标",
                 "no_icon": "无图标"
             },
@@ -2371,6 +2463,9 @@
                 "null": "自动"
             },
             "update_check_frequency": {
+                "daily": "每天",
+                "weekly": "每周",
+                "monthly": "每月",
                 "null": "自动"
             },
             "snapchat_plus": {
@@ -2381,7 +2476,7 @@
             },
             "bypass_video_length_restriction": {
                 "single": "单一媒体",
-                "split": "拆分媒体",
+                "split": "分割媒体",
                 "null": "默认"
             },
             "old_bitmoji_selfie": {
@@ -2392,11 +2487,11 @@
             "disable_confirmation_dialogs": {
                 "erase_message": "擦除消息",
                 "remove_friend": "移除好友",
-                "block_friend": "拉黑好友",
+                "block_friend": "屏蔽好友",
                 "ignore_friend": "忽略好友",
                 "hide_friend": "隐藏好友",
                 "hide_conversation": "隐藏对话",
-                "clear_conversation": "从好友列表清除对话"
+                "clear_conversation": "从好友动态流清除对话"
             },
             "edit_text_override": {
                 "multi_line_chat_input": "多行聊天输入",
@@ -2418,7 +2513,7 @@
             },
             "delete_after_unit": {
                 "seconds": "秒",
-                "minutes": "分钟",
+                "minutes": "分",
                 "hours": "小时"
             },
             "disable_story_sections": {
@@ -2433,7 +2528,7 @@
             },
             "disable_permission_requests": {
                 "notifications": "通知",
-                "read_media_images": "读取媒体图片",
+                "read_media_images": "读取媒体图像",
                 "read_media_video": "读取媒体视频",
                 "camera": "相机",
                 "microphone": "麦克风",
@@ -2443,22 +2538,22 @@
                 "phone_calls": "电话"
             },
             "message_indicators": {
-                "encryption_indicator": "在仅发送给您的消息旁边添加 🔒 图标",
-                "platform_indicator": "添加媒体发送来源的平台图标 (例如 Android, iOS, Web)",
-                "location_indicator": "在启用位置发送的 Snap 上添加 📍 图标",
+                "encryption_indicator": "在仅发送给您的消息旁边添加 \ud83d\udd12 图标",
+                "platform_indicator": "添加发送媒体的平台图标（例如 Android, iOS, Web）",
+                "location_indicator": "在启用了位置发送的 Snaps 上添加 \ud83d\udccd 图标",
                 "ovf_editor_indicator": "指示 Snap 是否使用 OVF 编辑器发送",
-                "director_mode_indicator": "在使用导演模式发送的 Snap 上添加 ✏️ 图标，这可用于将相册图片作为 Snap 发送"
+                "director_mode_indicator": "在使用导演模式发送的 Snaps 上添加 \u270f\ufe0f 图标，该模式可用于将画廊图像作为 Snaps 发送"
             },
             "auto_mark_as_read": {
                 "conversation_read": "发送消息时将对话标记为已读",
-                "snap_reply": "回复 Snap 时将其标记为已读",
-                "save_snap_in_chat": "在隐身模式下，在聊天中保存 Snap 时将其标记为已读"
+                "snap_reply": "回复 Snaps 时将其标记为已读",
+                "save_snap_in_chat": "在隐身模式下，在聊天中保存 Snaps 时将其标记为已读"
             },
             "friend_mutation_notifier": {
                 "remove_friend": "当有人将您从好友中移除时通知",
                 "birthday_changes": "当有人更改生日时通知",
                 "bitmoji_selfie_changes": "当有人更改 Bitmoji 自拍时通知",
-                "bitmoji_avatar_changes": "当有人更改 Bitmoji 头像时通知",
+                "bitmoji_avatar_changes": "当有人更改 Bitmoji 形象时通知",
                 "bitmoji_background_changes": "当有人更改 Bitmoji 背景时通知",
                 "bitmoji_scene_changes": "当有人更改 Bitmoji 场景时通知"
             },
@@ -2467,7 +2562,7 @@
                 "copy_text": "复制文本到剪贴板",
                 "delete_message": "删除消息",
                 "mark_as_read": "标记为已读",
-                "custom_emoji_reaction": "自定义表情反应",
+                "custom_emoji_reaction": "自定义表情符号反应",
                 "null": "默认"
             },
             "message_types": {
@@ -2478,7 +2573,7 @@
                 "STICKER": "贴纸"
             },
             "double_tap_chat_action_custom_emoji": {
-                "Custom emoji reaction": "自定义表情反应"
+                "Custom emoji reaction": "自定义表情符号反应"
             },
             "ai_model": {
                 "gemini-2.5-flash": "Gemini 2.5 Flash"
@@ -2487,7 +2582,7 @@
                 "": "未设置"
             },
             "ai_system_prompt": {
-                "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "你是一个在 Snapchat 上回复消息的乐于助人且友好的助手。保持回复自然、随意和对话式。避免过于正式或机械。像一个真人在进行正常对话一样回复。"
+                "You are a helpful and friendly assistant responding to messages on Snapchat. Keep responses natural, casual, and conversational. Avoid being overly formal or robotic. Respond as if you're a real person having a normal conversation.": "您是 Snapchat 上回复消息的热心助手。保持回复自然、随意且具有对话性。避免过于正式或机械。像真人进行正常对话一样回复。"
             },
             "ai_provider": {
                 "gemini": "Gemini",
@@ -2539,7 +2634,7 @@
                 "[\"I noticed you half-swiped! I'll respond soon.\"]": "我注意到你半滑了！我稍后回复。"
             },
             "tiny_snap_messages": {
-                "Thanks for the tiny snap!": "谢谢你的 Tiny Snap！"
+                "Thanks for the tiny snap!": "谢谢你的微小 snap！"
             },
             "voice_note_messages": {
                 "Thanks for the voice note!": "谢谢你的语音笔记！"
@@ -2557,7 +2652,7 @@
                 "Cool sticker!": "很酷的贴纸！"
             },
             "snap_messages": {
-                "Thanks for the snap!": "谢谢你的 Snap！"
+                "Thanks for the snap!": "谢谢你的 snap！"
             },
             "story_share_messages": {
                 "Thanks for sharing!": "谢谢分享！"
@@ -2567,13 +2662,13 @@
             },
             "auto_reply_content_types": {
                 "chat_messages": "聊天消息",
-                "snap_messages": "Snap",
+                "snap_messages": "Snaps",
                 "story_share_messages": "故事分享",
                 "story_reply_messages": "故事回复",
                 "external_media_messages": "外部媒体",
                 "voice_note_messages": "语音笔记",
                 "sticker_messages": "贴纸",
-                "tiny_snap_messages": "Tiny Snap",
+                "tiny_snap_messages": "微小 Snaps",
                 "map_reaction_messages": "地图反应",
                 "half_swipes": "半滑"
             },
@@ -2609,8 +2704,8 @@
         }
     },
     "friend_menu_option": {
-        "mark_snaps_as_seen": "标记 Snap 为已查看",
-        "mark_stories_as_seen_locally": "本地标记故事为已查看",
+        "mark_snaps_as_seen": "将 Snaps 标记为已查看",
+        "mark_stories_as_seen_locally": "在本地将故事标记为已查看",
         "preview": "预览",
         "stealth_mode": "隐身模式",
         "auto_download_blacklist": "自动下载黑名单",
@@ -2626,27 +2721,27 @@
         "STATUS": "状态",
         "LOCATION": "位置",
         "STATUS_SAVE_TO_CAMERA_ROLL": "已保存到相册",
-        "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "截图",
-        "STATUS_CONVERSATION_CAPTURE_RECORD": "录屏",
+        "STATUS_CONVERSATION_CAPTURE_SCREENSHOT": "截屏",
+        "STATUS_CONVERSATION_CAPTURE_RECORD": "屏幕录制",
         "STATUS_CALL_MISSED_VIDEO": "未接视频通话",
         "STATUS_CALL_MISSED_AUDIO": "未接语音通话",
-        "LIVE_LOCATION_SHARE": "实时位置分享",
-        "CREATIVE_TOOL_ITEM": "创意工具项",
+        "LIVE_LOCATION_SHARE": "实时位置共享",
+        "CREATIVE_TOOL_ITEM": "创意工具项目",
         "FAMILY_CENTER_INVITE": "家庭中心邀请",
         "FAMILY_CENTER_ACCEPT": "家庭中心接受",
         "FAMILY_CENTER_LEAVE": "家庭中心离开",
         "STATUS_PLUS_GIFT": "Status Plus 礼物",
-        "TINY_SNAP": "Tiny Snap",
+        "TINY_SNAP": "微小 Snap",
         "STATUS_COUNTDOWN": "倒计时",
         "MAP_REACTION": "地图反应",
         "chat_messages": "聊天消息",
-        "snap_messages": "Snap",
+        "snap_messages": "Snaps",
         "story_share_messages": "故事分享",
         "story_reply_messages": "故事回复",
         "external_media_messages": "外部媒体",
         "voice_note_messages": "语音笔记",
         "sticker_messages": "贴纸",
-        "tiny_snap_messages": "Tiny Snap",
+        "tiny_snap_messages": "微小 Snap",
         "map_reaction_messages": "地图反应",
         "half_swipes": "半滑"
     },
@@ -2660,17 +2755,18 @@
         "profile_picture": "个人资料图片",
         "story_logger": "故事记录器",
         "message_logger": "消息记录器",
-        "merged": "已合并",
+        "merged": "合并的",
         "voice_call": "语音通话",
         "chat_wallpaper": "聊天壁纸"
     },
     "chat_action_menu": {
         "preview_button": "预览",
         "download_button": "下载",
-        "delete_logged_message_button": "删除已记录的消息",
+        "delete_logged_message_button": "删除已记录消息",
         "show_chat_edit_history": "显示聊天编辑历史",
         "convert_message": "转换消息"
     },
+
     "chat_wallpaper_downloader": {
         "download_button": "下载聊天壁纸"
     },
@@ -2694,17 +2790,17 @@
         "SNAP": "Snap",
         "SAVEABLE_SNAP": "可保存的 Snap",
         "null": "Snapchat 默认",
-        "multiple_media_toast": "您一次只能发送一个媒体"
+        "multiple_media_toast": "一次只能发送一个媒体"
     },
     "mark_as_seen": {
-        "no_unseen_snaps_toast": "未找到未查看的 Snap！",
+        "no_unseen_snaps_toast": "未找到未查看的 Snaps！",
         "seen_toast": "已标记为已查看！",
         "unseen_toast": "已标记为未查看！",
-        "already_seen_toast": "已经标记为已查看！",
-        "already_unseen_toast": "已经标记为未查看！"
+        "already_seen_toast": "已标记为已查看！",
+        "already_unseen_toast": "已标记为未查看！"
     },
     "conversation_preview": {
-        "streak_expiration": "将在 {day} 天 {hour} 小时 {minute} 分钟后过期",
+        "streak_expiration": "在 {day} 天 {hour} 小时 {minute} 分钟后过期",
         "total_messages": "发送/接收消息总数：\n{count}",
         "title": "预览",
         "unknown_user": "未知用户",
@@ -2712,12 +2808,12 @@
     },
     "profile_info": {
         "title": "个人资料信息",
-        "first_created_username": "首次创建的用户名",
+        "first_created_username": "最初创建的用户名",
         "mutable_username": "可变用户名",
         "display_name": "显示名称",
         "added_date": "添加日期",
         "birthday": "生日：{month} {day}",
-        "hidden_birthday": "生日：已隐藏",
+        "hidden_birthday": "生日：隐藏",
         "friendship": "友谊",
         "add_source": "添加来源",
         "snapchat_plus": "Snapchat Plus",
@@ -2732,13 +2828,13 @@
     },
     "friendship_link_type": {
         "mutual": "互相关注",
-        "outgoing": "已发送",
-        "blocked": "已拉黑",
+        "outgoing": "已发送请求",
+        "blocked": "已屏蔽",
         "deleted": "已删除",
-        "following": "关注中",
+        "following": "正在关注",
         "suggested": "建议",
-        "incoming": "传入",
-        "incoming_follower": "传入关注者"
+        "incoming": "请求关注",
+        "incoming_follower": "请求关注者"
     },
     "bulk_messaging_action": {
         "actions.title": "操作",
@@ -2752,10 +2848,15 @@
         "actions": {
             "remove_friends": "移除好友",
             "clear_conversations": "清除对话",
-            "clear_friend_feed": "清除好友列表 ({count})",
+            "clear_friend_feed": "清除好友动态流 ({count})",
             "unfollow": "取消关注",
-            "remove": "移除"
+            "remove": "移除",
+            "accept": "接受",
+            "ignore": "忽略"
         },
+        "accept_requests": "接受请求",
+        "ignore_requests": "忽略请求",
+        "cleared_from_feed": "已从动态流中清除",
         "leave_groups": "离开 {count} 个群组",
         "left_group_success": "离开群组成功",
         "failed_to_leave_group": "离开群组失败：{error}",
@@ -2785,15 +2886,17 @@
         "filters": {
             "all": "全部",
             "my_friends": "我的好友",
-            "blocked": "已拉黑",
+            "blocked": "已屏蔽",
             "removed_me": "已移除我",
             "suggested": "建议",
             "deleted": "已删除",
-            "business_accounts": "商业账号",
-            "streaks": "火花",
+            "business_accounts": "商业帐户",
+            "streaks": "火花 (Streaks)",
             "non_streaks": "非火花",
             "followed": "已关注",
-            "following": "关注中",
+            "following": "正在关注",
+            "incoming": "好友请求",
+            "incoming_follower": "关注者请求",
             "location_on_map": "地图上的位置"
         },
         "sort_options": {
@@ -2803,18 +2906,21 @@
             "snap_score": "Snap 分数",
             "streak_length": "火花长度",
             "most_messages_sent": "发送消息最多",
-            "most_recent_message": "最新消息",
-            "nearest_location": "最近位置"
+            "most_recent_message": "最近的消息",
+            "nearest_location": "最近的位置"
         }
     },
     "chat_export": {
         "exporter_dialog": {
             "select_conversations_title": "选择对话",
-            "text_field_selection": "已选择 {amount} 个",
-            "text_field_selection_all": "全部",
+            "text_field_selection": "已选 {amount}",
+            "text_field_selection_all": "全选",
             "export_file_format_title": "导出文件格式",
-            "message_type_filter_title": "按类型过滤消息",
-            "amount_of_messages_title": "消息数量（留空则导出全部）",
+            "sort_order_title": "消息顺序",
+            "sort_order_newest_to_oldest": "最新到最旧",
+            "sort_order_oldest_to_newest": "最旧到最新",
+            "message_type_filter_title": "按类型筛选消息",
+            "amount_of_messages_title": "消息数量（留空表示全部）",
             "download_medias_title": "下载媒体"
         },
         "dialog_negative_button": "取消",
@@ -2836,6 +2942,7 @@
         "save": "保存",
         "open": "打开",
         "download": "下载",
+        "import": "导入",
         "send": "发送",
         "restore_original": "恢复原始",
         "convert_external_media": "转换外部媒体"
@@ -2852,20 +2959,20 @@
         "message_read": "消息已读",
         "message_deleted": "消息已删除",
         "message_saved": "消息已保存",
-        "message_unsaved": "消息取消保存",
+        "message_unsaved": "消息已取消保存",
         "message_edited": "消息已编辑",
         "message_reaction_add": "添加消息反应",
         "message_reaction_remove": "移除消息反应",
         "snap_opened": "Snap 已打开",
         "snap_replayed": "Snap 已重播",
         "snap_replayed_twice": "Snap 已重播两次",
-        "snap_screenshot": "Snap 截图",
-        "snap_screen_record": "Snap 录屏",
-        "i_can_see_you": "我能看到你"
+        "snap_screenshot": "Snap 截屏",
+        "snap_screen_record": "Snap 屏幕录制",
+        "i_can_see_you": "我能看见你"
     },
-    "cleared_from_feed": "已从列表清除",
+    "cleared_from_feed": "已从动态流中清除",
     "tracker_actions": {
-        "log": "记录",
+        "log": "日志",
         "in_app_notification": "应用内通知",
         "push_notification": "推送通知",
         "custom": "自定义"
@@ -2880,17 +2987,17 @@
     "profile_picture_downloader": {
         "button": "下载个人资料图片",
         "title": "个人资料图片下载器",
-        "avatar_option": "头像",
+        "avatar_option": "形象",
         "background_option": "背景"
     },
     "call_start_confirmation": {
-        "dialog_title": "开始呼叫",
-        "dialog_message": "您确定要开始呼叫吗？"
+        "dialog_title": "开始通话",
+        "dialog_message": "您确定要开始通话吗？"
     },
     "half_swipe_notifier": {
         "notification_channel_name": "半滑",
-        "notification_content_dm": "{friend} 刚刚半滑入您的聊天 {duration} 秒",
-        "notification_content_group": "{friend} 刚刚半滑入 {group} {duration} 秒"
+        "notification_content_dm": "{friend} 刚刚半滑进入您的聊天持续 {duration} 秒",
+        "notification_content_group": "{friend} 刚刚半滑进入 {group} 持续 {duration} 秒"
     },
     "download_processor": {
         "attachment_type": {
@@ -2914,39 +3021,39 @@
         "failed_generic_toast": "下载失败",
         "failed_to_create_preview_toast": "创建预览失败",
         "failed_processing_toast": "处理失败 {error}",
-        "failed_gallery_toast": "保存到相册失败 {error}",
+        "failed_gallery_toast": "保存到画廊失败 {error}",
         "dash_no_chapter": "未找到章节",
         "dash_dialog": {
-            "title": "下载 DASH 媒体",
-            "download_all": "下载全部",
+            "title": "下载 dash 媒体",
+            "download_all": "全部下载",
             "segment_text": "片段 {from} - {to}"
         }
     },
     "streaks_reminder": {
-        "notification_title": "火花",
-        "notification_text": "您与 {friend} 的火花将在 {hoursLeft} 小时后丢失"
+        "notification_title": "火花 (Streaks)",
+        "notification_text": "您将在 {hoursLeft} 小时内失去与 {friend} 的火花"
     },
     "biometric_auth": {
         "unlock_button": "解锁",
         "title": "解锁 Snapchat",
-        "subtitle": "请验证以解锁 Snapchat"
+        "subtitle": "请进行身份验证以解锁 Snapchat"
     },
     "end_to_end_encryption": {
         "toolbox": {
-            "no_shared_key": "您与此好友尚无共享密钥。点击下方以发起新的密钥交换。",
+            "no_shared_key": "您与此好友尚无共享密钥。点击下方以启动一个新的。",
             "shared_key_fingerprint": "您的指纹是：\n\n{fingerprint}\n\n请务必检查它是否与您好友的指纹匹配！",
-            "initiate_exchange_button": "发起密钥交换"
+            "initiate_exchange_button": "启动密钥交换"
         },
         "confirmation_dialogs": {
             "title": "端到端加密",
-            "confirmation_1": "警告：这将覆盖您的现有密钥。您将失去对此好友所有加密消息的访问权限。您确定要继续吗？",
-            "confirmation_2": "您真的确定要继续吗？这是您反悔的最后机会。"
+            "confirmation_1": "警告：这将覆盖您现有的密钥。您将失去对此好友所有加密消息的访问权限。您确定要继续吗？",
+            "confirmation_2": "您真的确定要继续吗？这是您退出的最后机会。"
         },
         "unencrypted_conversation_send_failure_toast": "您不能同时向加密和未加密的对话发送加密内容！",
         "native_hooks_send_failure_toast": "发送失败！请在设置中启用原生 Hook。",
-        "no_participants_to_encrypt_toast": "此对话中没有任何好友可以进行加密消息发送！",
-        "encryption_failed_toast": "加密消息失败！查看 logcat 以获取更多详细信息。",
-        "missing_friend_id_toast": "无法找到 conversationId {conversationId} 的 friendId",
+        "no_participants_to_encrypt_toast": "此对话中没有任何好友可以进行消息加密！",
+        "encryption_failed_toast": "消息加密失败！查看 logcat 以获取更多详细信息。",
+        "missing_friend_id_toast": "找不到 conversationId {conversationId} 的 friendId",
         "key_exchange_failed_toast": "无法为 friendId {friendId} 创建密钥交换",
         "accept_public_key_success_toast": "公钥接受成功！",
         "accept_secret_key_success_toast": "完成！您现在可以与此好友发送和接收加密消息。",
@@ -2956,52 +3063,52 @@
         "accept_public_key_button": "接受公钥",
         "outgoing_pk_message": "密钥交换请求",
         "outgoing_secret_message": "密钥交换响应",
-        "incoming_pk_message": "您刚刚收到一个公钥请求。点击下方以接受它。",
+        "incoming_pk_message": "您刚刚收到一个公钥请求。点击下方以接受。",
         "incoming_secret_message": "您的好友刚刚接受了您的公钥。点击下方以接受密钥。"
     },
     "account_switcher_ui": {
         "already_logged_in": "已作为 {username} 登录",
         "login_failed_toast": "登录失败。查看日志以获取更多信息。",
         "logged_out_toast": "已登出",
-        "data_not_found_toast": "未找到账号数据",
-        "restore_failed_toast": "恢复账号数据失败",
+        "data_not_found_toast": "未找到帐户数据",
+        "restore_failed_toast": "恢复帐户数据失败",
         "logged_in_as_toast": "已作为 {username} 登录",
-        "backup_success_toast": "账号已备份！",
-        "backup_failure_toast": "备份账号失败。查看日志以获取更多信息。",
+        "backup_success_toast": "帐户已备份！",
+        "backup_failure_toast": "备份帐户失败。查看日志以获取更多信息。",
         "import_success_toast": "已导入 {username}！",
-        "import_failure_toast": "导入账号失败：{message}",
-        "export_success_toast": "账号已导出！",
-        "export_failed_toast": "导出账号失败。查看日志以获取更多信息。",
-        "forced_logout_toast": "由于强制登出，已移除账号"
+        "import_failure_toast": "导入帐户失败：{message}",
+        "export_success_toast": "帐户已导出！",
+        "export_failed_toast": "导出帐户失败。查看日志以获取更多信息。",
+        "forced_logout_toast": "由于强制登出已移除帐户"
     },
     "auto_open_snaps": {
-        "title": "自动打开 Snap",
-        "priority_title": "自动打开 Snap (优先)",
-        "error_title": "自动打开 Snap (错误)",
-        "channel_description": "自动打开 Snap 队列状态的通知",
-        "priority_channel_description": "自动打开 Snap 的高优先级通知",
-        "error_channel_description": "自动打开 Snap 失败时的错误通知",
-        "paused_status": "自动打开 Snap 已暂停",
-        "processing_status": "正在处理 Snap：队列中 {queued} 个，已处理 {processed} 个",
+        "title": "自动打开 Snaps",
+        "priority_title": "自动打开 Snaps (优先级)",
+        "error_title": "自动打开 Snaps (错误)",
+        "channel_description": "自动打开 Snaps 队列状态的通知",
+        "priority_channel_description": "自动打开 Snaps 的高优先级通知",
+        "error_channel_description": "自动打开 Snaps 失败时的错误通知",
+        "paused_status": "自动打开 Snaps 已暂停",
+        "processing_status": "正在处理 Snaps：{queued} 个在队列中，已处理 {processed} 个",
         "monitor_status": "正在监控...",
-        "recent_snaps": "最近的 Snap",
+        "recent_snaps": "最近的 Snaps",
         "action_pause": "暂停",
         "action_resume": "恢复",
-        "action_clear": "清除队列",
+        "action_clear": "清空队列",
         "action_reset": "重置计数",
-        "error_content": "从 {sender} 打开 Snap 失败：{error}",
+        "error_content": "无法打开来自 {sender} 的 snap：{error}",
         "resumed_feedback": "自动打开已恢复",
         "paused_feedback": "自动打开已暂停",
-        "resumed_message": "处理将自动继续进行队列中的 Snap",
-        "paused_message": "处理已暂停。队列保留 ({count} 个 Snap)",
+        "resumed_message": "队列中的 snaps 将自动继续处理",
+        "paused_message": "处理已暂停。队列已保留 ({count} 个 snaps)",
         "status_paused": "已暂停",
         "status_monitoring": "正在监控",
         "status_active": "活跃",
-        "queue_cleared": "队列已清除且统计数据已重置",
-        "queue_cleared_title": "队列已清除",
-        "queue_cleared_reset": "队列已清除并重置",
-        "queue_cleared_feedback": "清除了 {count} 个排队的 Snap • 重置了 {processed} 个已处理计数",
-        "queue_cleared_feedback_simple": "重置了 {processed} 个已处理计数",
+        "queue_cleared": "队列已清空且统计信息已重置",
+        "queue_cleared_title": "队列已清空",
+        "queue_cleared_reset": "队列已清空并重置",
+        "queue_cleared_feedback": "已清空 {count} 个排队的 snaps \u2022 重置 {processed} 个处理计数",
+        "queue_cleared_feedback_simple": "重置 {processed} 个处理计数",
         "unknown_sender": "未知",
         "unknown_user": "未知用户",
         "content_type_external_media": "外部媒体",
@@ -3013,19 +3120,19 @@
         "notification_status": "状态",
         "notification_statistics": "统计",
         "notification_queue_size": "队列大小",
-        "notification_total_opened": "已打开 Snap 总数",
+        "notification_total_opened": "已打开 Snaps 总数",
         "notification_queue_preview": "队列预览",
         "notification_processing_continue": "处理将自动继续...",
-        "notification_no_snaps_queue": "队列中没有 Snap。",
-        "notification_queue_cleared_opened": "队列已清除（{opened} 个已打开）",
+        "notification_no_snaps_queue": "队列中没有 snaps。",
+        "notification_queue_cleared_opened": "队列已清空（已打开 {opened} 个）",
         "content_type_photo_video_snap": "照片/视频 Snap",
         "conversation_type_group_with_name": "群组：{name}",
         "delete_logs_title": "删除日志？",
         "delete_logs_progress": "正在删除 {count} 条日志...",
-        "delete_logs_description": "这将根据当前过滤器和搜索查询删除日志。此操作无法撤消。",
+        "delete_logs_description": "这将基于当前筛选条件和搜索查询删除日志。此操作无法撤消。",
         "export_logs_title": "导出日志？",
         "export_logs_progress": "正在导出日志...",
-        "export_logs_description": "这将根据当前过滤器和搜索查询导出日志。",
+        "export_logs_description": "这将基于当前筛选条件和搜索查询导出日志。",
         "export_logs_as": "导出为 {type}",
         "export_logs_success": "日志已导出！",
         "export_logs_failure": "导出日志失败。查看 logcat 以获取更多详细信息。",
@@ -3034,7 +3141,7 @@
     "script_imported": "脚本 {name} 已导入！",
     "script_import_failed": "导入脚本失败。{error}。查看日志以获取更多详细信息",
     "script_updating": "正在更新脚本 {name}...",
-    "script_updated": "{name} 已更新到版本 {version}",
+    "script_updated": "已将 {name} 更新至版本 {version}",
     "script_update_failed": "更新模块失败。查看日志以获取更多详细信息",
     "script_edit_failed": "打开模块文件失败。查看日志以获取更多详细信息",
     "script_data_cleared": "模块数据已清除！",
@@ -3043,7 +3150,7 @@
     "script_delete_failed": "删除模块失败。查看日志以获取更多详细信息",
     "script_actions": "操作",
     "script_no_description": "无描述",
-    "script_update_available": "可用更新：{version}",
+    "script_update_available": "更新可用：{version}",
     "script_loaded": "已加载脚本 {name}",
     "script_unloaded": "已卸载脚本 {name}",
     "script_enable_disable_failed": "{action} 脚本失败。查看日志以获取更多详细信息",
@@ -3077,21 +3184,21 @@
         "message_edited": "{friend} 在 {conversation} 中编辑了一条消息",
         "message_reaction_add": "{friend} 在 {conversation} 中添加了一个反应",
         "message_reaction_remove": "{friend} 在 {conversation} 中移除了一个反应",
-        "snap_opened": "{friend} 在 {conversation} 中打开了一个 Snap",
-        "snap_replayed": "{friend} 在 {conversation} 中重播了一个 Snap",
-        "snap_replayed_twice": "{friend} 在 {conversation} 中重播了两次 Snap",
-        "snap_screenshot": "{friend} 在 {conversation} 中截图",
-        "snap_screen_record": "{friend} 在 {conversation} 中录屏",
+        "snap_opened": "{friend} 在 {conversation} 中打开了一个 snap",
+        "snap_replayed": "{friend} 在 {conversation} 中重播了一个 snap",
+        "snap_replayed_twice": "{friend} 在 {conversation} 中重播了两次 snap",
+        "snap_screenshot": "{friend} 在 {conversation} 中截屏",
+        "snap_screen_record": "{friend} 在 {conversation} 中屏幕录制",
         "i_can_see_you": "{friend} 在 {conversation} 中的活动：{details}"
     },
     "friend_mutation_observer": {
-        "notification_channel_name": "好友变更观察者",
+        "notification_channel_name": "好友变动观察者",
         "friend_removed": "{username} 已将您从好友中移除",
         "birthday_removed": "{username} 已移除他们的生日 ({birthday})",
         "birthday_added": "{username} 已添加他们的生日 ({birthday})",
         "birthday_changed": "{username} 已将生日从 {oldBirthday} 更改为 {newBirthday}",
         "bitmoji_selfie_changed": "{username} 已更改他们的 Bitmoji 自拍",
-        "bitmoji_avatar_changed": "{username} 已更改他们的 Bitmoji 头像",
+        "bitmoji_avatar_changed": "{username} 已更改他们的 Bitmoji 形象",
         "bitmoji_background_changed": "{username} 已更改他们的 Bitmoji 背景",
         "bitmoji_scene_changed": "{username} 已更改他们的 Bitmoji 场景"
     },
@@ -3104,7 +3211,7 @@
         "date_range_picker_scroll_to_previous_month": "上个月",
         "date_range_picker_scroll_to_next_month": "下个月",
         "date_picker_today_description": "今天",
-        "date_range_picker_day_in_range": "已选择",
+        "date_range_picker_day_in_range": "已选",
         "date_input_invalid_for_pattern": "无效日期",
         "date_input_invalid_year_range": "无效年份",
         "date_input_invalid_not_allowed": "无效日期",
@@ -3112,21 +3219,40 @@
     },
     "send_override_dialog": {
         "title": "发送媒体为",
-        "duration": "时长：{duration}",
+        "duration": "持续时间：{duration}",
         "saveable_snap_hint": "使 Snap 在聊天中可保存",
         "unlimited_duration": "无限",
-        "schedule": "定时",
+        "schedule": "计划",
         "select_time": "选择时间",
         "select": "选择",
-        "select_date_first": "请先选择一个日期",
-        "invalid_time": "请选择一个未来的时间"
+        "select_date_first": "请先选择日期",
+        "invalid_time": "请选择未来的时间"
+    },
+    "spotlight_creator_info": {
+        "title": "创作者信息",
+        "close": "关闭",
+        "creator_info": "创作者信息",
+        "display_name": "显示名称",
+        "username": "用户名",
+        "user_id": "用户 ID",
+        "posted_on": "发布于",
+        "loading_username": "正在加载...",
+        "username_copied": "用户名已复制",
+        "user_id_copied": "用户 ID 已复制",
+        "friend_status": "好友状态",
+        "mutual_friend": "互为好友",
+        "following": "正在关注",
+        "friend_request_sent": "请求已发送",
+        "friend_request_received": "收到请求",
+        "blocked": "已屏蔽",
+        "friend_removed": "已移除"
     },
     "auto_reply_messages": {
         "dialog": {
             "add_message": "添加消息",
             "edit_message": "编辑消息",
             "message_label": "消息",
-            "no_messages": "暂无消息。添加您的第一条消息！",
+            "no_messages": "尚无消息。添加您的第一条消息！",
             "message_placeholder": "输入您的自动回复消息..."
         }
     },
@@ -3191,14 +3317,14 @@
             "no_rules_found": "未找到规则",
             "no_events": "无事件"
         },
-        "scopes_suffix": "个范围",
+        "scopes_suffix": "范围",
         "search": {
             "placeholder": "搜索"
         },
         "filters": {
             "newest_first": "最新的在前",
             "pick_a_date": "选择日期",
-            "title": "过滤器",
+            "title": "筛选",
             "search_by": "搜索依据",
             "since": "从",
             "until": "直到",
@@ -3216,24 +3342,24 @@
                 "stopped_speaking": "停止说话",
                 "started_peeking": "开始偷看",
                 "stopped_peeking": "停止偷看",
-                "message_read": "阅读消息",
-                "message_deleted": "删除消息",
-                "message_saved": "保存消息",
-                "message_unsaved": "取消保存消息",
-                "message_edited": "编辑消息",
-                "message_reaction_add": "添加反应",
-                "message_reaction_remove": "移除反应",
-                "snap_opened": "打开 Snap",
-                "snap_replayed": "重播 Snap",
-                "snap_replayed_twice": "重播两次 Snap",
-                "snap_screenshot": "截图",
-                "snap_screen_record": "录屏"
+                "message_read": "阅读了消息",
+                "message_deleted": "删除了消息",
+                "message_saved": "保存了消息",
+                "message_unsaved": "取消保存了消息",
+                "message_edited": "编辑了消息",
+                "message_reaction_add": "添加了反应",
+                "message_reaction_remove": "移除了反应",
+                "snap_opened": "打开了 snap",
+                "snap_replayed": "重播了 snap",
+                "snap_replayed_twice": "重播了两次 snap",
+                "snap_screenshot": "截屏了",
+                "snap_screen_record": "屏幕录制了"
             }
         },
         "logs": {
             "export_dialog": {
                 "title": "导出日志",
-                "description": "将您的好友追踪器日志导出到文件",
+                "description": "将好友追踪器日志导出到文件",
                 "progress": "正在导出日志...",
                 "export_as": "导出为 {type}",
                 "format_json": "JSON",
@@ -3250,17 +3376,17 @@
                 "in_conversation": "在 {conversation}",
                 "unknown_user": "未知",
                 "unknown_conversation": "私信",
-                "i_can_see_you_entered": "已进入",
-                "i_can_see_you_left": "已离开",
+                "i_can_see_you_entered": "进入",
+                "i_can_see_you_left": "离开",
                 "i_can_see_you_duration": "持续时间",
-                "i_can_see_you_not_available": "不可用",
-                "i_can_see_you_unit_hour": "时",
+                "i_can_see_you_not_available": "N/A",
+                "i_can_see_you_unit_hour": "小时",
                 "i_can_see_you_unit_minute": "分",
                 "i_can_see_you_unit_second": "秒",
-                "event_text": "{friend} {event} 在 {conversation}",
+                "event_text": "{friend} 在 {conversation} 中 {event}",
                 "events": {
-                    "conversation_enter": "进入了",
-                    "conversation_exit": "离开了",
+                    "conversation_enter": "进入",
+                    "conversation_exit": "离开",
                     "started_typing": "开始输入",
                     "stopped_typing": "停止输入",
                     "started_speaking": "开始说话",
@@ -3274,12 +3400,12 @@
                     "message_edited": "编辑了一条消息",
                     "message_reaction_add": "添加了一个反应",
                     "message_reaction_remove": "移除了一个反应",
-                    "snap_opened": "打开了一个 Snap",
-                    "snap_replayed": "重播了一个 Snap",
-                    "snap_replayed_twice": "重播了两次 Snap",
-                    "snap_screenshot": "截图了",
-                    "snap_screen_record": "录屏了",
-                    "i_can_see_you": "活跃"
+                    "snap_opened": "打开了一个 snap",
+                    "snap_replayed": "重播了一个 snap",
+                    "snap_replayed_twice": "重播了两次 snap",
+                    "snap_screenshot": "截屏",
+                    "snap_screen_record": "屏幕录制",
+                    "i_can_see_you": "处于活动状态"
                 }
             }
         },
@@ -3294,12 +3420,12 @@
             "only_inside_conversation": "仅当我在对话内时",
             "only_outside_conversation": "仅当我在对话外时",
             "only_when_app_active": "仅当 Snapchat 处于活动状态时",
-            "only_when_app_inactive": "仅当 Snapchat 处于非活动状态时",
+            "only_when_app_inactive": "仅当 Snapchat 不处于活动状态时",
             "no_notification_when_app_active": "当 Snapchat 处于活动状态时不发送通知",
             "scope_options": {
                 "all_friends_groups": "所有好友/群组",
-                "no_one_except": "除了...均不",
-                "everyone_except": "除了...均为"
+                "no_one_except": "除了...之外没人",
+                "everyone_except": "除了...之外所有人"
             }
         }
     },
@@ -3320,7 +3446,7 @@
             "disable_bypass_status_indicator": "禁用绕过状态指示器"
         }
     },
-    "ui_settings_title": "界面设置",
+    "ui_settings_title": "UI 设置",
     "haptic_feedback_label": "触觉反馈",
     "updates_title": "更新",
     "auto_update_check": "自动更新检查",
@@ -3341,10 +3467,10 @@
     "disable_bypass_indicator_label": "禁用绕过指示器",
     "friend_list": {
         "manage_title": "管理好友列表",
-        "export_description": "导出好友允许您将好友的 ID 保存到文本文件中。从文件导入将以列表形式显示好友，您可以在其中添加他们。",
+        "export_description": "导出好友允许您将好友 ID 列表保存到文本文件中。从文件导入将在列表中显示好友，您可以在其中添加他们。",
         "export_friends": "导出好友",
         "import_from_file": "从文件导入",
-        "load_suggested_friends": "加载建议好友",
+        "load_suggested_friends": "加载建议的好友",
         "add": "添加"
     },
     "memories": {
@@ -3367,34 +3493,39 @@
         "import_from_url": "从 URL 导入",
         "open_scripts_folder": "打开脚本文件夹",
         "import_script_from_url": "从 URL 导入脚本",
-        "warning_imported_scripts": "警告：导入的脚本可能对您的设备有害。仅导入来自受信任来源的脚本。",
-        "enter_url_here": "在此输入 URL：",
+        "warning_imported_scripts": "警告：导入的脚本可能会对您的设备有害。仅导入来自受信任来源的脚本。",
+        "enter_url_here": "在此处输入 URL：",
         "import": "导入",
         "cancel": "取消",
         "documentation": "文档"
     },
     "common": {
         "cancel": "取消",
+        "close": "关闭",
         "add": "添加",
         "ok": "确定",
         "quit": "退出",
         "done": "完成",
         "back": "返回",
         "unknown": "未知",
+        "unknown_error": "未知错误",
+        "not_available": "N/A",
         "added": "已添加",
         "no_friends_found": "未找到好友",
         "exporting_memories": "正在导出回忆... ({failed} 失败)"
     },
-    "clear_friend_feed": "清除好友列表",
+    "clear_friend_feed": "清除好友动态流",
+    "task_media_conversion_title": "媒体转换",
+    "task_call_recording_title": "通话录音 {author}",
     "select_date": "选择日期",
-    "schedule_scheduled_for": "预定给 {name}，时间 {time}",
-    "schedule_sending_in": "{time} 后发送",
-    "schedule_sent_to": "已发送给 {name}",
-    "schedule_sent": "预定 Snap 已发送",
+    "schedule_scheduled_for": "已为 {name} 安排，时间 {time}",
+    "schedule_sending_in": "发送时间 {time}",
+    "schedule_sent_to": "发送给 {name}",
+    "schedule_sent": "计划的 snap 已发送",
     "schedule_failed_to": "发送给 {name} 失败",
-    "schedule_failed": "预定 Snap 失败",
-    "schedule_cancelled_for": "已取消给 {name} 的发送",
-    "by_author": "作者：{author}",
+    "schedule_failed": "计划的 snap 失败",
+    "schedule_cancelled_for": "已为 {name} 取消",
+    "by_author": "作者 {author}",
     "version": "版本 {version}",
     "delete_button": "删除",
     "logger_history": {
@@ -3428,7 +3559,7 @@
     },
     "debug_dialogs": {
         "info": "信息",
-        "refs": "引用",
+        "refs": "Refs",
         "arroyo": "Arroyo",
         "message": "消息",
         "media_references": "媒体引用",
@@ -3440,10 +3571,10 @@
         "failed_to_edit_message": "编辑消息失败：{error}"
     },
     "toast_snapchat_not_installed": "无法执行操作：未安装 Snapchat",
-    "invalid_input_toast": "无效输入！请确保您输入了有效的值。",
+    "invalid_input_toast": "输入无效！请确保您输入了有效的值。",
     "toast_async_task_failed": "异步任务失败：{message}",
     "toast_snapchat_crashed": "Snapchat 已崩溃！请查看日志以获取更多详细信息。",
-    "toast_init_features_failed": "初始化功能失败！部分功能可能无法正常工作。",
+    "toast_init_features_failed": "初始化功能失败！某些功能可能无法正常工作。",
     "toast_init_script_runtime_failed": "初始化脚本运行时失败！",
     "toast_database_corrupted": "数据库 {path} 已损坏！正在重启...",
     "toast_feature_init_failed": "初始化功能 {feature} 失败！查看 logcat 以获取更多详细信息。",
@@ -3459,11 +3590,16 @@
     "toast_friends_import_failed": "导入好友失败：{message}",
     "toast_translation_service_unavailable": "翻译服务暂时不可用",
     "toast_send_message_failed": "发送消息失败：{error}",
-    "toast_mark_conversation_read_failed": "标记对话为已读失败",
+    "toast_mark_conversation_read_failed": "将对话标记为已读失败",
     "toast_fetch_conversation_failed": "获取对话失败",
-    "toast_open_snap_failed": "打开 Snap 失败",
-    "toast_mark_message_read_failed": "标记消息为已读失败。查看日志以获取更多详细信息",
+    "toast_open_snap_failed": "打开 snap 失败",
+    "toast_mark_message_read_failed": "将消息标记为已读失败。查看日志以获取更多详细信息",
     "toast_open_conversation_first": "您必须先打开一个对话",
+    "conversation_toolbox": {
+        "title": "对话工具箱",
+        "loaded_script": "已加载脚本",
+        "failed_to_load": "加载失败：{message}"
+    },
     "toast_open_link_failed": "打开链接失败",
     "ai_response_style": {
         "casual": "随意",
@@ -3475,7 +3611,7 @@
         "toxic": "尖锐"
     },
     "ai_response_language": {
-        "auto": "自动 (与接收到的相同)",
+        "auto": "自动 (与收到的相同)",
         "en": "英语",
         "es": "西班牙语",
         "fr": "法语",
@@ -3486,7 +3622,7 @@
         "ja": "日语",
         "ko": "韩语",
         "zh": "中文",
-        "ar": "阿拉伯语 (UAE) 和 (KSA)",
+        "ar": "阿拉伯语 (阿联酋) 和 (沙特)",
         "hi": "印地语",
         "tr": "土耳其语",
         "pl": "波兰语",
