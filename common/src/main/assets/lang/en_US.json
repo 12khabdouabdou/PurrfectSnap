@@ -639,6 +639,7 @@
             "scope_blacklist": "Everyone except",
             "events_section_title": "Events",
             "events_suffix": "events",
+            "scopes_suffix": "scopes",
             "no_events_text": "No events added yet",
             "add_event_dialog_title": "Add Event",
             "event_type_label": "Event Type",
@@ -2984,7 +2985,7 @@
         }
     },
     "profile_picture_downloader": {
-        "button": "Download Profile Picture",
+        "button": "⬇",
         "title": "Profile Picture Downloader",
         "avatar_option": "Avatar",
         "background_option": "Background"

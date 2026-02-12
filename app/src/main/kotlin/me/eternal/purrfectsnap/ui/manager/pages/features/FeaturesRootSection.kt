@@ -134,7 +134,10 @@ class FeaturesRootSection : Routes.Route() {
         val containers = mutableMapOf<String, PropertyPair<*>>()
         fun queryContainerRecursive(container: ConfigContainer) {
             container.properties.forEach {
-                if (it.key.dataType.type == DataProcessors.Type.CONTAINER) {
+                if (
+                    it.key.dataType.type == DataProcessors.Type.CONTAINER &&
+                    !it.key.params.flags.contains(ConfigFlag.HIDDEN)
+                ) {
                     containers[it.key.name] = PropertyPair(it.key, it.value)
                     queryContainerRecursive(it.value.get() as ConfigContainer)
                 }
@@ -155,10 +158,15 @@ class FeaturesRootSection : Routes.Route() {
         properties
     }
 
+    private fun isSearchVisibleProperty(propertyKey: PropertyKey<*>): Boolean {
+        return !propertyKey.params.flags.contains(ConfigFlag.HIDDEN)
+    }
+
     private data class SearchEntry(val keyword: String, val tokens: List<String>)
 
     private fun buildSearchEntries(): List<SearchEntry> {
         return allProperties.keys.mapNotNull { key ->
+            if (!isSearchVisibleProperty(key)) return@mapNotNull null
             val name = context.translation[key.propertyName()]
             val description = context.translation[key.propertyDescription()]
             val tokens = listOfNotNull(name, description, key.name).map { it.trim() }.filter { it.isNotEmpty() }
@@ -280,9 +288,11 @@ class FeaturesRootSection : Routes.Route() {
         composable(SEARCH_FEATURE_ROUTE) { backStackEntry ->
             backStackEntry.arguments?.getString("keyword")?.let { keyword ->
                 val properties = allProperties.filter {
-                    it.key.name.contains(keyword, ignoreCase = true) ||
+                    isSearchVisibleProperty(it.key) && (
+                        it.key.name.contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyName()].contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyDescription()].contains(keyword, ignoreCase = true)
+                    )
                 }.map { PropertyPair(it.key, it.value) }
 
                 PropertiesView(
@@ -1573,7 +1583,7 @@ class FeaturesRootSection : Routes.Route() {
         val isActiveSearch = isSearchResults || liveSearchQuery.isNotBlank()
         val globalSearchProperties = remember(enableGlobalSearch) {
             if (enableGlobalSearch) {
-                allProperties.map { PropertyPair(it.key, it.value) }
+                allProperties.filter { isSearchVisibleProperty(it.key) }.map { PropertyPair(it.key, it.value) }
             } else {
                 emptyList()
             }
