@@ -2985,7 +2985,7 @@
         }
     },
     "profile_picture_downloader": {
-        "button": "⬇",
+        "button": "Download Profile Picture",
         "title": "Profile Picture Downloader",
         "avatar_option": "Avatar",
         "background_option": "Background"
