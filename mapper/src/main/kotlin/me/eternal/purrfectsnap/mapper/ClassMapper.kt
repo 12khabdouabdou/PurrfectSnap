@@ -40,6 +40,7 @@ class ClassMapper(
             COFObservableMapper(),
             FoldingLayoutMapper(),
             PlatformClientAttestationMapper(),
+            ChatMediaDrawerMapper(),
         )
     }
 

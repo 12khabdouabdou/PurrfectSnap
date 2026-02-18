@@ -48,6 +48,7 @@ import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.util.dataBuilder
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
+import me.eternal.purrfectsnap.mapper.impl.ChatMediaDrawerMapper
 import java.io.InputStream
 import java.lang.reflect.Method
 import kotlin.random.Random
@@ -62,14 +63,27 @@ class MediaFilePicker : Feature("Media File Picker") {
 
         onNextActivityCreate(defer = true) {
             lateinit var chatMediaDrawerActionHandler: Any
-            lateinit var sendItemsMethod: Method
+            var sendItemsMethod: Method? = null
+            var drawerViewClass: Class<*>? = null
+            var sendItemsListItemClassFallback: Class<*>? = null
 
-            findClass("com.snap.composer.memories.ChatMediaDrawer").genericSuperclass?.getTypeArguments()?.getOrNull(1)?.apply {
-                methods.first {
-                    it.parameterTypes.size == 1 && it.parameterTypes[0].name.endsWith("ChatMediaDrawerActionHandler")
-                }.also { method ->
-                    sendItemsMethod = method.parameterTypes[0].methods.first { it.name == "sendItems" }
-                }.hook(HookStage.AFTER) {
+            context.mappings.useMapper(ChatMediaDrawerMapper::class) {
+                val drawerCls = chatMediaDrawerClass.getAsClass() ?: return@useMapper
+                val actionHandlerCls = actionHandlerClass.getAsClass() ?: return@useMapper
+                val sendItemsName = sendItemsMethodName.getAsString() ?: "sendItems"
+                drawerViewClass = drawerCls
+                sendItemsListItemClassFallback = sendItemsListItemClass.getAsClass()
+
+                val contextType = drawerCls.genericSuperclass?.getTypeArguments()?.getOrNull(1) ?: return@useMapper
+                val handlerParamMethod = contextType.methods.firstOrNull { method ->
+                    method.parameterTypes.size == 1 && (
+                        method.parameterTypes[0].name.endsWith("ChatMediaDrawerActionHandler") ||
+                        actionHandlerCls.isAssignableFrom(method.parameterTypes[0])
+                    )
+                } ?: return@useMapper
+                val sendItems = handlerParamMethod.parameterTypes[0].methods.firstOrNull { it.name == sendItemsName } ?: return@useMapper
+                sendItemsMethod = sendItems
+                handlerParamMethod.hook(HookStage.AFTER) {
                     chatMediaDrawerActionHandler = it.arg(0)
                 }
             }
@@ -102,7 +116,7 @@ class MediaFilePicker : Feature("Media File Picker") {
             }
 
             context.event.subscribe(ActivityResultEvent::class) { event ->
-                if (event.requestCode != requestCode || event.resultCode != Activity.RESULT_OK) return@subscribe
+                if (sendItemsMethod == null || event.requestCode != requestCode || event.resultCode != Activity.RESULT_OK) return@subscribe
                 requestCode = null
 
                 firstVideoId = context.androidContext.contentResolver.query(
@@ -128,25 +142,35 @@ class MediaFilePicker : Feature("Media File Picker") {
                 }
 
                 fun sendMedia() {
-                    sendItemsMethod.invoke(chatMediaDrawerActionHandler, listOf<Any>(), listOf(
-                        sendItemsMethod.genericParameterTypes[1].getTypeArguments().first().dataBuilder {
-                            from("_item") {
-                                set("_cameraRollSource", "Snapchat")
-                                set("_contentUri", "")
-                                set("_durationMs", 0.0)
-                                set("_disabled", false)
-                                set("_imageRotation", 0.0)
-                                set("_width", 1080.0)
-                                set("_height", 1920.0)
-                                set("_timestampMs", System.currentTimeMillis().toDouble())
-                                from("_itemId") {
-                                    set("_itemId", firstVideoId.toString())
-                                    set("_type", "VIDEO")
-                                }
+                    val method = sendItemsMethod ?: return
+                    val itemClass = method.genericParameterTypes.getOrNull(1)?.getTypeArguments()?.firstOrNull()
+                        ?: sendItemsListItemClassFallback
+                    if (itemClass == null) {
+                        context.log.warn("MediaFilePicker: sendItems second parameter type has no generic info (type erasure). genericParameterTypes[1]=${method.genericParameterTypes.getOrNull(1)}")
+                        context.inAppOverlay.showStatusToast(Icons.Default.Error, "Failed to send media (incompatible version).")
+                        return
+                    }
+                    val item = itemClass.dataBuilder {
+                        from("_item") {
+                            set("_cameraRollSource", "Snapchat")
+                            set("_contentUri", "")
+                            set("_durationMs", 0.0)
+                            set("_disabled", false)
+                            set("_imageRotation", 0.0)
+                            set("_width", 1080.0)
+                            set("_height", 1920.0)
+                            set("_timestampMs", System.currentTimeMillis().toDouble())
+                            from("_itemId") {
+                                set("_itemId", firstVideoId.toString())
+                                set("_type", "VIDEO")
                             }
-                            set("_order", 0.0)
                         }
-                    ))
+                        set("_order", 0.0)
+                    } ?: run {
+                        context.inAppOverlay.showStatusToast(Icons.Default.Error, "Failed to build media item.")
+                        return
+                    }
+                    method.invoke(chatMediaDrawerActionHandler, listOf<Any>(), listOf(item))
                 }
 
                 fun startConversion(audioOnly: Boolean) {
@@ -204,7 +228,7 @@ class MediaFilePicker : Feature("Media File Picker") {
             val buttonTag = Random.nextInt(0, 65535)
 
             context.event.subscribe(AddViewEvent::class) { event ->
-                if (event.parent !is FrameLayout || !event.view::class.java.name.endsWith("ChatMediaDrawer")) return@subscribe
+                if (event.parent !is FrameLayout || drawerViewClass?.isInstance(event.view) != true) return@subscribe
 
                 event.view.addOnAttachStateChangeListener(object: View.OnAttachStateChangeListener {
                     override fun onViewAttachedToWindow(v: View) {
