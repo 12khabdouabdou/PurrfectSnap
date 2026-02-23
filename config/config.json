@@ -30,6 +30,13 @@
     "/snap.security.ArgosService/GetTokens",
     "com.snap.playstate.net.ReadReceiptHttpInterface.batchUploadReadReceipts",
     "com.snap.identity.network.suggestion.BqSuggestFriendHttpInterface.fetchLegacySuggestedFriend",
-    "com.snap.identity.FriendingHttpInterface.submitSuggestedFriendsAction"
+    "com.snap.identity.FriendingHttpInterface.submitSuggestedFriendsAction",
+    "/snapchat.janus.api.LoginService/",
+    "/snapchat.janus.api.RegistrationService/",
+    "com.snap.identity.network.suggestion.BqSuggestFriendHttpInterface.fetchHighAvailableSuggestedFriend",
+    "com.snap.identity.network.suggestion.BqSuggestFriendHttpInterface.fetchNotificationSuggestedFriends",
+    "com.snap.identity.FriendingHttpInterface.getFriends",
+    "snaptoken",
+    "snaptokentype"
   ]
 }
