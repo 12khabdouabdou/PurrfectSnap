@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 
 /**
  * Centralized palette for the premium PurrfectSnap look.
- * Avoids relying on MaterialTheme for tinting so we can keep a consistent brand glow everywhere.
+ * Exactly aligned with the particle-box (Original Professional) standards.
  */
 object PurrfectPalette {
     val backgroundGradient = Brush.verticalGradient(
