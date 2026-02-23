@@ -12,9 +12,16 @@ fun ensureAndroidSdk(rootDir: File) {
         localProperties.inputStream().use { props.load(it) }
     }
 
-    val sdkPath = System.getenv("ANDROID_HOME")
+    var sdkPath = System.getenv("ANDROID_HOME")
         ?: System.getenv("ANDROID_SDK_ROOT")
         ?: props.getProperty("sdk.dir")
+
+    val potentialSdkDir = File(rootDir, ".gradle/android-sdk")
+    if (sdkPath == null && potentialSdkDir.exists()) {
+        sdkPath = potentialSdkDir.absolutePath
+        props["sdk.dir"] = sdkPath
+        localProperties.outputStream().use { props.store(it, null) }
+    }
 
     if (sdkPath != null && File(sdkPath).exists()) {
         println("Android SDK found at $sdkPath, skipping provisioning.")
@@ -78,11 +85,12 @@ fun ensureAndroidSdk(rootDir: File) {
     }
 
     runSdkManager("--licenses")
-    runSdkManager("platform-tools platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018")
+    // Align SDK/NDK to module config (compileSdk 36, build-tools 36.0.0, NDK 28.2)
+    val desiredNdkVersion = "28.2.13676358"
+    runSdkManager("platform-tools platforms;android-36 build-tools;36.0.0 ndk;$desiredNdkVersion")
 
-    val ndkDir = File(sdkDir, "ndk/27.2.12479018")
+    val ndkDir = File(sdkDir, "ndk/$desiredNdkVersion")
     props["sdk.dir"] = sdkDir.absolutePath
-    props["ndk.dir"] = ndkDir.absolutePath
     localProperties.outputStream().use { props.store(it, null) }
 
     System.setProperty("android.home", sdkDir.absolutePath)
@@ -113,11 +121,10 @@ dependencyResolutionManagement {
 
 
 
-rootProject.name = "SnapEnhance"
+rootProject.name = "PurrfectSnap"
 include(":common")
 include(":core")
-include(":composer")
+include(":valdi")
 include(":app")
 include(":mapper")
 include(":native")
-include(":manager")

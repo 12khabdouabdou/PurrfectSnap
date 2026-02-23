@@ -1,6 +1,6 @@
 use std::{error::Error, sync::Mutex};
 use jni::{objects::JObject, JNIEnv};
-use crate::util::get_jni_string;
+use crate::{secstrings, util::get_jni_string};
 
 static NATIVE_CONFIG: Mutex<Option<NativeConfig>> = Mutex::new(None);
 
@@ -12,7 +12,7 @@ pub fn native_config() -> NativeConfig {
 pub(crate) struct NativeConfig {
     pub disable_bitmoji: bool,
     pub disable_metrics: bool,
-    pub composer_hooks: bool,
+    pub valdi_hooks: bool,
     pub custom_emoji_font_path: Option<String>,
 }
 
@@ -39,9 +39,37 @@ impl NativeConfig {
         Ok(Self {
             disable_bitmoji: get_boolean!("disableBitmoji"),
             disable_metrics: get_boolean!("disableMetrics"),
-            composer_hooks: get_boolean!("composerHooks"),
+            valdi_hooks: get_boolean!("valdiHooks"),
             custom_emoji_font_path: get_string!("customEmojiFontPath"),
         })
+    }
+}
+
+pub struct BlockerConfig {
+    pub allowed_eps_active: Vec<String>,
+    pub detection_keywords: Vec<String>,
+    pub risk_block_list: Vec<String>,
+}
+
+pub fn get_blocker_config() -> BlockerConfig {
+    let config_str = include_str!("../../../config/config.json");
+    let raw: serde_json::Value = serde_json::from_str(config_str).unwrap();
+
+    let allowed = raw["allowed_eps_active"].as_array().cloned().unwrap_or_default();
+
+    BlockerConfig {
+        allowed_eps_active: allowed
+            .into_iter()
+            .filter_map(|value| value.as_str().map(|s| s.to_lowercase()))
+            .collect(),
+        detection_keywords: secstrings::get_detection_keywords()
+            .into_iter()
+            .map(|s| s.to_lowercase())
+            .collect(),
+        risk_block_list: secstrings::get_risk_block_list()
+            .into_iter()
+            .map(|s| s.to_lowercase())
+            .collect(),
     }
 }
 

@@ -1,6 +1,8 @@
 import java.io.File
 import java.util.Locale
 import java.util.Properties
+import java.util.zip.CRC32
+import org.apache.tools.ant.filters.FixCrLfFilter
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.Sync
 
@@ -31,9 +33,16 @@ val localProperties = Properties().apply {
     }
 }
 
+val desiredNdkVersion = (findProperty("androidNdkVersion") as? String)
+    ?: "28.2.13676358"
+
+val sdkDirPath = localProperties.getProperty("sdk.dir")?.trimEnd('/', '\\')
+    ?: System.getenv("ANDROID_SDK_ROOT")?.trimEnd('/', '\\')
+    ?: System.getenv("ANDROID_HOME")?.trimEnd('/', '\\')
+
 val ndkHomePath = (System.getenv("ANDROID_NDK_HOME")?.trimEnd('/', '\\')
-    ?: localProperties.getProperty("ndk.dir")?.trimEnd('/', '\\')
-    ?: error("Unable to locate the Android NDK. Set ANDROID_NDK_HOME or define ndk.dir in local.properties"))
+    ?: sdkDirPath?.let { "$it${File.separator}ndk${File.separator}$desiredNdkVersion" }
+    ?: error("Unable to locate the Android NDK. Set ANDROID_NDK_HOME or define sdk.dir in local.properties"))
     .replace("\\:", ":")
 val ndkHome = File(ndkHomePath)
 require(ndkHome.exists()) { "Configured NDK directory $ndkHome does not exist" }
@@ -58,6 +67,60 @@ val toolchainPath = listOf(toolchainBin.absolutePath, System.getenv("PATH") ?: "
     .filter { it.isNotBlank() }
     .joinToString(File.pathSeparator)
 
+fun File.toWslPath(): String {
+    val normalized = absolutePath.replace("\\", "/")
+    return if (normalized.length >= 2 && normalized[1] == ':') {
+        val drive = normalized[0].lowercaseChar()
+        "/mnt/$drive${normalized.substring(2)}"
+    } else normalized
+}
+
+fun File.toUnixLikePath(): String = absolutePath.replace("\\", "/")
+
+// In this environment, WSL doesn't mount all Windows drives (e.g. /mnt/d may be missing).
+// When using WSL's bash.exe, stage sources into a C:-backed temp directory and build from there.
+val wslStagingDir = File(System.getProperty("java.io.tmpdir"), "purrfectsnap-wsl-native").apply { mkdirs() }
+
+val explicitBash = System.getenv("BASH_PATH")?.takeIf { it.isNotBlank() }?.let { File(it) }
+val bashCandidates = mutableListOf<File>()
+explicitBash?.let { bashCandidates.add(it) }
+if (isWindowsHost) {
+    val systemRoot = System.getenv("WINDIR") ?: "C:\\Windows"
+    bashCandidates.add(File(systemRoot, "System32/bash.exe"))
+    System.getenv("ProgramFiles")?.let {
+        bashCandidates.add(File(it, "Git/bin/bash.exe"))
+        bashCandidates.add(File(it, "Git/usr/bin/bash.exe"))
+    }
+    System.getenv("ProgramFiles(x86)")?.let {
+        bashCandidates.add(File(it, "Git/bin/bash.exe"))
+    }
+}
+val resolvedBash = bashCandidates.firstOrNull { it.exists() }
+val bashExecutablePath = resolvedBash?.absolutePath ?: "bash"
+val requiresWslPath = resolvedBash?.absolutePath?.contains("system32\\bash.exe", ignoreCase = true) == true
+
+val nativeAbisProp = (findProperty("nativeAbis") as? String)
+    ?.takeIf { it.isNotBlank() }
+    ?: System.getenv("NATIVE_ABIS")
+    ?: "arm64-v8a,armeabi-v7a"
+var enabledNativeAbis = nativeAbisProp
+    .split(',', ';')
+    .map { it.trim() }
+    .filter { it.isNotEmpty() }
+    .toSet()
+    .ifEmpty { setOf("arm64-v8a", "armeabi-v7a") }
+
+val requestedTasks = gradle.startParameter.taskNames.joinToString(" ")
+val wantsArmv7 = requestedTasks.contains("armv7", ignoreCase = true)
+val wantsArmv8 = requestedTasks.contains("armv8", ignoreCase = true)
+if (wantsArmv7 && !wantsArmv8) {
+    enabledNativeAbis = setOf("armeabi-v7a")
+} else if (wantsArmv8 && !wantsArmv7) {
+    enabledNativeAbis = setOf("arm64-v8a")
+} else if (wantsArmv7 && wantsArmv8) {
+    enabledNativeAbis = enabledNativeAbis + setOf("armeabi-v7a", "arm64-v8a")
+}
+
 val cargoTargets = listOf(
     CargoTarget(
         triple = "aarch64-linux-android",
@@ -71,7 +134,31 @@ val cargoTargets = listOf(
         toolchainPrefix = "armv7a-linux-androideabi",
         apiLevel = 28,
     ),
-)
+).filter { enabledNativeAbis.contains(it.abi) }
+require(cargoTargets.isNotEmpty()) {
+    "No native ABIs enabled. Check the nativeAbis/NATIVE_ABIS configuration. Current value: $nativeAbisProp"
+}
+
+val defaultRustToolchain = if (hostTag.startsWith("windows")) {
+    "stable-x86_64-pc-windows-gnu"
+} else {
+    "stable"
+}
+
+val rustToolchain = (findProperty("rustToolchain") as? String)
+    ?: System.getenv("RUST_TOOLCHAIN")
+    ?: defaultRustToolchain
+
+val omvllVersion = (findProperty("omvllVersion") as? String)
+    ?: System.getenv("OMVLL_VERSION")
+    ?: "1.4.1"
+
+val omvllLinuxAsset = (findProperty("omvllLinuxAsset") as? String)
+    ?: System.getenv("OMVLL_LINUX_ASSET")
+    ?: "omvll_v1-4-1_linux_2025-10-01T09.33.59.tar.gz"
+
+val omvllArchiveUrl = (findProperty("omvllArchiveUrl") as? String)
+    ?.takeIf { it.isNotBlank() }
 
 fun clangExecutableFor(target: CargoTarget): File {
     val executable = File(toolchainBin, "${target.toolchainPrefix}${target.apiLevel}-clang$clangSuffix")
@@ -85,34 +172,11 @@ fun clangPlusPlusExecutableFor(target: CargoTarget): File {
     return executable
 }
 
-android {
-    namespace = rootProject.ext["applicationId"].toString() + ".nativelib"
-    compileSdk = 36
-
-    ndkVersion = ndkHome.name
-
-    buildFeatures {
-        buildConfig = true
-    }
-
-    defaultConfig {
-        buildConfigField("String", "NATIVE_NAME", "\"$nativeBuildHash\".toString()")
-        minSdk = 28
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    sourceSets["main"].jniLibs.srcDir("build/rustJniLibs/android")
-}
-
 // Register rustup tasks
 val rustupTasks = cargoTargets.map { target ->
     tasks.register<Exec>("rustup${target.taskSuffix}") {
         workingDir = file("rust")
-        commandLine("rustup", "target", "add", target.triple)
+        commandLine("rustup", "target", "add", "--toolchain", rustToolchain, target.triple)
     }
 }
 
@@ -128,37 +192,161 @@ rustupTasks.forEachIndexed { index, task ->
 // Register sync & cargo build tasks
 val syncTasks = cargoTargets.mapIndexed { index, target ->
     val rustupTask = rustupTasks[index]
+
+    val stageWslTask = tasks.register<Sync>("stageWslNative${target.taskSuffix}") {
+        enabled = requiresWslPath
+        from(project.layout.projectDirectory.asFile) {
+            into("native")
+            include("build-native.sh")
+            // Ensure LF endings inside WSL (CRLF breaks `set -euo pipefail`).
+            filter<FixCrLfFilter>("eol" to FixCrLfFilter.CrLf.newInstance("lf"))
+        }
+        from(project.layout.projectDirectory.asFile) {
+            into("native")
+            include("omvll_config.py")
+            include("rust/**")
+            exclude("rust/target/**")
+        }
+        from(rootProject.layout.projectDirectory.asFile) {
+            include("config/config.json")
+        }
+        into(wslStagingDir)
+    }
+
     val cargoTask = tasks.register<Exec>("cargoBuild${target.taskSuffix}") {
         group = "build"
         dependsOn(rustupTask)
-        workingDir = file("rust")
-        commandLine("cargo", "build", "--release", "--target", target.triple)
-        val clang = clangExecutableFor(target).absolutePath
-        val clangxx = clangPlusPlusExecutableFor(target).absolutePath
-        environment("CC", clang)
-        environment("CXX", clangxx)
-        environment("CC_${target.envSuffix}", clang)
-        environment("CXX_${target.envSuffix}", clangxx)
-        environment("CC_${target.envSuffixUpper}", clang)
-        environment("CXX_${target.envSuffixUpper}", clangxx)
-        environment("CARGO_TARGET_${target.envSuffixUpper}_LINKER", clang)
-        environment("AR", llvmArExecutable.absolutePath)
-        environment("AR_${target.envSuffix}", llvmArExecutable.absolutePath)
-        environment("AR_${target.envSuffixUpper}", llvmArExecutable.absolutePath)
-        environment("CARGO_TARGET_${target.envSuffixUpper}_AR", llvmArExecutable.absolutePath)
-        environment("PATH", toolchainPath)
+        dependsOn(stageWslTask)
+        workingDir = project.layout.projectDirectory.dir("rust").asFile
+        val buildScript = project.layout.projectDirectory.file("build-native.sh").asFile
+        val scriptCommand = if (requiresWslPath) {
+            val wslDir = File(wslStagingDir, "native").toWslPath()
+            val escapedDir = wslDir.replace("'", "'\"'\"'")
+            val command = "cd '$escapedDir' && bash './${buildScript.name}' ${target.triple}"
+            listOf(
+                bashExecutablePath,
+                "-lc",
+                command
+            )
+        } else {
+            val normalizedPath = buildScript.toUnixLikePath()
+            listOf(
+                bashExecutablePath,
+                normalizedPath,
+                target.triple
+            )
+        }
+        inputs.file(buildScript)
+        commandLine = scriptCommand
+        val ndkPath = if (requiresWslPath) ndkHome.toWslPath() else ndkHome.absolutePath
+        environment("ANDROID_NDK_HOME", ndkPath)
+        environment(
+            "OMVLL_CONFIG",
+            (if (requiresWslPath) File(wslStagingDir, "native/omvll_config.py") else project.layout.projectDirectory.file("omvll_config.py").asFile).let {
+                if (requiresWslPath) it.toWslPath() else it.absolutePath
+            }
+        )
+        environment("RUST_TOOLCHAIN", rustToolchain)
+        environment("OMVLL_VERSION", omvllVersion)
+        environment("OMVLL_LINUX_ASSET", omvllLinuxAsset)
+        omvllArchiveUrl?.let { environment("OMVLL_ARCHIVE_URL", it) }
     }
 
     tasks.register<Sync>("syncNative${target.taskSuffix}") {
         dependsOn(cargoTask)
         val outputLibName = nativeLibFileName
-        from(layout.projectDirectory.file("rust/target/${target.triple}/release/libsnapenhance.so")) {
+        inputs.property("outputLibName", outputLibName)
+        val wslCandidate = File(wslStagingDir, "native/rust/target/${target.triple}/release/libpurrfectsnap.so")
+        val localCandidate = layout.projectDirectory.file("rust/target/${target.triple}/release/libpurrfectsnap.so").asFile
+        val sourceLibs = files(wslCandidate, localCandidate)
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        from(sourceLibs) {
             rename { outputLibName }
         }
+        from(sourceLibs) {
+            rename { "libpurrfectsnap.so" }
+        }
         into(layout.buildDirectory.dir("rustJniLibs/android/${target.abi}"))
+        inputs.files(sourceLibs)
+        val checksumsDir = layout.buildDirectory.dir("checksums")
+        doLast {
+            val file = File(destinationDir, outputLibName)
+            if (!file.exists()) {
+                error("Native library not found for ${target.abi}. Expected ${file.absolutePath}")
+            }
+            val crc = CRC32()
+            crc.update(file.readBytes())
+            val checksumsDirFile = checksumsDir.get().asFile
+            checksumsDirFile.mkdirs()
+            File(checksumsDirFile, target.abi).writeText(crc.value.toString())
+        }
     }
 }
 
-tasks.named("preBuild").configure {
+val generateChecksumsFile = tasks.register("generateChecksumsFile") {
+    dependsOn(syncTasks)
+    val generatedDir = layout.buildDirectory.dir("generated/source/checksums/kotlin")
+    val checksumsFile = generatedDir.get().asFile.resolve("Checksums.kt")
+    val checksumsDir = layout.buildDirectory.dir("checksums").get().asFile
+    inputs.dir(checksumsDir)
+    outputs.file(checksumsFile)
+
+    doLast {
+        val checksums = checksumsDir.listFiles()?.associate {
+            it.name to it.readText().toLong()
+        } ?: emptyMap()
+
+        checksumsFile.parentFile.mkdirs()
+        checksumsFile.writeText(
+            """
+            package me.eternal.purrfectsnap.nativelib
+
+            object Checksums {
+                val checksums = mapOf(
+                    ${checksums.entries.joinToString(",\n") { (abi, checksum) -> "\"$abi\" to ${checksum}L" }}
+                )
+            }
+            """.trimIndent()
+        )
+    }
+}
+
+android {
+    namespace = rootProject.ext["applicationId"].toString() + ".nativelib"
+    compileSdk = 36
+
+    ndkVersion = desiredNdkVersion
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    defaultConfig {
+        buildConfigField("String", "NATIVE_NAME", "\"$nativeBuildHash\".toString()")
+        buildConfigField("String", "MODULE_PACKAGE_NAME", "\"${rootProject.ext["applicationId"]}\"")
+        minSdk = 28
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    sourceSets {
+        getByName("main") {
+            jniLibs.srcDir("build/rustJniLibs/android")
+            java.srcDir(layout.buildDirectory.dir("generated/source/checksums/kotlin"))
+        }
+    }
+}
+
+
+tasks.matching { it.name.startsWith("pre") && it.name.endsWith("Build") }.configureEach {
     syncTasks.forEach { dependsOn(it) }
+    dependsOn(generateChecksumsFile)
+}
+
+dependencies {
+    implementation("androidx.annotation:annotation:1.7.1")
+    implementation("com.google.code.gson:gson:2.10.1")
 }

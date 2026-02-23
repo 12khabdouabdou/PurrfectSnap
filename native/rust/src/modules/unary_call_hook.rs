@@ -104,7 +104,7 @@ def_hook!(
 pub fn init() {
     if let Some(signature) = sig::find_signature(
         &common::CLIENT_MODULE, 
-        "A8 03 1F F8 ?? 00 00 94 ?? ?? ?? 91", -0x48,
+        "A8 03 1F F8 ?? ?? 00 94 ?? ?? ?? 91 ?? ?? ?? A9", -0x48,
         "0A 90 00 F0 3F F9", -0x37
     ) {
         dobby_hook!(signature as *mut c_void, unary_call);
@@ -113,7 +113,7 @@ pub fn init() {
                 env.get_method_id(
                     env.get_object_class(common::native_lib_instance()).unwrap(),
                         "onNativeUnaryCall", 
-                        "(Ljava/lang/String;[B)Lme/rhunk/snapenhance/nativelib/NativeRequestData;"
+                        "(Ljava/lang/String;[B)Lme/eternal/purrfectsnap/nativelib/NativeRequestData;"
                 ).expect("Failed to get onNativeUnaryCall method id")
             ).expect("unary call method already set");
         });

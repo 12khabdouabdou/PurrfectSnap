@@ -1,5 +1,6 @@
-use std::sync::Mutex;
+use std::{fs::File, os::unix::io::AsRawFd, sync::Mutex};
 
+use nix::libc;
 use procfs::process::MMPermissions;
 
 use crate::mapped_lib::MappedLib;
@@ -15,7 +16,46 @@ pub fn get_signatures() -> Vec<(String, Vec<usize>)> {
     SIGNATURE_CACHE.lock().unwrap().clone()
 }
 
-pub fn find_signatures(module_base: usize, size: usize, pattern: &str, once: bool) -> Vec<usize> {
+fn read_region_bytes(start: usize, size: usize) -> Option<Vec<u8>> {
+    let file = File::open("/proc/self/mem").ok();
+    if let Some(file) = file {
+        let fd = file.as_raw_fd();
+        let mut buffer = vec![0u8; size];
+        let mut offset = 0usize;
+
+        while offset < size {
+            let read = unsafe {
+                libc::pread(
+                    fd,
+                    buffer[offset..].as_mut_ptr() as *mut libc::c_void,
+                    (size - offset) as libc::size_t,
+                    (start + offset) as libc::off_t,
+                )
+            };
+            if read < 0 {
+                warn!(
+                    "Failed to read /proc/self/mem at {:#x}: {}",
+                    start,
+                    std::io::Error::last_os_error()
+                );
+                return None;
+            }
+            if read == 0 {
+                break;
+            }
+            offset += read as usize;
+        }
+
+        if offset == size {
+            return Some(buffer);
+        }
+        warn!("Short read from /proc/self/mem at {:#x}: {} < {}", start, offset, size);
+    }
+
+    None
+}
+
+pub fn find_signatures(module_base: usize, bytes_buffer: &[u8], pattern: &str, once: bool) -> Vec<usize> {
     let mut results = Vec::new();
     let mut bytes = Vec::new();
     let mut mask = Vec::new();
@@ -37,13 +77,13 @@ pub fn find_signatures(module_base: usize, size: usize, pattern: &str, once: boo
     }
 
     let mut i = 0;
-    let size = size - bytes.len();
+    let size = bytes_buffer.len().saturating_sub(bytes.len());
     while i < size {
         let mut found = true;
         let mut j = 0;
 
         while j < bytes.len() {
-            if mask[j] == '?' || bytes[j] == unsafe { *(module_base as *const u8).offset(i as isize + j as isize) } {
+            if mask[j] == '?' || bytes[j] == bytes_buffer[i + j] {
                 j += 1;
                 continue;
             }
@@ -66,7 +106,7 @@ pub fn find_signatures(module_base: usize, size: usize, pattern: &str, once: boo
 
 pub fn find_signature_executable(mapped_lib: &MappedLib, pattern: &str) -> Option<usize> {
     let executable_regions = mapped_lib.regions.iter().filter(|region| {
-        region.perms.contains(MMPermissions::EXECUTE) && region.perms.contains(MMPermissions::READ)
+        region.perms.contains(MMPermissions::EXECUTE)
     }).collect::<Vec<_>>();
 
     for region in executable_regions {
@@ -74,7 +114,14 @@ pub fn find_signature_executable(mapped_lib: &MappedLib, pattern: &str) -> Optio
         let module_base = region.start as usize;
 
         if size > 0 {
-            let results = find_signatures(module_base, size, pattern, true);
+            let bytes_buffer = match read_region_bytes(module_base, size) {
+                Some(buffer) => buffer,
+                None => {
+                    warn!("Unable to read executable region: {:#x} - {:#x}", region.start, region.end);
+                    continue;
+                }
+            };
+            let results = find_signatures(module_base, &bytes_buffer, pattern, true);
 
             if results.is_empty() {
                 warn!("Signature not found in region: {:#x} - {:#x}", region.start, region.end);
