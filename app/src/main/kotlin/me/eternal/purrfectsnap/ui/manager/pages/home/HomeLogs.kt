@@ -64,8 +64,11 @@ import me.eternal.purrfectsnap.LogReader
 import me.eternal.purrfectsnap.common.logger.LogChannel
 import me.eternal.purrfectsnap.common.logger.LogLevel
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
+import me.eternal.purrfectsnap.ui.util.Motion
 import me.eternal.purrfectsnap.ui.util.pullrefresh.PullRefreshIndicator
 import me.eternal.purrfectsnap.ui.util.pullrefresh.pullRefresh
 import me.eternal.purrfectsnap.ui.util.pullrefresh.rememberPullRefreshState
@@ -73,9 +76,9 @@ import me.eternal.purrfectsnap.ui.util.saveFile
 import me.eternal.purrfectsnap.common.util.ktx.copyToClipboard
 
 class HomeLogs : Routes.Route() {
-    private val logListState by lazy { LazyListState(0) }
+    private val logListState = LazyListState()
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-    private val externalRefreshTick = mutableStateOf(0)
+    private val externalRefreshTick = mutableIntStateOf(0)
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
@@ -109,18 +112,19 @@ class HomeLogs : Routes.Route() {
     override val topBarActions: @Composable (RowScope.() -> Unit) = {}
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val coroutineScope = rememberCoroutineScope()
+        var controlsHeight by remember { mutableStateOf(100.dp) }
         val composeContext = LocalContext.current
         var logReader by remember { mutableStateOf<LogReader?>(null) }
         val visibleLogs = remember { mutableStateListOf<LogLine>() }
-        val mainExecutor = remember { context.androidContext.mainExecutor }
         var isRefreshing by remember { mutableStateOf(false) }
+
         fun refreshLogs() {
             coroutineScope.launch {
                 val readerResult = withContext(Dispatchers.IO) {
                     runCatching {
                         context.log.newReader { line ->
                             if (shouldHideLog(line)) return@newReader
-                            mainExecutor.execute {
+                            coroutineScope.launch(Dispatchers.Main) {
                                 visibleLogs.add(line)
                             }
                         }
@@ -141,8 +145,7 @@ class HomeLogs : Routes.Route() {
                 }
                 delay(220)
                 if (visibleLogs.isNotEmpty()) {
-                    val targetIndex = (visibleLogs.size - 1).coerceAtLeast(0)
-                    logListState.scrollToItem(targetIndex)
+                    logListState.scrollToItem((visibleLogs.size - 1).coerceAtLeast(0))
                 }
                 isRefreshing = false
             }
@@ -167,49 +170,98 @@ class HomeLogs : Routes.Route() {
                 .background(PurrfectPalette.backgroundGradient)
                 .pullRefresh(pullRefreshState)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                LogsFloatingBar(
-                    isRefreshing = isRefreshing,
-                    onRefresh = {
-                        isRefreshing = true
-                        refreshLogs()
-                    },
-                    onExport = { exportLogs() },
-                    onClear = { clearLogsAndReload() }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    color = Color.White.copy(alpha = 0.04f),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp,
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
-                ) {
-                    if (visibleLogs.isEmpty() && logReader != null) {
-                        EmptyLogsState()
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            state = logListState,
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(
-                                start = 8.dp,
-                                end = 8.dp,
-                                top = 12.dp,
-                                bottom = routes.bottomPadding + 22.dp
-                            )
-                        ) {
-                            items(visibleLogs, key = { it.hashCode() }) { line ->
-                                LogEntryCard(line = line, composeContext = composeContext)
-                            }
+            var showDropDown by remember { mutableStateOf(false) }
+            
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                shape = RoundedCornerShape(24.dp),
+                color = Color.White.copy(alpha = 0.04f),
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+            ) {
+                if (visibleLogs.isEmpty() && logReader != null) {
+                    EmptyLogsState()
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        state = logListState,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(
+                            start = 8.dp,
+                            end = 8.dp,
+                            top = controlsHeight,
+                            bottom = routes.bottomPadding + 12.dp
+                        )
+                    ) {
+                        items(visibleLogs, key = { it.hashCode() }) { line ->
+                            LogEntryCard(line = line, composeContext = composeContext)
                         }
                     }
                 }
             }
+
+            FloatingTopBar(
+                title = context.translation["manager.routes.home_logs"] ?: "Logs",
+                onBack = { routes.navController.popBackStack() },
+                scrollOffset = if (logListState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else logListState.firstVisibleItemScrollOffset,
+                modifier = Modifier.headerHeightTracker { controlsHeight = it },
+                actions = {
+                    if (isRefreshing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White
+                        )
+                    }
+                    IconButton(onClick = { isRefreshing = true; refreshLogs() }) {
+                        Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = Color.White)
+                    }
+                    Box {
+                        IconButton(onClick = { showDropDown = true }) {
+                            Icon(Icons.Filled.MoreVert, contentDescription = null, tint = Color.White)
+                        }
+                        DropdownMenu(
+                            expanded = showDropDown,
+                            onDismissRequest = { showDropDown = false },
+                            offset = DpOffset(0.dp, 8.dp),
+                            containerColor = Color(0xFF161821),
+                            tonalElevation = 8.dp,
+                            shadowElevation = 12.dp,
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    clearLogsAndReload()
+                                    showDropDown = false
+                                },
+                                leadingIcon = { Icon(Icons.Filled.DeleteSweep, contentDescription = null, tint = PurrfectPalette.glowPrimary) },
+                                text = { Text(translation["clear_logs_button"], color = Color.White) },
+                                colors = MenuDefaults.itemColors(
+                                    textColor = Color.White,
+                                    leadingIconColor = PurrfectPalette.glowPrimary
+                                )
+                            )
+                            DropdownMenuItem(
+                                onClick = {
+                                    exportLogs()
+                                    showDropDown = false
+                                },
+                                leadingIcon = { Icon(Icons.Filled.Download, contentDescription = null, tint = PurrfectPalette.glowSecondary) },
+                                text = { Text(translation["export_logs_button"], color = Color.White) },
+                                colors = MenuDefaults.itemColors(
+                                    textColor = Color.White,
+                                    leadingIconColor = PurrfectPalette.glowSecondary
+                                )
+                            )
+                        }
+                    }
+                }
+            )
+
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
@@ -264,116 +316,6 @@ class HomeLogs : Routes.Route() {
                         colors = floatingButtonColors
                     ) {
                         Icon(Icons.Filled.KeyboardDoubleArrowDown, contentDescription = null)
-                    }
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun LogsFloatingBar(
-        isRefreshing: Boolean,
-        onRefresh: () -> Unit,
-        onExport: () -> Unit,
-        onClear: () -> Unit
-    ) {
-        var showDropDown by remember { mutableStateOf(false) }
-        val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp)
-                .padding(top = topPadding),
-            shape = RoundedCornerShape(28.dp),
-            color = Color.White.copy(alpha = 0.07f),
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-            border = BorderStroke(
-                1.dp,
-                Brush.linearGradient(
-                    listOf(
-                        PurrfectPalette.glowPrimary.copy(alpha = 0.6f),
-                        PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
-                    )
-                )
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        IconButton(onClick = { routes.navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
-                        }
-                        Text(
-                            text = routeInfo.translatedKey?.value ?: translation["manager.routes.home_logs"],
-                            color = PurrfectPalette.textPrimary,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        if (isRefreshing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp,
-                                color = PurrfectPalette.glowSecondary
-                            )
-                        }
-                        IconButton(onClick = onRefresh) {
-                            Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = Color.White)
-                        }
-                        Box {
-                            IconButton(onClick = { showDropDown = true }) {
-                                Icon(Icons.Filled.MoreVert, contentDescription = null, tint = PurrfectPalette.glowSecondary)
-                            }
-                            DropdownMenu(
-                                expanded = showDropDown,
-                                onDismissRequest = { showDropDown = false },
-                                offset = DpOffset(0.dp, 8.dp),
-                                containerColor = Color(0xFF161821),
-                                tonalElevation = 8.dp,
-                                shadowElevation = 12.dp,
-                                shape = RoundedCornerShape(14.dp)
-                            ) {
-                                DropdownMenuItem(
-                                    onClick = {
-                                        onClear()
-                                        showDropDown = false
-                                    },
-                                    leadingIcon = { Icon(Icons.Filled.DeleteSweep, contentDescription = null, tint = PurrfectPalette.glowPrimary) },
-                                    text = { Text(translation["clear_logs_button"], color = Color.White) },
-                                    colors = MenuDefaults.itemColors(
-                                        textColor = Color.White,
-                                        leadingIconColor = PurrfectPalette.glowPrimary
-                                    )
-                                )
-                                DropdownMenuItem(
-                                    onClick = {
-                                        onExport()
-                                        showDropDown = false
-                                    },
-                                    leadingIcon = { Icon(Icons.Filled.Download, contentDescription = null, tint = PurrfectPalette.glowSecondary) },
-                                    text = { Text(translation["export_logs_button"], color = Color.White) },
-                                    colors = MenuDefaults.itemColors(
-                                        textColor = Color.White,
-                                        leadingIconColor = PurrfectPalette.glowSecondary
-                                    )
-                                )
-                            }
-                        }
                     }
                 }
             }

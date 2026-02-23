@@ -87,12 +87,12 @@ object Updater {
     }.getOrNull()
 
     private fun fetchLatestDebugCI() = runCatching {
-        val actionRuns = OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/particle-box/PurrfectSnap/actions/runs?event=workflow_dispatch&branch=dev").build()).execute().use {
+        val actionRuns = OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/particle-box/PurrfectSnap/actions/runs?branch=dev&status=success").build()).execute().use {
             if (!it.isSuccessful) throw Throwable("Failed to fetch CI runs: ${it.code}")
             JsonParser.parseString(it.body?.string()).asJsonObject
         }
         val debugRuns = actionRuns.getAsJsonArray("workflow_runs")?.mapNotNull { it.asJsonObject }?.filter { run ->
-            run.get("conclusion")?.takeIf { it.isJsonPrimitive }?.asString == "success" && run.getAsJsonPrimitive("path")?.asString == ".github/workflows/debug.yml"
+            run.getAsJsonPrimitive("name")?.asString == "PurrfectSnap Debug CI"
         } ?: throw Throwable("No debug CI runs found")
 
         val latestRun = debugRuns.firstOrNull() ?: throw Throwable("No debug CI runs found")
@@ -109,15 +109,22 @@ object Updater {
         AbstractLogger.directError("Failed to fetch latest debug CI", it)
     }.getOrNull()
 
-    private val cache = mutableMapOf<Channel, LatestRelease?>()
+    private val cache = mutableMapOf<Channel, Pair<Long, LatestRelease?>>()
 
     fun getLatestRelease(channel: Channel): LatestRelease? {
-        return cache.getOrPut(channel) {
-            if (BuildConfig.DEBUG) {
-                fetchLatestDebugCI() ?: fetchLatestRelease(channel)
-            } else {
-                fetchLatestRelease(channel)
-            }
+        val cached = cache[channel]
+        // Use 24-hour TTL (Time To Live) for cache to optimize API calls
+        if (cached != null && (System.currentTimeMillis() - cached.first) < 24 * 60 * 60 * 1000) {
+            return cached.second
         }
+        
+        val result = if (channel == Channel.PRERELEASE) {
+            fetchLatestDebugCI() ?: fetchLatestRelease(channel)
+        } else {
+            fetchLatestRelease(channel)
+        }
+        
+        cache[channel] = System.currentTimeMillis() to result
+        return result
     }
 }

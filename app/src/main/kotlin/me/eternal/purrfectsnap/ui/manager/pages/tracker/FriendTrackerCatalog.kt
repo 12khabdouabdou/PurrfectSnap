@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.RowScope
@@ -32,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,6 +50,8 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.AestheticEmptyState
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
+import me.eternal.purrfectsnap.ui.util.Motion
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
@@ -69,7 +71,10 @@ class FriendTrackerCatalog : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.friend_tracker_catalog") }
 
     @Composable
-    private fun AvailableRulesTab(topBarHeight: Dp) {
+    private fun AvailableRulesTab(
+        controlsHeight: androidx.compose.ui.unit.Dp,
+        onScrollOffsetChanged: (Int) -> Unit
+    ) {
         val coroutineScope = rememberCoroutineScope()
         val okHttpClient = remember { OkHttpClient() }
         val gson = remember { context.gson }
@@ -78,7 +83,6 @@ class FriendTrackerCatalog : Routes.Route() {
         var repoIndexes by remember { mutableStateOf<Map<String, FriendTrackerRepoManifest>>(emptyMap()) }
         var isLoading by remember { mutableStateOf(false) }
 
-        // Ticks whenever a rule import happens so isImported values recompute
         var importTick by remember { mutableStateOf(0) }
 
         fun refreshIndexes() {
@@ -93,7 +97,7 @@ class FriendTrackerCatalog : Routes.Route() {
                     repos.forEach { repoRoot ->
                         val indexUrl = if (repoRoot.endsWith("/")) "${repoRoot}index.json" else "$repoRoot/index.json"
                         try {
-                            val req = Request.Builder().url(indexUrl).build() // ktlint-disable indent_wrapped_argument
+                            val req = Request.Builder().url(indexUrl).build() 
                             okHttpClient.newCall(req).execute().use { response ->
                                 if (response.isSuccessful) {
                                     response.body?.charStream()?.let { reader ->
@@ -160,14 +164,14 @@ class FriendTrackerCatalog : Routes.Route() {
             coroutineScope.launch(Dispatchers.IO) {
                 val rawUrl = if (repoUrl.endsWith("/")) repoUrl + entry.path else repoUrl + "/" + entry.path
                 try {
-                    val req = Request.Builder().url(rawUrl).build() // ktlint-disable indent_wrapped_argument
+                    val req = Request.Builder().url(rawUrl).build() 
                     okHttpClient.newCall(req).execute().use { response ->
                         if (!response.isSuccessful) {
                             withContext(Dispatchers.Main) { context.shortToast(translation.format("download_failed", "code" to response.code.toString())) }
                             return@use
                         }
                         val content = response.body?.string()
-                        if (content != null) { // ktlint-disable no-multi-spaces
+                        if (content != null) { 
                             withContext(Dispatchers.Main) {
                                 routes.friendTrackerConfigJsonForImport = content
                                 routes.friendTrackerConfigImport.navigate()
@@ -182,27 +186,21 @@ class FriendTrackerCatalog : Routes.Route() {
             }
         }
 
-        if (repositories.isEmpty() && !isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = translation["no_repos_added"],
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        } else {
+        val listState = rememberLazyListState()
+        
+        LaunchedEffect(listState.firstVisibleItemScrollOffset, listState.firstVisibleItemIndex) {
+            val offset = if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else listState.firstVisibleItemScrollOffset
+            onScrollOffsetChanged(offset)
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = listState,
             contentPadding = PaddingValues(
                 start = 8.dp,
-                top = topBarHeight + 12.dp,
+                top = controlsHeight,
                 end = 8.dp,
-                bottom = 8.dp + routes.bottomPadding
+                bottom = routes.bottomPadding
             )
         ) {
             item {
@@ -233,7 +231,6 @@ class FriendTrackerCatalog : Routes.Route() {
                     }
                 }
                 items(allRules) { (repoUrl, entry) ->
-                    // Compute isImported using produceState so the suspend db call runs in a coroutine
                     val isImported by produceState(initialValue = false, key1 = entry.name, key2 = importTick) {
                         val exists = withContext(Dispatchers.IO) {
                             context.database.getTrackerRuleByName(entry.name) != null
@@ -327,35 +324,34 @@ class FriendTrackerCatalog : Routes.Route() {
                     }
                 }
             }
-        }
     }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val density = LocalDensity.current
-        val statusBarTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        var topBarHeight by remember { mutableStateOf(statusBarTopPadding + 96.dp) }
+        var scrollOffset by remember { mutableIntStateOf(0) }
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        var controlsHeight by remember { mutableStateOf(100.dp) }
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
+            AvailableRulesTab(
+                controlsHeight = controlsHeight,
+                onScrollOffsetChanged = { scrollOffset = it }
+            )
+
             FloatingTopBar(
                 title = translation["title"],
                 onBack = { routes.navController.popBackStack() },
+                scrollOffset = scrollOffset,
+                modifier = Modifier.headerHeightTracker { controlsHeight = it },
                 actions = {
                     IconButton(onClick = { routes.manageFriendTrackerRepos.navigate() }) {
                         Icon(Icons.Default.Public, contentDescription = translation["manage_repos_description"], tint = Color.White)
                     }
-                },
-                modifier = Modifier
-                    .zIndex(2f)
-                    .onGloballyPositioned {
-                        val newHeight = with(density) { it.size.height.toDp() }
-                        if (newHeight != topBarHeight) topBarHeight = newHeight
-                    }
+                }
             )
-            AvailableRulesTab(topBarHeight = topBarHeight)
         }
     }
 }

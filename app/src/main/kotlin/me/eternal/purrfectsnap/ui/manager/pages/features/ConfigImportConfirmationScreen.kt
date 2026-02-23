@@ -1,43 +1,24 @@
 package me.eternal.purrfectsnap.ui.manager.pages.features
 
+import me.eternal.purrfectsnap.ui.util.Motion
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -53,7 +34,9 @@ import me.eternal.purrfectsnap.bridge.location.LocationCoordinates
 import me.eternal.purrfectsnap.storage.addOrUpdateLocationCoordinate
 import me.eternal.purrfectsnap.storage.getLocationCoordinates
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.abs
@@ -73,10 +56,6 @@ class ConfigImportConfirmationScreen : Routes.Route() {
         private const val COORDINATE_TOLERANCE = 0.0001 // ~11 meters tolerance for de-duplication
     }
 
-    /**
-     * Imports saved locations from JSON array into database with de-duplication.
-     * Only adds locations that don't already exist (within coordinate tolerance).
-     */
     private fun importSavedLocations(locationsArray: com.google.gson.JsonArray) {
         val existingLocations = context.database.getLocationCoordinates()
         
@@ -87,14 +66,12 @@ class ConfigImportConfirmationScreen : Routes.Route() {
             val longitude = locationObj.get("longitude")?.asDouble ?: continue
             val radius = locationObj.get("radius")?.asDouble ?: 100.0
             
-            // Check for existing location with similar coordinates (de-duplication)
             val existingMatch = existingLocations.find { existing ->
                 abs(existing.latitude - latitude) < COORDINATE_TOLERANCE &&
                 abs(existing.longitude - longitude) < COORDINATE_TOLERANCE
             }
             
             if (existingMatch == null) {
-                // No duplicate found, add as new location
                 val newLocation = LocationCoordinates().apply {
                     this.name = name
                     this.latitude = latitude
@@ -103,7 +80,6 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                 }
                 context.database.addOrUpdateLocationCoordinate(null, newLocation)
             }
-            // If duplicate exists, skip (do not update or delete existing)
         }
     }
 
@@ -233,111 +209,26 @@ class ConfigImportConfirmationScreen : Routes.Route() {
         }
         val expandedState = remember { mutableStateMapOf<String, Boolean>() }
         val importLabel = translation["confirm_button"]
+        val listState = rememberLazyListState()
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        var controlsHeight by remember { mutableStateOf(100.dp) }
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .statusBarsPadding()
+                    .padding(horizontal = 12.dp),
+                state = listState,
+                contentPadding = PaddingValues(
+                    top = controlsHeight,
+                    bottom = routes.bottomPadding
+                ),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 12.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    color = Color.Transparent,
-                    tonalElevation = 0.dp,
-                    shadowElevation = 12.dp,
-                    border = BorderStroke(
-                        1.dp,
-                        Brush.linearGradient(
-                            listOf(
-                                PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                                PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
-                            )
-                        )
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .background(PurrfectPalette.cardOverlay, RoundedCornerShape(24.dp))
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(
-                            onClick = { routes.navController.popBackStack() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.28f),
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.padding(end = 6.dp)
-                            )
-                            Text(context.translation["common.back"])
-                        }
-                        Box(
-                            modifier = Modifier.weight(1f),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = translation["title"],
-                                color = Color.White,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 18.sp
-                            )
-                        }
-                        Button(
-                            onClick = {
-                                routes.configJsonForImport?.let { json ->
-                                    runCatching {
-                                        val savedLocationsJson = context.config.loadFromString(json)
-                                        
-                                        // Import saved locations if present in the JSON
-                                        savedLocationsJson?.let { locationsArray ->
-                                            importSavedLocations(locationsArray)
-                                        }
-                                    }.onFailure { err ->
-                                        context.longToast(
-                                            context.translation.format(
-                                                "config_import_failure_toast",
-                                                "error" to (err.message ?: context.translation["common.unknown_error"])
-                                            )
-                                        )
-                                    }
-                                    context.shortToast(translation["config_imported_toast"])
-                                    context.coroutineScope.launch(Dispatchers.Main) {
-                                        routes.features.navigateReload()
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text(importLabel)
-                        }
-                    }
-                }
-
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 12.dp),
-                    contentPadding = PaddingValues(
-                        top = 8.dp,
-                        bottom = 16.dp + routes.bottomPadding
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
                 items(featuresByCategory.toList()) { (category, features) ->
                     val isExpanded = expandedState[category] ?: false
                     val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
@@ -439,15 +330,46 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                                         }
                                         if (index < features.size - 1) {
                                             Spacer(modifier = Modifier.height(6.dp))
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
-                }
             }
-        }
-    }
-}
+
+            FloatingTopBar(
+                title = translation["title"],
+                onBack = { routes.navController.popBackStack() },
+                scrollOffset = listState.firstVisibleItemScrollOffset + (listState.firstVisibleItemIndex * Motion.HEADER_MORPH_THRESHOLD.toInt()),
+                modifier = Modifier.headerHeightTracker { controlsHeight = it },
+                actions = {
+                    IconButton(onClick = {
+                        routes.configJsonForImport?.let { json ->
+                            runCatching {
+                                val savedLocationsJson = context.config.loadFromString(json)
+                                savedLocationsJson?.let { locationsArray ->
+                                    importSavedLocations(locationsArray)
+                                }
+                            }.onFailure { err ->
+                                context.longToast(
+                                    context.translation.format(
+                                        "config_import_failure_toast",
+                                        "error" to (err.message ?: context.translation["common.unknown_error"])
+                                    )
+                                )
+                            }
+                            context.shortToast(translation["config_imported_toast"])
+                            context.coroutineScope.launch(Dispatchers.Main) {
+                                routes.features.navigateReload()
+                            }
+                        }
+                    }) {
+                        Icon(imageVector = Icons.Default.Check, contentDescription = importLabel, tint = Color.White)
+                    }
+                }
+            )
         }
     }
 

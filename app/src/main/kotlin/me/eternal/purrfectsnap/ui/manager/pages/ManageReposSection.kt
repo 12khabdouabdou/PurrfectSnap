@@ -1,18 +1,29 @@
 @file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 package me.eternal.purrfectsnap.ui.manager.pages
 
+import me.eternal.purrfectsnap.ui.util.Motion
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,6 +43,7 @@ import me.eternal.purrfectsnap.storage.addRepo
 import me.eternal.purrfectsnap.storage.getRepositories
 import me.eternal.purrfectsnap.storage.removeRepo
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import okhttp3.OkHttpClient
 
 class ManageReposSection: Routes.Route() {
@@ -165,44 +177,74 @@ class ManageReposSection: Routes.Route() {
         val repositories = rememberAsyncMutableStateList(defaultValue = listOf(), updateDispatcher = updateDispatcher) {
             context.database.getRepositories(repoType)
         }
+        val listState = rememberLazyListState()
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        var controlsHeight by remember { mutableStateOf(100.dp) }
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 8.dp + routes.bottomPadding),
+        LaunchedEffect(listState.firstVisibleItemScrollOffset, listState.firstVisibleItemIndex) {
+            val offset = if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else listState.firstVisibleItemScrollOffset
+            routes.navigation?.globalScrollOffset = offset
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(PurrfectPalette.backgroundGradient)
         ) {
-            item {
-                if (repositories.isEmpty()) {
-                    Text(translation["no_repos_added"], modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(), fontSize = 15.sp, fontWeight = FontWeight.Light, textAlign = TextAlign.Center)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = listState,
+                contentPadding = PaddingValues(start = 8.dp, top = controlsHeight, end = 8.dp, bottom = routes.bottomPadding),
+            ) {
+                item {
+                    if (repositories.isEmpty()) {
+                        Text(translation["no_repos_added"], modifier = Modifier
+                            .padding(16.dp)
+                            .padding(top = 40.dp)
+                            .fillMaxWidth(), fontSize = 15.sp, fontWeight = FontWeight.Light, textAlign = TextAlign.Center, color = Color.White)
+                    }
                 }
-            }
-            items(repositories) { url ->
-                ElevatedCard(onClick = {
-                    context.androidContext.copyToClipboard(url)
-                }, modifier = Modifier.animateContentSize()) {
-                    Row(
+                items(repositories) { url ->
+                    Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .clickable { context.androidContext.copyToClipboard(url) },
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color.White.copy(alpha = 0.05f),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
                     ) {
-                        Icon(Icons.Default.Public, contentDescription = null)
-                        Text(text = url, modifier = Modifier.weight(1f), overflow = TextOverflow.Ellipsis, maxLines = 4, fontSize = 15.sp, lineHeight = 15.sp)
-                        Button(
-                            onClick = {
-                                context.database.removeRepo(repoType, url)
-                                coroutineScope.launch {
-                                    updateDispatcher.dispatch()
-                                }
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text(translation["remove_button"])
+                            Icon(Icons.Default.Public, contentDescription = null, tint = Color.White)
+                            Text(text = url, color = Color.White, modifier = Modifier.weight(1f), overflow = TextOverflow.Ellipsis, maxLines = 1, fontSize = 14.sp)
+                            Button(
+                                onClick = {
+                                    context.database.removeRepo(repoType, url)
+                                    coroutineScope.launch {
+                                        updateDispatcher.dispatch()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.1f), contentColor = Color.White)
+                            ) {
+                                Text(translation["remove_button"])
+                            }
                         }
                     }
                 }
             }
+
+            me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
+                title = remember(repoType) { translation.format("title", "type" to repoType) },
+                onBack = { routes.navController.popBackStack() },
+                scrollOffset = listState.firstVisibleItemScrollOffset + (listState.firstVisibleItemIndex * Motion.HEADER_MORPH_THRESHOLD.toInt()),
+                modifier = Modifier.headerHeightTracker { controlsHeight = it }
+            )
         }
     }
 }

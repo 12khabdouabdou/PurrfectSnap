@@ -10,26 +10,31 @@ plugins {
 // var versionName = "1.0.0"
 // var versionCode = 210
 
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 abstract class GetVersionTask : DefaultTask() {
     @get:Input
     abstract val versionName: Property<String>
 
+    @get:OutputFile
+    abstract val versionFile: RegularFileProperty
+
     @TaskAction
     fun writeVersion() {
-        val versionFile = project.layout.projectDirectory.file("app/build/version.txt").asFile
-        versionFile.parentFile.mkdirs()
-        versionFile.writeText(versionName.get())
+        val file = versionFile.get().asFile
+        file.parentFile.mkdirs()
+        file.writeText(versionName.get())
     }
 }
 
 tasks.register<GetVersionTask>("getVersion") {
-    // Value comes from gradle.properties; falls back to 1.0.0 if not set.
     versionName.set(providers.gradleProperty("APP_VERSION_NAME").orElse("1.0.0"))
+    versionFile.set(project.layout.projectDirectory.file("app/build/version.txt"))
 }
 
 // You can still set these for legacy use by submodules or scripts:

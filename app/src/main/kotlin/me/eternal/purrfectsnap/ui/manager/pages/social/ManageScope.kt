@@ -21,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,6 +46,7 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.util.AlertDialogs
 import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
@@ -118,16 +118,13 @@ class ManageScope: Routes.Route() {
                 },
                 modifier = Modifier
                     .zIndex(2f)
-                    .onGloballyPositioned {
-                        val newHeight = with(density) { it.size.height.toDp() }
-                        if (newHeight != topBarHeight) topBarHeight = newHeight
-                    }
+                    .headerHeightTracker { topBarHeight = it }
             )
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = topBarHeight + 8.dp)
+                    .padding(top = topBarHeight)
                     .verticalScroll(rememberScrollState())
             ) {
             var bottomComposable by remember {
