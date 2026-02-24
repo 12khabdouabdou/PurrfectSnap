@@ -74,65 +74,63 @@ fun FloatingTopBar(
     colors: FloatingTopBarColors = rememberDefaultFloatingTopBarColors()
 ) {
     val haptic = LocalHapticFeedback.current
+    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     
-    // Use standardized morph threshold
-    val focusFactor = (scrollOffset.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f)
+    // Calculate morphing factor based on scroll progress
+    val focusFactor by remember(scrollOffset) {
+        derivedStateOf { (scrollOffset.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f) }
+    }
 
-    // Haptic "Snap" when header hits full expansion/stickiness
+    val morphingParams by remember(focusFactor, statusBarHeight) {
+        derivedStateOf {
+            object {
+                val headerHeight = lerp(64.dp, 56.dp, focusFactor)
+                val sidePadding = lerp(14.dp, 0.dp, focusFactor)
+                val containerTopPadding = lerp(statusBarHeight + 4.dp, 0.dp, focusFactor)
+                val internalTopPadding = lerp(0.dp, statusBarHeight, focusFactor)
+                val internalVerticalPadding = lerp(8.dp, 0.dp, focusFactor)
+                val topCorners = lerp(26.dp, 0.dp, focusFactor)
+                val bottomCorners = lerp(26.dp, 28.dp, focusFactor)
+                val subtitleAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
+                val subtitleTranslationY = lerp(0.dp, (-10).dp, focusFactor)
+                val iconScale = 1f - (0.12f * focusFactor)
+                val horizontalShift = (6 * focusFactor).dp
+            }
+        }
+    }
+
+    // Trigger tactile feedback when header reaches full expansion
     var hasSnapped by remember { mutableStateOf(false) }
     LaunchedEffect(focusFactor) {
         if (focusFactor >= 1f && !hasSnapped) {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             hasSnapped = true
         } else if (focusFactor < 0.9f) {
             hasSnapped = false
         }
     }
 
-    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-
-    // --- GEOMETRIC MORPHING MATH ---
-    // 1. Height: 64dp content area when floating -> 56dp when sticky
-    val headerHeight = lerp(64.dp, 56.dp, focusFactor)
-    
-    // 2. Padding Morph: 
-    // Static: Island (14dp sides, sits BELOW status bar with 12dp margin)
-    // Infinity: Full (0dp sides, covers status bar area entirely)
-    val sidePadding = lerp(14.dp, 0.dp, focusFactor)
-    val containerTopPadding = lerp(statusBarHeight + 4.dp, 0.dp, focusFactor)
-    val internalTopPadding = lerp(0.dp, statusBarHeight, focusFactor)
-    val internalVerticalPadding = lerp(8.dp, 0.dp, focusFactor)
-
-    // 3. Corner Morph: Round pill (26dp all) -> Bottom-rounded sticky bar (28dp bottom)
-    val topCorners = lerp(26.dp, 0.dp, focusFactor)
-    val bottomCorners = lerp(26.dp, 28.dp, focusFactor)
-    val shape = RoundedCornerShape(
-        topStart = topCorners, 
-        topEnd = topCorners, 
-        bottomStart = bottomCorners, 
-        bottomEnd = bottomCorners
-    )
-
-    // 4. Content Animation: Subtitle falls in/out, icons scale and shift
-    val subtitleAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
-    val subtitleTranslationY = lerp(0.dp, (-10).dp, focusFactor)
-    val iconScale = 1f - (0.12f * focusFactor)
-    val horizontalShift = (6 * focusFactor).dp 
+    val shape = remember(morphingParams.topCorners, morphingParams.bottomCorners) {
+        RoundedCornerShape(
+            topStart = morphingParams.topCorners, 
+            topEnd = morphingParams.topCorners, 
+            bottomStart = morphingParams.bottomCorners, 
+            bottomEnd = morphingParams.bottomCorners
+        )
+    }
 
     val borderPath = remember { Path() }
     val uPath = remember { Path() }
+    val refractiveColor = remember { Color(0xFF241F52) }
 
     Box(modifier = modifier.fillMaxWidth().zIndex(10f)) {
-        // --- 1. REFRACTIVE BACKGROUND (UNDER-GLASS) ---
-        // Covers full area (Internal Padding + Content Height + Dissolve Tail)
-        val totalHeaderArea = internalTopPadding + headerHeight
-        val refractiveColor = Color(0xFF241F52) // Aligned with Palette base
+        // --- 1. Refractive background layer ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = sidePadding)
-                .padding(top = containerTopPadding)
-                .height(totalHeaderArea + 32.dp) // 32dp smooth dissolve tail
+                .padding(horizontal = morphingParams.sidePadding)
+                .padding(top = morphingParams.containerTopPadding)
+                .height(morphingParams.internalTopPadding + morphingParams.headerHeight + 32.dp)
                 .background(
                     Brush.verticalGradient(
                         0.0f to refractiveColor.copy(alpha = 0.95f * focusFactor),
@@ -142,12 +140,12 @@ fun FloatingTopBar(
                 )
         )
 
-        // --- 2. MAIN HEADER SURFACE ---
+        // --- 2. Primary header surface ---
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = sidePadding)
-                .padding(top = containerTopPadding)
+                .padding(horizontal = morphingParams.sidePadding)
+                .padding(top = morphingParams.containerTopPadding)
                 .graphicsLayer { 
                     alpha = containerAlpha
                 },
@@ -170,8 +168,8 @@ fun FloatingTopBar(
                     .drawBehind {
                         val strokeWidth = 1.dp.toPx()
                         val brush = Brush.linearGradient(listOf(colors.borderStart, colors.borderEnd))
-                        val tr = topCorners.toPx()
-                        val br = bottomCorners.toPx()
+                        val tr = morphingParams.topCorners.toPx()
+                        val br = morphingParams.bottomCorners.toPx()
                         
                         if (focusFactor > 0.9f) {
                             uPath.reset()
@@ -201,25 +199,28 @@ fun FloatingTopBar(
                         }
                     }
             ) {
-                // --- 3. ROW CONTENT ---
+                // --- 3. Header layout content ---
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = internalTopPadding)
-                        .padding(horizontal = 16.dp, vertical = internalVerticalPadding)
-                        .height(headerHeight),
+                        .padding(top = morphingParams.internalTopPadding)
+                        .padding(horizontal = 16.dp, vertical = morphingParams.internalVerticalPadding)
+                        .height(morphingParams.headerHeight),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     if (onBack != null) {
                         IconButton(
-                            onClick = onBack, 
+                            onClick = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onBack() 
+                            }, 
                             modifier = Modifier
                                 .size(44.dp)
                                 .graphicsLayer { 
-                                    scaleX = iconScale
-                                    scaleY = iconScale
-                                    translationX = -horizontalShift.toPx()
+                                    scaleX = morphingParams.iconScale
+                                    scaleY = morphingParams.iconScale
+                                    translationX = -morphingParams.horizontalShift.toPx()
                                 }
                         ) {
                             Icon(
@@ -246,10 +247,10 @@ fun FloatingTopBar(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.fillMaxWidth()
                         )
-                        if (!subtitle.isNullOrBlank() && subtitleAlpha > 0.01f) {
+                        if (!subtitle.isNullOrBlank() && morphingParams.subtitleAlpha > 0.01f) {
                             PurrfectMarqueeText(
                                 text = subtitle,
-                                color = PurrfectPalette.textSecondary.copy(alpha = subtitleAlpha),
+                                color = PurrfectPalette.textSecondary.copy(alpha = morphingParams.subtitleAlpha),
                                 style = TextStyle(fontSize = 13.sp),
                                 textAlign = TextAlign.Start,
                                 contentAlignment = Alignment.CenterStart,
@@ -257,8 +258,8 @@ fun FloatingTopBar(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .graphicsLayer { 
-                                        translationY = subtitleTranslationY.toPx()
-                                        alpha = subtitleAlpha
+                                        translationY = morphingParams.subtitleTranslationY.toPx()
+                                        alpha = morphingParams.subtitleAlpha
                                     }
                             )
                         }
@@ -268,9 +269,9 @@ fun FloatingTopBar(
                         modifier = Modifier
                             .wrapContentWidth()
                             .graphicsLayer { 
-                                scaleX = iconScale
-                                scaleY = iconScale
-                                translationX = horizontalShift.toPx()
+                                scaleX = morphingParams.iconScale
+                                scaleY = morphingParams.iconScale
+                                translationX = morphingParams.horizontalShift.toPx()
                             },
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -281,11 +282,4 @@ fun FloatingTopBar(
             }
         }
     }
-}
-
-/**
- * Extension to safely copy color with clamped alpha.
- */
-private fun Color.coerceCopy(alpha: Float): Color {
-    return this.copy(alpha = alpha.coerceIn(0f, 1f))
 }

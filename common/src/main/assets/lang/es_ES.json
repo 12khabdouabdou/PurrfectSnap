@@ -3236,7 +3236,7 @@
         "username": "Nombre de usuario",
         "user_id": "ID de Usuario",
         "posted_on": "Publicado",
-        "loading_username": "Cargando…",
+        "loading_username": "Cargando\u2026",
         "username_copied": "Nombre de usuario copiado",
         "user_id_copied": "ID de usuario copiado",
         "friend_status": "Estado de amigo",

@@ -14,6 +14,7 @@ object Updater {
         val versionName: String,
         val releaseUrl: String,
         val workflowId: Long?,
+        val body: String? = null,
         val assetDownloads: Map<String, String> = emptyMap(),
     )
 
@@ -38,10 +39,11 @@ object Updater {
     private fun fetchLatestRelease(channel: Channel) = runCatching {
         val endpoint = Request.Builder().url("https://api.github.com/repos/particle-box/PurrfectSnap/releases").build()
         val response = OkHttpClient().newCall(endpoint).execute()
+        val body = response.body?.string() ?: throw Throwable("Empty response body")
 
         if (!response.isSuccessful) throw Throwable("Failed to fetch releases: ${response.code}")
 
-        val releases = JsonParser.parseString(response.body?.string()).asJsonArray.also {
+        val releases = JsonParser.parseString(body).asJsonArray.also {
             if (it.size() == 0) throw Throwable("No releases found")
         }
 
@@ -80,6 +82,7 @@ object Updater {
             releaseUrl = latestRelease.getAsJsonPrimitive("html_url")?.asString
                 ?: endpoint.url.toString().replace("api.", "").replace("repos/", ""),
             workflowId = null,
+            body = latestRelease.get("body")?.asString,
             assetDownloads = assetDownloads
         )
     }.onFailure {
@@ -104,27 +107,36 @@ object Updater {
             versionName = headSha.substring(0, headSha.length.coerceAtMost(7)) + "-debug",
             releaseUrl = latestRun.getAsJsonPrimitive("html_url")?.asString ?: return@runCatching null,
             workflowId = latestRun.getAsJsonPrimitive("id")?.asLong,
+            body = latestRun.get("head_commit")?.asJsonObject?.get("message")?.asString
         )
     }.onFailure {
         AbstractLogger.directError("Failed to fetch latest debug CI", it)
     }.getOrNull()
 
-    private val cache = mutableMapOf<Channel, Pair<Long, LatestRelease?>>()
+    private val cache = java.util.concurrent.ConcurrentHashMap<Channel, Pair<Long, Result<LatestRelease?>>>()
 
     fun getLatestRelease(channel: Channel): LatestRelease? {
         val cached = cache[channel]
-        // Use 24-hour TTL (Time To Live) for cache to optimize API calls
-        if (cached != null && (System.currentTimeMillis() - cached.first) < 24 * 60 * 60 * 1000) {
-            return cached.second
+        val now = System.currentTimeMillis()
+        
+        if (cached != null) {
+            val (timestamp, result) = cached
+            // Define Cache TTL: 24 hours for any successful API response, 10 minutes for error
+            val ttl = if (result.isSuccess) 24 * 60 * 60 * 1000L else 10 * 60 * 1000L
+            if ((now - timestamp) < ttl) {
+                return result.getOrNull()
+            }
         }
         
-        val result = if (channel == Channel.PRERELEASE) {
-            fetchLatestDebugCI() ?: fetchLatestRelease(channel)
-        } else {
-            fetchLatestRelease(channel)
+        val result = runCatching {
+            if (channel == Channel.PRERELEASE) {
+                fetchLatestDebugCI() ?: fetchLatestRelease(channel)
+            } else {
+                fetchLatestRelease(channel)
+            }
         }
         
-        cache[channel] = System.currentTimeMillis() to result
-        return result
+        cache[channel] = now to result
+        return result.getOrNull()
     }
 }

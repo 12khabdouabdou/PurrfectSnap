@@ -364,29 +364,19 @@ class ManageScope: Routes.Route() {
 
     private fun computeStreakETA(timestamp: Long): String? {
         val now = System.currentTimeMillis()
-        val stringBuilder = StringBuilder()
         val diff = timestamp - now
         val seconds = diff / 1000
         val minutes = seconds / 60
         val hours = minutes / 60
         val days = hours / 24
-        if (days > 0) {
-            stringBuilder.append("$days day ")
-            return stringBuilder.toString()
+        
+        return when {
+            days > 0 -> translation.format(if (days == 1L) "eta_day" else "eta_days", "count" to days.toString())
+            hours > 0 -> translation.format(if (hours == 1L) "eta_hour" else "eta_hours", "count" to hours.toString())
+            minutes > 0 -> translation.format(if (minutes == 1L) "eta_minute" else "eta_minutes", "count" to minutes.toString())
+            seconds > 0 -> translation.format(if (seconds == 1L) "eta_second" else "eta_seconds", "count" to seconds.toString())
+            else -> null
         }
-        if (hours > 0) {
-            stringBuilder.append("$hours hours ")
-            return stringBuilder.toString()
-        }
-        if (minutes > 0) {
-            stringBuilder.append("$minutes minutes ")
-            return stringBuilder.toString()
-        }
-        if (seconds > 0) {
-            stringBuilder.append("$seconds seconds ")
-            return stringBuilder.toString()
-        }
-        return null
     }
 
     @OptIn(ExperimentalEncodingApi::class)

@@ -3236,7 +3236,7 @@
         "username": "ユーザー名",
         "user_id": "ユーザーID",
         "posted_on": "投稿日",
-        "loading_username": "読み込み中…",
+        "loading_username": "読み込み中\u2026",
         "username_copied": "ユーザー名をコピーしました",
         "user_id_copied": "ユーザーIDをコピーしました",
         "friend_status": "フレンドステータス",

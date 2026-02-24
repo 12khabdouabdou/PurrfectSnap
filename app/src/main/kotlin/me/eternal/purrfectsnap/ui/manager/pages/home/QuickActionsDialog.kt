@@ -53,6 +53,7 @@ fun QuickActionsDialog(
     translation: LocaleWrapper
 ) {
     val selected = remember { mutableStateListOf(*selectedQuickActions.toTypedArray()) }
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
     Dialog(onDismissRequest = onDismiss) {
         val dialogShape = RoundedCornerShape(24.dp)
@@ -131,6 +132,7 @@ fun QuickActionsDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                 if (isSelected) selected.remove(name) else selected.add(name)
                             },
                         shape = RoundedCornerShape(16.dp),
@@ -174,6 +176,7 @@ fun QuickActionsDialog(
                             Switch(
                                 checked = isSelected,
                                 onCheckedChange = { toggled ->
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                     if (toggled) selected.add(name) else selected.remove(name)
                                 },
                                 colors = purrfectSwitchColors()
@@ -187,11 +190,17 @@ fun QuickActionsDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    TextButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onDismiss()
+                    }) {
                         Text(translation["button.cancel"], color = PurrfectPalette.textSecondary)
                     }
                     Button(
-                        onClick = { onSave(selected.toList()) },
+                        onClick = { 
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onSave(selected.toList()) 
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.35f),
                             contentColor = Color.White

@@ -3237,7 +3237,7 @@
         "username": "사용자 이름",
         "user_id": "사용자 ID",
         "posted_on": "게시일",
-        "loading_username": "로드 중…",
+        "loading_username": "로드 중\u2026",
         "username_copied": "사용자 이름 복사됨",
         "user_id_copied": "사용자 ID 복사됨",
         "friend_status": "친구 상태",

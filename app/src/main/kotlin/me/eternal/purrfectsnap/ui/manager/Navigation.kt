@@ -132,13 +132,14 @@ class Navigation(
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         if (currentRoute?.routeInfo?.hasOwnTopBar == true) return
         
-        val shrinkThreshold = 300f
+        val shrinkThreshold = me.eternal.purrfectsnap.ui.util.Motion.HEADER_MORPH_THRESHOLD
         val focusFactor = (globalScrollOffset / shrinkThreshold).coerceIn(0f, 1f)
         val headerHeight = lerp(64.dp, 48.dp, focusFactor)
 
         val canGoBack = remember(navBackStackEntry) {
             currentRoute?.let { !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination) } == true
         }
+        val haptic = LocalHapticFeedback.current
         TopAppBar(
             modifier = Modifier.height(headerHeight),
             title = {
@@ -170,7 +171,12 @@ class Navigation(
                         .width(lerp(0.dp, 48.dp, backButtonAnimation))
                         .height(48.dp)
                 ) {
-                    IconButton(onClick = { if (canGoBack) navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        if (canGoBack) {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            navController.popBackStack() 
+                        }
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 }
@@ -182,7 +188,10 @@ class Navigation(
             actions = {
                 currentRoute?.topBarActions?.invoke(this)
                 if (currentRoute?.routeInfo?.id == routes.settings.routeInfo.id) {
-                    IconButton(onClick = { openBottomBarCustomization = true }) {
+                    IconButton(onClick = { 
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        openBottomBarCustomization = true 
+                    }) {
                         Icon(Icons.Filled.Tune, contentDescription = null)
                     }
                 }
@@ -191,6 +200,7 @@ class Navigation(
     }
     @Composable
     fun FloatingBottomBar() {
+        val haptic = LocalHapticFeedback.current
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         val availableRoutes = remember {
@@ -198,7 +208,7 @@ class Navigation(
         }
         val availableRouteMap = remember(availableRoutes) { availableRoutes.associateBy { it.routeInfo.id } }
         
-        val shrinkThreshold = 300f
+        val shrinkThreshold = me.eternal.purrfectsnap.ui.util.Motion.HEADER_MORPH_THRESHOLD
         val focusFactor = (globalScrollOffset / shrinkThreshold).coerceIn(0f, 1f)
         val barHeight = lerp(82.dp, 64.dp, focusFactor)
         val labelAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
@@ -260,7 +270,7 @@ class Navigation(
             val animatedBarWidth by animateDpAsState(targetValue = targetBarWidth ?: 0.dp, label = "barWidth")
             Surface(
                 shape = barShape,
-                color = Color.White.copy(alpha = 0.08f), // Restored frosted glass harmony
+                color = Color.White.copy(alpha = 0.08f), // Apply translucent overlay for depth
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 border = BorderStroke(
                     1.dp,
@@ -499,7 +509,10 @@ class Navigation(
                                         unselectedTextColor = Color.White.copy(alpha = 0.72f),
                                         indicatorColor = Color.Transparent
                                     ),
-                                    onClick = { route.navigateReset() }
+                                    onClick = { 
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                        route.navigateReset() 
+                                    }
                                 )
                             }
                         }
@@ -848,3 +861,4 @@ class Navigation(
     @Composable fun FloatingActionButton() = Fab()
     @Composable fun Content(paddingValues: PaddingValues, startDestination: String) = NavContent(paddingValues, startDestination)
 }
+

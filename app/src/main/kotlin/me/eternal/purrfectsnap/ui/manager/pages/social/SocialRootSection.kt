@@ -127,6 +127,7 @@ class SocialRootSection : Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         var addFriendDialog by remember { mutableStateOf(null as AddFriendDialog?) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         if (addFriendDialog != null) {
             addFriendDialog?.Content {
@@ -141,6 +142,7 @@ class SocialRootSection : Routes.Route() {
 
         FloatingActionButton(
             onClick = {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                 addFriendDialog = AddFriendDialog(
                     context,
                     AddFriendDialog.Actions(
@@ -339,6 +341,7 @@ class SocialRootSection : Routes.Route() {
         onPreview: () -> Unit,
         remainingHours: Int
     ) {
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         val cardGradient = Brush.linearGradient(
             listOf(
                 PurrfectPalette.glowPrimary.copy(alpha = 0.22f),
@@ -351,7 +354,10 @@ class SocialRootSection : Routes.Route() {
                 .heightIn(min = 88.dp)
                 .border(1.dp, cardGradient, RoundedCornerShape(20.dp)),
             shape = RoundedCornerShape(20.dp),
-            onClick = onManage,
+            onClick = {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                onManage()
+            },
             colors = CardDefaults.elevatedCardColors(
                 containerColor = Color.Transparent
             )
@@ -461,7 +467,10 @@ class SocialRootSection : Routes.Route() {
                 }
 
                 Surface(
-                    onClick = onPreview,
+                    onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onPreview()
+                    },
                     shape = RoundedCornerShape(16.dp),
                     color = Color.White.copy(alpha = 0.08f),
                     tonalElevation = 0.dp,
@@ -507,6 +516,7 @@ class SocialRootSection : Routes.Route() {
         val scrollOffset = routes.navigation?.globalScrollOffset ?: 0
         val focusFactor = (scrollOffset / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f)
         val tabSwitcherAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         Column(
             modifier = Modifier.headerHeightTracker(onPositioned),
@@ -519,7 +529,10 @@ class SocialRootSection : Routes.Route() {
                 actions = {
                     StatPill(label = translation["friends_tab"], value = friendCount)
                     StatPill(label = translation["groups_tab"], value = groupCount)
-                    IconButton(onClick = onSearchToggle) {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onSearchToggle()
+                    }) {
                         Icon(
                             imageVector = if (searchActive) Icons.Filled.Close else Icons.Filled.Search,
                             contentDescription = if (searchActive) translation["close_search_button_description"] else translation["search_button_description"],
@@ -542,7 +555,10 @@ class SocialRootSection : Routes.Route() {
                     SocialTabSwitcher(
                         titles = titles,
                         pagerState = pagerState,
-                        onTabSelected = onTabSelected
+                        onTabSelected = { index ->
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onTabSelected(index)
+                        }
                     )
                 }
             }

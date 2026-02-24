@@ -282,6 +282,7 @@ class ScriptingRootSection : Routes.Route() {
         }
         var openSettings by remember(script) { mutableStateOf(false) }
         var openActions by remember { mutableStateOf(false) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         val dispatcher = rememberAsyncUpdateDispatcher()
         val reloadCallback = remember { suspend { dispatcher.dispatch() } }
@@ -314,7 +315,12 @@ class ScriptingRootSection : Routes.Route() {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = enabled) { if (enabled) openSettings = !openSettings }
+                    .clickable(enabled = enabled) { 
+                        if (enabled) {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            openSettings = !openSettings 
+                        }
+                    }
                     .background(PurrfectPalette.cardOverlay, cardShape)
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -391,12 +397,16 @@ class ScriptingRootSection : Routes.Route() {
                             }
                         }
                     }
-                    IconButton(onClick = { openActions = !openActions }) {
+                    IconButton(onClick = { 
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        openActions = !openActions 
+                    }) {
                         Icon(Icons.Default.Build, translation["actions_button"], tint = Color.White)
                     }
                     Switch(
                         checked = enabled,
                         onCheckedChange = { isChecked ->
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                             openSettings = false
                             context.coroutineScope.launch(Dispatchers.IO) {
                                 runCatching {
@@ -438,6 +448,7 @@ class ScriptingRootSection : Routes.Route() {
     @Composable
     private fun SelectFolderButton(onClick: () -> Unit) {
         val label = translation.getOrNull("select_folder_button") ?: "Select folder"
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -473,7 +484,10 @@ class ScriptingRootSection : Routes.Route() {
                                 )
                             )
                         )
-                        .clickable(onClick = onClick),
+                        .clickable(onClick = {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onClick()
+                        }),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -858,6 +872,7 @@ class ScriptingRootSection : Routes.Route() {
         val shrinkThreshold = 300f
         val focusFactor = (scrollOffset / shrinkThreshold).coerceIn(0f, 1f)
         val tabSwitcherAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         Column(modifier = Modifier.headerHeightTracker(onPositioned), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
@@ -865,16 +880,28 @@ class ScriptingRootSection : Routes.Route() {
                 subtitle = if (selectedTab == 0) translation["installed_scripts_tab"] else translation["catalog_tab"],
                 scrollOffset = scrollOffset,
                 actions = {
-                    IconButton(onClick = onDocs) {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onDocs()
+                    }) {
                         Icon(Icons.Default.CollectionsBookmark, contentDescription = translation["documentation_button"], tint = Color.White)
                     }
-                    IconButton(onClick = onManageRepos) {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onManageRepos()
+                    }) {
                         Icon(Icons.Default.Public, contentDescription = translation["manage_repos_button"], tint = Color.White)
                     }
-                    IconButton(onClick = onOpenFolder) {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onOpenFolder()
+                    }) {
                         Icon(Icons.Default.FolderOpen, contentDescription = translation["open_scripts_folder_button"], tint = Color.White)
                     }
-                    IconButton(onClick = onImport, enabled = folderSelected) {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onImport()
+                    }, enabled = folderSelected) {
                         Icon(Icons.Default.Link, contentDescription = translation["import_from_url_button"], tint = if (folderSelected) Color.White else Color.White.copy(alpha = 0.4f))
                     }
                 }
@@ -893,7 +920,10 @@ class ScriptingRootSection : Routes.Route() {
                     ScriptingTabSwitcher(
                         titles = titles,
                         selectedTab = selectedTab,
-                        onTabSelected = onTabSelected
+                        onTabSelected = { index ->
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onTabSelected(index)
+                        }
                     )
                 }
             }

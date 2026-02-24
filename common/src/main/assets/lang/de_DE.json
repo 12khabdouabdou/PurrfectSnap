@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Möchtest du die ausgewählten Aufgaben wirklich entfernen?",
                 "remove_all_tasks_title": "Möchtest du wirklich alle Aufgaben entfernen?",
                 "delete_files_option": "Auch Dateien löschen",
+                "delete_files_option_hint": "Zugehörige Downloads dauerhaft entfernen",
                 "remove_selected_tasks_confirm": "{count} Aufgaben entfernen?",
                 "remove_all_tasks_confirm": "Alle Aufgaben entfernen?"
             },

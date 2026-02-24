@@ -55,6 +55,7 @@ class HomeAbout : Routes.Route() {
         val tapTimeoutMs = 1500L
         val tapCount = remember { mutableIntStateOf(0) }
         val lastTapTime = remember { mutableLongStateOf(0L) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         LaunchedEffect(Unit) {
             context.shortToast(translation["about_magic_toast"])
@@ -104,6 +105,7 @@ class HomeAbout : Routes.Route() {
                                 interactionSource = tapSource,
                                 indication = null
                             ) {
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                 val now = SystemClock.elapsedRealtime()
                                 if (now - lastTapTime.longValue > tapTimeoutMs) {
                                     tapCount.intValue = 0
@@ -139,12 +141,14 @@ class HomeAbout : Routes.Route() {
                                 name = translation["about_dev_external"],
                                 imageRes = R.drawable.pfp_external,
                                 avenirNext = avenirNext,
+                                haptic = haptic,
                                 modifier = Modifier.weight(1f)
                             )
                             DeveloperCard(
                                 name = translation["about_dev_rsr"],
                                 imageRes = R.drawable.pfp_rsr,
                                 avenirNext = avenirNext,
+                                haptic = haptic,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -222,6 +226,7 @@ class HomeAbout : Routes.Route() {
                             Button(
                                 modifier = Modifier.weight(1f),
                                 onClick = {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                     context.androidContext.openLink(
                                         "https://github.com/particle-box/PurrfectSnap",
                                         context.translation["toast_open_link_failed"]
@@ -243,6 +248,7 @@ class HomeAbout : Routes.Route() {
                             OutlinedButton(
                                 modifier = Modifier.weight(1f),
                                 onClick = {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                     context.androidContext.openLink(
                                         "https://t.me/purrfectsnap_official",
                                         context.translation["toast_open_link_failed"]
@@ -279,6 +285,7 @@ class HomeAbout : Routes.Route() {
         name: String,
         imageRes: Int,
         avenirNext: FontFamily,
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
         modifier: Modifier = Modifier
     ) {
         val cardShape = RoundedCornerShape(20.dp)
@@ -290,7 +297,9 @@ class HomeAbout : Routes.Route() {
         )
 
         Surface(
-            modifier = modifier,
+            modifier = modifier.clickable {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+            },
             shape = cardShape,
             color = Color.White.copy(alpha = 0.08f),
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),

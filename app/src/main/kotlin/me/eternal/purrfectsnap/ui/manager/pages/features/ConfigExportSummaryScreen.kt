@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.util.saveFile
 import me.eternal.purrfectsnap.storage.getLocationCoordinates
@@ -56,14 +57,17 @@ class ConfigExportSummaryScreen : Routes.Route() {
                 for (key in properties.keys()) {
                     val value = properties.get(key)
                     val currentPrefix = if (prefix.isEmpty()) key else "$prefix.$key"
+                    // Handle nested features with their own state and sub-properties
                     if (value is JSONObject && value.has("state") && value.has("properties")) {
                         val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
                         val featureName = context.translation[featureNameKey] ?: key
                         featureList.add(ImportedFeature(niceCategoryName, featureName, key, value.getBoolean("state"), indent))
                         parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent + 1)
                     } else if (value is JSONObject && value.has("properties")) {
+                        // Handle purely structural containers
                         parseProperties(categoryKey, niceCategoryName, value.getJSONObject("properties"), currentPrefix, indent)
                     } else {
+                        // Handle terminal leaf properties (strings, ints, etc.)
                         val featureNameKey = "features.properties.$categoryKey.properties.${currentPrefix.split('.').joinToString(".properties.")}.name"
                         var featureName = context.translation[featureNameKey] ?: key
                         if (key == "save_folder") {
@@ -77,6 +81,7 @@ class ConfigExportSummaryScreen : Routes.Route() {
                 val value = json.get(categoryKey)
                 if (value is JSONObject) {
                     val niceCategoryName = context.translation["features.properties.$categoryKey.name"] ?: categoryKey.replaceFirstChar { it.uppercase() }
+                    // Process top-level features or recursively descend into property containers
                     if (value.has("state") && !value.has("properties")) {
                         featureList.add(ImportedFeature(niceCategoryName, translation["enable_feature"], categoryKey, value.getBoolean("state"), 0))
                     } else if (value.has("properties")) {
@@ -117,16 +122,20 @@ class ConfigExportSummaryScreen : Routes.Route() {
     }
 
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
-        val exportSensitiveData = it.arguments?.getString("exportSensitiveData")?.toBoolean() ?: false
-        val includeSavedLocations = it.arguments?.getString("includeSavedLocations")?.toBoolean() ?: false
+        var exportSensitiveData by remember { mutableStateOf(it.arguments?.getString("exportSensitiveData")?.toBoolean() ?: false) }
+        var includeSavedLocations by remember { mutableStateOf(it.arguments?.getString("includeSavedLocations")?.toBoolean() ?: false) }
+        
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         val exportLabel = context.translation["manager.sections.features.export_option"]
         val parser = remember { ConfigParser() }
-        val savedLocations = remember {
-            if (includeSavedLocations) context.database.getLocationCoordinates() else null
+        
+        val featuresByCategory by remember(exportSensitiveData, includeSavedLocations) {
+            derivedStateOf {
+                val savedLocations = if (includeSavedLocations) context.database.getLocationCoordinates() else null
+                parser.parse(context.config.exportToString(exportSensitiveData, includeSavedLocations, savedLocations))
+            }
         }
-        val featuresByCategory = remember {
-            parser.parse(context.config.exportToString(exportSensitiveData, includeSavedLocations, savedLocations))
-        }
+        
         val expandedState = remember { mutableStateMapOf<String, Boolean>() }
         val listState = rememberLazyListState()
         val density = androidx.compose.ui.platform.LocalDensity.current
@@ -148,13 +157,70 @@ class ConfigExportSummaryScreen : Routes.Route() {
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                item {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        color = PurrfectPalette.cardOverlayColor,
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = context.translation["manager.dialogs.export_config.content"] ?: "Export Sensitive Data",
+                                    color = Color.White,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Switch(
+                                    checked = exportSensitiveData,
+                                    onCheckedChange = { 
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                        exportSensitiveData = it 
+                                    },
+                                    colors = purrfectSwitchColors()
+                                )
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = context.translation["manager.sections.features.include_saved_locations"] ?: "Include Saved Locations",
+                                    color = Color.White,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Switch(
+                                    checked = includeSavedLocations,
+                                    onCheckedChange = { 
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                        includeSavedLocations = it 
+                                    },
+                                    colors = purrfectSwitchColors()
+                                )
+                            }
+                        }
+                    }
+                }
+
                 items(featuresByCategory.toList()) { (category, features) ->
                     val isExpanded = expandedState[category] ?: false
                     val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { expandedState[category] = !isExpanded },
+                            .clickable { 
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                expandedState[category] = !isExpanded 
+                            },
                         shape = RoundedCornerShape(18.dp),
                         color = PurrfectPalette.cardOverlayColor,
                         tonalElevation = 0.dp,
@@ -179,7 +245,10 @@ class ConfigExportSummaryScreen : Routes.Route() {
                                         color = Color.White
                                     )
                                 }
-                                IconButton(onClick = { expandedState[category] = !isExpanded }) {
+                                IconButton(onClick = { 
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                    expandedState[category] = !isExpanded 
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.KeyboardArrowDown,
                                         contentDescription = translation["expand_button_description"],
@@ -259,14 +328,16 @@ class ConfigExportSummaryScreen : Routes.Route() {
             FloatingTopBar(
                 title = translation["title"],
                 onBack = { routes.navController.popBackStack() },
-                scrollOffset = listState.firstVisibleItemScrollOffset + (listState.firstVisibleItemIndex * Motion.HEADER_MORPH_THRESHOLD.toInt()),
+                scrollOffset = if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else listState.firstVisibleItemScrollOffset,
                 modifier = Modifier.headerHeightTracker { controlsHeight = it },
                 actions = {
                     IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         routes.activityLauncher.saveFile("config.json", "application/json") { uri ->
                             runCatching {
                                 context.androidContext.contentResolver.openOutputStream(android.net.Uri.parse(uri))?.use {
                                     context.config.writeConfig()
+                                    val savedLocations = if (includeSavedLocations) context.database.getLocationCoordinates() else null
                                     context.config.exportToString(exportSensitiveData, includeSavedLocations, savedLocations).byteInputStream().copyTo(it)
                                     context.shortToast(context.translation["manager.sections.features.config_export_success_toast"])
                                 }

@@ -367,10 +367,14 @@ class FeaturesRootSection : Routes.Route() {
 
     @Composable
     private fun PropertyAction(property: PropertyPair<*>, registerClickCallback: RegisterClickCallback) {
+        val hapticFeedback = LocalHapticFeedback.current
         var showDialog by remember { mutableStateOf(false) }
         var dialogComposable by remember { mutableStateOf<@Composable () -> Unit>({}) }
 
-        fun registerDialogOnClickCallback() = registerClickCallback { showDialog = true }
+        fun registerDialogOnClickCallback() = registerClickCallback { 
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+            showDialog = true 
+        }
 
         if (showDialog) {
             Dialog(
@@ -472,6 +476,7 @@ class FeaturesRootSection : Routes.Route() {
                                         .fillMaxWidth()
                                         .padding(vertical = 4.dp)
                                         .clickable {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                             selectedFile = if (isSelected) null else file.name
                                             propertyValue.setAny(selectedFile)
                                             persistConfig()
@@ -540,6 +545,7 @@ class FeaturesRootSection : Routes.Route() {
 
         if (property.key.params.flags.contains(ConfigFlag.FOLDER)) {
             IconButton(onClick = registerClickCallback {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                 activityLauncher {
                     chooseFolder { uri ->
                         propertyValue.setAny(uri)
@@ -555,13 +561,10 @@ class FeaturesRootSection : Routes.Route() {
         when (val dataType = remember { property.key.dataType.type }) {
             DataProcessors.Type.BOOLEAN -> {
                 var state by remember { mutableStateOf(propertyValue.get() as Boolean) }
-                val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
                     onCheckedChange = registerClickCallback {
-                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         state = state.not()
                         propertyValue.setAny(state)
                         persistConfig()
@@ -612,7 +615,7 @@ class FeaturesRootSection : Routes.Route() {
                             alertDialogs.MultipleSelectionDialog(property)
                         }
                         DataProcessors.Type.STRING, DataProcessors.Type.INTEGER, DataProcessors.Type.FLOAT -> {
-                            // Check if this is a message list property
+                            // Verify if property handles message lists
                             val isMessageListProperty = property.key.name.endsWith("_messages")
                             if (isMessageListProperty) {
                                 alertDialogs.MessageListPropertyDialog(property) { showDialog = false }
@@ -632,7 +635,7 @@ class FeaturesRootSection : Routes.Route() {
                             onClick = it
                         )
                     } else {
-                        // Check if this is a message list property
+                        // Verify if property handles message lists
                         val isMessageListProperty = property.key.name.endsWith("_messages")
                         if (isMessageListProperty) {
                             // Show message count
@@ -648,17 +651,24 @@ class FeaturesRootSection : Routes.Route() {
                                 color = Color.White.copy(alpha = 0.06f),
                                 tonalElevation = 0.dp,
                                 shadowElevation = 0.dp,
-                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
+                                modifier = Modifier.clickable {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    it()
+                                }
                             ) {
                                 Text(
-                                    text = "$messageCount messages",
+                                    text = translation.format("search_results_count", "count" to messageCount.toString()),
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.White
                                 )
                             }
                         } else {
-                            IconButton(onClick = it) {
+                            IconButton(onClick = {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                it()
+                            }) {
                                 Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null)
                             }
                         }
@@ -682,6 +692,7 @@ class FeaturesRootSection : Routes.Route() {
                 val container = propertyValue.get() as ConfigContainer
 
                 registerClickCallback {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     routes.navController.navigate(FEATURE_CONTAINER_ROUTE.replace("{name}", property.name))
                 }
 
@@ -703,13 +714,10 @@ class FeaturesRootSection : Routes.Route() {
                         ))
                 }
 
-                val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
                     onCheckedChange = {
-                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                        }
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         state = state.not()
                         container.globalState = state
                         persistConfig()
@@ -726,11 +734,15 @@ class FeaturesRootSection : Routes.Route() {
         text: String,
         onClick: () -> Unit
     ) {
+        val haptic = LocalHapticFeedback.current
         Surface(
             modifier = Modifier
                 .size(52.dp)
                 .clip(CircleShape)
-                .clickable { onClick() },
+                .clickable { 
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick() 
+                },
             shape = CircleShape,
             color = Color.White.copy(alpha = 0.08f),
             tonalElevation = 0.dp,
@@ -961,6 +973,7 @@ class FeaturesRootSection : Routes.Route() {
         var showExportDialog by remember { mutableStateOf(false) }
 
         if (showResetConfirmationDialog) {
+            val haptic = LocalHapticFeedback.current
             Dialog(onDismissRequest = { showResetConfirmationDialog = false }) {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
@@ -997,7 +1010,10 @@ class FeaturesRootSection : Routes.Route() {
                                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                             ) {
                                 Button(
-                                    onClick = { showResetConfirmationDialog = false },
+                                    onClick = { 
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        showResetConfirmationDialog = false 
+                                    },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color.White.copy(alpha = 0.08f),
                                         contentColor = Color.White
@@ -1007,6 +1023,7 @@ class FeaturesRootSection : Routes.Route() {
                                 }
                                 Button(
                                     onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         context.config.reset()
                                         context.shortToast(context.translation["manager.dialogs.reset_config.success_toast"] ?: "Reset successful")
                                         showResetConfirmationDialog = false
@@ -1028,19 +1045,25 @@ class FeaturesRootSection : Routes.Route() {
         if (showExportDialog) {
             SensitiveDataDialog(
                 onDismiss = { showExportDialog = false },
-                onConfirm = { exportSensitiveData ->
+                onConfirm = { exportSensitiveData, includeSavedLocations ->
                     showExportDialog = false
                     routes.configExportSummary.navigate {
                         put("exportSensitiveData", exportSensitiveData.toString())
+                        put("includeSavedLocations", includeSavedLocations.toString())
                     }
                 }
             )
         }
 
+        val haptic = LocalHapticFeedback.current
         val actions = remember {
             listOf(
-                Triple(translation["export_option"] ?: "Export", Icons.Filled.SaveAlt) { showExportDialog = true },
+                Triple(translation["export_option"] ?: "Export", Icons.Filled.SaveAlt) { 
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showExportDialog = true 
+                },
                                   Triple(translation["import_option"] ?: "Import", Icons.Filled.FileDownload) {
+                                      haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                       activityLauncher {
                                           openFile("application/json") { uriString ->
                                               runCatching {
@@ -1057,7 +1080,10 @@ class FeaturesRootSection : Routes.Route() {
                                       }
                                   },
                 
-                Triple(translation["reset_option"] ?: "Reset", Icons.Filled.Refresh) { showResetConfirmationDialog = true }
+                Triple(translation["reset_option"] ?: "Reset", Icons.Filled.Refresh) { 
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showResetConfirmationDialog = true 
+                }
             )
         }
 
@@ -1207,7 +1233,7 @@ class FeaturesRootSection : Routes.Route() {
                 }
             )
 
-            // Suggestions overlay (outside the TopBar)
+            // Search suggestions overlay container
             if (showSearchBar && combinedSuggestions.isNotEmpty()) {
                 Surface(
                     modifier = Modifier
@@ -1375,9 +1401,11 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun SensitiveDataDialog(
         onDismiss: () -> Unit,
-        onConfirm: (exportSensitiveData: Boolean) -> Unit
+        onConfirm: (exportSensitiveData: Boolean, includeSavedLocations: Boolean) -> Unit
     ) {
         Dialog(onDismissRequest = onDismiss) {
+            val includeSavedLocations = remember { mutableStateOf(false) }
+
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 color = Color.White.copy(alpha = 0.06f),
@@ -1415,12 +1443,40 @@ class FeaturesRootSection : Routes.Route() {
                             color = PurrfectPalette.textSecondary,
                             modifier = Modifier.padding(horizontal = 6.dp)
                         )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = translation["include_saved_locations"] ?: "Include Saved Locations",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                            val hapticFeedback = LocalHapticFeedback.current
+                            Switch(
+                                checked = includeSavedLocations.value,
+                                onCheckedChange = {
+                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    includeSavedLocations.value = it
+                                },
+                                colors = purrfectSwitchColors()
+                            )
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                         ) {
+                            val haptic = LocalHapticFeedback.current
                             Button(
-                                onClick = { onConfirm(false) },
+                                onClick = { 
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onConfirm(false, includeSavedLocations.value) 
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.White.copy(alpha = 0.08f),
                                     contentColor = Color.White
@@ -1429,7 +1485,10 @@ class FeaturesRootSection : Routes.Route() {
                                 Text(context.translation["button.negative"])
                             }
                             Button(
-                                onClick = { onConfirm(true) },
+                                onClick = { 
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onConfirm(true, includeSavedLocations.value) 
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.32f),
                                     contentColor = Color.White

@@ -56,6 +56,10 @@ class ConfigImportConfirmationScreen : Routes.Route() {
         private const val COORDINATE_TOLERANCE = 0.0001 // ~11 meters tolerance for de-duplication
     }
 
+    /**
+     * Imports saved locations from JSON array into database with de-duplication.
+     * Only adds locations that don't already exist (within coordinate tolerance).
+     */
     private fun importSavedLocations(locationsArray: com.google.gson.JsonArray) {
         val existingLocations = context.database.getLocationCoordinates()
         
@@ -66,11 +70,13 @@ class ConfigImportConfirmationScreen : Routes.Route() {
             val longitude = locationObj.get("longitude")?.asDouble ?: continue
             val radius = locationObj.get("radius")?.asDouble ?: 100.0
             
+            // Check for existing location with similar coordinates (de-duplication)
             val existingMatch = existingLocations.find { existing ->
                 abs(existing.latitude - latitude) < COORDINATE_TOLERANCE &&
                 abs(existing.longitude - longitude) < COORDINATE_TOLERANCE
             }
             
+            // No duplicate found, add as new location
             if (existingMatch == null) {
                 val newLocation = LocationCoordinates().apply {
                     this.name = name
@@ -80,6 +86,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                 }
                 context.database.addOrUpdateLocationCoordinate(null, newLocation)
             }
+            // If duplicate exists, skip (do not update or delete existing)
         }
     }
 
@@ -97,6 +104,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                 for (key in properties.keys()) {
                     val value = properties.get(key)
                     val currentPrefix = if (prefix.isEmpty()) key else "$prefix.$key"
+                    // Handle nested features with their own state and sub-properties
                     if (value is JSONObject && value.has("state") && value.has("properties")) {
                         val featureNameKey =
                             "features.properties.$categoryKey.properties.${currentPrefix.split('.')
@@ -119,6 +127,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                             indent + 1
                         )
                     } else if (value is JSONObject && value.has("properties")) {
+                        // Handle purely structural containers
                         parseProperties(
                             categoryKey,
                             niceCategoryName,
@@ -127,6 +136,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                             indent
                         )
                     } else {
+                        // Handle terminal leaf properties (strings, ints, etc.)
                         val featureNameKey =
                             "features.properties.$categoryKey.properties.${currentPrefix.split('.')
                                 .joinToString(".properties.")}.name"
@@ -149,6 +159,7 @@ class ConfigImportConfirmationScreen : Routes.Route() {
                     val niceCategoryName =
                         context.translation["features.properties.$categoryKey.name"]
                             ?: categoryKey.replaceFirstChar { it.uppercase() }
+                    // Process top-level features or recursively descend into property containers
                     if (value.has("state") && !value.has("properties")) {
                         featureList.add(
                             ImportedFeature(

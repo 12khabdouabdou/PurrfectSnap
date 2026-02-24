@@ -232,9 +232,11 @@ class LoggerHistoryRoot : Routes.Route() {
                                             .padding(2.dp),
                                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     ) {
+                                        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                                         attachments.forEachIndexed { index, attachment ->
                                             Button(
                                                 onClick = {
+                                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                                     context.coroutineScope.launch {
                                                         runCatching {
                                                             downloadAttachment(message.sendTimestamp, attachment)
@@ -286,6 +288,7 @@ class LoggerHistoryRoot : Routes.Route() {
         }
 
         val conversationInfoCache = remember { ConcurrentHashMap<String, String?>() }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         Box(
             modifier = Modifier
@@ -373,6 +376,7 @@ class LoggerHistoryRoot : Routes.Route() {
                             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                                 conversations.forEach { conversationId ->
                                     DropdownMenuItem(onClick = {
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                         selectedConversation = conversationId
                                         expanded = false
                                     }, text = {
@@ -414,7 +418,10 @@ class LoggerHistoryRoot : Routes.Route() {
                             },
                             trailingIcon = if (stringFilter.isNotBlank()) {
                                 {
-                                    IconButton(onClick = { stringFilter = "" }) {
+                                    IconButton(onClick = { 
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                        stringFilter = "" 
+                                    }) {
                                         Icon(
                                             imageVector = Icons.Filled.Close,
                                             contentDescription = translation["close_button_description"],
@@ -446,7 +453,10 @@ class LoggerHistoryRoot : Routes.Route() {
                             )
                             Checkbox(
                                 checked = reverseOrder,
-                                onCheckedChange = { reverseOrder = it },
+                                onCheckedChange = { 
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                    reverseOrder = it 
+                                },
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = PurrfectPalette.glowPrimary,
                                     checkmarkColor = Color.White,
@@ -524,7 +534,7 @@ class LoggerHistoryRoot : Routes.Route() {
             FloatingTopBar(
                 title = context.translation["manager.routes.logger_history"] ?: "Logger History",
                 onBack = { routes.navController.popBackStack() },
-                scrollOffset = listState.firstVisibleItemScrollOffset + (listState.firstVisibleItemIndex * Motion.HEADER_MORPH_THRESHOLD.toInt()),
+                scrollOffset = if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else listState.firstVisibleItemScrollOffset,
                 modifier = Modifier.headerHeightTracker { controlsHeight = it }
             )
         }

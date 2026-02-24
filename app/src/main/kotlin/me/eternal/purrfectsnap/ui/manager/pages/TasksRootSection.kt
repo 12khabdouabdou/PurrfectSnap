@@ -105,11 +105,12 @@ class TasksRootSection : Routes.Route() {
                     it.deleteOnExit()
                 }
 
-                runCatching {
-                    pendingTask.updateProgress("Copying ${documentFile.name}")
-                    context.androidContext.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->
-                        val length = documentFile.length().toFloat()
-                        tempFile.outputStream().use { outputStream ->
+                                runCatching {
+                                    pendingTask.updateProgress("Copying ${documentFile.name}")
+                                    context.androidContext.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->       
+                                        //copy with progress
+                                        val length = documentFile.length().toFloat()
+                                        tempFile.outputStream().use { outputStream ->
                             val buffer = ByteArray(16 * 1024)
                             var read: Int
                             while (inputStream.read(buffer).also { read = it } != -1) {
@@ -277,6 +278,7 @@ class TasksRootSection : Routes.Route() {
                         }
 
                         if (showDeleteFiles) {
+                            val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                             Surface(
                                 shape = RoundedCornerShape(18.dp),
                                 color = Color.White.copy(alpha = 0.04f),
@@ -287,33 +289,38 @@ class TasksRootSection : Routes.Route() {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { onToggleDeleteFiles(!deleteFilesChecked) }
+                                        .clickable { 
+                                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                            onToggleDeleteFiles(!deleteFilesChecked) 
+                                        }
                                         .padding(horizontal = 12.dp, vertical = 10.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     Checkbox(
                                         checked = deleteFilesChecked,
-                                        onCheckedChange = { onToggleDeleteFiles(it) },
+                                        onCheckedChange = { 
+                                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                            onToggleDeleteFiles(it) 
+                                        },
                                         colors = CheckboxDefaults.colors(
                                             checkedColor = PurrfectPalette.glowPrimary,
                                             uncheckedColor = Color.White,
                                             checkmarkColor = Color.Black
                                         )
                                     )
-                                    Column {
-                                        Text(
-                                            text = context.translation["delete_files_option"] ?: "Delete Files",
-                                            color = Color.White,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                        Text(
-                                            text = context.translation["delete_files_option_hint"] ?: "Also remove downloaded files",
-                                            color = PurrfectPalette.textSecondary,
-                                            style = MaterialTheme.typography.bodySmall
-                                        )
-                                    }
-                                }
+                                                                            Column {
+                                                                                Text(
+                                                                                    text = translation["delete_files_option"] ?: "Delete Files",
+                                                                                    color = Color.White,
+                                                                                    fontWeight = FontWeight.SemiBold
+                                                                                )
+                                                                                Text(
+                                                                                    text = translation["delete_files_option_hint"] ?: "Also remove downloaded files",
+                                                                                    color = PurrfectPalette.textSecondary,
+                                                                                    style = MaterialTheme.typography.bodySmall
+                                                                                )
+                                                                            }                                }
                             }
                         }
 
@@ -321,8 +328,12 @@ class TasksRootSection : Routes.Route() {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                         ) {
+                            val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                             Button(
-                                onClick = onDismiss,
+                                onClick = {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                    onDismiss()
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.White.copy(alpha = 0.08f),
                                     contentColor = Color.White
@@ -331,7 +342,10 @@ class TasksRootSection : Routes.Route() {
                                 Text(context.translation["button.negative"])
                             }
                             Button(
-                                onClick = onConfirm,
+                                onClick = {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                    onConfirm()
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.34f),
                                     contentColor = Color.White
@@ -452,10 +466,12 @@ class TasksRootSection : Routes.Route() {
         }
 
         val isActive = pendingTask != null && !taskStatus.isFinalStage()
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         val cardModifier = modifier
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         if (taskSelection.isNotEmpty()) {
                             toggleSelection()
                             return@detectTapGestures
@@ -463,6 +479,7 @@ class TasksRootSection : Routes.Route() {
                         openFile()
                     },
                     onLongPress = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         if (taskSelection.isNotEmpty()) {
                             openFile()
                             return@detectTapGestures
@@ -624,9 +641,11 @@ class TasksRootSection : Routes.Route() {
                     modifier = Modifier.weight(1f),
                 ) {
                     if (task.type == TaskType.SCHEDULED_SEND) {
+                        // Professional design for scheduled send tasks
                         Column(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
+                            // Feature title
                             Text(
                                 context.translation.getOrNull("scheduled_send_title") ?: "Scheduled Snaps",
                                 style = MaterialTheme.typography.labelMedium,
@@ -634,6 +653,7 @@ class TasksRootSection : Routes.Route() {
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                             )
                             
+                            // Scheduled time without icon
                             Text(
                                 task.title,
                                 style = MaterialTheme.typography.titleMedium,
@@ -641,6 +661,7 @@ class TasksRootSection : Routes.Route() {
                                 color = Color.White
                             )
                             
+                            // Recipients with icon
                             task.author?.takeIf { it != "null" }?.let { recipients ->
                                 Row(
                                     verticalAlignment = Alignment.Top,
@@ -856,6 +877,7 @@ class TasksRootSection : Routes.Route() {
                     scrollOffset = if (scrollState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else scrollState.firstVisibleItemScrollOffset,
                     modifier = Modifier.headerHeightTracker { controlsHeight = it },
                     actions = {
+                        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                         if (taskSelection.size > 1 && taskSelection.all { it.second?.type?.contains("video") == true }) {
                             Surface(
                                 shape = RoundedCornerShape(50),
@@ -863,6 +885,7 @@ class TasksRootSection : Routes.Route() {
                                 modifier = Modifier
                                     .padding(end = 8.dp)
                                     .clickable { 
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                         mergeSelection(
                                             taskSelection.toList().also { taskSelection.clear() }
                                                 .map { it.first to it.second!! }
@@ -890,6 +913,7 @@ class TasksRootSection : Routes.Route() {
                             }
                         }
                         IconButton(onClick = {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                             if (taskSelection.isEmpty()) {
                                 showConfirmDialog = true
                             } else {

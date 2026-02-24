@@ -1,13 +1,23 @@
 package me.eternal.purrfectsnap.ui.manager.pages.home
 
 import android.content.SharedPreferences
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Widgets
@@ -20,14 +30,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -37,8 +49,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.Dispatchers
@@ -55,14 +67,19 @@ import me.eternal.purrfectsnap.common.util.ktx.openLink
 import me.eternal.purrfectsnap.storage.getQuickTiles
 import me.eternal.purrfectsnap.storage.setQuickTiles
 import me.eternal.purrfectsnap.ui.manager.Routes
-import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
+import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.manager.data.UpdateDownloader
 import me.eternal.purrfectsnap.ui.manager.data.Updater
 import me.eternal.purrfectsnap.ui.manager.data.Updater.Channel
-import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
-import me.eternal.purrfectsnap.ui.util.*
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
+import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
+import me.eternal.purrfectsnap.ui.util.PurrfectMarqueeText
+import me.eternal.purrfectsnap.ui.util.scaleOnPress
+import me.eternal.purrfectsnap.ui.util.Motion
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import androidx.compose.foundation.ScrollState
 
 class HomeRootSection : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.sections.home") }
@@ -129,13 +146,17 @@ class HomeRootSection : Routes.Route() {
         onClick: (() -> Unit)? = null,
         tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         containerColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
     ) {
         val interactionSource = remember { MutableInteractionSource() }
         val clickModifier = if (onClick != null) {
             Modifier.clickable(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current
-            ) { onClick() }
+            ) { 
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick() 
+            }
         } else {
             Modifier
         }
@@ -178,12 +199,14 @@ class HomeRootSection : Routes.Route() {
         label: String? = null,
         contentDescription: String? = label,
         shrinkFactor: Float = 1f,
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
         onClick: () -> Unit,
     ) {
-        val chipShape = RoundedCornerShape(40)
         Surface(
-            modifier = Modifier.widthIn(min = 36.dp),
-            shape = chipShape,
+            modifier = Modifier
+                .height(36.dp)
+                .widthIn(min = 36.dp), // Harmonized minimum footprint
+            shape = RoundedCornerShape(40),
             color = Color.White.copy(alpha = 0.06f),
             border = BorderStroke(
                 1.dp, 
@@ -197,10 +220,13 @@ class HomeRootSection : Routes.Route() {
         ) {
             Row(
                 modifier = Modifier
-                    .clip(chipShape)
-                    .clickable(onClick = onClick)
+                    .clip(RoundedCornerShape(40))
+                    .clickable { 
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onClick() 
+                    }
                     .padding(
-                        vertical = 6.dp,
+                        vertical = 6.dp, // Fixed height to prevent enlarging
                         horizontal = lerp(10.dp, 12.dp, shrinkFactor)
                     ),
                 verticalAlignment = Alignment.CenterVertically,
@@ -216,51 +242,52 @@ class HomeRootSection : Routes.Route() {
                         scaleY = iconScale
                     }
                 )
+                // Fluid Label Morph: Continuous alpha and width to prevent jumping
                 if (label != null) {
                     val labelAlpha = (shrinkFactor - 0.1f).coerceIn(0f, 1f)
-                    if (labelAlpha > 0f) {
-                        Spacer(modifier = Modifier.width((8 * shrinkFactor).dp))
-                        Text(
-                            text = label,
-                            color = Color.White.copy(alpha = labelAlpha),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Clip,
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    alpha = labelAlpha
-                                    translationX = (-4 * (1f - shrinkFactor)).dp.toPx()
-                                }
-                                .widthIn(max = (75 * shrinkFactor).dp)
-                        )
-                    }
+                    Spacer(modifier = Modifier.width((8 * shrinkFactor).dp))
+                    Text(
+                        text = label,
+                        color = Color.White.copy(alpha = labelAlpha),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier
+                            .graphicsLayer {
+                                alpha = labelAlpha
+                                translationX = (-4 * (1f - shrinkFactor)).dp.toPx()
+                            }
+                            .widthIn(max = (75 * shrinkFactor).dp)
+                    )
                 }
             }
         }
     }
 
     @Composable
-    private fun RowScope.HomeActionChips(scrollState: ScrollState) {
-        val shrinkFactor by remember {
+    private fun RowScope.HomeActionChips(scrollState: ScrollState, haptic: androidx.compose.ui.hapticfeedback.HapticFeedback) {
+        // Optimize: Use derivedStateOf to prevent constant re-composition during scroll
+        val shrinkFactor by remember(scrollState.value) {
             derivedStateOf { (1f - (scrollState.value.toFloat() / Motion.HEADER_MORPH_THRESHOLD)).coerceIn(0f, 1f) }
         }
 
         TopBarActionChip(
             icon = Icons.Filled.BugReport,
             label = context.translation["manager.routes.home_logs"],
-            shrinkFactor = shrinkFactor
+            shrinkFactor = shrinkFactor,
+            haptic = haptic
         ) { routes.homeLogs.navigate() }
         TopBarActionChip(
             icon = Icons.Filled.Settings,
             label = context.translation["manager.routes.home_settings"],
-            shrinkFactor = shrinkFactor
+            shrinkFactor = shrinkFactor,
+            haptic = haptic
         ) { routes.settings.navigate() }
     }
 
     @Composable
-    private fun LivingPurrAura(isActive: Boolean) {
-        val haptic = LocalHapticFeedback.current
+    private fun LivingPurrAura(isActive: Boolean, haptic: androidx.compose.ui.hapticfeedback.HapticFeedback) {
         val infiniteTransition = rememberInfiniteTransition(label = "aura")
         
         val pulseScale by infiniteTransition.animateFloat(
@@ -273,15 +300,26 @@ class HomeRootSection : Routes.Route() {
             label = "pulse"
         )
 
-        val glowAlpha1 by infiniteTransition.animateFloat(
+        val glow1 by infiniteTransition.animateFloat(
             initialValue = 0f, targetValue = 1f,
             animationSpec = infiniteRepeatable(tween(3200, easing = LinearEasing), RepeatMode.Restart),
             label = "g1"
         )
-        val glowAlpha2 by infiniteTransition.animateFloat(
+        val glow2 by infiniteTransition.animateFloat(
             initialValue = 0f, targetValue = 1f,
-            animationSpec = infiniteRepeatable(tween(3200, delayMillis = 1100, easing = LinearEasing), RepeatMode.Restart),
+            animationSpec = infiniteRepeatable(
+                animation = tween(3200, delayMillis = 1100, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
             label = "g2"
+        )
+        val glow3 by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(3200, delayMillis = 2200, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "g3"
         )
 
         val coreColor by animateColorAsState(
@@ -290,40 +328,41 @@ class HomeRootSection : Routes.Route() {
         )
         val secondaryColor by animateColorAsState(
             targetValue = if (isActive) PurrfectPalette.glowSecondary else Color(0xFF6B6B7A),
-            animationSpec = tween(800), label = "secColor"
+            animationSpec = tween(800), label = "coreColor"
         )
-
-        LaunchedEffect(glowAlpha1) {
-            if (isActive && glowAlpha1 < 0.05f) {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            }
-        }
 
         Canvas(modifier = Modifier.size(44.dp)) {
             val center = Offset(size.width / 2, size.height / 2)
             val baseRadius = 6.dp.toPx()
 
-            fun drawGlow(progress: Float, alpha: Float) {
+            fun drawAuroraGlow(progress: Float, alphaMultiplier: Float) {
                 if (!isActive || progress <= 0f) return
-                val radius = baseRadius * (1.2f + 4.5f * progress)
+                val auroraRadius = baseRadius * (1.2f + 4.5f * progress)
                 drawCircle(
                     brush = Brush.radialGradient(
-                        0.0f to coreColor.copy(alpha = 0.25f * (1f - progress) * alpha),
-                        0.6f to secondaryColor.copy(alpha = 0.12f * (1f - progress) * alpha),
+                        0.0f to coreColor.copy(alpha = 0.25f * (1f - progress) * alphaMultiplier),
+                        0.6f to secondaryColor.copy(alpha = 0.12f * (1f - progress) * alphaMultiplier),
                         1.0f to Color.Transparent,
-                        center = center, 
-                        radius = radius
+                        center = center,
+                        radius = auroraRadius
                     ),
-                    radius = radius, center = center
+                    radius = auroraRadius,
+                    center = center
                 )
             }
 
-            drawGlow(glowAlpha1, 0.8f)
-            drawGlow(glowAlpha2, 0.5f)
+            drawAuroraGlow(glow1, 0.8f)
+            drawAuroraGlow(glow2, 0.5f)
+            drawAuroraGlow(glow3, 0.3f)
 
             drawCircle(
-                brush = Brush.radialGradient(listOf(coreColor, secondaryColor), center = center, radius = baseRadius * pulseScale),
-                radius = baseRadius * pulseScale, center = center
+                brush = Brush.radialGradient(
+                    colors = listOf(coreColor, secondaryColor),
+                    center = center,
+                    radius = baseRadius * pulseScale
+                ),
+                radius = baseRadius * pulseScale,
+                center = center
             )
             
             drawCircle(
@@ -346,7 +385,8 @@ class HomeRootSection : Routes.Route() {
         isPurrAuraActive: Boolean,
         onAboutClick: () -> Unit,
         avenirNext: FontFamily,
-        scrollOffset: () -> Int
+        scrollOffset: () -> Int,
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
     ) {
         val heroShape = RoundedCornerShape(36.dp)
         val gitHashShort = remember { (context.installationSummary.modInfo?.gitHash ?: BuildConfig.GIT_HASH).take(7) }
@@ -440,7 +480,10 @@ class HomeRootSection : Routes.Route() {
                                 when (state) {
                                     UpdateDownloader.DownloadState.IDLE,
                                     UpdateDownloader.DownloadState.FAILED -> {
-                                        Button(onClick = onUpdateAction, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E))) {
+                                        Button(onClick = { 
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            onUpdateAction() 
+                                        }, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E))) {
                                             Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
                                         }
                                     }
@@ -492,7 +535,7 @@ class HomeRootSection : Routes.Route() {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(modifier = Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-                                    LivingPurrAura(isActive = isPurrAuraActive)
+                                    LivingPurrAura(isActive = isPurrAuraActive, haptic = haptic)
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
@@ -505,7 +548,10 @@ class HomeRootSection : Routes.Route() {
                         }
 
                         OutlinedButton(
-                            onClick = onAboutClick,
+                            onClick = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onAboutClick() 
+                            },
                             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
                             colors = ButtonDefaults.outlinedButtonColors(
                                 containerColor = Color.White.copy(alpha = 0.06f),
@@ -538,7 +584,10 @@ class HomeRootSection : Routes.Route() {
                         val androidContext = context.androidContext
                         Button(
                             modifier = Modifier.weight(1f).height(44.dp),
-                            onClick = { androidContext.openLink("https://purrfectsnap.me", context.translation["toast_open_link_failed"]) },
+                            onClick = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                androidContext.openLink("https://purrfectsnap.me", context.translation["toast_open_link_failed"]) 
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E)),
                             contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
@@ -554,7 +603,10 @@ class HomeRootSection : Routes.Route() {
                         }
                         OutlinedButton(
                             modifier = Modifier.weight(1f).height(44.dp),
-                            onClick = { androidContext.openLink("https://github.com/particle-box/PurrfectSnap", context.translation["toast_open_link_failed"]) },
+                            onClick = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                androidContext.openLink("https://github.com/particle-box/PurrfectSnap", context.translation["toast_open_link_failed"]) 
+                            },
                             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                             contentPadding = PaddingValues(horizontal = 12.dp)
@@ -569,7 +621,10 @@ class HomeRootSection : Routes.Route() {
                                 )
                             }
                         }
-                        ExternalLinkIcon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram), onClick = { androidContext.openLink("https://t.me/purrfectsnap_official", context.translation["toast_open_link_failed"]) }, tint = Color.White, containerColor = Color.White.copy(alpha = 0.14f))
+                        ExternalLinkIcon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram), onClick = { 
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            androidContext.openLink("https://t.me/purrfectsnap_official", context.translation["toast_open_link_failed"]) 
+                        }, tint = Color.White, containerColor = Color.White.copy(alpha = 0.14f), haptic = haptic)
                     }
                 }
             }
@@ -580,8 +635,9 @@ class HomeRootSection : Routes.Route() {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
 
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         val avenirNext = remember { FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium)) }
         val cards = rememberCards()
         val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) { context.database.getQuickTiles().filter { it.isNotBlank() } }
@@ -632,11 +688,15 @@ class HomeRootSection : Routes.Route() {
 
         Box(modifier = Modifier.fillMaxSize().background(pageBackgroundGradient)) {
             // FLOATING HEADER OVERLAY
-            val focusFactor = (scrollState.value.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f)
-            val stickyBrandingAlpha = ((scrollState.value.toFloat() - 50f) / 100f).coerceIn(0f, 1f)
+            val focusFactor by remember(scrollState.value) {
+                derivedStateOf { (scrollState.value.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f) }
+            }
+            val stickyBrandingAlpha by remember(scrollState.value) {
+                derivedStateOf { ((scrollState.value.toFloat() - 50f) / 100f).coerceIn(0f, 1f) }
+            }
             val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
             
-            // a438a7e & Particle-Box Symmetry Standards
+            // Standard header dimensions and layout constants
             val headerHeight = lerp(54.dp, 56.dp, focusFactor)
             val sidePadding = 0.dp 
             val containerTopPadding = lerp(statusBarHeight + 2.dp, 0.dp, focusFactor)
@@ -647,8 +707,8 @@ class HomeRootSection : Routes.Route() {
 
             // Header Container
             Box(modifier = Modifier.fillMaxWidth().zIndex(10f)) {
-                // "Under-Glass" Refractive Dissolve Layer
-                val refractiveColor = Color(0xFF241F52)
+                // Refractive background layer
+                val refractiveColor = remember { Color(0xFF241F52) }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -664,7 +724,7 @@ class HomeRootSection : Routes.Route() {
                         )
                 )
 
-                // 1. Background Sticky Bar (Fades in)
+                // Sticky background surface for floating header
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -722,25 +782,25 @@ class HomeRootSection : Routes.Route() {
                             .padding(horizontal = 16.dp, vertical = internalVerticalPadding)
                             .height(headerHeight)
                     ) {
-                        // Original Logo Sticky Branding
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "PurrfectSnap",
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(42.dp)
-                                .graphicsLayer { 
-                                    alpha = stickyBrandingAlpha
-                                }
+                        // Branding text visible when header is sticky
+                        Text(
+                            text = "PurrfectSnap",
+                            color = Color.White.copy(alpha = stickyBrandingAlpha),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = avenirNext,
+                            modifier = Modifier.align(Alignment.Center)
                         )
 
-                        // LEFT: Announcement
-                        val announcementShift = with(LocalDensity.current) { (-6 * focusFactor).dp.toPx() }
+                        // Left-aligned announcement interaction chip
+                        val announcementShift by remember(focusFactor) {
+                            derivedStateOf { (-6 * focusFactor).dp }
+                        }
                         Row(
                             modifier = Modifier
                                 .align(Alignment.CenterStart)
                                 .graphicsLayer { 
-                                    translationX = announcementShift
+                                    translationX = announcementShift.toPx()
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -748,25 +808,28 @@ class HomeRootSection : Routes.Route() {
                                 icon = Icons.Filled.Notifications,
                                 label = null,
                                 shrinkFactor = (1f - focusFactor).coerceIn(0f, 1f),
-                                contentDescription = translation["announcements_button_description"]
+                                contentDescription = translation["announcements_button_description"],
+                                haptic = haptic
                             ) {
                                 showAnnouncementsDialog = true
                                 loadAnnouncements()
                             }
                         }
 
-                        // RIGHT: Logs & Settings (Group)
-                        val settingsShift = with(LocalDensity.current) { (6 * focusFactor).dp.toPx() }
+                        // Right-aligned action chips for system navigation
+                        val settingsShift by remember(focusFactor) {
+                            derivedStateOf { (6 * focusFactor).dp }
+                        }
                         Row(
                             modifier = Modifier
                                 .align(Alignment.CenterEnd)
                                 .graphicsLayer { 
-                                    translationX = settingsShift
+                                    translationX = settingsShift.toPx()
                                 },
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            HomeActionChips(scrollState = scrollState)
+                            HomeActionChips(scrollState = scrollState, haptic = haptic)
                         }
                     }
                 }
@@ -785,7 +848,8 @@ class HomeRootSection : Routes.Route() {
                     isPurrAuraActive = isPurrAuraActive,
                     onAboutClick = { routes.about.navigate() },
                     avenirNext = avenirNext,
-                    scrollOffset = { scrollState.value }
+                    scrollOffset = { scrollState.value },
+                    haptic = haptic
                 )
                 
                 Spacer(Modifier.height(12.dp))
@@ -799,7 +863,10 @@ class HomeRootSection : Routes.Route() {
                                 Spacer(Modifier.height(16.dp))
                                 Text(translation["quick_actions_empty_title"], fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                 Spacer(Modifier.height(20.dp))
-                                Button(onClick = { showQuickActionsMenu = true }, colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E))) {
+                                Button(onClick = { 
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    showQuickActionsMenu = true 
+                                }, colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E))) {
                                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
                                     Spacer(Modifier.width(6.dp))
                                     Text(translation["quick_actions_add_tile_button"])
@@ -809,7 +876,10 @@ class HomeRootSection : Routes.Route() {
                                     Text(translation["quick_actions_title"], fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
                                     Text(translation.format("quick_actions_count_label", "count" to selectedTiles.size.toString()), fontSize = 13.sp, color = Color.White.copy(alpha = 0.75f))
                                     Spacer(Modifier.height(12.dp))
-                                    OutlinedButton(onClick = { showQuickActionsMenu = true }, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)) {
+                                    OutlinedButton(onClick = { 
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        showQuickActionsMenu = true 
+                                    }, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)) {
                                         Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage), contentDescription = null, modifier = Modifier.size(18.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(translation["quick_actions_manage_button"])
@@ -857,7 +927,10 @@ class HomeRootSection : Routes.Route() {
                                                     .width(100.dp)
                                                     .aspectRatio(1.05f) // Restored to 1.05f for square look
                                                     .scaleOnPress(interactionSource)
-                                                    .clickable { cardEntry.value(routes) }, 
+                                                    .clickable { 
+                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        cardEntry.value(routes) 
+                                                    }, 
                                                 shape = RoundedCornerShape(18.dp), 
                                                 color = Color.White.copy(alpha = 0.06f), 
                                                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
@@ -889,16 +962,38 @@ class HomeRootSection : Routes.Route() {
         }
 
         if (showAnnouncementsDialog) {
-            AestheticDialog(onDismissRequest = { showAnnouncementsDialog = false }, title = "Announcements", text = "", icon = Icons.Filled.Info, confirmButtonText = "Close", onConfirm = { showAnnouncementsDialog = false }, customContent = {
-                Column(modifier = Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (announcementsLoading) CircularProgressIndicator(color = Color.White)
-                    else Text(announcementsText ?: "No announcements", color = PurrfectPalette.textPrimary, fontSize = 14.sp)
+            AestheticDialog(
+                onDismissRequest = { showAnnouncementsDialog = false }, 
+                title = translation["announcements_dialog_title"] ?: "Announcements", 
+                text = "", 
+                icon = Icons.Filled.Notifications, 
+                confirmButtonText = translation["announcements_dialog_close_button"] ?: "Close", 
+                onConfirm = { showAnnouncementsDialog = false }, 
+                customContent = {
+                    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        if (announcementsLoading) CircularProgressIndicator(color = Color.White)
+                        else Text(announcementsText ?: translation["announcements_dialog_empty"] ?: "No announcements", color = PurrfectPalette.textPrimary, fontSize = 14.sp)
+                    }
                 }
-            })
+            )
         }
         
         if (showChangelogDialog) {
-            AestheticDialog(onDismissRequest = { showChangelogDialog = false }, title = "Changelog", text = "Latest refinements and stability fixes.", icon = Icons.Filled.Info, confirmButtonText = "Update", onConfirm = { showChangelogDialog = false; handleUpdateAction() }, dismissButtonText = "Cancel", onDismiss = { showChangelogDialog = false })
+            val haptic = LocalHapticFeedback.current
+            AestheticDialog(
+                onDismissRequest = { showChangelogDialog = false }, 
+                title = translation["changelog_dialog_title"], 
+                text = latestUpdate?.body ?: translation["changelog_dialog_empty"], 
+                icon = Icons.Filled.Info, 
+                confirmButtonText = translation["changelog_dialog_update_button"], 
+                onConfirm = { 
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showChangelogDialog = false
+                    handleUpdateAction() 
+                }, 
+                dismissButtonText = translation["changelog_dialog_cancel_button"], 
+                onDismiss = { showChangelogDialog = false }
+            )
         }
 
         if (showQuickActionsMenu) {
@@ -906,3 +1001,4 @@ class HomeRootSection : Routes.Route() {
         }
     }
 }
+

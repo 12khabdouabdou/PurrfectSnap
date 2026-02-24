@@ -108,9 +108,14 @@ class SaveFolderScreen : SetupScreen() {
                             text = if (currentFolder.isBlank()) {
                                 context.translation["setup.save_folder.system_default_label"]
                             } else {
-                                // Decode and simplify the URI for professional display
                                 runCatching { 
-                                    Uri.decode(currentFolder).substringAfterLast("%3A", currentFolder).substringAfterLast(":") 
+                                    val decoded = Uri.decode(currentFolder)
+                                    val friendlyPath = if (decoded.contains(":")) {
+                                        decoded.substringAfterLast(":")
+                                    } else {
+                                        decoded.substringAfterLast("/")
+                                    }
+                                    friendlyPath.trim('/').takeIf { it.isNotBlank() } ?: decoded
                                 }.getOrDefault(currentFolder)
                             },
                             fontSize = 15.sp,

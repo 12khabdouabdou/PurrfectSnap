@@ -38,7 +38,7 @@ object Motion {
     /**
      * Standard scroll distance (in pixels) for the header to complete its morphing animation.
      */
-    const val HEADER_MORPH_THRESHOLD = 250f
+    const val HEADER_MORPH_THRESHOLD = 300f
     
     /**
      * Milliseconds per pixel for marquee scrolling speed.
