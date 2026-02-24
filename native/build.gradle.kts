@@ -252,28 +252,39 @@ val syncTasks = cargoTargets.mapIndexed { index, target ->
         omvllArchiveUrl?.let { environment("OMVLL_ARCHIVE_URL", it) }
     }
 
-    tasks.register<Sync>("syncNative${target.taskSuffix}") {
+    tasks.register("syncNative${target.taskSuffix}") {
         dependsOn(cargoTask)
         val outputLibName = nativeLibFileName
-        inputs.property("outputLibName", outputLibName)
         val wslCandidate = File(wslStagingDir, "native/rust/target/${target.triple}/release/libpurrfectsnap.so")
         val localCandidate = layout.projectDirectory.file("rust/target/${target.triple}/release/libpurrfectsnap.so").asFile
-        val sourceLibs = files(wslCandidate, localCandidate)
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        from(sourceLibs) {
-            rename { outputLibName }
-        }
-        from(sourceLibs) {
-            rename { "libpurrfectsnap.so" }
-        }
-        into(layout.buildDirectory.dir("rustJniLibs/android/${target.abi}"))
-        inputs.files(sourceLibs)
+        val outputDir = layout.buildDirectory.dir("rustJniLibs/android/${target.abi}")
+        inputs.property("outputLibName", outputLibName)
+        inputs.files(wslCandidate, localCandidate)
+        outputs.dir(outputDir)
+        outputs.upToDateWhen { false }
         val checksumsDir = layout.buildDirectory.dir("checksums")
         doLast {
-            val file = File(destinationDir, outputLibName)
-            if (!file.exists()) {
-                error("Native library not found for ${target.abi}. Expected ${file.absolutePath}")
+            val sourceFile = listOf(wslCandidate, localCandidate).firstOrNull { it.exists() }
+                ?: error(
+                    "Native library not found for ${target.abi}. Looked in: " +
+                        "${wslCandidate.absolutePath}, ${localCandidate.absolutePath}"
+                )
+
+            val abiDir = outputDir.get().asFile
+            abiDir.mkdirs()
+
+            project.copy {
+                from(sourceFile)
+                into(abiDir)
+                rename { outputLibName }
             }
+            project.copy {
+                from(sourceFile)
+                into(abiDir)
+                rename { "libpurrfectsnap.so" }
+            }
+
+            val file = File(abiDir, outputLibName)
             val crc = CRC32()
             crc.update(file.readBytes())
             val checksumsDirFile = checksumsDir.get().asFile
