@@ -3,6 +3,7 @@ package me.eternal.purrfectsnap.mapper.impl
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import android.util.Log
 import me.eternal.purrfectsnap.mapper.AbstractClassMapper
 import me.eternal.purrfectsnap.mapper.ext.findConstString
 import me.eternal.purrfectsnap.mapper.ext.getClassName
@@ -62,7 +63,7 @@ class ActiveStatusMapper : AbstractClassMapper("ActiveSort") {
                 runCatching {
                     thresholdField.set(impl.searchNextFieldReference("MINUTES", contains = true)?.name)
                 }.onFailure {
-                    context.log.warn("ActiveStatusMapper: could not resolve threshold_field")
+                    Log.w("ActiveStatusMapper", "could not resolve threshold_field")
                 }
 
                 // Trace Response Handler: trace the lambda in the Orchestrator's return statement
@@ -82,7 +83,7 @@ class ActiveStatusMapper : AbstractClassMapper("ActiveSort") {
                         }
                     }
                 }.onFailure {
-                    context.log.warn("ActiveStatusMapper: could not resolve response_handler")
+                    Log.w("ActiveStatusMapper", "could not resolve response_handler")
                 }
 
                 // Trace Data Store Class: trace DI chain from Orchestrator via gRPC Client (C36842q0f)
@@ -116,7 +117,7 @@ class ActiveStatusMapper : AbstractClassMapper("ActiveSort") {
                         }
                     }
                 }.onFailure {
-                    context.log.warn("ActiveStatusMapper: could not resolve data_store_class")
+                    Log.w("ActiveStatusMapper", "could not resolve data_store_class")
                 }
 
                 // Trace Phase 2 Targets: SendTo and Bulk Messaging Providers
@@ -151,9 +152,9 @@ class ActiveStatusMapper : AbstractClassMapper("ActiveSort") {
                 val targets = listOf(orchestratorClass, responseHandler, thresholdField, dataStoreClass, cacheUpdateMethod, sendToProviderClass, sendToProviderMethod, bulkMessagingProviderClass, bulkMessagingProviderMethod)
                 val count = targets.count { it.get() != null }
                 if (count == targets.size) {
-                    context.log.verbose("ActiveStatusMapper: complete — $count/${targets.size} targets resolved")
+                    Log.v("ActiveStatusMapper", "complete — $count/${targets.size} targets resolved")
                 } else {
-                    context.log.warn("ActiveStatusMapper: partially complete — $count/${targets.size} targets resolved")
+                    Log.w("ActiveStatusMapper", "partially complete — $count/${targets.size} targets resolved")
                 }
                 
                 return@mapper
