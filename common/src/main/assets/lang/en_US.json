@@ -312,22 +312,22 @@
                 "remove_selected_tasks_confirm": "Remove {count} tasks?",
                 "remove_all_tasks_confirm": "Remove all tasks?"
             },
-        "features": {
-            "disabled": "Disabled",
-            "export_option": "Export",
-            "import_option": "Import",
-            "reset_option": "Reset",
-            "config_export_success_toast": "Config exported successfully",
-            "config_import_success_toast": "Config imported successfully",
-            "config_import_failure_toast": "Failed to import config {error}",
-            "config_export_failure_toast": "Failed to export config {error}",
-            "saved_config_snackbar": "Config saved",
-            "older_required": "This feature requires Snapchat v{version} or older to work correctly",
-            "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
-            "search_button": "Search",
-            "clear_history": "Clear search history",
-            "subtitle": "Search and manage features"
-        },
+            "features": {
+                "disabled": "Disabled",
+                "export_option": "Export",
+                "import_option": "Import",
+                "reset_option": "Reset",
+                "config_export_success_toast": "Config exported successfully",
+                "config_import_success_toast": "Config imported successfully",
+                "config_import_failure_toast": "Failed to import config {error}",
+                "config_export_failure_toast": "Failed to export config {error}",
+                "saved_config_snackbar": "Config saved",
+                "older_required": "This feature requires Snapchat v{version} or older to work correctly",
+                "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
+                "search_button": "Search",
+                "clear_history": "Clear search history",
+                "subtitle": "Search and manage features"
+            },
             "bypass_status": {
                 "active": "PurrAura Active",
                 "inactive": "PurrAura Inactive"
@@ -1112,6 +1112,10 @@
                     "opera_media_quick_info": {
                         "name": "Opera Media Quick Info",
                         "description": "Shows useful information of media such as creation date in opera viewer context menu"
+                    },
+                    "story_counter": {
+                        "name": "Story Counter",
+                        "description": "Shows a counter (e.g. 1/10) when viewing stories"
                     },
                     "old_bitmoji_selfie": {
                         "name": "Old Bitmoji Selfie",
@@ -2323,16 +2327,16 @@
             "custom_android_id": {
                 "null": "Use real Android ID"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "By Username",
-	                "added_by_mention": "By Mention",
-	                "added_by_group_chat": "By Group Chat",
-	                "added_by_qr_code": "By QR Code",
-	                "added_by_community": "By Community",
-	                "added_by_quick_add": "By Quick Add (high risk of being banned)",
-	                "added_by_spotlight": "By Spotlight",
-	                "null": "Don't spoof source"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "By Username",
+                "added_by_mention": "By Mention",
+                "added_by_group_chat": "By Group Chat",
+                "added_by_qr_code": "By QR Code",
+                "added_by_community": "By Community",
+                "added_by_quick_add": "By Quick Add (high risk of being banned)",
+                "added_by_spotlight": "By Spotlight",
+                "null": "Don't spoof source"
+            },
             "custom_streaks_expiration_format": {
                 "null": "System Default"
             },
@@ -2747,7 +2751,6 @@
         "show_chat_edit_history": "Show Chat Edit History",
         "convert_message": "Convert Message"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Download Chat Wallpaper"
     },

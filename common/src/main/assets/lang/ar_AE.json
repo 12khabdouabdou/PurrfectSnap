@@ -1113,6 +1113,10 @@
                         "name": "معلومات سريعة لوسائط أوبرا",
                         "description": "يظهر معلومات مفيدة للوسائط مثل تاريخ الإنشاء في قائمة سياق عارض أوبرا"
                     },
+                    "story_counter": {
+                        "name": "عداد القصص",
+                        "description": "يعرض عداداً (مثل 1/10) عند مشاهدة القصص"
+                    },
                     "old_bitmoji_selfie": {
                         "name": "سيلفي Bitmoji القديم",
                         "description": "يعيد صور سيلفي Bitmoji من إصدارات Snapchat القديمة"
@@ -2323,16 +2327,16 @@
             "custom_android_id": {
                 "null": "استخدام معرف Android الحقيقي"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "بواسطة اسم المستخدم",
-	                "added_by_mention": "بواسطة الإشارة (Mention)",
-	                "added_by_group_chat": "بواسطة دردشة المجموعة",
-	                "added_by_qr_code": "بواسطة رمز QR",
-	                "added_by_community": "بواسطة المجتمع",
-	                "added_by_quick_add": "بواسطة الإضافة السريعة (خطر عالي للحظر)",
-	                "added_by_spotlight": "بواسطة منصة الأضواء",
-	                "null": "عدم محاكاة المصدر"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "بواسطة اسم المستخدم",
+                "added_by_mention": "بواسطة الإشارة (Mention)",
+                "added_by_group_chat": "بواسطة دردشة المجموعة",
+                "added_by_qr_code": "بواسطة رمز QR",
+                "added_by_community": "بواسطة المجتمع",
+                "added_by_quick_add": "بواسطة الإضافة السريعة (خطر عالي للحظر)",
+                "added_by_spotlight": "بواسطة منصة الأضواء",
+                "null": "عدم محاكاة المصدر"
+            },
             "custom_streaks_expiration_format": {
                 "null": "افتراضي النظام"
             },
@@ -2748,7 +2752,6 @@
         "show_chat_edit_history": "عرض تاريخ تعديل الدردشة",
         "convert_message": "تحويل الرسالة"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "تنزيل خلفية الدردشة"
     },

@@ -50,6 +50,7 @@ class UserInterfaceTweaks : ConfigContainer() {
         "hide_map_reactions",
     ) { requireRestart(); versionCheck = RES_OBF_VERSION_CHECK }
     val operaMediaQuickInfo = boolean("opera_media_quick_info") { requireRestart() }
+    val storyCounter = boolean("story_counter") { requireRestart() }
     val oldBitmojiSelfie = unique("old_bitmoji_selfie", "2d", "3d") { requireCleanCache() }
     val disableSpotlight = boolean("disable_spotlight") { requireRestart() }
     val verticalStoryViewer = boolean("vertical_story_viewer") { requireRestart() }

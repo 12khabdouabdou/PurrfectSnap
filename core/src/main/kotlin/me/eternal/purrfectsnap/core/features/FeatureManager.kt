@@ -87,6 +87,7 @@ class FeatureManager(
             AutoSave(),
             AutoReply(),
             UITweaks(),
+            OperaStoryCounter(),
             ConfigurationOverride(),
             COFOverride(),
             UnsaveableMessages(),
