@@ -124,6 +124,8 @@ class FeatureManager(
             PreventForcedLogout(),
             ConversationToolbox(),
             SpotlightCommentsUsername(),
+            SpotlightCreatorInfo(),
+            OperaStoryCounter(),
             OperaViewerParamsOverride(),
             StealthModeIndicator(),
             DisablePermissionRequests(),
