@@ -114,6 +114,7 @@
         justify-content: flex-start;
         flex-wrap: nowrap;
         margin: 5px 15px;
+        --sender-color: #ffd3b6;
     }
 
     main>.message .header {
@@ -127,30 +128,15 @@
         align-items: center;
     }
 
-    main>.message:nth-child(2n) .username {
-        color: #dcedc1;
-    }
-
-    main>.message:nth-child(2n + 1) .username {
-        color: #ffd3b6;
-    }
-
     main>.message .username {
         font-weight: bold;
+        color: var(--sender-color);
     }
 
     main>.message .time {
         color: var(--Snap-sigTextSecondary);
         font-size: 12px;
         font-weight: 600;
-    }
-
-    main>.message:nth-child(2n) .content {
-        border-color: #dcedc1;
-    }
-
-    main>.message:nth-child(2n + 1) .content {
-        border-color: #ffd3b6;
     }
 
     main>.message .content {
@@ -160,6 +146,7 @@
         margin-top: 4px;
         padding-left: 4px;
         padding: 3px 0 3px 6px;
+        border-color: var(--sender-color);
     }
 
     main>.message .content div:has(.chat_media:not(audio):not(.overlay_media)) {
@@ -203,6 +190,17 @@
     main>.message .red_snap_svg {
         color: var(--Snap-sigSnapWithoutSound);
     }
+    main>.message .time.with_deleted {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    main>.message .deleted_icon_svg {
+        width: 12px;
+        height: 12px;
+        color: var(--Snap-sigTextNegative);
+    }
 </style>
 <body>
 <header>
@@ -219,6 +217,9 @@
 <div style="display: none;">
     <svg class="red_snap_svg" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="4" y="5" width="10.5" height="10.5" rx="1.808" stroke="currentColor" stroke-width="1.5"></rect>
+    </svg>
+    <svg class="deleted_icon_svg" width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 3h6M5 7h14M6 7l1 14h10l1-14M10 10v7M14 10v7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
     </svg>
 </div>
 
@@ -251,6 +252,52 @@
         }
     }
 
+    function hexToRgb(hex) {
+        if (!hex) return null
+        let value = hex.replace("#", "")
+        if (value.length === 3) {
+            value = value.split("").map(c => c + c).join("")
+        }
+        if (value.length !== 6) return null
+        const number = parseInt(value, 16)
+        return {
+            r: (number >> 16) & 255,
+            g: (number >> 8) & 255,
+            b: number & 255
+        }
+    }
+
+    function rgbToHsl(r, g, b) {
+        r /= 255
+        g /= 255
+        b /= 255
+        const max = Math.max(r, g, b)
+        const min = Math.min(r, g, b)
+        let h = 0
+        let s = 0
+        const l = (max + min) / 2
+        const delta = max - min
+
+        if (delta !== 0) {
+            s = delta / (1 - Math.abs(2 * l - 1))
+            switch (max) {
+                case r:
+                    h = ((g - b) / delta) % 6
+                    break
+                case g:
+                    h = (b - r) / delta + 2
+                    break
+                default:
+                    h = (r - g) / delta + 4
+                    break
+            }
+            h = Math.round(h * 60)
+            if (h < 0) h += 360
+        }
+
+        return { h, s: Math.round(s * 100), l: Math.round(l * 100) }
+    }
+
     function makeMain() {
         document.querySelector('main').innerHTML = ""
         const messageTemplate = document.querySelector("#message_template")
@@ -260,9 +307,34 @@
             messageList = messageList.reverse()
         }
 
+        const userColors = new Map()
+        const userColorsOverride = conversationData.userColors || {}
+        const seedRgb = hexToRgb(conversationData.colorSeed)
+        const baseHue = seedRgb ? rgbToHsl(seedRgb.r, seedRgb.g, seedRgb.b).h : null
+
+        function colorForUser(userId) {
+            if (userColors.has(userId)) return userColors.get(userId)
+            if (userColorsOverride[userId]) {
+                userColors.set(userId, userColorsOverride[userId])
+                return userColorsOverride[userId]
+            }
+            let hash = 0
+            for (let i = 0; i < userId.length; i++) {
+                hash = ((hash << 5) - hash) + userId.charCodeAt(i)
+                hash |= 0
+            }
+            const hue = baseHue === null ? (Math.abs(hash) % 360) : ((baseHue + Math.abs(hash)) % 360)
+            const color = `hsl(${hue}, 58%, 72%)`
+            userColors.set(userId, color)
+            return color
+        }
+
         messageList.forEach(message => {
             const messageObject = document.createElement("div")
             messageObject.classList.add("message")
+            const participant = participants[message.senderId]
+            const participantUserId = participant ? participant.userId : String(message.senderId)
+            messageObject.style.setProperty("--sender-color", colorForUser(String(participantUserId)))
 
             messageObject.appendChild(((headerElement) => {
                 headerElement.classList.add("header")
@@ -278,6 +350,10 @@
                 headerElement.appendChild(((elem) => {
                     elem.classList.add("time")
                     elem.innerHTML = new Date(message.createdTimestamp).toUTCString()
+                    if (message.isDeleted || message.type === "STATUS") {
+                        elem.classList.add("with_deleted")
+                        elem.appendChild(document.querySelector('.deleted_icon_svg').cloneNode(true))
+                    }
                     return elem
                 })(document.createElement("div")))
 

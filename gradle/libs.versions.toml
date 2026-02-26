@@ -29,8 +29,10 @@ hiddenapibypass = "6.1"
 smart-exception-java = "0.2.1"
 workmanager = "2.10.4"
 fetch = "3.4.1"
+osmbonuspack = "6.9.0"
 
 [libraries]
+osmbonuspack = { group = "com.github.MKergall", name = "osmbonuspack", version.ref = "osmbonuspack" }
 accompanist-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
 fetch = { group = "com.github.tonyofrancis.Fetch", name = "fetch2", version.ref = "fetch" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workmanager" }

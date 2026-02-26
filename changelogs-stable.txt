@@ -1,0 +1,96 @@
+## v1.3.2
+- ⚠️ ALL USERS ARE REQUESTED TO UPDATE TO THIS VERSION AS SOON AS POSSIBLE!⚠️
+- Fix: Crucial fixes
+- Fix: Media File Picker and added mapper(tq to RSR)
+
+## v1.3.0
+- New: Bulk Manage Friend Requests(tq to RSR)
+- Fix: Bulk Action Progress Dialogs(tq to RSR)
+- Fix: Audio note send override(tq to RSR)
+- Fix: Improve PurrAura Active indicator(tq to RSR)
+- Fix: Prevent Story Rewatch(tq to Brandon)
+- Fix: Location search(tq to Brandon)
+- Fix: story download & decryption(tq to Hazelnut)
+- New: Add confirmation dialogs for Reset PurrfectSnap option
+- New: Google Maps Integration(tq to Brandon)
+- Fix: support more translation keys
+- Fix: several inconsistencies
+- Fix: add proper support for scripts
+- New: Swap wiki with new website
+- Fix: Custom emoji is now stable!
+- Fix: Poor Call recorder quality
+- New: order feature for chat exports
+- Fix: Gemini Auto Reply(tq to RSR)
+- New: Spotlight Creator Info(tq to RSR)
+
+## v1.2.6
+- Fix: All translations are now high quality and up to date
+
+## v1.2.5
+- Fix: Prevent snap replay/missed audio voice call(tq to RSR)
+- New: Call Recording UI(tq to RSR)
+- Fix: weird Search bar behaviour in overlay
+- New: wrong architecture detector
+- Fix: Arabic Translation(tq to RSR)
+- New: Fresh look of PurrAura Indicator(tq to RSR)
+- Fix: no such directory auto patcher
+- New: Auto Mapper for Manage Friend List(tq to RSR)
+- Fix: remove audio note duration & transcription(tq to RSR)
+- Fix: Missing translations
+- New: Chat Wallpaper download button UI
+
+## v1.2.0
+- Fix: Prevent snap replay/missed audio voice call(thanks to RSR)
+- Fix: Various messaging fixes for newer snap versions(thanks to RSR)
+- New: Announcements feature(directly view important announcements right through the app!)
+- Fix: Missing about page
+- Fix: incorrect snap version instructions
+
+## v1.1.2
+- New: Chat Wallpaper Download(upstream commit) 
+- Fix: mappings error
+- Fix: armv7 failed to initialize error
+- New: Feature to record both sides while call recording(upstream commit)
+- Fix: Various Android 9 issues
+
+## v1.1.1
+- Fix: Quick Tiles crash.
+
+## v1.1.0
+- Fix: message preview overlap in French.
+- Fix: transparent gallery media send override dialog.
+- Fix: message logger autopurge "Never" no longer resets to 3 days.
+- Fix: crash during auto patching on certain older Android versions.
+- Fix: audio mismatch.
+- Fix: app lock crash.
+- New: translations added.
+- Fix: message list no longer autoscrolls.
+- New: included an Easter egg.
+- Fix: disable Bitmoji feature.
+- UI: various UI elements fixed.
+- UI: add friends dialog now includes an "Unselect all" button.
+- UI: redesigned remaining UI elements.
+- New: select folder screen has "Use default" option for cloned installs.
+- Fix: export memories crash on certain devices.
+- Fix: config state persistence on certain devices.
+- Fix: notification crash on certain devices.
+- Fix: friend suggestions (again).
+- Change: removed pull down gesture to open menu; use Quick Add instead.
+- New: custom color feature for export chat list.
+- New: exported chat messages now include message logger.
+- Fix: unsaveable snaps.
+- UI: many UI elements made symmetrical.
+- UI: redesigned file imports screen.
+- Fix: config.json and update frequency dialogs now open on click.
+- Fix: bypass camera roll limit.
+- Fix: "no friends found" text now visible in bulk messaging action.
+- Fix: search results list no longer autoscrolls while typing.
+- New: in-app guides for rooted and non-rooted devices plus a troubleshooting guide.
+- New: Snapchat auto downloader for rooted devices.
+- Fix: quick tiles appearance.
+- Fix: dialog position in Friend Tracker sort dialog.
+- New: about section added.
+- Improvement: optimizations throughout the app.
+
+## v1.0.0
+- Test.

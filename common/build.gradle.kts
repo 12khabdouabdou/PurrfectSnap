@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = rootProject.ext["applicationId"].toString() + ".common"
-    compileSdk = 35
+    compileSdk = 36
 
     buildFeatures {
         aidl = true
@@ -60,4 +60,3 @@ dependencies {
 
     implementation(project(":mapper"))
 }
-

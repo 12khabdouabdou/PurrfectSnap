@@ -16,10 +16,11 @@
         android:usesCleartextTraffic="true"
         android:label="@string/app_name"
         tools:targetApi="34"
-        android:allowBackup="true"
-        android:hasFragileUserData="true"
+        android:allowBackup="false"
+        android:hasFragileUserData="false"
         android:enableOnBackInvokedCallback="true"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
@@ -52,9 +53,8 @@
         <activity
             android:name=".ui.setup.SetupActivity"
             android:launchMode="singleTask"
-            android:exported="true"
-            android:theme="@style/AppTheme"
-            android:excludeFromRecents="true" />
+            android:exported="false"
+            android:theme="@style/AppTheme" />
         <activity android:name=".bridge.ForceStartActivity"
             android:theme="@android:style/Theme.NoDisplay"
             android:excludeFromRecents="true"
@@ -62,11 +62,12 @@
         <activity android:name=".bridge.BiometricPromptActivity"
             android:theme="@style/BiometricPromptTheme"
             android:excludeFromRecents="true"
-            android:exported="true" />
+            android:exported="true"
+            android:permission="com.snapchat.android.permission.UPDATE_STICKER_INDEX" />
         <receiver android:name=".StreaksReminder" />
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="me.rhunk.snapenhance.fileprovider"
+            android:authorities="me.eternal.purrfectsnap.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
