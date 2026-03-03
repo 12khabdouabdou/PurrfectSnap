@@ -256,7 +256,12 @@ class BetterLocationRoot : Routes.Route() {
 
         val marker = remember { mutableStateOf<Marker?>(null) }
         val mapView = remember { mutableStateOf<MapView?>(null) }
-        var spoofedCoordinates by remember(showTeleportDialog, showMap) { mutableStateOf(coordinatesProperty.value.get() as? Pair<*, *>) }
+        var spoofedCoordinates by remember(showTeleportDialog, showMap) {
+            mutableStateOf(
+                (coordinatesProperty.value.getNullable() as? Pair<*, *>)
+                    ?: (0.0 to 0.0)
+            )
+        }
 
         fun addSavedCoordinate(id: Int?, locationCoordinates: LocationCoordinates, onSuccess: suspend (id: Int) -> Unit = {}) {
             context.coroutineScope.launch {
@@ -279,14 +284,18 @@ class BetterLocationRoot : Routes.Route() {
             )
         }
 
-         var currentProvider by remember { mutableStateOf(context.config.root.global.betterLocation.locationSearchProvider.get()) }
-         var currentApiKey by remember { mutableStateOf(context.config.root.global.betterLocation.googleMapsApiKey.get()) }
+         var currentProvider by remember {
+             mutableStateOf(context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm")
+         }
+         var currentApiKey by remember {
+             mutableStateOf(context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: "")
+         }
 
          if (showProviderDialog) {
              me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = {
                  showProviderDialog = false
                  context.config.writeConfig()
-                 currentProvider = context.config.root.global.betterLocation.locationSearchProvider.get()
+                 currentProvider = context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm"
              }) {
                  alertDialogs.UniqueSelectionDialog(providerProperty)
              }
@@ -295,12 +304,12 @@ class BetterLocationRoot : Routes.Route() {
              me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { 
                  showApiKeyDialog = false
                  context.config.writeConfig()
-                 currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.get()
+                 currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: ""
              }) {
                   alertDialogs.KeyboardInputDialog(apiKeyProperty) {
                       showApiKeyDialog = false
                       context.config.writeConfig()
-                      currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.get()
+                      currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: ""
                   }
              }
          }
@@ -375,8 +384,8 @@ class BetterLocationRoot : Routes.Route() {
                                     property = coordinatesProperty,
                                     marker = marker,
                                     mapView = mapView,
-                                    locationSearchProvider = context.config.root.global.betterLocation.locationSearchProvider.get(),
-                                    googleMapsApiKey = context.config.root.global.betterLocation.googleMapsApiKey.get(),
+                                    locationSearchProvider = context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm",
+                                    googleMapsApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: "",
                                     saveCoordinates = {
                                         addSavedCoordinateDialog = true
                                     }
