@@ -1,6 +1,6 @@
-
--dontwarn de.robv.android.xposed.**
 -dontwarn org.mozilla.javascript.**
+-dontwarn android.app.AndroidAppHelper
+-dontwarn java.lang.reflect.AnnotatedType
 
 -keep class com.tonyodev.fetch2.** { *; }
 -keep class com.tonyodev.fetch2core.** { *; }

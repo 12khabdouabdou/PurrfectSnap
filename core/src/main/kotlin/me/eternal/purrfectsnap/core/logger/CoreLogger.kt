@@ -2,12 +2,12 @@ package me.eternal.purrfectsnap.core.logger
 
 import android.annotation.SuppressLint
 import android.util.Log
-import de.robv.android.xposed.XposedBridge
 import me.eternal.purrfectsnap.common.logger.AbstractLogger
 import me.eternal.purrfectsnap.common.logger.LogChannel
 import me.eternal.purrfectsnap.common.logger.LogLevel
 import me.eternal.purrfectsnap.core.bridge.BridgeClient
 import me.eternal.purrfectsnap.core.util.hook.HookStage
+import me.eternal.purrfectsnap.core.util.hook.YukiHookCompat
 import me.eternal.purrfectsnap.core.util.hook.hook
 
 @SuppressLint("PrivateApi")
@@ -20,13 +20,12 @@ class CoreLogger(
 
         fun xposedLog(message: Any?, tag: String = TAG) {
             Log.println(Log.INFO, tag, message.toString())
-            XposedBridge.log("$tag: $message")
+            Log.i(tag, message.toString())
         }
 
         fun xposedLog(message: Any?, throwable: Throwable, tag: String = TAG) {
             Log.println(Log.INFO, tag, message.toString())
-            XposedBridge.log("$tag: $message")
-            XposedBridge.log(throwable)
+            Log.i(tag, message.toString(), throwable)
         }
     }
 
@@ -46,7 +45,7 @@ class CoreLogger(
             internalLog(tag, LogLevel.fromPriority(priority) ?: LogLevel.INFO, message)
         }
         invokeOriginalPrintLog = { priority, tag, message ->
-            XposedBridge.invokeOriginalMethod(
+            YukiHookCompat.invokeOriginal(
                 printLnMethod,
                 null,
                 arrayOf<Any?>(priority, tag, message)

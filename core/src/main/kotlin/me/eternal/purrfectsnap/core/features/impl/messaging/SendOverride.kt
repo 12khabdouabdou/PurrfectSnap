@@ -22,8 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers
 import kotlinx.coroutines.*
 import me.eternal.purrfectsnap.bridge.task.TaskListener
 import me.eternal.purrfectsnap.common.data.ContentType
@@ -40,7 +38,9 @@ import me.eternal.purrfectsnap.core.messaging.MessageSender
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
+import me.eternal.purrfectsnap.core.util.ktx.setObjectField
 import me.eternal.purrfectsnap.core.util.hook.HookStage
+import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import java.text.SimpleDateFormat
@@ -65,7 +65,7 @@ class SendOverride : Feature("Send Override") {
     private var notificationIdCounter = 1000
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
-    private var backgroundHooks: List<XC_MethodHook.Unhook>? = null
+    private var backgroundHooks: List<Hooker.HookHandle>? = null
 
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
@@ -98,7 +98,7 @@ class SendOverride : Feature("Send Override") {
         return runCatching {
             val duplexClass = findClass("com.snapchat.client.duplex.DuplexClient\$CppProxy")
             val appStateMethod = duplexClass.methods.firstOrNull { it.name == "appStateChanged" } ?: return false
-            val hooks = mutableListOf<XC_MethodHook.Unhook>()
+            val hooks = mutableListOf<Hooker.HookHandle>()
             hooks.addAll(
                 duplexClass.hook("appStateChanged", HookStage.BEFORE) { param ->
                     if (param.arg<Any>(0).toString() == "INACTIVE") param.setResult(null)
@@ -493,8 +493,11 @@ class SendOverride : Feature("Send Override") {
                         if (shouldPreventSave) {
                             try {
                                 val savePolicyEnumClass = runCatching {
-                                    XposedHelpers.findClass("com.snapchat.client.messaging.SavePolicy", 
-                                        localMessageContent.instanceNonNull().javaClass.classLoader)
+                                    Class.forName(
+                                        "com.snapchat.client.messaging.SavePolicy",
+                                        false,
+                                        localMessageContent.instanceNonNull().javaClass.classLoader
+                                    )
                                 }.getOrNull()
                                 
                                 if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
@@ -510,7 +513,7 @@ class SendOverride : Feature("Send Override") {
                                         
                                         if (savePolicyField != null) {
                                             savePolicyField.isAccessible = true
-                                            XposedHelpers.setObjectField(localMessageContent.instanceNonNull(), "mSavePolicy", prohibitedEnum)
+                                            localMessageContent.instanceNonNull().setObjectField("mSavePolicy", prohibitedEnum)
                                         }
                                     }
                                 }

@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.os.UserHandle
-import de.robv.android.xposed.XposedBridge
 import kotlinx.coroutines.*
 import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.data.FileType
@@ -29,6 +28,7 @@ import me.eternal.purrfectsnap.core.features.impl.downloader.decoder.MessageDeco
 import me.eternal.purrfectsnap.core.features.impl.experiments.BetterTranscript
 import me.eternal.purrfectsnap.core.features.impl.spying.StealthMode
 import me.eternal.purrfectsnap.core.util.hook.HookStage
+import me.eternal.purrfectsnap.core.util.hook.YukiHookCompat
 import me.eternal.purrfectsnap.core.util.hook.findRestrictedConstructor
 import me.eternal.purrfectsnap.core.util.hook.findRestrictedMethod
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -48,7 +48,7 @@ class Notifications : Feature("Notifications") {
         val userHandle: UserHandle
     ) {
         fun send() {
-            XposedBridge.invokeOriginalMethod(notifyAsUserMethod, notificationManager, arrayOf(
+            YukiHookCompat.invokeOriginal(notifyAsUserMethod, notificationManager, arrayOf(
                 tag, id, notification, userHandle
             ))
         }
