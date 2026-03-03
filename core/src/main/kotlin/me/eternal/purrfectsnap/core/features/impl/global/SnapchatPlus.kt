@@ -2,6 +2,8 @@ package me.eternal.purrfectsnap.core.features.impl.global
 
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.util.dataBuilder
+import me.eternal.purrfectsnap.core.util.ktx.findFieldNamesByType
+import me.eternal.purrfectsnap.core.util.ktx.setObjectField
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
@@ -54,9 +56,8 @@ class SnapchatPlus: Feature("SnapchatPlus") {
                 val instance = param.thisObject<Any>()
                 val firstArg = param.argNullable<Any>(0) ?: return@hook
 
-                instance::class.java.declaredFields.filter { it.type == firstArg::class.java }.forEach {
-                    it.isAccessible = true
-                    it.set(instance, firstArg)
+                instance.findFieldNamesByType(firstArg::class.java).forEach { fieldName ->
+                    instance.setObjectField(fieldName, firstArg)
                 }
             }
         }

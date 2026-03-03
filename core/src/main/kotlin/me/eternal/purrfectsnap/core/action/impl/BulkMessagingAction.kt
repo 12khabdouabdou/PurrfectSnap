@@ -67,6 +67,7 @@ import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
 import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.util.EvictingMap
 import me.eternal.purrfectsnap.core.util.dataBuilder
+import me.eternal.purrfectsnap.core.util.ktx.findStaticObjectFieldByType
 import me.eternal.purrfectsnap.mapper.impl.FriendRelationshipChangerMapper
 import java.text.DateFormat
 import java.util.Date
@@ -1502,11 +1503,7 @@ class BulkMessagingAction : AbstractAction() {
                 val pageTypeClass = pageType.getAsClass() ?: return@runCatching context.log.error("Could not find page type class")
                 val method = f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
                     ?: return@runCatching context.log.error("Could not find $addFriendMethodName method")
-                fun findStaticField(clazz: Class<*>): Any? = clazz.declaredFields.firstOrNull { field ->
-                    java.lang.reflect.Modifier.isStatic(field.modifiers) && field.type == clazz
-                }?.let { field ->
-                    runCatching { field.isAccessible = true; field.get(null)?.takeIf { it.javaClass == clazz } }.getOrNull()
-                }
+                fun findStaticField(clazz: Class<*>): Any? = clazz.findStaticObjectFieldByType(clazz)
                 val enumClass = method.parameterTypes[2]
                 val enumConstants = enumClass.enumConstants ?: enumClass.getMethod("values").invoke(null) as? Array<*>
                     ?: return@runCatching context.log.error("Could not get enum constants")

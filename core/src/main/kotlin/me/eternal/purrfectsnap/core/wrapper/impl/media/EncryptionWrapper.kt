@@ -3,10 +3,11 @@ package me.eternal.purrfectsnap.core.wrapper.impl.media
 import android.util.Base64
 import android.util.Log
 import me.eternal.purrfectsnap.common.data.download.MediaEncryptionKeyPair
+import me.eternal.purrfectsnap.core.util.ktx.findFieldNamesByType
+import me.eternal.purrfectsnap.core.util.ktx.getObjectField
 import me.eternal.purrfectsnap.core.wrapper.AbstractWrapper
 import java.io.InputStream
 import java.io.OutputStream
-import java.lang.reflect.Field
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
 import javax.crypto.CipherOutputStream
@@ -44,28 +45,19 @@ class EncryptionWrapper(
     // Key + IV extraction
 
     val keySpec: ByteArray by lazy {
-        manualKey ?: searchByteArrayField(32)[instance] as ByteArray
+        manualKey ?: searchByteArrayField(32)?.let { instanceNonNull().getObjectField(it) as? ByteArray }
+        ?: throw NoSuchFieldException("Failed to find 32-byte key field")
     }
 
     val ivKeyParameterSpec: ByteArray by lazy {
-        manualIv ?: searchByteArrayField(16)[instance] as ByteArray
+        manualIv ?: searchByteArrayField(16)?.let { instanceNonNull().getObjectField(it) as? ByteArray }
+        ?: throw NoSuchFieldException("Failed to find 16-byte IV field")
     }
 
-    private fun searchByteArrayField(length: Int): Field {
-        return instanceNonNull()::class.java.declaredFields.first { field ->
-            try {
-                field.isAccessible = true
-
-                if (!field.type.isArray ||
-                    field.type.componentType != Byte::class.javaPrimitiveType
-                ) return@first false
-
-                val value = field.get(instanceNonNull()) as? ByteArray
-                value?.size == length
-
-            } catch (_: Exception) {
-                false
-            }
+    private fun searchByteArrayField(length: Int): String? {
+        val fields = instanceNonNull().findFieldNamesByType(ByteArray::class.java)
+        return fields.firstOrNull { fieldName ->
+            (instanceNonNull().getObjectField(fieldName) as? ByteArray)?.size == length
         }
     }
 

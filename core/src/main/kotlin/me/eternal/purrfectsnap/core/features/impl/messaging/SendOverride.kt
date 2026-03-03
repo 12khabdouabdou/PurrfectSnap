@@ -193,9 +193,7 @@ class SendOverride : Feature("Send Override") {
                                     }
                                 }
                                 runCatching {
-                                    val field = result.messageContent.instanceNonNull().javaClass.getDeclaredField("mAllowsTranscription")
-                                    field.isAccessible = true
-                                    field.set(result.messageContent.instanceNonNull(), false)
+                                    result.messageContent.instanceNonNull().setObjectField("mAllowsTranscription", false)
                                 }
                             }
                         }.toByteArray()
@@ -508,13 +506,7 @@ class SendOverride : Feature("Send Override") {
                                     }.getOrNull()
                                     
                                     if (prohibitedEnum != null) {
-                                        val savePolicyField = localMessageContent.instanceNonNull().javaClass.declaredFields
-                                            .find { it.name == "mSavePolicy" }
-                                        
-                                        if (savePolicyField != null) {
-                                            savePolicyField.isAccessible = true
-                                            localMessageContent.instanceNonNull().setObjectField("mSavePolicy", prohibitedEnum)
-                                        }
+                                        localMessageContent.instanceNonNull().setObjectField("mSavePolicy", prohibitedEnum)
                                     }
                                 }
                             } catch (e: Exception) {

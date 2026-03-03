@@ -8,6 +8,7 @@ import me.eternal.purrfectsnap.common.scripting.bindings.BindingsContext
 import me.eternal.purrfectsnap.common.scripting.impl.JavaInterfaces
 import me.eternal.purrfectsnap.common.scripting.impl.Networking
 import me.eternal.purrfectsnap.common.scripting.impl.Protobuf
+import me.eternal.purrfectsnap.common.util.ktx.KavaRefFieldBridge
 import me.eternal.purrfectsnap.common.scripting.ktx.contextScope
 import me.eternal.purrfectsnap.common.scripting.ktx.putFunction
 import me.eternal.purrfectsnap.common.scripting.ktx.scriptable
@@ -81,18 +82,18 @@ class JSModule(
                 val obj = args?.get(0) ?: return@putFunction Undefined.instance
                 val name = args[1].toString()
                 val value = args[2]
-                val field = obj.javaClass.declaredFields.find { it.name == name } ?: return@putFunction Undefined.instance
-                field.isAccessible = true
-                field.set(obj, value.toPrimitiveValue(lazy { field.type.name }))
+                runCatching {
+                    KavaRefFieldBridge.getField(obj, name)?.javaClass?.name
+                }.getOrNull()?.let { typeName ->
+                    KavaRefFieldBridge.setField(obj, name, value.toPrimitiveValue(lazy { typeName }))
+                } ?: return@putFunction Undefined.instance
                 Undefined.instance
             }
 
             moduleObject.putFunction("getField") { args ->
                 val obj = args?.get(0) ?: return@putFunction Undefined.instance
                 val name = args[1].toString()
-                val field = obj.javaClass.declaredFields.find { it.name == name } ?: return@putFunction Undefined.instance
-                field.isAccessible = true
-                field.get(obj)
+                runCatching { KavaRefFieldBridge.getField(obj, name) }.getOrNull() ?: Undefined.instance
             }
 
             moduleObject.putFunction("sleep") { args ->
@@ -141,9 +142,14 @@ class JSModule(
                         }
                     }
 
+                    // Expose static fields if they can be read through class reflection.
                     clazz.declaredFields.filter { Modifier.isStatic(it.modifiers) }.forEach { field ->
-                        field.isAccessible = true
-                        defineProperty(field.name, { field.get(null) }, { value -> field.set(null, value) }, 0)
+                        defineProperty(
+                            field.name,
+                            { runCatching { field.get(null) }.getOrNull() },
+                            { value -> runCatching { field.set(null, value) } },
+                            0
+                        )
                     }
 
                     if (get("newInstance") == null) {

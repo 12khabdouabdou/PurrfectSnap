@@ -1,33 +1,34 @@
 package me.eternal.purrfectsnap.core.util.ktx
 
-private fun findDeclaredFieldRecursive(type: Class<*>, fieldName: String): java.lang.reflect.Field? {
-    var current: Class<*>? = type
-    while (current != null && current != Any::class.java) {
-        current.declaredFields.firstOrNull { it.name == fieldName }?.let { return it }
-        current = current.superclass
-    }
-    return null
+fun Any.getObjectField(fieldName: String): Any? {
+    return KavaRefFieldBridge.getField(this, fieldName)
 }
 
-fun Any.getObjectField(fieldName: String): Any? {
-    val field = findDeclaredFieldRecursive(this::class.java, fieldName)
-        ?: throw NoSuchFieldException("${this::class.java.name}#$fieldName")
-    field.isAccessible = true
-    return field.get(this)
+fun Any.findFieldNamesByType(type: Class<*>): List<String> {
+    return KavaRefFieldBridge.findFieldNamesByType(this, type).toList()
+}
+
+fun Any.allFieldNames(): List<String> {
+    return KavaRefFieldBridge.getAllFieldNames(this).toList()
+}
+
+fun Class<*>.getStaticObjectField(fieldName: String): Any? {
+    return KavaRefFieldBridge.getStaticField(this, fieldName)
+}
+
+fun Class<*>.findStaticObjectFieldByType(type: Class<*>): Any? {
+    return KavaRefFieldBridge.findStaticFieldByType(this, type)
 }
 
 fun Any.setEnumField(fieldName: String, value: String) {
-    this::class.java.getDeclaredField(fieldName)
-        .type.enumConstants?.firstOrNull { it.toString() == value }?.let { enum ->
+    val enumType = KavaRefFieldBridge.getFieldType(this, fieldName)
+    enumType.enumConstants?.firstOrNull { it.toString() == value }?.let { enum ->
         setObjectField(fieldName, enum)
     }
 }
 
 fun Any.setObjectField(fieldName: String, value: Any?) {
-    val field = findDeclaredFieldRecursive(this::class.java, fieldName)
-        ?: throw NoSuchFieldException("${this::class.java.name}#$fieldName")
-    field.isAccessible = true
-    field.set(this, value)
+    KavaRefFieldBridge.setField(this, fieldName, value)
 }
 
 fun Any.getObjectFieldOrNull(fieldName: String): Any? {

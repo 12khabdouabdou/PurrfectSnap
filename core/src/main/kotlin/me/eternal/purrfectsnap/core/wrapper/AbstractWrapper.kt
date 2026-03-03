@@ -63,7 +63,9 @@ abstract class AbstractWrapper(
 
     @Suppress("UNCHECKED_CAST")
     fun setEnumValue(fieldName: String, value: Enum<*>) {
-        val type = instance!!.javaClass.declaredFields.find { it.name == fieldName }?.type as Class<out Enum<*>>
+        val currentValue = instance?.getObjectField(fieldName) as? Enum<*> ?: return
+        @Suppress("UNCHECKED_CAST")
+        val type = currentValue.javaClass as Class<out Enum<*>>
         instance?.setObjectField(fieldName, java.lang.Enum.valueOf(type, value.name))
     }
 }

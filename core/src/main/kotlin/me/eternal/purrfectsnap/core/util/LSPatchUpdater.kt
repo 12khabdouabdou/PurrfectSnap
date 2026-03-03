@@ -2,6 +2,7 @@ package me.eternal.purrfectsnap.core.util
 
 import me.eternal.purrfectsnap.common.Constants
 import me.eternal.purrfectsnap.core.ModContext
+import me.eternal.purrfectsnap.core.util.ktx.getStaticObjectField
 import java.io.File
 import java.util.zip.ZipFile
 
@@ -40,9 +41,9 @@ object LSPatchUpdater {
         val obfuscatedModulePath by lazy {
             (runCatching {
                 context::class.java.classLoader?.loadClass("org.lsposed.lspatch.share.Constants")
-            }.getOrNull())?.declaredFields?.firstOrNull { it.name == "MANAGER_PACKAGE_NAME" }?.also {
-                it.isAccessible = true
-            }?.get(null) as? String
+            }.getOrNull())?.let { clazz ->
+                runCatching { clazz.getStaticObjectField("MANAGER_PACKAGE_NAME") as? String }.getOrNull()
+            }
         }
 
         val embeddedModule = context.androidContext.cacheDir

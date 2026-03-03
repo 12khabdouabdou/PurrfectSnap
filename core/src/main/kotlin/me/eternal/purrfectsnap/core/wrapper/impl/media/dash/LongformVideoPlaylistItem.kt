@@ -1,11 +1,13 @@
 package me.eternal.purrfectsnap.core.wrapper.impl.media.dash
 
+import me.eternal.purrfectsnap.core.util.ktx.findFieldNamesByType
+import me.eternal.purrfectsnap.core.util.ktx.getObjectField
 import me.eternal.purrfectsnap.core.wrapper.AbstractWrapper
 
 class LongformVideoPlaylistItem(obj: Any?) : AbstractWrapper(obj) {
-    private val chapterList by lazy {
-        instanceNonNull().javaClass.declaredFields.first { it.type == List::class.java }
+    private val chapterListField by lazy {
+        instanceNonNull().findFieldNamesByType(List::class.java).first()
     }
     val chapters: List<SnapChapter>
-        get() = (chapterList.get(instanceNonNull()) as List<*>).map { SnapChapter(it) }
+        get() = (instanceNonNull().getObjectField(chapterListField) as List<*>).map { SnapChapter(it) }
 }
