@@ -1501,7 +1501,8 @@ class BulkMessagingAction : AbstractAction() {
                 val addFriendMethodName = addFriend14Method.get() ?: return@runCatching context.log.error("Could not find add friend method name")
                 val sourceTypeClass = sourceType.getAsClass() ?: return@runCatching context.log.error("Could not find source type class")
                 val pageTypeClass = pageType.getAsClass() ?: return@runCatching context.log.error("Could not find page type class")
-                val method = f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
+                val method = f9lClass.methods.firstOrNull { it.name == addFriendMethodName }
+                    ?: f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
                     ?: return@runCatching context.log.error("Could not find $addFriendMethodName method")
                 fun findStaticField(clazz: Class<*>): Any? = clazz.findStaticObjectFieldByType(clazz)
                 val enumClass = method.parameterTypes[2]

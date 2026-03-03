@@ -530,11 +530,14 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                         }
 
                         val operaLayerList = (param.thisObject() as Any).getObjectField(layerListField.get()!!) as ArrayList<*>
-                        val mediaParamMap: ParamMap = operaLayerList.map { Layer(it) }.first().paramMap
-
-                        if (!mediaParamMap.containsKey("image_media_info") && !mediaParamMap.containsKey("video_media_info_list")) {
-                            return@onOperaViewStateCallback
-                        }
+                        val mediaParamMap: ParamMap = operaLayerList
+                            .asSequence()
+                            .mapNotNull { layerObj ->
+                                layerObj?.let { runCatching { Layer(it).paramMap }.getOrNull() }
+                            }
+                            .firstOrNull {
+                                it.containsKey("image_media_info") || it.containsKey("video_media_info_list")
+                            } ?: return@onOperaViewStateCallback
 
                         val mediaInfoMap = mutableMapOf<SplitMediaAssetType, MediaInfo>()
                         val isVideo = mediaParamMap.containsKey("video_media_info_list")

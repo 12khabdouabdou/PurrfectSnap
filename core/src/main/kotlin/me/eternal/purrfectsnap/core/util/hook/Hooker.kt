@@ -46,9 +46,8 @@ object Hooker {
         stage: HookStage,
         crossinline filter: (HookAdapter) -> Boolean,
         noinline consumer: (HookAdapter) -> Unit
-    ): Set<HookHandle> = clazz.declaredMethods
+    ): Set<HookHandle> = collectMethods(clazz, methodName)
         .asSequence()
-        .filter { it.name == methodName }
         .map { method ->
             method.isAccessible = true
             val hookResult = YukiHookCompat.hookMember(method, newMethodHook(stage, consumer, filter))
@@ -166,6 +165,46 @@ object Hooker {
             hookConsumer(param)
             unhooks.forEach{ it.unhook() }
         }.also { unhooks.addAll(it) }
+    }
+
+    @PublishedApi
+    internal fun collectMethods(clazz: Class<*>, methodName: String): List<Method> {
+        val methods = LinkedHashMap<String, Method>()
+        val visited = HashSet<Class<*>>()
+        var currentClass: Class<*>? = clazz
+
+        while (currentClass != null && currentClass != Any::class.java && currentClass != Object::class.java) {
+            collectMethodsRecursive(currentClass, methodName, methods, visited)
+            currentClass = currentClass.superclass
+        }
+
+        return methods.values.toList()
+    }
+
+    private fun collectMethodsRecursive(
+        clazz: Class<*>,
+        methodName: String,
+        methods: MutableMap<String, Method>,
+        visited: MutableSet<Class<*>>
+    ) {
+        if (!visited.add(clazz)) return
+
+        clazz.declaredMethods
+            .asSequence()
+            .filter { it.name == methodName }
+            .forEach { method ->
+                val signature = buildString {
+                    append(method.name)
+                    append("#")
+                    method.parameterTypes.forEach {
+                        append(it.name)
+                        append(";")
+                    }
+                }
+                methods.putIfAbsent(signature, method)
+            }
+
+        clazz.interfaces.forEach { collectMethodsRecursive(it, methodName, methods, visited) }
     }
 }
 

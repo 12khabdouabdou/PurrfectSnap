@@ -99,7 +99,8 @@ class ManageFriendList : AbstractAction() {
                 val sourceTypeClass = sourceType.getAsClass() ?: return@runCatching context.log.error("Could not find source type class")
                 val pageTypeClass = pageType.getAsClass() ?: return@runCatching context.log.error("Could not find page type class")
 
-                val method = f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
+                val method = f9lClass.methods.firstOrNull { it.name == addFriendMethodName }
+                    ?: f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
                     ?: return@runCatching context.log.error("Could not find $addFriendMethodName method")
 
                 // Helper function to find static field by trying fallback

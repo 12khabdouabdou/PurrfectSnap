@@ -1,7 +1,11 @@
 package me.eternal.purrfectsnap.core.util.ktx
 
 fun Any.getObjectField(fieldName: String): Any? {
-    return KavaRefFieldBridge.getField(this, fieldName)
+    return runCatching {
+        KavaRefFieldBridge.getField(this, fieldName)
+    }.getOrElse {
+        findFieldRecursive(this::class.java, fieldName).also { it.isAccessible = true }.get(this)
+    }
 }
 
 fun Any.findFieldNamesByType(type: Class<*>): List<String> {
@@ -13,7 +17,11 @@ fun Any.allFieldNames(): List<String> {
 }
 
 fun Class<*>.getStaticObjectField(fieldName: String): Any? {
-    return KavaRefFieldBridge.getStaticField(this, fieldName)
+    return runCatching {
+        KavaRefFieldBridge.getStaticField(this, fieldName)
+    }.getOrElse {
+        findFieldRecursive(this, fieldName).also { it.isAccessible = true }.get(null)
+    }
 }
 
 fun Class<*>.findStaticObjectFieldByType(type: Class<*>): Any? {
@@ -21,14 +29,22 @@ fun Class<*>.findStaticObjectFieldByType(type: Class<*>): Any? {
 }
 
 fun Any.setEnumField(fieldName: String, value: String) {
-    val enumType = KavaRefFieldBridge.getFieldType(this, fieldName)
+    val enumType = runCatching {
+        KavaRefFieldBridge.getFieldType(this, fieldName)
+    }.getOrElse {
+        findFieldRecursive(this::class.java, fieldName).type
+    }
     enumType.enumConstants?.firstOrNull { it.toString() == value }?.let { enum ->
         setObjectField(fieldName, enum)
     }
 }
 
 fun Any.setObjectField(fieldName: String, value: Any?) {
-    KavaRefFieldBridge.setField(this, fieldName, value)
+    runCatching {
+        KavaRefFieldBridge.setField(this, fieldName, value)
+    }.getOrElse {
+        findFieldRecursive(this::class.java, fieldName).also { f -> f.isAccessible = true }.set(this, value)
+    }
 }
 
 fun Any.getObjectFieldOrNull(fieldName: String): Any? {
@@ -37,5 +53,14 @@ fun Any.getObjectFieldOrNull(fieldName: String): Any? {
     } catch (t: Throwable) {
         null
     }
+}
+
+private fun findFieldRecursive(clazz: Class<*>, fieldName: String): java.lang.reflect.Field {
+    var current: Class<*>? = clazz
+    while (current != null && current != Any::class.java && current != Object::class.java) {
+        runCatching { return current.getDeclaredField(fieldName) }
+        current = current.superclass
+    }
+    throw NoSuchFieldException("${clazz.name}#$fieldName")
 }
 
