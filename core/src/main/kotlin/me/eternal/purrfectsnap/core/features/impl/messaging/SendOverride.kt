@@ -341,6 +341,23 @@ class SendOverride : Feature("Send Override") {
                             }
                         }
                     }
+
+                    // Handle SNAP messages (field 11)
+                    val snapAtRoot = protoReader.followPath(11) != null
+                    val snapNested = protoReader.followPath(4, 4, 11) != null
+                    if (snapAtRoot || snapNested) {
+                        if (snapNested) {
+                            edit(4, 4, 11) {
+                                remove(7)
+                                addVarInt(7, savePolicy)
+                            }
+                        } else {
+                            edit(11) {
+                                remove(7)
+                                addVarInt(7, savePolicy)
+                            }
+                        }
+                    }
                 }.toByteArray()
             }
         }
@@ -443,6 +460,12 @@ class SendOverride : Feature("Send Override") {
                                 remove(4)
                                 addVarInt(4, 5) // APP_SOURCE_CAMERA
                             }
+
+                            // Enforce save policy directly on SNAP message body.
+                            edit(11) {
+                                remove(7)
+                                addVarInt(7, savePolicyValue)
+                            }
                         }.toByteArray()
                     }
                     "NOTE" -> {
@@ -487,32 +510,39 @@ class SendOverride : Feature("Send Override") {
                             audioNoteProto
                         }
                         
-                        // Set mSavePolicy on Java object if prevent audio is enabled
-                        if (shouldPreventSave) {
-                            try {
-                                val savePolicyEnumClass = runCatching {
-                                    Class.forName(
-                                        "com.snapchat.client.messaging.SavePolicy",
-                                        false,
-                                        localMessageContent.instanceNonNull().javaClass.classLoader
-                                    )
+                    }
+                }
+
+                if (postSavePolicy != null) {
+                    try {
+                        val savePolicyEnumClass = runCatching {
+                            Class.forName(
+                                "com.snapchat.client.messaging.SavePolicy",
+                                false,
+                                localMessageContent.instanceNonNull().javaClass.classLoader
+                            )
+                        }.getOrNull()
+
+                        if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
+                            @Suppress("UNCHECKED_CAST")
+                            val enumClass = savePolicyEnumClass as Class<out Enum<*>>
+                            val policyName = when (postSavePolicy) {
+                                1 -> "PROHIBITED"
+                                2 -> "VIEWER_SAVABLE"
+                                else -> null
+                            }
+                            if (policyName != null) {
+                                val policyEnum = runCatching {
+                                    java.lang.Enum.valueOf(enumClass, policyName)
                                 }.getOrNull()
-                                
-                                if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
-                                    @Suppress("UNCHECKED_CAST")
-                                    val enumClass = savePolicyEnumClass as Class<out Enum<*>>
-                                    val prohibitedEnum = runCatching {
-                                        java.lang.Enum.valueOf(enumClass, "PROHIBITED")
-                                    }.getOrNull()
-                                    
-                                    if (prohibitedEnum != null) {
-                                        localMessageContent.instanceNonNull().setObjectField("mSavePolicy", prohibitedEnum)
-                                    }
+
+                                if (policyEnum != null) {
+                                    localMessageContent.instanceNonNull().setObjectField("mSavePolicy", policyEnum)
                                 }
-                            } catch (e: Exception) {
-                                context.log.warn("SendOverride: Failed to set mSavePolicy for NOTE: ${e.message}")
                             }
                         }
+                    } catch (e: Exception) {
+                        context.log.warn("SendOverride: Failed to set mSavePolicy: ${e.message}")
                     }
                 }
 
