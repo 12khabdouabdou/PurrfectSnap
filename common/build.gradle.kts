@@ -46,8 +46,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.documentfile)
     implementation(libs.rhino)
-    implementation(libs.kavaref.core)
-    implementation(libs.kavaref.extension)
     implementation(libs.rhino.android) {
         exclude(group = "org.mozilla", module = "rhino-runtime")
     }
