@@ -267,6 +267,7 @@ dependencies {
     }
 
     implementation(project(":core"))
+    compileOnly(files("../core/libs/LSPosed-api-1.0-SNAPSHOT.jar"))
     implementation(project(":common"))
     implementation(project(":native"))
     implementation(libs.androidx.documentfile)
