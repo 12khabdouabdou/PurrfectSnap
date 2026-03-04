@@ -48,6 +48,39 @@ class ConfigurationOverride : Feature("Configuration Override") {
             overrideProperty("TRANSCODING_MAX_QUALITY", { context.config.global.mediaUploadQualityConfig.forceVideoUploadSourceQuality.get() },
                 { true }, isAppExperiment = true)
 
+            run {
+                val isForceQuality = { _: ConfigKeyInfo -> context.config.global.mediaUploadQualityConfig.forceVideoUploadSourceQuality.get() }
+                val level7Value = { _: ConfigKeyInfo -> 700 }
+                arrayOf(
+                    "MY_STORY_UPLOAD_QUALITY_LEVEL",
+                    "PUBLIC_STORY_UPLOAD_QUALITY_LEVEL",
+                    "GROUP_STORY_UPLOAD_QUALITY_LEVEL",
+                    "SPOTLIGHT_UPLOAD_QUALITY_LEVEL",
+                    "MEDIA_UPLOAD_QUALITY_LEVEL",
+                    "MESSAGING_MEDIA_UPLOAD_QUALITY_LEVEL",
+                    "IMAGE_UPLOAD_QUALITY_LEVEL",
+                    "IMAGE_QUALITY_LEVEL_FOR_PRE_UPLOAD",
+                    "IMAGE_QUALITY_LEVEL_FOR_PUBLIC_POSTING",
+                    "IMAGE_QUALITY_LEVEL_FOR_PRIVATE_POSTING",
+                    "RETRANSCODE_UPLOAD_QUALITY_LEVEL",
+                    "MEMORIES_BACKUP_MEDIA_LEVEL",
+                    "MEMORIES_BACKUP_MEDIA_LEVEL_HIGH_QUALITY",
+                    "MEDIA_EXPORT_QUALITY_LEVEL"
+                ).forEach { key ->
+                    overrideProperty(key, isForceQuality, level7Value)
+                }
+                overrideProperty("ENABLE_HIGH_QUALITY_MEMORIES_BACKUP",
+                    isForceQuality, { true })
+                overrideProperty("MEDIA_QUALITY_LEVEL_DOWNGRADING_PERCENTAGE",
+                    isForceQuality, { 0.0f })
+            }
+
+            run {
+                val isDisableCompression = { _: ConfigKeyInfo -> context.config.global.mediaUploadQualityConfig.disableImageCompression.get() }
+                overrideProperty("LIBJPEG_IMAGE_ENCODING_QUALITY", isDisableCompression, { 100 })
+                overrideProperty("LIBJPEG_IMAGE_ENCODING_QUALITY_V2", isDisableCompression, { 100 })
+            }
+
             overrideProperty("CAMERA_ME_ENABLE_HEVC_RECORDING", { context.config.camera.hevcRecording.get() },
                 { true })
             overrideProperty("MEDIA_RECORDER_MAX_QUALITY_LEVEL", { context.config.camera.forceCameraSourceEncoding.get() },

@@ -2,6 +2,7 @@ package me.eternal.purrfectsnap.mapper.impl
 
 import com.android.tools.smali.dexlib2.AccessFlags
 import me.eternal.purrfectsnap.mapper.AbstractClassMapper
+import me.eternal.purrfectsnap.mapper.ext.findConstString
 import me.eternal.purrfectsnap.mapper.ext.getClassName
 import me.eternal.purrfectsnap.mapper.ext.hasStaticConstructorString
 import me.eternal.purrfectsnap.mapper.ext.isAbstract
@@ -32,9 +33,57 @@ class MediaQualityLevelProviderMapper : AbstractClassMapper("MediaQualityLevelPr
                 if (!clazz.isAbstract()) continue
                 if (clazz.fields.none { it.accessFlags and AccessFlags.TRANSIENT.value != 0 }) continue
 
-                clazz.methods.firstOrNull { it.returnType == "L$enumQualityLevel;" }?.let {
+                clazz.methods.firstOrNull { method ->
+                    method.returnType == "L$enumQualityLevel;"
+                        && method.parameters.size == 2
+                        && method.parameters.last().type == "L$enumQualityLevel;"
+                }?.let {
                     mediaQualityLevelProvider.set(clazz.getClassName())
                     mediaQualityLevelProviderMethod.set(it.name)
+                    return@mapper
+                }
+            }
+        }
+
+        mapper {
+            if (enumQualityLevel == null || mediaQualityLevelProvider.get() != null) return@mapper
+
+            for (clazz in classes) {
+                if (clazz.methods.none { it.implementation?.findConstString("video-transcoding-level-", contains = true) == true }) continue
+
+                clazz.methods.firstOrNull { method ->
+                    method.returnType == "L$enumQualityLevel;"
+                        && method.parameters.size == 2
+                        && method.parameters.last().type == "L$enumQualityLevel;"
+                }?.let {
+                    mediaQualityLevelProvider.set(clazz.getClassName())
+                    mediaQualityLevelProviderMethod.set(it.name)
+                    return@mapper
+                }
+            }
+        }
+
+        mapper {
+            if (enumQualityLevel == null || mediaQualityLevelProvider.get() != null) return@mapper
+
+            for (clazz in classes) {
+                val hasTranscodingConfig = clazz.methods.any { method ->
+                    method.implementation?.findConstString("video-transcoding-level-1", contains = true) == true
+                }
+                if (!hasTranscodingConfig) continue
+
+                val hasImageTranscodingConfig = clazz.methods.any { method ->
+                    method.implementation?.findConstString("image_transcoding_level_", contains = true) == true
+                }
+                if (!hasImageTranscodingConfig) continue
+
+                clazz.methods.firstOrNull { method ->
+                    method.returnType == "L$enumQualityLevel;"
+                        && method.parameters.size == 2
+                        && method.parameters.last().type == "L$enumQualityLevel;"
+                }?.let { qualityMethod ->
+                    mediaQualityLevelProvider.set(clazz.getClassName())
+                    mediaQualityLevelProviderMethod.set(qualityMethod.name)
                     return@mapper
                 }
             }
