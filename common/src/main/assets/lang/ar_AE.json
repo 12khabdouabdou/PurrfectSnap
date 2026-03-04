@@ -1099,6 +1099,14 @@
                         "name": "معلومات الوسائط السريعة في أوبرا",
                         "description": "يعرض معلومات مفيدة عن الوسائط مثل تاريخ الإنشاء في قائمة سياق عارض أوبرا"
                     },
+                    "story_counter": {
+                        "name": "عداد القصص",
+                        "description": "يعرض عداداً (مثل 1/10) عند مشاهدة القصص"
+                    },
+                    "story_source_indicator": {
+                        "name": "مؤشر مصدر القصة",
+                        "description": "يعرض أيقونة تشير إلى ما إذا كان السناب تم التقاطه من الكاميرا أو رفعه من المعرض\nيعمل فقط مع قصص الأصدقاء"
+                    },
                     "old_bitmoji_selfie": {
                         "name": "سيلفي Bitmoji القديم",
                         "description": "يعيد سيلفي Bitmoji من إصدارات Snapchat القديمة"
@@ -2767,7 +2775,6 @@
         "show_chat_edit_history": "عرض سجل تحرير الدردشة",
         "convert_message": "تحويل الرسالة"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "تنزيل خلفية الدردشة"
     },

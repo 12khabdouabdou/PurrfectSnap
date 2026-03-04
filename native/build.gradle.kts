@@ -294,6 +294,10 @@ val syncTasks = cargoTargets.mapIndexed { index, target ->
     }
 }
 
+// Ensure checksums dir exists at configuration time so Gradle 9 input validation passes
+// (it is populated by syncTasks' doLast)
+layout.buildDirectory.dir("checksums").get().asFile.mkdirs()
+
 val generateChecksumsFile = tasks.register("generateChecksumsFile") {
     dependsOn(syncTasks)
     val generatedDir = layout.buildDirectory.dir("generated/source/checksums/kotlin")

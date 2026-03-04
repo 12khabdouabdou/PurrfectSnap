@@ -1099,6 +1099,14 @@
                         "name": "Opera Media Quick Info",
                         "description": "Shows useful information of media such as creation date in opera viewer context menu"
                     },
+                    "story_counter": {
+                        "name": "Story Counter",
+                        "description": "Shows a counter (e.g. 1/10) when viewing stories"
+                    },
+                    "story_source_indicator": {
+                        "name": "Story Source Indicator",
+                        "description": "Shows an icon indicating whether the snap was taken from the camera or uploaded from the gallery\nOnly works with friend stories"
+                    },
                     "old_bitmoji_selfie": {
                         "name": "Old Bitmoji Selfie",
                         "description": "Brings back the Bitmoji selfies from older Snapchat versions"
@@ -2339,16 +2347,16 @@
             "custom_android_id": {
                 "null": "Use real Android ID"
             },
-	            "add_friend_source_spoof": {
-	                "added_by_username": "By Username",
-	                "added_by_mention": "By Mention",
-	                "added_by_group_chat": "By Group Chat",
-	                "added_by_qr_code": "By QR Code",
-	                "added_by_community": "By Community",
-	                "added_by_quick_add": "By Quick Add (high risk of being banned)",
-	                "added_by_spotlight": "By Spotlight",
-	                "null": "Don't spoof source"
-	            },
+            "add_friend_source_spoof": {
+                "added_by_username": "By Username",
+                "added_by_mention": "By Mention",
+                "added_by_group_chat": "By Group Chat",
+                "added_by_qr_code": "By QR Code",
+                "added_by_community": "By Community",
+                "added_by_quick_add": "By Quick Add (high risk of being banned)",
+                "added_by_spotlight": "By Spotlight",
+                "null": "Don't spoof source"
+            },
             "custom_streaks_expiration_format": {
                 "null": "System Default"
             },
@@ -2766,7 +2774,6 @@
         "show_chat_edit_history": "Show Chat Edit History",
         "convert_message": "Convert Message"
     },
-
     "chat_wallpaper_downloader": {
         "download_button": "Download Chat Wallpaper"
     },
