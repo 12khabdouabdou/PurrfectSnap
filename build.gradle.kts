@@ -33,13 +33,15 @@ tasks.register<GetVersionTask>("getVersion") {
 }
 
 // You can still set these for legacy use by submodules or scripts:
-rootProject.ext.set("appVersionName", providers.gradleProperty("APP_VERSION_NAME").orElse("1.2.6").get())
-rootProject.ext.set("appVersionCode", providers.gradleProperty("APP_VERSION_CODE").orElse("252").get().toInt())
+rootProject.ext.set("appVersionName", providers.gradleProperty("APP_VERSION_NAME").orElse("1.3.0").get())
+rootProject.ext.set("appVersionCode", providers.gradleProperty("APP_VERSION_CODE").orElse("270").get().toInt())
 rootProject.ext.set("applicationId", "me.eternal.purrfectsnap")
+// buildHash: when PurrfectSnap or Snapchat is updated, mappings become outdated and auto-regenerate.
+// Include version code so each release has a different hash; use random for uniqueness within same version.
 rootProject.ext.set(
     "buildHash",
-    properties["debug_build_hash"]
-        ?: java.security.SecureRandom()
+    (properties["debug_build_hash"] as String?)
+        ?: "${rootProject.ext["appVersionCode"]}_${java.security.SecureRandom()
             .nextLong(Long.MAX_VALUE / 1000L, Long.MAX_VALUE)
-            .toString(16)
+            .toString(16)}"
 )

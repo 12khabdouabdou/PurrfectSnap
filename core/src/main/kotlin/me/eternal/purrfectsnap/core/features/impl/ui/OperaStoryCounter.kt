@@ -3,12 +3,23 @@ package me.eternal.purrfectsnap.core.features.impl.ui
 import android.view.Gravity
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.PhotoLibrary
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.eternal.purrfectsnap.common.ui.createComposeView
@@ -24,33 +35,76 @@ import me.eternal.purrfectsnap.mapper.impl.OperaPageViewControllerMapper
 
 class OperaStoryCounter : Feature("OperaStoryCounter") {
     private val counterState = mutableStateOf("")
+    // "CAMERA" or "GALLERY" or ""
+    private val sourceState = mutableStateOf("")
 
     override fun init() {
-        if (!this@OperaStoryCounter.context.config.userInterface.storyCounter.get()) return
+        val showCounter = this@OperaStoryCounter.context.config.userInterface.storyCounter.get()
+        val showSourceIndicator = this@OperaStoryCounter.context.config.userInterface.storySourceIndicator.get()
+
+        if (!showCounter && !showSourceIndicator) return
 
         this@OperaStoryCounter.context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view is FrameLayout && event.parent.javaClass.superclass?.name?.endsWith("OpenLayout") == true) {
                 val viewGroup = event.view as FrameLayout
-                
-                // Strict check: don't add if already exists in the entire parent hierarchy
-                if (event.parent.findViewWithTag<android.view.View>("story_counter") != null) return@subscribe
+
+                if (viewGroup.findViewWithTag<android.view.View>("story_counter") != null ||
+                    event.parent.findViewWithTag<android.view.View>("story_counter") != null) return@subscribe
 
                 if (event.parent.children().none { it.javaClass.name.endsWith("ScalableCircleMaskFrameLayout") }) return@subscribe
 
                 val composeView = createComposeView(viewGroup.context) {
-                    if (counterState.value.isNotEmpty()) {
-                        androidx.compose.material3.Surface(
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            color = Color(0x4C000000), // 30% opacity black
+                    val counterText = counterState.value
+                    val source = sourceState.value
+                    val hasCounter = showCounter && counterText.isNotEmpty()
+                    val hasSource = showSourceIndicator && source.isNotEmpty()
+
+                    if (hasCounter || hasSource) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = Color(0x4C000000),
+                                    shape = androidx.compose.foundation.shape.CircleShape
+                                )
                         ) {
-                            Text(
-                                text = counterState.value,
-                                color = Color.White,
-                                fontSize = 11.sp,
-                                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
-                                modifier = Modifier
-                                    .padding(horizontal = 10.dp, vertical = 3.dp)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                // Counter section
+                                if (hasCounter) {
+                                    Text(
+                                        text = counterText,
+                                        color = Color.White,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                    )
+                                }
+
+                                // Divider between counter and source icon
+                                if (hasCounter && hasSource) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .width(1.dp)
+                                            .height(14.dp)
+                                            .background(Color.White.copy(alpha = 0.5f))
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                }
+
+                                // Source icon section
+                                if (hasSource) {
+                                    val icon = if (source == "CAMERA") Icons.Outlined.CameraAlt else Icons.Outlined.PhotoLibrary
+                                    val description = if (source == "CAMERA") "Camera" else "Gallery"
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = description,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }.apply {
@@ -60,7 +114,7 @@ class OperaStoryCounter : Feature("OperaStoryCounter") {
                         FrameLayout.LayoutParams.WRAP_CONTENT
                     ).apply {
                         gravity = Gravity.TOP or Gravity.END
-                        topMargin = this@OperaStoryCounter.context.userInterface.dpToPx(55)
+                        topMargin = this@OperaStoryCounter.context.userInterface.dpToPx(50)
                         marginEnd = this@OperaStoryCounter.context.userInterface.dpToPx(10)
                     }
                 }
@@ -85,26 +139,44 @@ class OperaStoryCounter : Feature("OperaStoryCounter") {
                         val mediaParamMap: ParamMap = operaLayerList.map { Layer(it) }.first().paramMap
                         val snapSource = mediaParamMap["SNAP_SOURCE"]?.toString()
 
-                        if (snapSource == "SINGLE_SNAP_STORY" || snapSource == "CHAT" || mediaParamMap.containsKey("CHAT_ID") || mediaParamMap.containsKey("CONVERSATION_ID")) {
+                        // Don't show counter in conversation chats or groups
+                        if (mediaParamMap.containsKey("MESSAGE_ID")) {
                             this@OperaStoryCounter.context.runOnUiThread {
                                 counterState.value = ""
+                                sourceState.value = ""
                             }
                             return@hook
                         }
 
-                        val currentIndex = mediaParamMap["snap_index_in_story"]?.toString()?.toIntOrNull() 
+                        // Don't show counter on Spotlight (single snap, no story context)
+                        if (snapSource == "SINGLE_SNAP_STORY") {
+                            this@OperaStoryCounter.context.runOnUiThread {
+                                counterState.value = ""
+                                sourceState.value = ""
+                            }
+                            return@hook
+                        }
+
+                        // Extract counter info
+                        val currentIndex = mediaParamMap["snap_index_in_story"]?.toString()?.toIntOrNull()
                             ?: mediaParamMap["SNAP_POSITION_IN_STORY"]?.toString()?.toIntOrNull()
                         val totalCount = mediaParamMap["snap_story_length"]?.toString()?.toIntOrNull()
                             ?: mediaParamMap["NUM_SNAPS_IN_STORY"]?.toString()?.toIntOrNull()
 
-                        if (currentIndex != null && totalCount != null && totalCount > 0) {
-                            this@OperaStoryCounter.context.runOnUiThread {
-                                counterState.value = "${currentIndex + 1} / $totalCount"
-                            }
-                        } else {
-                            this@OperaStoryCounter.context.runOnUiThread {
-                                counterState.value = ""
-                            }
+                        // Extract media origin from PLAYABLE_STORY_SNAP_RECORD
+                        var mediaOrigin = ""
+                        if (showSourceIndicator) {
+                            val snapRecord = mediaParamMap["PLAYABLE_STORY_SNAP_RECORD"]?.toString() ?: ""
+                            mediaOrigin = if (snapRecord.contains("mediaOrigins=")) {
+                                if (snapRecord.contains("mediaOrigins=[CAMERA]")) "CAMERA" else "GALLERY"
+                            } else ""
+                        }
+
+                        this@OperaStoryCounter.context.runOnUiThread {
+                            counterState.value = if (showCounter && currentIndex != null && totalCount != null && totalCount > 0) {
+                                "${currentIndex + 1} / $totalCount"
+                            } else ""
+                            sourceState.value = mediaOrigin
                         }
                     }
                 }

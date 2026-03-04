@@ -1117,6 +1117,10 @@
                         "name": "Story Counter",
                         "description": "Shows a counter (e.g. 1/10) when viewing stories"
                     },
+                    "story_source_indicator": {
+                        "name": "Story Source Indicator",
+                        "description": "Shows an icon indicating whether the snap was taken from the camera or uploaded from the gallery\nOnly works with friend stories"
+                    },
                     "old_bitmoji_selfie": {
                         "name": "Old Bitmoji Selfie",
                         "description": "Brings back the Bitmoji selfies from older Snapchat versions"
