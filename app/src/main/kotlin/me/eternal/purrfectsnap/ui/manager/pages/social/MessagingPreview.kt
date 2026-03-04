@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,7 +59,6 @@ import me.eternal.purrfectsnap.storage.getGroupInfo
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
-import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 
@@ -767,13 +767,16 @@ class MessagingPreview: Routes.Route() {
                 },
                 modifier = Modifier
                     .zIndex(2f)
-                    .headerHeightTracker { topBarHeight = it }
+                    .onGloballyPositioned {
+                        val newHeight = with(density) { it.size.height.toDp() }
+                        if (newHeight != topBarHeight) topBarHeight = newHeight
+                    }
             )
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = topBarHeight)
+                    .padding(top = topBarHeight + 6.dp)
                     .padding(horizontal = 14.dp)
             ) {
                 if (hasBridgeError) {

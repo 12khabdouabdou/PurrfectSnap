@@ -14,8 +14,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -41,8 +41,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import me.eternal.purrfectsnap.ui.util.headerHeightTracker
-import me.eternal.purrfectsnap.ui.util.Motion
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,7 +68,6 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.OnLifecycleEvent
 import me.eternal.purrfectsnap.ui.util.coil.cacheKey
-import me.eternal.purrfectsnap.ui.util.scaleOnPress
 import java.io.File
 import java.util.UUID
 import kotlin.math.absoluteValue
@@ -105,12 +102,12 @@ class TasksRootSection : Routes.Route() {
                     it.deleteOnExit()
                 }
 
-                                runCatching {
-                                    pendingTask.updateProgress("Copying ${documentFile.name}")
-                                    context.androidContext.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->       
-                                        //copy with progress
-                                        val length = documentFile.length().toFloat()
-                                        tempFile.outputStream().use { outputStream ->
+                runCatching {
+                    pendingTask.updateProgress("Copying ${documentFile.name}")
+                    context.androidContext.contentResolver.openInputStream(documentFile.uri)?.use { inputStream ->
+                        //copy with progress
+                        val length = documentFile.length().toFloat()
+                        tempFile.outputStream().use { outputStream ->
                             val buffer = ByteArray(16 * 1024)
                             var read: Int
                             while (inputStream.read(buffer).also { read = it } != -1) {
@@ -278,7 +275,6 @@ class TasksRootSection : Routes.Route() {
                         }
 
                         if (showDeleteFiles) {
-                            val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                             Surface(
                                 shape = RoundedCornerShape(18.dp),
                                 color = Color.White.copy(alpha = 0.04f),
@@ -289,38 +285,33 @@ class TasksRootSection : Routes.Route() {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { 
-                                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                            onToggleDeleteFiles(!deleteFilesChecked) 
-                                        }
+                                        .clickable { onToggleDeleteFiles(!deleteFilesChecked) }
                                         .padding(horizontal = 12.dp, vertical = 10.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
                                     Checkbox(
                                         checked = deleteFilesChecked,
-                                        onCheckedChange = { 
-                                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                            onToggleDeleteFiles(it) 
-                                        },
+                                        onCheckedChange = { onToggleDeleteFiles(it) },
                                         colors = CheckboxDefaults.colors(
                                             checkedColor = PurrfectPalette.glowPrimary,
                                             uncheckedColor = Color.White,
                                             checkmarkColor = Color.Black
                                         )
                                     )
-                                                                            Column {
-                                                                                Text(
-                                                                                    text = translation["delete_files_option"] ?: "Delete Files",
-                                                                                    color = Color.White,
-                                                                                    fontWeight = FontWeight.SemiBold
-                                                                                )
-                                                                                Text(
-                                                                                    text = translation["delete_files_option_hint"] ?: "Also remove downloaded files",
-                                                                                    color = PurrfectPalette.textSecondary,
-                                                                                    style = MaterialTheme.typography.bodySmall
-                                                                                )
-                                                                            }                                }
+                                    Column {
+                                        Text(
+                                            text = context.translation["delete_files_option"],
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = context.translation["delete_files_option_hint"] ?: "Also remove downloaded files",
+                                            color = PurrfectPalette.textSecondary,
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
                             }
                         }
 
@@ -328,12 +319,8 @@ class TasksRootSection : Routes.Route() {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                         ) {
-                            val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
                             Button(
-                                onClick = {
-                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                    onDismiss()
-                                },
+                                onClick = onDismiss,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.White.copy(alpha = 0.08f),
                                     contentColor = Color.White
@@ -342,10 +329,7 @@ class TasksRootSection : Routes.Route() {
                                 Text(context.translation["button.negative"])
                             }
                             Button(
-                                onClick = {
-                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                    onConfirm()
-                                },
+                                onClick = onConfirm,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.34f),
                                     contentColor = Color.White
@@ -405,7 +389,59 @@ class TasksRootSection : Routes.Route() {
         }
     }
 
-    override val topBarActions: @Composable (RowScope.() -> Unit) = {}
+    override val topBarActions: @Composable (RowScope.() -> Unit) = {
+        var showConfirmDialog by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+
+        if (taskSelection.size > 1) {
+            val canMergeSelection by rememberAsyncMutableState(defaultValue = false, keys = arrayOf(taskSelection.size)) {
+                taskSelection.all { it.second?.type?.contains("video") == true }
+            }
+
+            if (canMergeSelection) {
+                TopBarActionButton(
+                    onClick = {
+                        mergeSelection(taskSelection.toList().also {
+                            taskSelection.clear()
+                        }.map { it.first to it.second!! })
+                    },
+                    icon = Icons.Filled.Merge,
+                    text = translation["merge_button"]
+                )
+            }
+        }
+
+        IconButton(onClick = {
+            showConfirmDialog = true
+        }) {
+            Icon(Icons.Filled.Delete, contentDescription = translation["clear_button_description"])
+        }
+
+        if (showConfirmDialog) {
+            var alsoDeleteFiles by remember { mutableStateOf(false) }
+            val isSelection = taskSelection.isNotEmpty()
+            val titleText = if (isSelection) {
+                translation.format("remove_selected_tasks_confirm", "count" to taskSelection.size.toString())
+            } else {
+                translation["remove_all_tasks_confirm"]
+            }
+            val messageText = if (isSelection) translation["remove_selected_tasks_title"] else translation["remove_all_tasks_title"]
+
+            TaskDangerDialog(
+                visible = showConfirmDialog,
+                title = titleText,
+                message = messageText,
+                showDeleteFiles = isSelection,
+                deleteFilesChecked = alsoDeleteFiles,
+                onToggleDeleteFiles = { alsoDeleteFiles = it },
+                onConfirm = {
+                    showConfirmDialog = false
+                    clearTasks(alsoDeleteFiles, coroutineScope)
+                },
+                onDismiss = { showConfirmDialog = false }
+            )
+        }
+    }
 
     @Composable
     private fun TaskCard(modifier: Modifier, task: Task, pendingTask: PendingTask? = null) {
@@ -466,12 +502,10 @@ class TasksRootSection : Routes.Route() {
         }
 
         val isActive = pendingTask != null && !taskStatus.isFinalStage()
-        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         val cardModifier = modifier
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         if (taskSelection.isNotEmpty()) {
                             toggleSelection()
                             return@detectTapGestures
@@ -479,7 +513,6 @@ class TasksRootSection : Routes.Route() {
                         openFile()
                     },
                     onLongPress = {
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         if (taskSelection.isNotEmpty()) {
                             openFile()
                             return@detectTapGestures
@@ -580,7 +613,7 @@ class TasksRootSection : Routes.Route() {
                         } else {
                             when {
                                 !isDocumentFileReadable -> Icon(Icons.Filled.DeleteOutline, contentDescription = "File not found")
-                                documentFileMimeType.contains("image") -> Icon(Icons.Filled.Photo, contentDescription = "Image")
+                                documentFileMimeType.contains("image") -> Icon(Icons.Filled.Image, contentDescription = "Image")
                                 documentFileMimeType.contains("video") -> Icon(Icons.Filled.Videocam, contentDescription = "Video")
                                 documentFileMimeType.contains("audio") -> Icon(Icons.Filled.MusicNote, contentDescription = "Audio")
                                 else -> Icon(Icons.Filled.FileCopy, contentDescription = "File")
@@ -811,14 +844,6 @@ class TasksRootSection : Routes.Route() {
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val scrollState = rememberLazyListState()
-        val density = androidx.compose.ui.platform.LocalDensity.current
-        var controlsHeight by remember { mutableStateOf(100.dp) }
-
-        LaunchedEffect(scrollState.firstVisibleItemScrollOffset, scrollState.firstVisibleItemIndex) {
-            val offset = if (scrollState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else scrollState.firstVisibleItemScrollOffset
-            routes.navigation?.globalScrollOffset = offset
-        }
-
         val scope = rememberCoroutineScope()
         recentTasks = remember { mutableStateListOf() }
         var lastFetchedTaskId by remember { mutableStateOf(null as Long?) }
@@ -858,101 +883,151 @@ class TasksRootSection : Routes.Route() {
                 .background(PurrfectPalette.backgroundGradient)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                val subtitle = if (activeTasks.isNotEmpty()) {
-                    translation.format(
-                        "summary_active",
-                        "active" to activeTasks.size.toString(),
-                        "recent" to recentTasks.size.toString()
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                        .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+                    shape = RoundedCornerShape(26.dp),
+                    color = Color.White.copy(alpha = 0.07f),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp,
+                    border = BorderStroke(
+                        1.dp,
+                        Brush.linearGradient(
+                            listOf(
+                                PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
+                                PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
+                            )
+                        )
                     )
-                } else {
-                    translation.format(
-                        "summary_idle",
-                        "recent" to recentTasks.size.toString()
-                    )
-                }
-
-                me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
-                    title = context.translation["manager.routes.tasks"] ?: "Tasks",
-                    subtitle = subtitle,
-                    scrollOffset = if (scrollState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else scrollState.firstVisibleItemScrollOffset,
-                    modifier = Modifier.headerHeightTracker { controlsHeight = it },
-                    actions = {
-                        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-                        if (taskSelection.size > 1 && taskSelection.all { it.second?.type?.contains("video") == true }) {
-                            Surface(
-                                shape = RoundedCornerShape(50),
-                                color = Color.White.copy(alpha = 0.1f),
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .clickable { 
-                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                text = context.translation["manager.routes.tasks"],
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 18.sp
+                            )
+                            Text(
+                                text = if (activeTasks.isNotEmpty()) {
+                                    translation.format(
+                                        "summary_active",
+                                        "active" to activeTasks.size.toString(),
+                                        "recent" to recentTasks.size.toString()
+                                    )
+                                } else {
+                                    translation.format(
+                                        "summary_idle",
+                                        "recent" to recentTasks.size.toString()
+                                    )
+                                },
+                                color = PurrfectPalette.textSecondary,
+                                fontSize = 12.sp
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (taskSelection.size > 1 && taskSelection.all { it.second?.type?.contains("video") == true }) {
+                                Surface(
+                                    onClick = {
                                         mergeSelection(
                                             taskSelection.toList().also { taskSelection.clear() }
                                                 .map { it.first to it.second!! }
                                         )
+                                    },
+                                    shape = RoundedCornerShape(18.dp),
+                                    color = Color.White.copy(alpha = 0.08f),
+                                    tonalElevation = 0.dp,
+                                    shadowElevation = 0.dp,
+                                    border = BorderStroke(
+                                        1.dp,
+                                        Brush.linearGradient(listOf(PurrfectPalette.glowPrimary, PurrfectPalette.glowSecondary))
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(Icons.Filled.Merge, contentDescription = translation["merge_button"], tint = Color.White)
+                                        Text(translation["merge_button"], color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
                                     }
+                                }
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(18.dp),
+                                color = Color.White.copy(alpha = 0.08f),
+                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    Icon(
-                                        Icons.Filled.Merge,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(Modifier.width(6.dp))
+                                    Icon(Icons.Filled.PlaylistAddCheckCircle, contentDescription = null, tint = Color.White)
                                     Text(
-                                        translation["merge_button"],
+                                        text = translation.format("running_count", "count" to activeTasks.size.toString()),
                                         color = Color.White,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 12.sp
                                     )
                                 }
                             }
-                        }
-                        IconButton(onClick = {
-                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                            if (taskSelection.isEmpty()) {
-                                showConfirmDialog = true
-                            } else {
-                                showConfirmDialog = true
+                            IconButton(onClick = { showConfirmDialog = true }) {
+                                Icon(Icons.Filled.Delete, contentDescription = translation["clear_button_description"], tint = Color.White)
                             }
-                        }) {
-                            Icon(Icons.Filled.DeleteSweep, contentDescription = translation["clear_button_description"], tint = Color.White)
                         }
                     }
-                )
+                }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                LazyColumn(
-                    state = scrollState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = 12.dp,
-                        end = 12.dp,
-                        top = controlsHeight,
-                        bottom = routes.bottomPadding
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                Surface(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    shape = RoundedCornerShape(22.dp),
+                    color = Color.White.copy(alpha = 0.04f),
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp,
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
                 ) {
-                    item {
-                        if (activeTasks.isEmpty() && recentTasks.isEmpty()) {
-                            TasksEmptyState(text = translation["no_tasks"])
+                    LazyColumn(
+                        state = scrollState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            start = 12.dp,
+                            end = 12.dp,
+                            top = 0.dp,
+                            bottom = routes.bottomPadding + 16.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
+                            if (activeTasks.isEmpty() && recentTasks.isEmpty()) {
+                                TasksEmptyState(text = translation["no_tasks"])
+                            }
                         }
-                    }
-                    items(activeTasks, key = { it.taskId }) { pendingTask ->
-                        TaskCard(modifier = Modifier.fillMaxWidth(), pendingTask.task, pendingTask = pendingTask)
-                    }
-                    items(recentTasks, key = { it.hash }) { task ->
-                        TaskCard(modifier = Modifier.fillMaxWidth(), task)
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(40.dp))
-                        LaunchedEffect(remember { derivedStateOf { scrollState.firstVisibleItemIndex } }) {
-                            fetchNewRecentTasks()
+                        items(activeTasks, key = { it.taskId }) { pendingTask ->
+                            TaskCard(modifier = Modifier.fillMaxWidth(), pendingTask.task, pendingTask = pendingTask)
+                        }
+                        items(recentTasks, key = { it.hash }) { task ->
+                            TaskCard(modifier = Modifier.fillMaxWidth(), task)
+                        }
+                        item {
+                            Spacer(modifier = Modifier.height(40.dp))
+                            LaunchedEffect(remember { derivedStateOf { scrollState.firstVisibleItemIndex } }) {
+                                fetchNewRecentTasks()
+                            }
                         }
                     }
                 }
@@ -970,8 +1045,8 @@ class TasksRootSection : Routes.Route() {
 
             TaskDangerDialog(
                 visible = showConfirmDialog,
-                title = titleText ?: "",
-                message = messageText ?: "",
+                title = titleText,
+                message = messageText,
                 showDeleteFiles = isSelection,
                 deleteFilesChecked = alsoDeleteFiles,
                 onToggleDeleteFiles = { alsoDeleteFiles = it },

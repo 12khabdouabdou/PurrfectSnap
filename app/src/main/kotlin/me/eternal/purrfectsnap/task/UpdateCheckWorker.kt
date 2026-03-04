@@ -65,7 +65,7 @@ class UpdateCheckWorker(
         val pendingIntent: PendingIntent = PendingIntent.getActivity(appContext, 0, intent, PendingIntent.FLAG_IMMUTABLE)
 
         val builder = NotificationCompat.Builder(appContext, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher_monochrome)
+            .setSmallIcon(R.drawable.launcher_icon_monochrome)
             .setContentTitle(title)
             .setContentText(text.format(versionName))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

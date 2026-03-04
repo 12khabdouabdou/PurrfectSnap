@@ -247,7 +247,7 @@
                 "about_tagline": "Ein Xposed-Modul, um dein Snapchat-Erlebnis zu verbessern!",
                 "about_lead_developers_title": "Hauptentwickler",
                 "about_story_title": "Unsere Geschichte",
-                "about_story": "PurrfectSnap wurde am 2. Oktober 2025 als Fork von SnapEnhance durch ΞTΞRNAL gegründet, mit der Vision, Nutzern das hochwertige Snapchat-Erlebnis zu bieten, das sie verdienen. Diese App sollte eigentlich nur ein kleines Update im SnapEnhance-Repository sein, wurde aber bald zu einer eigenständigen App, in der die Mitwirkenden immer mehr Funktionen hinzufügten. Dann trat der Entwickler <RSR/> dem Team bei und die App wurde bald ein großer Erfolg.\n\nWir erhielten viel Liebe und Unterstützung und erreichten 1K+ Downloads in nur zwei Tagen! Wir danken allen Nutzern und Mitwirkenden; ohne eure Unterstützung hätten wir diesen Punkt nicht erreicht.\n\nWir möchten auch rhunk, dem Hauptentwickler von SnapEnhance, großen Dank aussprechen, denn ohne ihn würde diese App nicht einmal existieren. Wir sind ihm unendlich dankbar.\n\nSchließlich möchten wir all unseren Admins danken, insbesondere: CLASSIC GENIUS, Harry, Sujal, Zain & schrodingerspet, die von Anfang an bei uns waren. Wir danken auch allen Testern, insbesondere Leo & Toxic, die kontinuierlich getestet und Fehler gemeldet haben. Wir sind unendlich dankbar für euren Beitrag.",
+                "about_story": "PurrfectSnap wurde am 2. Oktober 2025 als Fork von SnapEnhance durch ΞTΞRNAL gegründet, mit der Vision, Nutzern das hochwertige Snapchat-Erlebnis zu bieten, das sie verdienen. Diese App sollte eigentlich nur ein kleines Update im SnapEnhance-Repository sein, wurde aber bald zu einer eigenständigen App, in der die Mitwirkenden immer mehr Funktionen hinzufügten. Dann trat der Entwickler <RSR/> dem Team bei und die App wurde bald ein großer Erfolg. Wir erhielten viel Liebe und Unterstützung und erreichten 1K+ Downloads in nur zwei Tagen! Wir danken allen Nutzern und Mitwirkenden; ohne eure Unterstützung hätten wir diesen Punkt nicht erreicht. Wir möchten auch rhunk, dem Hauptentwickler von SnapEnhance, großen Dank aussprechen, denn ohne ihn würde diese App nicht einmal existieren. Wir sind ihm unendlich dankbar. Schließlich möchten wir all unseren Admins danken, insbesondere: CLASSIC GENIUS, Harry, Sujal, Zain & schrodingerspet, die von Anfang an bei uns waren. Wir danken auch allen Testern, insbesondere Leo & Toxic, die kontinuierlich getestet und Fehler gemeldet haben. Wir sind unendlich dankbar für euren Beitrag.",
                 "about_thanks_title": "Mit Liebe, PurrfectSnap Team",
                 "about_magic_toast": "Tippe 5 Mal auf diesen Bildschirm, um etwas Magie zu sehen 😉!",
                 "github_button": "GitHub",
@@ -340,7 +340,6 @@
                 "remove_selected_tasks_title": "Möchtest du die ausgewählten Aufgaben wirklich entfernen?",
                 "remove_all_tasks_title": "Möchtest du wirklich alle Aufgaben entfernen?",
                 "delete_files_option": "Auch Dateien löschen",
-                "delete_files_option_hint": "Zugehörige Downloads dauerhaft entfernen",
                 "remove_selected_tasks_confirm": "{count} Aufgaben entfernen?",
                 "remove_all_tasks_confirm": "Alle Aufgaben entfernen?"
             },

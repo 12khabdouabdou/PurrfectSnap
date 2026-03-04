@@ -4,8 +4,8 @@ import android.net.Uri
 import android.text.format.Formatter
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import me.eternal.purrfectsnap.ui.util.headerHeightTracker
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -157,8 +157,8 @@ class FileImportsRoot: Routes.Route() {
                     .padding(horizontal = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(
-                    top = topBarHeight,
-                    bottom = routes.bottomPadding
+                    top = topBarHeight + 8.dp,
+                    bottom = routes.bottomPadding + 16.dp
                 )
             ) {
                     item {
@@ -270,7 +270,9 @@ class FileImportsRoot: Routes.Route() {
                 title = titleText ?: translation["import_file_button"],
                 subtitle = null,
                 onBack = { routes.navController.popBackStack() },
-                modifier = Modifier.headerHeightTracker { topBarHeight = it }
+                modifier = Modifier.onGloballyPositioned {
+                    topBarHeight = with(density) { it.size.height.toDp() }
+                }
             )
         }
     }

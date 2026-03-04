@@ -68,7 +68,7 @@ class RemoteOverlay(
             containerColor = Color.Transparent,
             topBar = { navigation.TopBar() }
         ) { innerPadding ->
-            navigation.Content(
+            navigation.NavContent(
                 innerPadding,
                 startDestination = remember { startRoute(navigation.routes).routeInfo.id }
             )
