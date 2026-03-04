@@ -14,7 +14,6 @@ object Updater {
         val versionName: String,
         val releaseUrl: String,
         val workflowId: Long?,
-        val body: String? = null,
         val assetDownloads: Map<String, String> = emptyMap(),
     )
 
@@ -39,11 +38,10 @@ object Updater {
     private fun fetchLatestRelease(channel: Channel) = runCatching {
         val endpoint = Request.Builder().url("https://api.github.com/repos/particle-box/PurrfectSnap/releases").build()
         val response = OkHttpClient().newCall(endpoint).execute()
-        val body = response.body?.string() ?: throw Throwable("Empty response body")
 
         if (!response.isSuccessful) throw Throwable("Failed to fetch releases: ${response.code}")
 
-        val releases = JsonParser.parseString(body).asJsonArray.also {
+        val releases = JsonParser.parseString(response.body?.string()).asJsonArray.also {
             if (it.size() == 0) throw Throwable("No releases found")
         }
 
@@ -82,7 +80,6 @@ object Updater {
             releaseUrl = latestRelease.getAsJsonPrimitive("html_url")?.asString
                 ?: endpoint.url.toString().replace("api.", "").replace("repos/", ""),
             workflowId = null,
-            body = latestRelease.get("body")?.asString,
             assetDownloads = assetDownloads
         )
     }.onFailure {
@@ -90,12 +87,12 @@ object Updater {
     }.getOrNull()
 
     private fun fetchLatestDebugCI() = runCatching {
-        val actionRuns = OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/particle-box/PurrfectSnap/actions/runs?branch=dev&status=success").build()).execute().use {
+        val actionRuns = OkHttpClient().newCall(Request.Builder().url("https://api.github.com/repos/particle-box/PurrfectSnap/actions/runs?event=workflow_dispatch&branch=dev").build()).execute().use {
             if (!it.isSuccessful) throw Throwable("Failed to fetch CI runs: ${it.code}")
             JsonParser.parseString(it.body?.string()).asJsonObject
         }
         val debugRuns = actionRuns.getAsJsonArray("workflow_runs")?.mapNotNull { it.asJsonObject }?.filter { run ->
-            run.getAsJsonPrimitive("name")?.asString == "PurrfectSnap Debug CI"
+            run.get("conclusion")?.takeIf { it.isJsonPrimitive }?.asString == "success" && run.getAsJsonPrimitive("path")?.asString == ".github/workflows/debug.yml"
         } ?: throw Throwable("No debug CI runs found")
 
         val latestRun = debugRuns.firstOrNull() ?: throw Throwable("No debug CI runs found")
@@ -107,36 +104,20 @@ object Updater {
             versionName = headSha.substring(0, headSha.length.coerceAtMost(7)) + "-debug",
             releaseUrl = latestRun.getAsJsonPrimitive("html_url")?.asString ?: return@runCatching null,
             workflowId = latestRun.getAsJsonPrimitive("id")?.asLong,
-            body = latestRun.get("head_commit")?.asJsonObject?.get("message")?.asString
         )
     }.onFailure {
         AbstractLogger.directError("Failed to fetch latest debug CI", it)
     }.getOrNull()
 
-    private val cache = java.util.concurrent.ConcurrentHashMap<Channel, Pair<Long, Result<LatestRelease?>>>()
+    private val cache = mutableMapOf<Channel, LatestRelease?>()
 
     fun getLatestRelease(channel: Channel): LatestRelease? {
-        val cached = cache[channel]
-        val now = System.currentTimeMillis()
-        
-        if (cached != null) {
-            val (timestamp, result) = cached
-            // Define Cache TTL: 24 hours for any successful API response, 10 minutes for error
-            val ttl = if (result.isSuccess) 24 * 60 * 60 * 1000L else 10 * 60 * 1000L
-            if ((now - timestamp) < ttl) {
-                return result.getOrNull()
-            }
-        }
-        
-        val result = runCatching {
-            if (channel == Channel.PRERELEASE) {
+        return cache.getOrPut(channel) {
+            if (BuildConfig.DEBUG) {
                 fetchLatestDebugCI() ?: fetchLatestRelease(channel)
             } else {
                 fetchLatestRelease(channel)
             }
         }
-        
-        cache[channel] = now to result
-        return result.getOrNull()
     }
 }

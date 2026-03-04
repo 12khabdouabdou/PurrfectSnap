@@ -2,16 +2,27 @@ package me.eternal.purrfectsnap.ui.util
 
 import android.content.Context
 import android.provider.Settings
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.interaction.InteractionSource
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 
 /**
  * Returns true if the user has disabled animator duration scale at the system level.
+ * This respects Accessibility/Developer settings where motion is reduced or disabled.
  */
 fun prefersReducedMotion(context: Context): Boolean {
     return runCatching {
@@ -26,8 +37,9 @@ fun prefersReducedMotion(context: Context): Boolean {
 
 @Composable
 fun rememberPrefersReducedMotion(): Boolean {
-    val context = LocalContext.current
+    val context = androidx.compose.ui.platform.LocalContext.current
     val state = remember { mutableStateOf(prefersReducedMotion(context)) }
+    // One-shot read; if you need to observe changes live, add a ContentObserver.
     LaunchedEffect(Unit) {
         state.value = prefersReducedMotion(context)
     }
@@ -35,34 +47,18 @@ fun rememberPrefersReducedMotion(): Boolean {
 }
 
 object Motion {
-    /**
-     * Standard scroll distance (in pixels) for the header to complete its morphing animation.
-     */
-    const val HEADER_MORPH_THRESHOLD = 300f
-    
-    /**
-     * Milliseconds per pixel for marquee scrolling speed.
-     */
-    const val MARQUEE_CADENCE = 20
-
-    // 1. High-end Spring Physics for "Alive" UI
-    val springDynamic = spring<Float>(
-        dampingRatio = Spring.DampingRatioLowBouncy,
-        stiffness = Spring.StiffnessMediumLow
-    )
-
     @Composable
-    fun tweenSpec(durationMillis: Int, easing: Easing = FastOutSlowInEasing): FiniteAnimationSpec<Int> {
+    fun tweenSpec(durationMillis: Int, easing: Easing = androidx.compose.animation.core.FastOutSlowInEasing): FiniteAnimationSpec<Int> {
         val reduced = rememberPrefersReducedMotion()
         val d = if (reduced) 0 else durationMillis
-        return tween(durationMillis = d, easing = easing)
+        return tween<Int>(durationMillis = d, easing = easing)
     }
 
     @Composable
-    fun tweenFloatSpec(durationMillis: Int, easing: Easing = FastOutSlowInEasing): FiniteAnimationSpec<Float> {
+    fun tweenFloatSpec(durationMillis: Int, easing: Easing = androidx.compose.animation.core.FastOutSlowInEasing): FiniteAnimationSpec<Float> {
         val reduced = rememberPrefersReducedMotion()
         val d = if (reduced) 0 else durationMillis
-        return tween(durationMillis = d, easing = easing)
+        return tween<Float>(durationMillis = d, easing = easing)
     }
 
     @Composable
@@ -72,23 +68,23 @@ object Motion {
 }
 
 /**
- * Kinetic scale-down on press using spring physics.
+ * Apply a subtle scale-down on press for clickable components (cards, buttons, tiles).
+ * Pass the same [interactionSource] into the clickable component to synchronize state.
  */
 @Composable
 fun Modifier.scaleOnPress(
     interactionSource: InteractionSource,
     enabled: Boolean = true,
-    scaleDown: Float = 0.96f
+    scaleDown: Float = 0.98f
 ): Modifier {
     val pressed by interactionSource.collectIsPressedAsState()
     val target = if (pressed) scaleDown else 1f
-    
-    val animated by animateFloatAsState(
+    val spec = Motion.tweenFloatSpec(150)
+    val animated by androidx.compose.animation.core.animateFloatAsState(
         targetValue = target,
-        animationSpec = Motion.springDynamic,
+        animationSpec = spec,
         label = "pressScale"
     )
-    
     return this.then(Modifier.graphicsLayer {
         scaleX = animated
         scaleY = animated

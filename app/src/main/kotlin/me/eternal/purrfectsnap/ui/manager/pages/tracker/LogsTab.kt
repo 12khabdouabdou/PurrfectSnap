@@ -1,7 +1,5 @@
 package me.eternal.purrfectsnap.ui.manager.pages.tracker
 
-import me.eternal.purrfectsnap.ui.util.Motion
-
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -9,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -64,7 +61,6 @@ fun LogsTab(
     deleteAction: (() -> Unit) -> Unit,
     exportAction: (() -> Unit) -> Unit,
     bottomPadding: Dp,
-    scrollOffset: (Int) -> Unit
 ) {
     val translation = remember { context.translation.getCategory("manager.friend_tracker") }
     val trackerTranslation = remember { context.translation.getCategory("tracker") }
@@ -81,12 +77,6 @@ fun LogsTab(
 
     var filter by remember { mutableStateOf("") }
     var searchTimeoutJob by remember { mutableStateOf<Job?>(null) }
-
-    val listState = rememberLazyListState()
-    LaunchedEffect(listState.firstVisibleItemScrollOffset, listState.firstVisibleItemIndex) {
-        val offset = if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else listState.firstVisibleItemScrollOffset
-        scrollOffset(offset)
-    }
 
     fun getPaginatedLogs(pageIndex: Int) = context.messageLogger.getLogs(
         pageIndex = pageIndex,
@@ -675,15 +665,13 @@ fun LogsTab(
                         )
                     }
                 }
-                    }
-                }
-            
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    state = listState,
-                    contentPadding = PaddingValues(bottom = bottomPadding)
-                ) {
-            
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(bottom = bottomPadding)
+        ) {
             item {
                 Row(
                     modifier = Modifier

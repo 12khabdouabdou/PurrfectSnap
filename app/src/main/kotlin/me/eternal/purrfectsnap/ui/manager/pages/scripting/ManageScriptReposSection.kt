@@ -73,7 +73,6 @@ import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.components.AestheticEmptyState
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
-import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import okhttp3.OkHttpClient
 
 class ManageScriptReposSection : Routes.Route() {
@@ -297,7 +296,10 @@ class ManageScriptReposSection : Routes.Route() {
                 onBack = { routes.navController.popBackStack() },
                 modifier = Modifier
                     .zIndex(2f)
-                    .headerHeightTracker { topBarHeight = it }
+                    .onGloballyPositioned {
+                        val newHeight = with(density) { it.size.height.toDp() }
+                        if (newHeight != topBarHeight) topBarHeight = newHeight
+                    }
             )
             if (repositories.isEmpty()) {
                 Box(
@@ -317,9 +319,9 @@ class ManageScriptReposSection : Routes.Route() {
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = 12.dp,
-                        top = topBarHeight,
+                        top = topBarHeight + 12.dp,
                         end = 12.dp,
-                        bottom = routes.bottomPadding
+                        bottom = 18.dp + routes.bottomPadding
                     ),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
