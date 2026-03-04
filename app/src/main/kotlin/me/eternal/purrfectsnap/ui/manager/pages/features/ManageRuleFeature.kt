@@ -26,7 +26,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -48,6 +47,7 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.manager.pages.social.AddFriendDialog
 import me.eternal.purrfectsnap.ui.manager.pages.social.AddFriendDialog.Actions
 
@@ -223,25 +223,17 @@ class ManageRuleFeature : Routes.Route()  {
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
-            val density = LocalDensity.current
-            var topBarHeight by remember { mutableStateOf(96.dp) }
-            FloatingTopBar(
-                title = remember { context.translation[propertyKeyPair.key.propertyName()] },
-                onBack = { routes.navController.popBackStack() },
-                modifier = Modifier
-                    .zIndex(2f)
-                    .onGloballyPositioned {
-                        val newHeight = with(density) { it.size.height.toDp() }
-                        if (newHeight != topBarHeight) topBarHeight = newHeight
-                    }
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = topBarHeight + 10.dp)
-                    .padding(horizontal = 12.dp, vertical = 10.dp)
-                    .verticalScroll(rememberScrollState()),
+            val scrollState = rememberScrollState()
+            val density = androidx.compose.ui.platform.LocalDensity.current
+            var controlsHeight by remember { mutableStateOf(100.dp) }
+            
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(scrollState)
+                                    .padding(top = controlsHeight)
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+            
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 val headerShape = RoundedCornerShape(22.dp)
@@ -397,6 +389,13 @@ class ManageRuleFeature : Routes.Route()  {
 
                 Spacer(modifier = Modifier.height(routes.bottomPadding))
             }
+
+            FloatingTopBar(
+                title = remember { context.translation[propertyKeyPair.key.propertyName()] },
+                onBack = { routes.navController.popBackStack() },
+                scrollOffset = scrollState.value,
+                modifier = Modifier.headerHeightTracker { controlsHeight = it }
+            )
         }
     }
 }

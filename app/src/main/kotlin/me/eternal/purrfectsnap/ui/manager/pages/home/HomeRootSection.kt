@@ -3,12 +3,8 @@ package me.eternal.purrfectsnap.ui.manager.pages.home
 import android.content.SharedPreferences
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -17,95 +13,44 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.BugReport
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Widgets
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.State
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.Dispatchers
@@ -128,16 +73,18 @@ import me.eternal.purrfectsnap.ui.manager.data.Updater
 import me.eternal.purrfectsnap.ui.manager.data.Updater.Channel
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
-import me.eternal.purrfectsnap.ui.util.AlertDialogs
+import me.eternal.purrfectsnap.ui.util.PurrfectMarqueeText
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
+import me.eternal.purrfectsnap.ui.util.Motion
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import androidx.compose.foundation.ScrollState
 
 class HomeRootSection : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.sections.home") }
 
     companion object {
-        private const val QUICK_TILES_INITIALIZED_PREF = "quick_tiles_initialized"
         val cardMargin = 10.dp
         val pageBackgroundGradient = Brush.verticalGradient(
             listOf(
@@ -148,10 +95,7 @@ class HomeRootSection : Routes.Route() {
         )
     }
 
-    private val changelogClient by lazy { OkHttpClient() }
-    private val changelogStableUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-stable.txt"
-    private val changelogPrereleaseUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-prerelease.txt"
-    private val announcementsUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/announcements.txt"
+    private val announcementsUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/announcements.txt"    
 
     private val heroGradientColors = listOf(
         Color(0xFF5C4B99),
@@ -163,30 +107,18 @@ class HomeRootSection : Routes.Route() {
         Color(0xFF151127)
     )
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
-    data class QaCard(val id: String, val name: String, val icon: ImageVector, val action: (Routes) -> Unit)
-    private val cardEntries by lazy {
-        val list = mutableListOf<QaCard>()
-        EnumQuickActions.entries.forEach { q ->
-            val name = context.translation["actions.${q.key}.name"]
-            list.add(QaCard(id = "quick.${q.key}", name = name, icon = q.icon, action = q.action))
-        }
-        EnumAction.entries.forEach { a ->
-            val name = context.translation["actions.${a.key}.name"]
-            list.add(QaCard(id = "action.${a.key}", name = name, icon = a.icon, action = { context.launchActionIntent(a) }))
-        }
-        list
-    }
-    private val cards by lazy {
-        EnumQuickActions.entries.map {
-            (context.translation["actions.${it.key}.name"] to it.icon) to it.action
-        }.associate {
-            it.first to it.second
-        }.toMutableMap().apply {
+    @Composable
+    private fun rememberCards(): Map<Pair<String, ImageVector>, (Routes) -> Unit> {
+        return remember {
+            val map = EnumQuickActions.entries.associate {
+                (context.translation["actions.${it.key}.name"] to it.icon) to it.action
+            }.toMutableMap()
             EnumAction.entries.forEach { action ->
-                this[context.translation["actions.${action.key}.name"] to action.icon] = {
+                map[context.translation["actions.${action.key}.name"] to action.icon] = {
                     context.launchActionIntent(action)
                 }
             }
+            map
         }
     }
 
@@ -214,13 +146,17 @@ class HomeRootSection : Routes.Route() {
         onClick: (() -> Unit)? = null,
         tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         containerColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
     ) {
         val interactionSource = remember { MutableInteractionSource() }
         val clickModifier = if (onClick != null) {
             Modifier.clickable(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current
-            ) { onClick() }
+            ) { 
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick() 
+            }
         } else {
             Modifier
         }
@@ -262,30 +198,67 @@ class HomeRootSection : Routes.Route() {
         icon: ImageVector,
         label: String? = null,
         contentDescription: String? = label,
+        shrinkFactor: Float = 1f,
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
         onClick: () -> Unit,
     ) {
         Surface(
+            modifier = Modifier
+                .height(36.dp)
+                .widthIn(min = 36.dp), // Harmonized minimum footprint
             shape = RoundedCornerShape(40),
             color = Color.White.copy(alpha = 0.06f),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
+            border = BorderStroke(
+                1.dp, 
+                Brush.linearGradient(
+                    listOf(
+                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
+                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
+                    )
+                )
+            )
         ) {
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(40))
-                    .clickable(onClick = onClick)
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                    .clickable { 
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onClick() 
+                    }
+                    .padding(
+                        vertical = 6.dp, // Fixed height to prevent enlarging
+                        horizontal = lerp(10.dp, 12.dp, shrinkFactor)
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.Center
             ) {
-                Icon(icon, contentDescription = contentDescription, tint = Color.White)
-                label?.let {
+                Icon(
+                    imageVector = icon, 
+                    contentDescription = contentDescription, 
+                    tint = Color.White, 
+                    modifier = Modifier.size(20.dp).graphicsLayer {
+                        val iconScale = 0.82f + (0.18f * shrinkFactor)
+                        scaleX = iconScale
+                        scaleY = iconScale
+                    }
+                )
+                // Fluid Label Morph: Continuous alpha and width to prevent jumping
+                if (label != null) {
+                    val labelAlpha = (shrinkFactor - 0.1f).coerceIn(0f, 1f)
+                    Spacer(modifier = Modifier.width((8 * shrinkFactor).dp))
                     Text(
-                        text = it,
-                        color = Color.White,
-                        fontSize = 13.sp,
+                        text = label,
+                        color = Color.White.copy(alpha = labelAlpha),
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier
+                            .graphicsLayer {
+                                alpha = labelAlpha
+                                translationX = (-4 * (1f - shrinkFactor)).dp.toPx()
+                            }
+                            .widthIn(max = (75 * shrinkFactor).dp)
                     )
                 }
             }
@@ -293,108 +266,109 @@ class HomeRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun InfoCard(content: @Composable ColumnScope.() -> Unit) {
-        OutlinedCard(
-            modifier = Modifier
-                .padding(start = cardMargin, end = cardMargin)
-                .fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 10.dp),
-                content = content
-            )
+    private fun RowScope.HomeActionChips(scrollState: ScrollState, haptic: androidx.compose.ui.hapticfeedback.HapticFeedback) {
+        // Optimize: Use derivedStateOf to prevent constant re-composition during scroll
+        val shrinkFactor by remember(scrollState.value) {
+            derivedStateOf { (1f - (scrollState.value.toFloat() / Motion.HEADER_MORPH_THRESHOLD)).coerceIn(0f, 1f) }
         }
-    }
 
-    @Composable
-    private fun RowScope.HomeActionChips() {
         TopBarActionChip(
             icon = Icons.Filled.BugReport,
-            label = context.translation["manager.routes.home_logs"]
+            label = context.translation["manager.routes.home_logs"],
+            shrinkFactor = shrinkFactor,
+            haptic = haptic
         ) { routes.homeLogs.navigate() }
         TopBarActionChip(
-            icon = Icons.Filled.Info,
-            label = translation["manager.routes.home_about"]
-        ) { routes.about.navigate() }
+            icon = Icons.Filled.Settings,
+            label = context.translation["manager.routes.home_settings"],
+            shrinkFactor = shrinkFactor,
+            haptic = haptic
+        ) { routes.settings.navigate() }
     }
 
-
     @Composable
-    private fun AuroraBackground() {
-        val infiniteTransition = rememberInfiniteTransition(label = "aurora")
-        val driftX by infiniteTransition.animateFloat(
-            initialValue = -120f,
-            targetValue = 220f,
+    private fun LivingPurrAura(isActive: Boolean, haptic: androidx.compose.ui.hapticfeedback.HapticFeedback) {
+        val infiniteTransition = rememberInfiniteTransition(label = "aura")
+        
+        val pulseScale by infiniteTransition.animateFloat(
+            initialValue = 0.88f,
+            targetValue = 1.12f,
             animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 16000, easing = LinearEasing),
+                animation = tween(1600, easing = EaseInOutSine),
                 repeatMode = RepeatMode.Reverse
             ),
-            label = "driftX"
-        )
-        val driftY by infiniteTransition.animateFloat(
-            initialValue = 80f,
-            targetValue = -140f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 14000, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "driftY"
-        )
-        val shimmer by infiniteTransition.animateFloat(
-            initialValue = -120f,
-            targetValue = 160f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 11000, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "shimmer"
+            label = "pulse"
         )
 
-        val primaryGlow = MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
-        val tertiaryGlow = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.22f)
-        val trailGradient = listOf(
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-            MaterialTheme.colorScheme.secondary.copy(alpha = 0.16f),
-            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.14f)
+        val glow1 by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(3200, easing = LinearEasing), RepeatMode.Restart),
+            label = "g1"
+        )
+        val glow2 by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(3200, delayMillis = 1100, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "g2"
+        )
+        val glow3 by infiniteTransition.animateFloat(
+            initialValue = 0f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(3200, delayMillis = 2200, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "g3"
         )
 
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        val coreColor by animateColorAsState(
+            targetValue = if (isActive) PurrfectPalette.glowPrimary else Color(0xFF8C8CA3),
+            animationSpec = tween(800), label = "coreColor"
+        )
+        val secondaryColor by animateColorAsState(
+            targetValue = if (isActive) PurrfectPalette.glowSecondary else Color(0xFF6B6B7A),
+            animationSpec = tween(800), label = "coreColor"
+        )
+
+        Canvas(modifier = Modifier.size(44.dp)) {
+            val center = Offset(size.width / 2, size.height / 2)
+            val baseRadius = 6.dp.toPx()
+
+            fun drawAuroraGlow(progress: Float, alphaMultiplier: Float) {
+                if (!isActive || progress <= 0f) return
+                val auroraRadius = baseRadius * (1.2f + 4.5f * progress)
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        0.0f to coreColor.copy(alpha = 0.25f * (1f - progress) * alphaMultiplier),
+                        0.6f to secondaryColor.copy(alpha = 0.12f * (1f - progress) * alphaMultiplier),
+                        1.0f to Color.Transparent,
+                        center = center,
+                        radius = auroraRadius
+                    ),
+                    radius = auroraRadius,
+                    center = center
+                )
+            }
+
+            drawAuroraGlow(glow1, 0.8f)
+            drawAuroraGlow(glow2, 0.5f)
+            drawAuroraGlow(glow3, 0.3f)
+
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(primaryGlow, Color.Transparent),
-                    center = Offset(
-                        x = size.width * 0.25f + driftX,
-                        y = size.height * 0.18f + driftY * 0.4f
-                    ),
-                    radius = size.minDimension * 0.9f
+                    colors = listOf(coreColor, secondaryColor),
+                    center = center,
+                    radius = baseRadius * pulseScale
                 ),
-                alpha = 0.85f
+                radius = baseRadius * pulseScale,
+                center = center
             )
+            
             drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(tertiaryGlow, Color.Transparent),
-                    center = Offset(
-                        x = size.width * 0.78f - driftX * 0.45f,
-                        y = size.height * 0.72f
-                    ),
-                    radius = size.minDimension * 0.95f
-                ),
-                alpha = 0.9f
-            )
-            drawRect(
-                brush = Brush.linearGradient(
-                    colors = trailGradient,
-                    start = Offset(x = 0f, y = size.height * 0.15f + shimmer),
-                    end = Offset(x = size.width, y = size.height * 0.9f + shimmer)
-                ),
-                size = this.size,
-                alpha = 0.24f
+                color = Color.White.copy(alpha = 0.5f),
+                radius = (baseRadius * pulseScale) * 0.25f,
+                center = Offset(center.x - (baseRadius * pulseScale) * 0.3f, center.y - (baseRadius * pulseScale) * 0.3f)
             )
         }
     }
@@ -409,12 +383,10 @@ class HomeRootSection : Routes.Route() {
         onUpdateAction: () -> Unit,
         channelLabel: String,
         isPurrAuraActive: Boolean,
-        onWebsiteClick: () -> Unit,
-        onTelegramClick: () -> Unit,
-        onGithubClick: () -> Unit,
-        authorName: String,
-        onManageClick: () -> Unit,
-        avenirNext: FontFamily
+        onAboutClick: () -> Unit,
+        avenirNext: FontFamily,
+        scrollOffset: () -> Int,
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
     ) {
         val heroShape = RoundedCornerShape(36.dp)
         val gitHashShort = remember { (context.installationSummary.modInfo?.gitHash ?: BuildConfig.GIT_HASH).take(7) }
@@ -422,11 +394,7 @@ class HomeRootSection : Routes.Route() {
             modifier = Modifier
                 .padding(horizontal = cardMargin, vertical = 6.dp)
                 .clip(heroShape)
-                .background(
-                    Brush.linearGradient(
-                        heroGradientColors
-                    )
-                )
+                .background(Brush.linearGradient(heroGradientColors))
                 .border(1.dp, Color.White.copy(alpha = 0.1f), heroShape)
         ) {
             Column(
@@ -441,136 +409,94 @@ class HomeRootSection : Routes.Route() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "PurrfectSnap",
-                        color = Color.White,
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = avenirNext
+                        text = "PurrfectSnap", 
+                        color = Color.White, 
+                        fontSize = 34.sp, 
+                        fontWeight = FontWeight.ExtraBold, 
+                        fontFamily = avenirNext,
+                        modifier = Modifier.graphicsLayer {
+                            // Starts at 250px scroll
+                            alpha = (1f - ((scrollOffset() - 250f) / 120f)).coerceIn(0f, 1f)
+                            translationY = (-scrollOffset() * 0.06f)
+                        }
                     )
                     Text(
-                        text = "By ΞTΞRNAL",
-                        color = Color.White.copy(alpha = 0.75f),
-                        fontSize = 14.sp,
-                        fontFamily = avenirNext
+                        text = "By ΞTΞRNAL", 
+                        color = Color.White.copy(alpha = 0.75f), 
+                        fontSize = 14.sp, 
+                        fontFamily = avenirNext,
+                        modifier = Modifier.graphicsLayer {
+                            // Starts at 300px scroll
+                            alpha = (1f - ((scrollOffset() - 300f) / 120f)).coerceIn(0f, 1f)
+                            translationY = (-scrollOffset() * 0.04f)
+                        }
                     )
                     Text(
-                        text = translation["hero_tagline"],
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 15.sp,
-                        lineHeight = 20.sp,
-                        textAlign = TextAlign.Center
+                        text = translation["hero_tagline"], 
+                        color = Color.White.copy(alpha = 0.9f), 
+                        fontSize = 15.sp, 
+                        lineHeight = 20.sp, 
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.graphicsLayer {
+                            // Starts at 350px scroll
+                            alpha = (1f - ((scrollOffset() - 350f) / 120f)).coerceIn(0f, 1f)
+                            translationY = (-scrollOffset() * 0.02f)
+                        }
                     )
                 }
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            HeroBadge(translation.format("hero_version_label", "version" to versionName, "channel" to channelLabel))
-            gitHashShort.takeIf { it.isNotBlank() && it.lowercase() != "unknown" }?.let {
-                HeroBadge(translation.format("hero_build_label", "build" to it))
-            }
-        }
+                FlowRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer {
+                            // Starts at 400px scroll
+                            alpha = (1f - ((scrollOffset() - 400f) / 120f)).coerceIn(0f, 1f)
+                        },
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    HeroBadge(translation.format("hero_version_label", "version" to versionName, "channel" to channelLabel))
+                    gitHashShort.takeIf { it.isNotBlank() && it.lowercase() != "unknown" }?.let {
+                        HeroBadge(translation.format("hero_build_label", "build" to it))
+                    }
+                }
 
                 if (latestUpdate != null) {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20.dp),
                         color = Color.White.copy(alpha = 0.08f),
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
-                        tonalElevation = 0.dp,
-                        shadowElevation = 0.dp
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.14f))
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = translation["update_title"],
-                                    color = Color.White,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    text = translation.format(
-                                        "update_content",
-                                        "version" to (latestUpdate.versionName)
-                                    ),
-                                    color = Color.White.copy(alpha = 0.82f),
-                                    fontSize = 12.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text(translation["update_title"], color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                Text(translation.format("update_content", "version" to (latestUpdate.versionName)), color = Color.White.copy(alpha = 0.82f), fontSize = 12.sp)
                             }
-                            AnimatedContent(
-                                targetState = downloadState,
-                                label = "UpdateDownloadHero"
-                            ) { state ->
+                            AnimatedContent(targetState = downloadState, label = "UpdateDownloadHero") { state ->
                                 when (state) {
                                     UpdateDownloader.DownloadState.IDLE,
                                     UpdateDownloader.DownloadState.FAILED -> {
-                                        Button(
-                                            onClick = onUpdateAction,
-                                            shape = RoundedCornerShape(50),
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color.White,
-                                                contentColor = Color(0xFF1B152E)
-                                            ),
-                                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
-                                            contentPadding = PaddingValues(12.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Download,
-                                                contentDescription = translation["download_icon_description"],
-                                                modifier = Modifier.size(18.dp)
-                                            )
+                                        Button(onClick = { 
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            onUpdateAction() 
+                                        }, shape = RoundedCornerShape(50), colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E))) {
+                                            Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
                                         }
                                     }
-
                                     UpdateDownloader.DownloadState.DOWNLOADING -> {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                            modifier = Modifier.padding(end = 6.dp)
-                                        ) {
-                                            CircularProgressIndicator(
-                                                progress = { downloadProgress },
-                                                modifier = Modifier.size(28.dp),
-                                                strokeWidth = 3.dp,
-                                                color = Color.White
-                                            )
-                                            Text(
-                                                text = "${(downloadProgress * 100).toInt()}%",
-                                                color = Color.White,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                            CircularProgressIndicator(progress = { downloadProgress }, modifier = Modifier.size(28.dp), color = Color.White)
+                                            Text("${(downloadProgress * 100).toInt()}%", color = Color.White, fontWeight = FontWeight.SemiBold)
                                         }
                                     }
-
                                     UpdateDownloader.DownloadState.COMPLETED -> {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Check,
-                                                contentDescription = translation["completed_icon_description"],
-                                                tint = Color(0xFFA3F0C2)
-                                            )
-                                            Text(
-                                                text = translation["update_ready_label"],
-                                                color = Color.White,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
+                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFFA3F0C2))
+                                            Text(translation["update_ready_label"], color = Color.White, fontWeight = FontWeight.SemiBold)
                                         }
                                     }
                                 }
@@ -580,12 +506,14 @@ class HomeRootSection : Routes.Route() {
                 }
 
                 Surface(
-                    color = Color.White.copy(alpha = 0.08f),
+                    modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
+                    color = Color.White.copy(alpha = 0.08f),
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f)),
                     tonalElevation = 0.dp,
                     shadowElevation = 0.dp
                 ) {
+                    val unifiedButtonWidth = 180.dp
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -595,40 +523,49 @@ class HomeRootSection : Routes.Route() {
                     ) {
                         Surface(
                             shape = RoundedCornerShape(50),
-                            color = Color.White.copy(alpha = 0.06f),
-                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f)),
+                            color = Color.White.copy(alpha = 0.12f),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f)),
+                            modifier = Modifier.width(unifiedButtonWidth).height(46.dp),
                             tonalElevation = 0.dp,
                             shadowElevation = 0.dp
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier.fillMaxSize().padding(horizontal = 14.dp),
+                                horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(14.dp)
-                                        .clip(RoundedCornerShape(50))
-                                        .background(if (isPurrAuraActive) PurrfectPalette.glowPrimary else Color(0xFF8C8CA3))
-                                )
+                                Box(modifier = Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                                    LivingPurrAura(isActive = isPurrAuraActive, haptic = haptic)
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = if (isPurrAuraActive) translation["purr_aura_active_label"] else translation["purr_aura_inactive_label"],
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp
                                 )
                             }
                         }
 
                         OutlinedButton(
-                            onClick = onManageClick,
-                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            onClick = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onAboutClick() 
+                            },
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color.White.copy(alpha = 0.06f),
+                                contentColor = Color.White
+                            ),
+                            modifier = Modifier.width(unifiedButtonWidth).height(46.dp)
                         ) {
-                            Icon(Icons.Filled.Settings, contentDescription = null, tint = Color.White)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(translation["open_settings_button"])
+                            Icon(Icons.Filled.Info, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = translation.getOrNull("about_meet_team_button") ?: "About Us",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
                         }
                     }
                 }
@@ -637,224 +574,101 @@ class HomeRootSection : Routes.Route() {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(26.dp),
                     color = Color.White.copy(alpha = 0.06f),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f)),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.10f))
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        val androidContext = context.androidContext
                         Button(
-                            modifier = Modifier.weight(1f),
-                            onClick = onWebsiteClick,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.White,
-                                contentColor = Color(0xFF1B152E)
-                            )
+                            modifier = Modifier.weight(1f).height(44.dp),
+                            onClick = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                androidContext.openLink("https://purrfectsnap.me", context.translation["toast_open_link_failed"]) 
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E)),
+                            contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
-                            Icon(Icons.Filled.Language, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "Site", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                                Icon(Icons.Filled.Language, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                PurrfectMarqueeText(
+                                    text = "Site",
+                                    style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold),
+                                    color = Color(0xFF1B152E)
+                                )
+                            }
                         }
                         OutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = onGithubClick,
+                            modifier = Modifier.weight(1f).height(44.dp),
+                            onClick = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                androidContext.openLink("https://github.com/particle-box/PurrfectSnap", context.translation["toast_open_link_failed"]) 
+                            },
                             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                            contentPadding = PaddingValues(horizontal = 12.dp)
                         ) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = translation["github_button"], maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                                Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_github), contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                PurrfectMarqueeText(
+                                    text = translation["github_button"],
+                                    style = TextStyle(fontSize = 13.sp, fontWeight = FontWeight.Bold),
+                                    color = Color.White
+                                )
+                            }
                         }
-                        ExternalLinkIcon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
-                            onClick = onTelegramClick,
-                            tint = Color.White,
-                            containerColor = Color.White.copy(alpha = 0.14f)
-                        )
+                        ExternalLinkIcon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram), onClick = { 
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            androidContext.openLink("https://t.me/purrfectsnap_official", context.translation["toast_open_link_failed"]) 
+                        }, tint = Color.White, containerColor = Color.White.copy(alpha = 0.14f), haptic = haptic)
                     }
                 }
             }
         }
     }
-    private fun resolveTileKey(name: String): String {
-        val entry = cardEntries.firstOrNull { it.name == name }
-        return entry?.id ?: name
-    }
-    private fun getTileSpan(name: String): Pair<Int, Int> {
-        val prefs = context.sharedPreferences
-        val key = resolveTileKey(name)
-        val raw = prefs.getString("quick_tile_size_$key", null) ?: "1x1"
-        val parts = raw.split('x')
-        val w = parts.getOrNull(0)?.toIntOrNull()?.coerceIn(1, 3) ?: 1
-        val h = parts.getOrNull(1)?.toIntOrNull()?.coerceIn(1, 3) ?: 1
-        return w to h
-    }
-    private fun setTileSpan(name: String, w: Int, h: Int) {
-        val prefs = context.sharedPreferences
-        val key = resolveTileKey(name)
-        prefs.edit().putString("quick_tile_size_$key", "${w.coerceIn(1,3)}x${h.coerceIn(1,3)}").apply()
-    }
-    private fun clearTileSpan(name: String) {
-        val prefs = context.sharedPreferences
-        val key = resolveTileKey(name)
-        prefs.edit().remove("quick_tile_size_$key").apply()
-    }
 
-    private fun clearTileOffset(name: String) {
-        val prefs = context.sharedPreferences
-        val key = resolveTileKey(name)
-        prefs.edit().remove("quick_tile_offset_$key").apply()
-    }
-
-    override val title: @Composable (() -> Unit)? = {}
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
-    override val topBarActions: @Composable (RowScope.() -> Unit) = {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            HomeActionChips()
-        }
-    }
 
-
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val avenirNext = remember {
-            FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
-        }
-        val prefs = remember { context.sharedPreferences }
-        val allQuickTileNames = remember(cards) { cards.keys.map { it.first } }
-        val selectedTiles = rememberAsyncMutableStateList(defaultValue = allQuickTileNames) {
-            val storedTiles = context.database.getQuickTiles().filter { it.isNotBlank() }
-            val hasInitializedQuickTiles = prefs.getBoolean(QUICK_TILES_INITIALIZED_PREF, false)
-            when {
-                storedTiles.isNotEmpty() -> {
-                    if (!hasInitializedQuickTiles) {
-                        prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
-                    }
-                    storedTiles
-                }
-                hasInitializedQuickTiles -> storedTiles
-                else -> {
-                    context.database.setQuickTiles(allQuickTileNames)
-                    prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
-                    allQuickTileNames
-                }
-            }
-        }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+        val avenirNext = remember { FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium)) }
+        val cards = rememberCards()
+        val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) { context.database.getQuickTiles().filter { it.isNotBlank() } }
         val updateChannel = context.config.root.global.updateSettings.updateChannel.getNullable() ?: "stable"
         val channelLabel = if (updateChannel == "prerelease") translation["channel_label_prerelease"] else translation["channel_label_stable"]
-        val latestUpdate by rememberAsyncMutableState(defaultValue = null, keys = arrayOf(updateChannel)) {
-            val channel = if (updateChannel == "prerelease") Channel.PRERELEASE else Channel.STABLE
-            Updater.getLatestRelease(channel)
-        }
-        val changelogUrl = if (updateChannel == "prerelease") changelogPrereleaseUrl else changelogStableUrl
+        val latestUpdate by rememberAsyncMutableState(defaultValue = null, keys = arrayOf(updateChannel)) { Updater.getLatestRelease(if (updateChannel == "prerelease") Channel.PRERELEASE else Channel.STABLE) }
         val downloadState by UpdateDownloader.downloadState.collectAsState()
         val downloadProgress by UpdateDownloader.downloadProgress.collectAsState()
-        val coroutineScope = rememberCoroutineScope()
         val isPurrAuraActive by rememberPreferenceBool("debug_test_mode", true)
-        var showChangelogDialog by remember { mutableStateOf(false) }
-        var changelogLoading by remember { mutableStateOf(false) }
-        var changelogError by remember { mutableStateOf<String?>(null) }
-        var changelogText by remember { mutableStateOf<String?>(null) }
-        var changelogVersion by remember { mutableStateOf<String?>(null) }
-        var showAnnouncementsDialog by remember { mutableStateOf(false) }
+        val scrollState = rememberScrollState()
+        var showQuickActionsMenu by rememberSaveable { mutableStateOf(false) }
+        var showChangelogDialog by rememberSaveable { mutableStateOf(false) }
+        var showAnnouncementsDialog by rememberSaveable { mutableStateOf(false) }
+        var announcementsText by rememberSaveable { mutableStateOf<String?>(null) }
         var announcementsLoading by remember { mutableStateOf(false) }
-        var announcementsError by remember { mutableStateOf<String?>(null) }
-        var announcementsText by remember { mutableStateOf<String?>(null) }
+        val coroutineScope = rememberCoroutineScope()
+        var controlsHeight by remember { mutableStateOf(100.dp) }
+
+        LaunchedEffect(scrollState.value) { routes.navigation?.globalScrollOffset = scrollState.value }
 
         val handleUpdateAction: () -> Unit = {
             latestUpdate?.let { latest ->
-                val supportedAbis = android.os.Build.SUPPORTED_ABIS
-                var abiName: String? = null
-                for (abi in supportedAbis) {
-                    when (abi) {
-                        "arm64-v8a" -> {
-                            abiName = "arm64"
-                            break
-                        }
-                        "armeabi-v7a" -> {
-                            abiName = "armv7"
-                            break
-                        }
-                    }
-                }
-                context.log.info(
-                    "Update request: device ABIs=${supportedAbis.joinToString()} resolvedArch=${abiName ?: "unknown"}",
-                    "HomeRoot"
-                )
-
+                val abiName = android.os.Build.SUPPORTED_ABIS.firstNotNullOfOrNull { when(it) { "arm64-v8a" -> "arm64"; "armeabi-v7a" -> "armv7"; else -> null } }
                 if (latest.workflowId != null) {
-                    if (abiName == null) {
-                        android.widget.Toast.makeText(
-                            context.androidContext,
-                            translation["update_arch_not_supported_toast"],
-                            android.widget.Toast.LENGTH_LONG
-                        ).show()
-                    } else {
-                        val artifactName = "purrfectsnap-${abiName}-debug"
-                        val downloadUrl = "https://nightly.link/particle-box/PurrfectSnap/actions/runs/${latest.workflowId}/$artifactName.zip"
-                        context.log.info("Debug update -> downloading $artifactName from $downloadUrl", "HomeRoot")
-                        UpdateDownloader.downloadAndInstall(context, downloadUrl, "$artifactName.zip", coroutineScope)
+                    if (abiName != null) {
+                        // Use workflowId to ensure the specific build is downloaded via nightly.link
+                        val artifactName = "purrfectsnap-${if (abiName == "arm64") "armv8" else "armv7"}-debug"
+                        UpdateDownloader.downloadAndInstall(context, "https://nightly.link/particle-box/PurrfectSnap/actions/runs/${latest.workflowId}/$artifactName.zip", "$artifactName.zip", coroutineScope)
                     }
-                    return@let
-                }
-
-                val releaseDownload = abiName?.let { arch -> latest.assetDownloads[arch] }
-                if (releaseDownload != null) {
-                    val fileName = releaseDownload.substringAfterLast('/')
-                    context.log.info("Release update -> arch=$abiName url=$releaseDownload file=$fileName", "HomeRoot")
-                    UpdateDownloader.downloadAndInstall(context, releaseDownload, fileName, coroutineScope)
                 } else {
-                    context.log.warn(
-                        "No matching update asset for arch=$abiName (available: ${latest.assetDownloads.keys})",
-                        "HomeRoot"
-                    )
-                    context.androidContext.openLink(
-                        latest.releaseUrl,
-                        context.translation["toast_open_link_failed"]
-                    )
-                }
-            }
-        }
-
-        fun loadChangelog(targetVersion: String, url: String) {
-            if (changelogVersion == targetVersion && changelogText != null) return
-            changelogLoading = true
-            changelogError = null
-            coroutineScope.launch(Dispatchers.IO) {
-                runCatching {
-                    changelogClient.newCall(Request.Builder().url(url).build()).execute().use { response ->
-                        if (!response.isSuccessful) throw IllegalStateException("Failed to fetch changelog (${response.code})")
-                        val body = response.body?.string() ?: throw IllegalStateException("Empty changelog body")
-                        extractChangelogForVersion(body, targetVersion).ifBlank { body.trim() }
-                    }
-                }.onSuccess { text ->
-                    withContext(Dispatchers.Main) {
-                        changelogText = text
-                        changelogVersion = targetVersion
-                        changelogLoading = false
-                    }
-                }.onFailure { error ->
-                    withContext(Dispatchers.Main) {
-                        changelogError = error.message ?: "Failed to load changelog"
-                        changelogLoading = false
-                    }
+                    abiName?.let { arch -> latest.assetDownloads[arch] }?.let { url -> UpdateDownloader.downloadAndInstall(context, url, url.substringAfterLast('/'), coroutineScope) }
                 }
             }
         }
@@ -862,322 +676,277 @@ class HomeRootSection : Routes.Route() {
         fun loadAnnouncements() {
             if (announcementsText != null) return
             announcementsLoading = true
-            announcementsError = null
             coroutineScope.launch(Dispatchers.IO) {
-                runCatching {
-                    changelogClient.newCall(Request.Builder().url(announcementsUrl).build()).execute().use { response ->
-                        if (!response.isSuccessful) throw IllegalStateException("Failed to fetch announcements (${response.code})")
-                        val body = response.body?.string() ?: throw IllegalStateException("Empty announcements body")
-                        body.trim()
-                    }
-                }.onSuccess { text ->
-                    withContext(Dispatchers.Main) {
-                        announcementsText = text
-                        announcementsLoading = false
-                    }
-                }.onFailure { error ->
-                    withContext(Dispatchers.Main) {
-                        announcementsError = error.message ?: "Failed to load announcements"
-                        announcementsLoading = false
-                    }
-                }
+                runCatching { OkHttpClient().newCall(Request.Builder().url(announcementsUrl).build()).execute().use { it.body?.string() ?: "" } }
+                    .onSuccess { withContext(Dispatchers.Main) { announcementsText = it; announcementsLoading = false } }
+                    .onFailure { withContext(Dispatchers.Main) { announcementsLoading = false } }
             }
         }
 
-        LaunchedEffect(Unit) {
-            if (context.sharedPreferences.getBoolean("show_changelog_on_launch", false)) {
-                val version = context.sharedPreferences.getString("changelog_version_on_launch", null)
-                context.sharedPreferences.edit()
-                    .putBoolean("show_changelog_on_launch", false)
-                    .remove("changelog_version_on_launch")
-                    .apply()
-                version?.let {
-                    showChangelogDialog = true
-                    loadChangelog(it, changelogUrl)
-                }
+        val borderPath = remember { Path() }
+        val uPath = remember { Path() }
+
+        Box(modifier = Modifier.fillMaxSize().background(pageBackgroundGradient)) {
+            // FLOATING HEADER OVERLAY
+            val focusFactor by remember(scrollState.value) {
+                derivedStateOf { (scrollState.value.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f) }
             }
-        }
-
-        LaunchedEffect(Unit) {
-            if (context.sharedPreferences.getBoolean("show_announcements_on_launch", false)) {
-                context.sharedPreferences.edit()
-                    .putBoolean("show_announcements_on_launch", false)
-                    .apply()
-                showAnnouncementsDialog = true
-                loadAnnouncements()
+            val stickyBrandingAlpha by remember(scrollState.value) {
+                derivedStateOf { ((scrollState.value.toFloat() - 50f) / 100f).coerceIn(0f, 1f) }
             }
-        }
+            val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            
+            // Standard header dimensions and layout constants
+            val headerHeight = lerp(54.dp, 56.dp, focusFactor)
+            val sidePadding = 0.dp 
+            val containerTopPadding = lerp(statusBarHeight + 2.dp, 0.dp, focusFactor)
+            val internalTopPadding = lerp(0.dp, statusBarHeight, focusFactor)
+            val internalVerticalPadding = 0.dp
+            val topCorners = lerp(26.dp, 0.dp, focusFactor)
+            val bottomCorners = lerp(26.dp, 28.dp, focusFactor)
 
-        val onUpdateButtonClick: () -> Unit = {
-            latestUpdate?.let {
-                showChangelogDialog = true
-                loadChangelog(it.versionName, changelogUrl)
-            }
-        }
-
-        var showQuickActionsMenu by remember { mutableStateOf(false) }
-        val scrollState = rememberScrollState()
-        val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        val navigationBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val contentBottomPadding = routes.bottomPadding + navigationBarPadding + 96.dp
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(pageBackgroundGradient)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(bottom = contentBottomPadding)
-            ) {
-                Row(
+            // Header Container
+            Box(modifier = Modifier.fillMaxWidth().zIndex(10f)) {
+                // Refractive background layer
+                val refractiveColor = remember { Color(0xFF241F52) }
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(WindowInsets.statusBars.asPaddingValues())
-                        .padding(horizontal = cardMargin, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = sidePadding)
+                        .padding(top = containerTopPadding)
+                        .height(internalTopPadding + headerHeight + 32.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                0.0f to refractiveColor.copy(alpha = 0.95f * focusFactor),
+                                0.6f to refractiveColor.copy(alpha = 0.85f * focusFactor),
+                                1.0f to Color.Transparent
+                            )
+                        )
+                )
+
+                // Sticky background surface for floating header
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = sidePadding)
+                        .padding(top = containerTopPadding)
+                        .headerHeightTracker { controlsHeight = it }
+                        .drawBehind {
+                            val strokeWidth = 1.dp.toPx()
+                            val brush = Brush.linearGradient(
+                                listOf(
+                                    PurrfectPalette.glowPrimary.copy(alpha = focusFactor * 0.6f),
+                                    PurrfectPalette.glowSecondary.copy(alpha = focusFactor * 0.4f)
+                                )
+                            )
+                            val tr = topCorners.toPx()
+                            val br = bottomCorners.toPx()
+                            
+                            if (focusFactor > 0.9f) {
+                                uPath.reset()
+                                uPath.apply {
+                                    moveTo(0f, 0f)
+                                    lineTo(0f, size.height - br)
+                                    arcTo(androidx.compose.ui.geometry.Rect(0f, size.height - 2*br, 2*br, size.height), 180f, -90f, false)
+                                    lineTo(size.width - br, size.height)
+                                    arcTo(androidx.compose.ui.geometry.Rect(size.width - 2*br, size.height - 2*br, size.width, size.height), 90f, -90f, false)
+                                    lineTo(size.width, 0f)
+                                }
+                                drawPath(uPath, brush, style = Stroke(strokeWidth))
+                            } else if (focusFactor > 0.01f) {
+                                borderPath.reset()
+                                borderPath.apply {
+                                    moveTo(tr, 0f)
+                                    lineTo(size.width - tr, 0f)
+                                    arcTo(androidx.compose.ui.geometry.Rect(size.width - 2*tr, 0f, size.width, 2*tr), 270f, 90f, false)
+                                    lineTo(size.width, size.height - br)
+                                    arcTo(androidx.compose.ui.geometry.Rect(size.width - 2*br, size.height - 2*br, size.width, size.height), 0f, 90f, false)
+                                    lineTo(br, size.height)
+                                    arcTo(androidx.compose.ui.geometry.Rect(0f, size.height - 2*br, 2*br, size.height), 90f, 90f, false)
+                                    lineTo(0f, tr)
+                                    arcTo(androidx.compose.ui.geometry.Rect(0f, 0f, 2*tr, 2*tr), 180f, 90f, false)
+                                }
+                                drawPath(borderPath, brush, style = Stroke(strokeWidth))
+                            }
+                        },
+                    shape = RoundedCornerShape(
+                        topStart = topCorners, topEnd = topCorners, 
+                        bottomStart = bottomCorners, bottomEnd = bottomCorners
+                    ),
+                    color = Color(0xFF1B152E).copy(alpha = focusFactor * 0.95f)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = internalTopPadding)
+                            .padding(horizontal = 16.dp, vertical = internalVerticalPadding)
+                            .height(headerHeight)
                     ) {
-                        TopBarActionChip(
-                            icon = Icons.Filled.Notifications,
-                            label = null,
-                            contentDescription = translation["announcements_button_description"]
+                        // Branding text visible when header is sticky
+                        Text(
+                            text = "PurrfectSnap",
+                            color = Color.White.copy(alpha = stickyBrandingAlpha),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = avenirNext,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+
+                        // Left-aligned announcement interaction chip
+                        val announcementShift by remember(focusFactor) {
+                            derivedStateOf { (-6 * focusFactor).dp }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .graphicsLayer { 
+                                    translationX = announcementShift.toPx()
+                                },
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            showAnnouncementsDialog = true
-                            loadAnnouncements()
+                            TopBarActionChip(
+                                icon = Icons.Filled.Notifications,
+                                label = null,
+                                shrinkFactor = (1f - focusFactor).coerceIn(0f, 1f),
+                                contentDescription = translation["announcements_button_description"],
+                                haptic = haptic
+                            ) {
+                                showAnnouncementsDialog = true
+                                loadAnnouncements()
+                            }
+                        }
+
+                        // Right-aligned action chips for system navigation
+                        val settingsShift by remember(focusFactor) {
+                            derivedStateOf { (6 * focusFactor).dp }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .graphicsLayer { 
+                                    translationX = settingsShift.toPx()
+                                },
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            HomeActionChips(scrollState = scrollState, haptic = haptic)
                         }
                     }
-                    Row(
-                        modifier = Modifier.wrapContentWidth(Alignment.End),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        HomeActionChips()
-                    }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState).padding(bottom = routes.bottomPadding + 12.dp)) {
+                Spacer(Modifier.height(controlsHeight + containerTopPadding))
+                
                 HeroSection(
                     versionName = BuildConfig.VERSION_NAME,
                     latestUpdate = latestUpdate,
                     downloadState = downloadState,
                     downloadProgress = downloadProgress,
-                    onUpdateAction = onUpdateButtonClick,
+                    onUpdateAction = { latestUpdate?.let { showChangelogDialog = true } },
                     channelLabel = channelLabel,
                     isPurrAuraActive = isPurrAuraActive,
-                    onWebsiteClick = {
-                        context.androidContext.openLink(
-                            "https://purrfectsnap.vercel.app/",
-                            context.translation["toast_open_link_failed"]
-                        )
-                    },
-                    onTelegramClick = {
-                        context.androidContext.openLink(
-                            "https://t.me/purrfectsnap_official",
-                            context.translation["toast_open_link_failed"]
-                        )
-                    },
-                    onGithubClick = {
-                        context.androidContext.openLink(
-                            "https://github.com/particle-box/PurrfectSnap",
-                            context.translation["toast_open_link_failed"]
-                        )
-                    },
-                    authorName = "ETERNAL",
-                    onManageClick = { routes.settings.navigate() },
+                    onAboutClick = { routes.about.navigate() },
                     avenirNext = avenirNext,
+                    scrollOffset = { scrollState.value },
+                    haptic = haptic
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsAnim") { hasQuickActions ->
-                    val quickCardShape = RoundedCornerShape(34.dp)
-                    Surface(
-                        modifier = Modifier
-                            .padding(horizontal = cardMargin, vertical = 10.dp),
-                        shape = quickCardShape,
-                        tonalElevation = 0.dp,
-                        shadowElevation = 24.dp,
-                        color = Color.Transparent,
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Brush.linearGradient(quickActionsGradientColors))
-                        .padding(horizontal = 24.dp, vertical = 28.dp)
-                        .padding(bottom = navigationBarPadding + 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                
+                Spacer(Modifier.height(12.dp))
+                AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActions") { hasQuickActions ->
+                    Surface(modifier = Modifier.padding(horizontal = cardMargin, vertical = 10.dp), shape = RoundedCornerShape(34.dp), color = Color.Transparent, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))) {
+                        Column(modifier = Modifier.fillMaxWidth().background(Brush.linearGradient(quickActionsGradientColors)).padding(horizontal = 24.dp, vertical = 28.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                             if (!hasQuickActions) {
-                                Text(
-                                    translation["quick_actions_title"],
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White.copy(alpha = 0.85f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Widgets,
-                                        contentDescription = translation["quick_actions_icon_description"],
-                                        modifier = Modifier.size(72.dp),
-                                        tint = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = translation["quick_actions_empty_title"],
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = translation["quick_actions_empty_subtitle"],
-                                        fontSize = 14.sp,
-                                        color = Color.White.copy(alpha = 0.75f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                    Button(
-                                        onClick = { showQuickActionsMenu = true },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.White,
-                                            contentColor = Color(0xFF1B152E)
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = translation["add_quick_action_description"],
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(text = translation["quick_actions_add_tile_button"])
-                                    }
+                                Text(translation["quick_actions_title"], fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.85f))
+                                Spacer(Modifier.height(24.dp))
+                                Icon(Icons.Outlined.Widgets, contentDescription = null, modifier = Modifier.size(72.dp), tint = Color.White)
+                                Spacer(Modifier.height(16.dp))
+                                Text(translation["quick_actions_empty_title"], fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Spacer(Modifier.height(20.dp))
+                                Button(onClick = { 
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    showQuickActionsMenu = true 
+                                }, colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFF1B152E))) {
+                                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(translation["quick_actions_add_tile_button"])
                                 }
                             } else {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 18.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        translation["quick_actions_title"],
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        color = Color.White,
-                                        maxLines = 3,
-                                        overflow = TextOverflow.Clip
-                                    )
-                                    Text(
-                                        text = translation.format("quick_actions_count_label", "count" to selectedTiles.size.toString()),
-                                        fontSize = 13.sp,
-                                        color = Color.White.copy(alpha = 0.75f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Row(
-                                        modifier = Modifier.wrapContentWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        OutlinedButton(
-                                            onClick = { showQuickActionsMenu = true },
-                                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                                        ) {
-                                            Icon(
-                                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
-                                                contentDescription = translation["manage_quick_actions_description"],
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(text = translation["quick_actions_manage_button"])
-                                        }
+                                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(translation["quick_actions_title"], fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    Text(translation.format("quick_actions_count_label", "count" to selectedTiles.size.toString()), fontSize = 13.sp, color = Color.White.copy(alpha = 0.75f))
+                                    Spacer(Modifier.height(12.dp))
+                                    OutlinedButton(onClick = { 
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        showQuickActionsMenu = true 
+                                    }, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)) {
+                                        Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage), contentDescription = null, modifier = Modifier.size(18.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(translation["quick_actions_manage_button"])
                                     }
                                 }
-                                val spacing = 12.dp
-                                val gridPadding = 8.dp
-                                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                                    val preferredTileWidth = 100.dp
-                                    val columns = ((maxWidth + spacing) / (preferredTileWidth + spacing))
-                                        .toInt()
-                                        .coerceAtLeast(2)
-                                        .coerceAtMost(4)
-                                    val computedWidth = (maxWidth - gridPadding * 2 - spacing * (columns - 1)) / columns
-                                    val tileWidth = if (computedWidth < preferredTileWidth) computedWidth else preferredTileWidth
-                                    FlowRow(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(all = gridPadding),
-                                        horizontalArrangement = Arrangement.SpaceEvenly,
-                                        verticalArrangement = Arrangement.spacedBy(spacing),
-                                        maxItemsInEachRow = columns
-                                    ) {
-                                        selectedTiles.forEach { tileName ->
-                                            val cardEntry = cards.entries.find { entry -> entry.key.first == tileName } ?: return@forEach
-                                            val (card, action) = cardEntry
+
+                                var gridIsVisible by remember { mutableStateOf(false) }
+                                var animationPhase by remember { mutableIntStateOf(1) }
+                                
+                                LaunchedEffect(gridIsVisible) {
+                                    if (gridIsVisible) {
+                                        delay(600) // Initial wait
+                                        animationPhase = 2 // Icons shrink & Text expands to 2 lines
+                                        delay(1200) // Distinct wait for expansion to finish
+                                        animationPhase = 3 // Enable Marquee scrolling
+                                    }
+                                }
+
+                                BoxWithConstraints(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .onGloballyPositioned { coordinates ->
+                                            val windowHeight = context.androidContext.resources.displayMetrics.heightPixels
+                                            val positionInWindow = coordinates.localToWindow(Offset.Zero).y
+                                            // Trigger when the grid reaches the bottom area of the screen
+                                            if (positionInWindow > 0 && positionInWindow < windowHeight * 0.95f) {
+                                                gridIsVisible = true
+                                            }
+                                        }
+                                ) {
+                                    val columns = (maxWidth / 110.dp).toInt().coerceIn(2, 4)
+                                    FlowRow(modifier = Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalArrangement = Arrangement.spacedBy(12.dp), maxItemsInEachRow = columns) {
+                                        selectedTiles.forEachIndexed { index, name ->
+                                            val cardEntry = cards.entries.find { it.key.first == name } ?: return@forEachIndexed
                                             val interactionSource = remember { MutableInteractionSource() }
+                                            
+                                            val animatedIconSize by animateDpAsState(
+                                                targetValue = if (animationPhase >= 2) 28.dp else 44.dp,
+                                                animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
+                                                label = "iconShrink"
+                                            )
+
                                             Surface(
                                                 modifier = Modifier
-                                                    .width(tileWidth)
-                                                    .aspectRatio(1.05f)
+                                                    .width(100.dp)
+                                                    .aspectRatio(1.05f) // Restored to 1.05f for square look
                                                     .scaleOnPress(interactionSource)
-                                                    .clickable { action(routes) },
-                                                shape = RoundedCornerShape(18.dp),
-                                                color = Color.White.copy(alpha = 0.06f),
-                                                tonalElevation = 0.dp,
-                                                shadowElevation = 0.dp,
+                                                    .clickable { 
+                                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        cardEntry.value(routes) 
+                                                    }, 
+                                                shape = RoundedCornerShape(18.dp), 
+                                                color = Color.White.copy(alpha = 0.06f), 
                                                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
                                             ) {
-                                                Box(
-                                                    Modifier
-                                                        .fillMaxSize()
-                                                        .background(
-                                                            Brush.linearGradient(
-                                                                listOf(
-                                                                    PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
-                                                                    PurrfectPalette.glowSecondary.copy(alpha = 0.22f)
-                                                                )
-                                                            )
-                                                        )
-                                                        .clipToBounds()
-                                                ) {
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .fillMaxSize()
-                                                            .padding(all = 10.dp),
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        verticalArrangement = Arrangement.Center,
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = card.second, contentDescription = null,
-                                                            tint = Color.White,
-                                                            modifier = Modifier.size(44.dp)
-                                                        )
-                                                        Spacer(modifier = Modifier.height(8.dp))
+                                                Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(PurrfectPalette.glowPrimary.copy(alpha = 0.3f), PurrfectPalette.glowSecondary.copy(alpha = 0.22f)))).clipToBounds()) {
+                                                    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                                        Icon(cardEntry.key.second, contentDescription = null, tint = Color.White, modifier = Modifier.size(animatedIconSize))
+                                                        Spacer(Modifier.height(8.dp))
                                                         Text(
-                                                            text = card.first,
-                                                            lineHeight = 16.sp,
-                                                            fontSize = 13.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            textAlign = TextAlign.Center,
+                                                            text = cardEntry.key.first,
+                                                            style = TextStyle(lineHeight = 15.sp, fontSize = 12.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
                                                             color = Color.White,
+                                                            maxLines = if (animationPhase >= 2) 2 else 1,
                                                             overflow = TextOverflow.Ellipsis,
-                                                            maxLines = 2,
+                                                            softWrap = true,
+                                                            modifier = Modifier.fillMaxWidth()
                                                         )
                                                     }
                                                 }
@@ -1185,180 +954,51 @@ class HomeRootSection : Routes.Route() {
                                         }
                                     }
                                 }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-
-        if (showChangelogDialog && latestUpdate != null) {
-            AestheticDialog(
-                onDismissRequest = { showChangelogDialog = false },
-                title = translation["changelog_dialog_title"],
-                text = "",
-                icon = Icons.Filled.Info,
-                confirmButtonText = translation["changelog_dialog_update_button"],
-                onConfirm = {
-                    showChangelogDialog = false
-                    handleUpdateAction()
-                },
-                dismissButtonText = translation["changelog_dialog_cancel_button"],
-                onDismiss = { showChangelogDialog = false },
-                confirmEnabled = !changelogLoading,
-                showCloseButton = false,
-                customContent = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 120.dp, max = 340.dp)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                    when {
-                        changelogLoading -> {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(28.dp),
-                                    strokeWidth = 3.dp,
-                                    color = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = translation["changelog_dialog_loading"],
-                                    color = Color.White,
-                                    fontWeight = FontWeight.SemiBold
-                                )
                             }
                         }
-
-                        changelogError != null -> {
-                            Text(
-                                text = changelogError ?: translation["changelog_dialog_error"],
-                                color = MaterialTheme.colorScheme.error,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        else -> {
-                            Text(
-                                text = changelogText ?: translation["changelog_dialog_empty"],
-                                color = PurrfectPalette.textPrimary,
-                                fontSize = 14.sp,
-                                lineHeight = 20.sp
-                            )
-                        }
                     }
                 }
-                }
-            )
+            }
         }
 
         if (showAnnouncementsDialog) {
             AestheticDialog(
-                onDismissRequest = { showAnnouncementsDialog = false },
-                title = translation["announcements_dialog_title"],
-                text = "",
-                icon = Icons.Filled.Info,
-                confirmButtonText = translation["announcements_dialog_close_button"],
-                onConfirm = { showAnnouncementsDialog = false },
-                confirmEnabled = !announcementsLoading,
-                showCloseButton = false,
+                onDismissRequest = { showAnnouncementsDialog = false }, 
+                title = translation["announcements_dialog_title"] ?: "Announcements", 
+                text = "", 
+                icon = Icons.Filled.Notifications, 
+                confirmButtonText = translation["announcements_dialog_close_button"] ?: "Close", 
+                onConfirm = { showAnnouncementsDialog = false }, 
                 customContent = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 120.dp, max = 340.dp)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        when {
-                            announcementsLoading -> {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(28.dp),
-                                        strokeWidth = 3.dp,
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = translation["announcements_dialog_loading"],
-                                        color = Color.White,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
-                            }
-
-                            announcementsError != null -> {
-                                Text(
-                                    text = announcementsError ?: translation["announcements_dialog_error"],
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-
-                            else -> {
-                                Text(
-                                    text = announcementsText ?: translation["announcements_dialog_empty"],
-                                    color = PurrfectPalette.textPrimary,
-                                    fontSize = 14.sp,
-                                    lineHeight = 20.sp
-                                )
-                            }
-                        }
+                    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        if (announcementsLoading) CircularProgressIndicator(color = Color.White)
+                        else Text(announcementsText ?: translation["announcements_dialog_empty"] ?: "No announcements", color = PurrfectPalette.textPrimary, fontSize = 14.sp)
                     }
                 }
             )
         }
-
-        if (showQuickActionsMenu) {
-            QuickActionsDialog(
-                quickActions = cards,
-                selectedQuickActions = selectedTiles,
-                onDismiss = { showQuickActionsMenu = false },
-                onSave = { newList ->
-                    val previous = selectedTiles.toList()
-                    val removed = previous.filter { it !in newList }
-                    removed.forEach { clearTileSpan(it); clearTileOffset(it) }
-                    newList.forEach { clearTileOffset(it) }
-                    selectedTiles.clear()
-                    selectedTiles.addAll(newList)
-                    prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
-                    context.coroutineScope.launch {
-                        context.database.setQuickTiles(selectedTiles)
-                    }
-                    showQuickActionsMenu = false
-                },
-                translation = translation
+        
+        if (showChangelogDialog) {
+            val haptic = LocalHapticFeedback.current
+            AestheticDialog(
+                onDismissRequest = { showChangelogDialog = false }, 
+                title = translation["changelog_dialog_title"], 
+                text = latestUpdate?.body ?: translation["changelog_dialog_empty"], 
+                icon = Icons.Filled.Info, 
+                confirmButtonText = translation["changelog_dialog_update_button"], 
+                onConfirm = { 
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showChangelogDialog = false
+                    handleUpdateAction() 
+                }, 
+                dismissButtonText = translation["changelog_dialog_cancel_button"], 
+                onDismiss = { showChangelogDialog = false }
             )
         }
-    }
-}
 
-private fun extractChangelogForVersion(raw: String, version: String): String {
-    val lines = raw.lines()
-    val headerRegex = Regex("^\\s*#+\\s*v?${Regex.escape(version)}\\b", RegexOption.IGNORE_CASE)
-    val collected = mutableListOf<String>()
-    var collecting = false
-    for (line in lines) {
-        if (!collecting) {
-            if (headerRegex.containsMatchIn(line)) {
-                collecting = true
-            }
-            continue
+        if (showQuickActionsMenu) {
+            QuickActionsDialog(quickActions = cards, selectedQuickActions = selectedTiles, onDismiss = { showQuickActionsMenu = false }, onSave = { selectedTiles.clear(); selectedTiles.addAll(it); context.coroutineScope.launch { context.database.setQuickTiles(selectedTiles) }; showQuickActionsMenu = false }, translation = translation)
         }
-        if (line.trimStart().startsWith("#")) break
-        collected.add(line)
     }
-    return collected.joinToString("\n").trim()
-}
 }
 

@@ -3237,7 +3237,7 @@
         "username": "ইউজারনেম",
         "user_id": "ইউজার আইডি",
         "posted_on": "পোস্ট করা হয়েছে",
-        "loading_username": "লোড হচ্ছে…",
+        "loading_username": "লোড হচ্ছে\u2026",
         "username_copied": "ইউজারনেম কপি হয়েছে",
         "user_id_copied": "ইউজার আইডি কপি হয়েছে",
         "friend_status": "বন্ধু স্ট্যাটাস",

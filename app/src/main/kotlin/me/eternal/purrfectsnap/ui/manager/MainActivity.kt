@@ -132,7 +132,7 @@ class MainActivity : ComponentActivity() {
                 if (shouldShowAbiWarning) {
                     AestheticDialog(
                         onDismissRequest = {},
-                        title = managerContext.translation["wrong_apk_title"],
+                        title = managerContext.translation["setup.activity.wrong_apk_title"],
                         text = "",
                         icon = Icons.Filled.Warning,
                         confirmButtonText = managerContext.translation["common.close"],
@@ -140,11 +140,20 @@ class MainActivity : ComponentActivity() {
                         showCloseButton = false,
                         opaque = true,
                         customContent = {
-                            Text(
-                                text = managerContext.translation["wrong_apk_message"],
-                                color = PurrfectPalette.textSecondary,
-                                lineHeight = 18.sp
-                            )
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Text(
+                                    text = managerContext.translation["setup.activity.wrong_apk_message"],
+                                    color = PurrfectPalette.textSecondary,
+                                    lineHeight = 20.sp,
+                                    fontSize = 15.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+                            }
                         }
                     )
                 }
@@ -163,7 +172,7 @@ class MainActivity : ComponentActivity() {
                     insetsController.isAppearanceLightNavigationBars = isLight
                 }
                 // Floating bottom bar height and vertical spacing so floating action buttons and scrolling content remain readable:
-                val bottomPadding = 80.dp + 16.dp +
+                val bottomPadding = 82.dp + 4.dp +
                     WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                 routes.bottomPadding = bottomPadding
                 val navBackStackEntry by navController.currentBackStackEntryAsState()

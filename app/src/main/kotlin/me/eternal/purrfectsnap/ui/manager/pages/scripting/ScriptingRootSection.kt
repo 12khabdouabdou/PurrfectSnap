@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,12 +23,15 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.documentfile.provider.DocumentFile
@@ -38,6 +42,7 @@ import me.eternal.purrfectsnap.common.scripting.ui.InterfaceManager
 import me.eternal.purrfectsnap.common.scripting.ui.ScriptInterface
 import me.eternal.purrfectsnap.common.ui.AsyncUpdateDispatcher
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
+import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
 import me.eternal.purrfectsnap.common.ui.rememberAsyncUpdateDispatcher
 import me.eternal.purrfectsnap.common.util.ktx.getUrlFromClipboard
 import me.eternal.purrfectsnap.common.util.ktx.openLink
@@ -47,6 +52,8 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.components.AestheticEmptyState
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
+import me.eternal.purrfectsnap.ui.util.Motion
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
 import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.chooseFolder
@@ -59,7 +66,6 @@ class ScriptingRootSection : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.scripting") }
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
-    private var selectedTab by mutableStateOf(0)
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -140,7 +146,7 @@ class ScriptingRootSection : Routes.Route() {
                         return@launch
                     }.onFailure {
                         context.log.error("Failed to import script", it)
-                        context.shortToast(translation.format("import_failed", "message" to (it.message ?: context.translation["common.unknown"])))
+                        context.shortToast(translation.format("import_failed", "message" to (it.message ?: "Unknown")))
                     }
                     isLoading = false
                 }
@@ -276,6 +282,7 @@ class ScriptingRootSection : Routes.Route() {
         }
         var openSettings by remember(script) { mutableStateOf(false) }
         var openActions by remember { mutableStateOf(false) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         val dispatcher = rememberAsyncUpdateDispatcher()
         val reloadCallback = remember { suspend { dispatcher.dispatch() } }
@@ -308,7 +315,12 @@ class ScriptingRootSection : Routes.Route() {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable(enabled = enabled) { if (enabled) openSettings = !openSettings }
+                    .clickable(enabled = enabled) { 
+                        if (enabled) {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            openSettings = !openSettings 
+                        }
+                    }
                     .background(PurrfectPalette.cardOverlay, cardShape)
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -385,12 +397,16 @@ class ScriptingRootSection : Routes.Route() {
                             }
                         }
                     }
-                    IconButton(onClick = { openActions = !openActions }) {
+                    IconButton(onClick = { 
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        openActions = !openActions 
+                    }) {
                         Icon(Icons.Default.Build, translation["actions_button"], tint = Color.White)
                     }
                     Switch(
                         checked = enabled,
                         onCheckedChange = { isChecked ->
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                             openSettings = false
                             context.coroutineScope.launch(Dispatchers.IO) {
                                 runCatching {
@@ -431,7 +447,8 @@ class ScriptingRootSection : Routes.Route() {
 
     @Composable
     private fun SelectFolderButton(onClick: () -> Unit) {
-        val label = translation["select_folder_button"]
+        val label = translation.getOrNull("select_folder_button") ?: "Select folder"
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -439,13 +456,13 @@ class ScriptingRootSection : Routes.Route() {
             contentAlignment = Alignment.Center
         ) {
             Surface(
-                modifier = Modifier.size(78.dp),
+                modifier = Modifier.size(68.dp),
                 shape = CircleShape,
-                color = PurrfectPalette.cardOverlayColor.copy(alpha = 0.9f),
+                color = Color.White.copy(alpha = 0.1f),
                 tonalElevation = 0.dp,
-                shadowElevation = 14.dp,
+                shadowElevation = 10.dp,
                 border = BorderStroke(
-                    1.5.dp,
+                    1.dp,
                     Brush.linearGradient(
                         listOf(
                             PurrfectPalette.glowPrimary.copy(alpha = 0.7f),
@@ -456,26 +473,28 @@ class ScriptingRootSection : Routes.Route() {
             ) {
                 Box(
                     modifier = Modifier
-                        .padding(6.dp)
-                        .size(66.dp)
+                        .fillMaxSize()
                         .clip(CircleShape)
                         .background(
                             Brush.radialGradient(
                                 colors = listOf(
-                                    PurrfectPalette.glowPrimary.copy(alpha = 0.42f),
-                                    PurrfectPalette.glowSecondary.copy(alpha = 0.34f)
+                                    PurrfectPalette.glowPrimary.copy(alpha = 0.335f),
+                                    PurrfectPalette.glowSecondary.copy(alpha = 0.25f),
+                                    Color.Transparent
                                 )
                             )
                         )
-                        .border(1.dp, Color.White.copy(alpha = 0.14f), CircleShape)
-                        .clickable(onClick = onClick),
+                        .clickable(onClick = {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onClick()
+                        }),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = label,
                         tint = Color.White,
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
@@ -500,6 +519,7 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
+    @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
     override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
         val scriptingFolder by rememberAsyncMutableState(
             defaultValue = null,
@@ -508,10 +528,14 @@ class ScriptingRootSection : Routes.Route() {
         val tabTitles = listOf(translation["installed_scripts_tab"], translation["catalog_tab"])
         var showImportDialog by remember { mutableStateOf(false) }
         var showToast by remember { mutableStateOf(false) }
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        var controlsHeight by remember { mutableStateOf(100.dp) }
+        val coroutineScope = rememberCoroutineScope()
+        val pagerState = androidx.compose.foundation.pager.rememberPagerState { tabTitles.size }
 
         LaunchedEffect(scriptingFolder) {
-            if (scriptingFolder == null && selectedTab != 0) {
-                selectedTab = 0
+            if (scriptingFolder == null && pagerState.currentPage != 0) {
+                pagerState.scrollToPage(0)
             }
         }
 
@@ -532,12 +556,12 @@ class ScriptingRootSection : Routes.Route() {
         ) {
             ScriptingHeader(
                 titles = tabTitles,
-                selectedTab = selectedTab,
+                selectedTab = pagerState.currentPage,
                 onTabSelected = { index ->
                     if (index == 1 && scriptingFolder == null) {
                         showToast = true
                     } else {
-                        selectedTab = index
+                        coroutineScope.launch { pagerState.animateScrollToPage(index) }
                     }
                 },
                 onImport = {
@@ -562,15 +586,99 @@ class ScriptingRootSection : Routes.Route() {
                         context.translation["toast_open_link_failed"]
                     )
                 },
-                folderSelected = scriptingFolder != null
+                folderSelected = scriptingFolder != null,
+                onPositioned = { controlsHeight = it }
             )
-            Spacer(Modifier.height(12.dp))
-            when (selectedTab) {
-                0 -> InstalledTabContent(
-                    scriptingFolder = scriptingFolder
-                )
-                1 -> CatalogTabContent(
-                    scriptingFolder = scriptingFolder
+            
+            androidx.compose.foundation.pager.HorizontalPager(
+                modifier = Modifier.fillMaxSize(),
+                state = pagerState,
+                userScrollEnabled = scriptingFolder != null
+            ) { page ->
+                when (page) {
+                    0 -> InstalledTabContent(
+                        scriptingFolder = scriptingFolder,
+                        controlsHeight = controlsHeight
+                    )
+                    1 -> CatalogTabContent(
+                        scriptingFolder = scriptingFolder,
+                        controlsHeight = controlsHeight
+                    )
+                }
+            }
+
+            var scriptingWarning by remember {
+                mutableStateOf<Boolean>(context.sharedPreferences.run {
+                    getBoolean("scripting_warning", true).also {
+                        if (it) edit().putBoolean("scripting_warning", false).apply()
+                    }
+                })
+            }
+
+            if (scriptingWarning) {
+                var timeout by remember { mutableIntStateOf(10) }
+                LaunchedEffect(Unit) {
+                    while (timeout > 0) {
+                        delay(1000)
+                        timeout--
+                    }
+                }
+                AestheticDialog(
+                    onDismissRequest = { if (timeout == 0) scriptingWarning = false },
+                    title = context.translation["manager.dialogs.scripting_warning.title"] ?: "Scripting Warning",
+                    text = context.translation["manager.dialogs.scripting_warning.content"] ?: "Scripts can execute arbitrary code on your device. Only install scripts from trusted sources.",
+                    icon = Icons.Default.Warning,
+                    confirmButtonText = translation["button.ok"] ?: "OK",
+                    onConfirm = { if (timeout == 0) scriptingWarning = false },
+                    loading = timeout > 0,
+                    showCloseButton = false,
+                    customContent = {
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = PurrfectPalette.cardOverlayColor,
+                            tonalElevation = 0.dp,
+                            shadowElevation = 0.dp,
+                            border = BorderStroke(
+                                1.dp,
+                                Brush.linearGradient(
+                                    listOf(
+                                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
+                                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
+                                    )
+                                )
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .background(
+                                            Brush.radialGradient(
+                                                listOf(
+                                                    PurrfectPalette.glowPrimary.copy(alpha = 0.25f),
+                                                    PurrfectPalette.glowSecondary.copy(alpha = 0.18f)
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(18.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = timeout.toString(),
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 20.sp
+                                        )
+                                    }
+                            }
+                        }
+                    }
                 )
             }
         }
@@ -578,7 +686,8 @@ class ScriptingRootSection : Routes.Route() {
 
     @Composable
     private fun InstalledTabContent(
-        scriptingFolder: DocumentFile?
+        scriptingFolder: DocumentFile?,
+        controlsHeight: androidx.compose.ui.unit.Dp
     ) {
         val scriptModules by rememberAsyncMutableState(
             defaultValue = emptyList(),
@@ -605,229 +714,144 @@ class ScriptingRootSection : Routes.Route() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 12.dp)
         ) {
-            Surface(
-                shape = RoundedCornerShape(22.dp),
-                color = Color.White.copy(alpha = 0.04f),
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+            val listState = rememberLazyListState()
+
+            LaunchedEffect(listState.firstVisibleItemScrollOffset, listState.firstVisibleItemIndex) {
+                val offset = if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else listState.firstVisibleItemScrollOffset
+                routes.navigation?.globalScrollOffset = offset
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullRefresh(pullRefreshState),
+                state = listState,
+                contentPadding = PaddingValues(bottom = routes.bottomPadding, start = 8.dp, end = 8.dp, top = 12.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .pullRefresh(pullRefreshState),
-                        contentPadding = PaddingValues(bottom = routes.bottomPadding + 28.dp, start = 8.dp, end = 8.dp, top = 12.dp),
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        item {
-                            if (scriptingFolder == null && !refreshing) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 260.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Surface(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(24.dp),
-                                        color = Color.White.copy(alpha = 0.05f),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            Brush.linearGradient(
-                                                listOf(
-                                                    PurrfectPalette.glowPrimary.copy(alpha = 0.6f),
-                                                    PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
-                                                )
-                                            )
+                item {
+                    if (scriptingFolder == null && !refreshing) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(260.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(24.dp),
+                                color = Color.White.copy(alpha = 0.05f),
+                                border = BorderStroke(
+                                    1.dp,
+                                    Brush.linearGradient(
+                                        listOf(
+                                            PurrfectPalette.glowPrimary.copy(alpha = 0.6f),
+                                            PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
                                         )
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 20.dp, vertical = 22.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(58.dp)
-                                                    .clip(RoundedCornerShape(18.dp))
-                                                    .background(Color.White.copy(alpha = 0.08f)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.FolderOpen,
-                                                    contentDescription = null,
-                                                    tint = PurrfectPalette.glowSecondary,
-                                                    modifier = Modifier.size(28.dp)
-                                                )
-                                            }
-                                            Text(
-                                                text = translation["no_scripts_folder_selected_title"],
-                                                style = MaterialTheme.typography.headlineSmall,
-                                                fontWeight = FontWeight.ExtraBold,
-                                                textAlign = TextAlign.Center,
-                                                color = Color.White
-                                            )
-                                            Text(
-                                                text = translation["select_scripts_folder_toast"],
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                textAlign = TextAlign.Center,
-                                                color = PurrfectPalette.textSecondary,
-                                                lineHeight = 18.sp
-                                            )
-                                            SelectFolderButton(
-                                                onClick = {
-                                                    activityLauncherHelper.chooseFolder {
-                                                        context.config.root.scripting.moduleFolder.set(it)
-                                                        context.config.writeConfig()
-                                                        coroutineScope.launch { reloadDispatcher.dispatch() }
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            } else if (scriptModules.isEmpty()) {
-                                Box(
+                                    )
+                                )
+                            ) {
+                                Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(220.dp),
-                                    contentAlignment = Alignment.Center
+                                        .padding(horizontal = 20.dp, vertical = 22.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(14.dp)
                                 ) {
-                                    AestheticEmptyState(
-                                        icon = Icons.Default.DataObject,
-                                        title = translation["no_scripts_found_title"],
-                                        subtitle = translation["use_catalog_to_add_scripts"],
+                                    Box(
                                         modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 22.dp)
+                                            .size(58.dp)
+                                            .clip(RoundedCornerShape(18.dp))
+                                            .background(Color.White.copy(alpha = 0.08f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.FolderOpen,
+                                            contentDescription = null,
+                                            tint = PurrfectPalette.glowSecondary,
+                                            modifier = Modifier.size(28.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = translation["no_scripts_folder_selected_title"] ?: "No scripts folder selected",
+                                        style = MaterialTheme.typography.headlineSmall,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        textAlign = TextAlign.Center,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = translation["select_scripts_folder_toast"] ?: "Please select a folder to store scripts.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        textAlign = TextAlign.Center,
+                                        color = PurrfectPalette.textSecondary,
+                                        lineHeight = 18.sp
+                                    )
+                                    SelectFolderButton(
+                                        onClick = {
+                                            activityLauncherHelper.chooseFolder {
+                                                context.config.root.scripting.moduleFolder.set(it)
+                                                context.config.writeConfig()
+                                                coroutineScope.launch { reloadDispatcher.dispatch() }
+                                            }
+                                        }
                                     )
                                 }
                             }
                         }
-                        items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
-                            ModuleItem(scriptModules[index])
-                        }
-                    }
-                    PullRefreshIndicator(
-                        refreshing = refreshing,
-                        state = pullRefreshState,
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = 8.dp)
-                    )
-                }
-            }
-        }
-        var scriptingWarning by remember {
-            mutableStateOf(context.sharedPreferences.run {
-                getBoolean("scripting_warning", true).also {
-                    edit().putBoolean("scripting_warning", false).apply()
-                }
-            })
-        }
-        if (scriptingWarning) {
-            var timeout by remember { mutableIntStateOf(10) }
-            LaunchedEffect(Unit) {
-                while (timeout > 0) {
-                    delay(1000)
-                    timeout--
-                }
-            }
-            AestheticDialog(
-                onDismissRequest = { if (timeout == 0) scriptingWarning = false },
-                title = context.translation["manager.dialogs.scripting_warning.title"],
-                text = context.translation["manager.dialogs.scripting_warning.content"],
-                icon = Icons.Default.Warning,
-                confirmButtonText = translation["button.ok"],
-                onConfirm = { if (timeout == 0) scriptingWarning = false },
-                loading = timeout > 0,
-                showCloseButton = false,
-                customContent = {
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = PurrfectPalette.cardOverlayColor,
-                        tonalElevation = 0.dp,
-                        shadowElevation = 0.dp,
-                        border = BorderStroke(
-                            1.dp,
-                            Brush.linearGradient(
-                                listOf(
-                                    PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                                    PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                                )
-                            )
-                        )
-                    ) {
-                        Column(
+                    } else if (scriptModules.isEmpty()) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                .height(220.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
+                            AestheticEmptyState(
+                                icon = Icons.Default.DataObject,
+                                title = translation["no_scripts_found_title"] ?: "No scripts found",
+                                subtitle = translation["use_catalog_to_add_scripts"] ?: "Check the catalog to find and install scripts.",
                                 modifier = Modifier
-                                    .size(64.dp)
-                                    .background(
-                                        Brush.radialGradient(
-                                            listOf(
-                                                PurrfectPalette.glowPrimary.copy(alpha = 0.25f),
-                                                PurrfectPalette.glowSecondary.copy(alpha = 0.18f)
-                                            )
-                                        ),
-                                        shape = RoundedCornerShape(18.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = timeout.toString(),
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 20.sp
-                                    )
-                                }
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 22.dp)
+                            )
                         }
                     }
                 }
+                items(scriptModules.size, key = { scriptModules[it].hashCode() }) { index ->
+                    ModuleItem(scriptModules[index])
+                }
+            }
+            PullRefreshIndicator(
+                refreshing = refreshing,
+                state = pullRefreshState,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 8.dp)
             )
         }
     }
 
     @Composable
     private fun CatalogTabContent(
-        scriptingFolder: DocumentFile?
+        scriptingFolder: DocumentFile?,
+        controlsHeight: androidx.compose.ui.unit.Dp
     ) {
-        val coroutineScope = rememberCoroutineScope()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 12.dp)
         ) {
-            Surface(
-                shape = RoundedCornerShape(22.dp),
-                color = Color.White.copy(alpha = 0.04f),
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
-            ) {
-                if (scriptingFolder == null) {
-                    AestheticEmptyState(
-                        icon = Icons.Default.FolderOpen,
-                        title = translation["no_scripts_folder_selected_title"],
-                        subtitle = translation["select_scripts_folder_toast"],
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 22.dp)
-                    )
-                } else {
-                    ScriptCatalog(this@ScriptingRootSection)
-                }
+            if (scriptingFolder == null) {
+                AestheticEmptyState(
+                    icon = Icons.Default.FolderOpen,
+                    title = translation["no_scripts_folder_selected_title"] ?: "No scripts folder selected",
+                    subtitle = translation["select_scripts_folder_toast"] ?: "Please select a folder to store scripts.",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 22.dp)
+                )
+            } else {
+                ScriptCatalog(this@ScriptingRootSection)
             }
         }
     }
@@ -841,71 +865,67 @@ class ScriptingRootSection : Routes.Route() {
         onOpenFolder: () -> Unit,
         onManageRepos: () -> Unit,
         onDocs: () -> Unit,
-        folderSelected: Boolean
+        folderSelected: Boolean,
+        onPositioned: (androidx.compose.ui.unit.Dp) -> Unit = {}
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp)
-                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
-            shape = RoundedCornerShape(26.dp),
-            color = Color.White.copy(alpha = 0.07f),
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-            border = BorderStroke(
-                1.dp,
-                Brush.linearGradient(
-                    listOf(
-                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                    )
-                )
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = translation["manager.routes.scripts"],
-                            color = Color.White,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
-                        )
+        val scrollOffset = routes.navigation?.globalScrollOffset ?: 0
+        val shrinkThreshold = 300f
+        val focusFactor = (scrollOffset / shrinkThreshold).coerceIn(0f, 1f)
+        val tabSwitcherAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+        Column(modifier = Modifier.headerHeightTracker(onPositioned), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
+                title = translation["manager.routes.scripts"] ?: "Scripts",
+                subtitle = if (selectedTab == 0) translation["installed_scripts_tab"] else translation["catalog_tab"],
+                scrollOffset = scrollOffset,
+                actions = {
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onDocs()
+                    }) {
+                        Icon(Icons.Default.CollectionsBookmark, contentDescription = translation["documentation_button"], tint = Color.White)
                     }
-                    Row(
-                        modifier = Modifier.wrapContentWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = onDocs) {
-                            Icon(Icons.Default.CollectionsBookmark, contentDescription = translation["documentation_button"], tint = Color.White)
-                        }
-                        IconButton(onClick = onManageRepos) {
-                            Icon(Icons.Default.Public, contentDescription = translation["manage_repos_button"], tint = Color.White)
-                        }
-                        IconButton(onClick = onOpenFolder) {
-                            Icon(Icons.Default.FolderOpen, contentDescription = translation["open_scripts_folder_button"], tint = Color.White)
-                        }
-                        IconButton(onClick = onImport, enabled = folderSelected) {
-                            Icon(Icons.Default.Link, contentDescription = translation["import_from_url_button"], tint = if (folderSelected) Color.White else Color.White.copy(alpha = 0.4f))
-                        }
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onManageRepos()
+                    }) {
+                        Icon(Icons.Default.Public, contentDescription = translation["manage_repos_button"], tint = Color.White)
+                    }
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onOpenFolder()
+                    }) {
+                        Icon(Icons.Default.FolderOpen, contentDescription = translation["open_scripts_folder_button"], tint = Color.White)
+                    }
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onImport()
+                    }, enabled = folderSelected) {
+                        Icon(Icons.Default.Link, contentDescription = translation["import_from_url_button"], tint = if (folderSelected) Color.White else Color.White.copy(alpha = 0.4f))
                     }
                 }
-                ScriptingTabSwitcher(
-                    titles = titles,
-                    selectedTab = selectedTab,
-                    onTabSelected = onTabSelected
-                )
+            )
+
+            if (tabSwitcherAlpha > 0.05f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp)
+                        .graphicsLayer {
+                            alpha = tabSwitcherAlpha
+                            translationY = (-10 * focusFactor).dp.toPx()
+                        }
+                ) {
+                    ScriptingTabSwitcher(
+                        titles = titles,
+                        selectedTab = selectedTab,
+                        onTabSelected = { index ->
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onTabSelected(index)
+                        }
+                    )
+                }
             }
         }
     }
@@ -956,5 +976,5 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-    override val topBarActions: @Composable() (RowScope.() -> Unit) = {}
+    override val topBarActions: @Composable RowScope.() -> Unit = {}
 }

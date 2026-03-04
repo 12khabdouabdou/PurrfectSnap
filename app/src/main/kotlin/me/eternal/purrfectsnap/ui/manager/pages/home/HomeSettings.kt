@@ -55,6 +55,7 @@ import me.eternal.purrfectsnap.task.UpdateCheckWorker
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.setup.Requirements
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
 import me.eternal.purrfectsnap.ui.util.AlertDialogs
@@ -173,6 +174,7 @@ class HomeSettings : Routes.Route() {
                 confirmButtonText = positiveLabel,
                 dismissButtonText = negativeLabel,
                 onConfirm = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     value = false
                     sharedPreferences.edit().putBoolean(realKey, false).apply()
                     showDisableDialog = false
@@ -187,9 +189,7 @@ class HomeSettings : Routes.Route() {
                 .fillMaxWidth()
                 .heightIn(min = 55.dp)
                 .clickable {
-                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     val nextValue = !value
                     if (!nextValue && confirmDisableTitle != null) {
                         showDisableDialog = true
@@ -203,7 +203,7 @@ class HomeSettings : Routes.Route() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = text, modifier = Modifier.padding(start = 26.dp, end = 16.dp), fontSize = 14.sp)
+            Text(text = text, modifier = Modifier.padding(start = 26.dp, end = 16.dp), fontSize = 14.sp, color = Color.White)
             Switch(
                 checked = value,
                 onCheckedChange = null,
@@ -223,9 +223,7 @@ class HomeSettings : Routes.Route() {
                 .fillMaxWidth()
                 .heightIn(min = 55.dp)
                 .clickable {
-                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                    }
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     value = !value
                     sharedPreferences
                         .edit() {
@@ -235,7 +233,7 @@ class HomeSettings : Routes.Route() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = text, modifier = Modifier.padding(start = 26.dp, end = 16.dp), fontSize = 14.sp)
+            Text(text = text, modifier = Modifier.padding(start = 26.dp, end = 16.dp), fontSize = 14.sp, color = Color.White)
             Switch(
                 checked = value,
                 onCheckedChange = null,
@@ -247,10 +245,12 @@ class HomeSettings : Routes.Route() {
 
     @Composable
     private fun RowAction(key: String, requireConfirmation: Boolean = false, action: () -> Unit) {
+        val hapticFeedback = LocalHapticFeedback.current
         var confirmationDialog by remember {
             mutableStateOf(false)
         }
         fun takeAction() {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
             if (requireConfirmation) {
                 confirmationDialog = true
             } else {
@@ -260,6 +260,7 @@ class HomeSettings : Routes.Route() {
         if (requireConfirmation && confirmationDialog) {
             Dialog(onDismissRequest = { confirmationDialog = false }) {
                 dialogs.ConfirmDialog(title = context.translation["manager.dialogs.action_confirm.title"], onConfirm = {
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     action()
                     confirmationDialog = false
                 }, onDismiss = {
@@ -280,8 +281,8 @@ class HomeSettings : Routes.Route() {
             Column(
                 modifier = Modifier.weight(1f),
             ) {
-                Text(text = context.translation["actions.$key.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp)
-                context.translation.getOrNull("actions.$key.description")?.let { Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp) }
+                Text(text = context.translation["actions.$key.name"], fontSize = 16.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp, color = Color.White)
+                context.translation.getOrNull("actions.$key.description")?.let { Text(text = it, fontSize = 12.sp, fontWeight = FontWeight.Light, lineHeight = 15.sp, color = PurrfectPalette.textSecondary) }
             }
             IconButton(onClick = { takeAction() },
                 modifier = Modifier.padding(end = 2.dp)
@@ -289,7 +290,8 @@ class HomeSettings : Routes.Route() {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                     contentDescription = context.translation.getOrNull("actions.$key.name"),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.White
                 )
             }
         }
@@ -313,6 +315,12 @@ class HomeSettings : Routes.Route() {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
         val scrollState = rememberScrollState()
+        val hapticFeedback = LocalHapticFeedback.current
+
+        LaunchedEffect(scrollState.value) {
+            routes.navigation?.globalScrollOffset = scrollState.value
+        }
+
         val positiveLabel = context.translation["button.positive"]
         val negativeLabel = context.translation["button.negative"]
         val importLabel = context.translation["button.import"]
@@ -372,109 +380,27 @@ class HomeSettings : Routes.Route() {
         }
 
         val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        var controlsHeight by remember { mutableStateOf(100.dp) }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
-            if (showResetSetupDialog) {
-                AestheticDialog(
-                    onDismissRequest = { showResetSetupDialog = false },
-                    title = translation["reset_setup_dialog_title"],
-                    text = translation["reset_setup_dialog_text"],
-                    icon = Icons.Filled.Warning,
-                    confirmButtonText = positiveLabel,
-                    dismissButtonText = negativeLabel,
-                    onConfirm = {
-                        showResetSetupDialog = false
-                        context.sharedPreferences.edit()
-                            .remove("setup_in_progress")
-                            .remove("setup_current_route")
-                            .remove("setup_skip_patch")
-                            .remove("setup_install_mode")
-                            .apply()
-
-                        context.config.reset()
-                        context.config.writeConfig()
-
-                        val intent = android.content.Intent(
-                            context.androidContext,
-                            me.eternal.purrfectsnap.ui.setup.SetupActivity::class.java
-                        )
-                        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
-                            android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        context.androidContext.startActivity(intent)
-                        routes.navController.popBackStack()
-                    },
-                    onDismiss = { showResetSetupDialog = false },
-                    showCloseButton = false
-                )
-            }
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Spacer(modifier = Modifier.height(topPadding))
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 12.dp),
-                    shape = RoundedCornerShape(26.dp),
-                    color = Color.White.copy(alpha = 0.07f),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp,
-                    border = BorderStroke(
-                        1.dp,
-                        Brush.linearGradient(
-                            listOf(
-                                PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                                PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                            )
-                        )
-                    ),
-                    contentColor = Color.White
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        IconButton(onClick = { routes.navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                        }
-                        Text(
-                            text = translation["manager.routes.home_settings"],
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
-                        )
-                        IconButton(onClick = { routes.navigation?.openBottomBarCustomization = true }) {
-                            Icon(
-                                imageVector = Icons.Filled.Tune,
-                                contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.85f)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
+                         Column(
+                             modifier = Modifier
+                                 .fillMaxSize()
+                                 .verticalScroll(scrollState)
+                                 .padding(top = controlsHeight, bottom = routes.bottomPadding)
+                         ) {
+            
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
                     GlassCard {
                         RowTitle(title = translation["actions_title"])
                         EnumAction.entries.forEach { enumAction ->
@@ -486,56 +412,52 @@ class HomeSettings : Routes.Route() {
 
                     GlassCard {
                         RowTitle(title = translation["ui_settings_title"])
-                        ShiftedRow {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 55.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = translation["haptic_feedback_label"])
-                                    var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
-                                    val hapticFeedback = LocalHapticFeedback.current
-                                    Switch(
-                                        checked = hapticFeedbackEnabled,
-                                        onCheckedChange = {
-                                            if (it) {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            }
-                                            hapticFeedbackEnabled = it
-                                            context.config.root.global.uiSettings.hapticFeedback.set(it)
-                                            context.config.writeConfig()
-                                        },
-                                        modifier = Modifier.padding(end = 26.dp),
-                                        colors = purrfectSwitchColors()
-                                    )
-                                }
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 55.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = translation["use_system_toasts_label"])
-                                    var useSystemToasts by remember { mutableStateOf(context.config.root.global.uiSettings.useSystemToasts.getNullable() ?: false) }
-                                    val hapticFeedback = LocalHapticFeedback.current
-                                    Switch(
-                                        checked = useSystemToasts,
-                                        onCheckedChange = {
-                                            if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            }
-                                            useSystemToasts = it
-                                            context.config.root.global.uiSettings.useSystemToasts.set(it)
-                                            context.config.writeConfig()
-                                        },
-                                        modifier = Modifier.padding(end = 26.dp),
-                                        colors = purrfectSwitchColors()
-                                    )
-                                }
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 55.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = translation["haptic_feedback_label"], color = Color.White, modifier = Modifier.padding(start = 26.dp, end = 16.dp))
+                                var hapticFeedbackEnabled by remember { mutableStateOf(context.config.root.global.uiSettings.hapticFeedback.getNullable() ?: true) }
+                                Switch(
+                                    checked = hapticFeedbackEnabled,
+                                    onCheckedChange = {
+                                        if (it) {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        }
+                                        hapticFeedbackEnabled = it
+                                        context.config.root.global.uiSettings.hapticFeedback.set(it)
+                                        context.config.writeConfig()
+                                    },
+                                    modifier = Modifier.padding(end = 26.dp),
+                                    colors = purrfectSwitchColors()
+                                )
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 55.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = translation["use_system_toasts_label"], color = Color.White, modifier = Modifier.padding(start = 26.dp, end = 16.dp))
+                                var useSystemToasts by remember { mutableStateOf(context.config.root.global.uiSettings.useSystemToasts.getNullable() ?: false) }
+                                Switch(
+                                    checked = useSystemToasts,
+                                    onCheckedChange = {
+                                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        }
+                                        useSystemToasts = it
+                                        context.config.root.global.uiSettings.useSystemToasts.set(it)
+                                        context.config.writeConfig()
+                                    },
+                                    modifier = Modifier.padding(end = 26.dp),
+                                    colors = purrfectSwitchColors()
+                                )
                             }
                         }
                     }
@@ -546,31 +468,28 @@ class HomeSettings : Routes.Route() {
                             var autoUpdateCheck by remember { mutableStateOf(context.config.root.global.updateSettings.autoUpdateCheck.getNullable() ?: true) }
                             var selectedChannel by remember { mutableStateOf(context.config.root.global.updateSettings.updateChannel.getNullable() ?: "stable") }
                             var channelMenuExpanded by remember { mutableStateOf(false) }
-                            ShiftedRow {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(min = 55.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(text = translation["auto_update_check"])
-                                    val hapticFeedback = LocalHapticFeedback.current
-                                    Switch(
-                                        checked = autoUpdateCheck,
-                                        onCheckedChange = {
-                                            if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        }
-                                        autoUpdateCheck = it
-                                        context.config.root.global.updateSettings.autoUpdateCheck.set(it)
-                                        context.config.writeConfig()
-                                        scheduleUpdateCheck()
-                                    },
-                                    modifier = Modifier.padding(end = 26.dp),
-                                        colors = purrfectSwitchColors()
-                                    )
-                                }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 55.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(text = translation["auto_update_check"], color = Color.White, modifier = Modifier.padding(start = 26.dp, end = 16.dp))
+                                Switch(
+                                    checked = autoUpdateCheck,
+                                    onCheckedChange = {
+                                        if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    autoUpdateCheck = it
+                                    context.config.root.global.updateSettings.autoUpdateCheck.set(it)
+                                    context.config.writeConfig()
+                                    scheduleUpdateCheck()
+                                },
+                                modifier = Modifier.padding(end = 26.dp),
+                                    colors = purrfectSwitchColors()
+                                )
                             }
                             AnimatedVisibility(visible = autoUpdateCheck) {
                                 val spacingModifier = Modifier
@@ -628,12 +547,14 @@ class HomeSettings : Routes.Route() {
                                 text = translation["reset_setup_action"],
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
-                                lineHeight = 20.sp
+                                lineHeight = 20.sp,
+                                color = Color.White
                             )
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                 contentDescription = translation["reset_setup_action"],
-                                modifier = Modifier.padding(end = 14.dp)
+                                modifier = Modifier.padding(end = 14.dp),
+                                tint = Color.White
                             )
                         }
                     }
@@ -933,35 +854,83 @@ class HomeSettings : Routes.Route() {
                                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.18f)),
                                     shape = RoundedCornerShape(14.dp)
                                 ) {
-                                    Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(translation["clear_button"])
                                 }
                             }
-                            ShiftedRow {
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
-                                    PremiumPreferenceToggle(
-                                        context.sharedPreferences,
-                                        key = "test_mode",
-                                        text = translation["test_mode_label"],
-                                        defaultValue = true,
-                                        confirmDisableTitle = translation["purr_aura_disable_title"],
-                                        confirmDisableText = translation["purr_aura_disable_text"]
-                                    )
-                                    PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = translation["disable_feature_loading_label"])
-                                    PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = translation["disable_auto_mapper_label"])
-                                    PreferenceToggle(context.sharedPreferences, key = "disable_bypass_indicator", text = translation["disable_bypass_indicator_label"])
-                                }
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                            ) {
+                                PremiumPreferenceToggle(
+                                    context.sharedPreferences,
+                                    key = "test_mode",
+                                    text = translation["test_mode_label"],
+                                    defaultValue = true,
+                                    confirmDisableTitle = translation["purr_aura_disable_title"],
+                                    confirmDisableText = translation["purr_aura_disable_text"]
+                                )
+                                PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = translation["disable_feature_loading_label"])
+                                PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = translation["disable_auto_mapper_label"])
+                                PreferenceToggle(context.sharedPreferences, key = "disable_bypass_indicator", text = translation["disable_bypass_indicator_label"])
                             }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(routes.bottomPadding + 12.dp))
                 }
+            }
+
+            me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
+                title = translation["manager.routes.home_settings"] ?: "Settings",
+                onBack = { routes.navController.popBackStack() },
+                scrollOffset = scrollState.value,
+                modifier = Modifier.headerHeightTracker { controlsHeight = it },
+                actions = {
+                    IconButton(onClick = { 
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                        routes.navigation?.openBottomBarCustomization = true 
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Tune,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.85f)
+                        )
+                    }
+                }
+            )
+
+            if (showResetSetupDialog) {
+                AestheticDialog(
+                    onDismissRequest = { showResetSetupDialog = false },
+                    title = translation["reset_setup_dialog_title"],
+                    text = translation["reset_setup_dialog_text"],
+                    icon = Icons.Filled.Warning,
+                    confirmButtonText = positiveLabel,
+                    dismissButtonText = negativeLabel,
+                    onConfirm = {
+                        showResetSetupDialog = false
+                        context.sharedPreferences.edit()
+                            .remove("setup_in_progress")
+                            .remove("setup_current_route")
+                            .remove("setup_skip_patch")
+                            .remove("setup_install_mode")
+                            .apply()
+
+                        context.config.reset()
+                        context.config.writeConfig()
+
+                        val intent = android.content.Intent(
+                            context.androidContext,
+                            me.eternal.purrfectsnap.ui.setup.SetupActivity::class.java
+                        )
+                        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                            android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.androidContext.startActivity(intent)
+                        routes.navController.popBackStack()
+                    },
+                    onDismiss = { showResetSetupDialog = false },
+                    showCloseButton = false
+                )
             }
         }
     }
-}
 }

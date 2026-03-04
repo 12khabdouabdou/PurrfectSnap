@@ -21,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,6 +46,7 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.util.AlertDialogs
 import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
@@ -118,16 +118,13 @@ class ManageScope: Routes.Route() {
                 },
                 modifier = Modifier
                     .zIndex(2f)
-                    .onGloballyPositioned {
-                        val newHeight = with(density) { it.size.height.toDp() }
-                        if (newHeight != topBarHeight) topBarHeight = newHeight
-                    }
+                    .headerHeightTracker { topBarHeight = it }
             )
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = topBarHeight + 8.dp)
+                    .padding(top = topBarHeight)
                     .verticalScroll(rememberScrollState())
             ) {
             var bottomComposable by remember {
@@ -367,29 +364,19 @@ class ManageScope: Routes.Route() {
 
     private fun computeStreakETA(timestamp: Long): String? {
         val now = System.currentTimeMillis()
-        val stringBuilder = StringBuilder()
         val diff = timestamp - now
         val seconds = diff / 1000
         val minutes = seconds / 60
         val hours = minutes / 60
         val days = hours / 24
-        if (days > 0) {
-            stringBuilder.append("$days day ")
-            return stringBuilder.toString()
+        
+        return when {
+            days > 0 -> translation.format(if (days == 1L) "eta_day" else "eta_days", "count" to days.toString())
+            hours > 0 -> translation.format(if (hours == 1L) "eta_hour" else "eta_hours", "count" to hours.toString())
+            minutes > 0 -> translation.format(if (minutes == 1L) "eta_minute" else "eta_minutes", "count" to minutes.toString())
+            seconds > 0 -> translation.format(if (seconds == 1L) "eta_second" else "eta_seconds", "count" to seconds.toString())
+            else -> null
         }
-        if (hours > 0) {
-            stringBuilder.append("$hours hours ")
-            return stringBuilder.toString()
-        }
-        if (minutes > 0) {
-            stringBuilder.append("$minutes minutes ")
-            return stringBuilder.toString()
-        }
-        if (seconds > 0) {
-            stringBuilder.append("$seconds seconds ")
-            return stringBuilder.toString()
-        }
-        return null
     }
 
     @OptIn(ExperimentalEncodingApi::class)

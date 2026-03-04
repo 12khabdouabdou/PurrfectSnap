@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -72,6 +73,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -122,22 +124,37 @@ class Navigation(
 ) {
     private val translation by lazy { context.translation.getCategory("manager.navigation") }
     var openBottomBarCustomization by mutableStateOf(false)
+    var globalScrollOffset by mutableIntStateOf(0)
+
     @Composable
     fun TopBar() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         if (currentRoute?.routeInfo?.hasOwnTopBar == true) return
+        
+        val shrinkThreshold = me.eternal.purrfectsnap.ui.util.Motion.HEADER_MORPH_THRESHOLD
+        val focusFactor = (globalScrollOffset / shrinkThreshold).coerceIn(0f, 1f)
+        val headerHeight = lerp(64.dp, 48.dp, focusFactor)
+
         val canGoBack = remember(navBackStackEntry) {
             currentRoute?.let { !it.routeInfo.primary || it.routeInfo.childIds.contains(routes.currentDestination) } == true
         }
+        val haptic = LocalHapticFeedback.current
         TopAppBar(
+            modifier = Modifier.height(headerHeight),
             title = {
                 currentRoute?.apply {
                     title?.invoke() ?: routeInfo.translatedKey?.value?.let {
                         Text(
                             text = it,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.graphicsLayer {
+                                // Title stays visible but scales slightly down
+                                scaleX = 1f - (focusFactor * 0.05f)
+                                scaleY = 1f - (focusFactor * 0.05f)
+                                translationY = (-2 * focusFactor).dp.toPx()
+                            }
                         )
                     }
                 }
@@ -146,11 +163,20 @@ class Navigation(
                 val backButtonAnimation by animateFloatAsState(if (canGoBack) 1f else 0f, label = "backButton")
                 Box(
                     modifier = Modifier
-                        .graphicsLayer { alpha = backButtonAnimation }
+                        .graphicsLayer { 
+                            alpha = backButtonAnimation 
+                            scaleX = 1f - (focusFactor * 0.1f)
+                            scaleY = 1f - (focusFactor * 0.1f)
+                        }
                         .width(lerp(0.dp, 48.dp, backButtonAnimation))
                         .height(48.dp)
                 ) {
-                    IconButton(onClick = { if (canGoBack) navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        if (canGoBack) {
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            navController.popBackStack() 
+                        }
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 }
@@ -162,7 +188,10 @@ class Navigation(
             actions = {
                 currentRoute?.topBarActions?.invoke(this)
                 if (currentRoute?.routeInfo?.id == routes.settings.routeInfo.id) {
-                    IconButton(onClick = { openBottomBarCustomization = true }) {
+                    IconButton(onClick = { 
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        openBottomBarCustomization = true 
+                    }) {
                         Icon(Icons.Filled.Tune, contentDescription = null)
                     }
                 }
@@ -171,12 +200,20 @@ class Navigation(
     }
     @Composable
     fun FloatingBottomBar() {
+        val haptic = LocalHapticFeedback.current
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = remember(navBackStackEntry) { routes.getCurrentRoute(navBackStackEntry) }
         val availableRoutes = remember {
             listOf(routes.tasks, routes.features, routes.home, routes.social, routes.scripting, routes.friendTracker)
         }
         val availableRouteMap = remember(availableRoutes) { availableRoutes.associateBy { it.routeInfo.id } }
+        
+        val shrinkThreshold = me.eternal.purrfectsnap.ui.util.Motion.HEADER_MORPH_THRESHOLD
+        val focusFactor = (globalScrollOffset / shrinkThreshold).coerceIn(0f, 1f)
+        val barHeight = lerp(82.dp, 64.dp, focusFactor)
+        val labelAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
+        val iconTranslationY = (10 * focusFactor).dp // Sinks towards vertical center
+
         val prefs = remember { context.sharedPreferences }
         val defaultOrder = remember { listOf("tasks", "features", "home", "social", "scripts") }
         fun loadSelected(): List<String> {
@@ -233,11 +270,20 @@ class Navigation(
             val animatedBarWidth by animateDpAsState(targetValue = targetBarWidth ?: 0.dp, label = "barWidth")
             Surface(
                 shape = barShape,
-                color = Color.Transparent,
+                color = Color.White.copy(alpha = 0.08f), // Apply translucent overlay for depth
                 contentColor = MaterialTheme.colorScheme.onSurface,
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                border = BorderStroke(
+                    1.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            PurrfectPalette.glowPrimary.copy(alpha = 0.9f),
+                            PurrfectPalette.glowSecondary.copy(alpha = 0.85f)
+                        )
+                    )
+                ),
                 modifier = Modifier
                     .then(if (targetBarWidth != null) Modifier.width(animatedBarWidth) else Modifier.fillMaxWidth())
+                    .height(barHeight)
                     .drawBehind {
                         val radius = size.width * 0.62f
                         drawCircle(
@@ -263,7 +309,7 @@ class Navigation(
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .height(82.dp)
+                        .height(barHeight)
                         .clip(barShape)
                         .background(PurrfectPalette.cardOverlay)
                         .border(BorderStroke(1.dp, barBorder), barShape)
@@ -296,7 +342,7 @@ class Navigation(
                                 )
                             }
                     )
-                    Box(Modifier.fillMaxWidth().height(82.dp)) {
+                    Box(Modifier.fillMaxWidth().height(barHeight)) {
                         var barWidthPx by remember { mutableStateOf(0f) }
                         val itemCount = selectedRoutes.size.coerceAtLeast(1)
                         val density = androidx.compose.ui.platform.LocalDensity.current
@@ -369,7 +415,7 @@ class Navigation(
                                             .fillMaxHeight()
                                             .width(indicatorWidth.coerceAtLeast(0.dp))
                                             .offset(x = offsetX)
-                                            .padding(vertical = 10.dp, horizontal = 2.dp)
+                                            .padding(vertical = lerp(10.dp, 8.dp, focusFactor), horizontal = 2.dp)
                                             .graphicsLayer { scaleX = scaleXAnim; scaleY = scaleYAnim }
                                     ) {
                                         Box(
@@ -430,7 +476,10 @@ class Navigation(
                                             contentDescription = null,
                                             modifier = Modifier
                                                 .size(22.dp + 2.dp * selectionProgress)
-                                                .graphicsLayer { alpha = 0.65f + 0.35f * selectionProgress }
+                                                .graphicsLayer { 
+                                                    alpha = 0.65f + 0.35f * selectionProgress
+                                                    translationY = iconTranslationY.toPx()
+                                                }
                                         )
                                     },
                                     label = {
@@ -441,11 +490,15 @@ class Navigation(
                                             textAlign = TextAlign.Center,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.SemiBold,
-                                            color = Color.White.copy(alpha = 0.6f + 0.4f * selectionProgress),
+                                            color = Color.White.copy(alpha = (0.6f + 0.4f * selectionProgress) * labelAlpha),
                                             maxLines = if (isLong) 2 else 1,
                                             overflow = if (isLong) TextOverflow.Ellipsis else TextOverflow.Clip,
                                             softWrap = isLong,
-                                            modifier = if (isLong) Modifier.widthIn(max = 90.dp).wrapContentWidth(Alignment.CenterHorizontally) else Modifier.wrapContentWidth(Alignment.CenterHorizontally)
+                                            modifier = (if (isLong) Modifier.widthIn(max = 90.dp).wrapContentWidth(Alignment.CenterHorizontally) else Modifier.wrapContentWidth(Alignment.CenterHorizontally))
+                                                .graphicsLayer {
+                                                    alpha = labelAlpha
+                                                    translationY = (-10 * focusFactor).dp.toPx() // Fall into icon
+                                                }
                                         )
                                     },
                                     selected = isSelected,
@@ -456,7 +509,10 @@ class Navigation(
                                         unselectedTextColor = Color.White.copy(alpha = 0.72f),
                                         indicatorColor = Color.Transparent
                                     ),
-                                    onClick = { route.navigateReset() }
+                                    onClick = { 
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                        route.navigateReset() 
+                                    }
                                 )
                             }
                         }
@@ -805,3 +861,4 @@ class Navigation(
     @Composable fun FloatingActionButton() = Fab()
     @Composable fun Content(paddingValues: PaddingValues, startDestination: String) = NavContent(paddingValues, startDestination)
 }
+

@@ -1,40 +1,19 @@
 package me.eternal.purrfectsnap.ui.manager.pages.home
 
+import android.os.SystemClock
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -57,9 +37,12 @@ import me.eternal.purrfectsnap.common.util.ktx.openLink
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
-import android.os.SystemClock
+import me.eternal.purrfectsnap.ui.util.PurrfectMarqueeText
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 
 class HomeAbout : Routes.Route() {
+    override val translation by lazy { context.translation.getCategory("manager.sections.home_about") }
+
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val avenirNext = remember {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
@@ -67,16 +50,19 @@ class HomeAbout : Routes.Route() {
         val scrollState = rememberScrollState()
         val aboutStory = remember { translation["about_story"] }
         val pagePadding = 16.dp
-        val bottomPadding = routes.bottomPadding +
-            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() +
-            24.dp
+        val bottomPadding = routes.bottomPadding
         val tapSource = remember { MutableInteractionSource() }
         val tapTimeoutMs = 1500L
         val tapCount = remember { mutableIntStateOf(0) }
         val lastTapTime = remember { mutableLongStateOf(0L) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         LaunchedEffect(Unit) {
             context.shortToast(translation["about_magic_toast"])
+        }
+
+        LaunchedEffect(scrollState.value) {
+            routes.navigation?.globalScrollOffset = scrollState.value
         }
 
         Box(
@@ -84,19 +70,14 @@ class HomeAbout : Routes.Route() {
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
+            var controlsHeight by remember { mutableStateOf(100.dp) }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(bottom = bottomPadding)
+                    .padding(top = controlsHeight, bottom = bottomPadding)
             ) {
-                FloatingTopBar(
-                    title = routeInfo.translatedKey?.value ?: translation["manager.routes.home_about"],
-                    onBack = { routes.navController.popBackStack() }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
                 Surface(
                     modifier = Modifier
                         .padding(horizontal = pagePadding)
@@ -124,6 +105,7 @@ class HomeAbout : Routes.Route() {
                                 interactionSource = tapSource,
                                 indication = null
                             ) {
+                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                 val now = SystemClock.elapsedRealtime()
                                 if (now - lastTapTime.longValue > tapTimeoutMs) {
                                     tapCount.intValue = 0
@@ -156,15 +138,17 @@ class HomeAbout : Routes.Route() {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             DeveloperCard(
-                                name = "ΞTΞRNAL",
+                                name = translation["about_dev_external"],
                                 imageRes = R.drawable.pfp_external,
                                 avenirNext = avenirNext,
+                                haptic = haptic,
                                 modifier = Modifier.weight(1f)
                             )
                             DeveloperCard(
-                                name = "<RSR/>",
+                                name = translation["about_dev_rsr"],
                                 imageRes = R.drawable.pfp_rsr,
                                 avenirNext = avenirNext,
+                                haptic = haptic,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -176,7 +160,8 @@ class HomeAbout : Routes.Route() {
                 Surface(
                     modifier = Modifier
                         .padding(horizontal = pagePadding)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .widthIn(max = 500.dp),
                     shape = RoundedCornerShape(26.dp),
                     color = Color.Transparent,
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
@@ -186,20 +171,24 @@ class HomeAbout : Routes.Route() {
                     Column(
                         modifier = Modifier
                             .background(PurrfectPalette.cardOverlay)
-                            .padding(horizontal = 20.dp, vertical = 18.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                            .padding(horizontal = 24.dp, vertical = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = translation["about_story_title"],
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.White,
+                            textAlign = TextAlign.Center
                         )
                         Text(
                             text = aboutStory,
                             fontSize = 14.sp,
                             color = PurrfectPalette.textSecondary,
-                            lineHeight = 20.sp
+                            textAlign = TextAlign.Justify,
+                            lineHeight = 22.sp,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
@@ -237,6 +226,7 @@ class HomeAbout : Routes.Route() {
                             Button(
                                 modifier = Modifier.weight(1f),
                                 onClick = {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                     context.androidContext.openLink(
                                         "https://github.com/particle-box/PurrfectSnap",
                                         context.translation["toast_open_link_failed"]
@@ -258,6 +248,7 @@ class HomeAbout : Routes.Route() {
                             OutlinedButton(
                                 modifier = Modifier.weight(1f),
                                 onClick = {
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                     context.androidContext.openLink(
                                         "https://t.me/purrfectsnap_official",
                                         context.translation["toast_open_link_failed"]
@@ -278,9 +269,14 @@ class HomeAbout : Routes.Route() {
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(32.dp))
             }
+
+            FloatingTopBar(
+                title = context.translation["manager.routes.home_about"] ?: "About Us",
+                onBack = { routes.navController.popBackStack() },
+                scrollOffset = scrollState.value,
+                modifier = Modifier.headerHeightTracker { controlsHeight = it }
+            )
         }
     }
 
@@ -289,6 +285,7 @@ class HomeAbout : Routes.Route() {
         name: String,
         imageRes: Int,
         avenirNext: FontFamily,
+        haptic: androidx.compose.ui.hapticfeedback.HapticFeedback,
         modifier: Modifier = Modifier
     ) {
         val cardShape = RoundedCornerShape(20.dp)
@@ -300,7 +297,9 @@ class HomeAbout : Routes.Route() {
         )
 
         Surface(
-            modifier = modifier,
+            modifier = modifier.clickable {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+            },
             shape = cardShape,
             color = Color.White.copy(alpha = 0.08f),
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
@@ -316,10 +315,10 @@ class HomeAbout : Routes.Route() {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(82.dp)
+                        .size(76.dp)
                         .clip(CircleShape)
                         .background(Color.White.copy(alpha = 0.1f))
-                        .border(2.dp, imageRing, CircleShape)
+                        .border(1.5.dp, imageRing, CircleShape)
                 ) {
                     Image(
                         painter = painterResource(id = imageRes),
@@ -328,16 +327,17 @@ class HomeAbout : Routes.Route() {
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Text(
+                PurrfectMarqueeText(
                     text = name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = avenirNext
+                    ),
                     color = Color.White,
-                    fontFamily = avenirNext,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    modifier = Modifier.fillMaxWidth()
                 )
-}
+            }
         }
     }
 }

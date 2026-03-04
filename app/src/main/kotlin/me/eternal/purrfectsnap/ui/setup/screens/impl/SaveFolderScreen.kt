@@ -1,5 +1,6 @@
 package me.eternal.purrfectsnap.ui.setup.screens.impl
 
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -104,7 +105,19 @@ class SaveFolderScreen : SetupScreen() {
                             color = PurrfectPalette.textSecondary
                         )
                         Text(
-                            text = if (currentFolder.isBlank()) context.translation["setup.save_folder.system_default_label"] else currentFolder,
+                            text = if (currentFolder.isBlank()) {
+                                context.translation["setup.save_folder.system_default_label"]
+                            } else {
+                                runCatching { 
+                                    val decoded = Uri.decode(currentFolder)
+                                    val friendlyPath = if (decoded.contains(":")) {
+                                        decoded.substringAfterLast(":")
+                                    } else {
+                                        decoded.substringAfterLast("/")
+                                    }
+                                    friendlyPath.trim('/').takeIf { it.isNotBlank() } ?: decoded
+                                }.getOrDefault(currentFolder)
+                            },
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,

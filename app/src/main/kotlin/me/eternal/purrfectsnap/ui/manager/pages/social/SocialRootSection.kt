@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,11 +28,15 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
+import me.eternal.purrfectsnap.ui.util.Motion
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavBackStackEntry
@@ -62,7 +67,8 @@ class SocialRootSection : Routes.Route() {
     private fun ScopeList(
         scope: SocialScope,
         friends: List<MessagingFriendInfo>,
-        groups: List<MessagingGroupInfo>
+        groups: List<MessagingGroupInfo>,
+        controlsHeight: androidx.compose.ui.unit.Dp
     ) {
         val remainingHours = remember { context.config.root.streaksReminder.remainingHours.get() }
         val list = when (scope) {
@@ -70,10 +76,17 @@ class SocialRootSection : Routes.Route() {
             SocialScope.FRIEND -> friends
         }
 
+        val listState = rememberLazyListState()
+        LaunchedEffect(listState.firstVisibleItemScrollOffset, listState.firstVisibleItemIndex) {
+            val offset = if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else listState.firstVisibleItemScrollOffset
+            routes.navigation?.globalScrollOffset = offset
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = routes.bottomPadding + 12.dp),
+            state = listState,
+            contentPadding = PaddingValues(start = 10.dp, end = 10.dp, top = controlsHeight, bottom = routes.bottomPadding),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             //check if scope list is empty
@@ -114,6 +127,7 @@ class SocialRootSection : Routes.Route() {
 
     override val floatingActionButton: @Composable () -> Unit = {
         var addFriendDialog by remember { mutableStateOf(null as AddFriendDialog?) }
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
         if (addFriendDialog != null) {
             addFriendDialog?.Content {
@@ -128,6 +142,7 @@ class SocialRootSection : Routes.Route() {
 
         FloatingActionButton(
             onClick = {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                 addFriendDialog = AddFriendDialog(
                     context,
                     AddFriendDialog.Actions(
@@ -194,6 +209,8 @@ class SocialRootSection : Routes.Route() {
         val pagerState = rememberPagerState { titles.size }
         var searchQuery by rememberSaveable { mutableStateOf("") }
         var searchActive by rememberSaveable { mutableStateOf(false) }
+        val density = androidx.compose.ui.platform.LocalDensity.current
+        var controlsHeight by remember { mutableStateOf(100.dp) }
 
         LaunchedEffect(Unit) {
             updateScopeLists()
@@ -234,10 +251,11 @@ class SocialRootSection : Routes.Route() {
                 onSearchToggle = {
                     searchActive = !searchActive
                     if (!searchActive) searchQuery = ""
-                }
+                },
+                onPositioned = { controlsHeight = it }
             )
             if (searchActive) {
-                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"]
+                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"] ?: "Search"
                 val searchShape = RoundedCornerShape(18.dp)
                 val searchBorder = Brush.linearGradient(
                     listOf(
@@ -307,8 +325,8 @@ class SocialRootSection : Routes.Route() {
                 state = pagerState
             ) { page ->
                 when (page) {
-                    0 -> ScopeList(SocialScope.FRIEND, filteredFriends, filteredGroups)
-                    1 -> ScopeList(SocialScope.GROUP, filteredFriends, filteredGroups)
+                    0 -> ScopeList(SocialScope.FRIEND, filteredFriends, filteredGroups, controlsHeight = controlsHeight)
+                    1 -> ScopeList(SocialScope.GROUP, filteredFriends, filteredGroups, controlsHeight = controlsHeight)
                 }
             }
         }
@@ -323,6 +341,7 @@ class SocialRootSection : Routes.Route() {
         onPreview: () -> Unit,
         remainingHours: Int
     ) {
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
         val cardGradient = Brush.linearGradient(
             listOf(
                 PurrfectPalette.glowPrimary.copy(alpha = 0.22f),
@@ -335,7 +354,10 @@ class SocialRootSection : Routes.Route() {
                 .heightIn(min = 88.dp)
                 .border(1.dp, cardGradient, RoundedCornerShape(20.dp)),
             shape = RoundedCornerShape(20.dp),
-            onClick = onManage,
+            onClick = {
+                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                onManage()
+            },
             colors = CardDefaults.elevatedCardColors(
                 containerColor = Color.Transparent
             )
@@ -375,7 +397,7 @@ class SocialRootSection : Routes.Route() {
                                 fontSize = 15.sp
                             )
                             Text(
-                                text = translation["groups_tab"],
+                                text = translation["groups_tab"] ?: "Groups",
                                 color = PurrfectPalette.textSecondary,
                                 fontSize = 12.sp
                             )
@@ -445,7 +467,10 @@ class SocialRootSection : Routes.Route() {
                 }
 
                 Surface(
-                    onClick = onPreview,
+                    onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onPreview()
+                    },
                     shape = RoundedCornerShape(16.dp),
                     color = Color.White.copy(alpha = 0.08f),
                     tonalElevation = 0.dp,
@@ -485,68 +510,57 @@ class SocialRootSection : Routes.Route() {
         friendCount: Int,
         groupCount: Int,
         searchActive: Boolean,
-        onSearchToggle: () -> Unit
+        onSearchToggle: () -> Unit,
+        onPositioned: (Dp) -> Unit = {}
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp)
-                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
-            shape = RoundedCornerShape(26.dp),
-            color = Color.White.copy(alpha = 0.07f),
-            tonalElevation = 0.dp,
-            shadowElevation = 0.dp,
-            border = BorderStroke(
-                1.dp,
-                Brush.linearGradient(
-                    listOf(
-                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                    )
-                )
-            )
+        val scrollOffset = routes.navigation?.globalScrollOffset ?: 0
+        val focusFactor = (scrollOffset / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f)
+        val tabSwitcherAlpha = (1f - (focusFactor * 2.5f)).coerceIn(0f, 1f)
+        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+        Column(
+            modifier = Modifier.headerHeightTracker(onPositioned),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = translation["manager.routes.social"],
-                            color = Color.White,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 18.sp
+            me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
+                title = translation["manager.routes.social"] ?: "Social",
+                subtitle = if (pagerState.currentPage == 0) translation["friends_tab"] else translation["groups_tab"],
+                scrollOffset = scrollOffset,
+                actions = {
+                    StatPill(label = translation["friends_tab"], value = friendCount)
+                    StatPill(label = translation["groups_tab"], value = groupCount)
+                    IconButton(onClick = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        onSearchToggle()
+                    }) {
+                        Icon(
+                            imageVector = if (searchActive) Icons.Filled.Close else Icons.Filled.Search,
+                            contentDescription = if (searchActive) translation["close_search_button_description"] else translation["search_button_description"],
+                            tint = Color.White
                         )
                     }
-                    Row(
-                        modifier = Modifier.wrapContentWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        StatPill(label = translation["friends_tab"], value = friendCount)
-                        StatPill(label = translation["groups_tab"], value = groupCount)
-                        IconButton(onClick = onSearchToggle) {
-                            Icon(
-                                imageVector = if (searchActive) Icons.Filled.Close else Icons.Filled.Search,
-                                contentDescription = if (searchActive) translation["close_search_button_description"] else translation["search_button_description"],
-                                tint = Color.White
-                            )
-                        }
-                    }
                 }
-                SocialTabSwitcher(
-                    titles = titles,
-                    pagerState = pagerState,
-                    onTabSelected = onTabSelected
-                )
+            )
+
+            if (tabSwitcherAlpha > 0.05f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp)
+                        .graphicsLayer { 
+                            alpha = tabSwitcherAlpha 
+                            translationY = (-10 * focusFactor).dp.toPx()
+                        }
+                ) {
+                    SocialTabSwitcher(
+                        titles = titles,
+                        pagerState = pagerState,
+                        onTabSelected = { index ->
+                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                            onTabSelected(index)
+                        }
+                    )
+                }
             }
         }
     }
@@ -631,7 +645,7 @@ class SocialRootSection : Routes.Route() {
                     fontSize = 15.sp
                 )
                 Text(
-                    text = translation["social_empty_hint"],
+                    text = translation["social_empty_hint"] ?: "Tap the + button to sync friends or groups.",
                     color = PurrfectPalette.textSecondary,
                     fontSize = 12.sp
                 )

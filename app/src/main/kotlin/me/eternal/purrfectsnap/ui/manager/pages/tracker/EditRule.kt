@@ -496,7 +496,7 @@ class EditRule : Routes.Route() {
                     .background(PurrfectPalette.backgroundGradient)
                     .padding(padding)
             ) {
-                val contentBottomPadding = routes.bottomPadding + 12.dp
+                val contentBottomPadding = routes.bottomPadding
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
