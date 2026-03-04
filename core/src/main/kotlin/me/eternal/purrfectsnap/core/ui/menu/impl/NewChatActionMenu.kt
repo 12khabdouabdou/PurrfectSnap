@@ -73,22 +73,38 @@ class NewChatActionMenu : AbstractMenu() {
         edits: List<LoggedChatEdit>,
     ) {
         createComposeAlertDialog(context.mainActivity!!) {
-            LazyColumn(
-                modifier = Modifier.padding(16.dp),
-            ) {
-                itemsIndexed(edits) { index, edit ->
-                    Column(
-                        modifier = Modifier.padding(8.dp).fillMaxWidth().pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    context.androidContext.copyToClipboard(edit.message)
-                                }
-                            )
-                        },
-                        horizontalAlignment = Alignment.Start,
+            me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme {
+                me.eternal.purrfectsnap.core.ui.PurrfectGlassCard(
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 500.dp),
+                    title = this@NewChatActionMenu.context.translation["chat_action_menu.show_chat_edit_history"]
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth().padding(8.dp),
                     ) {
-                        Text(edit.message)
-                        Text(text = DateFormat.getDateTimeInstance().format(edit.timestamp) + " (${index + 1})", fontSize = 12.sp, fontWeight = FontWeight.Light)
+                        itemsIndexed(edits) { index, edit ->
+                            Column(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth()
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onLongPress = {
+                                                context.androidContext.copyToClipboard(edit.message)
+                                            }
+                                        )
+                                    },
+                                horizontalAlignment = Alignment.Start,
+                            ) {
+                                Text(edit.message)
+                                Text(
+                                    text = DateFormat.getDateTimeInstance()
+                                        .format(edit.timestamp) + " (${index + 1})",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Light,
+                                    color = me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette.textSecondary
+                                )
+                            }
+                        }
                     }
                 }
             }

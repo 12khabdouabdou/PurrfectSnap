@@ -46,17 +46,25 @@ import me.eternal.purrfectsnap.core.wrapper.impl.media.dash.SnapPlaylistItem
 import me.eternal.purrfectsnap.core.wrapper.impl.media.opera.Layer
 import me.eternal.purrfectsnap.core.wrapper.impl.media.opera.ParamMap
 import me.eternal.purrfectsnap.core.wrapper.impl.media.toKeyPair
+import me.eternal.purrfectsnap.core.wrapper.impl.media.EncryptionWrapper
 import me.eternal.purrfectsnap.mapper.impl.OperaPageViewControllerMapper
+import me.eternal.purrfectsnap.core.wrapper.impl.media.SnapCipherMode
+import me.eternal.purrfectsnap.core.wrapper.impl.media.toKeyPairUrlSafe
+import me.eternal.purrfectsnap.core.wrapper.impl.media.HybridEncryptionResolver
+import me.eternal.purrfectsnap.core.wrapper.AbstractWrapper
 import java.nio.file.Paths
 import java.util.UUID
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.absoluteValue
+import android.util.Base64
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 class SnapChapterInfo(
     val offset: Long,
     val duration: Long?
 )
-
 
 class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleType.AUTO_DOWNLOAD) {
     private var lastSeenMediaInfoMap: MutableMap<SplitMediaAssetType, MediaInfo>? = null
@@ -204,17 +212,23 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         }
     }
 
-    private fun downloadOperaMedia(downloadManagerClient: DownloadManagerClient, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>, paramMap: ParamMap) {
+    private fun downloadOperaMedia(
+        downloadManagerClient: DownloadManagerClient,
+        mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>,
+        paramMap: ParamMap
+    ) {
         if (mediaInfoMap.isEmpty()) return
 
+        // Story Snap Entry (images)
         paramMap["SNAP_ID"]?.toString()?.let { snapId ->
             context.database.getStorySnapEntry(snapId)?.let { storySnapEntry ->
+
                 downloadManagerClient.downloadSingleMedia(
                     storySnapEntry.mediaUrl ?: throw Exception("Media URL not found"),
                     DownloadMediaType.fromUri(Uri.parse(storySnapEntry.mediaUrl)),
-                    (storySnapEntry.mediaKey to storySnapEntry.mediaIv).takeIf { it.first != null && it.second != null }?.let { (key, iv) ->
-                        MediaEncryptionKeyPair(key!!, iv!!, urlSafe = false)
-                    }
+                    (storySnapEntry.mediaKey to storySnapEntry.mediaIv)
+                        .takeIf { it.first != null && it.second != null }
+                        ?.let { (key, iv) -> MediaEncryptionKeyPair(key!!, iv!!, urlSafe = false) }
                 )
                 return
             }
@@ -223,6 +237,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         val originalMediaInfo = mediaInfoMap[SplitMediaAssetType.ORIGINAL]!!
         val originalMediaInfoReference = handleLocalReferences(originalMediaInfo.uri)
 
+        // Overlay (if present)
         mediaInfoMap[SplitMediaAssetType.OVERLAY]?.let { overlay ->
             val overlayReference = handleLocalReferences(overlay.uri)
 
@@ -242,6 +257,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
             return
         }
 
+        // Single media (video/DASH)
         downloadManagerClient.downloadSingleMedia(
             originalMediaInfoReference,
             DownloadMediaType.fromUri(Uri.parse(originalMediaInfoReference)),
@@ -267,41 +283,40 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         forceDownload: Boolean,
         forceAllowDuplicate: Boolean = false
     ) {
-        //messages
+        
+        // ─── Messages ─────────────────────────
         paramMap["MESSAGE_ID"]?.toString()?.takeIf { forceDownload || shouldAutoDownload("friend_snaps") }?.let { id ->
-            val messageId = id.substring(id.lastIndexOf(":") + 1).toLong()
-            val conversationMessage = context.database.getConversationMessageFromId(messageId)!!
-
+            val messageId = id.substringAfterLast(":").toLong()
+            val conversationMessage = context.database.getConversationMessageFromId(messageId) ?: return@let
             val conversationId = conversationMessage.clientConversationId!!
 
-            if (!forceDownload && !canUseRule(conversationId)) {
-                return
-            }
+            if (!forceDownload && !canUseRule(conversationId)) return@let
 
             val senderId = conversationMessage.senderId!!
+            if (!forceDownload && context.config.downloader.preventSelfAutoDownload.get() &&
+                senderId == context.database.myUserId
+            ) return@let
 
-            if (!forceDownload && context.config.downloader.preventSelfAutoDownload.get() && senderId == context.database.myUserId) return
-
-            val author = context.database.getFriendInfo(senderId) ?: return
+            val author = context.database.getFriendInfo(senderId) ?: return@let
             val authorUsername = author.usernameForSorting!!
-            val mediaId = paramMap["MEDIA_ID"]?.toString()?.let {
-                if (it.contains("-")) it.substringAfter("-")
-                else it
-            }?.substringBefore(".")
+            val mediaId = paramMap["MEDIA_ID"]?.toString()?.substringAfter("-")?.substringBefore(".") ?: ""
 
-            downloadOperaMedia(provideDownloadManagerClient(
-                mediaIdentifier = "$conversationId$senderId${conversationMessage.serverMessageId}$mediaId",
-                mediaAuthor = authorUsername,
-                creationTimestamp = conversationMessage.creationTimestamp,
-                downloadSource = MediaDownloadSource.CHAT_MEDIA,
-                friendInfo = author,
-                forceAllowDuplicate = forceAllowDuplicate
-            ), mediaInfoMap, paramMap)
-
+            downloadOperaMedia(
+                provideDownloadManagerClient(
+                    mediaIdentifier = "$conversationId$senderId${conversationMessage.serverMessageId}$mediaId",
+                    mediaAuthor = authorUsername,
+                    creationTimestamp = conversationMessage.creationTimestamp,
+                    downloadSource = MediaDownloadSource.CHAT_MEDIA,
+                    friendInfo = author,
+                    forceAllowDuplicate = forceAllowDuplicate
+                ),
+                mediaInfoMap,
+                paramMap
+            )
             return
         }
 
-        //private stories
+        // ─── Private Friend Story ─────────────────────────
         paramMap["PLAYLIST_V2_GROUP"]?.takeIf {
             forceDownload || shouldAutoDownload("friend_stories")
         }?.let { playlistGroup ->
@@ -319,7 +334,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
 
                 val conversationMessage = context.database.getConversationMessageFromId(arroyoMessageId.toLong()) ?: return@let
                 val conversationParticipants = context.database.getConversationParticipants(conversationMessage.clientConversationId.toString()) ?: return@let
-
                 conversationParticipants.firstOrNull { it != conversationMessage.senderId }
             }
 
@@ -335,18 +349,23 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                 if (!canUseRule(author.userId!!)) return
             }
 
-            downloadOperaMedia(provideDownloadManagerClient(
-                mediaIdentifier = paramMap["MEDIA_ID"].toString(),
-                mediaAuthor = authorName,
-                creationTimestamp = paramMap["PLAYABLE_STORY_SNAP_RECORD"]?.toString()?.substringAfter("timestamp=")
-                    ?.substringBefore(",")?.toLongOrNull(),
-                downloadSource = MediaDownloadSource.STORY,
-                friendInfo = author,
-                forceAllowDuplicate = forceAllowDuplicate,
-            ), mediaInfoMap, paramMap)
+            downloadOperaMedia(
+                provideDownloadManagerClient(
+                    mediaIdentifier = paramMap["MEDIA_ID"].toString(),
+                    mediaAuthor = authorName,
+                    creationTimestamp = paramMap["PLAYABLE_STORY_SNAP_RECORD"]?.toString()?.substringAfter("timestamp=")
+                        ?.substringBefore(",")?.toLongOrNull(),
+                    downloadSource = MediaDownloadSource.STORY,
+                    friendInfo = author,
+                    forceAllowDuplicate = forceAllowDuplicate
+                ),
+                mediaInfoMap,
+                paramMap
+            )
             return
         }
 
+        // ─── Public Stories / Spotlight ───────────────────
         val snapSource = paramMap["SNAP_SOURCE"].toString()
 
         //spotlight
@@ -511,11 +530,14 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                         }
 
                         val operaLayerList = (param.thisObject() as Any).getObjectField(layerListField.get()!!) as ArrayList<*>
-                        val mediaParamMap: ParamMap = operaLayerList.map { Layer(it) }.first().paramMap
-
-                        if (!mediaParamMap.containsKey("image_media_info") && !mediaParamMap.containsKey("video_media_info_list")) {
-                            return@onOperaViewStateCallback
-                        }
+                        val mediaParamMap: ParamMap = operaLayerList
+                            .asSequence()
+                            .mapNotNull { layerObj ->
+                                layerObj?.let { runCatching { Layer(it).paramMap }.getOrNull() }
+                            }
+                            .firstOrNull {
+                                it.containsKey("image_media_info") || it.containsKey("video_media_info_list")
+                            } ?: return@onOperaViewStateCallback
 
                         val mediaInfoMap = mutableMapOf<SplitMediaAssetType, MediaInfo>()
                         val isVideo = mediaParamMap.containsKey("video_media_info_list")
@@ -717,7 +739,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         if (!isPreview) {
             if (forceDownloadFirst ||
                 decodedAttachments.size == 1 ||
-                context.isMainActivityPaused // we can't show alert dialogs when it downloads from a notification, so it downloads the first one
+                context.isMainActivityPaused
             ) {
                 downloadMessageAttachments(friendInfo, message, authorName,
                     listOf(decodedAttachments.first()),

@@ -237,7 +237,7 @@ class SocialRootSection : Routes.Route() {
                 }
             )
             if (searchActive) {
-                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"] ?: "Search"
+                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"]
                 val searchShape = RoundedCornerShape(18.dp)
                 val searchBorder = Brush.linearGradient(
                     listOf(
@@ -520,7 +520,7 @@ class SocialRootSection : Routes.Route() {
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = translation["manager.routes.social"] ?: "Social",
+                            text = translation["manager.routes.social"],
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 18.sp
@@ -631,7 +631,7 @@ class SocialRootSection : Routes.Route() {
                     fontSize = 15.sp
                 )
                 Text(
-                    text = translation["social_empty_hint"] ?: "Tap the + button to sync friends or groups.",
+                    text = translation["social_empty_hint"],
                     color = PurrfectPalette.textSecondary,
                     fontSize = 12.sp
                 )

@@ -24,6 +24,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.yukihookapi.api)
+    implementation(libs.kavaref.core)
+    implementation(libs.kavaref.extension)
     compileOnly(files("libs/LSPosed-api-1.0-SNAPSHOT.jar"))
     implementation(libs.coroutines)
     implementation(libs.recyclerview)

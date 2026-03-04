@@ -98,11 +98,13 @@ class CoreScriptHooker: AbstractBinding("hooker", BindingSide.CORE) {
     }
 
     fun findMethod(clazz: Class<*>, methodName: String): Member? {
-        return clazz.declaredMethods.find { it.name == methodName }
+        return collectMethods(clazz).firstOrNull { it.name == methodName }
     }
 
     fun findMethodWithParameters(clazz: Class<*>, methodName: String, vararg types: String): Member? {
-        return clazz.declaredMethods.find { method -> method.name == methodName && method.parameterTypes.map { it.name }.toTypedArray() contentEquals types }
+        return collectMethods(clazz).firstOrNull { method ->
+            method.name == methodName && method.parameterTypes.map { it.name }.toTypedArray() contentEquals types
+        }
     }
 
     fun findMethod(className: String, methodName: String): Member? {
@@ -158,6 +160,41 @@ class CoreScriptHooker: AbstractBinding("hooker", BindingSide.CORE) {
 
     fun hookAllConstructors(className: String, stage: String, callback: HookCallback)
         = findClassSafe(className)?.let { hookAllConstructors(it, stage, callback) }
+
+    private fun collectMethods(clazz: Class<*>): List<Method> {
+        val methods = LinkedHashMap<String, Method>()
+        val visited = HashSet<Class<*>>()
+        var currentClass: Class<*>? = clazz
+
+        while (currentClass != null && currentClass != Any::class.java && currentClass != Object::class.java) {
+            collectMethodsRecursive(currentClass, methods, visited)
+            currentClass = currentClass.superclass
+        }
+
+        return methods.values.toList()
+    }
+
+    private fun collectMethodsRecursive(
+        clazz: Class<*>,
+        methods: MutableMap<String, Method>,
+        visited: MutableSet<Class<*>>
+    ) {
+        if (!visited.add(clazz)) return
+
+        clazz.declaredMethods.forEach { method ->
+            val signature = buildString {
+                append(method.name)
+                append("#")
+                method.parameterTypes.forEach {
+                    append(it.name)
+                    append(";")
+                }
+            }
+            methods.putIfAbsent(signature, method)
+        }
+
+        clazz.interfaces.forEach { collectMethodsRecursive(it, methods, visited) }
+    }
 
     override fun onDispose() {
         hooks.forEach { it() }

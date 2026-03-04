@@ -140,7 +140,7 @@ class ScriptingRootSection : Routes.Route() {
                         return@launch
                     }.onFailure {
                         context.log.error("Failed to import script", it)
-                        context.shortToast(translation.format("import_failed", "message" to (it.message ?: "Unknown")))
+                        context.shortToast(translation.format("import_failed", "message" to (it.message ?: context.translation["common.unknown"])))
                     }
                     isLoading = false
                 }
@@ -431,7 +431,7 @@ class ScriptingRootSection : Routes.Route() {
 
     @Composable
     private fun SelectFolderButton(onClick: () -> Unit) {
-        val label = translation.getOrNull("select_folder_button") ?: "Select folder"
+        val label = translation["select_folder_button"]
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -439,13 +439,13 @@ class ScriptingRootSection : Routes.Route() {
             contentAlignment = Alignment.Center
         ) {
             Surface(
-                modifier = Modifier.size(68.dp),
+                modifier = Modifier.size(78.dp),
                 shape = CircleShape,
-                color = Color.White.copy(alpha = 0.1f),
+                color = PurrfectPalette.cardOverlayColor.copy(alpha = 0.9f),
                 tonalElevation = 0.dp,
-                shadowElevation = 10.dp,
+                shadowElevation = 14.dp,
                 border = BorderStroke(
-                    1.dp,
+                    1.5.dp,
                     Brush.linearGradient(
                         listOf(
                             PurrfectPalette.glowPrimary.copy(alpha = 0.7f),
@@ -456,17 +456,18 @@ class ScriptingRootSection : Routes.Route() {
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .padding(6.dp)
+                        .size(66.dp)
                         .clip(CircleShape)
                         .background(
                             Brush.radialGradient(
                                 colors = listOf(
-                                    PurrfectPalette.glowPrimary.copy(alpha = 0.335f),
-                                    PurrfectPalette.glowSecondary.copy(alpha = 0.25f),
-                                    Color.Transparent
+                                    PurrfectPalette.glowPrimary.copy(alpha = 0.42f),
+                                    PurrfectPalette.glowSecondary.copy(alpha = 0.34f)
                                 )
                             )
                         )
+                        .border(1.dp, Color.White.copy(alpha = 0.14f), CircleShape)
                         .clickable(onClick = onClick),
                     contentAlignment = Alignment.Center
                 ) {
@@ -474,7 +475,7 @@ class ScriptingRootSection : Routes.Route() {
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = label,
                         tint = Color.White,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(34.dp)
                     )
                 }
             }
@@ -627,7 +628,7 @@ class ScriptingRootSection : Routes.Route() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(260.dp),
+                                        .heightIn(min = 260.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Surface(
@@ -743,7 +744,7 @@ class ScriptingRootSection : Routes.Route() {
                 title = context.translation["manager.dialogs.scripting_warning.title"],
                 text = context.translation["manager.dialogs.scripting_warning.content"],
                 icon = Icons.Default.Warning,
-                confirmButtonText = translation["button.ok"] ?: "OK",
+                confirmButtonText = translation["button.ok"],
                 onConfirm = { if (timeout == 0) scriptingWarning = false },
                 loading = timeout > 0,
                 showCloseButton = false,
@@ -875,7 +876,7 @@ class ScriptingRootSection : Routes.Route() {
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = translation["manager.routes.scripts"] ?: "Scripts",
+                            text = translation["manager.routes.scripts"],
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 18.sp

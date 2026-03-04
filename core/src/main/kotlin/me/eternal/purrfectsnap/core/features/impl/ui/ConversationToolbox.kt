@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -25,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -143,7 +143,7 @@ class ConversationToolbox : Feature("Conversation Toolbox") {
                         .verticalScroll(rememberScrollState())
                 ) {
                     Text(
-                        "Conversation Toolbox",
+                        context.translation["conversation_toolbox.title"],
                         fontSize = 18.sp,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -160,14 +160,16 @@ class ConversationToolbox : Feature("Conversation Toolbox") {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .shadow(10.dp, itemShape, clip = true)
                                 .clip(itemShape)
                                 .background(Color.White.copy(alpha = 0.06f), itemShape)
                                 .border(1.dp, Color.White.copy(alpha = 0.10f), itemShape)
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .clickable { expandedComposableCache[title] = !expanded }
+                                    .clickable(
+                                        indication = null,
+                                        interactionSource = remember { MutableInteractionSource() }
+                                    ) { expandedComposableCache[title] = !expanded }
                                     .fillMaxWidth()
                                     .padding(horizontal = 12.dp, vertical = 12.dp),
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -196,7 +198,10 @@ class ConversationToolbox : Feature("Conversation Toolbox") {
                                         composable(alertDialog, openedConversationId)
                                     }.onFailure { throwable ->
                                         Text(
-                                            "Failed to load: ${throwable.message}",
+                                            context.translation.format(
+                                                "conversation_toolbox.failed_to_load",
+                                                "message" to (throwable.message ?: "unknown error")
+                                            ),
                                             color = PurrfectOverlayPalette.textSecondary,
                                             fontSize = 12.sp
                                         )

@@ -259,7 +259,8 @@ class BetterLocation : Feature("Better Location") {
                     }.apply {
                         layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                             addRule(RelativeLayout.ALIGN_PARENT_LEFT)
-                            setMargins(0, (60 * context.resources.displayMetrics.density).toInt(), 0, 0)
+                            // Keep the button below the top map chips (Memories/Visited/Popular/Favorites).
+                            setMargins(0, (88 * context.resources.displayMetrics.density).toInt(), 0, 0)
                         }
                     })
                 }

@@ -20,15 +20,17 @@ class Global : ConfigContainer() {
     }
 
     inner class BetterLocationConfig : ConfigContainer(hasGlobalState = true) {
-        val spoofLocation = boolean("spoof_location")
-        val coordinates = mapCoordinates("coordinates", 0.0 to 0.0) { addFlags(ConfigFlag.SENSITIVE) } // lat, long
-        val walkRadius = string("walk_radius") { requireRestart(); inputCheck = { it.toDoubleOrNull()?.isFinite() == true && it.toDouble() >= 0.0 } }
-        val alwaysUpdateLocation = boolean("always_update_location") { requireRestart() }
-        val suspendLocationUpdates = boolean("suspend_location_updates")
-        val spoofBatteryLevel = string("spoof_battery_level") { requireRestart(); inputCheck = { it.isEmpty() || it.toIntOrNull() in 0..100 } }
-        val spoofHeadphones = boolean("spoof_headphones") { requireRestart() }
-        val showBatteryLevel = boolean("show_battery_level") { requireRestart() }
-    }
+         val spoofLocation = boolean("spoof_location")
+         val locationSearchProvider = unique("location_search_provider", "osm", "google_maps") { addFlags(ConfigFlag.NO_DISABLE_KEY) }
+         val googleMapsApiKey = string("google_maps_api_key") { addFlags(ConfigFlag.SENSITIVE) }
+         val coordinates = mapCoordinates("coordinates", 0.0 to 0.0) { addFlags(ConfigFlag.SENSITIVE) } // lat, long
+         val walkRadius = string("walk_radius") { requireRestart(); inputCheck = { it.toDoubleOrNull()?.isFinite() == true && it.toDouble() >= 0.0 } }
+         val alwaysUpdateLocation = boolean("always_update_location") { requireRestart() }
+         val suspendLocationUpdates = boolean("suspend_location_updates")
+         val spoofBatteryLevel = string("spoof_battery_level") { requireRestart(); inputCheck = { it.isEmpty() || it.toIntOrNull() in 0..100 } }
+         val spoofHeadphones = boolean("spoof_headphones") { requireRestart() }
+         val showBatteryLevel = boolean("show_battery_level") { requireRestart() }
+     }
 
     inner class MediaUploadQualityConfig : ConfigContainer() {
         val forceVideoUploadSourceQuality = boolean("force_video_upload_source_quality") { requireRestart() }
@@ -48,6 +50,7 @@ class Global : ConfigContainer() {
     val disableMemoriesSnapFeed = boolean("disable_memories_snap_feed")
     val spotlightCommentsUsername = boolean("spotlight_comments_username") { requireRestart() }
     val spotlightCommentsUsernameIcon = string("spotlight_comments_username_icon", "[👤]") { requireRestart() }
+    val spotlightCreatorInfo = boolean("spotlight_creator_info") { requireRestart() }
     val bypassVideoLengthRestriction = unique("bypass_video_length_restriction", "split", "single") { addNotices(
         FeatureNotice.BAN_RISK); requireRestart() }
     val defaultVideoPlaybackRate = float("default_video_playback_rate", 1.0F) { requireRestart(); inputCheck = { (it.toFloatOrNull() ?: 1.0F) in 0.1F..4.0F} }

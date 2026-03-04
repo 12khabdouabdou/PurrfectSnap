@@ -88,16 +88,20 @@ ensure_omvll_bundle() {
   local archive_url="${OMVLL_ARCHIVE_URL:-https://github.com/open-obfuscator/o-mvll/releases/download/${OMVLL_VERSION}/${OMVLL_LINUX_ASSET}}"
   OMVLL_CACHE_DIR="$SCRIPT_DIR/.omvll/$OMVLL_VERSION"
   OMVLL_PLUGIN_PATH="$OMVLL_CACHE_DIR/omvll-ndk.so"
+  local tmp_tar=""
 
-  if [ ! -f "$OMVLL_PLUGIN_PATH" ]; then
-    echo "Downloading O-MVLL bundle from $archive_url"
+  download_omvll_bundle() {
     rm -rf "$OMVLL_CACHE_DIR"
     mkdir -p "$OMVLL_CACHE_DIR"
-    local tmp_tar
     tmp_tar=$(mktemp)
     curl -fL "$archive_url" -o "$tmp_tar"
     tar -xzf "$tmp_tar" -C "$OMVLL_CACHE_DIR"
     rm -f "$tmp_tar"
+  }
+
+  if [ ! -f "$OMVLL_PLUGIN_PATH" ]; then
+    echo "Downloading O-MVLL bundle from $archive_url"
+    download_omvll_bundle
   fi
 
   if [ ! -f "$OMVLL_PLUGIN_PATH" ]; then
@@ -117,11 +121,16 @@ ensure_omvll_bundle() {
     local py_root
     py_root=$(find "$OMVLL_CACHE_DIR" -maxdepth 1 -type d -name 'Python-*' | head -n1 || true)
     if [ -z "$py_root" ] || [ ! -d "$py_root/Lib" ]; then
-      echo "Unable to determine Python stdlib directory inside the O-MVLL bundle" >&2
-      echo "OMVLL_CACHE_DIR: $OMVLL_CACHE_DIR" >&2
-      echo "Contents:" >&2
-      ls -la "$OMVLL_CACHE_DIR" >&2 || true
-      exit 1
+      echo "OMVLL cache is incomplete. Re-downloading bundle..." >&2
+      download_omvll_bundle
+      py_root=$(find "$OMVLL_CACHE_DIR" -maxdepth 1 -type d -name 'Python-*' | head -n1 || true)
+      if [ -z "$py_root" ] || [ ! -d "$py_root/Lib" ]; then
+        echo "Unable to determine Python stdlib directory inside the O-MVLL bundle" >&2
+        echo "OMVLL_CACHE_DIR: $OMVLL_CACHE_DIR" >&2
+        echo "Contents:" >&2
+        ls -la "$OMVLL_CACHE_DIR" >&2 || true
+        exit 1
+      fi
     fi
     export OMVLL_PYTHONPATH="$py_root/Lib"
   fi

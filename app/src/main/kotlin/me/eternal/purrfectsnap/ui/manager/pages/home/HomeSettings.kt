@@ -16,7 +16,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +53,7 @@ import me.eternal.purrfectsnap.storage.getAllScopeNotes
 import me.eternal.purrfectsnap.storage.setAllScopeNotes
 import me.eternal.purrfectsnap.task.UpdateCheckWorker
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.setup.Requirements
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
@@ -143,17 +146,40 @@ class HomeSettings : Routes.Route() {
         sharedPreferences: SharedPreferences,
         key: String,
         text: String,
-        defaultValue: Boolean = false
+        defaultValue: Boolean = false,
+        confirmDisableTitle: String? = null,
+        confirmDisableText: String? = null
     ) {
         val realKey = "debug_$key"
         var value by remember { mutableStateOf(sharedPreferences.getBoolean(realKey, defaultValue)) }
+        var showDisableDialog by remember { mutableStateOf(false) }
         val hapticFeedback = LocalHapticFeedback.current
+        val positiveLabel = context.translation["button.positive"]
+        val negativeLabel = context.translation["button.negative"]
 
         LaunchedEffect(realKey) {
             if (!sharedPreferences.contains(realKey)) {
                 sharedPreferences.edit().putBoolean(realKey, defaultValue).apply()
                 value = defaultValue
             }
+        }
+
+        if (showDisableDialog) {
+            AestheticDialog(
+                onDismissRequest = { showDisableDialog = false },
+                title = confirmDisableTitle ?: translation["reset_setup_dialog_title"],
+                text = confirmDisableText.orEmpty(),
+                icon = Icons.Filled.Warning,
+                confirmButtonText = positiveLabel,
+                dismissButtonText = negativeLabel,
+                onConfirm = {
+                    value = false
+                    sharedPreferences.edit().putBoolean(realKey, false).apply()
+                    showDisableDialog = false
+                },
+                onDismiss = { showDisableDialog = false },
+                showCloseButton = false
+            )
         }
 
         Row(
@@ -164,11 +190,15 @@ class HomeSettings : Routes.Route() {
                     if (context.config.root.global.uiSettings.hapticFeedback.get()) {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
-                    value = !value
-                    sharedPreferences
-                        .edit() {
+                    val nextValue = !value
+                    if (!nextValue && confirmDisableTitle != null) {
+                        showDisableDialog = true
+                    } else {
+                        value = nextValue
+                        sharedPreferences.edit() {
                             putBoolean(realKey, value)
                         }
+                    }
                 },
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -283,11 +313,15 @@ class HomeSettings : Routes.Route() {
         val contextC = LocalContext.current
         val scope = rememberCoroutineScope()
         val scrollState = rememberScrollState()
+        val positiveLabel = context.translation["button.positive"]
+        val negativeLabel = context.translation["button.negative"]
+        val importLabel = context.translation["button.import"]
         val sharedButtonColors = ButtonDefaults.buttonColors(
             containerColor = Color.White.copy(alpha = 0.12f),
             contentColor = Color.White
         )
         val sharedOutlinedColors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+        var showResetSetupDialog by remember { mutableStateOf(false) }
 
         @Composable
         fun GlassCard(
@@ -343,6 +377,39 @@ class HomeSettings : Routes.Route() {
                 .fillMaxSize()
                 .background(PurrfectPalette.backgroundGradient)
         ) {
+            if (showResetSetupDialog) {
+                AestheticDialog(
+                    onDismissRequest = { showResetSetupDialog = false },
+                    title = translation["reset_setup_dialog_title"],
+                    text = translation["reset_setup_dialog_text"],
+                    icon = Icons.Filled.Warning,
+                    confirmButtonText = positiveLabel,
+                    dismissButtonText = negativeLabel,
+                    onConfirm = {
+                        showResetSetupDialog = false
+                        context.sharedPreferences.edit()
+                            .remove("setup_in_progress")
+                            .remove("setup_current_route")
+                            .remove("setup_skip_patch")
+                            .remove("setup_install_mode")
+                            .apply()
+
+                        context.config.reset()
+                        context.config.writeConfig()
+
+                        val intent = android.content.Intent(
+                            context.androidContext,
+                            me.eternal.purrfectsnap.ui.setup.SetupActivity::class.java
+                        )
+                        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                            android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.androidContext.startActivity(intent)
+                        routes.navController.popBackStack()
+                    },
+                    onDismiss = { showResetSetupDialog = false },
+                    showCloseButton = false
+                )
+            }
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -546,44 +613,26 @@ class HomeSettings : Routes.Route() {
                     }
 
                     GlassCard {
-                        RowTitle(title = "Reset PurrfectSnap")
+                        RowTitle(title = translation["reset_setup_title"])
                         ShiftedRow(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 55.dp)
                                 .clickable {
-                                    // Clear setup progress and route back to SetupActivity
-                                    context.sharedPreferences.edit()
-                                        .remove("setup_in_progress")
-                                        .remove("setup_current_route")
-                                        .remove("setup_skip_patch")
-                                        .remove("setup_install_mode")
-                                        .apply()
-
-                                    // Clear config to defaults
-                                    context.config.reset()
-                                    context.config.writeConfig()
-
-                                    // Launch setup activity fresh
-                                    val intent = android.content.Intent(context.androidContext, me.eternal.purrfectsnap.ui.setup.SetupActivity::class.java)
-                                    intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    context.androidContext.startActivity(intent)
-
-                                    // Close current manager activity
-                                    routes.navController.popBackStack()
+                                    showResetSetupDialog = true
                                 },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Reset and restart setup",
+                                text = translation["reset_setup_action"],
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 lineHeight = 20.sp
                             )
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                                contentDescription = "Reset",
+                                contentDescription = translation["reset_setup_action"],
                                 modifier = Modifier.padding(end = 14.dp)
                             )
                         }
@@ -697,7 +746,7 @@ class HomeSettings : Routes.Route() {
                                         colors = sharedButtonColors,
                                         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
                                     ) {
-                                        Text(text = "Import")
+                                        Text(text = translation["import_button"])
                                     }
                                 }
                             }
@@ -712,53 +761,49 @@ class HomeSettings : Routes.Route() {
                                 Text(translation["view_logger_history_button"])
                             }
                             if (showImportDialog) {
-                                AlertDialog(
+                                AestheticDialog(
                                     onDismissRequest = { showImportDialog = false },
-                                    title = { Text("Import message logger") },
-                                    text = { Text("Importing will override your current message logger database. Continue?") },
-                                    confirmButton = {
-                                        TextButton(onClick = {
-                                            showImportDialog = false
-                                            runCatching {
-                                                activityLauncherHelper.openFile("application/octet-stream") { uri ->
-                                                    runCatching {
-                                                        context.androidContext.contentResolver.openInputStream(uri.toUri())?.use { inputStream ->
-                                                            context.messageLogger.databaseFile.outputStream().use { outputStream ->
-                                                                inputStream.copyTo(outputStream)
-                                                            }
-                                                        } ?: throw IllegalStateException("Unable to open selected file")
-                                                        storedMessagesCount = context.messageLogger.getStoredMessageCount()
-                                                        storedStoriesCount = context.messageLogger.getStoredStoriesCount()
-                                                        context.shortToast(translation["success_toast"])
-                                                        context.log.info("Imported message logger from $uri", "MessageLogger")
-                                                    }.onFailure {
-                                                        context.log.error("Failed to import message logger", it)
-                                                        context.longToast(
-                                                            translation.format(
-                                                                "import_failed_toast",
-                                                                "message" to (it.localizedMessage ?: it.message ?: "")
-                                                            )
+                                    title = translation["message_logger_import_title"],
+                                    text = translation["message_logger_import_text"],
+                                    icon = Icons.Filled.Info,
+                                    confirmButtonText = importLabel,
+                                    dismissButtonText = context.translation["button.cancel"],
+                                    onConfirm = {
+                                        showImportDialog = false
+                                        runCatching {
+                                            activityLauncherHelper.openFile("application/octet-stream") { uri ->
+                                                runCatching {
+                                                    context.androidContext.contentResolver.openInputStream(uri.toUri())?.use { inputStream ->
+                                                        context.messageLogger.databaseFile.outputStream().use { outputStream ->
+                                                            inputStream.copyTo(outputStream)
+                                                        }
+                                                    } ?: throw IllegalStateException("Unable to open selected file")
+                                                    storedMessagesCount = context.messageLogger.getStoredMessageCount()
+                                                    storedStoriesCount = context.messageLogger.getStoredStoriesCount()
+                                                    context.shortToast(translation["success_toast"])
+                                                    context.log.info("Imported message logger from $uri", "MessageLogger")
+                                                }.onFailure {
+                                                    context.log.error("Failed to import message logger", it)
+                                                    context.longToast(
+                                                        translation.format(
+                                                            "import_failed_toast",
+                                                            "message" to (it.localizedMessage ?: it.message ?: "")
                                                         )
-                                                    }
-                                                }
-                                            }.onFailure {
-                                                context.log.error("Failed to launch import picker", it)
-                                                context.longToast(
-                                                    translation.format(
-                                                        "import_failed_toast",
-                                                        "message" to (it.localizedMessage ?: it.message ?: "")
                                                     )
-                                                )
+                                                }
                                             }
-                                        }) {
-                                            Text(translation["button.import"] ?: "Import")
+                                        }.onFailure {
+                                            context.log.error("Failed to launch import picker", it)
+                                            context.longToast(
+                                                translation.format(
+                                                    "import_failed_toast",
+                                                    "message" to (it.localizedMessage ?: it.message ?: "")
+                                                )
+                                            )
                                         }
                                     },
-                                    dismissButton = {
-                                        TextButton(onClick = { showImportDialog = false }) {
-                                            Text(translation["button.cancel"])
-                                        }
-                                    }
+                                    onDismiss = { showImportDialog = false },
+                                    showCloseButton = false
                                 )
                             }
                         }
@@ -901,7 +946,9 @@ class HomeSettings : Routes.Route() {
                                         context.sharedPreferences,
                                         key = "test_mode",
                                         text = translation["test_mode_label"],
-                                        defaultValue = true
+                                        defaultValue = true,
+                                        confirmDisableTitle = translation["purr_aura_disable_title"],
+                                        confirmDisableText = translation["purr_aura_disable_text"]
                                     )
                                     PreferenceToggle(context.sharedPreferences, key = "disable_feature_loading", text = translation["disable_feature_loading_label"])
                                     PreferenceToggle(context.sharedPreferences, key = "disable_mapper", text = translation["disable_auto_mapper_label"])

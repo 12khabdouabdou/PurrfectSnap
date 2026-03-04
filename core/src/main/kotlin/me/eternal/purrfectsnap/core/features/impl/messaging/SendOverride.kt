@@ -22,8 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers
 import kotlinx.coroutines.*
 import me.eternal.purrfectsnap.bridge.task.TaskListener
 import me.eternal.purrfectsnap.common.data.ContentType
@@ -40,7 +38,9 @@ import me.eternal.purrfectsnap.core.messaging.MessageSender
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
+import me.eternal.purrfectsnap.core.util.ktx.setObjectField
 import me.eternal.purrfectsnap.core.util.hook.HookStage
+import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import java.text.SimpleDateFormat
@@ -65,7 +65,7 @@ class SendOverride : Feature("Send Override") {
     private var notificationIdCounter = 1000
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
-    private var backgroundHooks: List<XC_MethodHook.Unhook>? = null
+    private var backgroundHooks: List<Hooker.HookHandle>? = null
 
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
@@ -98,7 +98,7 @@ class SendOverride : Feature("Send Override") {
         return runCatching {
             val duplexClass = findClass("com.snapchat.client.duplex.DuplexClient\$CppProxy")
             val appStateMethod = duplexClass.methods.firstOrNull { it.name == "appStateChanged" } ?: return false
-            val hooks = mutableListOf<XC_MethodHook.Unhook>()
+            val hooks = mutableListOf<Hooker.HookHandle>()
             hooks.addAll(
                 duplexClass.hook("appStateChanged", HookStage.BEFORE) { param ->
                     if (param.arg<Any>(0).toString() == "INACTIVE") param.setResult(null)
@@ -193,9 +193,7 @@ class SendOverride : Feature("Send Override") {
                                     }
                                 }
                                 runCatching {
-                                    val field = result.messageContent.instanceNonNull().javaClass.getDeclaredField("mAllowsTranscription")
-                                    field.isAccessible = true
-                                    field.set(result.messageContent.instanceNonNull(), false)
+                                    result.messageContent.instanceNonNull().setObjectField("mAllowsTranscription", false)
                                 }
                             }
                         }.toByteArray()
@@ -343,6 +341,23 @@ class SendOverride : Feature("Send Override") {
                             }
                         }
                     }
+
+                    // Handle SNAP messages (field 11)
+                    val snapAtRoot = protoReader.followPath(11) != null
+                    val snapNested = protoReader.followPath(4, 4, 11) != null
+                    if (snapAtRoot || snapNested) {
+                        if (snapNested) {
+                            edit(4, 4, 11) {
+                                remove(7)
+                                addVarInt(7, savePolicy)
+                            }
+                        } else {
+                            edit(11) {
+                                remove(7)
+                                addVarInt(7, savePolicy)
+                            }
+                        }
+                    }
                 }.toByteArray()
             }
         }
@@ -445,6 +460,12 @@ class SendOverride : Feature("Send Override") {
                                 remove(4)
                                 addVarInt(4, 5) // APP_SOURCE_CAMERA
                             }
+
+                            // Enforce save policy directly on SNAP message body.
+                            edit(11) {
+                                remove(7)
+                                addVarInt(7, savePolicyValue)
+                            }
                         }.toByteArray()
                     }
                     "NOTE" -> {
@@ -489,35 +510,39 @@ class SendOverride : Feature("Send Override") {
                             audioNoteProto
                         }
                         
-                        // Set mSavePolicy on Java object if prevent audio is enabled
-                        if (shouldPreventSave) {
-                            try {
-                                val savePolicyEnumClass = runCatching {
-                                    XposedHelpers.findClass("com.snapchat.client.messaging.SavePolicy", 
-                                        localMessageContent.instanceNonNull().javaClass.classLoader)
+                    }
+                }
+
+                if (postSavePolicy != null) {
+                    try {
+                        val savePolicyEnumClass = runCatching {
+                            Class.forName(
+                                "com.snapchat.client.messaging.SavePolicy",
+                                false,
+                                localMessageContent.instanceNonNull().javaClass.classLoader
+                            )
+                        }.getOrNull()
+
+                        if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
+                            @Suppress("UNCHECKED_CAST")
+                            val enumClass = savePolicyEnumClass as Class<out Enum<*>>
+                            val policyName = when (postSavePolicy) {
+                                1 -> "PROHIBITED"
+                                2 -> "VIEWER_SAVABLE"
+                                else -> null
+                            }
+                            if (policyName != null) {
+                                val policyEnum = runCatching {
+                                    java.lang.Enum.valueOf(enumClass, policyName)
                                 }.getOrNull()
-                                
-                                if (savePolicyEnumClass != null && savePolicyEnumClass.isEnum) {
-                                    @Suppress("UNCHECKED_CAST")
-                                    val enumClass = savePolicyEnumClass as Class<out Enum<*>>
-                                    val prohibitedEnum = runCatching {
-                                        java.lang.Enum.valueOf(enumClass, "PROHIBITED")
-                                    }.getOrNull()
-                                    
-                                    if (prohibitedEnum != null) {
-                                        val savePolicyField = localMessageContent.instanceNonNull().javaClass.declaredFields
-                                            .find { it.name == "mSavePolicy" }
-                                        
-                                        if (savePolicyField != null) {
-                                            savePolicyField.isAccessible = true
-                                            XposedHelpers.setObjectField(localMessageContent.instanceNonNull(), "mSavePolicy", prohibitedEnum)
-                                        }
-                                    }
+
+                                if (policyEnum != null) {
+                                    localMessageContent.instanceNonNull().setObjectField("mSavePolicy", policyEnum)
                                 }
-                            } catch (e: Exception) {
-                                context.log.warn("SendOverride: Failed to set mSavePolicy for NOTE: ${e.message}")
                             }
                         }
+                    } catch (e: Exception) {
+                        context.log.warn("SendOverride: Failed to set mSavePolicy: ${e.message}")
                     }
                 }
 

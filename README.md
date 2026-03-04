@@ -16,7 +16,7 @@
 [![Downloads](https://img.shields.io/github/downloads/particle-box/PurrfectSnap/total?style=for-the-badge&color=f5bde6&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/releases)
 [![License](https://img.shields.io/badge/License-GPL_3.0-f5a97f?style=for-the-badge&labelColor=1e1e2e)](https://github.com/particle-box/PurrfectSnap/blob/dev/LICENSE)
 
-[Installation](#installation) • [Features](#features) • [Changelog](#whats-new) • [Community](#community)
+[Installation](#installation) • [Features](#features) • [Build](#build-from-source) • [Community](#community)
 
 </div>
 
@@ -40,44 +40,9 @@ No aggressive donation requests. No minimal changes disguised as “major update
 
 <br>
 
----
-
-<br>
-
-## 🔄 How It Works
-
-```mermaid
-graph TD
-    A[Install PurrfectSnap] --> B{Device Type?}
-    B -->|Non-Rooted| C[Auto Patcher Runs]
-    B -->|Rooted| D[Xposed Framework]
-    C --> E[Snapchat Patched Automatically]
-    D --> E
-    E --> F[Launch Snapchat]
-    F --> G[Access PurrfectSnap Settings]
-    G --> H[Configure Features]
-    H --> I{Enable Features}
-    I --> J[Media Downloader]
-    I --> K[Privacy Controls]
-    I --> L[UI Customization]
-    I --> M[Camera Enhancements]
-    I --> N[AI Intelligence Layer]
-    J --> O[Enhanced Snapchat Experience]
-    K --> O
-    L --> O
-    M --> O
-    N --> O
-```
-
-<br>
-
----
-
-<br>
-
 ## Features
 
-PurrfectSnap offers deep control across media, privacy, automation, and UI—designed for both casual users and power users.
+PurrfectSnap offers deep control across media, privacy, automation, and UI:designed for both casual users and power users.
 
 <table>
 <tr>
@@ -246,152 +211,6 @@ Extensibility through custom scripts.
 
 <br>
 
----
-
-<br>
-
-## What's New
-
-Here's what makes PurrfectSnap different from upstream SnapEnhance.
-
-<br>
-
-### Aurora Design System
-
-A complete visual language rebuilt from the ground up. Not just a theme, an entire design philosophy.
-
-The interface now flows with purpose. Subtle animations guide your interactions. Every screen has been reconsidered, every transition refined. The result is an experience that feels premium without being ostentatious.
-
-<br>
-
-### PurrAura
-
-The ban problem? Solved.
-
-No more sacrificing features to stay safe. Add friends, block users, attach music; everything works as it should. No workarounds, no compromises, no disadvantages.
-
-<br>
-
-### Auto Patcher
-
-Installation was complicated. Now it isn’t.
-
-We've eliminated 90% of the installation friction. No Shizuku. No LSPatch. Just a straightforward process that respects your time.
-
-<br>
-
-### Intelligence Layer
-
-**Auto Reply**  
-Let AI handle routine responses while you focus on what matters. Configure automatic replies for chats, stories, and half-swipes. Essential for creators managing volume. Requires an API key from Google AI Studio, they offer free tier access.
-
-**Scheduled Snaps**  
-Time-shifted communication. Set a snap to send at midnight for a birthday. Queue content for optimal timing:your schedule, automated.
-
-**Message Translator**  
-Language barriers, eliminated. Incoming messages automatically translate to your preferred language. Set it once, communicate globally.
-
-<br>
-
-### Privacy Enhancements
-
-**Granular Controls**  
-Whitelist and blacklist modes for typing indicators and message logging. Choose exactly who sees what, friend by friend.
-
-**Auto Delete Messages**  
-Set expiration times for your messages. They disappear on your schedule, not Snapchat's.
-
-**Message Logger Viewer**  
-Review exported logs directly in-app. No external tools required.
-
-<br>
-
-### Data Persistence
-
-**Friend Notes Backup**  
-Your notes are valuable. Now they're protected. Export and restore with ease. Never lose context again.
-
-<br>
-
-### Device Management
-
-**ID Spoofing**  
-Device bans happen. Sometimes unjustly. We offer a solution for legitimate cases, approval required with proof of wrongful ban. This feature is restricted to prevent abuse.
-
-**Model Spoofing**  
-Identify as a high-end device model. Potential performance improvements, enhanced camera processing, and better feature access.
-
-**Network Spoofing**  
-Spoof your network status to Wi-Fi always to prevent several restrictions on mobile data.
-
-<br>
-
-### Restored Functionality
-
-Features that disappeared? They're back.
-
-Bulk messaging works again. Friend list management is fully operational. These aren't new features, they're restored capabilities that should never have been lost.
-
-<br>
-
-### Discovery
-
-**Scripts Catalog**  
-Browse and install scripts without leaving the app. No more hunting for import links. One-tap installation. Always current.
-
-**Friend Tracker Catalog**  
-Browse and install tracking rules without leaving the app. One-tap installation. Always current.
-
-**Friend Tracker Import/Export**  
-Backup and restore your Friend Tracker configurations with ease.
-
-<br>
-
-### Advanced Tracking
-
-**I Can See You Rule**  
-Track the exact time and duration when a friend enters your chat. Precision visibility tracking for Friend Tracker.
-
-**Auto Open Snaps Enhancement**  
-More granular control with queue size configuration and customizable delays.
-
-<br>
-
-### Visual Refinements
-
-**AMOLED Theme**  
-True black. Battery-saving. The most requested feature, delivered.
-
-**Haptic Feedback**  
-Subtle tactile responses. Every interaction confirmed through touch.
-
-**Customizable Bottom Bar**  
-Your navigation, your rules. Rearrange tabs, remove what you don't use, set your default view. Complete flexibility.
-
-**Search History**  
-Recently searched features, instantly accessible. No more hunting through menus.
-
-<br>
-
-### Infrastructure
-
-**In-App Updates**  
-New versions install directly from within the app. No GitHub hunting. No manual downloads. Just seamless updates.
-
-**Update Notifications**  
-Stay current automatically. Get notified when new releases are available.
-
-**Config Export/Import Summary**  
-See exactly which features a config will enable before importing or exporting. Know what you're getting.
-
-<br>
-
-### Quality
-
-Hundreds of refinements you'll feel but might not see. Smoother animations. Faster response times. Eliminated edge cases. The kind of polish that separates good from exceptional.
-
-
-
 > ⚠️Some features are intended for educational, recovery, or accessibility purposes. Misuse may violate Snapchat’s terms of service. 
 > **We are not affiliated with Snap Inc. and are not responsible for any violations by the user. Our sole purpose is for education purposes only!**
 
@@ -425,15 +244,79 @@ Questions? Ideas? Found a bug? Our community is active and responsive.
 
 <br>
 
-## Contributing
+## Build from Source
 
 We welcome contributions from developers who share our vision. Whether it's code, documentation, etc., contributions are always appreciated. Feel free to open a PR :)
 
-<br>
+### 1) Fork
 
----
+1. Fork this repository on GitHub.
+```
 
-<br>
+### 2) Generate a Release Keystore (Certificate)
+
+Create a signing keystore (`.jks`) and keep it secure:
+
+```bash
+keytool -genkeypair -v \
+  -keystore purrfectsnap-release.keystore \
+  -storetype JKS \
+  -alias purrfectsnap \
+  -keyalg RSA \
+  -keysize 2048 \
+  -validity 10000
+```
+
+Optional local placement for Gradle signing:
+
+```bash
+mkdir -p ~/.android
+cp purrfectsnap-release.keystore ~/.android/purrfectsnap-release.keystore
+```
+
+### 3) Convert Keystore to Base64
+
+For GitHub Actions secret `PS_BASE_64`:
+
+Linux/macOS:
+
+```bash
+base64 -w 0 purrfectsnap-release.keystore > keystore.base64
+```
+
+PowerShell (Windows):
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("purrfectsnap-release.keystore")) | Set-Content -NoNewline keystore.base64
+```
+
+### 4) Add Required GitHub Secrets (Your Fork)
+
+Go to:
+`Settings -> Secrets and variables -> Actions -> New repository secret`
+
+Create these exact secrets (from `.github/workflows/release.yml`):
+
+- `PS_BASE_64` = contents of `keystore.base64`
+- `PS_RELEASE_KEY_ALIAS` = `purrfectsnap` (or your chosen alias)
+- `PS_RELEASE_KEY_PASSWORD` = key password from `keytool`
+- `PS_RELEASE_STORE_PASSWORD` = keystore password from `keytool`
+
+### 5) Run Release Workflow
+
+1. Open `Actions` in your fork.
+2. Run `PurrfectSnap Release CI` (`workflow_dispatch`).
+3. Workflow builds and signs:
+   - `armv8` release APK
+   - `armv7` release APK
+4. Workflow creates a GitHub Release and uploads APK assets.
+
+### Notes
+
+- CI uses `JDK 21 (Temurin)`.
+- Signing requires all four secrets above.
+- Keep keystore and passwords private. Rotate immediately if exposed.
+
 
 ## Credits
 

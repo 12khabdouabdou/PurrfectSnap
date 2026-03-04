@@ -1,6 +1,5 @@
 package me.eternal.purrfectsnap.core.util
 
-import de.robv.android.xposed.XC_MethodHook
 import me.eternal.purrfectsnap.core.util.hook.HookAdapter
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.Hooker
@@ -39,7 +38,7 @@ class CallbackBuilder(
         val callbackInstance = createEmptyObject(callbackClass.constructors.first())!!
         val callbackInstanceHashCode: Int = callbackInstance.hashCode()
         val callbackInstanceClass = callbackInstance.javaClass
-        val unhooks = mutableListOf<XC_MethodHook.Unhook>()
+        val unhooks = mutableListOf<Hooker.HookHandle>()
         callbackInstanceClass.methods.forEach { method ->
             if (method.declaringClass != callbackInstanceClass) return@forEach
             if (Modifier.isPrivate(method.modifiers)) return@forEach

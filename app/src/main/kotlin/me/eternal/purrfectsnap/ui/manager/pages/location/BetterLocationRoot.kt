@@ -127,7 +127,11 @@ class BetterLocationRoot : Routes.Route() {
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Lat ${friendLocation.latitude.toFloat()}, Lng ${friendLocation.longitude.toFloat()}",
+                        text = context.translation.format(
+                            "spoofed_coordinates_title",
+                            "latitude" to friendLocation.latitude.toFloat().toString(),
+                            "longitude" to friendLocation.longitude.toFloat().toString()
+                        ),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Light,
                         color = Color.White.copy(alpha = 0.8f)
@@ -234,6 +238,8 @@ class BetterLocationRoot : Routes.Route() {
         val coordinatesProperty = remember {
             context.config.root.global.betterLocation.getPropertyPair("coordinates")
         }
+        val providerProperty = remember { context.config.root.global.betterLocation.getPropertyPair("location_search_provider") }
+        val apiKeyProperty = remember { context.config.root.global.betterLocation.getPropertyPair("google_maps_api_key") }
 
         val updateDispatcher = rememberAsyncUpdateDispatcher()
         val savedCoordinates = rememberAsyncMutableStateList(
@@ -245,10 +251,17 @@ class BetterLocationRoot : Routes.Route() {
         var showMap by remember { mutableStateOf(false) }
         var addSavedCoordinateDialog by remember { mutableStateOf(false) }
         var showTeleportDialog by remember { mutableStateOf(false) }
+        var showProviderDialog by remember { mutableStateOf(false) }
+        var showApiKeyDialog by remember { mutableStateOf(false) }
 
         val marker = remember { mutableStateOf<Marker?>(null) }
         val mapView = remember { mutableStateOf<MapView?>(null) }
-        var spoofedCoordinates by remember(showTeleportDialog, showMap) { mutableStateOf(coordinatesProperty.value.get() as? Pair<*, *>) }
+        var spoofedCoordinates by remember(showTeleportDialog, showMap) {
+            mutableStateOf(
+                (coordinatesProperty.value.getNullable() as? Pair<*, *>)
+                    ?: (0.0 to 0.0)
+            )
+        }
 
         fun addSavedCoordinate(id: Int?, locationCoordinates: LocationCoordinates, onSuccess: suspend (id: Int) -> Unit = {}) {
             context.coroutineScope.launch {
@@ -270,6 +283,36 @@ class BetterLocationRoot : Routes.Route() {
                 }
             )
         }
+
+         var currentProvider by remember {
+             mutableStateOf(context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm")
+         }
+         var currentApiKey by remember {
+             mutableStateOf(context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: "")
+         }
+
+         if (showProviderDialog) {
+             me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = {
+                 showProviderDialog = false
+                 context.config.writeConfig()
+                 currentProvider = context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm"
+             }) {
+                 alertDialogs.UniqueSelectionDialog(providerProperty)
+             }
+         }
+         if (showApiKeyDialog) {
+             me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { 
+                 showApiKeyDialog = false
+                 context.config.writeConfig()
+                 currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: ""
+             }) {
+                  alertDialogs.KeyboardInputDialog(apiKeyProperty) {
+                      showApiKeyDialog = false
+                      context.config.writeConfig()
+                      currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: ""
+                  }
+             }
+         }
 
         Column(
             modifier = Modifier
@@ -337,9 +380,16 @@ class BetterLocationRoot : Routes.Route() {
                             )
                         ) {
                             Box(modifier = Modifier.background(PurrfectPalette.cardOverlay)) {
-                                alertDialogs.ChooseLocationDialog(property = coordinatesProperty, marker, mapView, saveCoordinates = {
-                                    addSavedCoordinateDialog = true
-                                }) {
+                                alertDialogs.ChooseLocationDialog(
+                                    property = coordinatesProperty,
+                                    marker = marker,
+                                    mapView = mapView,
+                                    locationSearchProvider = context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm",
+                                    googleMapsApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: "",
+                                    saveCoordinates = {
+                                        addSavedCoordinateDialog = true
+                                    }
+                                ) {
                                     showMap = false
                                     context.config.writeConfig()
                                 }
@@ -394,6 +444,42 @@ class BetterLocationRoot : Routes.Route() {
                         remember { mutableStateOf(context.config.root.global.betterLocation.suspendLocationUpdates.get()) }
                     ) {
                         context.config.root.global.betterLocation.suspendLocationUpdates.set(it)
+                    }
+
+                    @Composable
+                    fun ConfigSelector(text: String, value: String, onClick: () -> Unit) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onClick)
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = text, modifier = Modifier.weight(1f))
+                            Text(
+                                text = value,
+                                color = PurrfectPalette.textSecondary,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+
+                    @Composable
+                    fun ConfigInput(text: String, value: String, onClick: () -> Unit) {
+                        ConfigSelector(text, if (value.isNotEmpty()) "********" else translation["options.empty"], onClick)
+                    }
+
+                    ConfigSelector(
+                        text = translation["location_search_provider_title"],
+                        value = translation["option_$currentProvider"]
+                    ) { showProviderDialog = true }
+
+                    if (currentProvider == "google_maps") {
+                        ConfigInput(
+                            text = translation["google_maps_api_key_title"],
+                            value = currentApiKey
+                        ) { showApiKeyDialog = true }
                     }
                 }
                 item {

@@ -78,7 +78,7 @@ class FriendTrackerConfigImportScreen : Routes.Route() {
                                 routes.onRuleImported?.invoke()
                                 routes.navController.popBackStack()
                             }.onFailure {
-                                context.longToast(translation.format("import_failed_toast", "message" to (it.message ?: "Unknown")))
+                                context.longToast(translation.format("import_failed_toast", "message" to (it.message ?: context.translation["common.unknown"])))
                             }
                         }) {
                             Text(translation["confirm_button"])

@@ -1,6 +1,5 @@
 package me.eternal.purrfectsnap.core.features.impl.tweaks
 
-import de.robv.android.xposed.XposedHelpers
 import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
 import me.eternal.purrfectsnap.common.util.protobuf.ProtoEditor
@@ -8,6 +7,7 @@ import me.eternal.purrfectsnap.common.util.protobuf.ProtoReader
 import me.eternal.purrfectsnap.core.event.events.impl.NativeUnaryCallEvent
 import me.eternal.purrfectsnap.core.event.events.impl.SendMessageWithContentEvent
 import me.eternal.purrfectsnap.core.features.MessagingRuleFeature
+import me.eternal.purrfectsnap.core.util.ktx.setObjectField
 
 class UnsaveableMessages : MessagingRuleFeature(
     "Unsaveable Messages",
@@ -55,8 +55,9 @@ class UnsaveableMessages : MessagingRuleFeature(
             
             // Set mSavePolicy on Java object
             try {
-                val savePolicyEnumClass = XposedHelpers.findClass(
+                val savePolicyEnumClass = Class.forName(
                     "com.snapchat.client.messaging.SavePolicy",
+                    false,
                     localMessageContent.instanceNonNull().javaClass.classLoader
                 )
                 
@@ -66,7 +67,7 @@ class UnsaveableMessages : MessagingRuleFeature(
                         savePolicyEnumClass as Class<out Enum<*>>,
                         "PROHIBITED"
                     )
-                    XposedHelpers.setObjectField(localMessageContent.instanceNonNull(), "mSavePolicy", prohibitedEnum)
+                    localMessageContent.instanceNonNull().setObjectField("mSavePolicy", prohibitedEnum)
                 }
             } catch (e: Exception) {
                 context.log.warn("UnsaveableMessages: Failed to set mSavePolicy: ${e.message}")

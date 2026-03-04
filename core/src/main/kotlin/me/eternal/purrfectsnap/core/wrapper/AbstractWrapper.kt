@@ -1,7 +1,8 @@
 package me.eternal.purrfectsnap.core.wrapper
 
-import de.robv.android.xposed.XposedHelpers
 import me.eternal.purrfectsnap.core.util.CallbackBuilder
+import me.eternal.purrfectsnap.core.util.ktx.getObjectField
+import me.eternal.purrfectsnap.core.util.ktx.setObjectField
 import me.eternal.purrfectsnap.core.wrapper.impl.SnapUUID
 import kotlin.reflect.KProperty
 
@@ -20,13 +21,13 @@ abstract class AbstractWrapper(
         @Suppress("UNCHECKED_CAST")
         operator fun getValue(obj: Any, property: KProperty<*>): T? {
             return runCatching {
-                val value = XposedHelpers.getObjectField(instance, fieldName)
+                val value = instance?.getObjectField(fieldName)
                 mapper?.invoke(value) ?: value as? T
             }.getOrNull()
         }
 
         operator fun setValue(obj: Any, property: KProperty<*>, value: Any?) {
-            XposedHelpers.setObjectField(instance, fieldName, when (value) {
+            instance?.setObjectField(fieldName, when (value) {
                 is AbstractWrapper -> value.instance
                 is ArrayList<*> -> value.map { if (it is AbstractWrapper) it.instance else it }.toMutableList()
                 else -> value
@@ -56,13 +57,15 @@ abstract class AbstractWrapper(
 
     fun <T : Enum<*>> getEnumValue(fieldName: String, defaultValue: T?): T? {
         if (defaultValue == null || instance == null) return null
-        val mContentType = XposedHelpers.getObjectField(instance, fieldName) as? Enum<*> ?: return null
+        val mContentType = instance?.getObjectField(fieldName) as? Enum<*> ?: return null
         return java.lang.Enum.valueOf(defaultValue::class.java, mContentType.name)
     }
 
     @Suppress("UNCHECKED_CAST")
     fun setEnumValue(fieldName: String, value: Enum<*>) {
-        val type = instance!!.javaClass.declaredFields.find { it.name == fieldName }?.type as Class<out Enum<*>>
-        XposedHelpers.setObjectField(instance, fieldName, java.lang.Enum.valueOf(type, value.name))
+        val currentValue = instance?.getObjectField(fieldName) as? Enum<*> ?: return
+        @Suppress("UNCHECKED_CAST")
+        val type = currentValue.javaClass as Class<out Enum<*>>
+        instance?.setObjectField(fieldName, java.lang.Enum.valueOf(type, value.name))
     }
 }

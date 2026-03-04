@@ -315,7 +315,7 @@ class HomeLogs : Routes.Route() {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
                         }
                         Text(
-                            text = routeInfo.translatedKey?.value ?: translation["manager.routes.home_logs"] ?: "Logs",
+                            text = routeInfo.translatedKey?.value ?: translation["manager.routes.home_logs"],
                             color = PurrfectPalette.textPrimary,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraBold
@@ -412,7 +412,7 @@ class HomeLogs : Routes.Route() {
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Pull to refresh or trigger an action to see new entries.",
+                text = translation["refresh_hint"],
                 color = PurrfectPalette.textSecondary,
                 fontSize = 13.sp,
                 textAlign = TextAlign.Center,

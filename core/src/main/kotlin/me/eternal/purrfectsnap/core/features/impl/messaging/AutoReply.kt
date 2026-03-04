@@ -489,7 +489,8 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
             "openrouter" -> ai.aiModel.get().ifBlank { "deepseek/deepseek-r1-0528:free" }
             "deepseek" -> ai.aiModel.get().ifBlank { "deepseek-chat" }
             "openai" -> ai.aiModel.get().ifBlank { "gpt-4o-mini" }
-            else -> ai.aiModel.get().ifBlank { "gemini-2.5-flash" }
+            "gemini" -> ai.aiModel.get().ifBlank { "gemini-2.0-flash" }
+            else -> ai.aiModel.get().ifBlank { "gemini-2.0-flash" }
         }
         val timeoutSec = ai.aiRequestTimeout.get()
         val maxRetries = ai.aiRetryAttempts.get()
@@ -513,75 +514,13 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
             )
         }
 
-        suspend fun makeRequest(): String = withTimeout(timeoutSec * 1000L) {
-            withContext(Dispatchers.IO) {
-                when (provider) {
-                    "openrouter", "openai", "deepseek" -> {
-
-                        val payload = JsonObject().apply {
-                            addProperty("model", model)
-                            add("messages", JsonArray().apply {
-                                messages.forEach { msg ->
-                                    add(JsonObject().apply {
-                                        addProperty("role", msg.role)
-                                        addProperty("content", msg.content)
-                                    })
-                                }
-                            })
-                            if (maxTokens > 0) addProperty("max_tokens", maxTokens)
-                            addProperty("temperature", temp)
-                        }
-
-                        val apiUrl = when (provider) {
-                            "openrouter" -> "https://openrouter.ai/api/v1/chat/completions"
-                            "openai" -> "https://api.openai.com/v1/chat/completions"
-                            else -> "https://api.deepseek.com/v1/chat/completions"
-                        }
-
-                        val reqBuilder = Request.Builder()
-                            .url(apiUrl)
-                            .addHeader("Authorization", "Bearer $apiKey")
-                            .addHeader("Content-Type", "application/json")
-
-                        if (provider == "openrouter") {
-                            reqBuilder
-                                .addHeader("HTTP-Referer", "https://purrfectsnap.app")
-                                .addHeader("X-Title", "PurrfectSnap")
-                        }
-
-                        val request = reqBuilder
-                            .post(payload.toString().toRequestBody("application/json".toMediaType()))
-                            .build()
-
-                        httpClient.newCall(request).execute().use { resp ->
-                            val body = resp.body?.string().orEmpty()
-                            if (!resp.isSuccessful) {
-                                throw Throwable("AI error ${resp.code}: ${body.take(200)}")
-                            }
-
-                            JsonParser.parseString(body)
-                                .asJsonObject
-                                .getAsJsonArray("choices")
-                                ?.firstOrNull()?.asJsonObject
-                                ?.getAsJsonObject("message")
-                                ?.get("content")
-                                ?.asString
-                                ?.trim()
-                                .orEmpty()
-                        }
-                    }
-                    else -> throw IllegalArgumentException("Unsupported AI provider: $provider")
-                }
-            }
-        }
-
         var lastError: Throwable? = null
         repeat(maxRetries + 1) { attempt ->
             val result = runCatching {
-                makeRequest()
+                performAiRequest(provider, model, apiKey, messages, timeoutSec, temp, maxTokens)
             }.getOrElse { err ->
                 lastError = err
-                context.log.warn("AI reply attempt ${attempt + 1} failed for provider $provider model $model timeout ${timeoutSec}s conversation $conversationId: ${err.localizedMessage}; ${err.stackTraceToString()}")
+                context.log.warn("AI reply attempt ${attempt + 1} failed for provider $provider model $model timeout ${timeoutSec}s conversation $conversationId: ${err.message ?: err.localizedMessage}")
                 if (attempt < maxRetries) {
                     delay(1000L * (attempt + 1))
                     null
@@ -600,7 +539,7 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
         context.log.warn("AI reply failed after ${maxRetries + 1} attempts: ${lastError?.message}")
         return if (ai.aiFallbackToTemplate.get()) fallback else ""
     }
-    
+
     private suspend fun handleHalfSwipe(conversationId: String, userId: String, duration: Long) {
         val currentTime = System.currentTimeMillis()
         
@@ -641,7 +580,7 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
             context.log.error("Error handling half-swipe auto-reply", e)
         }
     }
-    
+
     private suspend fun generateAiReplyForHalfSwipe(senderId: String, conversationId: String, fallback: String): String {
         val ai = context.config.messaging.autoReply.aiConfig
         val provider = ai.aiProvider.get()
@@ -650,7 +589,8 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
             "openrouter" -> ai.aiModel.get().ifBlank { "deepseek/deepseek-r1-0528:free" }
             "deepseek" -> ai.aiModel.get().ifBlank { "deepseek-chat" }
             "openai" -> ai.aiModel.get().ifBlank { "gpt-4o-mini" }
-            else -> ai.aiModel.get().ifBlank { "gemini-2.5-flash" }
+            "gemini" -> ai.aiModel.get().ifBlank { "gemini-2.0-flash" }
+            else -> ai.aiModel.get().ifBlank { "gemini-2.0-flash" }
         }
         val timeoutSec = ai.aiRequestTimeout.get()
         val maxRetries = ai.aiRetryAttempts.get()
@@ -687,75 +627,13 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
             )
         }
 
-        suspend fun makeRequest(): String = withTimeout(timeoutSec * 1000L) {
-            withContext(Dispatchers.IO) {
-                when (provider) {
-                    "openrouter", "openai", "deepseek" -> {
-
-                        val payload = JsonObject().apply {
-                            addProperty("model", model)
-                            add("messages", JsonArray().apply {
-                                messages.forEach { msg ->
-                                    add(JsonObject().apply {
-                                        addProperty("role", msg.role)
-                                        addProperty("content", msg.content)
-                                    })
-                                }
-                            })
-                            if (maxTokens > 0) addProperty("max_tokens", maxTokens)
-                            addProperty("temperature", temp)
-                        }
-
-                        val apiUrl = when (provider) {
-                            "openrouter" -> "https://openrouter.ai/api/v1/chat/completions"
-                            "openai" -> "https://api.openai.com/v1/chat/completions"
-                            else -> "https://api.deepseek.com/v1/chat/completions"
-                        }
-
-                        val reqBuilder = Request.Builder()
-                            .url(apiUrl)
-                            .addHeader("Authorization", "Bearer $apiKey")
-                            .addHeader("Content-Type", "application/json")
-
-                        if (provider == "openrouter") {
-                            reqBuilder
-                                .addHeader("HTTP-Referer", "https://purrfectsnap.app")
-                                .addHeader("X-Title", "PurrfectSnap")
-                        }
-
-                        val request = reqBuilder
-                            .post(payload.toString().toRequestBody("application/json".toMediaType()))
-                            .build()
-
-                        httpClient.newCall(request).execute().use { resp ->
-                            val body = resp.body?.string().orEmpty()
-                            if (!resp.isSuccessful) {
-                                throw Throwable("AI error ${resp.code}: ${body.take(200)}")
-                            }
-
-                            JsonParser.parseString(body)
-                                .asJsonObject
-                                .getAsJsonArray("choices")
-                                ?.firstOrNull()?.asJsonObject
-                                ?.getAsJsonObject("message")
-                                ?.get("content")
-                                ?.asString
-                                ?.trim()
-                                .orEmpty()
-                        }
-                    }
-                    else -> throw IllegalArgumentException("Unsupported AI provider: $provider")
-                }
-            }
-        }
-
         var lastError: Throwable? = null
         repeat(maxRetries + 1) { attempt ->
             val result = runCatching {
-                makeRequest()
+                performAiRequest(provider, model, apiKey, messages, timeoutSec, temp, maxTokens)
             }.getOrElse { err ->
                 lastError = err
-                context.log.warn("AI half-swipe reply attempt ${attempt + 1} failed for provider $provider model $model timeout ${timeoutSec}s conversation $conversationId: ${err.localizedMessage}; ${err.stackTraceToString()}")
+                context.log.warn("AI half-swipe reply attempt ${attempt + 1} failed for provider $provider model $model timeout ${timeoutSec}s conversation $conversationId: ${err.message ?: err.localizedMessage}")
                 if (attempt < maxRetries) {
                     delay(1000L * (attempt + 1))
                     null
@@ -774,6 +652,145 @@ class AutoReply : MessagingRuleFeature("Auto Reply", MessagingRuleType.AUTO_REPL
         context.log.warn("AI reply failed after ${maxRetries + 1} attempts: ${lastError?.message}")
         return if (ai.aiFallbackToTemplate.get()) fallback else ""
     }
+
+    private suspend fun performAiRequest(
+        provider: String,
+        model: String,
+        apiKey: String,
+        messages: List<AIMessage>,
+        timeoutSec: Int,
+        temp: Double,
+        maxTokens: Int
+    ): String = withTimeout(timeoutSec * 1000L) {
+        withContext(Dispatchers.IO) {
+            when (provider) {
+                "openrouter", "openai", "deepseek" -> {
+                    val payload = JsonObject().apply {
+                        addProperty("model", model)
+                        add("messages", JsonArray().apply {
+                            messages.forEach { msg ->
+                                add(JsonObject().apply {
+                                    addProperty("role", msg.role)
+                                    addProperty("content", msg.content)
+                                })
+                            }
+                        })
+                        if (maxTokens > 0) addProperty("max_tokens", maxTokens)
+                        addProperty("temperature", temp)
+                    }
+
+                    val apiUrl = when (provider) {
+                        "openrouter" -> "https://openrouter.ai/api/v1/chat/completions"
+                        "openai" -> "https://api.openai.com/v1/chat/completions"
+                        else -> "https://api.deepseek.com/v1/chat/completions"
+                    }
+
+                    val reqBuilder = Request.Builder()
+                        .url(apiUrl)
+                        .addHeader("Authorization", "Bearer $apiKey")
+                        .addHeader("Content-Type", "application/json")
+
+                    if (provider == "openrouter") {
+                        reqBuilder
+                            .addHeader("HTTP-Referer", "https://purrfectsnap.app")
+                            .addHeader("X-Title", "PurrfectSnap")
+                    }
+
+                    val request = reqBuilder
+                        .post(payload.toString().toRequestBody("application/json".toMediaType()))
+                        .build()
+
+                    httpClient.newCall(request).execute().use { resp ->
+                        val body = resp.body?.string().orEmpty()
+                        if (!resp.isSuccessful) {
+                            throw Throwable("AI error ${resp.code}: ${body.take(200)}")
+                        }
+
+                        JsonParser.parseString(body)
+                            .asJsonObject
+                            .getAsJsonArray("choices")
+                            ?.firstOrNull()?.asJsonObject
+                            ?.getAsJsonObject("message")
+                            ?.get("content")
+                            ?.asString
+                            ?.trim()
+                            .orEmpty()
+                    }
+                }
+                "gemini" -> {
+                    val payload = JsonObject().apply {
+                        val contents = JsonArray()
+                        val systemParts = JsonArray()
+                        
+                        val mergedMessages = mutableListOf<Pair<String, StringBuilder>>()
+                        messages.forEach { msg ->
+                            if (msg.role == "system") {
+                                systemParts.add(JsonObject().apply { addProperty("text", msg.content) })
+                            } else {
+                                val geminiRole = if (msg.role == "assistant") "model" else "user"
+                                if (mergedMessages.isNotEmpty() && mergedMessages.last().first == geminiRole) {
+                                    mergedMessages.last().second.append("\n").append(msg.content)
+                                } else {
+                                    mergedMessages.add(geminiRole to StringBuilder(msg.content))
+                                }
+                            }
+                        }
+                        
+                        mergedMessages.forEach { (role, content) ->
+                            if (contents.size() == 0 && role == "model") return@forEach // Gemini contents turn must start with user
+                            contents.add(JsonObject().apply {
+                                addProperty("role", role)
+                                add("parts", JsonArray().apply {
+                                    add(JsonObject().apply { addProperty("text", content.toString()) })
+                                })
+                            })
+                        }
+                        
+                        add("contents", contents)
+                        if (systemParts.size() > 0) {
+                            add("system_instruction", JsonObject().apply {
+                                add("parts", systemParts)
+                            })
+                        }
+                        
+                        add("generationConfig", JsonObject().apply {
+                            addProperty("temperature", temp)
+                            if (maxTokens > 0) addProperty("maxOutputTokens", maxTokens)
+                        })
+                    }
+
+                    val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
+                    
+                    val request = Request.Builder()
+                        .url(apiUrl)
+                        .addHeader("Content-Type", "application/json")
+                        .post(payload.toString().toRequestBody("application/json".toMediaType()))
+                        .build()
+
+                    httpClient.newCall(request).execute().use { resp ->
+                        val body = resp.body?.string().orEmpty()
+                        if (!resp.isSuccessful) {
+                            throw Throwable("AI error ${resp.code}: ${body.take(200)}")
+                        }
+
+                        JsonParser.parseString(body)
+                            .asJsonObject
+                            .getAsJsonArray("candidates")
+                            ?.firstOrNull()?.asJsonObject
+                            ?.getAsJsonObject("content")
+                            ?.getAsJsonArray("parts")
+                            ?.firstOrNull()?.asJsonObject
+                            ?.get("text")
+                            ?.asString
+                            ?.trim()
+                            .orEmpty()
+                    }
+                }
+                else -> throw IllegalArgumentException("Unsupported AI provider: $provider")
+            }
+        }
+    }
+
 
     // === AI helper structures ===
     private data class AIMessage(val role: String, val content: String)

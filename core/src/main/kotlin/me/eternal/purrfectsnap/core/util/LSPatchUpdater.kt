@@ -2,6 +2,7 @@ package me.eternal.purrfectsnap.core.util
 
 import me.eternal.purrfectsnap.common.Constants
 import me.eternal.purrfectsnap.core.ModContext
+import me.eternal.purrfectsnap.core.util.ktx.getStaticObjectField
 import java.io.File
 import java.util.zip.ZipFile
 
@@ -10,6 +11,21 @@ object LSPatchUpdater {
 
     var HAS_LSPATCH = false
         private set
+
+    private fun translatedOrFallback(context: ModContext, key: String, fallback: String): String {
+        val value = context.translation.getOrNull(key) ?: return fallback
+        return if (value.equals(key, ignoreCase = false)) fallback else value
+    }
+
+    private fun ensureTranslationsLoaded(context: ModContext) {
+        if (context.translation.getOrNull("toast_purrfectsnap_updated") != null) return
+        runCatching {
+            context.translation.userLocale = context.getConfigLocale()
+            context.translation.load()
+        }.onFailure {
+            context.log.warn("Failed to load translations in updater: ${it.message}", TAG)
+        }
+    }
 
     private fun getModuleUniqueHash(module: ZipFile): String {
         return module.entries().asSequence()
@@ -20,12 +36,14 @@ object LSPatchUpdater {
     }
 
     fun onBridgeConnected(context: ModContext) {
+        ensureTranslationsLoaded(context)
+
         val obfuscatedModulePath by lazy {
             (runCatching {
                 context::class.java.classLoader?.loadClass("org.lsposed.lspatch.share.Constants")
-            }.getOrNull())?.declaredFields?.firstOrNull { it.name == "MANAGER_PACKAGE_NAME" }?.also {
-                it.isAccessible = true
-            }?.get(null) as? String
+            }.getOrNull())?.let { clazz ->
+                runCatching { clazz.getStaticObjectField("MANAGER_PACKAGE_NAME") as? String }.getOrNull()
+            }
         }
 
         val embeddedModule = context.androidContext.cacheDir
@@ -59,19 +77,37 @@ object LSPatchUpdater {
         }
 
         context.log.verbose("updating", TAG)
-        context.shortToast(context.translation["toast_updating_purrfectsnap"])
+        context.shortToast(
+            translatedOrFallback(
+                context,
+                "toast_updating_purrfectsnap",
+                "Updating PurrfectSnap. Please wait..."
+            )
+        )
         // copy embedded module to cache
         runCatching {
             seAppApk.copyTo(embeddedModule, overwrite = true)
         }.onFailure {
             seAppApk.delete()
             context.log.error("Failed to copy embedded module", it, TAG)
-            context.longToast(context.translation["toast_update_purrfectsnap_failed"])
+            context.longToast(
+                translatedOrFallback(
+                    context,
+                    "toast_update_purrfectsnap_failed",
+                    "Failed to update PurrfectSnap. Please check logcat for more details."
+                )
+            )
             context.forceCloseApp()
             return
         }
 
-        context.longToast(context.translation["toast_purrfectsnap_updated"])
+        context.longToast(
+            translatedOrFallback(
+                context,
+                "toast_purrfectsnap_updated",
+                "PurrfectSnap updated!"
+            )
+        )
         context.log.verbose("updated", TAG)
         context.softRestartApp()
     }

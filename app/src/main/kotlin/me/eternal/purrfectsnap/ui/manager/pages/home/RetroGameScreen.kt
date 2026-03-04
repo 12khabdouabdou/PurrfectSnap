@@ -58,6 +58,8 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 class RetroGameScreen : Routes.Route() {
+    override val translation by lazy { context.translation.getCategory("manager.sections.retro_flight") }
+
     override val content: @Composable (NavBackStackEntry) -> Unit = {
         val gridWidth = 120
         val gridHeight = 160
@@ -206,7 +208,7 @@ class RetroGameScreen : Routes.Route() {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 FloatingTopBar(
-                    title = "Retro Flight",
+                    title = translation["title"],
                     onBack = { routes.navController.popBackStack() }
                 )
                 Spacer(modifier = Modifier.height(6.dp))
@@ -243,7 +245,7 @@ class RetroGameScreen : Routes.Route() {
                             modifier = Modifier.align(Alignment.Center)
                         ) {
                             Text(
-                                text = "GAME OVER",
+                                text = translation["game_over_label"],
                                 color = Color.White,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
@@ -258,7 +260,7 @@ class RetroGameScreen : Routes.Route() {
                                 ),
                                 shape = RoundedCornerShape(6.dp)
                             ) {
-                                Text("RESTART", fontFamily = pixelFont, fontSize = 12.sp)
+                                Text(translation["restart_button"], fontFamily = pixelFont, fontSize = 12.sp)
                             }
                         }
                     }
@@ -293,7 +295,7 @@ class RetroGameScreen : Routes.Route() {
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = "LEFT",
+                                text = translation["left_button"],
                                 color = Color.White,
                                 fontSize = 14.sp,
                                 fontFamily = pixelFont,
@@ -324,7 +326,7 @@ class RetroGameScreen : Routes.Route() {
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = "RIGHT",
+                                text = translation["right_button"],
                                 color = Color.White,
                                 fontSize = 14.sp,
                                 fontFamily = pixelFont,
