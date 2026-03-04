@@ -1,3 +1,15 @@
+## v1.3.5
+- New: Added support for Snap versions upto v13.81(server side update, requires v1.3.2 and above)
+- New: Migration from libxposed API to YukiHook
+- New: Switch to kavaref
+- Fix: better location overlay crash
+- Fix: better location icon position for newer snap versions
+- New: Story counter(tq to RSR)
+- New: Story Source(tq to RSR)
+- Fix: Snaps getting saved even if the option is unchecked(tq to AhmedRaza)
+- Fix: Chat edit history UI(tq to AhmedRaza)
+- Fix: Media quality(tq to RSR)
+
 ## v1.3.2
 - ⚠️ ALL USERS ARE REQUESTED TO UPDATE TO THIS VERSION AS SOON AS POSSIBLE!⚠️
 - Fix: Crucial fixes
