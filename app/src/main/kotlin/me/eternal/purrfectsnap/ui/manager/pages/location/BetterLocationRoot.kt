@@ -483,16 +483,20 @@ class BetterLocationRoot : Routes.Route() {
                         context.config.root.global.betterLocation.spoofLocation.set(it)
                     }
 
-                    ConfigSelector(
-                        text = translation["routing_mode_title"],
-                        value = translation["option_${modeProperty.value.get()}"]
-                    ) { showModeDialog = true }
+                    if (routeStatus != RouteStatus.Routing) {
+                        ConfigSelector(
+                            text = translation["routing_mode_title"],
+                            value = translation["option_${modeProperty.value.get()}"]
+                        ) { showModeDialog = true }
+                    }
 
                     if (modeProperty.value.get() == "route") {
-                        ConfigSelector(
-                            text = translation["routing_speed_title"],
-                            value = "${speedProperty.value.get()} km/h"
-                        ) { showSpeedDialog = true }
+                        if (routeStatus != RouteStatus.Routing) {
+                            ConfigSelector(
+                                text = translation["routing_speed_title"],
+                                value = "${speedProperty.value.get()} km/h"
+                            ) { showSpeedDialog = true }
+                        }
 
                         Button(
                             onClick = {
@@ -594,6 +598,7 @@ class BetterLocationRoot : Routes.Route() {
                             .fillMaxWidth()
                             .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
+                    if (routeStatus != RouteStatus.Routing) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -624,6 +629,7 @@ class BetterLocationRoot : Routes.Route() {
                                 Text(translation["teleport_to_friend_button"])
                             }
                         }
+                    }
                     }
                 }
                 item {

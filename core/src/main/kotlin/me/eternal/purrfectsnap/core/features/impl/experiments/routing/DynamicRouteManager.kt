@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import me.eternal.purrfectsnap.core.ModContext
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.bonuspack.routing.OSRMRoadManager
-import org.osmdroid.util.GeoPoint
 
 /**
  * Status of the current dynamic route.
