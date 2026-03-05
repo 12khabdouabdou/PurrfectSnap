@@ -52,6 +52,7 @@ class PurrfectSnap {
     private var isBridgeInitialized = false
     private var android9ValdiBindDisabled = false
     private var android9ValdiBindDisableLogged = false
+    private val nativeLateInitTriggered = java.util.concurrent.atomic.AtomicBoolean(false)
 
     private fun hookMainActivity(methodName: String, stage: HookStage = HookStage.AFTER, block: Activity.(param: HookAdapter) -> Unit) {
         Activity::class.java.hook(methodName, stage, { isBridgeInitialized }) { param ->
@@ -391,6 +392,7 @@ class PurrfectSnap {
             lateinit var unhook: () -> Unit
             hook(HookStage.AFTER) { param ->
                 if (param.arg<String>(1) != "client") return@hook
+                if (!nativeLateInitTriggered.compareAndSet(false, true)) return@hook
                 unhook()
                 lateInit()
             }.also { unhook = { it.unhook() } }
