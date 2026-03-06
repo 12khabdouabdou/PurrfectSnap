@@ -324,7 +324,7 @@ PurrfectSnap is built with exceptional open source tools. We do not collect any 
 
 **Core Dependencies**
 - [SnapEnhance](https://github.com/rhunk/SnapEnhance) — The foundation
-- [libxposed](https://github.com/libxposed/api) — Framework integration
+- [YukiHook](https://github.com/HighCapable/YukiHookAPI) — Framework integration
 - [Jingmatrix Lspatch](https://github.com/JingMatrix/LSPatch) — Auto Patcher
 - [Dobby](https://github.com/jmpews/Dobby) — Native hooking
 - [O‑MVLL](https://github.com/open-obfuscator/o-mvll) — Obfuscation

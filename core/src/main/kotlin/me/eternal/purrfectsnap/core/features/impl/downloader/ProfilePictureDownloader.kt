@@ -1,9 +1,15 @@
 package me.eternal.purrfectsnap.core.features.impl.downloader
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
 import android.util.TypedValue
-import android.widget.Button as AndroidButton
-import android.widget.RelativeLayout
+import android.widget.ImageView
+import android.widget.ImageButton
+import android.widget.FrameLayout
+import android.view.View
+import android.view.ViewTreeObserver
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,8 +48,13 @@ import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.event.events.impl.NetworkApiRequestEvent
 import me.eternal.purrfectsnap.core.event.events.impl.UnaryCallEvent
 import me.eternal.purrfectsnap.core.features.Feature
+import me.eternal.purrfectsnap.core.util.ktx.isDarkTheme
 
 class ProfilePictureDownloader : Feature("ProfilePictureDownloader") {
+    private companion object {
+        const val DOWNLOAD_BUTTON_TAG = "profile_picture_download_button"
+    }
+
     @SuppressLint("SetTextI18n")
     override fun init() {
         if (!context.config.downloader.downloadProfilePictures.get()) return
@@ -62,31 +73,38 @@ class ProfilePictureDownloader : Feature("ProfilePictureDownloader") {
             context.event.subscribe(AddViewEvent::class) { event ->
                 if (event.view::class.java.name !in profileViewClasses) return@subscribe
 
+                val activity = context.mainActivity ?: return@subscribe
+                val rootContent = activity.findViewById<FrameLayout>(android.R.id.content) ?: return@subscribe
                 val buttonText = this@ProfilePictureDownloader.context.translation["profile_picture_downloader.button"]
-                if ((0 until event.parent.childCount).any {
-                    val child = event.parent.getChildAt(it)
-                    child is AndroidButton && child.contentDescription == buttonText
-                }) return@subscribe
+                rootContent.findViewWithTag<View>(DOWNLOAD_BUTTON_TAG)?.let { rootContent.removeView(it) }
 
-                event.parent.addView(AndroidButton(event.parent.context).apply {
-                    text = ""
-                    contentDescription = buttonText
+                val button = ImageButton(activity).apply {
                     val density = resources.displayMetrics.density
-                    val buttonHeight = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48f, resources.displayMetrics).toInt()
-                    minWidth = 0
-                    minimumWidth = 0
-                    minHeight = buttonHeight
-                    minimumHeight = buttonHeight
-                    setPadding(
-                        (6 * density).toInt(),
-                        0,
-                        0,
-                        0
+                    val buttonSize = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40f, resources.displayMetrics).toInt()
+                    val iconPadding = (8 * density).toInt()
+                    val darkTheme = context.isDarkTheme()
+
+                    tag = DOWNLOAD_BUTTON_TAG
+                    contentDescription = buttonText
+                    scaleType = ImageView.ScaleType.CENTER
+                    setImageResource(android.R.drawable.stat_sys_download)
+                    imageTintList = ColorStateList.valueOf(
+                        if (darkTheme) android.graphics.Color.WHITE else android.graphics.Color.parseColor("#151A1A")
                     )
-                    setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.stat_sys_download, 0, 0, 0)
-                    layoutParams = RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, buttonHeight).apply {
-                        setMargins((8 * density).toInt(), 200, 0, 0)
+                    background = GradientDrawable().apply {
+                        shape = GradientDrawable.OVAL
+                        setColor(
+                            if (darkTheme) android.graphics.Color.parseColor("#1D1D1D")
+                            else android.graphics.Color.WHITE
+                        )
                     }
+                    setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
+                    minimumWidth = 0
+                    minimumHeight = 0
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                        stateListAnimator = null
+                    }
+                    layoutParams = FrameLayout.LayoutParams(buttonSize, buttonSize)
                     setOnClickListener {
                         val choices = buildList {
                             backgroundUrl?.let {
@@ -109,7 +127,7 @@ class ProfilePictureDownloader : Feature("ProfilePictureDownloader") {
                             }
                         }
 
-        createComposeAlertDialog(
+                        createComposeAlertDialog(
                             this@ProfilePictureDownloader.context.mainActivity!!,
                             content = { alertDialog ->
                                 ProfilePictureDialog(
@@ -138,7 +156,47 @@ class ProfilePictureDownloader : Feature("ProfilePictureDownloader") {
                             }
                         ).show()
                     }
+                }
+
+                val leftOffsetPx = (8 * activity.resources.displayMetrics.density).toInt()
+                val topOffsetPx = 236
+
+                val anchorView = event.view
+                val positionUpdater = ViewTreeObserver.OnPreDrawListener {
+                    updateOverlayButtonPosition(
+                        activity = activity,
+                        anchorView = anchorView,
+                        button = button,
+                        leftOffsetPx = leftOffsetPx,
+                        topOffsetPx = topOffsetPx
+                    )
+                    true
+                }
+
+                anchorView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                    override fun onViewAttachedToWindow(v: View) = Unit
+
+                    override fun onViewDetachedFromWindow(v: View) {
+                        if (rootContent.viewTreeObserver.isAlive) {
+                            rootContent.viewTreeObserver.removeOnPreDrawListener(positionUpdater)
+                        }
+                        rootContent.findViewWithTag<View>(DOWNLOAD_BUTTON_TAG)?.let { rootContent.removeView(it) }
+                        v.removeOnAttachStateChangeListener(this)
+                    }
                 })
+
+                rootContent.addView(button)
+                rootContent.viewTreeObserver.addOnPreDrawListener(positionUpdater)
+                rootContent.post {
+                    updateOverlayButtonPosition(
+                        activity = activity,
+                        anchorView = anchorView,
+                        button = button,
+                        leftOffsetPx = leftOffsetPx,
+                        topOffsetPx = topOffsetPx
+                    )
+                    button.bringToFront()
+                }
             }
 
 
@@ -377,5 +435,25 @@ class ProfilePictureDownloader : Feature("ProfilePictureDownloader") {
     private enum class ProfilePictureChoiceIcon {
         AVATAR,
         BACKGROUND
+    }
+
+    private fun updateOverlayButtonPosition(
+        activity: Activity,
+        anchorView: View,
+        button: View,
+        leftOffsetPx: Int,
+        topOffsetPx: Int
+    ) {
+        if (!anchorView.isAttachedToWindow || !button.isAttachedToWindow) return
+
+        val rootContent = activity.findViewById<FrameLayout>(android.R.id.content) ?: return
+        val rootLocation = IntArray(2)
+        val anchorLocation = IntArray(2)
+
+        rootContent.getLocationOnScreen(rootLocation)
+        anchorView.getLocationOnScreen(anchorLocation)
+
+        button.x = (anchorLocation[0] - rootLocation[0] + leftOffsetPx).toFloat()
+        button.y = (anchorLocation[1] - rootLocation[1] + topOffsetPx).toFloat()
     }
 }

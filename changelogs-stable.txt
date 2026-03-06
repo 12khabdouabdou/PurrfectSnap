@@ -1,3 +1,11 @@
+## v1.3.8
+- Fix: Download profile picture button shape
+- New: Auto Patcher(Jingmatrix Lspatch) updated to v0.8
+- Fix: Video playback rate slider mobility
+- New: Redesign Convert Message dialog
+- Fix: Media File Picker issues
+- Fix: REQUEST_NOT_SUCCESSFUL issues while updating PurrfectSnap for some devices
+
 ## v1.3.6
 - Fix: Crash issues for some devices
 - Fix: Scroll state

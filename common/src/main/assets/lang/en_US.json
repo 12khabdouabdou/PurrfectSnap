@@ -3247,6 +3247,9 @@
         "select_date_first": "Please select a date",
         "invalid_time": "Please select a future time"
     },
+    "convert_message_dialog": {
+        "subtitle": "Choose how this message should be reshaped locally."
+    },
     "spotlight_creator_info": {
         "title": "Creator Info",
         "close": "Close",

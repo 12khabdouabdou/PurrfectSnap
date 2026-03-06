@@ -1,12 +1,15 @@
 package me.eternal.purrfectsnap.core.ui.menu.impl
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -25,8 +28,6 @@ import androidx.compose.material.icons.filled.SlowMotionVideo
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -35,9 +36,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.use
 import me.eternal.purrfectsnap.common.ui.createComposeView
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
@@ -225,28 +228,56 @@ class OperaContextActionMenu : AbstractMenu() {
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                     Text(
-                                        text = "x" + value.toString().take(4),
+                                        text = "x" + String.format("%.2f", value),
                                         color = Color(0xFFD9D3FF),
                                         textAlign = TextAlign.Start
                                     )
                                 }
                             }
-                            Slider(
-                                value = value,
-                                onValueChange = {
-                                    value = it
-                                    operaViewerParamsOverride.currentPlaybackRate = it
+                            AndroidView(
+                                modifier = Modifier.fillMaxWidth(),
+                                factory = { androidContext ->
+                                    SeekBar(androidContext).apply {
+                                        max = 390
+                                        progress = ((value - 0.1f) * 100).toInt().coerceIn(0, max)
+                                        thumbTintList = ColorStateList.valueOf(Color.White.toArgb())
+                                        progressTintList = ColorStateList.valueOf(glowSecondary.toArgb())
+                                        progressBackgroundTintList = ColorStateList.valueOf(Color.White.copy(alpha = 0.16f).toArgb())
+                                        splitTrack = false
+
+                                        setOnTouchListener { seekBar, motionEvent ->
+                                            when (motionEvent.actionMasked) {
+                                                MotionEvent.ACTION_DOWN,
+                                                MotionEvent.ACTION_MOVE -> seekBar.parent?.requestDisallowInterceptTouchEvent(true)
+                                                MotionEvent.ACTION_UP,
+                                                MotionEvent.ACTION_CANCEL -> seekBar.parent?.requestDisallowInterceptTouchEvent(false)
+                                            }
+                                            false
+                                        }
+
+                                        setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                                            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                                                val playbackRate = (0.1f + (progress / 100f)).coerceIn(0.1f, 4.0f)
+                                                value = playbackRate
+                                                operaViewerParamsOverride.currentPlaybackRate = playbackRate
+                                            }
+
+                                            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                                                seekBar?.parent?.requestDisallowInterceptTouchEvent(true)
+                                            }
+
+                                            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                                                seekBar?.parent?.requestDisallowInterceptTouchEvent(false)
+                                            }
+                                        })
+                                    }
                                 },
-                                valueRange = 0.1F..4.0F,
-                                steps = 0,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = Color.White,
-                                    activeTrackColor = glowSecondary,
-                                    inactiveTrackColor = Color.White.copy(alpha = 0.16f),
-                                    activeTickColor = glowPrimary,
-                                    inactiveTickColor = Color.Transparent
-                                ),
-                                modifier = Modifier.fillMaxWidth()
+                                update = { seekBar ->
+                                    val targetProgress = ((value - 0.1f) * 100).toInt().coerceIn(0, seekBar.max)
+                                    if (seekBar.progress != targetProgress) {
+                                        seekBar.progress = targetProgress
+                                    }
+                                }
                             )
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 Text(
