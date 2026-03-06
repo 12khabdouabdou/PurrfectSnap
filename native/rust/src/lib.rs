@@ -155,9 +155,15 @@ fn setChecksums(mut env: JNIEnv, _class: JClass, checksums_json: JString) {
 
 fn pre_init(_env: JNIEnv, _class: JObject) {
     debug!("Pre init");
-    linker_hook::init();
-    custom_font_hook::init();
-    fstat_hook::init();
+    for (name, init) in [
+        ("linker_hook", linker_hook::init as fn()),
+        ("custom_font_hook", custom_font_hook::init as fn()),
+        ("fstat_hook", fstat_hook::init as fn()),
+    ] {
+        if let Err(error) = std::panic::catch_unwind(init) {
+            error!("{} init failed: {:?}", name, error);
+        }
+    }
 }
 
 fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
@@ -186,23 +192,29 @@ fn init(mut env: JNIEnv, _class: JObject, signature_cache: JString) -> jstring {
     let mut threads: Vec<std::thread::JoinHandle<()>> = Vec::new();
 
     macro_rules! async_init {
-        ($($f:expr),*) => {
+        ($(($name:expr, $f:expr)),* $(,)?) => {
             $(
                 threads.push(std::thread::spawn(move || {
-                    $f;
+                    if let Err(error) = std::panic::catch_unwind(|| { $f; }) {
+                        error!("{} init failed: {:?}", $name, error);
+                    }
                 }));
             )*
         };
     }
 
     async_init!(
-        duplex_hook::init(),
-        unary_call_hook::init(),
-        valdi_hook::init(),
-        sqlite_hook::init()
+        ("duplex_hook", duplex_hook::init()),
+        ("unary_call_hook", unary_call_hook::init()),
+        ("valdi_hook", valdi_hook::init()),
+        ("sqlite_hook", sqlite_hook::init())
     );
     
-    threads.into_iter().for_each(|t| t.join().unwrap());
+    threads.into_iter().for_each(|t| {
+        if let Err(error) = t.join() {
+            error!("native init worker panicked: {:?}", error);
+        }
+    });
 
     info!("native init took {:?}", start_time.elapsed());
 

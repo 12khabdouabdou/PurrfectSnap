@@ -91,6 +91,7 @@ import com.google.gson.reflect.TypeToken
 import me.eternal.purrfectsnap.common.ui.TopBarActionButton
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.rememberRouteLazyListState
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.*
 import org.json.JSONArray
@@ -254,7 +255,10 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        Container(context.config.root)
+        Container(
+            configContainer = context.config.root,
+            stateKey = "${routeInfo.id}:root"
+        )
     }
 
     override val customComposables: NavGraphBuilder.() -> Unit = {
@@ -277,6 +281,7 @@ class FeaturesRootSection : Routes.Route() {
                     val containerSubtitle = translation[it.key.propertyDescription()]
                     Container(
                         configContainer = it.value.get() as ConfigContainer,
+                        stateKey = "${routeInfo.id}:container:$containerName",
                         sectionTitle = containerTitle,
                         sectionSubtitle = containerSubtitle,
                         onBack = { routes.navController.popBackStack() }
@@ -297,6 +302,7 @@ class FeaturesRootSection : Routes.Route() {
 
                 PropertiesView(
                     properties = properties,
+                    stateKey = "${routeInfo.id}:search:$keyword",
                     isSearchResults = true,
                     searchKeyword = keyword,
                     enableGlobalSearch = true,
@@ -1568,6 +1574,7 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun PropertiesView(
         properties: List<PropertyPair<*>>,
+        stateKey: String,
         isSearchResults: Boolean = false,
         activeSectionTitle: String? = null,
         activeSectionSubtitle: String? = null,
@@ -1577,7 +1584,7 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         val density = LocalDensity.current
         var controlsHeight by remember { mutableStateOf(96.dp) }
-        val listState = rememberLazyListState()
+        val listState = rememberRouteLazyListState(stateKey)
         val sharedSearchHistory = remember { mutableStateListOf<String>().apply { addAll(loadSearchHistory()) } }
         var liveSearchQuery by rememberSaveable { mutableStateOf(searchKeyword.orEmpty()) }
         val isActiveSearch = isSearchResults || liveSearchQuery.isNotBlank()
@@ -1682,6 +1689,7 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun Container(
         configContainer: ConfigContainer,
+        stateKey: String,
         sectionTitle: String? = null,
         sectionSubtitle: String? = null,
         searchKeyword: String? = null,
@@ -1693,6 +1701,7 @@ class FeaturesRootSection : Routes.Route() {
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 }
             },
+            stateKey = stateKey,
             activeSectionTitle = sectionTitle,
             activeSectionSubtitle = sectionSubtitle,
             searchKeyword = searchKeyword,

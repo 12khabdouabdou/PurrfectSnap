@@ -8,17 +8,34 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SlowMotionVideo
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.use
@@ -137,30 +154,116 @@ class OperaContextActionMenu : AbstractMenu() {
             val operaViewerParamsOverride = context.feature(OperaViewerParamsOverride::class)
 
             linearLayout.addView(createComposeView(view.context) {
+                val glowPrimary = Color(0xFF8C7BFF)
+                val glowSecondary = Color(0xFF5FD8FF)
+                val cardShape = RoundedCornerShape(22.dp)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp)
                 ) {
                     var value by remember { mutableFloatStateOf(operaViewerParamsOverride.currentPlaybackRate) }
-                    Slider(
-                        value = value,
-                        onValueChange = {
-                            value = it
-                            operaViewerParamsOverride.currentPlaybackRate = it
-                        },
-                        valueRange = 0.1F..4.0F,
-                        steps = 0,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Text(
-                        text = "x" + value.toString().take(4),
-                        color = remember {
-                            Color(context.userInterface.colorPrimary)
-                        },
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Card(
+                        shape = cardShape,
+                        border = BorderStroke(
+                            1.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    glowPrimary.copy(alpha = 0.45f),
+                                    glowSecondary.copy(alpha = 0.35f)
+                                )
+                            )
+                        ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF2A2452).copy(alpha = 0.94f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(
+                                            Color(0xFF2A2452).copy(alpha = 0.95f),
+                                            Color(0xFF1A143A).copy(alpha = 0.92f)
+                                        )
+                                    ),
+                                    cardShape
+                                )
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .background(
+                                            Brush.linearGradient(
+                                                listOf(
+                                                    glowPrimary.copy(alpha = 0.35f),
+                                                    glowSecondary.copy(alpha = 0.28f)
+                                                )
+                                            ),
+                                            CircleShape
+                                        )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.SlowMotionVideo,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .align(androidx.compose.ui.Alignment.Center)
+                                            .size(22.dp)
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Playback Rate",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                    Text(
+                                        text = "x" + value.toString().take(4),
+                                        color = Color(0xFFD9D3FF),
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+                            }
+                            Slider(
+                                value = value,
+                                onValueChange = {
+                                    value = it
+                                    operaViewerParamsOverride.currentPlaybackRate = it
+                                },
+                                valueRange = 0.1F..4.0F,
+                                steps = 0,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = Color.White,
+                                    activeTrackColor = glowSecondary,
+                                    inactiveTrackColor = Color.White.copy(alpha = 0.16f),
+                                    activeTickColor = glowPrimary,
+                                    inactiveTickColor = Color.Transparent
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    text = "0.1x",
+                                    color = Color(0xFFD9D3FF),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = "4.0x",
+                                    color = Color(0xFFD9D3FF),
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
                 }
             }.apply {
                 layoutParams = ViewGroup.LayoutParams(

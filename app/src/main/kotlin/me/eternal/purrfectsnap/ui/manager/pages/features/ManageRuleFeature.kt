@@ -38,6 +38,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
+import me.eternal.purrfectsnap.ui.manager.rememberRouteScrollState
 import me.eternal.purrfectsnap.common.data.RuleState
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
 import me.eternal.purrfectsnap.common.ui.rememberAsyncUpdateDispatcher
@@ -241,7 +242,7 @@ class ManageRuleFeature : Routes.Route()  {
                     .fillMaxSize()
                     .padding(top = topBarHeight + 10.dp)
                     .padding(horizontal = 12.dp, vertical = 10.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberRouteScrollState(routeInfo.id)),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 val headerShape = RoundedCornerShape(22.dp)

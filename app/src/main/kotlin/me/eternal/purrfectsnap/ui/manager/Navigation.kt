@@ -794,7 +794,9 @@ class Navigation(
                 } else {
                     navigation("main_" + route.routeInfo.id, route.routeInfo.id) {
                         composable("main_" + route.routeInfo.id) { route.content.invoke(it) }
-                        children.forEach { child -> composable(child.routeInfo.id) { child.content.invoke(it) } }
+                        children.forEach { child ->
+                            composable(child.routeInfo.id) { child.content.invoke(it) }
+                        }
                         route.customComposables.invoke(this)
                     }
                 }

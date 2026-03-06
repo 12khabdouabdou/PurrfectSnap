@@ -43,7 +43,7 @@ macro_rules! dobby_hook_sym {
             crate::dobby_hook!(hook_symbol, $hook);
             debug!("hooked symbol: {}", $sym);
         } else {
-            panic!("Failed to resolve symbol: {}", $sym);
+            error!("Failed to resolve symbol: {}", $sym);
         }
     };
 }

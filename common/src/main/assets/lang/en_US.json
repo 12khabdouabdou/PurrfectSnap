@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Are you sure you want to remove selected tasks?",
                 "remove_all_tasks_title": "Are you sure you want to remove all tasks?",
                 "delete_files_option": "Also delete files",
+                "delete_files_option_hint": "Permanently remove the original files from storage",
                 "remove_selected_tasks_confirm": "Remove {count} tasks?",
                 "remove_all_tasks_confirm": "Remove all tasks?"
             },
@@ -2994,8 +2995,19 @@
     "profile_picture_downloader": {
         "button": "Download Profile Picture",
         "title": "Profile Picture Downloader",
+        "subtitle": "Choose which profile image to save",
+        "empty_state": "No profile pictures available. Please wait for the profile to load.",
+        "download_hint": "Tap to download",
         "avatar_option": "Avatar",
         "background_option": "Background"
+    },
+    "spotlight_comments_username_dialog": {
+        "title": "User Information",
+        "subtitle": "Spotlight comment profile details",
+        "username_label": "Username",
+        "display_name_label": "Display Name",
+        "user_id_label": "User ID",
+        "not_available": "Not available"
     },
     "call_start_confirmation": {
         "dialog_title": "Start Call",
@@ -3506,6 +3518,8 @@
         "cancel": "Cancel",
         "documentation": "Documentation"
     },
+    "include_saved_locations": "Include Saved Locations",
+    "include_saved_locations_description": "Export your saved location coordinates",
     "common": {
         "cancel": "Cancel",
         "close": "Close",

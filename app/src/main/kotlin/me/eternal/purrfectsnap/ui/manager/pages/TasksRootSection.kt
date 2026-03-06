@@ -301,12 +301,13 @@ class TasksRootSection : Routes.Route() {
                                     )
                                     Column {
                                         Text(
-                                            text = context.translation["delete_files_option"],
+                                            text = context.translation["manager.sections.tasks.delete_files_option"],
                                             color = Color.White,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Text(
-                                            text = context.translation["delete_files_option_hint"] ?: "Also remove downloaded files",
+                                            text = context.translation["manager.sections.tasks.delete_files_option_hint"]
+                                                ?: "Also remove downloaded files",
                                             color = PurrfectPalette.textSecondary,
                                             style = MaterialTheme.typography.bodySmall
                                         )

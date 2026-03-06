@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
+import android.os.RemoteException
 import kotlinx.coroutines.runBlocking
 import me.eternal.purrfectsnap.RemoteSideContext
 import me.eternal.purrfectsnap.SharedContextHolder
@@ -27,10 +28,26 @@ import kotlin.system.measureTimeMillis
 
 class BridgeService : Service() {
     private lateinit var remoteSideContext: RemoteSideContext
-    lateinit var syncCallback: SyncCallback
+    private var syncCallback: SyncCallback? = null
+    private var syncCallbackBinder: IBinder? = null
+    private val syncCallbackDeathRecipient = IBinder.DeathRecipient {
+        remoteSideContext.takeIf { ::remoteSideContext.isInitialized }?.log?.warn("Sync callback binder died")
+        clearSyncCallback()
+    }
     var messagingBridge: MessagingBridge? = null
 
+    private fun clearSyncCallback() {
+        syncCallbackBinder?.let { binder ->
+            runCatching {
+                binder.unlinkToDeath(syncCallbackDeathRecipient, 0)
+            }
+        }
+        syncCallbackBinder = null
+        syncCallback = null
+    }
+
     override fun onDestroy() {
+        clearSyncCallback()
         if (::remoteSideContext.isInitialized) {
             remoteSideContext.bridgeService = null
         }
@@ -47,8 +64,10 @@ class BridgeService : Service() {
     }
 
     fun triggerScopeSync(scope: SocialScope, id: String, updateOnly: Boolean = false) {
+        val callback = syncCallback ?: return
         runCatching {
-            if (!syncCallback.asBinder().pingBinder()) {
+            if (!callback.asBinder().pingBinder()) {
+                clearSyncCallback()
                 remoteSideContext.log.warn("Failed to sync $scope $id: Callback is dead")
                 return
             }
@@ -57,11 +76,11 @@ class BridgeService : Service() {
             val syncedObject = when (scope) {
                 SocialScope.FRIEND -> {
                     if (updateOnly && database.getFriendInfo(id) == null) return
-                    syncCallback.syncFriend(id)
+                    callback.syncFriend(id)
                 }
                 SocialScope.GROUP -> {
                     if (updateOnly && database.getGroupInfo(id) == null) return
-                    syncCallback.syncGroup(id)
+                    callback.syncGroup(id)
                 }
             } ?: run {
                 remoteSideContext.log.warn("Failed to sync $scope $id")
@@ -77,6 +96,11 @@ class BridgeService : Service() {
                 }
             }
         }.onFailure {
+            if (it is RemoteException) {
+                clearSyncCallback()
+                remoteSideContext.log.warn("Failed to sync $scope $id: Callback is dead")
+                return@onFailure
+            }
             remoteSideContext.log.error("Failed to sync $scope $id", it)
         }
     }
@@ -162,7 +186,16 @@ class BridgeService : Service() {
         }
 
         override fun sync(callback: SyncCallback) {
+            clearSyncCallback()
             syncCallback = callback
+            syncCallbackBinder = callback.asBinder().also { binder ->
+                runCatching {
+                    binder.linkToDeath(syncCallbackDeathRecipient, 0)
+                }.onFailure {
+                    clearSyncCallback()
+                    throw it
+                }
+            }
             measureTimeMillis {
                 remoteSideContext.database.getFriends().map { it.userId } .forEach { friendId ->
                     triggerScopeSync(SocialScope.FRIEND, friendId, true)

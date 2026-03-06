@@ -1,3 +1,12 @@
+## v1.3.6
+- Fix: Crash issues for some devices
+- Fix: Scroll state
+- New: Redesign profile picture downloader & spotlight comments username dialog
+- New: Change the profile picture download button to an icon
+- New: Redesign playback slider & saved coordinates buttons
+- Fix: Add missing translations(en_US only for now, all languages to be supported in the next update)
+- Fix: Deadosobjectexception
+
 ## v1.3.5
 - New: Added support for Snap versions upto v13.81(server side update, requires v1.3.2 and above)
 - New: Migration from libxposed API to YukiHook

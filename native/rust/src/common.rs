@@ -15,7 +15,7 @@ pub static CLIENT_MODULE: Lazy<MappedLib> = Lazy::new(|| {
         client_module = MappedLib::new("split_config.arm".into());
 
         if let Err(error) = client_module.search() {
-            panic!("Unable to find split_config.arm: {}", error);
+            error!("Unable to find split_config.arm: {}", error);
         }
     }
 

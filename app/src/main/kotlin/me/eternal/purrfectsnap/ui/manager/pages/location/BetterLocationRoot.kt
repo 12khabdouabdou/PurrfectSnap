@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -221,16 +220,21 @@ class BetterLocationRoot : Routes.Route() {
     }
 
     @Composable
-    private fun ThemedEditLocationButton(onClick: () -> Unit) {
+    private fun CoordinateActionButton(
+        icon: androidx.compose.ui.graphics.vector.ImageVector,
+        description: String,
+        accent: Color,
+        onClick: () -> Unit
+    ) {
         FilledIconButton(
-            modifier = Modifier.size(40.dp),
+            onClick = onClick,
+            modifier = Modifier.size(42.dp),
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = if (isSystemInDarkTheme()) Color.White else Color(0xFF151A1A),
-            ),
-            onClick = onClick
+                containerColor = accent.copy(alpha = 0.22f),
+                contentColor = Color.White
+            )
         ) {
-            Icon(Icons.Default.Edit, contentDescription = translation["edit_location_button_description"])
+            Icon(icon, contentDescription = description)
         }
     }
 
@@ -674,15 +678,19 @@ class BetterLocationRoot : Routes.Route() {
                                     color = PurrfectPalette.textSecondary
                                 )
                             }
-                            FilledIconButton(onClick = {
+                            CoordinateActionButton(
+                                icon = Icons.Default.Edit,
+                                description = translation["edit_icon_description"],
+                                accent = PurrfectPalette.glowPrimary
+                            ) {
                                 showEditDialog = true
-                            }) {
-                                Icon(Icons.Default.Edit, contentDescription = translation["edit_icon_description"])
                             }
-                            FilledIconButton(onClick = {
+                            CoordinateActionButton(
+                                icon = Icons.Default.DeleteOutline,
+                                description = translation["delete_icon_description"],
+                                accent = PurrfectPalette.glowSecondary
+                            ) {
                                 showDeleteDialog = true
-                            }) {
-                                Icon(Icons.Default.DeleteOutline, contentDescription = translation["delete_icon_description"])
                             }
                         }
                     }
