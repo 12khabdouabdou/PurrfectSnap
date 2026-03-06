@@ -88,7 +88,7 @@ class ConvertMessageLocally : Feature("Convert Message Edit") {
 
         createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
             ConvertMessageDialog(
-                title = context.translation["convert_message"],
+                title = context.translation["chat_action_menu.convert_message"],
                 subtitle = context.translation["convert_message_dialog.subtitle"],
                 closeLabel = context.translation["button.cancel"],
                 actions = actions.map { (label, _) ->
