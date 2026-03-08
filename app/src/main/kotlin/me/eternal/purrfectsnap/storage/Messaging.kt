@@ -86,6 +86,76 @@ fun AppDatabase.syncFriend(friend: MessagingFriendInfo) {
     }
 }
 
+fun AppDatabase.replaceMessagingData(
+    friends: List<MessagingFriendInfo>,
+    groups: List<MessagingGroupInfo>
+) {
+    executeAsync {
+        database.beginTransaction()
+        try {
+            val friendIds = friends.map { it.userId }.toSet()
+            val groupIds = groups.map { it.conversationId }.toSet()
+
+            getFriends().forEach { friend ->
+                if (friend.userId !in friendIds) {
+                    database.execSQL("DELETE FROM friends WHERE userId = ?", arrayOf(friend.userId))
+                    database.execSQL("DELETE FROM streaks WHERE id = ?", arrayOf(friend.userId))
+                    database.execSQL("DELETE FROM rules WHERE targetUuid = ?", arrayOf(friend.userId))
+                }
+            }
+
+            getGroups().forEach { group ->
+                if (group.conversationId !in groupIds) {
+                    database.execSQL("DELETE FROM groups WHERE conversationId = ?", arrayOf(group.conversationId))
+                    database.execSQL("DELETE FROM rules WHERE targetUuid = ?", arrayOf(group.conversationId))
+                }
+            }
+
+            friends.forEach { friend ->
+                database.execSQL(
+                    "INSERT OR REPLACE INTO friends (userId, dmConversationId, displayName, mutableUsername, bitmojiId, selfieId) VALUES (?, ?, ?, ?, ?, ?)",
+                    arrayOf<Any?>(
+                        friend.userId,
+                        friend.dmConversationId,
+                        friend.displayName,
+                        friend.mutableUsername,
+                        friend.bitmojiId,
+                        friend.selfieId
+                    )
+                )
+
+                friend.streaks?.takeIf { it.length > 0 }?.also {
+                    val streaks = getFriendStreaks(friend.userId)
+                    database.execSQL(
+                        "INSERT OR REPLACE INTO streaks (id, notify, expirationTimestamp, length) VALUES (?, ?, ?, ?)",
+                        arrayOf<Any?>(
+                            friend.userId,
+                            streaks?.notify != false,
+                            it.expirationTimestamp,
+                            it.length
+                        )
+                    )
+                } ?: database.execSQL("DELETE FROM streaks WHERE id = ?", arrayOf(friend.userId))
+            }
+
+            groups.forEach { group ->
+                database.execSQL(
+                    "INSERT OR REPLACE INTO groups (conversationId, name, participantsCount) VALUES (?, ?, ?)",
+                    arrayOf<Any?>(
+                        group.conversationId,
+                        group.name,
+                        group.participantsCount
+                    )
+                )
+            }
+
+            database.setTransactionSuccessful()
+        } finally {
+            database.endTransaction()
+        }
+    }
+}
+
 fun AppDatabase.getRules(targetUuid: String): List<MessagingRuleType> {
     return database.rawQuery(
         "SELECT type FROM rules WHERE targetUuid = ?", arrayOf(targetUuid)

@@ -83,16 +83,37 @@ class BridgeService : Service() {
                     callback.syncGroup(id)
                 }
             } ?: run {
+                if (updateOnly) {
+                    when (scope) {
+                        SocialScope.FRIEND -> database.deleteFriend(id)
+                        SocialScope.GROUP -> database.deleteGroup(id)
+                    }
+                    return
+                }
                 remoteSideContext.log.warn("Failed to sync $scope $id")
                 return
             }
 
             when (scope) {
                 SocialScope.FRIEND -> {
-                    toParcelable<MessagingFriendInfo>(syncedObject)?.let { database.syncFriend(it) }
+                    toParcelable<MessagingFriendInfo>(syncedObject)?.let { database.syncFriend(it) } ?: run {
+                        if (updateOnly) {
+                            database.deleteFriend(id)
+                            return
+                        }
+                        remoteSideContext.log.warn("Failed to sync $scope $id")
+                        return
+                    }
                 }
                 SocialScope.GROUP -> {
-                    toParcelable<MessagingGroupInfo>(syncedObject)?.let { database.syncGroupInfo(it) }
+                    toParcelable<MessagingGroupInfo>(syncedObject)?.let { database.syncGroupInfo(it) } ?: run {
+                        if (updateOnly) {
+                            database.deleteGroup(id)
+                            return
+                        }
+                        remoteSideContext.log.warn("Failed to sync $scope $id")
+                        return
+                    }
                 }
             }
         }.onFailure {
@@ -218,10 +239,10 @@ class BridgeService : Service() {
             friends: List<String>
         ) {
             remoteSideContext.log.verbose("Received ${groups.size} groups and ${friends.size} friends")
-            remoteSideContext.database.receiveMessagingDataCallback(
-                friends.mapNotNull { toParcelable<MessagingFriendInfo>(it) },
-                groups.mapNotNull { toParcelable<MessagingGroupInfo>(it) }
-            )
+            val parsedFriends = friends.mapNotNull { toParcelable<MessagingFriendInfo>(it) }
+            val parsedGroups = groups.mapNotNull { toParcelable<MessagingGroupInfo>(it) }
+            remoteSideContext.database.replaceMessagingData(parsedFriends, parsedGroups)
+            remoteSideContext.database.receiveMessagingDataCallback(parsedFriends, parsedGroups)
         }
 
         override fun getScopeNotes(id: String): String? {

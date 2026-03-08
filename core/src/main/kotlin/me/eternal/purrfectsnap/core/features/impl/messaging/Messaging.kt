@@ -17,6 +17,7 @@ import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
 import me.eternal.purrfectsnap.core.wrapper.impl.*
 import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
 import me.eternal.purrfectsnap.mapper.impl.FriendsFeedEventDispatcherMapper
+import me.eternal.purrfectsnap.mapper.impl.PlatformPresenceActionWrapperMapper
 import java.util.UUID
 import java.util.concurrent.Future
 
@@ -52,8 +53,37 @@ class Messaging : Feature("Messaging") {
         lastFocusedConversationType = -1
     }
 
+    private fun currentConversationId(): String? = openedConversationUUID?.toString()
+
+    private fun shouldHideBitmojiPresence(stealthMode: StealthMode): Boolean {
+        return context.config.messaging.hideBitmojiPresence.get() ||
+            currentConversationId()?.let { stealthMode.canUseRule(it) } == true
+    }
+
+    private fun shouldHideTyping(stealthMode: StealthMode, hideTypingIndicator: HideTypingIndicator): Boolean {
+        return context.config.messaging.hideTypingNotifications.get() ||
+            currentConversationId()?.let { stealthMode.canUseRule(it) || hideTypingIndicator.canUseRule(it) } == true
+    }
+
+    private fun shouldHidePeek(stealthMode: StealthMode): Boolean {
+        return context.config.messaging.hidePeekAPeek.get() ||
+            currentConversationId()?.let { stealthMode.canUseRule(it) } == true
+    }
+
+    private fun clearField(instance: Any, typeNamePart: String, shouldClear: Boolean) {
+        if (!shouldClear) return
+        instance.javaClass.declaredFields.forEach { field ->
+            if (field.type.name.contains(typeNamePart)) {
+                field.isAccessible = true
+                field.set(instance, null)
+            }
+        }
+    }
+
     override fun init() {
         val stealthMode = context.feature(StealthMode::class)
+        val hideTypingIndicator = context.feature(HideTypingIndicator::class)
+
         context.classCache.conversationManager.hookConstructor(HookStage.BEFORE) { param ->
             synchronized(conversationManagerReadyListeners) {
                 conversationManager = ConversationManager(context, param.thisObject())
@@ -98,19 +128,99 @@ class Messaging : Feature("Messaging") {
         }
 
         defer {
-            arrayOf("activate", "deactivate").forEach { hook ->
+            arrayOf("activate", "deactivate", "processTypingActivity").forEach { hook ->
                 context.classCache.presenceSession.hook(hook, HookStage.BEFORE, {
-                    val conversationId = openedConversationUUID?.toString() ?: return@hook false
-                    context.config.messaging.hideBitmojiPresence.get() || stealthMode.canUseRule(conversationId)
+                    shouldHideBitmojiPresence(stealthMode)
                 }) {
                     it.setResult(null)
                 }
             }
 
             context.classCache.presenceSession.hook("startPeeking", HookStage.BEFORE, {
-                val conversationId = openedConversationUUID?.toString() ?: return@hook false
-                context.config.messaging.hidePeekAPeek.get() || stealthMode.canUseRule(conversationId)
+                shouldHidePeek(stealthMode)
             }) { it.setResult(null) }
+
+            context.classCache.conversationManager.hook("sendTypingNotification", HookStage.BEFORE, {
+                shouldHideTyping(stealthMode, hideTypingIndicator)
+            }) {
+                it.setResult(null)
+            }
+
+            context.mappings.useMapper(PlatformPresenceActionWrapperMapper::class) {
+                classLoader = context.androidContext.classLoader
+                if (classReference.getAsClass() == null) {
+                    runCatching { context.mappings.refresh() }.onFailure {
+                        context.log.error("Failed to refresh mappings for PlatformPresenceActionWrapper", it)
+                    }
+                }
+
+                classReference.getAsClass()?.let { wrapperClass ->
+                    val bitmojiMethodNames = mutableSetOf<String>()
+                    val typingMethodNames = mutableSetOf<String>()
+                    val peekingMethodNames = mutableSetOf<String>()
+
+                    wrapperClass.methods.forEach { method ->
+                        val parameterTypes = method.parameterTypes
+
+                        if (parameterTypes.any { parameterType ->
+                                listOf(
+                                    "PlatformChatVisibleAction",
+                                    "PlatformChatHiddenAction",
+                                    "PlatformViewingChatMediaAction",
+                                    "PlatformUsingReplyCameraAction"
+                                ).any { parameterType.name.contains(it) }
+                            }) {
+                            bitmojiMethodNames.add(method.name)
+                        }
+
+                        if (parameterTypes.any { parameterType ->
+                                parameterType.name.contains("PlatformTypingAction")
+                            }) {
+                            typingMethodNames.add(method.name)
+                        }
+
+                        if (parameterTypes.any { parameterType ->
+                                parameterType.name.contains("PlatformStartPeekingAction")
+                            }) {
+                            peekingMethodNames.add(method.name)
+                        }
+                    }
+
+                    bitmojiMethodNames.forEach { methodName ->
+                        wrapperClass.hook(methodName, HookStage.BEFORE, {
+                            shouldHideBitmojiPresence(stealthMode)
+                        }) {
+                            it.setResult(null)
+                        }
+                    }
+
+                    typingMethodNames.forEach { methodName ->
+                        wrapperClass.hook(methodName, HookStage.BEFORE, {
+                            shouldHideTyping(stealthMode, hideTypingIndicator)
+                        }) {
+                            it.setResult(null)
+                        }
+                    }
+
+                    peekingMethodNames.forEach { methodName ->
+                        wrapperClass.hook(methodName, HookStage.BEFORE, {
+                            shouldHidePeek(stealthMode)
+                        }) {
+                            it.setResult(null)
+                        }
+                    }
+
+                    wrapperClass.hookConstructor(HookStage.AFTER) { param ->
+                        val instance = param.thisObject<Any>()
+                        clearField(instance, "PlatformChatVisibleAction", shouldHideBitmojiPresence(stealthMode))
+                        clearField(instance, "PlatformChatHiddenAction", shouldHideBitmojiPresence(stealthMode))
+                        clearField(instance, "PlatformViewingChatMediaAction", shouldHideBitmojiPresence(stealthMode))
+                        clearField(instance, "PlatformUsingReplyCameraAction", shouldHideBitmojiPresence(stealthMode))
+                        clearField(instance, "PlatformTypingAction", shouldHideTyping(stealthMode, hideTypingIndicator))
+                        clearField(instance, "PlatformStartPeekingAction", shouldHidePeek(stealthMode))
+                    }
+                }
+            }
 
             //get last opened snap for media downloader
             context.event.subscribe(OnSnapInteractionEvent::class) { event ->

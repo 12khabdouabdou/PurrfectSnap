@@ -31,41 +31,97 @@ class HideFriendFeedEntry : MessagingRuleFeature("HideFriendFeedEntry", ruleType
         }
     }
 
+    private fun hookCallbackMethod(
+        hookedCallbacks: MutableSet<String>,
+        callbackClassName: String,
+        methodName: String,
+        block: (param: me.eternal.purrfectsnap.core.util.hook.HookAdapter) -> Unit
+    ) {
+        val hookKey = "$callbackClassName#$methodName"
+        if (!hookedCallbacks.add(hookKey)) return
+        runCatching {
+            findClass(callbackClassName).hook(methodName, HookStage.BEFORE) { param ->
+                block(param)
+            }
+        }.onFailure {
+            context.log.warn("Failed to hook $methodName on $callbackClassName")
+        }
+    }
+
     override fun init() {
         if (!context.config.userInterface.hideFriendFeedEntry.get()) return
 
         context.mappings.useMapper(CallbackMapper::class) {
-            arrayOf(
-                "FetchAndSyncFeedWithConversationIdsCallback" to "onFetchAndSyncFeedComplete",
-                "FetchFeedCallback" to "onFetchFeedComplete",
-                "FetchFeedEntriesCallback" to "onFetchFeedEntriesComplete",
-                "QueryFeedCallback" to "onQueryFeedComplete",
-                "FeedManagerDelegate" to "onFeedEntriesUpdated",
-                "FeedManagerDelegate" to "onInternalSyncFeed",
-            ).forEach { (callbackName, methodName) ->
-                findClass(callbacks.get()!![callbackName] ?: return@forEach).hook(methodName, HookStage.BEFORE) { param ->
-                    filterFriendFeed(param.arg(0))
+            classLoader = context.androidContext.classLoader
+            val hasFetchAndSyncCallback = callbacks.getAsMap()?.entries?.any {
+                it.key.startsWith("FetchAndSyncFeed") && it.key.endsWith("Callback")
+            } == true
+            if (callbacks.getClass("SyncFeedCallback") == null || !hasFetchAndSyncCallback) {
+                runCatching { context.mappings.refresh() }.onFailure {
+                    context.log.error("Failed to refresh mappings for HideFriendFeedEntry callbacks", it)
+                }
+                classLoader = context.androidContext.classLoader
+            }
+            val callbackMap = callbacks.getAsMap().orEmpty()
+            val hookedCallbacks = mutableSetOf<String>()
+
+            callbackMap.entries.forEach { (callbackName, callbackClassName) ->
+                when {
+                    callbackName.startsWith("FetchAndSyncFeed") && callbackName.endsWith("Callback") -> {
+                        hookCallbackMethod(hookedCallbacks, callbackClassName ?: return@forEach, "onFetchAndSyncFeedComplete") { param ->
+                            val deletedConversations: ArrayList<Any> = param.arg(2)
+                            filterFriendFeed(param.arg(0), deletedConversations)
+
+                            if (deletedConversations.any {
+                                    val uuid = SnapUUID(it.getObjectField("mFeedEntryIdentifier")?.getObjectField("mConversationId")).toString()
+                                    context.database.getFeedEntryByConversationId(uuid) != null
+                                }) {
+                                param.setArg(4, true)
+                            }
+                        }
+                    }
+
+                    callbackName.contains("SyncFeed") && callbackName.endsWith("Callback") -> {
+                        hookCallbackMethod(hookedCallbacks, callbackClassName ?: return@forEach, "onSyncFeedComplete") { param ->
+                            filterFriendFeed(param.arg(0), param.argNullable(2))
+                        }
+                    }
+
+                    callbackName == "FetchFeedCallback" || callbackName.contains("FetchFeedCallback") -> {
+                        hookCallbackMethod(hookedCallbacks, callbackClassName ?: return@forEach, "onFetchFeedComplete") { param ->
+                            filterFriendFeed(param.arg(0))
+                        }
+                    }
+
+                    callbackName == "FetchFeedEntriesCallback" || callbackName.contains("FetchFeedEntriesCallback") -> {
+                        hookCallbackMethod(hookedCallbacks, callbackClassName ?: return@forEach, "onFetchFeedEntriesComplete") { param ->
+                            filterFriendFeed(param.arg(0))
+                        }
+                    }
+
+                    callbackName == "QueryFeedCallback" || callbackName.contains("QueryFeedCallback") -> {
+                        hookCallbackMethod(hookedCallbacks, callbackClassName ?: return@forEach, "onQueryFeedComplete") { param ->
+                            filterFriendFeed(param.arg(0))
+                        }
+                    }
+
+                    callbackName == "FeedManagerDelegate" -> {
+                        hookCallbackMethod(hookedCallbacks, callbackClassName ?: return@forEach, "onFeedEntriesUpdated") { param ->
+                            filterFriendFeed(param.arg(0))
+                        }
+                        hookCallbackMethod(hookedCallbacks, callbackClassName ?: return@forEach, "onInternalSyncFeed") { param ->
+                            filterFriendFeed(param.arg(0))
+                        }
+                    }
                 }
             }
 
-            callbacks.getAsMap()?.entries?.firstOrNull { it.key.startsWith("FetchAndSyncFeed") && it.key.endsWith("Callback") }
-                ?.value
-                ?.let { findClass(it) }
-                ?.hook("onFetchAndSyncFeedComplete", HookStage.BEFORE) { param ->
-                    val deletedConversations: ArrayList<Any> = param.arg(2)
-                    filterFriendFeed(param.arg(0), deletedConversations)
-
-                    if (deletedConversations.any {
-                            val uuid = SnapUUID(it.getObjectField("mFeedEntryIdentifier")?.getObjectField("mConversationId")).toString()
-                            context.database.getFeedEntryByConversationId(uuid) != null
-                        }) {
-                        param.setArg(4, true)
-                    }
-                } ?: context.log.warn("Failed to hook FetchAndSyncFeedCallback")
-            callbacks.getClass("SyncFeedCallback")
-                ?.hook("onSyncFeedComplete", HookStage.BEFORE) { param ->
-                    filterFriendFeed(param.arg(0), param.arg(2))
-                } ?: context.log.warn("Failed to hook SyncFeedCallback")
+            if (callbackMap.entries.none { it.key.startsWith("FetchAndSyncFeed") && it.key.endsWith("Callback") }) {
+                context.log.warn("Failed to hook FetchAndSyncFeedCallback")
+            }
+            if (callbackMap.entries.none { it.key.contains("SyncFeed") && it.key.endsWith("Callback") }) {
+                context.log.warn("Failed to hook SyncFeedCallback")
+            }
         }
     }
 

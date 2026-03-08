@@ -27,7 +27,9 @@ abstract class MessagingRuleFeature(name: String, val ruleType: MessagingRuleTyp
         ).contains(ruleType) && getRuleState() != null
 
     fun canUseRule(conversationId: String): Boolean {
-        if (getRuleState() == null) return false
+        if (ruleType.key == "translation" && context.config.messaging.instantTranslation.globalState != true) {
+            return false
+        }
         val state = getState(conversationId)
         if (context.config.rules.getRuleState(ruleType) == RuleState.BLACKLIST) {
             return !state
