@@ -1,3 +1,8 @@
+## v1.3.9
+- Fix: Improve ads & metrics blocking
+- Fix: Hide Typing Notifications & Hide Bitmoji Presence
+- Fix: Many fixes & improvements
+
 ## v1.3.8
 - Fix: Download profile picture button shape
 - New: Auto Patcher(Jingmatrix Lspatch) updated to v0.8
