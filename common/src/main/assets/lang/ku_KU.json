@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "دڵنیایت دەتەوێت ئەرکە دیاریکراوەکان بسڕیتەوە؟",
                 "remove_all_tasks_title": "دڵنیایت دەتەوێت هەموو ئەرکەکان بسڕیتەوە؟",
                 "delete_files_option": "فایلەکانیش بسڕەوە",
+                "delete_files_option_hint": "فایلە داگراوەکانیش لە ئامێرەوە بسڕەوە",
                 "remove_selected_tasks_confirm": "{count} ئەرک دەسڕیتەوە؟",
                 "remove_all_tasks_confirm": "هەموو ئەرکەکان دەسڕیتەوە؟"
             },

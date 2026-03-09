@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "您确定要移除选定的任务吗？",
                 "remove_all_tasks_title": "您确定要移除所有任务吗？",
                 "delete_files_option": "同时删除文件",
+                "delete_files_option_hint": "同时从设备中删除已下载的文件",
                 "remove_selected_tasks_confirm": "移除 {count} 个任务？",
                 "remove_all_tasks_confirm": "移除所有任务？"
             },

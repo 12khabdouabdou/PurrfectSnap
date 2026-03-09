@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Apakah Anda yakin ingin menghapus tugas yang dipilih?",
                 "remove_all_tasks_title": "Apakah Anda yakin ingin menghapus semua tugas?",
                 "delete_files_option": "Hapus juga file",
+                "delete_files_option_hint": "Hapus juga file yang diunduh dari perangkat",
                 "remove_selected_tasks_confirm": "Hapus {count} tugas?",
                 "remove_all_tasks_confirm": "Hapus semua tugas?"
             },

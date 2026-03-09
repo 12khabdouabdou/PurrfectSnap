@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Ești sigur că vrei să elimini sarcinile selectate?",
                 "remove_all_tasks_title": "Ești sigur că vrei să elimini toate sarcinile?",
                 "delete_files_option": "Șterge și fișierele",
+                "delete_files_option_hint": "Elimină și fișierele descărcate de pe dispozitiv",
                 "remove_selected_tasks_confirm": "Elimini {count} sarcini?",
                 "remove_all_tasks_confirm": "Elimini toate sarcinile?"
             },

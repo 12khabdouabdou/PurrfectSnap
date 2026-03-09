@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Weet je zeker dat je de geselecteerde taken wilt verwijderen?",
                 "remove_all_tasks_title": "Weet je zeker dat je alle taken wilt verwijderen?",
                 "delete_files_option": "Ook bestanden verwijderen",
+                "delete_files_option_hint": "Ook gedownloade bestanden van apparaat verwijderen",
                 "remove_selected_tasks_confirm": "{count} taken verwijderen?",
                 "remove_all_tasks_confirm": "Alle taken verwijderen?"
             },

@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Er du sikker på at du vil fjerne valgte oppgaver?",
                 "remove_all_tasks_title": "Er du sikker på at du vil fjerne alle oppgaver?",
                 "delete_files_option": "Slett også filer",
+                "delete_files_option_hint": "Fjern også nedlastede filer fra enheten",
                 "remove_selected_tasks_confirm": "Fjern {count} oppgaver?",
                 "remove_all_tasks_confirm": "Fjern alle oppgaver?"
             },

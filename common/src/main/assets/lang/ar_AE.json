@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "هل أنت متأكد أنك تريد إزالة المهام المحددة؟",
                 "remove_all_tasks_title": "هل أنت متأكد أنك تريد إزالة جميع المهام؟",
                 "delete_files_option": "حذف الملفات أيضاً",
+                "delete_files_option_hint": "إزالة الملفات المحملة من الجهاز أيضاً",
                 "remove_selected_tasks_confirm": "إزالة {count} مهام؟",
                 "remove_all_tasks_confirm": "إزالة جميع المهام؟"
             },
@@ -3012,7 +3013,15 @@
             "title": "تنزيل وسائط dash",
             "download_all": "تنزيل الكل",
             "segment_text": "جزء {from} - {to}"
-        }
+        },
+        "story_snap_dialog": {
+            "title": "تنزيل سنابات القصة",
+            "select_all": "تحديد الكل",
+            "deselect_all": "إلغاء التحديد",
+            "snap_item": "السناب {index} من {total}"
+        },
+        "batch_download_complete_toast": "تم تنزيل جميع السنابات",
+        "batch_download_jump_failed_toast": "تعذر الانتقال للسناب التالي. تأكد من أن عرض القصة مرئي."
     },
     "streaks_reminder": {
         "notification_title": "Streaks (سلاسل)",

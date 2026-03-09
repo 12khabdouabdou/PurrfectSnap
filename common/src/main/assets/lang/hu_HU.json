@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Biztosan el akarod távolítani a kiválasztott feladatokat?",
                 "remove_all_tasks_title": "Biztosan el akarod távolítani az összes feladatot?",
                 "delete_files_option": "Fájlok törlése is",
+                "delete_files_option_hint": "Letöltött fájlok eltávolítása az eszközről is",
                 "remove_selected_tasks_confirm": "{count} feladat eltávolítása?",
                 "remove_all_tasks_confirm": "Összes feladat eltávolítása?"
             },

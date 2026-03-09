@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Er du sikker på, at du vil fjerne valgte opgaver?",
                 "remove_all_tasks_title": "Er du sikker på, at du vil fjerne alle opgaver?",
                 "delete_files_option": "Slet også filer",
+                "delete_files_option_hint": "Fjern også downloadede filer fra enheden",
                 "remove_selected_tasks_confirm": "Fjern {count} opgaver?",
                 "remove_all_tasks_confirm": "Fjern alle opgaver?"
             },

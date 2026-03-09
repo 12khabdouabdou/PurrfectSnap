@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Seçili görevleri kaldırmak istediğinizden emin misiniz?",
                 "remove_all_tasks_title": "Tüm görevleri kaldırmak istediğinizden emin misiniz?",
                 "delete_files_option": "Dosyaları da sil",
+                "delete_files_option_hint": "Cihazdan indirilen dosyaları da kaldır",
                 "remove_selected_tasks_confirm": "{count} görev kaldırılsın mı?",
                 "remove_all_tasks_confirm": "Tüm görevler kaldırılsın mı?"
             },

@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Are you sure you want to remove selected tasks?",
                 "remove_all_tasks_title": "Are you sure you want to remove all tasks?",
                 "delete_files_option": "Also delete files",
+                "delete_files_option_hint": "Also remove downloaded files from device",
                 "remove_selected_tasks_confirm": "Remove {count} tasks?",
                 "remove_all_tasks_confirm": "Remove all tasks?"
             },

@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Ali ste prepričani, da želite odstraniti izbrane naloge?",
                 "remove_all_tasks_title": "Ali ste prepričani, da želite odstraniti vse naloge?",
                 "delete_files_option": "Izbriši tudi datoteke",
+                "delete_files_option_hint": "Odstrani tudi prenesene datoteke iz naprave",
                 "remove_selected_tasks_confirm": "Odstrani {count} nalog?",
                 "remove_all_tasks_confirm": "Odstrani vse naloge?"
             },

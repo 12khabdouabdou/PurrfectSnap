@@ -44,6 +44,7 @@ class DownloaderConfig : ConfigContainer() {
     val autoDownloadVoiceNotes = boolean("auto_download_voice_notes") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
     val downloadProfilePictures = boolean("download_profile_pictures") { requireRestart() }
     val operaDownloadButton = boolean("opera_download_button") { requireRestart() }
+    val storySnapListDownload = boolean("story_snap_list_download", true)
     val downloadContextMenu = boolean("download_context_menu")
     val ffmpegOptions = container("ffmpeg_options", FFMpegOptions()) { addNotices(FeatureNotice.UNSTABLE) }
     val logging = multiple("logging", "started", "success", "progress", "failure").apply {

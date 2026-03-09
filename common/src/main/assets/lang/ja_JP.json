@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "選択したタスクを削除してもよろしいですか？",
                 "remove_all_tasks_title": "すべてのタスクを削除してもよろしいですか？",
                 "delete_files_option": "ファイルも削除する",
+                "delete_files_option_hint": "デバイスからダウンロードしたファイルも削除する",
                 "remove_selected_tasks_confirm": "{count} 件のタスクを削除しますか？",
                 "remove_all_tasks_confirm": "すべてのタスクを削除しますか？"
             },

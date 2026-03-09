@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "क्या आप वाकई चयनित कार्यों को हटाना चाहते हैं?",
                 "remove_all_tasks_title": "क्या आप वाकई सभी कार्यों को हटाना चाहते हैं?",
                 "delete_files_option": "फ़ाइलें भी हटाएँ",
+                "delete_files_option_hint": "डिवाइस से डाउनलोड की गई फ़ाइलें भी हटाएँ",
                 "remove_selected_tasks_confirm": "{count} कार्यों को हटाएँ?",
                 "remove_all_tasks_confirm": "सभी कार्यों को हटाएँ?"
             },

@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "Are you sure you want to remove selected tasks?",
                 "remove_all_tasks_title": "Are you sure you want to remove all tasks?",
                 "delete_files_option": "Also delete files",
+                "delete_files_option_hint": "Also remove downloaded files from device",
                 "remove_selected_tasks_confirm": "Remove {count} tasks?",
                 "remove_all_tasks_confirm": "Remove all tasks?"
             },
@@ -992,6 +993,10 @@
                     "opera_download_button": {
                         "name": "Opera Download Button",
                         "description": "Adds a download button on the top right corner when viewing a Snap.\nLong press on buttons will force download"
+                    },
+                    "story_snap_list_download": {
+                        "name": "Story Snap List Download",
+                        "description": "When viewing a multi-snap story, shows a dialog to select which snaps to download"
                     },
                     "download_context_menu": {
                         "name": "Download Context Menu",
@@ -3011,7 +3016,15 @@
             "title": "Download dash media",
             "download_all": "Download All",
             "segment_text": "Segment {from} - {to}"
-        }
+        },
+        "story_snap_dialog": {
+            "title": "Download story snaps",
+            "select_all": "Select All",
+            "deselect_all": "Deselect All",
+            "snap_item": "Snap {index} of {total}"
+        },
+        "batch_download_complete_toast": "All snaps downloaded",
+        "batch_download_jump_failed_toast": "Could not navigate to next snap. Ensure Story Snap Jump is enabled and the story view is visible."
     },
     "streaks_reminder": {
         "notification_title": "Streaks",

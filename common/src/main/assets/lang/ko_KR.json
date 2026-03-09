@@ -309,6 +309,7 @@
                 "remove_selected_tasks_title": "선택한 작업을 제거하시겠습니까?",
                 "remove_all_tasks_title": "모든 작업을 제거하시겠습니까?",
                 "delete_files_option": "파일도 삭제",
+                "delete_files_option_hint": "기기에서 다운로드한 파일도 삭제",
                 "remove_selected_tasks_confirm": "{count}개의 작업을 제거할까요?",
                 "remove_all_tasks_confirm": "모든 작업을 제거할까요?"
             },
