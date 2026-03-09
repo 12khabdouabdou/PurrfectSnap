@@ -1,7 +1,7 @@
 package me.eternal.purrfectsnap.ui.manager.pages.features
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
@@ -9,28 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
@@ -91,6 +70,7 @@ import com.google.gson.reflect.TypeToken
 import me.eternal.purrfectsnap.common.ui.TopBarActionButton
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.rememberRouteLazyListState
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.*
@@ -113,7 +93,7 @@ class FeaturesRootSection : Routes.Route() {
                 } ?: routeInfo.translatedKey?.value
             }
             SEARCH_FEATURE_ROUTE -> {
-                translation["search_button"]
+                translation["search_button"] ?: "Search"
             }
             else -> {
                 routeInfo.translatedKey?.value
@@ -122,16 +102,16 @@ class FeaturesRootSection : Routes.Route() {
         Text(titleText ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 
-    private val alertDialogs by lazy { AlertDialogs(context.translation) }
-    private val gson by lazy { Gson() }
-    private val listTypeToken = object : TypeToken<List<String>>() {}.type
+    internal val alertDialogs by lazy { AlertDialogs(context.translation) }
+    internal val gson by lazy { Gson() }
+    internal val listTypeToken = object : TypeToken<List<String>>() {}.type
 
     companion object {
         const val FEATURE_CONTAINER_ROUTE = "feature_container/{name}"
         const val SEARCH_FEATURE_ROUTE = "search_feature/{keyword}"
     }
 
-    private val allContainers by lazy {
+    internal val allContainers by lazy {
         val containers = mutableMapOf<String, PropertyPair<*>>()
         fun queryContainerRecursive(container: ConfigContainer) {
             container.properties.forEach {
@@ -139,7 +119,7 @@ class FeaturesRootSection : Routes.Route() {
                     it.key.dataType.type == DataProcessors.Type.CONTAINER &&
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 ) {
-                    containers[it.key.name] = PropertyPair(it.key, it.value)
+                    containers[it.key.name] = PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>)
                     queryContainerRecursive(it.value.get() as ConfigContainer)
                 }
             }
@@ -148,7 +128,7 @@ class FeaturesRootSection : Routes.Route() {
         containers
     }
 
-    private val allProperties by lazy {
+    internal val allProperties by lazy {
         val properties = mutableMapOf<PropertyKey<*>, PropertyValue<*>>()
         allContainers.values.forEach {
             val container = it.value.get() as ConfigContainer
@@ -159,13 +139,13 @@ class FeaturesRootSection : Routes.Route() {
         properties
     }
 
-    private fun isSearchVisibleProperty(propertyKey: PropertyKey<*>): Boolean {
+    internal fun isSearchVisibleProperty(propertyKey: PropertyKey<*>): Boolean {
         return !propertyKey.params.flags.contains(ConfigFlag.HIDDEN)
     }
 
-    private data class SearchEntry(val keyword: String, val tokens: List<String>)
+    internal data class SearchEntry(val keyword: String, val tokens: List<String>)
 
-    private fun buildSearchEntries(): List<SearchEntry> {
+    internal fun buildSearchEntries(): List<SearchEntry> {
         return allProperties.keys.mapNotNull { key ->
             if (!isSearchVisibleProperty(key)) return@mapNotNull null
             val name = context.translation[key.propertyName()]
@@ -175,7 +155,7 @@ class FeaturesRootSection : Routes.Route() {
         }
     }
 
-    private fun levenshtein(a: String, b: String): Int {
+    internal fun levenshtein(a: String, b: String): Int {
         if (a == b) return 0
         if (a.isEmpty()) return b.length
         if (b.isEmpty()) return a.length
@@ -195,7 +175,7 @@ class FeaturesRootSection : Routes.Route() {
         return curr[b.length]
     }
 
-    private fun similarityScore(query: String, target: String): Float {
+    internal fun similarityScore(query: String, target: String): Float {
         val q = query.lowercase()
         val t = target.lowercase()
         val maxLen = max(q.length, t.length)
@@ -204,7 +184,7 @@ class FeaturesRootSection : Routes.Route() {
         return 1f - (dist.toFloat() / maxLen.toFloat())
     }
 
-    private fun fuzzySuggest(query: String, entries: List<SearchEntry>): List<String> {
+    internal fun fuzzySuggest(query: String, entries: List<SearchEntry>): List<String> {
         val q = query.trim()
         if (q.length < 2) return emptyList()
         return entries.map { entry ->
@@ -217,22 +197,22 @@ class FeaturesRootSection : Routes.Route() {
             .take(6)
     }
 
-    private fun loadSearchHistory(): List<String> {
+    internal fun loadSearchHistory(): List<String> {
         return context.sharedPreferences
-            .getString("features_search_history", "") // stored as | separated
+            .getString("features_search_history", "")
             ?.split("|")
             ?.map { it.trim() }
             ?.filter { it.isNotEmpty() }
             ?: emptyList()
     }
 
-    private fun saveSearchHistory(history: List<String>) {
+    internal fun saveSearchHistory(history: List<String>) {
         context.sharedPreferences.edit()
             .putString("features_search_history", history.joinToString("|"))
             .apply()
     }
 
-    private fun upsertHistory(term: String, history: SnapshotStateList<String>) {
+    internal fun upsertHistory(term: String, history: SnapshotStateList<String>) {
         val cleaned = term.trim()
         if (cleaned.isEmpty()) return
         val existingIndex = history.indexOfFirst { it.equals(cleaned, ignoreCase = true) }
@@ -242,7 +222,7 @@ class FeaturesRootSection : Routes.Route() {
         saveSearchHistory(history)
     }
     
-    private fun navigateToMainRoot() {
+    internal fun navigateToMainRoot() {
         routes.navController.navigate(routeInfo.id, NavOptions.Builder()
             .setPopUpTo(routes.navController.graph.findStartDestination().id, false)
             .setLaunchSingleTop(true)
@@ -250,15 +230,23 @@ class FeaturesRootSection : Routes.Route() {
         )
     }
 
-    private fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
+    internal fun activityLauncher(block: ActivityLauncherHelper.() -> Unit) {
         routes.activityLauncher.let(block)
     }
 
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
-        Container(
-            configContainer = context.config.root,
-            stateKey = "${routeInfo.id}:root"
-        )
+    override val content: @Composable (NavBackStackEntry) -> Unit = { nav ->
+        val themeId by produceState(initialValue = context.config.root.global.uiSettings.managerTheme.get()) {
+            while (true) {
+                delay(300)
+                value = context.config.root.global.uiSettings.managerTheme.get()
+            }
+        }
+
+        key(themeId) {
+            with(ManagerTheme.fromId(themeId).theme) {
+                this@FeaturesRootSection.FeaturesScreen(nav)
+            }
+        }
     }
 
     override val customComposables: NavGraphBuilder.() -> Unit = {
@@ -298,7 +286,7 @@ class FeaturesRootSection : Routes.Route() {
                             context.translation[it.key.propertyName()].contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyDescription()].contains(keyword, ignoreCase = true)
                     )
-                }.map { PropertyPair(it.key, it.value) }
+                }.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }
 
                 PropertiesView(
                     properties = properties,
@@ -313,7 +301,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun FeatureAuroraBackdrop(modifier: Modifier = Modifier) {
+    internal fun FeatureAuroraBackdrop(modifier: Modifier = Modifier) {
         Box(
             modifier = modifier
                 .fillMaxSize()
@@ -322,7 +310,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun NoticeBadge(text: String, color: Color) {
+    internal fun NoticeBadge(text: String, color: Color) {
         Surface(
             shape = RoundedCornerShape(50),
             color = color.copy(alpha = 0.16f),
@@ -341,7 +329,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun EmptyState(isSearchResults: Boolean) {
+    internal fun EmptyState(isSearchResults: Boolean) {
         val shape = RoundedCornerShape(24.dp)
         val border = Brush.linearGradient(
             listOf(
@@ -399,7 +387,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun PropertyAction(property: PropertyPair<*>, registerClickCallback: RegisterClickCallback) {
+    internal fun PropertyAction(property: PropertyPair<*>, registerClickCallback: RegisterClickCallback) {
         var showDialog by remember { mutableStateOf(false) }
         var dialogComposable by remember { mutableStateOf<@Composable () -> Unit>({}) }
 
@@ -473,14 +461,14 @@ class FeaturesRootSection : Routes.Route() {
                                     verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Text(
-                                        text = context.translation["manager.dialogs.file_imports.settings_select_file_hint"],
+                                        text = context.translation["manager.dialogs.file_imports.settings_select_file_hint"] ?: "Select File",
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = Color.White
                                     )
                                     if (isEmpty) {
                                         Text(
-                                            text = context.translation["manager.dialogs.file_imports.no_files_settings_hint"],
+                                            text = context.translation["manager.dialogs.file_imports.no_files_settings_hint"] ?: "No files found",
                                             fontSize = 15.sp,
                                             fontWeight = FontWeight.Medium,
                                             color = PurrfectPalette.textSecondary,
@@ -489,8 +477,7 @@ class FeaturesRootSection : Routes.Route() {
                                         )
                                     } else {
                                         Text(
-                                            text = translation["manager.dialogs.file_imports.settings_select_file_subtitle"]
-                                                ?: translation["manager.dialogs.file_imports.settings_select_file_hint"],
+                                            text = translation["manager.dialogs.file_imports.settings_select_file_subtitle"] ?: "Pick a file to import",
                                             fontSize = 13.sp,
                                             color = PurrfectPalette.textSecondary,
                                             textAlign = TextAlign.Center
@@ -645,7 +632,6 @@ class FeaturesRootSection : Routes.Route() {
                             alertDialogs.MultipleSelectionDialog(property)
                         }
                         DataProcessors.Type.STRING, DataProcessors.Type.INTEGER, DataProcessors.Type.FLOAT -> {
-                            // Check if this is a message list property
                             val isMessageListProperty = property.key.name.endsWith("_messages")
                             if (isMessageListProperty) {
                                 alertDialogs.MessageListPropertyDialog(property) { showDialog = false }
@@ -665,10 +651,8 @@ class FeaturesRootSection : Routes.Route() {
                             onClick = it
                         )
                     } else {
-                        // Check if this is a message list property
                         val isMessageListProperty = property.key.name.endsWith("_messages")
                         if (isMessageListProperty) {
-                            // Show message count
                             val messageCount = try {
                                 val messageList: List<String> = gson.fromJson(propertyValue.get().toString(), listTypeToken) ?: emptyList()
                                 messageList.size
@@ -755,7 +739,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun ValueGlowChip(
+    internal fun ValueGlowChip(
         text: String,
         onClick: () -> Unit
     ) {
@@ -801,7 +785,7 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun PropertyCard(property: PropertyPair<*>, onOpen: (() -> Unit)? = null) {
+    internal fun PropertyCard(property: PropertyPair<*>, onOpen: (() -> Unit)? = null) {
         var clickCallback by remember { mutableStateOf<ClickCallback?>(null) }
         val noticeColorMap = remember {
             mapOf(
@@ -817,7 +801,6 @@ class FeaturesRootSection : Routes.Route() {
 
         val cardShape = RoundedCornerShape(22.dp)
         val interactionSource = remember { MutableInteractionSource() }
-        val density = LocalDensity.current
         val cardBorder = remember {
             Brush.linearGradient(
                 listOf(
@@ -892,14 +875,14 @@ class FeaturesRootSection : Routes.Route() {
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                             Text(
-                                text = context.translation[property.key.propertyName()],
+                                text = context.translation[property.key.propertyName()] ?: property.key.name,
                                 fontSize = 17.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = PurrfectPalette.textPrimary,
                                 lineHeight = 20.sp
                             )
                             Text(
-                                text = context.translation[property.key.propertyDescription()],
+                                text = context.translation[property.key.propertyDescription()] ?: "",
                                 fontSize = 13.sp,
                                 lineHeight = 16.sp,
                                 color = PurrfectPalette.textSecondary
@@ -909,7 +892,7 @@ class FeaturesRootSection : Routes.Route() {
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 property.key.params.notices.forEach {
                                     NoticeBadge(
-                                        text = context.translation["features.notices.${it.key}"],
+                                        text = context.translation["features.notices.${it.key}"] ?: it.key,
                                         color = noticeColorMap[it.key] ?: Color(0xFFFFFB87)
                                     )
                                 }
@@ -949,241 +932,18 @@ class FeaturesRootSection : Routes.Route() {
         }
     }
 
-    @Composable
-    private fun FeatureSearchBar(rowScope: RowScope, focusRequester: FocusRequester) {
-        var searchValue by remember { mutableStateOf("") }
-        val isOverlay = remember { context.sharedPreferences.getBoolean("overlay_active", false) }
-        val scope = rememberCoroutineScope()
-        var currentSearchJob by remember { mutableStateOf<Job?>(null) }
-        val searchHistory = remember { mutableStateListOf<String>().apply { addAll(loadSearchHistory()) } }
-        fun launchSearch(term: String, record: Boolean, delayMs: Long = 0L) {
-            val keyword = term.trim()
-            if (keyword.isEmpty()) {
-                navigateToMainRoot()
-                return
-            }
-            currentSearchJob?.cancel()
-            currentSearchJob = scope.launch {
-                if (delayMs > 0) delay(delayMs)
-                if (record) upsertHistory(keyword, searchHistory)
-                routes.navController.navigate(
-                    SEARCH_FEATURE_ROUTE.replace("{keyword}", keyword),
-                    NavOptions.Builder()
-                        .setLaunchSingleTop(true)
-                        .setPopUpTo(routeInfo.id, false)
-                        .build()
-                )
-            }
-        }
-
-        rowScope.apply {
-            val searchBorder = remember {
-                Brush.linearGradient(
-                    listOf(
-                        Color(0xFF8C7BFF).copy(alpha = 0.48f),
-                        Color(0xFF5FD8FF).copy(alpha = 0.4f)
-                    )
-                )
-            }
-            Surface(
-                modifier = Modifier
-                    .focusRequester(focusRequester)
-                    .weight(1f, fill = true)
-                    .padding(end = 10.dp)
-                    .height(62.dp),
-                shape = RoundedCornerShape(18.dp),
-                tonalElevation = 8.dp,
-                shadowElevation = 0.dp,
-                border = BorderStroke(1.dp, searchBorder),
-                color = Color.Transparent
-            ) {
-                TextField(
-                    value = searchValue,
-                    onValueChange = { keyword ->
-                        searchValue = keyword
-                        if (keyword.isEmpty()) {
-                            if (isOverlay) {
-                                routes.navController.popBackStack(routeInfo.id, false)
-                            }
-                        } else {
-                            launchSearch(keyword, record = false, delayMs = 250L)
-                        }
-                    },
-                    keyboardActions = KeyboardActions(onDone = {
-                        launchSearch(searchValue, record = true, delayMs = 0L)
-                        focusRequester.freeFocus()
-                    }),
-                    singleLine = true,
-                    leadingIcon = {
-                        Surface(
-                shape = CircleShape,
-                color = Color.White.copy(alpha = 0.16f),
-                tonalElevation = 0.dp
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Search,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-        },
-        placeholder = {
-            Text(
-                text = translation["search_button"],
-                color = Color(0xFFE0DCFF)
-            )
-        },
-                    trailingIcon = {
-                        if (searchValue.isNotEmpty()) {
-                            IconButton(onClick = {
-                                searchValue = ""
-                                if (isOverlay) {
-                                    routes.navController.popBackStack(routeInfo.id, false)
-                                }
-                                focusRequester.requestFocus()
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = null,
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        focusedContainerColor = Color.White.copy(alpha = 0.08f),
-                        unfocusedContainerColor = Color.White.copy(alpha = 0.06f),
-                        cursorColor = Color.White,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        disabledTextColor = Color.White.copy(alpha = 0.65f),
-                        focusedPlaceholderColor = Color(0xFFE0DCFF),
-                        unfocusedPlaceholderColor = Color(0xFFE0DCFF),
-                        focusedLeadingIconColor = Color.White,
-                        unfocusedLeadingIconColor = Color.White.copy(alpha = 0.9f),
-                        focusedTrailingIconColor = Color.White,
-                        unfocusedTrailingIconColor = Color.White.copy(alpha = 0.9f)
-                    )
-                )
-            }
-        }
-    }
-
-    @Composable
-    private fun SensitiveDataDialog(
-        onDismiss: () -> Unit,
-        onConfirm: (exportSensitiveData: Boolean, includeSavedLocations: Boolean) -> Unit
-    ) {
-        Dialog(onDismissRequest = onDismiss) {
-            val includeSavedLocations = remember { mutableStateOf(false) }
-            
-            Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = Color.White.copy(alpha = 0.06f),
-                tonalElevation = 0.dp,
-                shadowElevation = 16.dp,
-                border = BorderStroke(
-                    1.dp,
-                    Brush.linearGradient(
-                        listOf(
-                            PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                            PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
-                        )
-                    )
-                )
-            ) {
-                Box(modifier = Modifier.background(PurrfectPalette.cardOverlay)) {
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 20.dp, vertical = 18.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        Text(
-                            text = context.translation["manager.dialogs.export_config.title"],
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.ExtraBold
-                            ),
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            text = context.translation["manager.dialogs.export_config.content"],
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
-                            color = PurrfectPalette.textSecondary,
-                            modifier = Modifier.padding(horizontal = 6.dp)
-                        )
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = context.translation["include_saved_locations"],
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White
-                            )
-                            val hapticFeedback = LocalHapticFeedback.current
-                            Switch(
-                                checked = includeSavedLocations.value,
-                                onCheckedChange = { 
-                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    }
-                                    includeSavedLocations.value = it 
-                                },
-                                colors = purrfectSwitchColors()
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
-                        ) {
-                            Button(
-                                onClick = { onConfirm(false, includeSavedLocations.value) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.White.copy(alpha = 0.08f),
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Text(context.translation["button.negative"])
-                            }
-                            Button(
-                                onClick = { onConfirm(true, includeSavedLocations.value) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.32f),
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Text(context.translation["button.positive"])
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    override val topBarActions: @Composable (RowScope.() -> Unit) = {}
-
     @OptIn(ExperimentalLayoutApi::class)
     @Composable
-    private fun FloatingControls(
+    internal fun FloatingControls(
         isSearchResults: Boolean,
-        modifier: Modifier = Modifier,
         activeSectionTitle: String? = null,
         activeSectionSubtitle: String? = null,
         searchKeyword: String? = null,
         searchHistory: SnapshotStateList<String>,
         onSearchQueryChange: (String) -> Unit,
-        onBack: (() -> Unit)? = null
+        onBack: (() -> Unit)? = null,
+        scrollOffset: Int = 0,
+        modifier: Modifier = Modifier
     ) {
         var showSearchBar by rememberSaveable { mutableStateOf(isSearchResults) }
         val focusRequester = remember { FocusRequester() }
@@ -1219,6 +979,7 @@ class FeaturesRootSection : Routes.Route() {
         var showExportDialog by remember { mutableStateOf(false) }
 
         if (showResetConfirmationDialog) {
+            val haptic = LocalHapticFeedback.current
             Dialog(onDismissRequest = { showResetConfirmationDialog = false }) {
                 Surface(
                     shape = RoundedCornerShape(24.dp),
@@ -1241,12 +1002,12 @@ class FeaturesRootSection : Routes.Route() {
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
                             Text(
-                                text = context.translation["manager.dialogs.reset_config.title"],
+                                text = context.translation["manager.dialogs.reset_config.title"] ?: "Reset Config",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
                                 color = Color.White
                             )
                             Text(
-                                text = context.translation["manager.dialogs.reset_config.content"],
+                                text = context.translation["manager.dialogs.reset_config.content"] ?: "Reset all settings to default?",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = PurrfectPalette.textSecondary
                             )
@@ -1255,7 +1016,10 @@ class FeaturesRootSection : Routes.Route() {
                                 horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                             ) {
                                 Button(
-                                    onClick = { showResetConfirmationDialog = false },
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        showResetConfirmationDialog = false
+                                    },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color.White.copy(alpha = 0.08f),
                                         contentColor = Color.White
@@ -1265,8 +1029,9 @@ class FeaturesRootSection : Routes.Route() {
                                 }
                                 Button(
                                     onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         context.config.reset()
-                                        context.shortToast(context.translation["manager.dialogs.reset_config.success_toast"])
+                                        context.shortToast(context.translation["manager.dialogs.reset_config.success_toast"] ?: "Reset successful")
                                         showResetConfirmationDialog = false
                                     },
                                     colors = ButtonDefaults.buttonColors(
@@ -1296,37 +1061,40 @@ class FeaturesRootSection : Routes.Route() {
             )
         }
 
+        val haptic = LocalHapticFeedback.current
         val actions = remember {
             listOf(
-                Triple(translation["export_option"], Icons.Filled.SaveAlt) { showExportDialog = true },
-                Triple(translation["import_option"], Icons.Filled.FileDownload) {
+                Triple(translation["export_option"] ?: "Export", Icons.Filled.SaveAlt) {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showExportDialog = true
+                },
+                Triple(translation["import_option"] ?: "Import", Icons.Filled.FileDownload) {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     activityLauncher {
-                        openFile("application/json") { uri ->
-                            context.androidContext.contentResolver.openInputStream(Uri.parse(uri))?.use {
-                                routes.configJsonForImport = it.readBytes().toString(Charsets.UTF_8)
-                                routes.navController.navigate(Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE)
+                        openFile("application/json") { uriString ->
+                            runCatching {
+                                val uri = android.net.Uri.parse(uriString)
+                                context.androidContext.contentResolver.openInputStream(uri)?.use {
+                                    routes.configJsonForImport = it.readBytes().toString(Charsets.UTF_8)
+                                    routes.navController.navigate(Routes.CONFIG_IMPORT_CONFIRMATION_ROUTE)
+                                }
+                            }.onFailure { err ->
+                                context.log.error("Failed to read config file", err)
+                                context.longToast(translation.format("config_import_failure_toast", "error" to (err.message ?: "Unknown")))
                             }
                         }
                     }
                 },
-                Triple(translation["reset_option"], Icons.Filled.Refresh) { showResetConfirmationDialog = true }
+                Triple(translation["reset_option"] ?: "Reset", Icons.Filled.Refresh) {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showResetConfirmationDialog = true
+                }
             )
         }
 
-        val topBarShape = RoundedCornerShape(26.dp)
-        val topBarBackground = remember { PurrfectPalette.cardOverlay }
-        val topBarBorder = remember {
-            Brush.linearGradient(
-                listOf(
-                    PurrfectPalette.glowPrimary.copy(alpha = 0.6f),
-                    PurrfectPalette.glowSecondary.copy(alpha = 0.52f)
-                )
-            )
-        }
-
-        val headerTitle = activeSectionTitle ?: translation["manager.routes.features"]
+        val headerTitle = activeSectionTitle ?: translation["manager.routes.features"] ?: "Features"
         val subtitleText = when {
-            isSearchResults -> translation["search_button"]
+            isSearchResults -> translation["search_button"] ?: "Search"
             !activeSectionSubtitle.isNullOrBlank() -> activeSectionSubtitle
             else -> translation["manager.sections.features.subtitle"] ?: ""
         }
@@ -1344,223 +1112,182 @@ class FeaturesRootSection : Routes.Route() {
             }
         }
 
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = 14.dp, vertical = 0.dp)
-                .zIndex(1f)
-        ) {
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth(),
-                shape = topBarShape,
-                color = PurrfectPalette.cardOverlayColor,
-                border = BorderStroke(1.dp, topBarBorder),
-                tonalElevation = 0.dp,
-                shadowElevation = 8.dp
-            ) {
-                Box {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clip(topBarShape)
-                            .background(topBarBackground)
-                    )
-                    Column(
-                        modifier = Modifier
-                            .padding(horizontal = 14.dp, vertical = 12.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            if (onBack != null) {
-                                IconButton(onClick = onBack) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = context.translation["common.back"],
-                                        tint = Color.White
-                                    )
+        Column(modifier = modifier) {
+            me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
+                title = headerTitle,
+                subtitle = if (showSearchBar) null else subtitleText,
+                onBack = onBack,
+                scrollOffset = scrollOffset,
+                actions = {
+                    if (showSearchBar) {
+                        TextField(
+                            value = searchValue,
+                            onValueChange = { keywordValue ->
+                                searchValue = keywordValue
+                                if (keywordValue.text.isEmpty()) {
+                                    updateSearch("", record = false)
+                                } else {
+                                    updateSearch(keywordValue.text, record = false)
                                 }
-                            }
-
-                            if (showSearchBar) {
-                                TextField(
-                                    value = searchValue,
-                                    onValueChange = { keywordValue ->
-                                        searchValue = keywordValue
-                                        if (keywordValue.text.isEmpty()) {
-                                            updateSearch("", record = false)
-                                        } else {
-                                            updateSearch(keywordValue.text, record = false)
-                                        }
-                                    },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .focusRequester(focusRequester),
-                                    singleLine = true,
-                                    placeholder = { Text(text = translation["search_button"], color = Color(0xFFE0DCFF)) },
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Filled.Search,
-                                            contentDescription = null,
-                                            tint = Color.White
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        if (searchValue.text.isNotEmpty()) {
-                                            IconButton(onClick = {
-                                                searchValue = TextFieldValue("", TextRange(0))
-                                                updateSearch("", record = false)
-                                                if (isSearchResults) {
-                                                    if (isOverlay) {
-                                                        routes.navController.popBackStack(routeInfo.id, false)
-                                                    }
-                                                } else {
-                                                    showSearchBar = false
-                                                }
-                                            }) {
-                                                Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White)
-                                            }
-                                        }
-                                    },
-                                    keyboardActions = KeyboardActions(
-                                        onDone = {
-                                            updateSearch(searchValue.text, record = true)
-                                        }
-                                    ),
-                                    colors = TextFieldDefaults.colors(
-                                        focusedContainerColor = Color.Transparent,
-                                        unfocusedContainerColor = Color.Transparent,
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent,
-                                        cursorColor = Color.White,
-                                        focusedTextColor = Color.White,
-                                        unfocusedTextColor = Color.White,
-                                        disabledTextColor = Color.White.copy(alpha = 0.65f),
-                                        focusedPlaceholderColor = Color(0xFFE0DCFF),
-                                        unfocusedPlaceholderColor = Color(0xFFE0DCFF),
-                                        focusedLeadingIconColor = Color.White,
-                                        unfocusedLeadingIconColor = Color.White.copy(alpha = 0.9f),
-                                        focusedTrailingIconColor = Color.White,
-                                        unfocusedTrailingIconColor = Color.White.copy(alpha = 0.9f)
-                                    )
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(focusRequester),
+                            singleLine = true,
+                            placeholder = { Text(text = translation["search_button"] ?: "Search", color = Color(0xFFE0DCFF)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.Search,
+                                    contentDescription = null,
+                                    tint = Color.White
                                 )
-                                LaunchedEffect(Unit) { focusRequester.requestFocus() }
-                            } else {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = headerTitle ?: "",
-                                        color = Color.White,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        fontSize = 18.sp
-                                    )
-                                    Text(
-                                        text = subtitleText,
-                                        color = Color(0xFFCEC8FF),
-                                        fontSize = 12.sp
-                                    )
-                                }
-                            }
-
-                            if (!showSearchBar || searchValue.text.isEmpty()) {
-                                IconButton(onClick = {
-                                    if (showSearchBar) {
+                            },
+                            trailingIcon = {
+                                if (searchValue.text.isNotEmpty()) {
+                                    IconButton(onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         searchValue = TextFieldValue("", TextRange(0))
-                                        if (isOverlay) {
-                                            routes.navController.popBackStack(routeInfo.id, false)
+                                        updateSearch("", record = false)
+                                        if (isSearchResults) {
+                                            if (isOverlay) {
+                                                routes.navController.popBackStack(routeInfo.id, false)
+                                            }
+                                        } else {
+                                            showSearchBar = false
                                         }
+                                    }) {
+                                        Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White)
                                     }
-                                    showSearchBar = !showSearchBar
-                                }) {
-                                    Icon(
-                                        imageVector = if (showSearchBar) Icons.Filled.Close else Icons.Filled.Search,
-                                        contentDescription = null,
-                                        tint = Color.White
-                                    )
                                 }
-                            }
+                            },
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    updateSearch(searchValue.text, record = true)
+                                }
+                            ),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                cursorColor = Color.White,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                disabledTextColor = Color.White.copy(alpha = 0.65f),
+                                focusedPlaceholderColor = Color(0xFFE0DCFF),
+                                unfocusedPlaceholderColor = Color(0xFFE0DCFF),
+                                focusedLeadingIconColor = Color.White,
+                                unfocusedLeadingIconColor = Color.White.copy(alpha = 0.9f),
+                                focusedTrailingIconColor = Color.White,
+                                unfocusedTrailingIconColor = Color.White.copy(alpha = 0.9f)
+                            )
+                        )
+                        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+                    } else {
+                        IconButton(onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            showSearchBar = true
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                    }
 
-                            if (context.activity != null) {
-                                Box {
-                                    IconButton(onClick = { showExportDropdownMenu = !showExportDropdownMenu }) {
-                                        Icon(
-                                            imageVector = Icons.Filled.MoreVert,
-                                            contentDescription = null,
-                                            tint = PurrfectPalette.glowSecondary
-                                        )
-                                    }
-                                    DropdownMenu(
-                                        expanded = showExportDropdownMenu,
-                                        onDismissRequest = { showExportDropdownMenu = false },
-                                        offset = DpOffset(0.dp, 8.dp),
-                                        containerColor = Color(0xFF161821),
-                                        shape = RoundedCornerShape(14.dp),
-                                        tonalElevation = 8.dp,
-                                        shadowElevation = 12.dp
-                                    ) {
-                                        actions.forEach { (name, icon, action) ->
-                                            DropdownMenuItem(
-                                                leadingIcon = {
-                                                    Icon(
-                                                        imageVector = icon,
-                                                        contentDescription = null,
-                                                        tint = PurrfectPalette.glowPrimary
-                                                    )
-                                                },
-                                                text = { Text(text = name, color = Color.White) },
-                                                onClick = {
-                                                    action()
-                                                    showExportDropdownMenu = false
-                                                },
-                                                colors = MenuDefaults.itemColors(
-                                                    textColor = Color.White,
-                                                    leadingIconColor = PurrfectPalette.glowPrimary
-                                                )
+                    if (context.activity != null) {
+                        Box {
+                            IconButton(onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                showExportDropdownMenu = !showExportDropdownMenu
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = null,
+                                    tint = PurrfectPalette.glowSecondary
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showExportDropdownMenu,
+                                onDismissRequest = { showExportDropdownMenu = false },
+                                offset = DpOffset(0.dp, 8.dp),
+                                containerColor = Color(0xFF161821),
+                                shape = RoundedCornerShape(14.dp),
+                                tonalElevation = 8.dp,
+                                shadowElevation = 12.dp
+                            ) {
+                                actions.forEach { (name, icon, action) ->
+                                    DropdownMenuItem(
+                                        leadingIcon = {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = null,
+                                                tint = PurrfectPalette.glowPrimary
                                             )
-                                        }
-                                    }
+                                        },
+                                        text = { Text(text = name ?: "", color = Color.White) },
+                                        onClick = {
+                                            action()
+                                            showExportDropdownMenu = false
+                                        },
+                                        colors = MenuDefaults.itemColors(
+                                            textColor = Color.White,
+                                            leadingIconColor = PurrfectPalette.glowPrimary
+                                        )
+                                    )
                                 }
                             }
                         }
+                    }
+                }
+            )
 
-                        if (showSearchBar && combinedSuggestions.isNotEmpty()) {
-                            Spacer(Modifier.height(10.dp))
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                combinedSuggestions.forEach { suggestion ->
-                                    AssistChip(
-                                        onClick = {
-                                            searchValue = TextFieldValue(suggestion, TextRange(suggestion.length))
-                                            updateSearch(suggestion, record = true)
-                                        },
-                                        label = { Text(text = suggestion, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = Color.White) },
-                                        colors = AssistChipDefaults.assistChipColors(
-                                            containerColor = Color.White.copy(alpha = 0.08f),
-                                            labelColor = Color.White,
-                                            leadingIconContentColor = Color.White
-                                        )
+            if (showSearchBar && combinedSuggestions.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier
+                        .padding(horizontal = 14.dp)
+                        .padding(top = 10.dp)
+                        .fillMaxWidth(),
+                    color = PurrfectPalette.cardOverlayColor,
+                    shape = RoundedCornerShape(18.dp),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            combinedSuggestions.forEach { suggestion ->
+                                AssistChip(
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        searchValue = TextFieldValue(suggestion, TextRange(suggestion.length))
+                                        updateSearch(suggestion, record = true)
+                                    },
+                                    label = { Text(text = suggestion, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = Color.White) },
+                                    colors = AssistChipDefaults.assistChipColors(
+                                        containerColor = Color.White.copy(alpha = 0.08f),
+                                        labelColor = Color.White,
+                                        leadingIconContentColor = Color.White
                                     )
-                                }
+                                )
                             }
-                            if (searchHistory.isNotEmpty()) {
-                                Spacer(Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    TextButton(
-                                        onClick = {
-                                            searchHistory.clear()
-                                            saveSearchHistory(emptyList())
-                                        }
-                                    ) {
-                                        Icon(Icons.Filled.Delete, contentDescription = null, tint = Color.White.copy(alpha = 0.85f))
-                                        Spacer(Modifier.width(6.dp))
-                                        Text(text = translation["clear_history"], color = Color.White)
+                        }
+                        if (searchHistory.isNotEmpty()) {
+                            Spacer(Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        searchHistory.clear()
+                                        saveSearchHistory(emptyList())
                                     }
+                                ) {
+                                    Icon(Icons.Filled.Delete, contentDescription = null, tint = Color.White.copy(alpha = 0.85f))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(text = translation["clear_history"] ?: "Clear history", color = Color.White)
                                 }
                             }
                         }
@@ -1568,11 +1295,10 @@ class FeaturesRootSection : Routes.Route() {
                 }
             }
         }
-
     }
 
     @Composable
-    private fun PropertiesView(
+    internal fun PropertiesView(
         properties: List<PropertyPair<*>>,
         stateKey: String,
         isSearchResults: Boolean = false,
@@ -1583,14 +1309,14 @@ class FeaturesRootSection : Routes.Route() {
         onBack: (() -> Unit)? = null
     ) {
         val density = LocalDensity.current
-        var controlsHeight by remember { mutableStateOf(96.dp) }
+        var controlsHeight by remember { mutableStateOf(100.dp) }
         val listState = rememberRouteLazyListState(stateKey)
         val sharedSearchHistory = remember { mutableStateListOf<String>().apply { addAll(loadSearchHistory()) } }
         var liveSearchQuery by rememberSaveable { mutableStateOf(searchKeyword.orEmpty()) }
         val isActiveSearch = isSearchResults || liveSearchQuery.isNotBlank()
         val globalSearchProperties = remember(enableGlobalSearch) {
             if (enableGlobalSearch) {
-                allProperties.filter { isSearchVisibleProperty(it.key) }.map { PropertyPair(it.key, it.value) }
+                allProperties.filter { isSearchVisibleProperty(it.key) }.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }
             } else {
                 emptyList()
             }
@@ -1611,23 +1337,38 @@ class FeaturesRootSection : Routes.Route() {
                 liveSearchQuery = searchKeyword
             }
         }
+        var lastAppliedQuery by remember { mutableStateOf(liveSearchQuery) }
         LaunchedEffect(liveSearchQuery) {
-            if (!listState.isScrollInProgress) {
-                listState.scrollToItem(0)
+            if (liveSearchQuery != lastAppliedQuery) {
+                if (!listState.isScrollInProgress) {
+                    listState.scrollToItem(0)
+                }
+                lastAppliedQuery = liveSearchQuery
             }
+        }
+
+        val computedScrollOffset by remember {
+            derivedStateOf {
+                if (listState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt()
+                else listState.firstVisibleItemScrollOffset
+            }
+        }
+
+        LaunchedEffect(computedScrollOffset) {
+            routes.navigation?.globalScrollOffset = computedScrollOffset
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
             FeatureAuroraBackdrop()
+
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 contentPadding = PaddingValues(
                     start = 6.dp,
                     end = 6.dp,
-                    top = controlsHeight + 12.dp,
+                    top = controlsHeight,
                     bottom = routes.bottomPadding
                 )
             ) {
@@ -1645,6 +1386,7 @@ class FeaturesRootSection : Routes.Route() {
                 }
                 item { Spacer(modifier = Modifier.height(12.dp)) }
             }
+
             FloatingControls(
                 isSearchResults = isActiveSearch,
                 activeSectionTitle = activeSectionTitle,
@@ -1653,12 +1395,8 @@ class FeaturesRootSection : Routes.Route() {
                 searchHistory = sharedSearchHistory,
                 onSearchQueryChange = { liveSearchQuery = it },
                 onBack = onBack,
-                modifier = Modifier.onGloballyPositioned {
-                    val newHeight = with(density) { it.size.height.toDp() }
-                    if (newHeight != controlsHeight) {
-                        controlsHeight = newHeight
-                    }
-                }
+                scrollOffset = computedScrollOffset,
+                modifier = Modifier.headerHeightTracker { controlsHeight = it }
             )
         }
     }
@@ -1684,10 +1422,112 @@ class FeaturesRootSection : Routes.Route() {
         }
     }
 
+    @Composable
+    internal fun SensitiveDataDialog(
+        onDismiss: () -> Unit,
+        onConfirm: (exportSensitiveData: Boolean, includeSavedLocations: Boolean) -> Unit
+    ) {
+        val haptic = LocalHapticFeedback.current
+        Dialog(onDismissRequest = onDismiss) {
+            val includeSavedLocations = remember { mutableStateOf(false) }
 
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = Color.White.copy(alpha = 0.06f),
+                tonalElevation = 0.dp,
+                shadowElevation = 16.dp,
+                border = BorderStroke(
+                    1.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
+                            PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
+                        )
+                    )
+                )
+            ) {
+                Box(modifier = Modifier.background(PurrfectPalette.cardOverlay)) {
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 20.dp, vertical = 18.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Text(
+                            text = context.translation["manager.dialogs.export_config.title"] ?: "Export Config",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.ExtraBold
+                            ),
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = context.translation["manager.dialogs.export_config.content"] ?: "Include sensitive data?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = PurrfectPalette.textSecondary,
+                            modifier = Modifier.padding(horizontal = 6.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = context.translation["include_saved_locations"] ?: "Include Saved Locations",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                            Switch(
+                                checked = includeSavedLocations.value,
+                                onCheckedChange = {
+                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    includeSavedLocations.value = it
+                                },
+                                colors = purrfectSwitchColors()
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
+                        ) {
+                            Button(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onDismiss()
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.White.copy(alpha = 0.08f),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(context.translation["button.negative"])
+                            }
+                            Button(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onConfirm(true, includeSavedLocations.value)
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.32f),
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(context.translation["button.positive"])
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @Composable
-    private fun Container(
+    internal fun Container(
         configContainer: ConfigContainer,
         stateKey: String,
         sectionTitle: String? = null,
@@ -1697,7 +1537,7 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         PropertiesView(
             properties = remember {
-                configContainer.properties.map { PropertyPair(it.key, it.value) }.filter {
+                configContainer.properties.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }.filter {
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 }
             },

@@ -25,13 +25,7 @@ import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavBackStackEntry
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
@@ -51,6 +46,7 @@ import me.eternal.purrfectsnap.common.ui.rememberAsyncUpdateDispatcher
 import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
 import me.eternal.purrfectsnap.storage.*
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
@@ -67,18 +63,18 @@ class FriendTrackerManagerRoot : Routes.Route() {
     }
 
     override val translation by lazy { context.translation.getCategory("manager.friend_tracker") }
-    private val titles by lazy {
+    internal val titles by lazy {
         listOf(
             translation["rules_tab"],
             translation["logs_tab"]
         )
     }
-    private var currentPage by mutableIntStateOf(0)
-    private lateinit var logDeleteAction : () -> Unit
-    private lateinit var exportAction : () -> Unit
+    internal var currentPage by mutableIntStateOf(0)
+    internal lateinit var logDeleteAction : () -> Unit
+    internal lateinit var exportAction : () -> Unit
 
     @Composable
-    private fun TrackerIconButton(
+    internal fun TrackerIconButton(
         icon: ImageVector,
         contentDescription: String?,
         modifier: Modifier = Modifier,
@@ -114,7 +110,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
     }
 
     @Composable
-    private fun TrackerActionButton(
+    internal fun TrackerActionButton(
         label: String,
         icon: ImageVector,
         onClick: () -> Unit,
@@ -156,7 +152,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
     }
 
     @Composable
-    private fun TrackerPillButton(
+    internal fun TrackerPillButton(
         label: String,
         icon: ImageVector,
         onClick: () -> Unit,
@@ -304,7 +300,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
         }
     }
 
-    private lateinit var activityLauncherHelper: ActivityLauncherHelper
+    internal lateinit var activityLauncherHelper: ActivityLauncherHelper
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
@@ -347,7 +343,7 @@ class FriendTrackerManagerRoot : Routes.Route() {
     }
 
     @Composable
-    private fun ConfigRulesTab() {
+    internal fun ConfigRulesTab() {
         val updateRules = rememberAsyncUpdateDispatcher()
         val rules = rememberAsyncMutableStateList(defaultValue = listOf(), updateDispatcher = updateRules) {
             context.database.getTrackerRulesDesc()
@@ -568,9 +564,9 @@ class FriendTrackerManagerRoot : Routes.Route() {
         }
     }
 
-
     @OptIn(ExperimentalFoundationApi::class)
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
+    @Composable
+    internal fun TrackerScreenContent(nav: NavBackStackEntry) {
         val coroutineScope = rememberCoroutineScope()
         val pagerState = rememberPagerState(initialPage = 0) { titles.size }
         currentPage = pagerState.currentPage
@@ -625,47 +621,47 @@ class FriendTrackerManagerRoot : Routes.Route() {
                         )
                     )
                 ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                text = context.translation["manager.routes.friend_tracker"],
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 20.sp
+                            )
+                            Text(
+                                text = titles.getOrNull(pagerState.currentPage) ?: "",
+                                color = PurrfectPalette.textSecondary,
+                                fontSize = 14.sp
+                            )
+                        }
+                        if (pagerState.currentPage == 0) {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalAlignment = Alignment.End
                             ) {
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Text(
-                                        text = context.translation["manager.routes.friend_tracker"],
-                                        color = Color.White,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        fontSize = 20.sp
-                                    )
-                                    Text(
-                                        text = titles.getOrNull(pagerState.currentPage) ?: "",
-                                        color = PurrfectPalette.textSecondary,
-                                        fontSize = 14.sp
-                                    )
-                                }
-                                if (pagerState.currentPage == 0) {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                                        horizontalAlignment = Alignment.End
-                                    ) {
-                                        TrackerPillButton(
-                                            label = translation["import_button"],
-                                            icon = Icons.Default.FolderOpen,
-                                            onClick = { showImportDialog = true }
-                                        )
-                                        TrackerPillButton(
-                                            label = translation["export_button"],
-                                            icon = Icons.Default.SaveAlt,
-                                            onClick = { showExportDialog = true }
-                                        )
-                                    }
-                                }
+                                TrackerPillButton(
+                                    label = translation["import_button"],
+                                    icon = Icons.Default.FolderOpen,
+                                    onClick = { showImportDialog = true }
+                                )
+                                TrackerPillButton(
+                                    label = translation["export_button"],
+                                    icon = Icons.Default.SaveAlt,
+                                    onClick = { showExportDialog = true }
+                                )
                             }
                         }
+                    }
+                }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Surface(
                     modifier = Modifier
@@ -794,6 +790,22 @@ class FriendTrackerManagerRoot : Routes.Route() {
                     }
                 }
             )
+        }
+    }
+
+    override val content: @Composable (NavBackStackEntry) -> Unit = { nav ->
+        val themeId by produceState(
+            initialValue = context.config.root.global.uiSettings.managerTheme.get()
+        ) {
+            while (true) {
+                delay(300)
+                value = context.config.root.global.uiSettings.managerTheme.get()
+            }
+        }
+        key(themeId) {
+            with(ManagerTheme.fromId(themeId).theme) {
+                this@FriendTrackerManagerRoot.FriendTrackerScreen(nav)
+            }
         }
     }
 }
