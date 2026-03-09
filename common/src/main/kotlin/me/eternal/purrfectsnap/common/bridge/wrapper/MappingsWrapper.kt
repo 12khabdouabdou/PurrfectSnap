@@ -54,6 +54,9 @@ class MappingsWrapper(
         if (!exists()) {
             throw Exception("Mappings file does not exist")
         }
+        mappers.values.forEach { mapper ->
+            mapper.classLoader = context.classLoader
+        }
         val mappingsObject = JsonParser.parseString(readBytes().toString(Charsets.UTF_8)).asJsonObject.also {
             mappingUniqueHash = it["unique_hash"].asLong
         }
@@ -61,7 +64,6 @@ class MappingsWrapper(
         mappingsObject.entrySet().forEach { (key, value) ->
             mappers.values.firstOrNull { it.mapperName == key }?.let { mapper ->
                 mapper.readFromJson(value.asJsonObject)
-                mapper.classLoader = context.classLoader
             }
         }
         isMappingsLoaded = true
@@ -74,6 +76,9 @@ class MappingsWrapper(
         fileHandleManager.value.getFileHandle(FileHandleScope.INTERNAL.key, InternalFileHandleType.NATIVE_SIG_CACHE.key).delete()
 
         val classMapper = ClassMapper(*mappers.values.toTypedArray())
+        mappers.values.forEach { mapper ->
+            mapper.classLoader = context.classLoader
+        }
 
         runCatching {
             classMapper.loadApk(getSnapchatPackageInfo()?.applicationInfo?.sourceDir ?: throw Exception("Failed to get APK"))
@@ -87,6 +92,8 @@ class MappingsWrapper(
             }
             writeBytes(result.toString().toByteArray())
         }
+
+        loadCached()
 
         return classMapper.getWarns()
     }

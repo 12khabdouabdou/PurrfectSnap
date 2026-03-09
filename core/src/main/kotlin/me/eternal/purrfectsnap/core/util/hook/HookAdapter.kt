@@ -1,69 +1,68 @@
 package me.eternal.purrfectsnap.core.util.hook
 
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
 import java.lang.reflect.Member
 import java.util.function.Consumer
 
 @Suppress("UNCHECKED_CAST")
 class HookAdapter(
-    private val methodHookParam: XC_MethodHook.MethodHookParam<*>
+    private val methodHookParam: Any
 ) {
     fun <T : Any> thisObject(): T {
-        return methodHookParam.thisObject as T
+        return YukiHookBridge.instance(methodHookParam) as T
     }
 
     fun <T : Any> nullableThisObject(): T? {
-        return methodHookParam.thisObject as T?
+        return YukiHookBridge.instance(methodHookParam) as T?
     }
 
     fun method(): Member {
-        return methodHookParam.method
+        return YukiHookBridge.member(methodHookParam)
     }
 
     fun <T : Any> arg(index: Int): T {
-        return methodHookParam.args[index] as T
+        return YukiHookBridge.args(methodHookParam)[index] as T
     }
 
     fun <T : Any> argNullable(index: Int): T? {
-        return methodHookParam.args.getOrNull(index) as T?
+        return YukiHookBridge.args(methodHookParam).getOrNull(index) as T?
     }
 
     fun setArg(index: Int, value: Any?) {
-        if (index < 0 || index >= methodHookParam.args.size) return
-        methodHookParam.args[index] = value
+        val args = YukiHookBridge.args(methodHookParam)
+        if (index < 0 || index >= args.size) return
+        args[index] = value
     }
 
     fun args(): Array<Any?> {
-        return methodHookParam.args
+        return YukiHookBridge.args(methodHookParam)
     }
 
     fun getResult(): Any? {
-        return methodHookParam.result
+        return YukiHookBridge.result(methodHookParam)
     }
 
     fun setResult(result: Any?) {
-        methodHookParam.result = result
+        YukiHookBridge.setResult(methodHookParam, result)
     }
 
     fun setThrowable(throwable: Throwable) {
-        methodHookParam.throwable = throwable
+        YukiHookBridge.setThrowable(methodHookParam, throwable)
     }
 
     fun clearThrowable() {
-        methodHookParam.throwable = null
+        YukiHookBridge.setThrowable(methodHookParam, null)
     }
 
     fun throwable(): Throwable? {
-        return methodHookParam.throwable
+        return YukiHookBridge.throwable(methodHookParam)
     }
 
     fun invokeOriginal(): Any? {
-        return XposedBridge.invokeOriginalMethod(method(), thisObject(), args())
+        return YukiHookCompat.invokeOriginal(method(), nullableThisObject<Any>(), args())
     }
 
     fun invokeOriginal(args: Array<Any?>): Any? {
-        return XposedBridge.invokeOriginalMethod(method(), thisObject(), args)
+        return YukiHookCompat.invokeOriginal(method(), nullableThisObject<Any>(), args)
     }
 
     fun invokeOriginalSafe(errorCallback: Consumer<Throwable>) {
@@ -72,7 +71,7 @@ class HookAdapter(
 
     fun invokeOriginalSafe(args: Array<Any?>, errorCallback: Consumer<Throwable>) {
         runCatching {
-            setResult(XposedBridge.invokeOriginalMethod(method(), thisObject(), args))
+            setResult(YukiHookCompat.invokeOriginal(method(), nullableThisObject<Any>(), args))
         }.onFailure {
             errorCallback.accept(it)
         }

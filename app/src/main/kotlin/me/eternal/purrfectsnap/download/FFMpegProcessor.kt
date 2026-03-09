@@ -232,6 +232,7 @@ class FFMpegProcessor(
                 }
                 globalArguments += "-ar" to args.audioStreamFormat.sampleRate.toString()
                 globalArguments += "-ac" to args.audioStreamFormat.channels.toString()
+                outputArguments += "-c:a" to "pcm_s16le"
             }
             Action.MERGE_AUDIO_STREAMS -> {
                 inputArguments.clear()
@@ -240,18 +241,23 @@ class FFMpegProcessor(
                 args.inputs.forEachIndexed { index, input ->
                     inputArguments += "-i" to input
                     val offset = args.inputDelayOffsets?.get(input) ?: 0L
+                    filterParts.append("[$index:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo")
                     if (offset > 0) {
-                        filterParts.append("[$index:a]adelay=$offset|$offset[a$index];")
+                        filterParts.append(",adelay=$offset|$offset[a$index];")
                     } else {
-                        filterParts.append("[$index:a]acopy[a$index];")
+                        filterParts.append(",acopy[a$index];")
                     }
                 }
                 args.inputs.indices.forEach { index ->
                     filterParts.append("[a$index]")
                 }
-                filterParts.append("amix=inputs=${args.inputs.size}:duration=longest:normalize=0[aout]")
+                filterParts.append("amix=inputs=${args.inputs.size}:duration=longest:dropout_transition=0:normalize=1,alimiter=limit=0.95[aout]")
                 outputArguments += "-filter_complex" to "\"$filterParts\""
                 outputArguments += "-map" to "\"[aout]\""
+                outputArguments += "-c:a" to "libmp3lame"
+                outputArguments += "-b:a" to "192k"
+                outputArguments += "-ar" to "48000"
+                outputArguments += "-ac" to "2"
             }
         }
         outputArguments += args.output.absolutePath

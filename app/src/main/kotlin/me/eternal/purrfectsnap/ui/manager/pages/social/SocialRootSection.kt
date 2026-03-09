@@ -37,11 +37,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.R
+import me.eternal.purrfectsnap.common.ReceiversConfig
 import me.eternal.purrfectsnap.common.data.MessagingFriendInfo
 import me.eternal.purrfectsnap.common.data.MessagingGroupInfo
 import me.eternal.purrfectsnap.common.data.SocialScope
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
 import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
+import me.eternal.purrfectsnap.common.util.snap.SnapWidgetBroadcastReceiverHelper
 import me.eternal.purrfectsnap.storage.*
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
@@ -55,6 +57,16 @@ class SocialRootSection : Routes.Route() {
         context.coroutineScope.launch {
             friendList = context.database.getFriends(descOrder = true)
             groupList = context.database.getGroups()
+        }
+    }
+
+    private fun requestLatestSnapshot() {
+        runCatching {
+            context.androidContext.sendBroadcast(
+                SnapWidgetBroadcastReceiverHelper.create(ReceiversConfig.BRIDGE_SYNC_ACTION) {}
+            )
+        }.onFailure {
+            context.log.error("Failed to request latest social snapshot", it)
         }
     }
 
@@ -196,7 +208,17 @@ class SocialRootSection : Routes.Route() {
         var searchActive by rememberSaveable { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
+            context.database.receiveMessagingDataCallback = { friends, groups ->
+                friendList = friends
+                groupList = groups
+            }
             updateScopeLists()
+            requestLatestSnapshot()
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                context.database.receiveMessagingDataCallback = { _, _ -> }
+            }
         }
         val normalizedQuery = remember(searchQuery) { searchQuery.trim() }
         val filteredFriends = remember(friendList, normalizedQuery) {
@@ -237,7 +259,7 @@ class SocialRootSection : Routes.Route() {
                 }
             )
             if (searchActive) {
-                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"] ?: "Search"
+                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"]
                 val searchShape = RoundedCornerShape(18.dp)
                 val searchBorder = Brush.linearGradient(
                     listOf(
@@ -520,7 +542,7 @@ class SocialRootSection : Routes.Route() {
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = translation["manager.routes.social"] ?: "Social",
+                            text = translation["manager.routes.social"],
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 18.sp
@@ -631,7 +653,7 @@ class SocialRootSection : Routes.Route() {
                     fontSize = 15.sp
                 )
                 Text(
-                    text = translation["social_empty_hint"] ?: "Tap the + button to sync friends or groups.",
+                    text = translation["social_empty_hint"],
                     color = PurrfectPalette.textSecondary,
                     fontSize = 12.sp
                 )

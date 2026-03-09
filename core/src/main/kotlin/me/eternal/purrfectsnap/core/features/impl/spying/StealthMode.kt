@@ -22,7 +22,6 @@ class StealthMode : MessagingRuleFeature("StealthMode", MessagingRuleType.STEALT
 
 
     override fun init() {
-        if (getRuleState() == null) return
         val isConversationInStealthMode: (SnapUUID) -> Boolean = { canUseRule(it.toString()) }
 
         arrayOf("mediaMessagesDisplayed", "displayedMessages").forEach { methodName: String ->

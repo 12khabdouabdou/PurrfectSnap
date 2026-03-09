@@ -46,6 +46,7 @@ import me.eternal.purrfectsnap.core.action.AbstractAction
 import me.eternal.purrfectsnap.core.event.events.impl.ActivityResultEvent
 import me.eternal.purrfectsnap.core.features.impl.experiments.AddFriendSourceSpoof
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
+import me.eternal.purrfectsnap.core.util.ktx.findStaticObjectFieldByType
 import me.eternal.purrfectsnap.core.util.EvictingMap
 import me.eternal.purrfectsnap.core.wrapper.impl.Snapchatter
 import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
@@ -98,20 +99,13 @@ class ManageFriendList : AbstractAction() {
                 val sourceTypeClass = sourceType.getAsClass() ?: return@runCatching context.log.error("Could not find source type class")
                 val pageTypeClass = pageType.getAsClass() ?: return@runCatching context.log.error("Could not find page type class")
 
-                val method = f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
+                val method = f9lClass.methods.firstOrNull { it.name == addFriendMethodName }
+                    ?: f9lClass.declaredMethods.firstOrNull { it.name == addFriendMethodName }
                     ?: return@runCatching context.log.error("Could not find $addFriendMethodName method")
 
                 // Helper function to find static field by trying fallback
                 fun findStaticField(clazz: Class<*>): Any? {
-                    // Fallback: find any static field of the same type
-                    return clazz.declaredFields.firstOrNull { field ->
-                        java.lang.reflect.Modifier.isStatic(field.modifiers) && field.type == clazz
-                    }?.let { field ->
-                        runCatching {
-                            field.isAccessible = true
-                            field.get(null)?.takeIf { it.javaClass == clazz }
-                        }.getOrNull()
-                    }
+                    return clazz.findStaticObjectFieldByType(clazz)
                 }
 
                 // Get enum constant for USERNAME

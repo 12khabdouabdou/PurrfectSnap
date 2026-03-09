@@ -1,6 +1,5 @@
 package me.eternal.purrfectsnap.core.features.impl
 
-import de.robv.android.xposed.XposedHelpers
 import me.eternal.purrfectsnap.core.features.Feature
 
 import me.eternal.purrfectsnap.core.util.hook.HookStage
@@ -126,8 +125,10 @@ class ConfigurationOverride : Feature("Configuration Override") {
             ) { param ->
                 val enumData = param.arg<Any>(0)
                 val key = enumData.toString()
-                val setValue: (Any?) -> Unit = { value ->
-                    val valueHolder = XposedHelpers.callMethod(enumData, configEnumMapping["getValue"]?.getAsString())
+                val setValue: (Any?) -> Unit = setValue@{ value ->
+                    val valueHolder = enumData::class.java.methods.firstOrNull {
+                        it.name == configEnumMapping["getValue"]?.getAsString() && it.parameterCount == 0
+                    }?.invoke(enumData) ?: return@setValue
                     valueHolder.setObjectField(configEnumMapping["defaultValueField"]?.getAsString()!!, value)
                 }
 

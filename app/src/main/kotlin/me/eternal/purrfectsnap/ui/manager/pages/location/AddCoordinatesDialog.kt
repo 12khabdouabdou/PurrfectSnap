@@ -1,13 +1,20 @@
 package me.eternal.purrfectsnap.ui.manager.pages.location
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -16,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import me.eternal.purrfectsnap.bridge.location.LocationCoordinates
 import me.eternal.purrfectsnap.common.bridge.wrapper.LocaleWrapper
+import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.AlertDialogs
 
 
@@ -38,52 +46,103 @@ fun AddCoordinatesDialog(
 
     alertDialogs.DefaultDialogCard {
         val focusRequester = remember { FocusRequester() }
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+        val fieldColors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.White.copy(alpha = 0.08f),
+            unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedLabelColor = PurrfectPalette.textSecondary,
+            unfocusedLabelColor = PurrfectPalette.textSecondary,
+            cursorColor = PurrfectPalette.glowSecondary,
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White
+        )
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = Color.Transparent,
+            tonalElevation = 0.dp,
+            shadowElevation = 12.dp
         ) {
-            Text(translation["save_coordinates_dialog_title"], fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            OutlinedTextField(
+            Column(
                 modifier = Modifier
-                    .focusRequester(focusRequester),
-                value = savedName,
-                onValueChange = { savedName = it },
-                label = { Text(translation["saved_name_dialog_hint"]) }
-            )
-
-            LaunchedEffect(Unit) {
-                delay(200)
-                focusRequester.requestFocus()
-            }
-
-            OutlinedTextField(
-                value = savedLatitude,
-                onValueChange = { savedLatitude = it },
-                label = { Text(translation["latitude_dialog_hint"]) }
-            )
-            OutlinedTextField(
-                value = savedLongitude,
-                onValueChange = { savedLongitude = it },
-                label = { Text(translation["longitude_dialog_hint"]) }
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.End
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                PurrfectPalette.cardOverlayColor.copy(alpha = 0.98f),
+                                Color(0xFF1A143A).copy(alpha = 0.94f)
+                            )
+                        ),
+                        RoundedCornerShape(24.dp)
+                    )
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Button(
-                    onClick = {
-                        confirm(LocationCoordinates().apply {
-                            this.name = savedName.text
-                            this.latitude = savedLatitude.toDoubleOrNull() ?: 0.0
-                            this.longitude = savedLongitude.toDoubleOrNull() ?: 0.0
-                        })
-                    },
-                    enabled = savedName.text.isNotBlank() && savedLatitude.isNotBlank() && savedLongitude.isNotBlank()
+                Text(
+                    text = translation["save_coordinates_dialog_title"],
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester),
+                    value = savedName,
+                    onValueChange = { savedName = it },
+                    label = { Text(translation["saved_name_dialog_hint"]) },
+                    colors = fieldColors,
+                    shape = RoundedCornerShape(18.dp),
+                    singleLine = true
+                )
+
+                LaunchedEffect(Unit) {
+                    delay(200)
+                    focusRequester.requestFocus()
+                }
+
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = savedLatitude,
+                    onValueChange = { savedLatitude = it },
+                    label = { Text(translation["latitude_dialog_hint"]) },
+                    colors = fieldColors,
+                    shape = RoundedCornerShape(18.dp),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = savedLongitude,
+                    onValueChange = { savedLongitude = it },
+                    label = { Text(translation["longitude_dialog_hint"]) },
+                    colors = fieldColors,
+                    shape = RoundedCornerShape(18.dp),
+                    singleLine = true
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Text(translation["save_dialog_button"])
+                    Button(
+                        onClick = {
+                            confirm(LocationCoordinates().apply {
+                                this.name = savedName.text
+                                this.latitude = savedLatitude.toDoubleOrNull() ?: 0.0
+                                this.longitude = savedLongitude.toDoubleOrNull() ?: 0.0
+                            })
+                        },
+                        enabled = savedName.text.isNotBlank() && savedLatitude.isNotBlank() && savedLongitude.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
+                            contentColor = Color.White,
+                            disabledContainerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.16f),
+                            disabledContentColor = Color.White.copy(alpha = 0.6f)
+                        )
+                    ) {
+                        Text(translation["save_dialog_button"])
+                    }
                 }
             }
         }

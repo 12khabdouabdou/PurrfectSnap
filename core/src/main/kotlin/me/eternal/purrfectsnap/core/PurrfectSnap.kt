@@ -17,6 +17,7 @@ import me.eternal.purrfectsnap.bridge.SyncCallback
 import me.eternal.purrfectsnap.common.Constants
 import me.eternal.purrfectsnap.common.ReceiversConfig
 import me.eternal.purrfectsnap.common.action.EnumAction
+import me.eternal.purrfectsnap.common.data.FriendLinkType
 import me.eternal.purrfectsnap.common.bridge.FileHandleScope
 import me.eternal.purrfectsnap.common.bridge.InternalFileHandleType
 import me.eternal.purrfectsnap.common.bridge.toWrapper
@@ -52,6 +53,7 @@ class PurrfectSnap {
     private var isBridgeInitialized = false
     private var android9ValdiBindDisabled = false
     private var android9ValdiBindDisableLogged = false
+    private val nativeLateInitTriggered = java.util.concurrent.atomic.AtomicBoolean(false)
 
     private fun hookMainActivity(methodName: String, stage: HookStage = HookStage.AFTER, block: Activity.(param: HookAdapter) -> Unit) {
         Activity::class.java.hook(methodName, stage, { isBridgeInitialized }) { param ->
@@ -391,6 +393,7 @@ class PurrfectSnap {
             lateinit var unhook: () -> Unit
             hook(HookStage.AFTER) { param ->
                 if (param.arg<String>(1) != "client") return@hook
+                if (!nativeLateInitTriggered.compareAndSet(false, true)) return@hook
                 unhook()
                 lateInit()
             }.also { unhook = { it.unhook() } }
@@ -452,21 +455,29 @@ class PurrfectSnap {
                 )
             }
 
-            val friends = feedEntries.filter { it.conversationType == 0 }.mapNotNull {
-                val friendUserId = it.friendUserId ?: it.participants?.firstOrNull { it != appContext.database.myUserId }
-                ?: return@mapNotNull null
-                val friend = appContext.database.getFriendInfo(friendUserId) ?: return@mapNotNull null
-
-                MessagingFriendInfo(
-                    friendUserId,
-                    it.key,
-                    friend.displayName,
-                    friend.mutableUsername ?: friend.usernameForSorting!!,
-                    friend.bitmojiAvatarId,
-                    friend.bitmojiSelfieId,
-                    streaks = null
-                )
-            }
+            val friends = appContext.database.getAllFriends()
+                .asSequence()
+                .filter { friend ->
+                    friend.userId != null && when (FriendLinkType.fromValue(friend.friendLinkType)) {
+                        FriendLinkType.DELETED,
+                        FriendLinkType.BLOCKED,
+                        FriendLinkType.SUGGESTED -> false
+                        else -> true
+                    }
+                }
+                .mapNotNull { friend ->
+                    val userId = friend.userId ?: return@mapNotNull null
+                    MessagingFriendInfo(
+                        userId = userId,
+                        dmConversationId = appContext.database.getDMConversationId(userId),
+                        displayName = friend.displayName,
+                        mutableUsername = friend.mutableUsername ?: friend.usernameForSorting ?: return@mapNotNull null,
+                        bitmojiId = friend.bitmojiAvatarId,
+                        selfieId = friend.bitmojiSelfieId,
+                        streaks = null
+                    )
+                }
+                .toList()
 
             appContext.bridgeClient.passGroupsAndFriends(groups, friends)
         }
@@ -483,9 +494,15 @@ class PurrfectSnap {
         appContext.bridgeClient.sync(object : SyncCallback.Stub() {
             override fun syncFriend(uuid: String): String? {
                 return appContext.database.getFriendInfo(uuid)?.let {
+                    if (FriendLinkType.fromValue(it.friendLinkType) in setOf(
+                            FriendLinkType.DELETED,
+                            FriendLinkType.BLOCKED,
+                            FriendLinkType.SUGGESTED
+                        )
+                    ) return@let null
                     MessagingFriendInfo(
                         userId = it.userId!!,
-                        dmConversationId = null,
+                        dmConversationId = appContext.database.getDMConversationId(it.userId!!),
                         displayName = it.displayName,
                         mutableUsername = it.mutableUsername!!,
                         bitmojiId = it.bitmojiAvatarId,

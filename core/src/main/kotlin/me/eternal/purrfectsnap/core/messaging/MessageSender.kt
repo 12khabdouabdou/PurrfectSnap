@@ -89,7 +89,15 @@ class MessageSender(
     }
 
     private fun internalSendMessage(conversations: List<SnapUUID>, localMessageContentTemplate: String, callback: Any) {
-        val sendMessageWithContentMethod = context.classCache.conversationManager.declaredMethods.first { it.name == "sendMessageWithContent" }
+        val sendMessageWithContentMethod = sequence {
+            var current: Class<*>? = context.classCache.conversationManager
+            while (current != null && current != Any::class.java && current != Object::class.java) {
+                yield(current)
+                current = current.superclass
+            }
+        }.flatMap { clazz -> clazz.declaredMethods.asSequence() }
+            .firstOrNull { it.name == "sendMessageWithContent" }
+            ?: throw NoSuchMethodException("sendMessageWithContent")
 
         val localMessageContent = context.gson.fromJson(localMessageContentTemplate, context.classCache.localMessageContent)
         val messageDestinations = MessageDestinations(AbstractWrapper.newEmptyInstance(context.classCache.messageDestinations)).also {

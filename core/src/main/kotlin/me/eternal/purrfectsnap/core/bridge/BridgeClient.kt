@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.*
 import android.util.Log
-import de.robv.android.xposed.XposedHelpers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Semaphore
@@ -106,17 +105,17 @@ class BridgeClient(
                                         this@BridgeClient
                                     )
                                 } else {
-                                    XposedHelpers.callMethod(
+                                    val handler = Handler(HandlerThread("BridgeClient").apply { start() }.looper)
+                                    this::class.java.methods.firstOrNull {
+                                        it.name == "bindServiceAsUser" && it.parameterTypes.size == 5
+                                    }?.invoke(
                                         this,
-                                        "bindServiceAsUser",
                                         intent,
                                         this@BridgeClient,
                                         Context.BIND_AUTO_CREATE,
-                                        Handler(HandlerThread("BridgeClient").apply {
-                                            start()
-                                        }.looper),
+                                        handler,
                                         Process.myUserHandle()
-                                    )
+                                    ) ?: throw NoSuchMethodException("bindServiceAsUser")
                                 }
                             }.onFailure {
                                 onFailure(it)

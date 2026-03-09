@@ -1,3 +1,63 @@
+## v1.3.9
+- Fix: Improve ads & metrics blocking
+- Fix: Hide Typing Notifications & Hide Bitmoji Presence
+- Fix: Many fixes & improvements
+
+## v1.3.8
+- Fix: Download profile picture button shape
+- New: Auto Patcher(Jingmatrix Lspatch) updated to v0.8
+- Fix: Video playback rate slider mobility
+- New: Redesign Convert Message dialog
+- Fix: Media File Picker issues
+- Fix: REQUEST_NOT_SUCCESSFUL issues while updating PurrfectSnap for some devices
+
+## v1.3.6
+- Fix: Crash issues for some devices
+- Fix: Scroll state
+- New: Redesign profile picture downloader & spotlight comments username dialog
+- New: Change the profile picture download button to an icon
+- New: Redesign playback slider & saved coordinates buttons
+- Fix: Add missing translations(en_US only for now, all languages to be supported in the next update)
+- Fix: Deadosobjectexception
+
+## v1.3.5
+- New: Added support for Snap versions upto v13.81(server side update, requires v1.3.2 and above)
+- New: Migration from libxposed API to YukiHook
+- New: Switch to kavaref
+- Fix: better location overlay crash
+- Fix: better location icon position for newer snap versions
+- New: Story counter(tq to RSR)
+- New: Story Source(tq to RSR)
+- Fix: Snaps getting saved even if the option is unchecked(tq to AhmedRaza)
+- Fix: Chat edit history UI(tq to AhmedRaza)
+- Fix: Media quality(tq to RSR)
+- New: Remove support for Android 9 and 10
+
+## v1.3.2
+- ⚠️ ALL USERS ARE REQUESTED TO UPDATE TO THIS VERSION AS SOON AS POSSIBLE!⚠️
+- Fix: Crucial fixes
+- Fix: Media File Picker and added mapper(tq to RSR)
+
+## v1.3.0
+- New: Bulk Manage Friend Requests(tq to RSR)
+- Fix: Bulk Action Progress Dialogs(tq to RSR)
+- Fix: Audio note send override(tq to RSR)
+- Fix: Improve PurrAura Active indicator(tq to RSR)
+- Fix: Prevent Story Rewatch(tq to Brandon)
+- Fix: Location search(tq to Brandon)
+- Fix: story download & decryption(tq to Hazelnut)
+- New: Add confirmation dialogs for Reset PurrfectSnap option
+- New: Google Maps Integration(tq to Brandon)
+- Fix: support more translation keys
+- Fix: several inconsistencies
+- Fix: add proper support for scripts
+- New: Swap wiki with new website
+- Fix: Custom emoji is now stable!
+- Fix: Poor Call recorder quality
+- New: order feature for chat exports
+- Fix: Gemini Auto Reply(tq to RSR)
+- New: Spotlight Creator Info(tq to RSR)
+
 ## v1.2.6
 - Fix: All translations are now high quality and up to date
 

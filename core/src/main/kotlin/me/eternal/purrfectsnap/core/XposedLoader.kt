@@ -10,13 +10,15 @@ import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
 
 class XposedLoader : IXposedHookLoadPackage {
-    override fun handleLoadPackage(p0: XC_LoadPackage.LoadPackageParam) {
-        if (p0.packageName != Constants.SNAPCHAT_PACKAGE_NAME) return
+    override fun handleLoadPackage(param: XC_LoadPackage.LoadPackageParam) {
+        if (param.packageName != Constants.SNAPCHAT_PACKAGE_NAME) return
         // prevent loading in sub-processes
-        if (p0.processName.contains(":")) return
-        XposedBridge.log("Loading PurrfectSnap v${BuildConfig.VERSION_NAME}#${BuildConfig.GIT_HASH} (package: ${BuildConfig.APPLICATION_ID})")
-        Application::class.java.hook("attach", HookStage.BEFORE) { param ->
-            PurrfectSnap().init(param.arg(0))
+        if (param.processName.contains(":")) return
+        XposedBridge.log(
+            "Loading PurrfectSnap v${BuildConfig.VERSION_NAME}#${BuildConfig.GIT_HASH} (package: ${BuildConfig.APPLICATION_ID})"
+        )
+        Application::class.java.hook("attach", HookStage.BEFORE) { hookParam ->
+            PurrfectSnap().init(hookParam.arg(0))
         }
     }
 }

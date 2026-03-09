@@ -41,6 +41,7 @@ class ClassMapper(
             FoldingLayoutMapper(),
             PlatformClientAttestationMapper(),
             ChatMediaDrawerMapper(),
+            PlatformPresenceActionWrapperMapper(),
         )
     }
 

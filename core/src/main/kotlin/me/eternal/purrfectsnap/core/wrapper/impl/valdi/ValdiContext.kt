@@ -1,6 +1,6 @@
 package me.eternal.purrfectsnap.core.wrapper.impl.valdi
 
-import de.robv.android.xposed.XposedHelpers
+import me.eternal.purrfectsnap.core.util.ktx.getObjectField
 import me.eternal.purrfectsnap.core.wrapper.AbstractWrapper
 import java.lang.ref.WeakReference
 import java.lang.reflect.Proxy
@@ -12,7 +12,7 @@ class ValdiContext(obj: Any): AbstractWrapper(obj) {
     val componentContext by field<WeakReference<Any?>>("componentContext")
 
     val viewModelLegacy: Any?
-        get() = runCatching { XposedHelpers.getObjectField(instanceNonNull(), "viewModel") }.getOrNull()
+        get() = runCatching { instanceNonNull().getObjectField("viewModel") }.getOrNull()
             ?: instanceNonNull()::class.java.methods.firstOrNull { it.name == "getViewModel" && it.parameterTypes.isEmpty() }?.invoke(instanceNonNull())
 
     fun enqueueNextRenderCallback(callback: () -> Unit) {

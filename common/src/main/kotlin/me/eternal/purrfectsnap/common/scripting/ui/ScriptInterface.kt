@@ -1,18 +1,27 @@
 package me.eternal.purrfectsnap.common.scripting.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.common.logger.AbstractLogger
 import me.eternal.purrfectsnap.common.scripting.ui.components.Node
@@ -66,7 +75,7 @@ private fun DrawNode(node: Node) {
         Text(
             text = cachedAttributes["label"] as String,
             fontSize = (cachedAttributes["fontSize"]?.toString()?.toInt() ?: 14).sp,
-            color = (cachedAttributes["color"] as? Long)?.let { Color(it) } ?: Color.Unspecified
+            color = (cachedAttributes["color"] as? Long)?.let { Color(it) } ?: Color.White
         )
     }
 
@@ -130,7 +139,15 @@ private fun DrawNode(node: Node) {
                                 node.setAttribute("state", state)
                                 (cachedAttributes["callback"] as? (Boolean) -> Unit)?.let { it(state) }
                             }
-                        }
+                        },
+                        colors = androidx.compose.material3.SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = Color(0xFF8C7BFF).copy(alpha = 0.66f),
+                            uncheckedThumbColor = Color.White.copy(alpha = 0.9f),
+                            uncheckedTrackColor = Color.White.copy(alpha = 0.20f),
+                            checkedBorderColor = Color.Transparent,
+                            uncheckedBorderColor = Color.Transparent
+                        )
                     )
                 }
                 NodeType.SLIDER -> {
@@ -148,26 +165,55 @@ private fun DrawNode(node: Node) {
                         },
                         valueRange = (cachedAttributes["min"] as Int).toFloat()..(cachedAttributes["max"] as Int).toFloat(),
                         steps = cachedAttributes["step"] as Int,
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color(0xFF8C7BFF),
+                            activeTrackColor = Color(0xFF8C7BFF).copy(alpha = 0.72f),
+                            inactiveTrackColor = Color.White.copy(alpha = 0.20f),
+                        )
                     )
                 }
                 NodeType.BUTTON -> {
-                    OutlinedButton(onClick = {
-                        runCallbackSafe {
-                            (cachedAttributes["callback"] as? () -> Unit)?.let { it() }
-                        }
-                    }) {
-                        NodeLabel()
+                    val buttonShape = RoundedCornerShape(999.dp)
+                    Box(
+                        modifier = Modifier
+                            .clip(buttonShape)
+                            .background(Color.White.copy(alpha = 0.08f), buttonShape)
+                            .border(1.dp, Color.White.copy(alpha = 0.20f), buttonShape)
+                            .clickable(
+                                indication = null,
+                                interactionSource = remember { MutableInteractionSource() },
+                                onClick = {
+                                    runCallbackSafe {
+                                        (cachedAttributes["callback"] as? () -> Unit)?.let { it() }
+                                    }
+                                }
+                            )
+                            .padding(horizontal = 16.dp, vertical = 9.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = cachedAttributes["label"] as String,
+                            color = Color.White,
+                            fontSize = (cachedAttributes["fontSize"]?.toString()?.toInt() ?: 14).sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
                 NodeType.TEXT_INPUT -> {
                     var textInputValue by remember {
                         mutableStateOf(cachedAttributes["value"].toString())
                     }
-                    TextField(
+                    val inputShape = RoundedCornerShape(14.dp)
+                    BasicTextField(
                         value = textInputValue,
                         readOnly = cachedAttributes["readonly"] as? Boolean ?: false,
                         singleLine = cachedAttributes["singleLine"] as? Boolean ?: true,
                         maxLines = cachedAttributes["maxLines"] as? Int ?: 1,
+                        textStyle = TextStyle(
+                            color = Color.White,
+                            fontSize = 14.sp
+                        ),
+                        cursorBrush = SolidColor(Color(0xFF8C7BFF)),
                         onValueChange = { value ->
                             runCallbackSafe {
                                 textInputValue = value
@@ -175,7 +221,24 @@ private fun DrawNode(node: Node) {
                                 (cachedAttributes["callback"] as? (String) -> Unit)?.let { it(value) }
                             }
                         },
-                        placeholder = { Text(cachedAttributes["placeholder"].toString()) }
+                        decorationBox = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.White.copy(alpha = 0.08f), inputShape)
+                                    .border(1.dp, Color.White.copy(alpha = 0.18f), inputShape)
+                                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                            ) {
+                                if (textInputValue.isEmpty()) {
+                                    Text(
+                                        text = cachedAttributes["placeholder"].toString(),
+                                        color = Color.White.copy(alpha = 0.6f),
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
                     )
                 }
                 else -> {}

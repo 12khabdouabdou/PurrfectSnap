@@ -245,7 +245,7 @@ class ManageFriendTrackerReposSection: Routes.Route() {
                                             }
                                         }.onFailure {
                                             context.log.error("Failed to add repository", it)
-                                            context.shortToast(translation.format("add_repo_failed_toast", "message" to (it.message ?: "Unknown")))
+                                            context.shortToast(translation.format("add_repo_failed_toast", "message" to (it.message ?: context.translation["common.unknown"])))
                                         }
                                         loading = false
                                     }
@@ -282,7 +282,7 @@ class ManageFriendTrackerReposSection: Routes.Route() {
                 .background(PurrfectPalette.backgroundGradient)
         ) {
             FloatingTopBar(
-                title = routeInfo.translatedKey?.value ?: (translation["title"] ?: "Repositories"),
+                title = routeInfo.translatedKey?.value ?: translation["title"],
                 onBack = { routes.navController.popBackStack() },
                 modifier = Modifier
                     .zIndex(2f)

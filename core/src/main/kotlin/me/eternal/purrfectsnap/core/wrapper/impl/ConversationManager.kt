@@ -15,7 +15,15 @@ class ConversationManager(
     val context: ModContext,
     obj: Any
 ) : AbstractWrapper(obj) {
-    private fun findMethodByName(name: String) = context.classCache.conversationManager.declaredMethods.find { it.name == name } ?: throw RuntimeException("Could not find method $name")
+    private fun findMethodByName(name: String) = sequence {
+        var current: Class<*>? = context.classCache.conversationManager
+        while (current != null && current != Any::class.java && current != Object::class.java) {
+            yield(current)
+            current = current.superclass
+        }
+    }.flatMap { clazz -> clazz.declaredMethods.asSequence() }
+        .firstOrNull { it.name == name }
+        ?: throw RuntimeException("Could not find method $name")
 
     private val updateMessageMethod by lazy { findMethodByName("updateMessage") }
     private val fetchConversationWithMessagesPaginatedMethod by lazy { findMethodByName("fetchConversationWithMessagesPaginated") }

@@ -91,6 +91,7 @@ import com.google.gson.reflect.TypeToken
 import me.eternal.purrfectsnap.common.ui.TopBarActionButton
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.rememberRouteLazyListState
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.*
 import org.json.JSONArray
@@ -112,7 +113,7 @@ class FeaturesRootSection : Routes.Route() {
                 } ?: routeInfo.translatedKey?.value
             }
             SEARCH_FEATURE_ROUTE -> {
-                translation["search_button"] ?: "Search"
+                translation["search_button"]
             }
             else -> {
                 routeInfo.translatedKey?.value
@@ -134,7 +135,10 @@ class FeaturesRootSection : Routes.Route() {
         val containers = mutableMapOf<String, PropertyPair<*>>()
         fun queryContainerRecursive(container: ConfigContainer) {
             container.properties.forEach {
-                if (it.key.dataType.type == DataProcessors.Type.CONTAINER) {
+                if (
+                    it.key.dataType.type == DataProcessors.Type.CONTAINER &&
+                    !it.key.params.flags.contains(ConfigFlag.HIDDEN)
+                ) {
                     containers[it.key.name] = PropertyPair(it.key, it.value)
                     queryContainerRecursive(it.value.get() as ConfigContainer)
                 }
@@ -155,10 +159,15 @@ class FeaturesRootSection : Routes.Route() {
         properties
     }
 
+    private fun isSearchVisibleProperty(propertyKey: PropertyKey<*>): Boolean {
+        return !propertyKey.params.flags.contains(ConfigFlag.HIDDEN)
+    }
+
     private data class SearchEntry(val keyword: String, val tokens: List<String>)
 
     private fun buildSearchEntries(): List<SearchEntry> {
         return allProperties.keys.mapNotNull { key ->
+            if (!isSearchVisibleProperty(key)) return@mapNotNull null
             val name = context.translation[key.propertyName()]
             val description = context.translation[key.propertyDescription()]
             val tokens = listOfNotNull(name, description, key.name).map { it.trim() }.filter { it.isNotEmpty() }
@@ -246,7 +255,10 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = {
-        Container(context.config.root)
+        Container(
+            configContainer = context.config.root,
+            stateKey = "${routeInfo.id}:root"
+        )
     }
 
     override val customComposables: NavGraphBuilder.() -> Unit = {
@@ -269,6 +281,7 @@ class FeaturesRootSection : Routes.Route() {
                     val containerSubtitle = translation[it.key.propertyDescription()]
                     Container(
                         configContainer = it.value.get() as ConfigContainer,
+                        stateKey = "${routeInfo.id}:container:$containerName",
                         sectionTitle = containerTitle,
                         sectionSubtitle = containerSubtitle,
                         onBack = { routes.navController.popBackStack() }
@@ -280,13 +293,16 @@ class FeaturesRootSection : Routes.Route() {
         composable(SEARCH_FEATURE_ROUTE) { backStackEntry ->
             backStackEntry.arguments?.getString("keyword")?.let { keyword ->
                 val properties = allProperties.filter {
-                    it.key.name.contains(keyword, ignoreCase = true) ||
+                    isSearchVisibleProperty(it.key) && (
+                        it.key.name.contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyName()].contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyDescription()].contains(keyword, ignoreCase = true)
+                    )
                 }.map { PropertyPair(it.key, it.value) }
 
                 PropertiesView(
                     properties = properties,
+                    stateKey = "${routeInfo.id}:search:$keyword",
                     isSearchResults = true,
                     searchKeyword = keyword,
                     enableGlobalSearch = true,
@@ -668,7 +684,7 @@ class FeaturesRootSection : Routes.Route() {
                                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f))
                             ) {
                                 Text(
-                                    text = "$messageCount messages",
+                                    text = translation.format("search_results_count", "count" to messageCount.toString()),
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.White
@@ -1014,7 +1030,7 @@ class FeaturesRootSection : Routes.Route() {
         },
         placeholder = {
             Text(
-                text = translation["search_button"] ?: "Search",
+                text = translation["search_button"],
                 color = Color(0xFFE0DCFF)
             )
         },
@@ -1060,9 +1076,11 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun SensitiveDataDialog(
         onDismiss: () -> Unit,
-        onConfirm: (exportSensitiveData: Boolean) -> Unit
+        onConfirm: (exportSensitiveData: Boolean, includeSavedLocations: Boolean) -> Unit
     ) {
         Dialog(onDismissRequest = onDismiss) {
+            val includeSavedLocations = remember { mutableStateOf(false) }
+            
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 color = Color.White.copy(alpha = 0.06f),
@@ -1100,12 +1118,36 @@ class FeaturesRootSection : Routes.Route() {
                             color = PurrfectPalette.textSecondary,
                             modifier = Modifier.padding(horizontal = 6.dp)
                         )
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = context.translation["include_saved_locations"],
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White
+                            )
+                            val hapticFeedback = LocalHapticFeedback.current
+                            Switch(
+                                checked = includeSavedLocations.value,
+                                onCheckedChange = { 
+                                    if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    }
+                                    includeSavedLocations.value = it 
+                                },
+                                colors = purrfectSwitchColors()
+                            )
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                         ) {
                             Button(
-                                onClick = { onConfirm(false) },
+                                onClick = { onConfirm(false, includeSavedLocations.value) },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Color.White.copy(alpha = 0.08f),
                                     contentColor = Color.White
@@ -1114,7 +1156,7 @@ class FeaturesRootSection : Routes.Route() {
                                 Text(context.translation["button.negative"])
                             }
                             Button(
-                                onClick = { onConfirm(true) },
+                                onClick = { onConfirm(true, includeSavedLocations.value) },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.32f),
                                     contentColor = Color.White
@@ -1244,10 +1286,11 @@ class FeaturesRootSection : Routes.Route() {
         if (showExportDialog) {
             SensitiveDataDialog(
                 onDismiss = { showExportDialog = false },
-                onConfirm = { exportSensitiveData ->
+                onConfirm = { exportSensitiveData, includeSavedLocations ->
                     showExportDialog = false
                     routes.configExportSummary.navigate {
                         put("exportSensitiveData", exportSensitiveData.toString())
+                        put("includeSavedLocations", includeSavedLocations.toString())
                     }
                 }
             )
@@ -1283,7 +1326,7 @@ class FeaturesRootSection : Routes.Route() {
 
         val headerTitle = activeSectionTitle ?: translation["manager.routes.features"]
         val subtitleText = when {
-            isSearchResults -> translation["search_button"] ?: "Search"
+            isSearchResults -> translation["search_button"]
             !activeSectionSubtitle.isNullOrBlank() -> activeSectionSubtitle
             else -> translation["manager.sections.features.subtitle"] ?: ""
         }
@@ -1337,7 +1380,7 @@ class FeaturesRootSection : Routes.Route() {
                                 IconButton(onClick = onBack) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = translation["button.back"] ?: "Back",
+                                        contentDescription = context.translation["common.back"],
                                         tint = Color.White
                                     )
                                 }
@@ -1358,7 +1401,7 @@ class FeaturesRootSection : Routes.Route() {
                                         .weight(1f)
                                         .focusRequester(focusRequester),
                                     singleLine = true,
-                                    placeholder = { Text(text = translation["search_button"] ?: "Search", color = Color(0xFFE0DCFF)) },
+                                    placeholder = { Text(text = translation["search_button"], color = Color(0xFFE0DCFF)) },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = Icons.Filled.Search,
@@ -1516,7 +1559,7 @@ class FeaturesRootSection : Routes.Route() {
                                     ) {
                                         Icon(Icons.Filled.Delete, contentDescription = null, tint = Color.White.copy(alpha = 0.85f))
                                         Spacer(Modifier.width(6.dp))
-                                        Text(text = translation["clear_history"] ?: "Clear history", color = Color.White)
+                                        Text(text = translation["clear_history"], color = Color.White)
                                     }
                                 }
                             }
@@ -1531,6 +1574,7 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun PropertiesView(
         properties: List<PropertyPair<*>>,
+        stateKey: String,
         isSearchResults: Boolean = false,
         activeSectionTitle: String? = null,
         activeSectionSubtitle: String? = null,
@@ -1540,13 +1584,13 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         val density = LocalDensity.current
         var controlsHeight by remember { mutableStateOf(96.dp) }
-        val listState = rememberLazyListState()
+        val listState = rememberRouteLazyListState(stateKey)
         val sharedSearchHistory = remember { mutableStateListOf<String>().apply { addAll(loadSearchHistory()) } }
         var liveSearchQuery by rememberSaveable { mutableStateOf(searchKeyword.orEmpty()) }
         val isActiveSearch = isSearchResults || liveSearchQuery.isNotBlank()
         val globalSearchProperties = remember(enableGlobalSearch) {
             if (enableGlobalSearch) {
-                allProperties.map { PropertyPair(it.key, it.value) }
+                allProperties.filter { isSearchVisibleProperty(it.key) }.map { PropertyPair(it.key, it.value) }
             } else {
                 emptyList()
             }
@@ -1645,6 +1689,7 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     private fun Container(
         configContainer: ConfigContainer,
+        stateKey: String,
         sectionTitle: String? = null,
         sectionSubtitle: String? = null,
         searchKeyword: String? = null,
@@ -1656,6 +1701,7 @@ class FeaturesRootSection : Routes.Route() {
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 }
             },
+            stateKey = stateKey,
             activeSectionTitle = sectionTitle,
             activeSectionSubtitle = sectionSubtitle,
             searchKeyword = searchKeyword,

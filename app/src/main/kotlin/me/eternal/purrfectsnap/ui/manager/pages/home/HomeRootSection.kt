@@ -46,13 +46,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Schedule
@@ -137,6 +137,7 @@ class HomeRootSection : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.sections.home") }
 
     companion object {
+        private const val QUICK_TILES_INITIALIZED_PREF = "quick_tiles_initialized"
         val cardMargin = 10.dp
         val pageBackgroundGradient = Brush.verticalGradient(
             listOf(
@@ -408,7 +409,7 @@ class HomeRootSection : Routes.Route() {
         onUpdateAction: () -> Unit,
         channelLabel: String,
         isPurrAuraActive: Boolean,
-        onWikiClick: () -> Unit,
+        onWebsiteClick: () -> Unit,
         onTelegramClick: () -> Unit,
         onGithubClick: () -> Unit,
         authorName: String,
@@ -649,15 +650,15 @@ class HomeRootSection : Routes.Route() {
                     ) {
                         Button(
                             modifier = Modifier.weight(1f),
-                            onClick = onWikiClick,
+                            onClick = onWebsiteClick,
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.White,
                                 contentColor = Color(0xFF1B152E)
                             )
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Filled.Language, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = translation["wiki_button"], maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(text = "Site", maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         OutlinedButton(
                             modifier = Modifier.weight(1f),
@@ -736,8 +737,25 @@ class HomeRootSection : Routes.Route() {
         val avenirNext = remember {
             FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
         }
-        val selectedTiles = rememberAsyncMutableStateList(defaultValue = listOf()) {
-            context.database.getQuickTiles().filter { it.isNotBlank() }
+        val prefs = remember { context.sharedPreferences }
+        val allQuickTileNames = remember(cards) { cards.keys.map { it.first } }
+        val selectedTiles = rememberAsyncMutableStateList(defaultValue = allQuickTileNames) {
+            val storedTiles = context.database.getQuickTiles().filter { it.isNotBlank() }
+            val hasInitializedQuickTiles = prefs.getBoolean(QUICK_TILES_INITIALIZED_PREF, false)
+            when {
+                storedTiles.isNotEmpty() -> {
+                    if (!hasInitializedQuickTiles) {
+                        prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
+                    }
+                    storedTiles
+                }
+                hasInitializedQuickTiles -> storedTiles
+                else -> {
+                    context.database.setQuickTiles(allQuickTileNames)
+                    prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
+                    allQuickTileNames
+                }
+            }
         }
         val updateChannel = context.config.root.global.updateSettings.updateChannel.getNullable() ?: "stable"
         val channelLabel = if (updateChannel == "prerelease") translation["channel_label_prerelease"] else translation["channel_label_stable"]
@@ -952,9 +970,9 @@ class HomeRootSection : Routes.Route() {
                     onUpdateAction = onUpdateButtonClick,
                     channelLabel = channelLabel,
                     isPurrAuraActive = isPurrAuraActive,
-                    onWikiClick = {
+                    onWebsiteClick = {
                         context.androidContext.openLink(
-                            "https://github.com/particle-box/PurrfectSnap/wiki",
+                            "https://purrfectsnap.vercel.app/",
                             context.translation["toast_open_link_failed"]
                         )
                     },
@@ -1177,17 +1195,18 @@ class HomeRootSection : Routes.Route() {
         if (showChangelogDialog && latestUpdate != null) {
             AestheticDialog(
                 onDismissRequest = { showChangelogDialog = false },
-                title = "Changelog",
+                title = translation["changelog_dialog_title"],
                 text = "",
                 icon = Icons.Filled.Info,
-                confirmButtonText = "Update",
+                confirmButtonText = translation["changelog_dialog_update_button"],
                 onConfirm = {
                     showChangelogDialog = false
                     handleUpdateAction()
                 },
-                dismissButtonText = "Cancel",
+                dismissButtonText = translation["changelog_dialog_cancel_button"],
                 onDismiss = { showChangelogDialog = false },
                 confirmEnabled = !changelogLoading,
+                showCloseButton = false,
                 customContent = {
                     Column(
                         modifier = Modifier
@@ -1210,7 +1229,7 @@ class HomeRootSection : Routes.Route() {
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    text = "Loading changelog…",
+                                    text = translation["changelog_dialog_loading"],
                                     color = Color.White,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -1219,7 +1238,7 @@ class HomeRootSection : Routes.Route() {
 
                         changelogError != null -> {
                             Text(
-                                text = changelogError ?: "Failed to load changelog",
+                                text = changelogError ?: translation["changelog_dialog_error"],
                                 color = MaterialTheme.colorScheme.error,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -1227,7 +1246,7 @@ class HomeRootSection : Routes.Route() {
 
                         else -> {
                             Text(
-                                text = changelogText ?: "Changelog not available",
+                                text = changelogText ?: translation["changelog_dialog_empty"],
                                 color = PurrfectPalette.textPrimary,
                                 fontSize = 14.sp,
                                 lineHeight = 20.sp
@@ -1242,12 +1261,13 @@ class HomeRootSection : Routes.Route() {
         if (showAnnouncementsDialog) {
             AestheticDialog(
                 onDismissRequest = { showAnnouncementsDialog = false },
-                title = "Announcements",
+                title = translation["announcements_dialog_title"],
                 text = "",
                 icon = Icons.Filled.Info,
-                confirmButtonText = "Close",
+                confirmButtonText = translation["announcements_dialog_close_button"],
                 onConfirm = { showAnnouncementsDialog = false },
                 confirmEnabled = !announcementsLoading,
+                showCloseButton = false,
                 customContent = {
                     Column(
                         modifier = Modifier
@@ -1270,7 +1290,7 @@ class HomeRootSection : Routes.Route() {
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
-                                        text = "Loading announcements...",
+                                        text = translation["announcements_dialog_loading"],
                                         color = Color.White,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -1279,7 +1299,7 @@ class HomeRootSection : Routes.Route() {
 
                             announcementsError != null -> {
                                 Text(
-                                    text = announcementsError ?: "Failed to load announcements",
+                                    text = announcementsError ?: translation["announcements_dialog_error"],
                                     color = MaterialTheme.colorScheme.error,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -1287,7 +1307,7 @@ class HomeRootSection : Routes.Route() {
 
                             else -> {
                                 Text(
-                                    text = announcementsText ?: "Announcements not available",
+                                    text = announcementsText ?: translation["announcements_dialog_empty"],
                                     color = PurrfectPalette.textPrimary,
                                     fontSize = 14.sp,
                                     lineHeight = 20.sp
@@ -1311,6 +1331,7 @@ class HomeRootSection : Routes.Route() {
                     newList.forEach { clearTileOffset(it) }
                     selectedTiles.clear()
                     selectedTiles.addAll(newList)
+                    prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
                     context.coroutineScope.launch {
                         context.database.setQuickTiles(selectedTiles)
                     }

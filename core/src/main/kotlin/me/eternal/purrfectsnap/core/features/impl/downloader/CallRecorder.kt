@@ -1,9 +1,11 @@
 package me.eternal.purrfectsnap.core.features.impl.downloader
 
+import android.media.AudioManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.AudioTrack
+import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -184,6 +186,29 @@ class CallRecorder : Feature("Call Recorder") {
         onCallStarted(conversationId)
     }
 
+    private fun clampCopyRange(offset: Int, requestedLength: Int, maxLength: Int): Pair<Int, Int>? {
+        if (requestedLength <= 0 || maxLength <= 0) return null
+        val safeOffset = offset.coerceAtLeast(0).coerceAtMost(maxLength)
+        val available = (maxLength - safeOffset).coerceAtLeast(0)
+        val safeLength = requestedLength.coerceAtMost(available)
+        if (safeLength <= 0) return null
+        return safeOffset to safeLength
+    }
+
+    private fun copyAudioRecordByteBuffer(data: ByteBuffer, bytesRead: Int): ByteArray? {
+        if (bytesRead <= 0) return null
+        val currentPosition = data.position()
+        val start = (currentPosition - bytesRead).coerceAtLeast(0)
+        val end = currentPosition.coerceAtMost(data.limit())
+        if (end <= start) return null
+        return ByteArray(end - start).also { out ->
+            val dup = data.duplicate()
+            dup.position(start)
+            dup.limit(end)
+            dup.get(out)
+        }
+    }
+
     override fun init() {
         if (callRecorderConfig.callRecorder.getNullable() == null) return
         
@@ -200,18 +225,22 @@ class CallRecorder : Feature("Call Recorder") {
             if (recorderConfig == "only_record_others") return@apply
             hookConstructor(HookStage.AFTER) { param ->
                 val attributes = runCatching { param.arg<AudioAttributes>(0) }.getOrNull()
-                val isCall = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION || 
-                             attributes?.usage == AudioAttributes.USAGE_UNKNOWN ||
-                             runCatching { param.arg<Int>(0) }.getOrNull() == 7 // 7 = VOICE_COMMUNICATION
-                
-                if (isCall) {
+                val audioSource = runCatching { param.arg<Int>(0) }.getOrNull()
+                val isVoiceCommunication = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION ||
+                    audioSource == MediaRecorder.AudioSource.VOICE_COMMUNICATION
+                val shouldCapture = isVoiceCommunication ||
+                    (wasInCall && attributes?.usage == AudioAttributes.USAGE_UNKNOWN)
+
+                if (shouldCapture) {
                     val format = AudioFormat.Builder()
                         .setSampleRate(if (attributes != null) param.arg<AudioFormat>(1).sampleRate else param.arg(1))
                         .setChannelMask(if (attributes != null) param.arg<AudioFormat>(1).channelMask else param.arg(2))
                         .setEncoding(if (attributes != null) param.arg<AudioFormat>(1).encoding else param.arg(3))
                         .build()
                     streams[param.thisObject<Any>().hashCode()] = CallStreamWrapper(format)
-                    ensureSessionStarted()
+                    if (isVoiceCommunication) {
+                        ensureSessionStarted()
+                    }
                 }
             }
 
@@ -221,10 +250,18 @@ class CallRecorder : Feature("Call Recorder") {
                 val wrapper = streams[param.thisObject<Any>().hashCode()] ?: return@hook
                 
                 val buffer = when (val data = param.arg<Any>(0)) {
-                    is ByteBuffer -> ByteArray(result).also { val pos = data.position(); data.get(it); data.position(pos) }
-                    is ByteArray -> data.copyOfRange(param.argNullable(1) ?: 0, (param.argNullable<Int>(1) ?: 0) + result)
-                    is ShortArray -> ByteArray(result * 2).also { 
-                        ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data, param.argNullable(1) ?: 0, result) 
+                    is ByteBuffer -> copyAudioRecordByteBuffer(data, result) ?: return@hook
+                    is ByteArray -> {
+                        val offset = param.argNullable<Int>(1) ?: 0
+                        val (safeOffset, safeLength) = clampCopyRange(offset, result, data.size) ?: return@hook
+                        data.copyOfRange(safeOffset, safeOffset + safeLength)
+                    }
+                    is ShortArray -> {
+                        val offset = param.argNullable<Int>(1) ?: 0
+                        val (safeOffset, safeLength) = clampCopyRange(offset, result, data.size) ?: return@hook
+                        ByteArray(safeLength * 2).also {
+                            ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data, safeOffset, safeLength)
+                        }
                     }
                     else -> return@hook
                 }
@@ -242,32 +279,54 @@ class CallRecorder : Feature("Call Recorder") {
             if (recorderConfig == "only_record_self") return@apply
             hookConstructor(HookStage.AFTER) { param ->
                 val attributes = runCatching { param.arg<AudioAttributes>(0) }.getOrNull()
-                val isCall = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION || 
-                             attributes?.usage == AudioAttributes.USAGE_UNKNOWN ||
-                             runCatching { param.arg<Int>(0) }.getOrNull() in listOf(0, 7) // 0 = CALL, 7 = SCO
-                
-                if (isCall) {
+                val streamType = runCatching { param.arg<Int>(0) }.getOrNull()
+                val isVoiceCommunication = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION ||
+                    streamType == AudioManager.STREAM_VOICE_CALL ||
+                    streamType == 6
+                val shouldCapture = isVoiceCommunication ||
+                    (wasInCall && attributes?.usage == AudioAttributes.USAGE_UNKNOWN)
+
+                if (shouldCapture) {
                     val format = AudioFormat.Builder()
                         .setSampleRate(if (attributes != null) param.arg<AudioFormat>(1).sampleRate else param.arg(1))
                         .setChannelMask(if (attributes != null) param.arg<AudioFormat>(1).channelMask else param.arg(2))
                         .setEncoding(if (attributes != null) param.arg<AudioFormat>(1).encoding else param.arg(3))
                         .build()
                     streams[param.thisObject<Any>().hashCode()] = CallStreamWrapper(format)
-                    ensureSessionStarted()
+                    if (isVoiceCommunication) {
+                        ensureSessionStarted()
+                    }
                 }
             }
 
             hook("write", HookStage.BEFORE) { param ->
                 val wrapper = streams[param.thisObject<Any>().hashCode()] ?: return@hook
                 val data = param.arg<Any>(0)
-                val size = if (param.args().size > 2) param.arg(2) else if (data is ByteArray) data.size else if (data is ShortArray) data.size else if (data is ByteBuffer) data.remaining() else 0
-                if (size <= 0) return@hook
 
                 val buffer = when (data) {
-                    is ByteBuffer -> ByteArray(size).also { val pos = data.position(); data.get(it); data.position(pos) }
-                    is ByteArray -> data.copyOfRange(param.argNullable(1) ?: 0, (param.argNullable<Int>(1) ?: 0) + size)
-                    is ShortArray -> ByteArray(size * 2).also { 
-                        ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data, param.argNullable(1) ?: 0, size) 
+                    is ByteBuffer -> {
+                        val requestedSize = param.argNullable<Int>(1) ?: data.remaining()
+                        val safeSize = requestedSize.coerceAtMost(data.remaining()).coerceAtLeast(0)
+                        if (safeSize <= 0) return@hook
+                        ByteArray(safeSize).also {
+                            val pos = data.position()
+                            data.get(it, 0, safeSize)
+                            data.position(pos)
+                        }
+                    }
+                    is ByteArray -> {
+                        val offset = param.argNullable<Int>(1) ?: 0
+                        val requestedSize = param.argNullable<Int>(2) ?: data.size
+                        val (safeOffset, safeLength) = clampCopyRange(offset, requestedSize, data.size) ?: return@hook
+                        data.copyOfRange(safeOffset, safeOffset + safeLength)
+                    }
+                    is ShortArray -> {
+                        val offset = param.argNullable<Int>(1) ?: 0
+                        val requestedSize = param.argNullable<Int>(2) ?: data.size
+                        val (safeOffset, safeLength) = clampCopyRange(offset, requestedSize, data.size) ?: return@hook
+                        ByteArray(safeLength * 2).also {
+                            ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data, safeOffset, safeLength)
+                        }
                     }
                     else -> return@hook
                 }

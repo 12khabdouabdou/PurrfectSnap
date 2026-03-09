@@ -307,7 +307,7 @@ class TasksRootSection : Routes.Route() {
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Text(
-                                            text = tasksTranslation.getOrNull("delete_files_option_hint") ?: "Also remove downloaded files from device",
+                                            text = tasksTranslation.getOrNull("delete_files_option_hint") ?: "Permanently remove the original files from storage",
                                             color = PurrfectPalette.textSecondary,
                                             style = MaterialTheme.typography.bodySmall
                                         )

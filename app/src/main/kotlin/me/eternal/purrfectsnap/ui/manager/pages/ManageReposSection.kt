@@ -143,7 +143,7 @@ class ManageReposSection: Routes.Route() {
                                 addRepo(url)
                             }.onFailure {
                                 context.log.error("Failed to add repository", it)
-                                context.shortToast(translation.format("add_repo_failed", "message" to (it.message ?: "Unknown")))
+                                context.shortToast(translation.format("add_repo_failed", "message" to (it.message ?: context.translation["common.unknown"])))
                             }
                             loading = false
                         }

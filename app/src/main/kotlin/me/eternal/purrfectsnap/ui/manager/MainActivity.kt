@@ -132,16 +132,16 @@ class MainActivity : ComponentActivity() {
                 if (shouldShowAbiWarning) {
                     AestheticDialog(
                         onDismissRequest = {},
-                        title = "Wrong APK installed",
+                        title = managerContext.translation["wrong_apk_title"],
                         text = "",
                         icon = Icons.Filled.Warning,
-                        confirmButtonText = "Close",
+                        confirmButtonText = managerContext.translation["common.close"],
                         onConfirm = { (context as? Activity)?.finishAffinity() },
                         showCloseButton = false,
                         opaque = true,
                         customContent = {
                             Text(
-                                text = "Your device is armv8, please download the armv8 apk, not armv7.",
+                                text = managerContext.translation["wrong_apk_message"],
                                 color = PurrfectPalette.textSecondary,
                                 lineHeight = 18.sp
                             )

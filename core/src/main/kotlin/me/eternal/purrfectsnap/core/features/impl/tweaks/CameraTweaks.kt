@@ -27,13 +27,15 @@ class CameraTweaks : Feature("Camera Tweaks") {
     override fun init() {
         val config = context.config.camera
 
-        config.startupDefaultCamera.getNullable()?.let { defaultCamera ->
-            context.database.setCameraType(if (defaultCamera == "back") "BACK_FACING" else "FRONT_FACING")
-        }
-
         val frontCameraId by lazy {
             runCatching { context.androidContext.getSystemService(CameraManager::class.java).run {
                 cameraIdList.firstOrNull { getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT }
+            } }.getOrNull()
+        }
+
+        val backCameraId by lazy {
+            runCatching { context.androidContext.getSystemService(CameraManager::class.java).run {
+                cameraIdList.firstOrNull { getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK }
             } }.getOrNull()
         }
 
@@ -47,11 +49,24 @@ class CameraTweaks : Feature("Camera Tweaks") {
         }
 
         var isLastCameraFront = false
+        var startupCameraApplied = false
 
         CameraManager::class.java.hook("openCamera", HookStage.BEFORE) { param ->
             val cameraManager = param.thisObject() as? CameraManager ?: return@hook
-            val cameraId = param.arg<String>(0)
+            var cameraId = param.arg<String>(0)
             val disabledCameras = config.disableCameras.get()
+            val startupDefaultCamera = config.startupDefaultCamera.getNullable()
+
+            if (startupDefaultCamera != null && !startupCameraApplied) {
+                val preferredCameraId = if (startupDefaultCamera == "back") backCameraId else frontCameraId
+                if (preferredCameraId != null) {
+                    if (preferredCameraId != cameraId) {
+                        param.setArg(0, preferredCameraId)
+                        cameraId = preferredCameraId
+                    }
+                    startupCameraApplied = true
+                }
+            }
 
             if (disabledCameras.size >= 2) {
                 param.setResult(null)

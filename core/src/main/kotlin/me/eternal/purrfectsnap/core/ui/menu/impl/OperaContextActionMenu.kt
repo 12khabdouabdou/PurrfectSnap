@@ -1,26 +1,46 @@
 package me.eternal.purrfectsnap.core.ui.menu.impl
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.SeekBar
 import android.widget.TextView
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Slider
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SlowMotionVideo
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.res.use
 import me.eternal.purrfectsnap.common.ui.createComposeView
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
@@ -84,10 +104,9 @@ class OperaContextActionMenu : AbstractMenu() {
             val playableStorySnapRecord = paramMap["PLAYABLE_STORY_SNAP_RECORD"]?.toString()
             val sentTimestamp = playableStorySnapRecord?.substringAfter("timestamp=")
                 ?.substringBefore(",")?.toLongOrNull()
-                ?: paramMap["MESSAGE_ID"]?.toString()?.let { messageId ->
+                ?: mediaDownloader.resolveCurrentSnapMessageContext()?.clientMessageId?.let { messageId ->
                     context.database.getConversationMessageFromId(
-                        messageId.substring(messageId.lastIndexOf(":") + 1)
-                            .toLong()
+                        messageId
                     )?.creationTimestamp
                 }
                 ?: paramMap["SNAP_TIMESTAMP"]?.toString()?.toLongOrNull()
@@ -137,30 +156,144 @@ class OperaContextActionMenu : AbstractMenu() {
             val operaViewerParamsOverride = context.feature(OperaViewerParamsOverride::class)
 
             linearLayout.addView(createComposeView(view.context) {
+                val glowPrimary = Color(0xFF8C7BFF)
+                val glowSecondary = Color(0xFF5FD8FF)
+                val cardShape = RoundedCornerShape(22.dp)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp)
                 ) {
                     var value by remember { mutableFloatStateOf(operaViewerParamsOverride.currentPlaybackRate) }
-                    Slider(
-                        value = value,
-                        onValueChange = {
-                            value = it
-                            operaViewerParamsOverride.currentPlaybackRate = it
-                        },
-                        valueRange = 0.1F..4.0F,
-                        steps = 0,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Text(
-                        text = "x" + value.toString().take(4),
-                        color = remember {
-                            Color(context.userInterface.colorPrimary)
-                        },
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Card(
+                        shape = cardShape,
+                        border = BorderStroke(
+                            1.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    glowPrimary.copy(alpha = 0.45f),
+                                    glowSecondary.copy(alpha = 0.35f)
+                                )
+                            )
+                        ),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF2A2452).copy(alpha = 0.94f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(
+                                            Color(0xFF2A2452).copy(alpha = 0.95f),
+                                            Color(0xFF1A143A).copy(alpha = 0.92f)
+                                        )
+                                    ),
+                                    cardShape
+                                )
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .background(
+                                            Brush.linearGradient(
+                                                listOf(
+                                                    glowPrimary.copy(alpha = 0.35f),
+                                                    glowSecondary.copy(alpha = 0.28f)
+                                                )
+                                            ),
+                                            CircleShape
+                                        )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.SlowMotionVideo,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .align(androidx.compose.ui.Alignment.Center)
+                                            .size(22.dp)
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Playback Rate",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                    Text(
+                                        text = "x" + String.format("%.2f", value),
+                                        color = Color(0xFFD9D3FF),
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+                            }
+                            AndroidView(
+                                modifier = Modifier.fillMaxWidth(),
+                                factory = { androidContext ->
+                                    SeekBar(androidContext).apply {
+                                        max = 390
+                                        progress = ((value - 0.1f) * 100).toInt().coerceIn(0, max)
+                                        thumbTintList = ColorStateList.valueOf(Color.White.toArgb())
+                                        progressTintList = ColorStateList.valueOf(glowSecondary.toArgb())
+                                        progressBackgroundTintList = ColorStateList.valueOf(Color.White.copy(alpha = 0.16f).toArgb())
+                                        splitTrack = false
+
+                                        setOnTouchListener { seekBar, motionEvent ->
+                                            when (motionEvent.actionMasked) {
+                                                MotionEvent.ACTION_DOWN,
+                                                MotionEvent.ACTION_MOVE -> seekBar.parent?.requestDisallowInterceptTouchEvent(true)
+                                                MotionEvent.ACTION_UP,
+                                                MotionEvent.ACTION_CANCEL -> seekBar.parent?.requestDisallowInterceptTouchEvent(false)
+                                            }
+                                            false
+                                        }
+
+                                        setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                                            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                                                val playbackRate = (0.1f + (progress / 100f)).coerceIn(0.1f, 4.0f)
+                                                value = playbackRate
+                                                operaViewerParamsOverride.currentPlaybackRate = playbackRate
+                                            }
+
+                                            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                                                seekBar?.parent?.requestDisallowInterceptTouchEvent(true)
+                                            }
+
+                                            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                                                seekBar?.parent?.requestDisallowInterceptTouchEvent(false)
+                                            }
+                                        })
+                                    }
+                                },
+                                update = { seekBar ->
+                                    val targetProgress = ((value - 0.1f) * 100).toInt().coerceIn(0, seekBar.max)
+                                    if (seekBar.progress != targetProgress) {
+                                        seekBar.progress = targetProgress
+                                    }
+                                }
+                            )
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    text = "0.1x",
+                                    color = Color(0xFFD9D3FF),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = "4.0x",
+                                    color = Color(0xFFD9D3FF),
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
                 }
             }.apply {
                 layoutParams = ViewGroup.LayoutParams(

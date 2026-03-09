@@ -91,7 +91,7 @@ class ManageScope: Routes.Route() {
                 title = translation.format("delete_scope_confirm_dialog_title", "scope" to context.translation["scopes.${scope.key}"]),
                 text = "",
                 icon = Icons.Rounded.DeleteForever,
-                confirmButtonText = translation["delete_button"] ?: "Delete",
+                confirmButtonText = translation["delete_button"],
                 dismissButtonText = context.translation["button.cancel"],
                 onDismiss = { deleteConfirmDialog = false },
                 onConfirm = {
@@ -109,7 +109,7 @@ class ManageScope: Routes.Route() {
                 .background(PurrfectPalette.backgroundGradient)
         ) {
             FloatingTopBar(
-                title = titleText ?: "Manage",
+                title = titleText ?: translation["manage_scope_title"],
                 onBack = { routes.navController.popBackStack() },
                 actions = {
                     IconButton(onClick = { deleteConfirmDialog = true }) {

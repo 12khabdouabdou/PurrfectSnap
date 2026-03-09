@@ -24,6 +24,8 @@ import me.eternal.purrfectsnap.core.features.MessagingRuleFeature
 import me.eternal.purrfectsnap.core.ui.addForegroundDrawable
 import me.eternal.purrfectsnap.core.ui.removeForegroundDrawable
 import me.eternal.purrfectsnap.core.util.EvictingMap
+import me.eternal.purrfectsnap.core.util.ktx.KavaRefFieldBridge
+import me.eternal.purrfectsnap.core.util.ktx.setObjectField
 import java.util.concurrent.Executors
 import kotlin.system.measureTimeMillis
 
@@ -175,11 +177,12 @@ class MessageLogger : MessagingRuleFeature("MessageLogger", MessagingRuleType.ME
             }
 
             //serialize all properties of messageJsonObject and put mMessageContent & mMetadata in the message object
-            messageInstance::class.java.declaredFields.forEach { field ->
-                if (field.name != "mMessageContent" && field.name != "mMetadata") return@forEach
-                field.isAccessible = true
-                deletedMessageObject[field.name]?.let { fieldValue ->
-                    field.set(messageInstance, context.gson.fromJson(fieldValue, field.type))
+            listOf("mMessageContent", "mMetadata").forEach { fieldName ->
+                deletedMessageObject[fieldName]?.let { fieldValue ->
+                    runCatching {
+                        val fieldType = KavaRefFieldBridge.getFieldType(messageInstance, fieldName)
+                        messageInstance.setObjectField(fieldName, context.gson.fromJson(fieldValue, fieldType))
+                    }
                 }
             }
 

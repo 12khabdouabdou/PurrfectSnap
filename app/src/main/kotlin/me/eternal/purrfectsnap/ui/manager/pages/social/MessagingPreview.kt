@@ -63,7 +63,7 @@ import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 
 class MessagingPreview: Routes.Route() {
-    override val translation by lazy { context.translation.getCategory("manager.sections.social.messaging_preview.messaging_preview") }
+    override val translation by lazy { context.translation.getCategory("manager.sections.social.messaging_preview") }
     private lateinit var coroutineScope: CoroutineScope
     private lateinit var previewScrollState: LazyListState
 
@@ -77,21 +77,6 @@ class MessagingPreview: Routes.Route() {
     private fun toggleSelectedMessage(messageId: Long) {
         if (selectedMessages.contains(messageId)) selectedMessages.remove(messageId)
         else selectedMessages.add(messageId)
-    }
-
-    private fun tr(key: String, fallback: String? = null): String {
-        fun normalizeCandidate(candidate: String?): String? {
-            if (candidate.isNullOrBlank()) return null
-            if (candidate == key) return null
-            if (candidate.endsWith(".$key")) return null
-            return candidate
-        }
-
-        return normalizeCandidate(translation.getOrNull(key))
-            ?: normalizeCandidate(context.translation.getOrNull("manager.sections.social.messaging_preview.$key"))
-            ?: normalizeCandidate(context.translation.getOrNull("manager.social.messaging_preview.$key"))
-            ?: fallback
-            ?: key
     }
 
     @Composable
@@ -338,20 +323,20 @@ class MessagingPreview: Routes.Route() {
 
                 val senderDisplayName by rememberAsyncMutableState<String?>(null, keys = arrayOf(senderId, myUserId, scope.key, scopeId, friendDisplayName)) {
                     when {
-                        senderId == null -> "Unknown"
-                        senderId == myUserId -> "You"
+                        senderId == null -> translation["sender_unknown"]
+                        senderId == myUserId -> translation["sender_you"]
                         scope == SocialScope.FRIEND -> friendDisplayName
                             ?: context.database.getFriendInfo(scopeId)?.displayName
                             ?: context.database.getFriendInfo(scopeId)?.mutableUsername
-                            ?: "Friend"
+                            ?: translation["sender_friend"]
                         else -> context.database.getFriendInfo(senderId)?.displayName
                             ?: context.database.getFriendInfo(senderId)?.mutableUsername
-                            ?: "Unknown"
+                            ?: translation["sender_unknown"]
                     }
                 }
 
                 val contentTypeLabel = remember(contentType) {
-                    contentType?.let { contentTypeTranslation.getOrNull(it.name) ?: it.name } ?: "Unknown"
+                    contentType?.let { contentTypeTranslation.getOrNull(it.name) ?: it.name } ?: translation["sender_unknown"]
                 }
                 val bodyText = remember(message.contentType) { messageReader.getString(2, 1)?.trim().orEmpty() }
 
@@ -408,7 +393,7 @@ class MessagingPreview: Routes.Route() {
                         horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
                     ) {
                         Text(
-                            text = senderDisplayName ?: "Unknown",
+                            text = senderDisplayName ?: translation["sender_unknown"],
                             color = Color.White.copy(alpha = 0.82f),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -487,7 +472,7 @@ class MessagingPreview: Routes.Route() {
                             .padding(40.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Text(tr("no_message_hint", "No messages"), color = PurrfectPalette.textSecondary)
+                        Text(translation["no_message_hint"], color = PurrfectPalette.textSecondary)
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
@@ -564,7 +549,7 @@ class MessagingPreview: Routes.Route() {
                         translation.format("processed_message_toast", "count" to processMessageCount.intValue.toString())
                     } ?: translation.getOrNull("processed_messages_toast")?.let {
                         translation.format("processed_messages_toast", "count" to processMessageCount.intValue.toString())
-                    } ?: "Processed ${processMessageCount.intValue} messages"
+                    } ?: translation.format("processed_messages_toast", "count" to processMessageCount.intValue.toString())
                     context.longToast(toastText)
                 }
             }
@@ -579,7 +564,7 @@ class MessagingPreview: Routes.Route() {
                 context.longToast(
                     translation.getOrNull("bridge_connection_error")
                         ?: translation.getOrNull("bridge_connection_failed")
-                        ?: "Failed to connect to bridge"
+                        ?: translation["bridge_connection_error"]
                 )
                 return
             }
@@ -640,7 +625,7 @@ class MessagingPreview: Routes.Route() {
                 ) {
                     val processedText = translation.getOrNull("processed_messages_text")?.let {
                         translation.format("processed_messages_text", "count" to processMessageCount.intValue.toString())
-                    } ?: "Processed ${processMessageCount.intValue}"
+                    } ?: translation.format("processed_messages_text", "count" to processMessageCount.intValue.toString())
                     Text(processedText)
                     if (activeTask?.hasFixedGoal() == true) {
                         LinearProgressIndicator(
@@ -679,7 +664,7 @@ class MessagingPreview: Routes.Route() {
                 }.onFailure {
                     context.log.error("Failed to fetch messages", it)
                     context.shortToast(
-                        translation.getOrNull("message_fetch_failed") ?: "Failed to fetch messages"
+                        translation.getOrNull("message_fetch_failed") ?: translation["message_fetch_failed"]
                     )
                 }
             }
@@ -710,7 +695,7 @@ class MessagingPreview: Routes.Route() {
                 fetchNewMessages()
             }.onFailure {
                 context.longToast(
-                    translation.getOrNull("bridge_init_failed") ?: "Failed to initialize messaging bridge"
+                    translation.getOrNull("bridge_init_failed") ?: translation["bridge_init_failed"]
                 )
                 context.log.error("Failed to initialize messaging bridge", it)
             }
@@ -751,11 +736,11 @@ class MessagingPreview: Routes.Route() {
                 .background(PurrfectPalette.backgroundGradient)
         ) {
             FloatingTopBar(
-                title = titleText ?: translation["title"] ?: "Preview",
+                title = titleText ?: translation["title"],
                 subtitle = if (selectedMessages.isNotEmpty()) {
                     "${selectedMessages.size} selected"
                 } else {
-                    tr("subtitle", "Hold to select")
+                    translation["subtitle"]
                         .substringBefore("•")
                         .substringBefore("·")
                         .substringBefore("|")
@@ -798,7 +783,7 @@ class MessagingPreview: Routes.Route() {
                     Text(
                         translation.getOrNull("bridge_connection_error")
                             ?: translation.getOrNull("bridge_connection_failed")
-                            ?: "Failed to connect to bridge",
+                            ?: translation["bridge_connection_error"],
                         modifier = Modifier.padding(16.dp),
                         color = Color.White
                     )
@@ -831,7 +816,7 @@ class MessagingPreview: Routes.Route() {
                     val selectionSubtitle = if (hasSelection) {
                         "${selectedMessages.size} selected"
                     } else {
-                        "Choose message types"
+                        translation["choose_message_types_subtitle"]
                     }
 
                     Column(
@@ -862,7 +847,7 @@ class MessagingPreview: Routes.Route() {
                         )
                         Spacer(Modifier.height(14.dp))
                         Text(
-                            text = tr("actions_title", "Conversation Actions"),
+                            text = translation["actions_title"],
                             color = Color.White,
                             fontWeight = FontWeight.ExtraBold,
                             fontSize = 18.sp,
@@ -886,31 +871,31 @@ class MessagingPreview: Routes.Route() {
                             val deleteKey = if (hasSelection) "delete_selection_option" else "delete_all_option"
 
                             ActionsSheetItem(
-                                title = tr(saveKey, if (hasSelection) "Save Selection" else "Save All"),
-                                subtitle = if (hasSelection) "Save selected messages" else "Save by content type",
+                                title = translation[saveKey],
+                                subtitle = if (hasSelection) translation["save_selected_messages_subtitle"] else translation["save_by_content_type_subtitle"],
                                 icon = Icons.Rounded.BookmarkAdded
                             ) {
                                 launchMessagingTask(MessagingTaskType.SAVE)
                                 if (hasSelection) runCurrentTask() else selectConstraintsDialog = true
                             }
                             ActionsSheetItem(
-                                title = tr(unsaveKey, if (hasSelection) "Unsave Selection" else "Unsave All"),
-                                subtitle = if (hasSelection) "Unsave selected messages" else "Unsave by content type",
+                                title = translation[unsaveKey],
+                                subtitle = if (hasSelection) translation["unsave_selected_messages_subtitle"] else translation["unsave_by_content_type_subtitle"],
                                 icon = Icons.Rounded.BookmarkBorder
                             ) {
                                 launchMessagingTask(MessagingTaskType.UNSAVE)
                                 if (hasSelection) runCurrentTask() else selectConstraintsDialog = true
                             }
                             ActionsSheetItem(
-                                title = tr(markKey, if (hasSelection) "Mark selected as seen" else "Mark all as seen"),
-                                subtitle = "Marks snaps as seen",
+                                title = translation[markKey],
+                                subtitle = translation["mark_as_seen_subtitle"],
                                 icon = Icons.Rounded.RemoveRedEye
                             ) {
                                 if (messagingBridge == null) {
                                     context.longToast(
                                         translation.getOrNull("bridge_connection_error")
                                             ?: translation.getOrNull("bridge_connection_failed")
-                                            ?: "Failed to connect to bridge"
+                                            ?: translation["bridge_connection_error"]
                                     )
                                     return@ActionsSheetItem
                                 }
@@ -924,8 +909,8 @@ class MessagingPreview: Routes.Route() {
                                 runCurrentTask()
                             }
                             ActionsSheetItem(
-                                title = tr(deleteKey, if (hasSelection) "Delete Selection" else "Delete All"),
-                                subtitle = if (hasSelection) "Delete selected messages" else "Delete by content type",
+                                title = translation[deleteKey],
+                                subtitle = if (hasSelection) translation["delete_selected_messages_subtitle"] else translation["delete_by_content_type_subtitle"],
                                 icon = Icons.Rounded.DeleteForever,
                                 danger = true
                             ) {
@@ -933,7 +918,7 @@ class MessagingPreview: Routes.Route() {
                                     context.longToast(
                                         translation.getOrNull("bridge_connection_error")
                                             ?: translation.getOrNull("bridge_connection_failed")
-                                            ?: "Failed to connect to bridge"
+                                            ?: translation["bridge_connection_error"]
                                     )
                                     return@ActionsSheetItem
                                 }

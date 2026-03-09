@@ -74,6 +74,7 @@ import me.eternal.purrfectsnap.core.logger.CoreLogger
 import me.eternal.purrfectsnap.core.messaging.ConversationExporter
 import me.eternal.purrfectsnap.core.messaging.ExportFormat
 import me.eternal.purrfectsnap.core.messaging.ExportParams
+import me.eternal.purrfectsnap.core.messaging.ExportSortOrder
 import me.eternal.purrfectsnap.core.wrapper.impl.Message
 import java.io.File
 import kotlin.math.absoluteValue
@@ -180,7 +181,9 @@ class ExportChatMessages : AbstractAction() {
         var downloadMedias by remember { mutableStateOf(false) }
         var showConversationPicker by remember { mutableStateOf(false) }
         var showFormatPicker by remember { mutableStateOf(false) }
+        var showOrderPicker by remember { mutableStateOf(false) }
         var showMessageTypePicker by remember { mutableStateOf(false) }
+        var exportSortOrder by remember { mutableStateOf(ExportSortOrder.NEWEST_TO_OLDEST) }
         val colorOverrides = remember { mutableStateMapOf<String, String>() }
         var colorPickerTarget by remember { mutableStateOf<ExportColorParticipant?>(null) }
         var colorPickerValue by remember { mutableStateOf<Color?>(null) }
@@ -309,6 +312,19 @@ class ExportChatMessages : AbstractAction() {
                         tint = MaterialTheme.colorScheme.surfaceVariant
                     )
 
+                    SectionLabel(t("sort_order_title"))
+                    GlassField(
+                        value = t(
+                            if (exportSortOrder == ExportSortOrder.OLDEST_TO_NEWEST) {
+                                "sort_order_oldest_to_newest"
+                            } else {
+                                "sort_order_newest_to_oldest"
+                            }
+                        ),
+                        onClick = { showOrderPicker = true },
+                        tint = MaterialTheme.colorScheme.surfaceVariant
+                    )
+
                     SectionLabel(t("message_type_filter_title"))
                     GlassField(
                         value = messageTypeFilter.takeIf { it.isNotEmpty() }?.let {
@@ -417,6 +433,7 @@ class ExportChatMessages : AbstractAction() {
                                 selection,
                                 ExportParams(
                                     exportFormat = exportType,
+                                    sortOrder = exportSortOrder,
                                     messageTypeFilter = messageTypeFilter.takeIf { it.isNotEmpty() },
                                     amountOfMessages = amountOfMessages.takeIf { it != -1 },
                                     downloadMedias = downloadMedias,
@@ -606,6 +623,38 @@ class ExportChatMessages : AbstractAction() {
                         onClick = {
                             messageTypeFilter.clear()
                             showMessageTypePicker = false
+                        }
+                    )
+                }
+            }
+
+            if (showOrderPicker) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.55f))
+                        .clickable { showOrderPicker = false }
+                )
+                SelectorPopup(
+                    title = t("sort_order_title"),
+                    onDismiss = { showOrderPicker = false }
+                ) {
+                    SelectorRow(
+                        title = t("sort_order_newest_to_oldest"),
+                        subtitle = null,
+                        checked = exportSortOrder == ExportSortOrder.NEWEST_TO_OLDEST,
+                        onToggle = {
+                            exportSortOrder = ExportSortOrder.NEWEST_TO_OLDEST
+                            showOrderPicker = false
+                        }
+                    )
+                    SelectorRow(
+                        title = t("sort_order_oldest_to_newest"),
+                        subtitle = null,
+                        checked = exportSortOrder == ExportSortOrder.OLDEST_TO_NEWEST,
+                        onToggle = {
+                            exportSortOrder = ExportSortOrder.OLDEST_TO_NEWEST
+                            showOrderPicker = false
                         }
                     )
                 }
@@ -1159,6 +1208,13 @@ class ExportChatMessages : AbstractAction() {
         }.getOrDefault(emptyList())
     }
 
+    private fun messageSortKey(message: Message): Long {
+        return message.orderKey
+            ?: message.messageMetadata?.createdAt
+            ?: message.messageDescriptor?.messageId
+            ?: Long.MIN_VALUE
+    }
+
     private suspend fun exportFullConversation(
         feedEntry: FriendFeedEntry,
         exportParams: ExportParams,
@@ -1209,58 +1265,75 @@ class ExportChatMessages : AbstractAction() {
 
         var foundMessageCount = 0
         val exportedOrderKeys = mutableSetOf<Long>()
+        val fetchedMessages = mutableListOf<Message>()
+        val seenMessageKeys = mutableSetOf<String>()
 
         var lastMessageId: Long? = null
         fetchMessagesPaginated(conversationId, Long.MAX_VALUE, amount = 1).firstOrNull()?.also { message ->
-            conversationExporter.readMessage(message)
-            foundMessageCount++
-            message.orderKey?.let { exportedOrderKeys.add(it) }
+            val messageKey = message.orderKey?.toString() ?: message.messageDescriptor?.messageId?.toString()
+            if (messageKey != null && seenMessageKeys.add(messageKey)) {
+                fetchedMessages.add(message)
+            }
             lastMessageId = message.messageDescriptor?.messageId
         }
 
-        if (lastMessageId == null) {
+        if (lastMessageId == null && fetchedMessages.isEmpty()) {
             logDialog(translation["no_messages_found"])
         }
 
         while (lastMessageId != null) {
-            val fetchedMessages = fetchMessagesPaginated(conversationId, lastMessageId, amount = 500).toMutableList()
-            if (fetchedMessages.isEmpty()) break
+            val pagedMessages = fetchMessagesPaginated(conversationId, lastMessageId, amount = 500)
+            if (pagedMessages.isEmpty()) break
 
-            fetchedMessages.firstOrNull()?.let {
+            pagedMessages.firstOrNull()?.let {
                 lastMessageId = it.messageDescriptor!!.messageId!!
             }
 
-            exportParams.messageTypeFilter?.let { filter ->
-                fetchedMessages.removeIf { message ->
-                    !filter.contains(message.messageContent?.contentType ?: return@removeIf false)
+            pagedMessages.forEach { message ->
+                val messageKey = message.orderKey?.toString() ?: message.messageDescriptor?.messageId?.toString()
+                if (messageKey != null && seenMessageKeys.add(messageKey)) {
+                    fetchedMessages.add(message)
                 }
             }
+        }
 
-            val remainingLimit = exportParams.amountOfMessages?.let { it - foundMessageCount } ?: Int.MAX_VALUE
-            if (remainingLimit <= 0) break
-
-            val messagesToWrite = fetchedMessages.reversed().let { messages ->
-                if (messages.size <= remainingLimit) messages else messages.subList(0, remainingLimit)
+        val filteredMessages = exportParams.messageTypeFilter?.let { filter ->
+            fetchedMessages.filter { message ->
+                val contentType = message.messageContent?.contentType ?: return@filter false
+                filter.contains(contentType)
             }
+        } ?: fetchedMessages
 
-            messagesToWrite.forEach { message ->
-                conversationExporter.readMessage(message)
-                foundMessageCount++
-                message.orderKey?.let { exportedOrderKeys.add(it) }
-            }
+        val sortedMessages = when (exportParams.sortOrder) {
+            ExportSortOrder.OLDEST_TO_NEWEST -> filteredMessages.sortedBy { messageSortKey(it) }
+            ExportSortOrder.NEWEST_TO_OLDEST -> filteredMessages.sortedByDescending { messageSortKey(it) }
+        }
 
+        val messagesToWrite = exportParams.amountOfMessages?.let { limit ->
+            sortedMessages.take(limit)
+        } ?: sortedMessages
+
+        messagesToWrite.forEach { message ->
+            conversationExporter.readMessage(message)
+            foundMessageCount++
+            message.orderKey?.let { exportedOrderKeys.add(it) }
             setStatus("Exporting (found ${foundMessageCount})")
         }
 
         if (loggerMessages.isNotEmpty() && (exportParams.amountOfMessages == null || foundMessageCount < exportParams.amountOfMessages)) {
             val parsedLoggerMessages = loggerMessages.mapNotNull { conversationExporter.parseLoggedMessage(it) }
-            for (loggedMessage in parsedLoggerMessages.asReversed()) {
+            val sortedLoggerMessages = when (exportParams.sortOrder) {
+                ExportSortOrder.OLDEST_TO_NEWEST -> parsedLoggerMessages.sortedBy { it.orderKey }
+                ExportSortOrder.NEWEST_TO_OLDEST -> parsedLoggerMessages.sortedByDescending { it.orderKey }
+            }
+            for (loggedMessage in sortedLoggerMessages) {
                 if (exportedOrderKeys.contains(loggedMessage.orderKey)) continue
                 val filter = exportParams.messageTypeFilter
                 if (filter != null && !filter.contains(loggedMessage.contentType)) continue
                 if (exportParams.amountOfMessages != null && foundMessageCount >= exportParams.amountOfMessages) break
                 conversationExporter.readLoggedMessage(loggedMessage)
                 foundMessageCount++
+                setStatus("Exporting (found ${foundMessageCount})")
             }
         }
 

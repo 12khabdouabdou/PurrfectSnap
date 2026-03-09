@@ -3,7 +3,9 @@ package me.eternal.purrfectsnap.common.config
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import me.eternal.purrfectsnap.bridge.location.LocationCoordinates
 import me.eternal.purrfectsnap.bridge.ConfigStateListener
 import me.eternal.purrfectsnap.bridge.storage.FileHandleManager
 import me.eternal.purrfectsnap.common.bridge.InternalFileHandleType
@@ -60,10 +62,25 @@ class ModConfig(
 
     fun exportToString(
         exportSensitiveData: Boolean = true,
+        includeSavedLocations: Boolean = true,
+        savedLocations: List<LocationCoordinates>? = null,
         config: RootConfig = root,
     ): String {
-        return gson.toJson(config.toJson(exportSensitiveData).apply {
+        return gson.toJson(config.toJson(exportSensitiveData, includeSavedLocations).apply {
             addProperty("_locale", locale)
+            if (includeSavedLocations && savedLocations != null) {
+                add("_saved_locations", JsonArray().apply {
+                    savedLocations.forEach { location ->
+                        add(JsonObject().apply {
+                            addProperty("id", location.id)
+                            addProperty("name", location.name)
+                            addProperty("latitude", location.latitude)
+                            addProperty("longitude", location.longitude)
+                            addProperty("radius", location.radius)
+                        })
+                    }
+                })
+            }
         })
     }
 
@@ -133,10 +150,17 @@ class ModConfig(
         }
     }
 
-    fun loadFromString(string: String) {
+    /**
+     * Loads config from a JSON string.
+     * @return JsonArray of saved locations if present in the JSON, null otherwise
+     */
+    fun loadFromString(string: String): JsonArray? {
         val configObject = gson.fromJson(string, JsonObject::class.java)
         locale = configObject.get("_locale")?.asString ?: LocaleWrapper.DEFAULT_LOCALE
         root.fromJson(configObject)
         writeConfig()
+        
+        // Return saved locations array if present (for caller to handle database import)
+        return configObject.getAsJsonArray("_saved_locations")
     }
 }

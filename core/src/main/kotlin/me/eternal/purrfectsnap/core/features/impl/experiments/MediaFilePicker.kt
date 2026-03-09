@@ -6,10 +6,11 @@ import android.content.ContentResolver
 import android.content.Intent
 import android.database.Cursor
 import android.database.CursorWrapper
-import android.media.MediaPlayer
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
+import android.webkit.MimeTypeMap
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -39,12 +40,12 @@ import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.common.ui.createComposeView
 import me.eternal.purrfectsnap.common.util.ktx.getLongOrNull
 import me.eternal.purrfectsnap.common.util.ktx.getTypeArguments
+import me.eternal.purrfectsnap.common.data.FileType
 import me.eternal.purrfectsnap.core.event.events.impl.ActivityResultEvent
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
-import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.util.dataBuilder
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -56,6 +57,35 @@ import kotlin.random.Random
 class MediaFilePicker : Feature("Media File Picker") {
     var lastMediaDuration: Long? = null
         private set
+
+    private fun extractMediaDuration(uri: Uri): Long? {
+        val retriever = MediaMetadataRetriever()
+        return runCatching {
+            retriever.setDataSource(context.androidContext, uri)
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+        }.getOrNull().also {
+            runCatching { retriever.release() }
+        }
+    }
+
+    private fun resolveInputExtension(uri: Uri, mimeType: String?): String {
+        val extensionFromMime = mimeType?.let { MimeTypeMap.getSingleton().getExtensionFromMimeType(it) }?.lowercase()
+        val extensionFromUri = MimeTypeMap.getFileExtensionFromUrl(uri.toString()).takeIf { !it.isNullOrBlank() }?.lowercase()
+
+        return when (extensionFromMime ?: extensionFromUri ?: mimeType) {
+            "video/mp4", "audio/mp4", "application/mp4", "mp4", "m4v" -> "mp4"
+            "video/quicktime", "mov", "qt" -> "mov"
+            "video/webm", "webm" -> "webm"
+            "video/x-matroska", "video/mkv", "mkv" -> "mkv"
+            "video/avi", "video/x-msvideo", "avi" -> "avi"
+            "audio/mpeg", "audio/mp3", "mp3" -> "mp3"
+            "audio/aac", "aac" -> "aac"
+            "audio/ogg", "audio/opus", "opus", "ogg" -> "opus"
+            "audio/wav", "audio/x-wav", "wav" -> "wav"
+            "audio/mp4a-latm", "audio/x-m4a", "m4a" -> "m4a"
+            else -> FileType.fromString(extensionFromMime ?: extensionFromUri).fileExtension ?: "mp4"
+        }
+    }
 
     @SuppressLint("Recycle")
     override fun init() {
@@ -154,7 +184,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                         from("_item") {
                             set("_cameraRollSource", "Snapchat")
                             set("_contentUri", "")
-                            set("_durationMs", 0.0)
+                            set("_durationMs", (lastMediaDuration ?: 0L).toDouble())
                             set("_disabled", false)
                             set("_imageRotation", 0.0)
                             set("_width", 1080.0)
@@ -175,19 +205,27 @@ class MediaFilePicker : Feature("Media File Picker") {
 
                 fun startConversion(audioOnly: Boolean) {
                     context.coroutineScope.launch {
-                        lastMediaDuration = MediaPlayer().run {
-                            setDataSource(context.androidContext, event.intent.data!!)
-                            prepare()
-                            duration.toLong().also {
-                                release()
-                            }
+                        val pickedUri = event.intent?.data ?: run {
+                            context.inAppOverlay.showStatusToast(Icons.Default.Error, "No media was selected.")
+                            return@launch
                         }
+                        val mimeType = context.androidContext.contentResolver.getType(pickedUri)
+                        val inputExtension = resolveInputExtension(pickedUri, mimeType)
+                        val outputExtension = if (audioOnly || mimeType?.startsWith("audio/") == true) "m4a" else "mp4"
+
+                        lastMediaDuration = extractMediaDuration(pickedUri)
 
                         context.inAppOverlay.showStatusToast(Icons.Default.Crop, "Converting media...", durationMs = 3000)
+                        val pickedFileDescriptor = context.androidContext.contentResolver.openFileDescriptor(pickedUri, "r")
+                        if (pickedFileDescriptor == null) {
+                            context.inAppOverlay.showStatusToast(Icons.Default.Error, "Failed to open selected media.")
+                            return@launch
+                        }
+
                         val pfd = context.bridgeClient.convertMedia(
-                            context.androidContext.contentResolver.openFileDescriptor(event.intent.data!!, "r")!!,
-                            "m4a",
-                            "m4a",
+                            pickedFileDescriptor,
+                            inputExtension,
+                            outputExtension,
                             "aac",
                             if (!audioOnly) "libx264" else null
                         )
@@ -210,14 +248,15 @@ class MediaFilePicker : Feature("Media File Picker") {
                     }
                 }
 
-                val isAudio = context.androidContext.contentResolver.getType(event.intent.data!!)!!.startsWith("audio/")
+                val pickedUri = event.intent?.data ?: return@subscribe
+                val isAudio = context.androidContext.contentResolver.getType(pickedUri)?.startsWith("audio/") == true
 
                 if (isAudio || context.config.messaging.galleryMediaSendOverride.mode.getNullable() == null) {
                     startConversion(isAudio)
                     return@subscribe
                 }
 
-                ViewAppearanceHelper.newAlertDialogBuilder(context.mainActivity!!)
+                android.app.AlertDialog.Builder(context.mainActivity!!)
                     .setTitle("Convert video file")
                     .setItems(arrayOf("Send as video/audio", "Send as audio only")) { _, which ->
                         startConversion(which == 1)
@@ -313,4 +352,5 @@ class MediaFilePicker : Feature("Media File Picker") {
             }
         }
     }
+
 }

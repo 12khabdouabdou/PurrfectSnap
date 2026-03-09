@@ -19,11 +19,13 @@ def_hook!(
             let content = content.into_boxed_slice();
             
             if libc::write(memfd, content.as_ptr() as *const c_void, content.len() as libc::size_t) == -1 {
-                panic!("failed to write to memfd");
+                error!("failed to write to memfd");
+                return linker_openat_original.unwrap()(dir_fd, pathname, flags, mode);
             }
 
             if libc::lseek(memfd, 0, libc::SEEK_SET) == -1 {
-                panic!("failed to seek memfd");
+                error!("failed to seek memfd");
+                return linker_openat_original.unwrap()(dir_fd, pathname, flags, mode);
             }
 
             std::mem::forget(content);

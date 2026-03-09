@@ -28,7 +28,8 @@
         "dialogs": {
             "select_language": "Select Language",
             "save_folder": "Choose where to save downloads",
-            "select_save_folder_button": "Select Folder"
+            "select_save_folder_button": "Select Folder",
+            "hex_color_label": "Hex Color"
         },
         "install_mode": {
             "confirm_timeout": "I understand ({seconds}s)",
@@ -196,7 +197,7 @@
         },
         "sections": {
             "home": {
-                "version_title": "v{versionName} \u00b7 by Eternal",
+                "version_title": "v{versionName} \u00b7 by ΞTΞRNAL",
                 "update_title": "PurrfectSnap Update",
                 "update_content": "Version {version} is available!",
                 "update_button": "Download",
@@ -226,14 +227,27 @@
                 "quick_actions_empty_subtitle": "Design your dream grid with the actions you use the most.",
                 "quick_actions_add_tile_button": "Add tile",
                 "quick_actions_manage_button": "Manage",
-                "quick_actions_count_label": "{count} curated shortcuts"
+                "quick_actions_count_label": "{count} curated shortcuts",
+                "enabled": "Enabled",
+                "disabled": "Disabled",
+                "changelog_dialog_title": "Changelog",
+                "changelog_dialog_update_button": "Update",
+                "changelog_dialog_cancel_button": "Cancel",
+                "changelog_dialog_loading": "Loading changelog...",
+                "changelog_dialog_error": "Failed to load changelog",
+                "changelog_dialog_empty": "Changelog not available",
+                "announcements_dialog_title": "Announcements",
+                "announcements_dialog_close_button": "Close",
+                "announcements_dialog_loading": "Loading announcements...",
+                "announcements_dialog_error": "Failed to load announcements",
+                "announcements_dialog_empty": "Announcements not available"
             },
             "home_about": {
                 "about_title": "PurrfectSnap",
                 "about_tagline": "An Xposed Module meant to enhance your Snapchat experience!",
                 "about_lead_developers_title": "Lead Developers",
                 "about_story_title": "Our Story",
-                "about_story": "PurrfectSnap was founded on 2nd of October, 2025, as a fork of SnapEnhance by IzTIzRNAL with a vision to provide users the quality Snapchat experience they deserve. This app was just meant to be a minor update in the SnapEnhance repository, but it soon became a separate app wherein the contributors kept adding features. Then the developer <RSR/> joined the team, and this app soon became a huge success. We received much love and support and gained 1K+ downloads in just two days! We thank all users and contributors; without your support, we wouldn't have reached this place. We would also like to convey our huge thanks to rhunk, the lead developer of SnapEnhance, as without him, this app wouldn't even exist. We are immensely grateful to him. Lastly, we would like to thank all our admins, notably: CLASSIC GENIUS, Harry, SUJI>L, Zain & scrodingerspet, who were right there with us from the very beginning. We would also like to thank all testers, notably Leo & Toxic, who tested and reported bugs continuously. We are immensely grateful for your contribution.",
+                "about_story": "PurrfectSnap was founded on 2nd of October, 2025, as a fork of SnapEnhance by ΞTΞRNAL with a vision to provide users the quality Snapchat experience they deserve. This app was just meant to be a minor update in the SnapEnhance repository, but it soon became a separate app wherein the contributors kept adding features. Then the developer <RSR/> joined the team, and this app soon became a huge success. We received much love and support and gained 1K+ downloads in just two days! We thank all users and contributors; without your support, we wouldn't have reached this place. We would also like to convey our huge thanks to rhunk, the lead developer of SnapEnhance, as without him, this app wouldn't even exist. We are immensely grateful to him. Lastly, we would like to thank all our admins, notably: CLASSIC GENIUS, Harry, Sujal, Zain & schrodingerspet, who were right there with us from the very beginning. We would also like to thank all testers, notably Leo & Toxic, who tested and reported bugs continuously. We are immensely grateful for your contribution.",
                 "about_thanks_title": "With love, PurrfectSnap Team",
                 "about_magic_toast": "Tap 5 times in this screen to see some magic 😉!",
                 "github_button": "GitHub",
@@ -241,6 +255,7 @@
             },
             "home_logs": {
                 "no_logs_hint": "No logs available",
+                "refresh_hint": "Pull to refresh or trigger an action to see new entries.",
                 "clear_logs_button": "Clear Logs",
                 "export_logs_button": "Export Logs",
                 "saving_logs_toast": "Saving logs, this may take a while ...",
@@ -255,8 +270,11 @@
                 "success_toast": "Done!",
                 "message_logger_summary": "{messageCount} messages\n{storyCount} stories",
                 "export_button": "Export",
+                "import_button": "Import",
                 "clear_button": "Clear",
                 "view_logger_history_button": "View Logger History",
+                "message_logger_import_title": "Import message logger",
+                "message_logger_import_text": "Importing will override your current message logger database. Continue?",
                 "ui_settings_title": "UI Settings",
                 "haptic_feedback_label": "Haptic Feedback",
                 "use_system_toasts_label": "Use System Toasts",
@@ -287,15 +305,28 @@
                 "customize_bottom_bar_title": "Customize Bottom Bar",
                 "customize_bottom_bar_subtitle": "Pick which tabs show on your home screen",
                 "available_tabs_title": "Available Tabs",
+                "reset_setup_title": "Reset PurrfectSnap",
+                "reset_setup_action": "Reset and restart setup",
+                "reset_setup_dialog_title": "Are you sure?",
+                "reset_setup_dialog_text": "This will reset PurrfectSnap and restart setup.",
                 "reset_button": "Reset",
                 "done_button": "Done",
                 "clear_friend_feed": "Clear Friend Feed",
                 "test_mode_label": "Enable PurrAura",
+                "purr_aura_disable_title": "Are you sure?",
+                "purr_aura_disable_text": "Doing this will put your account at risk and cause bans!",
                 "disable_feature_loading_label": "Disable Feature Loading",
                 "disable_auto_mapper_label": "Disable Auto Mapper",
                 "disable_bypass_indicator_label": "Disable Bypass Indicator",
                 "open_file_failed_toast": "Failed to open file! {message}",
                 "import_failed_toast": "Import failed: {message}"
+            },
+            "retro_flight": {
+                "title": "Retro Flight",
+                "game_over_label": "GAME OVER",
+                "restart_button": "RESTART",
+                "left_button": "LEFT",
+                "right_button": "RIGHT"
             },
             "tasks": {
                 "no_tasks": "No tasks",
@@ -309,23 +340,24 @@
                 "remove_selected_tasks_title": "Are you sure you want to remove selected tasks?",
                 "remove_all_tasks_title": "Are you sure you want to remove all tasks?",
                 "delete_files_option": "Also delete files",
-                "delete_files_option_hint": "Also remove downloaded files from device",
+                "delete_files_option_hint": "Permanently remove the original files from storage",
                 "remove_selected_tasks_confirm": "Remove {count} tasks?",
                 "remove_all_tasks_confirm": "Remove all tasks?"
             },
             "features": {
-                "disabled": "Disabled",
-                "export_option": "Export",
-                "import_option": "Import",
-                "reset_option": "Reset",
-                "config_export_success_toast": "Config exported successfully",
-                "config_import_success_toast": "Config imported successfully",
-                "config_import_failure_toast": "Failed to import config {error}",
-                "config_export_failure_toast": "Failed to export config {error}",
-                "saved_config_snackbar": "Config saved",
-                "older_required": "This feature requires Snapchat v{version} or older to work correctly",
-                "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
+            "disabled": "Disabled",
+            "export_option": "Export",
+            "import_option": "Import",
+            "reset_option": "Reset",
+            "config_export_success_toast": "Config exported successfully",
+            "config_import_success_toast": "Config imported successfully",
+            "config_import_failure_toast": "Failed to import config {error}",
+            "config_export_failure_toast": "Failed to export config {error}",
+            "saved_config_snackbar": "Config saved",
+            "older_required": "This feature requires Snapchat v{version} or older to work correctly",
+            "newer_required": "This feature requires Snapchat v{version} or newer to work correctly",
                 "search_button": "Search",
+                "search_results_count": "{count} messages",
                 "clear_history": "Clear search history",
                 "subtitle": "Search and manage features"
             },
@@ -343,7 +375,9 @@
                 "blacklist_state_subtext": "Everyone except {count} friends/groups will be affected by this rule",
                 "blacklist_state_button": "Select excluded friends/groups",
                 "clear_list_button": "Clear friends/groups list",
-                "dialog_clear_confirmation_text": "Are you sure you want to clear the list?"
+                "dialog_clear_confirmation_text": "Are you sure you want to clear the list?",
+                "dialog_clear_confirm_button": "Clear",
+                "dialog_clear_cancel_button": "Cancel"
             },
             "social": {
                 "friends_tab": "Friends",
@@ -359,6 +393,7 @@
                 "social_empty_hint": "Tap the + button to sync friends or groups."
             },
             "manage_scope": {
+                "manage_scope_title": "Manage",
                 "logged_stories_button": "Show Logged Stories",
                 "e2ee_title": "End-to-End Encryption",
                 "e2ee_subtitle": "Manage your shared key for this friend.",
@@ -389,16 +424,27 @@
                 "bridge_init_failed": "Failed to initialize messaging bridge. Make sure Snapchat is running in the background",
                 "message_fetch_failed": "Failed to fetch messages",
                 "no_message_hint": "No message",
+                "sender_unknown": "Unknown",
+                "sender_you": "You",
+                "sender_friend": "Friend",
                 "subtitle": "Hold to select",
                 "actions_title": "Conversation Actions",
+                "choose_message_types_subtitle": "Choose message types",
                 "save_selection_option": "Save Selection",
                 "save_all_option": "Save All",
+                "save_selected_messages_subtitle": "Save selected messages",
+                "save_by_content_type_subtitle": "Save by content type",
                 "unsave_selection_option": "Unsave Selection",
                 "unsave_all_option": "Unsave All",
+                "unsave_selected_messages_subtitle": "Unsave selected messages",
+                "unsave_by_content_type_subtitle": "Unsave by content type",
                 "mark_selection_as_seen_option": "Mark selected Snap as seen",
                 "mark_all_as_seen_option": "Mark all Snaps as seen",
+                "mark_as_seen_subtitle": "Marks snaps as seen",
                 "delete_selection_option": "Delete Selection",
                 "delete_all_option": "Delete All",
+                "delete_selected_messages_subtitle": "Delete selected messages",
+                "delete_by_content_type_subtitle": "Delete by content type",
                 "processed_message_toast": "Processed {count} messages",
                 "processed_messages_toast": "Processed {count} messages",
                 "processed_messages_text": "Processed {count}",
@@ -431,6 +477,10 @@
                 "longitude_dialog_hint": "Longitude",
                 "save_dialog_button": "Save",
                 "choose_location_button": "Pick a Location",
+                "search_or_tap_map_hint": "Search or tap on the map",
+                "search_location_placeholder": "Search location...",
+                "search_icon_description": "Search",
+                "searching_label": "Searching...",
                 "manual_coordinates_hint": "Fine-tune the coordinates manually.",
                 "saved_coordinates_subtitle": "Manage your saved spoof locations",
                 "teleport_to_friend_button": "Teleport to Friend",
@@ -443,7 +493,13 @@
                 "teleport_to_friend_title": "Teleport to Friend",
                 "search_bar": "Search",
                 "no_friends_map": "No friends on the map",
-                "no_friends_found": "No friends found"
+                "no_friends_found": "No friends found",
+                "include_saved_locations": "Include Saved Locations",
+                "include_saved_locations_description": "Export your saved location coordinates",
+                "location_search_provider_title": "Location Search Provider",
+                "google_maps_api_key_title": "Google Maps API Key",
+                "option_osm": "OpenStreetMap (Free)",
+                "option_google_maps": "Google Maps"
             }
         },
         "dialogs": {
@@ -482,7 +538,8 @@
             },
             "file_imports": {
                 "no_files_settings_hint": "No files found. Make sure you have imported the required files in the File Imports section",
-                "settings_select_file_hint": "Select an imported file"
+                "settings_select_file_hint": "Select an imported file",
+                "settings_select_file_subtitle": "Choose a file from your imported files list"
             }
         },
         "scripting": {
@@ -513,6 +570,8 @@
             "no_settings_for_module": "This module does not have any settings",
             "open_module_failed": "Failed to open module file",
             "open_scripts_folder_button": "Open scripts folder",
+            "loaded_script": "Loaded script {name}",
+            "unloaded_script": "Unloaded script {name}",
             "script_already_installed": "Script already installed",
             "select_folder_button": "Choose Folder",
             "select_scripts_folder_toast": "Please select a scripts folder first",
@@ -524,6 +583,7 @@
                 "no_repos_added": "No repositories added",
                 "repo_list_info": "Find repositories here:",
                 "link_text": "Repository list",
+                "loading": "Loading catalog...",
                 "script_already_installed": "Script already installed",
                 "script_downloaded": "Script downloaded",
                 "could_not_create_file": "Could not create file",
@@ -580,6 +640,7 @@
             "scope_blacklist": "Everyone except",
             "events_section_title": "Events",
             "events_suffix": "events",
+            "scopes_suffix": "scopes",
             "no_events_text": "No events added yet",
             "add_event_dialog_title": "Add Event",
             "event_type_label": "Event Type",
@@ -623,6 +684,10 @@
             "save_button": "Save",
             "back_button_description": "Go back",
             "expand_button_description": "Expand or collapse category",
+            "tracker_author_label": "Author",
+            "tracker_enabled_label": "Enabled",
+            "tracker_enabled_value": "Enabled",
+            "tracker_disabled_value": "Disabled",
             "exported_toast": "Tracker configuration exported",
             "export_failed_toast": "Failed to export tracker: {message}"
         },
@@ -631,6 +696,10 @@
             "confirm_button": "Import",
             "back_button_description": "Go back",
             "expand_button_description": "Expand or collapse category",
+            "tracker_author_label": "Author",
+            "tracker_enabled_label": "Enabled",
+            "tracker_enabled_value": "Enabled",
+            "tracker_disabled_value": "Disabled",
             "imported_toast": "Tracker imported",
             "import_failed_toast": "Failed to import tracker: {message}"
         },
@@ -831,90 +900,7 @@
             "ban_risk": "\u26a0 This feature may cause bans",
             "internal_behavior": "\u26a0 This may break Snapchat internal behavior"
         },
-        "options": {
-            "empty": "Empty",
-            "walk_radius": {
-                "empty": "Empty"
-            },
-            "spoof_battery_level": {
-                "empty": "Empty"
-            },
-            "custom_android_id": {
-                "empty": "Empty"
-            },
-            "custom_streaks_expiration_format": {
-                "empty": "Empty"
-            },
-            "preferred_transcription_lang": {
-                "empty": "Empty"
-            },
-            "custom_emoji_font": {
-                "empty": "Empty"
-            },
-            "custom_shared_library": {
-                "empty": "Empty"
-            },
-            "custom_resolution": {
-                "empty": "Empty"
-            },
-            "custom_path_format": {
-                "empty": "Empty"
-            },
-            "custom_video_codec": {
-                "empty": "Empty"
-            },
-            "custom_audio_codec": {
-                "empty": "Empty"
-            },
-            "double_tap_chat_action_custom_emoji": {
-                "empty": "Empty"
-            },
-            "unsaveable_messages": {
-                "blacklist": "Blacklist mode",
-                "whitelist": "Whitelist mode",
-                "null": "Disabled"
-            },
-            "update_check_frequency": {
-                "daily": "Daily",
-                "weekly": "Weekly",
-                "monthly": "Monthly"
-            }
-        },
         "properties": {
-            "global": {
-                "name": "Global",
-                "description": "General module preferences and defaults",
-                "properties": {
-                    "ui_settings": {
-                        "name": "UI Settings",
-                        "description": "Tune feedback and toast behavior",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptic Feedback",
-                                "description": "Vibrate on supported interactions"
-                            },
-                            "use_system_toasts": {
-                                "name": "Use System Toasts",
-                                "description": "Show Android toasts instead of in-app overlays"
-                            }
-                        }
-                    },
-                    "update_settings": {
-                        "name": "Update Settings",
-                        "description": "Control automatic update checks",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Auto Update Check",
-                                "description": "Check for new builds automatically"
-                            },
-                            "update_check_frequency": {
-                                "name": "Update Check Frequency",
-                                "description": "How often to check for updates"
-                            }
-                        }
-                    }
-                }
-            },
             "downloader": {
                 "name": "Downloader",
                 "description": "Download Snapchat Media",
@@ -1688,6 +1674,34 @@
                 "name": "Global",
                 "description": "Tweak Global Snapchat Settings",
                 "properties": {
+                    "ui_settings": {
+                        "name": "UI Settings",
+                        "description": "Tune feedback and toast behavior",
+                        "properties": {
+                            "haptic_feedback": {
+                                "name": "Haptic Feedback",
+                                "description": "Vibrate on supported interactions"
+                            },
+                            "use_system_toasts": {
+                                "name": "Use System Toasts",
+                                "description": "Show Android toasts instead of in-app overlays"
+                            }
+                        }
+                    },
+                    "update_settings": {
+                        "name": "Update Settings",
+                        "description": "Control automatic update checks",
+                        "properties": {
+                            "auto_update_check": {
+                                "name": "Auto Update Check",
+                                "description": "Check for new builds automatically"
+                            },
+                            "update_check_frequency": {
+                                "name": "Update Check Frequency",
+                                "description": "How often to check for updates"
+                            }
+                        }
+                    },
                     "better_location": {
                         "name": "Better Location",
                         "description": "Enhances the Snapchat Location",
@@ -1695,6 +1709,14 @@
                             "spoof_location": {
                                 "name": "Spoof Location",
                                 "description": "Spoofs your location to a specified one"
+                            },
+                            "location_search_provider": {
+                                "name": "Location Search Provider",
+                                "description": "Choose the provider for searching locations"
+                            },
+                            "google_maps_api_key": {
+                                "name": "Google Maps API Key",
+                                "description": "Required if using Google Maps provider"
                             },
                             "coordinates": {
                                 "name": "Coordinates",
@@ -1756,26 +1778,6 @@
                         "name": "Auto Updater",
                         "description": "Automatically checks for new updates"
                     },
-                    "update_settings": {
-                        "name": "Update Settings",
-                        "description": "Control how PurrfectSnap checks for updates",
-                        "properties": {
-                            "auto_update_check": {
-                                "name": "Auto Update Check"
-                            },
-                            "update_check_frequency": {
-                                "name": "Update Check Frequency"
-                            }
-                        }
-                    },
-                    "ui_settings": {
-                        "name": "UI Settings",
-                        "properties": {
-                            "haptic_feedback": {
-                                "name": "Haptic Feedback"
-                            }
-                        }
-                    },
                     "disable_metrics": {
                         "name": "Disable Metrics",
                         "description": "Blocks sending specific analytic data to Snapchat"
@@ -1807,6 +1809,10 @@
                     "spotlight_comments_username_icon": {
                         "name": "Spotlight Comments Username Icon",
                         "description": "Choose which icon is displayed next to usernames in Spotlight comments"
+                    },
+                    "spotlight_creator_info": {
+                        "name": "Spotlight Creator Info",
+                        "description": "Show an info button on Spotlight/Discover snaps to view creator display name, username, and user ID"
                     },
                     "bypass_video_length_restriction": {
                         "name": "Bypass Video Length Restrictions",
@@ -2203,6 +2209,16 @@
             }
         },
         "options": {
+            "empty": "Empty",
+            "location_search_provider": {
+                "osm": "OpenStreetMap (Free)",
+                "google_maps": "Google Maps"
+            },
+            "unsaveable_messages": {
+                "blacklist": "Blacklist mode",
+                "whitelist": "Whitelist mode",
+                "null": "Disabled"
+            },
             "app_appearance": {
                 "always_light": "Always Light",
                 "always_dark": "Always Dark",
@@ -2460,6 +2476,9 @@
                 "null": "Automatic"
             },
             "update_check_frequency": {
+                "daily": "Daily",
+                "weekly": "Weekly",
+                "monthly": "Monthly",
                 "null": "Auto"
             },
             "snapchat_plus": {
@@ -2909,6 +2928,9 @@
             "text_field_selection": "{amount} selected",
             "text_field_selection_all": "All",
             "export_file_format_title": "Export File Format",
+            "sort_order_title": "Message Order",
+            "sort_order_newest_to_oldest": "Newest to Oldest",
+            "sort_order_oldest_to_newest": "Oldest to Newest",
             "message_type_filter_title": "Filter Messages by Type",
             "amount_of_messages_title": "Message Count (leave blank for all)",
             "download_medias_title": "Download Media"
@@ -2932,6 +2954,7 @@
         "save": "Save",
         "open": "Open",
         "download": "Download",
+        "import": "Import",
         "send": "Send",
         "restore_original": "Restore Original",
         "convert_external_media": "Convert External Media"
@@ -2976,8 +2999,19 @@
     "profile_picture_downloader": {
         "button": "Download Profile Picture",
         "title": "Profile Picture Downloader",
+        "subtitle": "Choose which profile image to save",
+        "empty_state": "No profile pictures available. Please wait for the profile to load.",
+        "download_hint": "Tap to download",
         "avatar_option": "Avatar",
         "background_option": "Background"
+    },
+    "spotlight_comments_username_dialog": {
+        "title": "User Information",
+        "subtitle": "Spotlight comment profile details",
+        "username_label": "Username",
+        "display_name_label": "Display Name",
+        "user_id_label": "User ID",
+        "not_available": "Not available"
     },
     "call_start_confirmation": {
         "dialog_title": "Start Call",
@@ -3224,6 +3258,28 @@
         "select": "Select",
         "select_date_first": "Please select a date",
         "invalid_time": "Please select a future time"
+    },
+    "convert_message_dialog": {
+        "subtitle": "Choose how this message should be reshaped locally."
+    },
+    "spotlight_creator_info": {
+        "title": "Creator Info",
+        "close": "Close",
+        "creator_info": "Creator Info",
+        "display_name": "Display name",
+        "username": "Username",
+        "user_id": "User ID",
+        "posted_on": "Posted",
+        "loading_username": "Loading…",
+        "username_copied": "Username copied",
+        "user_id_copied": "User ID copied",
+        "friend_status": "Friend status",
+        "mutual_friend": "Mutual friend",
+        "following": "Following",
+        "friend_request_sent": "Request sent",
+        "friend_request_received": "Request received",
+        "blocked": "Blocked",
+        "friend_removed": "Removed"
     },
     "auto_reply_messages": {
         "dialog": {
@@ -3477,19 +3533,26 @@
         "cancel": "Cancel",
         "documentation": "Documentation"
     },
+    "include_saved_locations": "Include Saved Locations",
+    "include_saved_locations_description": "Export your saved location coordinates",
     "common": {
         "cancel": "Cancel",
+        "close": "Close",
         "add": "Add",
         "ok": "OK",
         "quit": "Quit",
         "done": "Done",
         "back": "Back",
         "unknown": "Unknown",
+        "unknown_error": "Unknown error",
+        "not_available": "N/A",
         "added": "Added",
         "no_friends_found": "No friends found",
         "exporting_memories": "Exporting memories... ({failed} failed)"
     },
     "clear_friend_feed": "Clear Friend Feed",
+    "task_media_conversion_title": "Media conversion",
+    "task_call_recording_title": "Call Recording {author}",
     "select_date": "Select Date",
     "schedule_scheduled_for": "Scheduled for {name} in {time}",
     "schedule_sending_in": "Sending in {time}",
@@ -3568,6 +3631,11 @@
     "toast_open_snap_failed": "Failed to open snap",
     "toast_mark_message_read_failed": "Failed to mark message as read. Check logs for more details",
     "toast_open_conversation_first": "You must open a conversation first",
+    "conversation_toolbox": {
+        "title": "Conversation Toolbox",
+        "loaded_script": "Loaded Script",
+        "failed_to_load": "Failed to load: {message}"
+    },
     "toast_open_link_failed": "Failed to open link",
     "ai_response_style": {
         "casual": "Casual",
