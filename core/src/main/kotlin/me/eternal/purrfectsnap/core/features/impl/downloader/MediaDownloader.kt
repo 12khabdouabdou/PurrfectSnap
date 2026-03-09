@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import me.eternal.purrfectsnap.bridge.DownloadCallback
+import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.data.FileType
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
 import me.eternal.purrfectsnap.common.data.download.*
@@ -64,6 +65,11 @@ import javax.crypto.spec.SecretKeySpec
 class SnapChapterInfo(
     val offset: Long,
     val duration: Long?
+)
+
+data class OperaViewerMessageContext(
+    val conversationId: String,
+    val clientMessageId: Long
 )
 
 class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleType.AUTO_DOWNLOAD) {
@@ -195,6 +201,71 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         }
     }
 
+    private fun isSnapContentType(contentTypeId: Int): Boolean {
+        return when (ContentType.fromId(contentTypeId)) {
+            ContentType.SNAP,
+            ContentType.TINY_SNAP,
+            ContentType.EXTERNAL_MEDIA -> true
+            else -> false
+        }
+    }
+
+    private fun validateViewerMessageContext(messageContext: OperaViewerMessageContext): OperaViewerMessageContext? {
+        val message = context.database.getConversationMessageFromId(messageContext.clientMessageId) ?: return null
+        if (message.clientConversationId != messageContext.conversationId) return null
+        if (!isSnapContentType(message.contentType)) return null
+        return messageContext
+    }
+
+    private fun parseViewerMessageContext(rawValue: String): OperaViewerMessageContext? {
+        val parts = rawValue.split(':')
+        if (parts.size < 3) return null
+
+        val conversationId = parts.firstOrNull()?.takeIf {
+            runCatching { UUID.fromString(it) }.isSuccess
+        } ?: return null
+        val clientMessageId = parts.lastOrNull()?.toLongOrNull() ?: return null
+
+        return OperaViewerMessageContext(
+            conversationId = conversationId,
+            clientMessageId = clientMessageId
+        )
+    }
+
+    fun resolveViewerMessageContextFromParamMap(paramMap: ParamMap? = lastSeenMapParams): OperaViewerMessageContext? {
+        if (paramMap == null) return null
+
+        paramMap["MESSAGE_ID"]?.toString()
+            ?.let(::parseViewerMessageContext)
+            ?.let(::validateViewerMessageContext)
+            ?.let { return it }
+
+        return paramMap.concurrentHashMap.values
+            .asSequence()
+            .mapNotNull { value ->
+                value?.toString()?.let(::parseViewerMessageContext)
+            }
+            .mapNotNull(::validateViewerMessageContext)
+            .firstOrNull()
+    }
+
+    fun resolveCurrentSnapMessageContext(): OperaViewerMessageContext? {
+        val messaging = context.feature(Messaging::class)
+        val currentConversationId = messaging.openedConversationUUID?.toString()
+        val currentMessageId = messaging.lastFocusedMessageId.takeIf { it > 0L }
+
+        if (currentConversationId != null && currentMessageId != null) {
+            validateViewerMessageContext(
+                OperaViewerMessageContext(
+                    conversationId = currentConversationId,
+                    clientMessageId = currentMessageId
+                )
+            )?.let { return it }
+        }
+
+        return resolveViewerMessageContextFromParamMap()
+    }
+
     private fun handleLocalReferences(path: String) = runBlocking {
         Uri.parse(path).let { uri ->
             if (uri.scheme == "file" || uri.scheme == null) {
@@ -285,9 +356,10 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
     ) {
         
         // ─── Messages ─────────────────────────
-        paramMap["MESSAGE_ID"]?.toString()?.takeIf { forceDownload || shouldAutoDownload("friend_snaps") }?.let { id ->
-            val messageId = id.substringAfterLast(":").toLong()
-            val conversationMessage = context.database.getConversationMessageFromId(messageId) ?: return@let
+        resolveViewerMessageContextFromParamMap(paramMap)?.takeIf {
+            forceDownload || shouldAutoDownload("friend_snaps")
+        }?.let { messageContext ->
+            val conversationMessage = context.database.getConversationMessageFromId(messageContext.clientMessageId) ?: return@let
             val conversationId = conversationMessage.clientConversationId!!
 
             if (!forceDownload && !canUseRule(conversationId)) return@let
@@ -530,14 +602,26 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                         }
 
                         val operaLayerList = (param.thisObject() as Any).getObjectField(layerListField.get()!!) as ArrayList<*>
-                        val mediaParamMap: ParamMap = operaLayerList
+                        val layerParamMaps = operaLayerList
                             .asSequence()
                             .mapNotNull { layerObj ->
                                 layerObj?.let { runCatching { Layer(it).paramMap }.getOrNull() }
                             }
-                            .firstOrNull {
-                                it.containsKey("image_media_info") || it.containsKey("video_media_info_list")
-                            } ?: return@onOperaViewStateCallback
+                            .toList()
+                        val firstLayerParamMap = layerParamMaps.firstOrNull()
+                        val mediaParamMap: ParamMap = (
+                            // Chat snaps need the primary MESSAGE_ID-bearing param map for mark-as-seen to work.
+                            layerParamMaps.firstOrNull {
+                                it.containsKey("MESSAGE_ID") &&
+                                    (it.containsKey("image_media_info") || it.containsKey("video_media_info_list"))
+                            }
+                                ?: firstLayerParamMap?.takeIf {
+                                    it.containsKey("image_media_info") || it.containsKey("video_media_info_list")
+                                }
+                                ?: layerParamMaps.firstOrNull {
+                                    it.containsKey("image_media_info") || it.containsKey("video_media_info_list")
+                                }
+                            ) ?: return@onOperaViewStateCallback
 
                         val mediaInfoMap = mutableMapOf<SplitMediaAssetType, MediaInfo>()
                         val isVideo = mediaParamMap.containsKey("video_media_info_list")

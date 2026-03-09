@@ -104,10 +104,9 @@ class OperaContextActionMenu : AbstractMenu() {
             val playableStorySnapRecord = paramMap["PLAYABLE_STORY_SNAP_RECORD"]?.toString()
             val sentTimestamp = playableStorySnapRecord?.substringAfter("timestamp=")
                 ?.substringBefore(",")?.toLongOrNull()
-                ?: paramMap["MESSAGE_ID"]?.toString()?.let { messageId ->
+                ?: mediaDownloader.resolveCurrentSnapMessageContext()?.clientMessageId?.let { messageId ->
                     context.database.getConversationMessageFromId(
-                        messageId.substring(messageId.lastIndexOf(":") + 1)
-                            .toLong()
+                        messageId
                     )?.creationTimestamp
                 }
                 ?: paramMap["SNAP_TIMESTAMP"]?.toString()?.toLongOrNull()
