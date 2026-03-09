@@ -142,6 +142,7 @@ class FeatureManager(
             AutoOpenSnaps(),
             CustomStreaksExpirationFormat(),
             ValdiHooks(),
+            FirstCreatedUsername(),
             DisableCustomTabs(),
             BestFriendPinning(),
             ContextMenuFix(),
