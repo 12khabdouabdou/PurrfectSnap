@@ -29,20 +29,9 @@ import kotlin.system.measureTimeMillis
 class BridgeService : Service() {
     private lateinit var remoteSideContext: RemoteSideContext
     private var syncCallback: SyncCallback? = null
-    private var syncCallbackBinder: IBinder? = null
-    private val syncCallbackDeathRecipient = IBinder.DeathRecipient {
-        remoteSideContext.takeIf { ::remoteSideContext.isInitialized }?.log?.warn("Sync callback binder died")
-        clearSyncCallback()
-    }
     var messagingBridge: MessagingBridge? = null
 
     private fun clearSyncCallback() {
-        syncCallbackBinder?.let { binder ->
-            runCatching {
-                binder.unlinkToDeath(syncCallbackDeathRecipient, 0)
-            }
-        }
-        syncCallbackBinder = null
         syncCallback = null
     }
 
@@ -66,12 +55,6 @@ class BridgeService : Service() {
     fun triggerScopeSync(scope: SocialScope, id: String, updateOnly: Boolean = false) {
         val callback = syncCallback ?: return
         runCatching {
-            if (!callback.asBinder().pingBinder()) {
-                clearSyncCallback()
-                remoteSideContext.log.warn("Failed to sync $scope $id: Callback is dead")
-                return
-            }
-
             val database = remoteSideContext.database
             val syncedObject = when (scope) {
                 SocialScope.FRIEND -> {
@@ -209,14 +192,6 @@ class BridgeService : Service() {
         override fun sync(callback: SyncCallback) {
             clearSyncCallback()
             syncCallback = callback
-            syncCallbackBinder = callback.asBinder().also { binder ->
-                runCatching {
-                    binder.linkToDeath(syncCallbackDeathRecipient, 0)
-                }.onFailure {
-                    clearSyncCallback()
-                    throw it
-                }
-            }
             measureTimeMillis {
                 remoteSideContext.database.getFriends().map { it.userId } .forEach { friendId ->
                     triggerScopeSync(SocialScope.FRIEND, friendId, true)

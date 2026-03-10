@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Tem certeza que deseja remover as tarefas selecionadas?",
                 "remove_all_tasks_title": "Tem certeza que deseja remover todas as tarefas?",
                 "delete_files_option": "Excluir arquivos também",
+                "delete_files_option_hint": "Remover permanentemente os arquivos originais do armazenamento",
                 "remove_selected_tasks_confirm": "Remover {count} tarefas?",
                 "remove_all_tasks_confirm": "Remover todas as tarefas?"
             },

@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "আপনি কি নির্বাচিত টাস্কগুলো সরাতে চান?",
                 "remove_all_tasks_title": "আপনি কি সব টাস্ক সরাতে চান?",
                 "delete_files_option": "ফাইলগুলোও ডিলিট করুন",
+                "delete_files_option_hint": "স্টোরেজ থেকে মূল ফাইলগুলো স্থায়ীভাবে সরান",
                 "remove_selected_tasks_confirm": "{count} টি টাস্ক সরাবেন?",
                 "remove_all_tasks_confirm": "সব টাস্ক সরাবেন?"
             },

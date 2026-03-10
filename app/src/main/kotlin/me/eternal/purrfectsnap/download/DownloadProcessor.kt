@@ -1,5 +1,6 @@
 package me.eternal.purrfectsnap.download
 
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Intent
 import android.graphics.Bitmap
@@ -61,6 +62,10 @@ class DownloadProcessor (
     private val remoteSideContext: RemoteSideContext,
     private val callback: DownloadCallback
 ) {
+    private data class GallerySaveResult(
+        val uri: Uri,
+        val alreadyDownloaded: Boolean = false
+    )
 
     private val translation by lazy {
         remoteSideContext.translation.getCategory("download_processor")
@@ -118,78 +123,36 @@ class DownloadProcessor (
                 }
             }
 
-            val fileName = metadata.outputPath.substringAfterLast("/") + "." + fileType.fileExtension
+            val fileName = buildOutputFileName(metadata.outputPath, fileType)
             val configuredFolder = remoteSideContext.config.root.downloader.saveFolder.get().orEmpty().trim()
-            if (configuredFolder.isBlank()) {
-                val outputUri = saveToSystemDefault(fileName, fileType, inputFile, metadata)
-                    ?: throw Exception("Failed to save media (no output uri)")
-                pendingTask.task.extra = outputUri.toString()
-                pendingTask.success()
-                callbackOnSuccess(fileName)
-                return
-            }
+            val saveResult = if (configuredFolder.isBlank()) {
+                saveToSystemDefault(fileName, fileType, inputFile, metadata)
+            } else {
+                runCatching {
+                    saveToConfiguredFolder(
+                        configuredFolder = configuredFolder,
+                        fileName = fileName,
+                        fileType = fileType,
+                        inputFile = inputFile,
+                        metadata = metadata,
+                        pendingTask = pendingTask
+                    )
+                }.onFailure {
+                    remoteSideContext.log.error("Failed to save to configured folder, falling back to system default", it)
+                }.getOrNull() ?: saveToSystemDefault(fileName, fileType, inputFile, metadata)
+            } ?: throw Exception("Failed to save media (no output uri)")
 
-            val outputFolder = DocumentFile.fromTreeUri(remoteSideContext.androidContext, Uri.parse(configuredFolder))
-                ?: throw Exception("Failed to open output folder")
+            pendingTask.task.extra = saveResult.uri.toString()
+            pendingTask.success()
 
-            val outputFileFolder = metadata.outputPath.let {
-                if (it.contains("/")) {
-                    it.substringBeforeLast("/").split("/").fold(outputFolder) { folder, name ->
-                        folder.findFile(name) ?: folder.createDirectory(name)!!
-                    }
-                } else {
-                    outputFolder
-                }
-            }
-
-            // checks if the file already exists and if it does, compares its contents with the input file, if contents differ, deletes existing file.
-            outputFileFolder.findFile(fileName)?.let { existingFile ->
-                pendingTask.updateProgress("Comparing existing media")
-                if (existingFile.length() != inputFile.length()) {
-                    existingFile.delete()
-                    return@let
-                }
-
-                remoteSideContext.androidContext.contentResolver.openInputStream(existingFile.uri)?.use { existingInputStream ->
-                    val buffer1 = ByteArray(1024 * 1024)
-                    val buffer2 = ByteArray(1024 * 1024)
-                    var read1: Int
-                    var read2: Int
-
-                    inputFile.inputStream().use { inputStream ->
-                        while (true) {
-                            read1 = inputStream.read(buffer1)
-                            read2 = existingInputStream.read(buffer2)
-                            if (read1 != read2 || !buffer1.contentEquals(buffer2)) {
-                                existingFile.delete()
-                                return@let
-                            }
-                            if (read1 == -1) break
-                        }
-                    }
-                }
-
-                pendingTask.task.extra = existingFile.uri.toString()
-                pendingTask.success()
+            if (saveResult.alreadyDownloaded) {
                 callbackOnFailure(translation["already_downloaded_toast"])
                 return
             }
 
-            val outputFile = outputFileFolder.createFile(fileType.mimeType, fileName)!!
-
-            pendingTask.updateProgress("Saving media to gallery")
-            remoteSideContext.androidContext.contentResolver.openOutputStream(outputFile.uri)!!.use { outputStream ->
-                inputFile.inputStream().use { inputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-            }
-
-            pendingTask.task.extra = outputFile.uri.toString()
-            pendingTask.success()
-
             runCatching {
                 remoteSideContext.androidContext.sendBroadcast(Intent("android.intent.action.MEDIA_SCANNER_SCAN_FILE").apply {
-                    data = outputFile.uri
+                    data = saveResult.uri
                 })
             }.onFailure {
                 remoteSideContext.log.error("Failed to scan media file", it)
@@ -205,15 +168,184 @@ class DownloadProcessor (
         }
     }
 
+    private fun saveToConfiguredFolder(
+        configuredFolder: String,
+        fileName: String,
+        fileType: FileType,
+        inputFile: File,
+        metadata: DownloadMetadata,
+        pendingTask: PendingTask,
+    ): GallerySaveResult {
+        val outputFolder = DocumentFile.fromTreeUri(remoteSideContext.androidContext, Uri.parse(configuredFolder))
+            ?: throw Exception("Failed to open output folder")
+
+        val outputFileFolder = metadata.outputPath.let {
+            if (it.contains("/")) {
+                it.substringBeforeLast("/").split("/").fold(outputFolder) { folder, name ->
+                    folder.findFile(name)
+                        ?: folder.createDirectory(name)
+                        ?: throw Exception("Failed to create output directory $name")
+                }
+            } else {
+                outputFolder
+            }
+        }
+
+        outputFileFolder.findFile(fileName)?.let { existingFile ->
+            pendingTask.updateProgress("Comparing existing media")
+            if (existingFile.length() != inputFile.length()) {
+                existingFile.delete()
+            } else {
+                val existingInputStream = remoteSideContext.androidContext.contentResolver.openInputStream(existingFile.uri)
+                    ?: throw Exception("Failed to open existing media for comparison")
+
+                existingInputStream.use { currentExistingInputStream ->
+                    val buffer1 = ByteArray(1024 * 1024)
+                    val buffer2 = ByteArray(1024 * 1024)
+                    var read1: Int
+                    var read2: Int
+
+                    inputFile.inputStream().use { inputStream ->
+                        while (true) {
+                            read1 = inputStream.read(buffer1)
+                            read2 = currentExistingInputStream.read(buffer2)
+                            if (read1 != read2 || (read1 > 0 && !buffersMatch(buffer1, buffer2, read1))) {
+                                existingFile.delete()
+                                return@let
+                            }
+                            if (read1 == -1) break
+                        }
+                    }
+                }
+
+                return GallerySaveResult(existingFile.uri, alreadyDownloaded = true)
+            }
+        }
+
+        val outputFile = outputFileFolder.createFile(fileType.mimeType, fileName)
+            ?: throw Exception("Failed to create output file $fileName")
+
+        pendingTask.updateProgress("Saving media to gallery")
+        val outputStream = remoteSideContext.androidContext.contentResolver.openOutputStream(outputFile.uri)
+            ?: throw Exception("Failed to open output stream for $fileName")
+
+        outputStream.use { currentOutputStream ->
+            inputFile.inputStream().use { inputStream ->
+                inputStream.copyTo(currentOutputStream)
+            }
+        }
+
+        return GallerySaveResult(outputFile.uri)
+    }
+
+    private fun buffersMatch(left: ByteArray, right: ByteArray, length: Int): Boolean {
+        for (index in 0 until length) {
+            if (left[index] != right[index]) return false
+        }
+        return true
+    }
+
+    private fun buildOutputFileName(outputPath: String, fileType: FileType): String {
+        val rawName = outputPath.substringAfterLast("/").ifBlank { "media" }
+        val sanitizedBase = sanitizeFileName(rawName.substringBeforeLast(".", rawName))
+        val currentExtension = rawName.substringAfterLast(".", "").lowercase()
+        val targetExtension = fileType.fileExtension?.lowercase() ?: "dat"
+        val extension = if (currentExtension == targetExtension) {
+            currentExtension
+        } else {
+            targetExtension
+        }
+        return "$sanitizedBase.$extension"
+    }
+
+    private fun sanitizeFileName(name: String): String {
+        return name
+            .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+            .replace(Regex("\\p{Cntrl}"), "")
+            .replace(Regex("\\s+"), " ")
+            .trim()
+            .trim('.')
+            .ifBlank { "media" }
+    }
+
+    private fun sanitizeRelativePath(path: String): String {
+        return path.split("/")
+            .mapNotNull { segment ->
+                segment.trim()
+                    .takeIf { it.isNotBlank() }
+                    ?.let(::sanitizeFileName)
+            }
+            .joinToString("/")
+    }
+
+    private fun appendNameSuffix(fileName: String, index: Int): String {
+        val extension = fileName.substringAfterLast('.', "")
+        val baseName = fileName.substringBeforeLast(".", fileName)
+        return if (extension.isBlank()) {
+            "$baseName ($index)"
+        } else {
+            "$baseName ($index).$extension"
+        }
+    }
+
+    private fun findExistingMediaUri(collection: Uri, fileName: String, relativePath: String): Uri? {
+        val projection = arrayOf(MediaStore.MediaColumns._ID)
+        val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.RELATIVE_PATH} = ?"
+        val selectionArgs = arrayOf(fileName, relativePath)
+        return remoteSideContext.androidContext.contentResolver.query(
+            collection,
+            projection,
+            selection,
+            selectionArgs,
+            null
+        )?.use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
+            ContentUris.withAppendedId(collection, id)
+        }
+    }
+
+    private fun contentMatches(uri: Uri, inputFile: File): Boolean {
+        val existingInputStream = remoteSideContext.androidContext.contentResolver.openInputStream(uri) ?: return false
+        return streamsMatch(existingInputStream, inputFile.inputStream())
+    }
+
+    private fun filesMatch(existingFile: File, inputFile: File): Boolean {
+        return streamsMatch(existingFile.inputStream(), inputFile.inputStream())
+    }
+
+    private fun streamsMatch(existingInputStream: InputStream, inputInputStream: InputStream): Boolean {
+        existingInputStream.use { currentExistingInputStream ->
+            val buffer1 = ByteArray(1024 * 1024)
+            val buffer2 = ByteArray(1024 * 1024)
+            var read1: Int
+            var read2: Int
+
+            inputInputStream.use { inputStream ->
+                while (true) {
+                    read1 = inputStream.read(buffer1)
+                    read2 = currentExistingInputStream.read(buffer2)
+                    if (read1 != read2 || (read1 > 0 && !buffersMatch(buffer1, buffer2, read1))) {
+                        return false
+                    }
+                    if (read1 == -1) break
+                }
+            }
+        }
+        return true
+    }
+
     private fun saveToSystemDefault(
         fileName: String,
         fileType: FileType,
         inputFile: File,
         metadata: DownloadMetadata,
-    ): Uri? {
-        val subPath = metadata.outputPath.substringBeforeLast("/", missingDelimiterValue = "")
-            .replace("\\", "/")
-            .trim('/')
+    ): GallerySaveResult? {
+        val subPath = sanitizeRelativePath(
+            metadata.outputPath.substringBeforeLast("/", missingDelimiterValue = "")
+                .replace("\\", "/")
+                .trim('/')
+        )
         val baseRelative = when {
             fileType.isImage -> Environment.DIRECTORY_PICTURES
             fileType.isVideo -> Environment.DIRECTORY_MOVIES
@@ -228,23 +360,69 @@ class DownloadProcessor (
                 fileType.isVideo -> MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
                 else -> MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
             }
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                put(MediaStore.MediaColumns.MIME_TYPE, fileType.mimeType)
-                put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
-            }
             val resolver = remoteSideContext.androidContext.contentResolver
-            val uri = resolver.insert(collection, values) ?: return null
-            resolver.openOutputStream(uri)?.use { out ->
-                inputFile.inputStream().use { it.copyTo(out) }
-            } ?: return null
-            uri
+            val sanitizedFileName = sanitizeFileName(fileName.substringBeforeLast(".", fileName)).let { baseName ->
+                val extension = fileName.substringAfterLast('.', "")
+                if (extension.isBlank()) baseName else "$baseName.$extension"
+            }
+            findExistingMediaUri(collection, sanitizedFileName, relativePath)?.let { existingUri ->
+                if (contentMatches(existingUri, inputFile)) {
+                    remoteSideContext.log.verbose("Media already exists in gallery: $sanitizedFileName")
+                    return GallerySaveResult(existingUri, alreadyDownloaded = true)
+                }
+            }
+
+            for (attempt in 0..100) {
+                val candidateName = if (attempt == 0) sanitizedFileName else appendNameSuffix(sanitizedFileName, attempt)
+                val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, candidateName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, fileType.mimeType)
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+                    put(MediaStore.MediaColumns.IS_PENDING, 1)
+                }
+
+                val uri = runCatching {
+                    resolver.insert(collection, values)
+                }.onFailure {
+                    remoteSideContext.log.verbose("MediaStore insert rejected $candidateName in $relativePath: ${it.message}")
+                }.getOrNull() ?: continue
+
+                runCatching {
+                    resolver.openOutputStream(uri)?.use { out ->
+                        inputFile.inputStream().use { it.copyTo(out) }
+                    } ?: throw IllegalStateException("Failed to open output stream for $candidateName")
+
+                    ContentValues().apply {
+                        put(MediaStore.MediaColumns.IS_PENDING, 0)
+                    }.also { resolver.update(uri, it, null, null) }
+
+                    return GallerySaveResult(uri)
+                }.onFailure {
+                    runCatching { resolver.delete(uri, null, null) }
+                    remoteSideContext.log.error("Failed writing media to gallery for $candidateName", it)
+                }
+            }
+
+            throw IllegalStateException("Failed to allocate a unique gallery file for $sanitizedFileName in $relativePath")
         } else {
             @Suppress("DEPRECATION")
             val baseDir = Environment.getExternalStoragePublicDirectory(baseRelative)
             val destDir = File(baseDir, "PurrfectSnap" + (if (subPath.isNotBlank()) "/$subPath" else ""))
             destDir.mkdirs()
-            val destFile = File(destDir, fileName)
+            val sanitizedFileName = sanitizeFileName(fileName.substringBeforeLast(".", fileName)).let { baseName ->
+                val extension = fileName.substringAfterLast('.', "")
+                if (extension.isBlank()) baseName else "$baseName.$extension"
+            }
+            var destFile = File(destDir, sanitizedFileName)
+            if (destFile.exists()) {
+                if (destFile.length() == inputFile.length() && filesMatch(destFile, inputFile)) {
+                    return GallerySaveResult(Uri.fromFile(destFile), alreadyDownloaded = true)
+                }
+                var suffix = 1
+                while (destFile.exists()) {
+                    destFile = File(destDir, appendNameSuffix(sanitizedFileName, suffix++))
+                }
+            }
             FileOutputStream(destFile).use { out ->
                 inputFile.inputStream().use { it.copyTo(out) }
             }
@@ -255,7 +433,7 @@ class DownloadProcessor (
                     }
                 )
             }
-            Uri.fromFile(destFile)
+            GallerySaveResult(Uri.fromFile(destFile))
         }
     }
 

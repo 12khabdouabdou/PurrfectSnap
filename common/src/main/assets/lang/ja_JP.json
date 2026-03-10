@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "選択したタスクを削除しますか？",
                 "remove_all_tasks_title": "すべてのタスクを削除しますか？",
                 "delete_files_option": "ファイルも削除する",
+                "delete_files_option_hint": "ストレージから元のファイルを完全に削除する",
                 "remove_selected_tasks_confirm": "{count} 個のタスクを削除しますか？",
                 "remove_all_tasks_confirm": "すべてのタスクを削除しますか？"
             },

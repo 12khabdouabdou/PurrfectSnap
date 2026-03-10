@@ -392,7 +392,42 @@
                 "groups_empty_title": "No groups synced yet",
                 "streaks_expiration_short": "{hours}h",
                 "social_tagline": "Manage scopes, streaks, and previews",
-                "social_empty_hint": "Tap the + button to sync friends or groups."
+                "social_empty_hint": "Tap the + button to sync friends or groups.",
+                "messaging_preview": {
+                    "bridge_connection_failed": "Failed to connect to bridge. Make sure Snapchat is running in the background",
+                    "bridge_connection_error": "Failed to connect to bridge. Make sure Snapchat is running in the background",
+                    "bridge_init_failed": "Failed to initialize messaging bridge. Make sure Snapchat is running in the background",
+                    "message_fetch_failed": "Failed to fetch messages",
+                    "no_message_hint": "No message",
+                    "sender_unknown": "Unknown",
+                    "sender_you": "You",
+                    "sender_friend": "Friend",
+                    "subtitle": "Hold to select",
+                    "actions_title": "Conversation Actions",
+                    "choose_message_types_subtitle": "Choose message types",
+                    "choose_message_type_subtitle": "Choose message types",
+                    "save_selection_option": "Save Selection",
+                    "save_all_option": "Save All",
+                    "save_selected_messages_subtitle": "Save selected messages",
+                    "save_by_content_type_subtitle": "Save by content type",
+                    "unsave_selection_option": "Unsave Selection",
+                    "unsave_all_option": "Unsave All",
+                    "unsave_selected_messages_subtitle": "Unsave selected messages",
+                    "unsave_by_content_type_subtitle": "Unsave by content type",
+                    "unsave_by_content_ttype_subtitle": "Unsave by content type",
+                    "mark_selection_as_seen_option": "Mark selected Snap as seen",
+                    "mark_all_as_seen_option": "Mark all Snaps as seen",
+                    "mark_all_as_as_seen_option": "Mark all Snaps as seen",
+                    "mark_as_seen_subtitle": "Marks snaps as seen",
+                    "delete_selection_option": "Delete Selection",
+                    "delete_all_option": "Delete All",
+                    "delete_selected_messages_subtitle": "Delete selected messages",
+                    "delete_by_content_type_subtitle": "Delete by content type",
+                    "processed_message_toast": "Processed {count} messages",
+                    "processed_messages_toast": "Processed {count} messages",
+                    "processed_messages_text": "Processed {count}",
+                    "close_button_description": "Clear selection"
+                }
             },
             "manage_scope": {
                 "manage_scope_title": "Manage",
@@ -981,6 +1016,10 @@
                     "opera_download_button": {
                         "name": "Opera Download Button",
                         "description": "Adds a download button on the top right corner when viewing a Snap.\nLong press on buttons will force download"
+                    },
+                    "story_snap_list_download": {
+                        "name": "Story Snap List Download",
+                        "description": "When viewing a multi-snap story, shows a dialog to select which snaps to download"
                     },
                     "download_context_menu": {
                         "name": "Download Context Menu",
@@ -3048,7 +3087,15 @@
             "title": "Download dash media",
             "download_all": "Download All",
             "segment_text": "Segment {from} - {to}"
-        }
+        },
+        "story_snap_dialog": {
+            "title": "Download story snaps",
+            "select_all": "Select All",
+            "deselect_all": "Deselect All",
+            "snap_item": "Snap {index} of {total}"
+        },
+        "batch_download_complete_toast": "All snaps downloaded",
+        "batch_download_jump_failed_toast": "Could not navigate to next snap. Ensure Story Snap Jump is enabled and the story view is visible."
     },
     "streaks_reminder": {
         "notification_title": "Streaks",

@@ -213,6 +213,7 @@ class TasksRootSection : Routes.Route() {
         message: String,
         showDeleteFiles: Boolean,
         deleteFilesChecked: Boolean,
+        tasksTranslation: me.eternal.purrfectsnap.common.bridge.wrapper.LocaleWrapper,
         onToggleDeleteFiles: (Boolean) -> Unit,
         onConfirm: () -> Unit,
         onDismiss: () -> Unit
@@ -252,9 +253,49 @@ class TasksRootSection : Routes.Route() {
                         }
 
                         if (showDeleteFiles) {
+<<<<<<< themes
                             Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.04f)).clickable { onToggleDeleteFiles(!deleteFilesChecked) }.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text(text = translation["clear_tasks_delete_files"], fontSize = 14.sp, color = Color.White.copy(alpha = 0.9f))
                                 Checkbox(checked = deleteFilesChecked, onCheckedChange = null, colors = CheckboxDefaults.colors(checkedColor = PurrfectPalette.glowPrimary, uncheckedColor = Color.White.copy(alpha = 0.3f), checkmarkColor = Color.White))
+=======
+                            Surface(
+                                shape = RoundedCornerShape(18.dp),
+                                color = Color.White.copy(alpha = 0.04f),
+                                tonalElevation = 0.dp,
+                                shadowElevation = 0.dp,
+                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { onToggleDeleteFiles(!deleteFilesChecked) }
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Checkbox(
+                                        checked = deleteFilesChecked,
+                                        onCheckedChange = { onToggleDeleteFiles(it) },
+                                        colors = CheckboxDefaults.colors(
+                                            checkedColor = PurrfectPalette.glowPrimary,
+                                            uncheckedColor = Color.White,
+                                            checkmarkColor = Color.Black
+                                        )
+                                    )
+                                    Column {
+                                        Text(
+                                            text = tasksTranslation["delete_files_option"],
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = tasksTranslation.getOrNull("delete_files_option_hint") ?: "Permanently remove the original files from storage",
+                                            color = PurrfectPalette.textSecondary,
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
+>>>>>>> dev
                             }
                         }
 
@@ -284,7 +325,70 @@ class TasksRootSection : Routes.Route() {
                     Icon(Icons.Filled.CheckCircle, contentDescription = text, tint = Color.White)
                 }
             }
+<<<<<<< themes
             Text(text = text, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold), color = Color.White)
+=======
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
+                color = Color.White
+            )
+        }
+    }
+
+    override val topBarActions: @Composable (RowScope.() -> Unit) = {
+        var showConfirmDialog by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+
+        if (taskSelection.size > 1) {
+            val canMergeSelection by rememberAsyncMutableState(defaultValue = false, keys = arrayOf(taskSelection.size)) {
+                taskSelection.all { it.second?.type?.contains("video") == true }
+            }
+
+            if (canMergeSelection) {
+                TopBarActionButton(
+                    onClick = {
+                        mergeSelection(taskSelection.toList().also {
+                            taskSelection.clear()
+                        }.map { it.first to it.second!! })
+                    },
+                    icon = Icons.Filled.Merge,
+                    text = translation["merge_button"]
+                )
+            }
+        }
+
+        IconButton(onClick = {
+            showConfirmDialog = true
+        }) {
+            Icon(Icons.Filled.Delete, contentDescription = translation["clear_button_description"])
+        }
+
+        if (showConfirmDialog) {
+            var alsoDeleteFiles by remember { mutableStateOf(false) }
+            val isSelection = taskSelection.isNotEmpty()
+            val titleText = if (isSelection) {
+                translation.format("remove_selected_tasks_confirm", "count" to taskSelection.size.toString())
+            } else {
+                translation["remove_all_tasks_confirm"]
+            }
+            val messageText = if (isSelection) translation["remove_selected_tasks_title"] else translation["remove_all_tasks_title"]
+
+            TaskDangerDialog(
+                visible = showConfirmDialog,
+                title = titleText,
+                message = messageText,
+                showDeleteFiles = isSelection,
+                deleteFilesChecked = alsoDeleteFiles,
+                tasksTranslation = translation,
+                onToggleDeleteFiles = { alsoDeleteFiles = it },
+                onConfirm = {
+                    showConfirmDialog = false
+                    clearTasks(alsoDeleteFiles, coroutineScope)
+                },
+                onDismiss = { showConfirmDialog = false }
+            )
+>>>>>>> dev
         }
     }
 
@@ -431,6 +535,7 @@ class TasksRootSection : Routes.Route() {
                 message = messageText ?: "",
                 showDeleteFiles = isSelection,
                 deleteFilesChecked = alsoDeleteFiles,
+                tasksTranslation = translation,
                 onToggleDeleteFiles = { alsoDeleteFiles = it },
                 onConfirm = {
                     showConfirmDialog = false

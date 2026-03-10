@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "क्या आप वाकई चयनित कार्यों को हटाना चाहते हैं?",
                 "remove_all_tasks_title": "क्या आप वाकई सभी कार्यों को हटाना चाहते हैं?",
                 "delete_files_option": "फ़ाइलें भी हटाएँ",
+                "delete_files_option_hint": "स्टोरेज से मूल फ़ाइलों को स्थायी रूप से हटाएँ",
                 "remove_selected_tasks_confirm": "{count} कार्य हटाएँ?",
                 "remove_all_tasks_confirm": "सभी कार्य हटाएँ?"
             },

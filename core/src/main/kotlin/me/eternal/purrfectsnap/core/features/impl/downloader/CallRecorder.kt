@@ -1,9 +1,11 @@
 package me.eternal.purrfectsnap.core.features.impl.downloader
 
+import android.media.AudioManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.AudioTrack
+import android.media.MediaRecorder
 import android.os.ParcelFileDescriptor
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -223,18 +225,22 @@ class CallRecorder : Feature("Call Recorder") {
             if (recorderConfig == "only_record_others") return@apply
             hookConstructor(HookStage.AFTER) { param ->
                 val attributes = runCatching { param.arg<AudioAttributes>(0) }.getOrNull()
-                val isCall = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION || 
-                             attributes?.usage == AudioAttributes.USAGE_UNKNOWN ||
-                             runCatching { param.arg<Int>(0) }.getOrNull() == 7 // 7 = VOICE_COMMUNICATION
-                
-                if (isCall) {
+                val audioSource = runCatching { param.arg<Int>(0) }.getOrNull()
+                val isVoiceCommunication = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION ||
+                    audioSource == MediaRecorder.AudioSource.VOICE_COMMUNICATION
+                val shouldCapture = isVoiceCommunication ||
+                    (wasInCall && attributes?.usage == AudioAttributes.USAGE_UNKNOWN)
+
+                if (shouldCapture) {
                     val format = AudioFormat.Builder()
                         .setSampleRate(if (attributes != null) param.arg<AudioFormat>(1).sampleRate else param.arg(1))
                         .setChannelMask(if (attributes != null) param.arg<AudioFormat>(1).channelMask else param.arg(2))
                         .setEncoding(if (attributes != null) param.arg<AudioFormat>(1).encoding else param.arg(3))
                         .build()
                     streams[param.thisObject<Any>().hashCode()] = CallStreamWrapper(format)
-                    ensureSessionStarted()
+                    if (isVoiceCommunication) {
+                        ensureSessionStarted()
+                    }
                 }
             }
 
@@ -273,18 +279,23 @@ class CallRecorder : Feature("Call Recorder") {
             if (recorderConfig == "only_record_self") return@apply
             hookConstructor(HookStage.AFTER) { param ->
                 val attributes = runCatching { param.arg<AudioAttributes>(0) }.getOrNull()
-                val isCall = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION || 
-                             attributes?.usage == AudioAttributes.USAGE_UNKNOWN ||
-                             runCatching { param.arg<Int>(0) }.getOrNull() in listOf(0, 7) // 0 = CALL, 7 = SCO
-                
-                if (isCall) {
+                val streamType = runCatching { param.arg<Int>(0) }.getOrNull()
+                val isVoiceCommunication = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION ||
+                    streamType == AudioManager.STREAM_VOICE_CALL ||
+                    streamType == 6
+                val shouldCapture = isVoiceCommunication ||
+                    (wasInCall && attributes?.usage == AudioAttributes.USAGE_UNKNOWN)
+
+                if (shouldCapture) {
                     val format = AudioFormat.Builder()
                         .setSampleRate(if (attributes != null) param.arg<AudioFormat>(1).sampleRate else param.arg(1))
                         .setChannelMask(if (attributes != null) param.arg<AudioFormat>(1).channelMask else param.arg(2))
                         .setEncoding(if (attributes != null) param.arg<AudioFormat>(1).encoding else param.arg(3))
                         .build()
                     streams[param.thisObject<Any>().hashCode()] = CallStreamWrapper(format)
-                    ensureSessionStarted()
+                    if (isVoiceCommunication) {
+                        ensureSessionStarted()
+                    }
                 }
             }
 

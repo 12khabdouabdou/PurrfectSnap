@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Ви впевнені, що хочете видалити вибрані завдання?",
                 "remove_all_tasks_title": "Ви впевнені, що хочете видалити всі завдання?",
                 "delete_files_option": "Також видалити файли",
+                "delete_files_option_hint": "Також видалити завантажені файли з пристрою",
                 "remove_selected_tasks_confirm": "Видалити {count} завдань?",
                 "remove_all_tasks_confirm": "Видалити всі завдання?"
             },

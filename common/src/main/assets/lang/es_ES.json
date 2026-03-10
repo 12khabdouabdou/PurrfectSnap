@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "¿Estás seguro de que quieres eliminar las tareas seleccionadas?",
                 "remove_all_tasks_title": "¿Estás seguro de que quieres eliminar todas las tareas?",
                 "delete_files_option": "También eliminar archivos",
+                "delete_files_option_hint": "También eliminar archivos descargados del dispositivo",
                 "remove_selected_tasks_confirm": "¿Eliminar {count} tareas?",
                 "remove_all_tasks_confirm": "¿Eliminar todas las tareas?"
             },

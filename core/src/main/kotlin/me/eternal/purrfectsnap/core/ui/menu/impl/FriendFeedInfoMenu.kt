@@ -4,9 +4,7 @@ import android.graphics.BitmapFactory
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,7 +61,6 @@ import me.eternal.purrfectsnap.core.ui.PurrfectGlassCard
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.ui.menu.AbstractMenu
-import me.eternal.purrfectsnap.core.ui.randomTag
 import me.eternal.purrfectsnap.core.ui.triggerRootCloseTouchEvent
 import me.eternal.purrfectsnap.core.util.ktx.isDarkTheme
 import me.eternal.purrfectsnap.core.wrapper.impl.sanitizeForLayout
@@ -524,7 +521,6 @@ class FriendFeedInfoMenu : AbstractMenu() {
         }
     }
 
-    private val recyclerViewTag = randomTag()
     private val messaging by lazy { context.feature(Messaging::class)}
 
     override fun onViewAdded(event: AddViewEvent) {
@@ -533,46 +529,23 @@ class FriendFeedInfoMenu : AbstractMenu() {
             return constraintLayout.children().firstOrNull { it.javaClass.name.endsWith("AvatarView") } != null
         }
 
-        if (event.parent is FrameLayout && messaging.lastFocusedConversationType == 1 && event.view.javaClass.name.endsWith("RecyclerView")) {
-            event.view.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-                if (event.view.tag == recyclerViewTag || !hasAvatarHeader(event.view as ViewGroup)) return@addOnLayoutChangeListener
-                event.view.tag = recyclerViewTag
-
-                // remove recycler view
-                event.parent.removeView(event.view)
-
-                val newLayout = LinearLayout(event.view.context).apply {
-                    orientation = LinearLayout.VERTICAL
-                    gravity = Gravity.BOTTOM
-                    layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                    addView(event.view)
-                }
-
-                newLayout.addView(ScrollView(newLayout.context).apply {
-                    layoutParams = LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        weight = 1f;
-                        setMargins(0, 100, 0, 0)
-                    }
-
-                    addView(LinearLayout(context).apply {
-                        orientation = LinearLayout.VERTICAL
-                        injectIntoActionSheetItems(newLayout) {
-                            it.layoutParams = LinearLayout.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.WRAP_CONTENT
-                            ).apply {
-                                setMargins(0, 5, 0, 5)
-                            }
-                            addView(it)
-                        }
-                    })
-                }, 0)
-
-                event.parent.addView(newLayout)
+        if (messaging.lastFocusedConversationType == 1 &&
+            event.viewClassName.endsWith("ConstraintLayout") &&
+            event.parent.javaClass.name.endsWith("RecyclerView")
+        ) {
+            val actionSheetItemsContainerLayout = LinearLayout(event.view.context).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
             }
+
+            injectIntoActionSheetItems(actionSheetItemsContainerLayout) {
+                actionSheetItemsContainerLayout.addView(it, 0)
+            }
+
+            (event.view as? ViewGroup)?.addView(actionSheetItemsContainerLayout, 0)
         }
 
         if (event.parent is LinearLayout && event.viewClassName.endsWith("SnapCardView") && hasAvatarHeader(event.parent)) {

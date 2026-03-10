@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Вы уверены, что хотите удалить выбранные задачи?",
                 "remove_all_tasks_title": "Вы уверены, что хотите удалить все задачи?",
                 "delete_files_option": "Также удалить файлы",
+                "delete_files_option_hint": "Также удалить загруженные файлы с устройства",
                 "remove_selected_tasks_confirm": "Удалить {count} задач?",
                 "remove_all_tasks_confirm": "Удалить все задачи?"
             },

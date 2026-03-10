@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Si prepričan, da želiš odstraniti izbrana opravila?",
                 "remove_all_tasks_title": "Si prepričan, da želiš odstraniti vsa opravila?",
                 "delete_files_option": "Izbriši tudi datoteke",
+                "delete_files_option_hint": "Trajno odstrani izvirne datoteke iz pomnilnika",
                 "remove_selected_tasks_confirm": "Odstrani {count} opravil?",
                 "remove_all_tasks_confirm": "Odstrani vsa opravila?"
             },

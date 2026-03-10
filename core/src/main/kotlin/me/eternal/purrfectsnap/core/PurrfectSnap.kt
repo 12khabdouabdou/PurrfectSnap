@@ -21,6 +21,8 @@ import me.eternal.purrfectsnap.common.data.FriendLinkType
 import me.eternal.purrfectsnap.common.bridge.FileHandleScope
 import me.eternal.purrfectsnap.common.bridge.InternalFileHandleType
 import me.eternal.purrfectsnap.common.bridge.toWrapper
+import me.eternal.purrfectsnap.common.database.impl.FriendFeedEntry
+import me.eternal.purrfectsnap.common.database.impl.FriendInfo
 import me.eternal.purrfectsnap.common.data.FriendStreaks
 import me.eternal.purrfectsnap.common.data.MessagingFriendInfo
 import me.eternal.purrfectsnap.common.data.MessagingGroupInfo
@@ -54,6 +56,23 @@ class PurrfectSnap {
     private var android9ValdiBindDisabled = false
     private var android9ValdiBindDisableLogged = false
     private val nativeLateInitTriggered = java.util.concurrent.atomic.AtomicBoolean(false)
+    private var syncCallback: SyncCallback? = null
+
+    private fun FriendInfo.isCurrentSocialFriend(): Boolean {
+        return !userId.isNullOrBlank() &&
+            FriendLinkType.fromValue(friendLinkType) == FriendLinkType.MUTUAL &&
+            addedTimestamp > 0L
+    }
+
+    private fun FriendFeedEntry.toMessagingGroupInfo(): MessagingGroupInfo? {
+        if (conversationType != 1 || participantsSize <= 0) return null
+        val conversationId = key?.takeIf { it.isNotBlank() } ?: return null
+        return MessagingGroupInfo(
+            conversationId = conversationId,
+            name = feedDisplayName ?: "",
+            participantsCount = participantsSize
+        )
+    }
 
     private fun hookMainActivity(methodName: String, stage: HookStage = HookStage.AFTER, block: Activity.(param: HookAdapter) -> Unit) {
         Activity::class.java.hook(methodName, stage, { isBridgeInitialized }) { param ->
@@ -447,24 +466,15 @@ class PurrfectSnap {
             event.canceled = true
             val feedEntries = appContext.database.getFeedEntries(Int.MAX_VALUE)
 
-            val groups = feedEntries.filter { it.conversationType == 1 }.map {
-                MessagingGroupInfo(
-                    it.key!!,
-                    it.feedDisplayName ?: "",
-                    it.participantsSize
-                )
-            }
+            val groups = feedEntries
+                .asSequence()
+                .mapNotNull { it.toMessagingGroupInfo() }
+                .distinctBy { it.conversationId }
+                .toList()
 
             val friends = appContext.database.getAllFriends()
                 .asSequence()
-                .filter { friend ->
-                    friend.userId != null && when (FriendLinkType.fromValue(friend.friendLinkType)) {
-                        FriendLinkType.DELETED,
-                        FriendLinkType.BLOCKED,
-                        FriendLinkType.SUGGESTED -> false
-                        else -> true
-                    }
-                }
+                .filter { friend -> friend.isCurrentSocialFriend() }
                 .mapNotNull { friend ->
                     val userId = friend.userId ?: return@mapNotNull null
                     MessagingFriendInfo(
@@ -484,22 +494,20 @@ class PurrfectSnap {
     }
 
     private fun syncRemote() {
-        if (!appContext.isLoggedIn()) return
+        if (!appContext.isLoggedIn()) {
+            syncCallback = null
+            return
+        }
         
         val myUserId = appContext.database.myUserId
         val streakEntries = appContext.database.getFeedEntries(Int.MAX_VALUE, whereClause = "streak_count IS NOT NULL AND streak_count > 0")
             .associateBy { entry -> (entry.friendUserId ?: entry.participants?.firstOrNull { it != myUserId }) }
             .filter { it.key != null }
 
-        appContext.bridgeClient.sync(object : SyncCallback.Stub() {
+        syncCallback = object : SyncCallback.Stub() {
             override fun syncFriend(uuid: String): String? {
                 return appContext.database.getFriendInfo(uuid)?.let {
-                    if (FriendLinkType.fromValue(it.friendLinkType) in setOf(
-                            FriendLinkType.DELETED,
-                            FriendLinkType.BLOCKED,
-                            FriendLinkType.SUGGESTED
-                        )
-                    ) return@let null
+                    if (!it.isCurrentSocialFriend()) return@let null
                     MessagingFriendInfo(
                         userId = it.userId!!,
                         dmConversationId = appContext.database.getDMConversationId(it.userId!!),
@@ -531,7 +539,9 @@ class PurrfectSnap {
                     ).toSerialized()
                 }
             }
-        })
+        }
+
+        appContext.bridgeClient.sync(syncCallback!!)
     }
 
     private fun jetpackComposeResourceHook() {
