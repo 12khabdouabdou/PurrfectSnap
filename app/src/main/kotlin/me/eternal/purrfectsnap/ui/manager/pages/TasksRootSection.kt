@@ -253,11 +253,6 @@ class TasksRootSection : Routes.Route() {
                         }
 
                         if (showDeleteFiles) {
-<<<<<<< themes
-                            Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color.White.copy(alpha = 0.04f)).clickable { onToggleDeleteFiles(!deleteFilesChecked) }.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(text = translation["clear_tasks_delete_files"], fontSize = 14.sp, color = Color.White.copy(alpha = 0.9f))
-                                Checkbox(checked = deleteFilesChecked, onCheckedChange = null, colors = CheckboxDefaults.colors(checkedColor = PurrfectPalette.glowPrimary, uncheckedColor = Color.White.copy(alpha = 0.3f), checkmarkColor = Color.White))
-=======
                             Surface(
                                 shape = RoundedCornerShape(18.dp),
                                 color = Color.White.copy(alpha = 0.04f),
@@ -293,10 +288,9 @@ class TasksRootSection : Routes.Route() {
                                             color = PurrfectPalette.textSecondary,
                                             style = MaterialTheme.typography.bodySmall
                                         )
-                                    }
                                 }
->>>>>>> dev
                             }
+                        }
                         }
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -325,9 +319,6 @@ class TasksRootSection : Routes.Route() {
                     Icon(Icons.Filled.CheckCircle, contentDescription = text, tint = Color.White)
                 }
             }
-<<<<<<< themes
-            Text(text = text, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold), color = Color.White)
-=======
             Text(
                 text = text,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
@@ -336,61 +327,6 @@ class TasksRootSection : Routes.Route() {
         }
     }
 
-    override val topBarActions: @Composable (RowScope.() -> Unit) = {
-        var showConfirmDialog by remember { mutableStateOf(false) }
-        val coroutineScope = rememberCoroutineScope()
-
-        if (taskSelection.size > 1) {
-            val canMergeSelection by rememberAsyncMutableState(defaultValue = false, keys = arrayOf(taskSelection.size)) {
-                taskSelection.all { it.second?.type?.contains("video") == true }
-            }
-
-            if (canMergeSelection) {
-                TopBarActionButton(
-                    onClick = {
-                        mergeSelection(taskSelection.toList().also {
-                            taskSelection.clear()
-                        }.map { it.first to it.second!! })
-                    },
-                    icon = Icons.Filled.Merge,
-                    text = translation["merge_button"]
-                )
-            }
-        }
-
-        IconButton(onClick = {
-            showConfirmDialog = true
-        }) {
-            Icon(Icons.Filled.Delete, contentDescription = translation["clear_button_description"])
-        }
-
-        if (showConfirmDialog) {
-            var alsoDeleteFiles by remember { mutableStateOf(false) }
-            val isSelection = taskSelection.isNotEmpty()
-            val titleText = if (isSelection) {
-                translation.format("remove_selected_tasks_confirm", "count" to taskSelection.size.toString())
-            } else {
-                translation["remove_all_tasks_confirm"]
-            }
-            val messageText = if (isSelection) translation["remove_selected_tasks_title"] else translation["remove_all_tasks_title"]
-
-            TaskDangerDialog(
-                visible = showConfirmDialog,
-                title = titleText,
-                message = messageText,
-                showDeleteFiles = isSelection,
-                deleteFilesChecked = alsoDeleteFiles,
-                tasksTranslation = translation,
-                onToggleDeleteFiles = { alsoDeleteFiles = it },
-                onConfirm = {
-                    showConfirmDialog = false
-                    clearTasks(alsoDeleteFiles, coroutineScope)
-                },
-                onDismiss = { showConfirmDialog = false }
-            )
->>>>>>> dev
-        }
-    }
 
     @Composable
     internal fun TaskCard(modifier: Modifier, task: Task, pendingTask: PendingTask? = null) {

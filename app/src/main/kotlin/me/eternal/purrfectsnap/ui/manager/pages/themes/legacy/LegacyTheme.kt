@@ -1222,6 +1222,7 @@ object LegacyTheme : ThemeContract {
         val scope = rememberCoroutineScope()
         val listState = rememberLazyListState()
         var showConfirmDialog by remember { mutableStateOf(false) }
+        var alsoDeleteFiles by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             fetchActiveTasks(this)
@@ -1368,6 +1369,31 @@ object LegacyTheme : ThemeContract {
                     }
                 }
             }
+        }
+
+        if (showConfirmDialog) {
+            val isSelection = taskSelection.isNotEmpty()
+            val titleText = if (isSelection) {
+                translation.format("remove_selected_tasks_confirm", "count" to taskSelection.size.toString())
+            } else {
+                translation["remove_all_tasks_confirm"]
+            }
+            val messageText = if (isSelection) translation["remove_selected_tasks_title"] else translation["remove_all_tasks_title"]
+
+            TaskDangerDialog(
+                visible = showConfirmDialog,
+                title = titleText ?: "",
+                message = messageText ?: "",
+                showDeleteFiles = isSelection,
+                deleteFilesChecked = alsoDeleteFiles,
+                tasksTranslation = translation,
+                onToggleDeleteFiles = { alsoDeleteFiles = it },
+                onConfirm = {
+                    showConfirmDialog = false
+                    clearTasks(alsoDeleteFiles, scope)
+                },
+                onDismiss = { showConfirmDialog = false }
+            )
         }
     }
 

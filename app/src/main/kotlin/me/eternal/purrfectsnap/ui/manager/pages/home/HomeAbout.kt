@@ -36,7 +36,7 @@ import me.eternal.purrfectsnap.ui.util.PurrfectMarqueeText
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
 
 class HomeAbout : Routes.Route() {
-    override val translation by lazy { context.translation.getCategory("manager.navigation.home_about") }
+    override val translation by lazy { context.translation.getCategory("manager.sections.home_about") }
 
     override val content: @Composable (NavBackStackEntry) -> Unit = { nav ->
         val themeId by produceState(

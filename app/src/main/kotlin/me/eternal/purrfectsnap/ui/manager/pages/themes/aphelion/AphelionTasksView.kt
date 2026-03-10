@@ -57,7 +57,6 @@ import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.OnLifecycleEvent
 import me.eternal.purrfectsnap.ui.util.coil.cacheKey
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
-import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.util.Motion
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +64,6 @@ import me.eternal.purrfectsnap.ui.util.Motion
 fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
     val scrollState = rememberLazyListState()
     val haptic = LocalHapticFeedback.current
-    var controlsHeight by remember { mutableStateOf(100.dp) }
 
     LaunchedEffect(scrollState.firstVisibleItemScrollOffset, scrollState.firstVisibleItemIndex) {
         val offset = if (scrollState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else scrollState.firstVisibleItemScrollOffset
@@ -115,7 +113,6 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
                 title = context.translation["manager.routes.tasks"] ?: "Tasks",
                 subtitle = subtitle,
                 scrollOffset = routes.navigation?.globalScrollOffset ?: 0,
-                modifier = Modifier.headerHeightTracker { controlsHeight = it },
                 actions = {
                     Surface(
                         shape = RoundedCornerShape(18.dp),
@@ -188,7 +185,7 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
                 contentPadding = PaddingValues(
                     start = 12.dp,
                     end = 12.dp,
-                    top = controlsHeight,
+                    top = 0.dp,
                     bottom = routes.bottomPadding
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -229,6 +226,7 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
             message = messageText ?: "",
             showDeleteFiles = isSelection,
             deleteFilesChecked = alsoDeleteFiles,
+            tasksTranslation = translation,
             onToggleDeleteFiles = { alsoDeleteFiles = it },
             onConfirm = {
                 showConfirmDialog = false
