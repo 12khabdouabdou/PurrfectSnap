@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Er du sikker på at du vil fjerne valgte oppgaver?",
                 "remove_all_tasks_title": "Er du sikker på at du vil fjerne alle oppgaver?",
                 "delete_files_option": "Slett også filer",
+                "delete_files_option_hint": "Fjern permanent de originale filene fra lagring",
                 "remove_selected_tasks_confirm": "Fjerne {count} oppgaver?",
                 "remove_all_tasks_confirm": "Fjerne alle oppgaver?"
             },

@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Êtes-vous sûr de vouloir supprimer les tâches sélectionnées ?",
                 "remove_all_tasks_title": "Êtes-vous sûr de vouloir supprimer toutes les tâches ?",
                 "delete_files_option": "Supprimer aussi les fichiers",
+                "delete_files_option_hint": "Supprimer aussi les fichiers téléchargés de l'appareil",
                 "remove_selected_tasks_confirm": "Supprimer {count} tâches ?",
                 "remove_all_tasks_confirm": "Supprimer toutes les tâches ?"
             },

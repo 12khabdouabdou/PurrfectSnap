@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Sei sicuro di voler rimuovere le attività selezionate?",
                 "remove_all_tasks_title": "Sei sicuro di voler rimuovere tutte le attività?",
                 "delete_files_option": "Elimina anche i file",
+                "delete_files_option_hint": "Rimuovi anche i file scaricati dal dispositivo",
                 "remove_selected_tasks_confirm": "Rimuovere {count} attività?",
                 "remove_all_tasks_confirm": "Rimuovere tutte le attività?"
             },

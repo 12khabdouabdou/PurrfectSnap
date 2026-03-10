@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Czy na pewno chcesz usunąć wybrane zadania?",
                 "remove_all_tasks_title": "Czy na pewno chcesz usunąć wszystkie zadania?",
                 "delete_files_option": "Usuń również pliki",
+                "delete_files_option_hint": "Usuń również pobrane pliki z urządzenia",
                 "remove_selected_tasks_confirm": "Usunąć {count} zadań?",
                 "remove_all_tasks_confirm": "Usunąć wszystkie zadania?"
             },

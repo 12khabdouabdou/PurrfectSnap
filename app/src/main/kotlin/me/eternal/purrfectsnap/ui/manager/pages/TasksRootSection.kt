@@ -195,6 +195,7 @@ class TasksRootSection : Routes.Route() {
         message: String,
         showDeleteFiles: Boolean,
         deleteFilesChecked: Boolean,
+        tasksTranslation: me.eternal.purrfectsnap.common.bridge.wrapper.LocaleWrapper,
         onToggleDeleteFiles: (Boolean) -> Unit,
         onConfirm: () -> Unit,
         onDismiss: () -> Unit
@@ -301,13 +302,12 @@ class TasksRootSection : Routes.Route() {
                                     )
                                     Column {
                                         Text(
-                                            text = context.translation["manager.sections.tasks.delete_files_option"],
+                                            text = tasksTranslation["delete_files_option"],
                                             color = Color.White,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Text(
-                                            text = context.translation["manager.sections.tasks.delete_files_option_hint"]
-                                                ?: "Also remove downloaded files",
+                                            text = tasksTranslation.getOrNull("delete_files_option_hint") ?: "Permanently remove the original files from storage",
                                             color = PurrfectPalette.textSecondary,
                                             style = MaterialTheme.typography.bodySmall
                                         )
@@ -434,6 +434,7 @@ class TasksRootSection : Routes.Route() {
                 message = messageText,
                 showDeleteFiles = isSelection,
                 deleteFilesChecked = alsoDeleteFiles,
+                tasksTranslation = translation,
                 onToggleDeleteFiles = { alsoDeleteFiles = it },
                 onConfirm = {
                     showConfirmDialog = false
@@ -1050,6 +1051,7 @@ class TasksRootSection : Routes.Route() {
                 message = messageText,
                 showDeleteFiles = isSelection,
                 deleteFilesChecked = alsoDeleteFiles,
+                tasksTranslation = translation,
                 onToggleDeleteFiles = { alsoDeleteFiles = it },
                 onConfirm = {
                     showConfirmDialog = false

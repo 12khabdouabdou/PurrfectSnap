@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Vai tiešām vēlaties noņemt atlasītos uzdevumus?",
                 "remove_all_tasks_title": "Vai tiešām vēlaties noņemt visus uzdevumus?",
                 "delete_files_option": "Dzēst arī failus",
+                "delete_files_option_hint": "Noņemt arī lejupielādētos failus no ierīces",
                 "remove_selected_tasks_confirm": "Noņemt {count} uzdevumus?",
                 "remove_all_tasks_confirm": "Noņemt visus uzdevumus?"
             },

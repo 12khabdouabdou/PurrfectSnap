@@ -10,9 +10,37 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.eternal.purrfectsnap.common.ui.createComposeAlertDialog
+import me.eternal.purrfectsnap.core.ui.PurrfectGlassCard
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import kotlinx.coroutines.runBlocking
 import me.eternal.purrfectsnap.bridge.DownloadCallback
 import me.eternal.purrfectsnap.common.data.ContentType
@@ -47,6 +75,7 @@ import me.eternal.purrfectsnap.core.wrapper.impl.media.dash.SnapPlaylistItem
 import me.eternal.purrfectsnap.core.wrapper.impl.media.opera.Layer
 import me.eternal.purrfectsnap.core.wrapper.impl.media.opera.ParamMap
 import me.eternal.purrfectsnap.core.wrapper.impl.media.toKeyPair
+import me.eternal.purrfectsnap.core.features.impl.ui.OperaStoryOverlay
 import me.eternal.purrfectsnap.core.wrapper.impl.media.EncryptionWrapper
 import me.eternal.purrfectsnap.mapper.impl.OperaPageViewControllerMapper
 import me.eternal.purrfectsnap.core.wrapper.impl.media.SnapCipherMode
@@ -76,6 +105,10 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
     private var lastSeenMediaInfoMap: MutableMap<SplitMediaAssetType, MediaInfo>? = null
     var lastSeenMapParams: ParamMap? = null
         private set
+    @Volatile
+    private var pendingBatchDownloadIndices: MutableList<Int>? = null
+    @Volatile
+    private var batchForceAllowDuplicate: Boolean = false
     private val translations by lazy {
         context.translation.getCategory("download_processor")
     }
@@ -166,14 +199,227 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         )
     }
 
+    private fun ParamMap.getStorySnapIndex(): Int? =
+        this["snap_index_in_story"]?.toString()?.toIntOrNull()
+            ?: this["SNAP_POSITION_IN_STORY"]?.toString()?.toIntOrNull()
+
+    private fun ParamMap.getStorySnapTotal(): Int? =
+        this["snap_story_length"]?.toString()?.toIntOrNull()
+            ?: this["NUM_SNAPS_IN_STORY"]?.toString()?.toIntOrNull()
+
+    private fun isMultiSnapStory(paramMap: ParamMap): Boolean {
+        if (paramMap.containsKey("MESSAGE_ID") || paramMap["SNAP_SOURCE"]?.toString() == "SINGLE_SNAP_STORY") return false
+        if (paramMap.containsKey("LONGFORM_VIDEO_PLAYLIST_ITEM")) return false
+        val total = paramMap.getStorySnapTotal() ?: return false
+        return total > 1
+    }
+
     /*
      * Download the last seen media
      */
     fun downloadLastOperaMediaAsync(allowDuplicate: Boolean) {
         if (lastSeenMapParams == null || lastSeenMediaInfoMap == null) return
-        context.executeAsync {
-            handleOperaMedia(lastSeenMapParams!!, lastSeenMediaInfoMap!!, true, allowDuplicate)
+        val paramMap = lastSeenMapParams!!
+        val mediaInfoMap = lastSeenMediaInfoMap!!
+
+        if (isMultiSnapStory(paramMap) && context.config.downloader.storySnapListDownload.get()) {
+            context.runOnUiThread {
+                showStorySnapSelectionDialog(paramMap, mediaInfoMap, allowDuplicate)
+            }
+            return
         }
+
+        context.executeAsync {
+            handleOperaMedia(paramMap, mediaInfoMap, true, allowDuplicate)
+        }
+    }
+
+    private fun showStorySnapSelectionDialog(paramMap: ParamMap, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>, allowDuplicate: Boolean) {
+        val totalCount = paramMap.getStorySnapTotal() ?: return
+        val currentIndex = paramMap.getStorySnapIndex() ?: 0
+        val tr = context.translation.getCategory("download_processor.story_snap_dialog")
+        val cancelStr = context.translation["button.cancel"]
+        val downloadStr = context.translation["button.download"]
+
+        context.runOnUiThread {
+            createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+                PurrfectOverlayTheme {
+                    val selected = remember { mutableStateListOf<Int>().apply { add(currentIndex) } }
+
+                    LaunchedEffect(Unit) {
+                        if (!selected.contains(currentIndex)) selected.add(currentIndex)
+                    }
+
+                    PurrfectGlassCard(
+                        title = tr["title"],
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 120.dp, max = 320.dp)
+                                    .background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(14.dp))
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                itemsIndexed((0 until totalCount).toList()) { index, _ ->
+                                    val label = tr.format("snap_item", "index" to (index + 1).toString(), "total" to totalCount.toString())
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 10.dp, horizontal = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Checkbox(
+                                            checked = selected.contains(index),
+                                            onCheckedChange = { checked ->
+                                                if (checked) selected.add(index) else selected.remove(index)
+                                            },
+                                            colors = CheckboxDefaults.colors(checkedColor = PurrfectOverlayPalette.glowPrimary)
+                                        )
+                                        Text(
+                                            label,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = PurrfectOverlayPalette.textPrimary
+                                        )
+                                    }
+                                }
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = selected.size == totalCount,
+                                    onCheckedChange = { checked ->
+                                        if (checked) {
+                                            selected.clear()
+                                            selected.addAll(0 until totalCount)
+                                        } else {
+                                            selected.clear()
+                                        }
+                                    },
+                                    colors = CheckboxDefaults.colors(checkedColor = PurrfectOverlayPalette.glowPrimary)
+                                )
+                                Text(
+                                    tr["select_all"],
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = PurrfectOverlayPalette.textPrimary
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                OutlinedButton(
+                                    onClick = { alertDialog.dismiss() },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = PurrfectOverlayPalette.textPrimary)
+                                ) {
+                                    Text(cancelStr)
+                                }
+                                Button(
+                                    onClick = {
+                                        if (selected.isNotEmpty()) {
+                                            startBatchDownload(selected.sorted().toMutableList(), allowDuplicate)
+                                            alertDialog.dismiss()
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = PurrfectOverlayPalette.glowPrimary)
+                                ) {
+                                    Text(downloadStr)
+                                }
+                            }
+                        }
+                    }
+                }
+            }.apply {
+                window?.setBackgroundDrawableResource(android.R.color.transparent)
+                show()
+            }
+        }
+    }
+
+    private fun startBatchDownload(indices: MutableList<Int>, allowDuplicate: Boolean) {
+        if (indices.isEmpty()) return
+        val paramMap = lastSeenMapParams ?: return
+        val mediaInfoMap = lastSeenMediaInfoMap ?: return
+
+        pendingBatchDownloadIndices = indices
+        batchForceAllowDuplicate = allowDuplicate
+
+        val currentIndex = paramMap.getStorySnapIndex() ?: 0
+        val targetIndex = indices.first()
+        val totalCount = paramMap.getStorySnapTotal()
+
+        if (currentIndex == targetIndex) {
+            processNextBatchDownload(paramMap, mediaInfoMap)
+        } else {
+            val jumped = context.feature(OperaStoryOverlay::class).requestJumpToSnap(targetIndex, totalCount)
+            if (!jumped) {
+                pendingBatchDownloadIndices = null
+                context.shortToast(translations["batch_download_jump_failed_toast"])
+            }
+        }
+    }
+
+    private fun downloadSingleSnap(paramMap: ParamMap, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>) {
+        context.executeAsync {
+            runCatching { handleOperaMedia(paramMap, mediaInfoMap, true, batchForceAllowDuplicate) }
+                .onFailure {
+                    context.log.error("Batch download failed", it)
+                    context.shortToast(translations["failed_generic_toast"])
+                }
+        }
+    }
+
+    private fun processNextBatchDownload(paramMap: ParamMap, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>) {
+        val queue = pendingBatchDownloadIndices ?: return
+        if (queue.isEmpty()) {
+            flushPendingMergeAndComplete()
+            return
+        }
+
+        val currentIndex = paramMap.getStorySnapIndex() ?: -1
+        if (currentIndex != queue.first()) return
+
+        queue.removeAt(0)
+        downloadSingleSnap(paramMap, mediaInfoMap)
+
+        if (queue.isEmpty()) {
+            flushPendingMergeAndComplete()
+        } else {
+            val totalCount = paramMap.getStorySnapTotal()
+            context.runOnUiThread {
+                fun tryJump(retryCount: Int = 0) {
+                    val delayMs = if (retryCount == 0) 120L else 220L
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        val jumped = runCatching {
+                            context.feature(OperaStoryOverlay::class).requestJumpToSnap(queue.first(), totalCount)
+                        }.getOrNull() == true
+                        if (!jumped && retryCount < 1) {
+                            tryJump(retryCount + 1)
+                        } else if (!jumped) {
+                            pendingBatchDownloadIndices = null
+                            context.shortToast(translations["batch_download_jump_failed_toast"])
+                        }
+                    }, delayMs)
+                }
+                tryJump()
+            }
+        }
+    }
+
+    private fun flushPendingMergeAndComplete() {
+        pendingBatchDownloadIndices = null
+        context.shortToast(translations["batch_download_complete_toast"])
     }
 
     fun showLastOperaDebugMediaInfo() {
@@ -641,6 +887,15 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
 
                         lastSeenMapParams = mediaParamMap
                         lastSeenMediaInfoMap = mediaInfoMap
+
+                        if (pendingBatchDownloadIndices != null) {
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                if (pendingBatchDownloadIndices != null) {
+                                    processNextBatchDownload(mediaParamMap, mediaInfoMap)
+                                }
+                            }, 80L)
+                            return@onOperaViewStateCallback
+                        }
 
                         if (!shouldAutoDownload) {
                             return@onOperaViewStateCallback

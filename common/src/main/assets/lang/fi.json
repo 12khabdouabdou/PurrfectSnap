@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Oletko varma, että haluat poistaa valitut tehtävät?",
                 "remove_all_tasks_title": "Oletko varma, että haluat poistaa kaikki tehtävät?",
                 "delete_files_option": "Poista myös tiedostot",
+                "delete_files_option_hint": "Poista myös ladatut tiedostot laitteelta",
                 "remove_selected_tasks_confirm": "Poista {count} tehtävää?",
                 "remove_all_tasks_confirm": "Poista kaikki tehtävät?"
             },

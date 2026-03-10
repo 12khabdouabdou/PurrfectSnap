@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Är du säker på att du vill ta bort valda uppgifter?",
                 "remove_all_tasks_title": "Är du säker på att du vill ta bort alla uppgifter?",
                 "delete_files_option": "Radera även filer",
+                "delete_files_option_hint": "Ta bort nedladdade filer från enheten",
                 "remove_selected_tasks_confirm": "Ta bort {count} uppgifter?",
                 "remove_all_tasks_confirm": "Ta bort alla uppgifter?"
             },

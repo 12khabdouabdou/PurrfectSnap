@@ -340,6 +340,7 @@
                 "remove_selected_tasks_title": "Biztosan törölni szeretnéd a kijelölt feladatokat?",
                 "remove_all_tasks_title": "Biztosan törölni szeretnéd az összes feladatot?",
                 "delete_files_option": "Fájlok törlése is",
+                "delete_files_option_hint": "Az eredeti fájlok végleges eltávolítása a tárolóból",
                 "remove_selected_tasks_confirm": "{count} feladat törlése?",
                 "remove_all_tasks_confirm": "Összes feladat törlése?"
             },
