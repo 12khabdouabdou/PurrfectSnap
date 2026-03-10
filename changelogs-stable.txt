@@ -2,6 +2,7 @@
 - Fix: Download profile picture button showing in all pages
 - Fix: Opera Download button & Mark Snaps as seen for newer snapchat versions
 - Fix: Crash issues
+- Fix: Sync Binder died
 - Fix: Random friends showing up in Social tab
 - Fix: Untranslated strings in the message preview section(en_US only for now)
 - Fix: Show First Created Username
