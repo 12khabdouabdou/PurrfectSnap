@@ -11,6 +11,10 @@ data class PropertyPair<T>(
     val name get() = key.name
 }
 
+@Suppress("UNCHECKED_CAST")
+fun Pair<PropertyKey<*>, PropertyValue<*>>.toPropertyPair(): PropertyPair<Any> =
+    PropertyPair(first as PropertyKey<Any>, second as PropertyValue<Any>)
+
 enum class FeatureNotice(
     val key: String
 ) {
