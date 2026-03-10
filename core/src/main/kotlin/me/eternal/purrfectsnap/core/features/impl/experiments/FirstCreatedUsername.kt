@@ -103,8 +103,10 @@ class FirstCreatedUsername : Feature("FirstCreatedUsername") {
     }
 
     private fun Any.findUserId(): String? {
-        return getObjectFieldOrNull("_userId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
-            ?: getObjectFieldOrNull("userId")?.toString()?.takeIf { it.isNotBlank() && it != "null" }
+        return getObjectFieldOrNull("_userId").asSafeString()
+            ?.takeIf { it.isNotBlank() && it != "null" }
+            ?: getObjectFieldOrNull("userId").asSafeString()
+                ?.takeIf { it.isNotBlank() && it != "null" }
     }
 
     private fun Any.findUsername(): String? {
@@ -118,7 +120,7 @@ class FirstCreatedUsername : Feature("FirstCreatedUsername") {
 
     private fun findUsernameInObject(target: Any): String? {
         usernameFieldNames.forEach { fieldName ->
-            val value = target.getObjectFieldOrNull(fieldName)?.toString() ?: return@forEach
+            val value = target.getObjectFieldOrNull(fieldName).asSafeString() ?: return@forEach
             normalizeUsername(value)?.let { return it }
         }
         return null
@@ -135,11 +137,15 @@ class FirstCreatedUsername : Feature("FirstCreatedUsername") {
 
     private fun applyUsernameOverrideToObject(target: Any, currentUsername: String, decoratedUsername: String): Boolean {
         var changed = false
+        val firstCreatedUsername = decoratedUsername
+            .substringAfter("(", "")
+            .substringBeforeLast(")")
+            .takeIf { it.isNotBlank() }
         usernameFieldNames.forEach { fieldName ->
-            val rawValue = target.getObjectFieldOrNull(fieldName)?.toString() ?: return@forEach
+            val rawValue = target.getObjectFieldOrNull(fieldName).asSafeString() ?: return@forEach
             if (normalizeUsername(rawValue) != currentUsername) return@forEach
 
-            val updatedValue = appendOriginalUsername(rawValue, currentUsername, decoratedUsername)
+            val updatedValue = appendOriginalUsername(rawValue, currentUsername, firstCreatedUsername, decoratedUsername)
             if (updatedValue == rawValue) return@forEach
 
             runCatching {
@@ -152,15 +158,19 @@ class FirstCreatedUsername : Feature("FirstCreatedUsername") {
 
     private fun ValdiViewNode.applyRenderedUsernameOverride(currentUsername: String, decoratedUsername: String): Boolean {
         var changed = false
+        val firstCreatedUsername = decoratedUsername
+            .substringAfter("(", "")
+            .substringBeforeLast(")")
+            .takeIf { it.isNotBlank() }
         walk().forEach { node ->
             val className = node.getClassName()
             if (!className.endsWith("SnapTextView") && !className.endsWith("TextView")) return@forEach
 
             arrayOf("value", "text", "title").forEach { attributeName ->
-                val rawValue = node.getAttribute(attributeName)?.toString() ?: return@forEach
+                val rawValue = node.getAttribute(attributeName).asSafeString() ?: return@forEach
                 if (normalizeUsername(rawValue) != currentUsername) return@forEach
 
-                val updatedValue = appendOriginalUsername(rawValue, currentUsername, decoratedUsername)
+                val updatedValue = appendOriginalUsername(rawValue, currentUsername, firstCreatedUsername, decoratedUsername)
                 if (updatedValue == rawValue) return@forEach
 
                 runCatching {
@@ -184,7 +194,22 @@ class FirstCreatedUsername : Feature("FirstCreatedUsername") {
         return trimmed.removePrefix("@").substringBefore(" (").trim().takeIf { it.isNotBlank() }
     }
 
-    private fun appendOriginalUsername(rawValue: String, currentUsername: String, decoratedUsername: String): String {
+    private fun Any?.asSafeString(): String? {
+        return when (this) {
+            is String -> this
+            is CharSequence -> this.toString()
+            is Char -> this.toString()
+            else -> null
+        }
+    }
+
+    private fun appendOriginalUsername(
+        rawValue: String,
+        currentUsername: String,
+        firstCreatedUsername: String?,
+        decoratedUsername: String
+    ): String {
+        if (firstCreatedUsername != null && rawValue.contains("($firstCreatedUsername)")) return rawValue
         if (rawValue.contains("($currentUsername)") || rawValue.contains("($decoratedUsername)")) return rawValue
 
         val prefixedCurrentUsername = "@$currentUsername"
