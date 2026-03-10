@@ -1,3 +1,16 @@
+## v1.4.0
+- Fix: Download profile picture button showing in all pages
+- Fix: Opera Download button & Mark Snaps as seen for newer snapchat versions
+- Fix: Crash issues
+- Fix: Random friends showing up in Social tab
+- Fix: Untranslated strings in the message preview section(en_US only for now)
+- Fix: Show First Created Username
+- Fix: Call recording starting automatically when taking snaps/videos
+- Fix: Snap Downloading issue for some devices
+- New: Story Snap Batch Download(tq to RSR)
+- New: Aphelion Theme!(tq to Kaladin)
+- Fix: Monochrome icon of PurrfectSnap(tq to Kaladin)
+
 ## v1.3.9
 - Fix: Improve ads & metrics blocking
 - Fix: Hide Typing Notifications & Hide Bitmoji Presence
