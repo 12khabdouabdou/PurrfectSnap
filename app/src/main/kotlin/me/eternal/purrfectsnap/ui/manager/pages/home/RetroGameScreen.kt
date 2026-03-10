@@ -155,6 +155,7 @@ class RetroGameScreen : Routes.Route() {
         }
 
         LaunchedEffect(Unit) {
+            context.shortToast(translation["about_magic_toast"]?:"")
             resetGame()
             while (true) {
                 delay(16)

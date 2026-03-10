@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavBackStackEntry
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.R
 import me.eternal.purrfectsnap.common.ReceiversConfig
@@ -46,21 +47,22 @@ import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
 import me.eternal.purrfectsnap.common.util.snap.SnapWidgetBroadcastReceiverHelper
 import me.eternal.purrfectsnap.storage.*
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.coil.BitmojiImage
 
 class SocialRootSection : Routes.Route() {
-    private var friendList: List<MessagingFriendInfo> by mutableStateOf(emptyList())
-    private var groupList: List<MessagingGroupInfo> by mutableStateOf(emptyList())
+    internal var friendList: List<MessagingFriendInfo> by mutableStateOf(emptyList())
+    internal var groupList: List<MessagingGroupInfo> by mutableStateOf(emptyList())
 
-    private fun updateScopeLists() {
+    internal fun updateScopeLists() {
         context.coroutineScope.launch {
             friendList = context.database.getFriends(descOrder = true)
             groupList = context.database.getGroups()
         }
     }
 
-    private fun requestLatestSnapshot() {
+    internal fun requestLatestSnapshot() {
         runCatching {
             context.androidContext.sendBroadcast(
                 SnapWidgetBroadcastReceiverHelper.create(ReceiversConfig.BRIDGE_SYNC_ACTION) {}
@@ -71,7 +73,7 @@ class SocialRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun ScopeList(
+    internal fun ScopeList(
         scope: SocialScope,
         friends: List<MessagingFriendInfo>,
         groups: List<MessagingGroupInfo>
@@ -88,7 +90,6 @@ class SocialRootSection : Routes.Route() {
             contentPadding = PaddingValues(start = 10.dp, end = 10.dp, bottom = routes.bottomPadding + 12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            //check if scope list is empty
             val listSize = list.size
 
             if (listSize == 0) {
@@ -197,147 +198,23 @@ class SocialRootSection : Routes.Route() {
         }
     }
 
-    @OptIn(ExperimentalFoundationApi::class)
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val titles = remember {
-            listOf(translation["friends_tab"], translation["groups_tab"])
-        }
-        val coroutineScope = rememberCoroutineScope()
-        val pagerState = rememberPagerState { titles.size }
-        var searchQuery by rememberSaveable { mutableStateOf("") }
-        var searchActive by rememberSaveable { mutableStateOf(false) }
-
-        LaunchedEffect(Unit) {
-            context.database.receiveMessagingDataCallback = { friends, groups ->
-                friendList = friends
-                groupList = groups
-            }
-            updateScopeLists()
-            requestLatestSnapshot()
-        }
-        DisposableEffect(Unit) {
-            onDispose {
-                context.database.receiveMessagingDataCallback = { _, _ -> }
-            }
-        }
-        val normalizedQuery = remember(searchQuery) { searchQuery.trim() }
-        val filteredFriends = remember(friendList, normalizedQuery) {
-            if (normalizedQuery.isBlank()) {
-                friendList
-            } else {
-                friendList.filter {
-                    it.mutableUsername.contains(normalizedQuery, ignoreCase = true) ||
-                        it.displayName?.contains(normalizedQuery, ignoreCase = true) == true
-                }
-            }
-        }
-        val filteredGroups = remember(groupList, normalizedQuery) {
-            if (normalizedQuery.isBlank()) {
-                groupList
-            } else {
-                groupList.filter { it.name.contains(normalizedQuery, ignoreCase = true) }
+    override val content: @Composable (NavBackStackEntry) -> Unit = { nav ->
+        val themeId by produceState(initialValue = context.config.root.global.uiSettings.managerTheme.get()) {
+            while (true) {
+                delay(300)
+                value = context.config.root.global.uiSettings.managerTheme.get()
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(PurrfectPalette.backgroundGradient)
-        ) {
-            SocialHeader(
-                titles = titles,
-                pagerState = pagerState,
-                onTabSelected = { index ->
-                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                },
-                friendCount = friendList.size,
-                groupCount = groupList.size,
-                searchActive = searchActive,
-                onSearchToggle = {
-                    searchActive = !searchActive
-                    if (!searchActive) searchQuery = ""
-                }
-            )
-            if (searchActive) {
-                val searchHint = context.translation["manager.dialogs.add_friend.search_hint"]
-                val searchShape = RoundedCornerShape(18.dp)
-                val searchBorder = Brush.linearGradient(
-                    listOf(
-                        PurrfectPalette.glowPrimary.copy(alpha = 0.45f),
-                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                    )
-                )
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
-                    shape = searchShape,
-                    color = Color.White.copy(alpha = 0.05f),
-                    border = BorderStroke(1.dp, searchBorder),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(PurrfectPalette.cardOverlay, searchShape)
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = searchHint,
-                            tint = PurrfectPalette.textSecondary
-                        )
-                        BasicTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            singleLine = true,
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                color = Color.White,
-                                fontSize = 15.sp
-                            ),
-                            cursorBrush = SolidColor(PurrfectPalette.glowSecondary),
-                            modifier = Modifier.weight(1f)
-                        ) { innerTextField ->
-                            if (searchQuery.isEmpty()) {
-                                Text(
-                                    text = searchHint,
-                                    color = PurrfectPalette.textSecondary,
-                                    fontSize = 14.sp
-                                )
-                            }
-                            innerTextField()
-                        }
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = translation["clear_search_button_description"],
-                                    tint = Color.White
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            HorizontalPager(
-                modifier = Modifier
-                    .fillMaxSize(),
-                state = pagerState
-            ) { page ->
-                when (page) {
-                    0 -> ScopeList(SocialScope.FRIEND, filteredFriends, filteredGroups)
-                    1 -> ScopeList(SocialScope.GROUP, filteredFriends, filteredGroups)
-                }
+        key(themeId) {
+            with(ManagerTheme.fromId(themeId).theme) {
+                this@SocialRootSection.SocialScreen(nav)
             }
         }
     }
 
     @Composable
-    private fun SocialCard(
+    internal fun SocialCard(
         scope: SocialScope,
         friend: MessagingFriendInfo?,
         group: MessagingGroupInfo?,
@@ -500,7 +377,7 @@ class SocialRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun SocialHeader(
+    internal fun SocialHeader(
         titles: List<String>,
         pagerState: androidx.compose.foundation.pager.PagerState,
         onTabSelected: (Int) -> Unit,
@@ -574,7 +451,7 @@ class SocialRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun SocialTabSwitcher(
+    internal fun SocialTabSwitcher(
         titles: List<String>,
         pagerState: androidx.compose.foundation.pager.PagerState,
         onTabSelected: (Int) -> Unit
@@ -620,7 +497,7 @@ class SocialRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun EmptyState(scope: SocialScope) {
+    internal fun EmptyState(scope: SocialScope) {
         val title = when (scope) {
             SocialScope.FRIEND -> translation.getOrNull("friends_empty_title") ?: translation["empty_hint"]
             SocialScope.GROUP -> translation.getOrNull("groups_empty_title") ?: translation["empty_hint"]
@@ -647,13 +524,13 @@ class SocialRootSection : Routes.Route() {
                     modifier = Modifier.size(26.dp)
                 )
                 Text(
-                    text = title,
+                    text = title ?: "",
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp
                 )
                 Text(
-                    text = translation["social_empty_hint"],
+                    text = translation["social_empty_hint"] ?: "",
                     color = PurrfectPalette.textSecondary,
                     fontSize = 12.sp
                 )
@@ -662,7 +539,7 @@ class SocialRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun StatPill(label: String, value: Int) {
+    internal fun StatPill(label: String, value: Int) {
         Surface(
             shape = RoundedCornerShape(50),
             color = Color.White.copy(alpha = 0.08f),

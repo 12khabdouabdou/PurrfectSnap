@@ -82,6 +82,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -92,6 +94,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
@@ -122,6 +126,7 @@ import me.eternal.purrfectsnap.common.util.ktx.openLink
 import me.eternal.purrfectsnap.storage.getQuickTiles
 import me.eternal.purrfectsnap.storage.setQuickTiles
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.manager.data.UpdateDownloader
 import me.eternal.purrfectsnap.ui.manager.data.Updater
@@ -137,7 +142,7 @@ class HomeRootSection : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.sections.home") }
 
     companion object {
-        private const val QUICK_TILES_INITIALIZED_PREF = "quick_tiles_initialized"
+        internal const val QUICK_TILES_INITIALIZED_PREF = "quick_tiles_initialized"
         val cardMargin = 10.dp
         val pageBackgroundGradient = Brush.verticalGradient(
             listOf(
@@ -148,23 +153,23 @@ class HomeRootSection : Routes.Route() {
         )
     }
 
-    private val changelogClient by lazy { OkHttpClient() }
-    private val changelogStableUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-stable.txt"
-    private val changelogPrereleaseUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-prerelease.txt"
-    private val announcementsUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/announcements.txt"
+    internal val changelogClient by lazy { OkHttpClient() }
+    internal val changelogStableUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-stable.txt"
+    internal val changelogPrereleaseUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/changelogs-prerelease.txt"
+    internal val announcementsUrl = "https://raw.githubusercontent.com/particle-box/PurrfectSnap/dev/announcements.txt"
 
-    private val heroGradientColors = listOf(
+    internal val heroGradientColors = listOf(
         Color(0xFF5C4B99),
         Color(0xFF322B5E),
         Color(0xFF1B1836)
     )
-    private val quickActionsGradientColors = listOf(
+    internal val quickActionsGradientColors = listOf(
         Color(0xFF241C3E),
         Color(0xFF151127)
     )
     private lateinit var activityLauncherHelper: ActivityLauncherHelper
     data class QaCard(val id: String, val name: String, val icon: ImageVector, val action: (Routes) -> Unit)
-    private val cardEntries by lazy {
+    internal val cardEntries by lazy {
         val list = mutableListOf<QaCard>()
         EnumQuickActions.entries.forEach { q ->
             val name = context.translation["actions.${q.key}.name"]
@@ -176,7 +181,7 @@ class HomeRootSection : Routes.Route() {
         }
         list
     }
-    private val cards by lazy {
+    internal val cards by lazy {
         EnumQuickActions.entries.map {
             (context.translation["actions.${it.key}.name"] to it.icon) to it.action
         }.associate {
@@ -191,7 +196,7 @@ class HomeRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun rememberPreferenceBool(key: String, default: Boolean = false): State<Boolean> {
+    internal fun rememberPreferenceBool(key: String, default: Boolean = false): State<Boolean> {
         val prefs = remember { context.sharedPreferences }
         val state = remember { mutableStateOf(prefs.getBoolean(key, default)) }
         DisposableEffect(prefs, key) {
@@ -214,13 +219,17 @@ class HomeRootSection : Routes.Route() {
         onClick: (() -> Unit)? = null,
         tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
         containerColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+        haptic: HapticFeedback? = null,
     ) {
         val interactionSource = remember { MutableInteractionSource() }
         val clickModifier = if (onClick != null) {
             Modifier.clickable(
                 interactionSource = interactionSource,
                 indication = LocalIndication.current
-            ) { onClick() }
+            ) { 
+                haptic?.performHapticFeedback(HapticFeedbackType.LongPress)
+                onClick() 
+            }
         } else {
             Modifier
         }
@@ -244,7 +253,7 @@ class HomeRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun HeroBadge(text: String) {
+    internal fun HeroBadge(text: String) {
         Text(
             text = text,
             color = Color.White,
@@ -624,7 +633,7 @@ class HomeRootSection : Routes.Route() {
                             onClick = onManageClick,
                             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            modifier = Alignment.CenterHorizontally.let { Modifier.align(it) }
                         ) {
                             Icon(Icons.Filled.Settings, contentDescription = null, tint = Color.White)
                             Spacer(modifier = Modifier.width(6.dp))
@@ -686,7 +695,7 @@ class HomeRootSection : Routes.Route() {
             }
         }
     }
-    private fun resolveTileKey(name: String): String {
+    internal fun resolveTileKey(name: String): String {
         val entry = cardEntries.firstOrNull { it.name == name }
         return entry?.id ?: name
     }
@@ -704,13 +713,13 @@ class HomeRootSection : Routes.Route() {
         val key = resolveTileKey(name)
         prefs.edit().putString("quick_tile_size_$key", "${w.coerceIn(1,3)}x${h.coerceIn(1,3)}").apply()
     }
-    private fun clearTileSpan(name: String) {
+    internal fun clearTileSpan(name: String) {
         val prefs = context.sharedPreferences
         val key = resolveTileKey(name)
         prefs.edit().remove("quick_tile_size_$key").apply()
     }
 
-    private fun clearTileOffset(name: String) {
+    internal fun clearTileOffset(name: String) {
         val prefs = context.sharedPreferences
         val key = resolveTileKey(name)
         prefs.edit().remove("quick_tile_offset_$key").apply()
@@ -732,618 +741,23 @@ class HomeRootSection : Routes.Route() {
     }
 
 
-    @OptIn(ExperimentalLayoutApi::class, ExperimentalAnimationApi::class, ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
-    override val content: @Composable (NavBackStackEntry) -> Unit = {
-        val avenirNext = remember {
-            FontFamily(Font(R.font.avenir_next_medium, FontWeight.Medium))
-        }
-        val prefs = remember { context.sharedPreferences }
-        val allQuickTileNames = remember(cards) { cards.keys.map { it.first } }
-        val selectedTiles = rememberAsyncMutableStateList(defaultValue = allQuickTileNames) {
-            val storedTiles = context.database.getQuickTiles().filter { it.isNotBlank() }
-            val hasInitializedQuickTiles = prefs.getBoolean(QUICK_TILES_INITIALIZED_PREF, false)
-            when {
-                storedTiles.isNotEmpty() -> {
-                    if (!hasInitializedQuickTiles) {
-                        prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
-                    }
-                    storedTiles
-                }
-                hasInitializedQuickTiles -> storedTiles
-                else -> {
-                    context.database.setQuickTiles(allQuickTileNames)
-                    prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
-                    allQuickTileNames
-                }
-            }
-        }
-        val updateChannel = context.config.root.global.updateSettings.updateChannel.getNullable() ?: "stable"
-        val channelLabel = if (updateChannel == "prerelease") translation["channel_label_prerelease"] else translation["channel_label_stable"]
-        val latestUpdate by rememberAsyncMutableState(defaultValue = null, keys = arrayOf(updateChannel)) {
-            val channel = if (updateChannel == "prerelease") Channel.PRERELEASE else Channel.STABLE
-            Updater.getLatestRelease(channel)
-        }
-        val changelogUrl = if (updateChannel == "prerelease") changelogPrereleaseUrl else changelogStableUrl
-        val downloadState by UpdateDownloader.downloadState.collectAsState()
-        val downloadProgress by UpdateDownloader.downloadProgress.collectAsState()
-        val coroutineScope = rememberCoroutineScope()
-        val isPurrAuraActive by rememberPreferenceBool("debug_test_mode", true)
-        var showChangelogDialog by remember { mutableStateOf(false) }
-        var changelogLoading by remember { mutableStateOf(false) }
-        var changelogError by remember { mutableStateOf<String?>(null) }
-        var changelogText by remember { mutableStateOf<String?>(null) }
-        var changelogVersion by remember { mutableStateOf<String?>(null) }
-        var showAnnouncementsDialog by remember { mutableStateOf(false) }
-        var announcementsLoading by remember { mutableStateOf(false) }
-        var announcementsError by remember { mutableStateOf<String?>(null) }
-        var announcementsText by remember { mutableStateOf<String?>(null) }
-
-        val handleUpdateAction: () -> Unit = {
-            latestUpdate?.let { latest ->
-                val supportedAbis = android.os.Build.SUPPORTED_ABIS
-                var abiName: String? = null
-                for (abi in supportedAbis) {
-                    when (abi) {
-                        "arm64-v8a" -> {
-                            abiName = "arm64"
-                            break
-                        }
-                        "armeabi-v7a" -> {
-                            abiName = "armv7"
-                            break
-                        }
-                    }
-                }
-                context.log.info(
-                    "Update request: device ABIs=${supportedAbis.joinToString()} resolvedArch=${abiName ?: "unknown"}",
-                    "HomeRoot"
-                )
-
-                if (latest.workflowId != null) {
-                    if (abiName == null) {
-                        android.widget.Toast.makeText(
-                            context.androidContext,
-                            translation["update_arch_not_supported_toast"],
-                            android.widget.Toast.LENGTH_LONG
-                        ).show()
-                    } else {
-                        val artifactName = "purrfectsnap-${abiName}-debug"
-                        val downloadUrl = "https://nightly.link/particle-box/PurrfectSnap/actions/runs/${latest.workflowId}/$artifactName.zip"
-                        context.log.info("Debug update -> downloading $artifactName from $downloadUrl", "HomeRoot")
-                        UpdateDownloader.downloadAndInstall(context, downloadUrl, "$artifactName.zip", coroutineScope)
-                    }
-                    return@let
-                }
-
-                val releaseDownload = abiName?.let { arch -> latest.assetDownloads[arch] }
-                if (releaseDownload != null) {
-                    val fileName = releaseDownload.substringAfterLast('/')
-                    context.log.info("Release update -> arch=$abiName url=$releaseDownload file=$fileName", "HomeRoot")
-                    UpdateDownloader.downloadAndInstall(context, releaseDownload, fileName, coroutineScope)
-                } else {
-                    context.log.warn(
-                        "No matching update asset for arch=$abiName (available: ${latest.assetDownloads.keys})",
-                        "HomeRoot"
-                    )
-                    context.androidContext.openLink(
-                        latest.releaseUrl,
-                        context.translation["toast_open_link_failed"]
-                    )
-                }
-            }
-        }
-
-        fun loadChangelog(targetVersion: String, url: String) {
-            if (changelogVersion == targetVersion && changelogText != null) return
-            changelogLoading = true
-            changelogError = null
-            coroutineScope.launch(Dispatchers.IO) {
-                runCatching {
-                    changelogClient.newCall(Request.Builder().url(url).build()).execute().use { response ->
-                        if (!response.isSuccessful) throw IllegalStateException("Failed to fetch changelog (${response.code})")
-                        val body = response.body?.string() ?: throw IllegalStateException("Empty changelog body")
-                        extractChangelogForVersion(body, targetVersion).ifBlank { body.trim() }
-                    }
-                }.onSuccess { text ->
-                    withContext(Dispatchers.Main) {
-                        changelogText = text
-                        changelogVersion = targetVersion
-                        changelogLoading = false
-                    }
-                }.onFailure { error ->
-                    withContext(Dispatchers.Main) {
-                        changelogError = error.message ?: "Failed to load changelog"
-                        changelogLoading = false
-                    }
-                }
-            }
-        }
-
-        fun loadAnnouncements() {
-            if (announcementsText != null) return
-            announcementsLoading = true
-            announcementsError = null
-            coroutineScope.launch(Dispatchers.IO) {
-                runCatching {
-                    changelogClient.newCall(Request.Builder().url(announcementsUrl).build()).execute().use { response ->
-                        if (!response.isSuccessful) throw IllegalStateException("Failed to fetch announcements (${response.code})")
-                        val body = response.body?.string() ?: throw IllegalStateException("Empty announcements body")
-                        body.trim()
-                    }
-                }.onSuccess { text ->
-                    withContext(Dispatchers.Main) {
-                        announcementsText = text
-                        announcementsLoading = false
-                    }
-                }.onFailure { error ->
-                    withContext(Dispatchers.Main) {
-                        announcementsError = error.message ?: "Failed to load announcements"
-                        announcementsLoading = false
-                    }
-                }
-            }
-        }
-
-        LaunchedEffect(Unit) {
-            if (context.sharedPreferences.getBoolean("show_changelog_on_launch", false)) {
-                val version = context.sharedPreferences.getString("changelog_version_on_launch", null)
-                context.sharedPreferences.edit()
-                    .putBoolean("show_changelog_on_launch", false)
-                    .remove("changelog_version_on_launch")
-                    .apply()
-                version?.let {
-                    showChangelogDialog = true
-                    loadChangelog(it, changelogUrl)
-                }
-            }
-        }
-
-        LaunchedEffect(Unit) {
-            if (context.sharedPreferences.getBoolean("show_announcements_on_launch", false)) {
-                context.sharedPreferences.edit()
-                    .putBoolean("show_announcements_on_launch", false)
-                    .apply()
-                showAnnouncementsDialog = true
-                loadAnnouncements()
-            }
-        }
-
-        val onUpdateButtonClick: () -> Unit = {
-            latestUpdate?.let {
-                showChangelogDialog = true
-                loadChangelog(it.versionName, changelogUrl)
-            }
-        }
-
-        var showQuickActionsMenu by remember { mutableStateOf(false) }
-        val scrollState = rememberScrollState()
-        val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        val navigationBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-        val contentBottomPadding = routes.bottomPadding + navigationBarPadding + 96.dp
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(pageBackgroundGradient)
+    override val content: @Composable (NavBackStackEntry) -> Unit = { nav ->
+        val themeId by produceState(
+            initialValue = context.config.root.global.uiSettings.managerTheme.get()
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
-                    .padding(bottom = contentBottomPadding)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(WindowInsets.statusBars.asPaddingValues())
-                        .padding(horizontal = cardMargin, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TopBarActionChip(
-                            icon = Icons.Filled.Notifications,
-                            label = null,
-                            contentDescription = translation["announcements_button_description"]
-                        ) {
-                            showAnnouncementsDialog = true
-                            loadAnnouncements()
-                        }
-                    }
-                    Row(
-                        modifier = Modifier.wrapContentWidth(Alignment.End),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        HomeActionChips()
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                HeroSection(
-                    versionName = BuildConfig.VERSION_NAME,
-                    latestUpdate = latestUpdate,
-                    downloadState = downloadState,
-                    downloadProgress = downloadProgress,
-                    onUpdateAction = onUpdateButtonClick,
-                    channelLabel = channelLabel,
-                    isPurrAuraActive = isPurrAuraActive,
-                    onWebsiteClick = {
-                        context.androidContext.openLink(
-                            "https://purrfectsnap.vercel.app/",
-                            context.translation["toast_open_link_failed"]
-                        )
-                    },
-                    onTelegramClick = {
-                        context.androidContext.openLink(
-                            "https://t.me/purrfectsnap_official",
-                            context.translation["toast_open_link_failed"]
-                        )
-                    },
-                    onGithubClick = {
-                        context.androidContext.openLink(
-                            "https://github.com/particle-box/PurrfectSnap",
-                            context.translation["toast_open_link_failed"]
-                        )
-                    },
-                    authorName = "ETERNAL",
-                    onManageClick = { routes.settings.navigate() },
-                    avenirNext = avenirNext,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                AnimatedContent(targetState = selectedTiles.isNotEmpty(), label = "QuickActionsAnim") { hasQuickActions ->
-                    val quickCardShape = RoundedCornerShape(34.dp)
-                    Surface(
-                        modifier = Modifier
-                            .padding(horizontal = cardMargin, vertical = 10.dp),
-                        shape = quickCardShape,
-                        tonalElevation = 0.dp,
-                        shadowElevation = 24.dp,
-                        color = Color.Transparent,
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Brush.linearGradient(quickActionsGradientColors))
-                        .padding(horizontal = 24.dp, vertical = 28.dp)
-                        .padding(bottom = navigationBarPadding + 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                            if (!hasQuickActions) {
-                                Text(
-                                    translation["quick_actions_title"],
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White.copy(alpha = 0.85f),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Widgets,
-                                        contentDescription = translation["quick_actions_icon_description"],
-                                        modifier = Modifier.size(72.dp),
-                                        tint = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = translation["quick_actions_empty_title"],
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = translation["quick_actions_empty_subtitle"],
-                                        fontSize = 14.sp,
-                                        color = Color.White.copy(alpha = 0.75f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.height(20.dp))
-                                    Button(
-                                        onClick = { showQuickActionsMenu = true },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.White,
-                                            contentColor = Color(0xFF1B152E)
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = translation["add_quick_action_description"],
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(text = translation["quick_actions_add_tile_button"])
-                                    }
-                                }
-                            } else {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(bottom = 18.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        translation["quick_actions_title"],
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        color = Color.White,
-                                        maxLines = 3,
-                                        overflow = TextOverflow.Clip
-                                    )
-                                    Text(
-                                        text = translation.format("quick_actions_count_label", "count" to selectedTiles.size.toString()),
-                                        fontSize = 13.sp,
-                                        color = Color.White.copy(alpha = 0.75f),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Row(
-                                        modifier = Modifier.wrapContentWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        OutlinedButton(
-                                            onClick = { showQuickActionsMenu = true },
-                                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f)),
-                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
-                                        ) {
-                                            Icon(
-                                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_manage),
-                                                contentDescription = translation["manage_quick_actions_description"],
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(text = translation["quick_actions_manage_button"])
-                                        }
-                                    }
-                                }
-                                val spacing = 12.dp
-                                val gridPadding = 8.dp
-                                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-                                    val preferredTileWidth = 100.dp
-                                    val columns = ((maxWidth + spacing) / (preferredTileWidth + spacing))
-                                        .toInt()
-                                        .coerceAtLeast(2)
-                                        .coerceAtMost(4)
-                                    val computedWidth = (maxWidth - gridPadding * 2 - spacing * (columns - 1)) / columns
-                                    val tileWidth = if (computedWidth < preferredTileWidth) computedWidth else preferredTileWidth
-                                    FlowRow(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(all = gridPadding),
-                                        horizontalArrangement = Arrangement.SpaceEvenly,
-                                        verticalArrangement = Arrangement.spacedBy(spacing),
-                                        maxItemsInEachRow = columns
-                                    ) {
-                                        selectedTiles.forEach { tileName ->
-                                            val cardEntry = cards.entries.find { entry -> entry.key.first == tileName } ?: return@forEach
-                                            val (card, action) = cardEntry
-                                            val interactionSource = remember { MutableInteractionSource() }
-                                            Surface(
-                                                modifier = Modifier
-                                                    .width(tileWidth)
-                                                    .aspectRatio(1.05f)
-                                                    .scaleOnPress(interactionSource)
-                                                    .clickable { action(routes) },
-                                                shape = RoundedCornerShape(18.dp),
-                                                color = Color.White.copy(alpha = 0.06f),
-                                                tonalElevation = 0.dp,
-                                                shadowElevation = 0.dp,
-                                                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
-                                            ) {
-                                                Box(
-                                                    Modifier
-                                                        .fillMaxSize()
-                                                        .background(
-                                                            Brush.linearGradient(
-                                                                listOf(
-                                                                    PurrfectPalette.glowPrimary.copy(alpha = 0.3f),
-                                                                    PurrfectPalette.glowSecondary.copy(alpha = 0.22f)
-                                                                )
-                                                            )
-                                                        )
-                                                        .clipToBounds()
-                                                ) {
-                                                    Column(
-                                                        modifier = Modifier
-                                                            .fillMaxSize()
-                                                            .padding(all = 10.dp),
-                                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                                        verticalArrangement = Arrangement.Center,
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = card.second, contentDescription = null,
-                                                            tint = Color.White,
-                                                            modifier = Modifier.size(44.dp)
-                                                        )
-                                                        Spacer(modifier = Modifier.height(8.dp))
-                                                        Text(
-                                                            text = card.first,
-                                                            lineHeight = 16.sp,
-                                                            fontSize = 13.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            textAlign = TextAlign.Center,
-                                                            color = Color.White,
-                                                            overflow = TextOverflow.Ellipsis,
-                                                            maxLines = 2,
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(32.dp))
+            while (true) {
+                delay(300)
+                value = context.config.root.global.uiSettings.managerTheme.get()
             }
         }
-
-        if (showChangelogDialog && latestUpdate != null) {
-            AestheticDialog(
-                onDismissRequest = { showChangelogDialog = false },
-                title = translation["changelog_dialog_title"],
-                text = "",
-                icon = Icons.Filled.Info,
-                confirmButtonText = translation["changelog_dialog_update_button"],
-                onConfirm = {
-                    showChangelogDialog = false
-                    handleUpdateAction()
-                },
-                dismissButtonText = translation["changelog_dialog_cancel_button"],
-                onDismiss = { showChangelogDialog = false },
-                confirmEnabled = !changelogLoading,
-                showCloseButton = false,
-                customContent = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 120.dp, max = 340.dp)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                    when {
-                        changelogLoading -> {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(28.dp),
-                                    strokeWidth = 3.dp,
-                                    color = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = translation["changelog_dialog_loading"],
-                                    color = Color.White,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                        }
-
-                        changelogError != null -> {
-                            Text(
-                                text = changelogError ?: translation["changelog_dialog_error"],
-                                color = MaterialTheme.colorScheme.error,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-
-                        else -> {
-                            Text(
-                                text = changelogText ?: translation["changelog_dialog_empty"],
-                                color = PurrfectPalette.textPrimary,
-                                fontSize = 14.sp,
-                                lineHeight = 20.sp
-                            )
-                        }
-                    }
-                }
-                }
-            )
-        }
-
-        if (showAnnouncementsDialog) {
-            AestheticDialog(
-                onDismissRequest = { showAnnouncementsDialog = false },
-                title = translation["announcements_dialog_title"],
-                text = "",
-                icon = Icons.Filled.Info,
-                confirmButtonText = translation["announcements_dialog_close_button"],
-                onConfirm = { showAnnouncementsDialog = false },
-                confirmEnabled = !announcementsLoading,
-                showCloseButton = false,
-                customContent = {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 120.dp, max = 340.dp)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        when {
-                            announcementsLoading -> {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(28.dp),
-                                        strokeWidth = 3.dp,
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = translation["announcements_dialog_loading"],
-                                        color = Color.White,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
-                            }
-
-                            announcementsError != null -> {
-                                Text(
-                                    text = announcementsError ?: translation["announcements_dialog_error"],
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-
-                            else -> {
-                                Text(
-                                    text = announcementsText ?: translation["announcements_dialog_empty"],
-                                    color = PurrfectPalette.textPrimary,
-                                    fontSize = 14.sp,
-                                    lineHeight = 20.sp
-                                )
-                            }
-                        }
-                    }
-                }
-            )
-        }
-
-        if (showQuickActionsMenu) {
-            QuickActionsDialog(
-                quickActions = cards,
-                selectedQuickActions = selectedTiles,
-                onDismiss = { showQuickActionsMenu = false },
-                onSave = { newList ->
-                    val previous = selectedTiles.toList()
-                    val removed = previous.filter { it !in newList }
-                    removed.forEach { clearTileSpan(it); clearTileOffset(it) }
-                    newList.forEach { clearTileOffset(it) }
-                    selectedTiles.clear()
-                    selectedTiles.addAll(newList)
-                    prefs.edit().putBoolean(QUICK_TILES_INITIALIZED_PREF, true).apply()
-                    context.coroutineScope.launch {
-                        context.database.setQuickTiles(selectedTiles)
-                    }
-                    showQuickActionsMenu = false
-                },
-                translation = translation
-            )
+        key(themeId) {
+            with(ManagerTheme.fromId(themeId).theme) {
+                this@HomeRootSection.HomeScreen(nav)
+            }
         }
     }
-}
 
-private fun extractChangelogForVersion(raw: String, version: String): String {
+    internal fun extractChangelogForVersion(raw: String, version: String): String {
     val lines = raw.lines()
     val headerRegex = Regex("^\\s*#+\\s*v?${Regex.escape(version)}\\b", RegexOption.IGNORE_CASE)
     val collected = mutableListOf<String>()

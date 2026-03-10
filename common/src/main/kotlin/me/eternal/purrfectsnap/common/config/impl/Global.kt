@@ -70,6 +70,7 @@ class Global : ConfigContainer() {
     inner class UISettings : ConfigContainer() {
         val hapticFeedback = boolean("haptic_feedback", true)
         val useSystemToasts = boolean("use_system_toasts", false)
+        val managerTheme = unique("manager_theme", "LEGACY", "APHELION") { requireRestart() }.apply { set("LEGACY") }
     }
 
     val updateSettings = container("update_settings", UpdateSettings()) { addFlags(ConfigFlag.HIDDEN) }

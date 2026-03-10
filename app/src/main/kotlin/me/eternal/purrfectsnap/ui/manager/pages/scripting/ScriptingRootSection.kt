@@ -30,7 +30,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.documentfile.provider.DocumentFile
+import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.*
 import me.eternal.purrfectsnap.common.scripting.type.ModuleInfo
 import me.eternal.purrfectsnap.common.scripting.ui.EnumScriptInterface
@@ -44,11 +46,11 @@ import me.eternal.purrfectsnap.common.util.ktx.openLink
 import me.eternal.purrfectsnap.storage.isScriptEnabled
 import me.eternal.purrfectsnap.storage.setScriptEnabled
 import me.eternal.purrfectsnap.ui.manager.Routes
+import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.components.AestheticEmptyState
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
-import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.chooseFolder
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 import me.eternal.purrfectsnap.ui.util.pullrefresh.PullRefreshIndicator
@@ -57,15 +59,15 @@ import me.eternal.purrfectsnap.ui.util.pullrefresh.rememberPullRefreshState
 
 class ScriptingRootSection : Routes.Route() {
     override val translation by lazy { context.translation.getCategory("manager.scripting") }
-    private lateinit var activityLauncherHelper: ActivityLauncherHelper
-    val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
-    private var selectedTab by mutableStateOf(0)
+    internal lateinit var activityLauncherHelper: ActivityLauncherHelper
+    internal val reloadDispatcher = AsyncUpdateDispatcher(updateOnFirstComposition = false)
+    internal var selectedTab by mutableStateOf(0)
 
     override val init: () -> Unit = {
         activityLauncherHelper = ActivityLauncherHelper(context.activity!!)
     }
 
-    suspend fun isScriptInstalledByUrl(scriptUrl: String): Boolean {
+    internal suspend fun isScriptInstalledByUrl(scriptUrl: String): Boolean {
         return try {
             val installedScripts = context.scriptManager.getSyncedModules()
             installedScripts.any { module ->
@@ -76,7 +78,7 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-    fun downloadScript(scriptUrl: String, onComplete: () -> Unit) {
+    internal fun downloadScript(scriptUrl: String, onComplete: () -> Unit) {
         context.coroutineScope.launch {
             if (isScriptInstalledByUrl(scriptUrl)) {
                 context.shortToast(translation["script_already_installed"])
@@ -97,7 +99,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun ImportRemoteScript(
+    internal fun ImportRemoteScript(
         dismiss: () -> Unit
     ) {
         var url by remember { mutableStateOf("") }
@@ -172,7 +174,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun ModuleActions(
+    internal fun ModuleActions(
         script: ModuleInfo,
         canUpdate: Boolean,
         dismiss: () -> Unit
@@ -270,7 +272,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    fun ModuleItem(script: ModuleInfo) {
+    internal fun ModuleItem(script: ModuleInfo) {
         var enabled by rememberAsyncMutableState(defaultValue = false, keys = arrayOf(script)) {
             context.database.isScriptEnabled(script.name)
         }
@@ -430,7 +432,7 @@ class ScriptingRootSection : Routes.Route() {
     override val floatingActionButton: @Composable () -> Unit = {}
 
     @Composable
-    private fun SelectFolderButton(onClick: () -> Unit) {
+    internal fun SelectFolderButton(onClick: () -> Unit) {
         val label = translation["select_folder_button"]
         Box(
             modifier = Modifier
@@ -483,7 +485,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    fun ScriptSettings(script: ModuleInfo) {
+    internal fun ScriptSettings(script: ModuleInfo) {
         val settingsInterface = remember {
             val module =
                 context.scriptManager.runtime.getModuleByName(script.name) ?: return@remember null
@@ -500,84 +502,23 @@ class ScriptingRootSection : Routes.Route() {
         }
     }
 
-    override val content: @Composable (androidx.navigation.NavBackStackEntry) -> Unit = {
-        val scriptingFolder by rememberAsyncMutableState(
-            defaultValue = null,
-            updateDispatcher = reloadDispatcher
-        ) { context.scriptManager.getScriptsFolder() }
-        val tabTitles = listOf(translation["installed_scripts_tab"], translation["catalog_tab"])
-        var showImportDialog by remember { mutableStateOf(false) }
-        var showToast by remember { mutableStateOf(false) }
-
-        LaunchedEffect(scriptingFolder) {
-            if (scriptingFolder == null && selectedTab != 0) {
-                selectedTab = 0
+    override val content: @Composable (NavBackStackEntry) -> Unit = { nav ->
+        val themeId by produceState(initialValue = context.config.root.global.uiSettings.managerTheme.get()) {
+            while (true) {
+                delay(300)
+                value = context.config.root.global.uiSettings.managerTheme.get()
             }
         }
 
-        if (showImportDialog) {
-            ImportRemoteScript { showImportDialog = false }
-        }
-        if (showToast) {
-            LaunchedEffect(showToast) {
-                context.shortToast(translation["select_scripts_folder_toast"])
-                showToast = false
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(PurrfectPalette.backgroundGradient)
-        ) {
-            ScriptingHeader(
-                titles = tabTitles,
-                selectedTab = selectedTab,
-                onTabSelected = { index ->
-                    if (index == 1 && scriptingFolder == null) {
-                        showToast = true
-                    } else {
-                        selectedTab = index
-                    }
-                },
-                onImport = {
-                    if (scriptingFolder == null) showToast = true else showImportDialog = true
-                },
-                onOpenFolder = {
-                    if (scriptingFolder == null) {
-                        showToast = true
-                    } else {
-                        scriptingFolder?.let {
-                            context.androidContext.openLink(
-                                it.uri.toString(),
-                                context.translation["toast_open_link_failed"]
-                            )
-                        }
-                    }
-                },
-                onManageRepos = { routes.manageScriptRepos.navigate() },
-                onDocs = {
-                    context.androidContext.openLink(
-                        "https://github.com/SnapEnhance/scripting-docs",
-                        context.translation["toast_open_link_failed"]
-                    )
-                },
-                folderSelected = scriptingFolder != null
-            )
-            Spacer(Modifier.height(12.dp))
-            when (selectedTab) {
-                0 -> InstalledTabContent(
-                    scriptingFolder = scriptingFolder
-                )
-                1 -> CatalogTabContent(
-                    scriptingFolder = scriptingFolder
-                )
+        key(themeId) {
+            with(ManagerTheme.fromId(themeId).theme) {
+                this@ScriptingRootSection.ScriptingScreen(nav)
             }
         }
     }
 
     @Composable
-    private fun InstalledTabContent(
+    internal fun InstalledTabContent(
         scriptingFolder: DocumentFile?
     ) {
         val scriptModules by rememberAsyncMutableState(
@@ -800,7 +741,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun CatalogTabContent(
+    internal fun CatalogTabContent(
         scriptingFolder: DocumentFile?
     ) {
         val coroutineScope = rememberCoroutineScope()
@@ -833,7 +774,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun ScriptingHeader(
+    internal fun ScriptingHeader(
         titles: List<String>,
         selectedTab: Int,
         onTabSelected: (Int) -> Unit,
@@ -911,7 +852,7 @@ class ScriptingRootSection : Routes.Route() {
     }
 
     @Composable
-    private fun ScriptingTabSwitcher(
+    internal fun ScriptingTabSwitcher(
         titles: List<String>,
         selectedTab: Int,
         onTabSelected: (Int) -> Unit
