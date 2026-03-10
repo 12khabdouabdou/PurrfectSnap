@@ -19,11 +19,24 @@ class Spoof : ConfigContainer(hasGlobalState = true) {
     val spoofDeviceId = container("spoof_device_id", SpoofDeviceIdConfig()) { requireRestart() }
     val spoofDevice = boolean("spoof_device") { requireRestart() }
     val deviceModel = unique("device_model",
-        "samsung_s25_ultra",
-        "google_pixel_10_pro",
-        "oneplus_13",
-        "xiaomi_15_ultra"
-    ) { 
+        "none",
+        "random",
+        "Pixel 8 Pro",
+        "Pixel 9 Pro XL",
+        "Pixel 10",
+        "Pixel 10 Pro",
+        "Pixel 10 Pro XL",
+        "Pixel 10 Pro Fold",
+        "Galaxy S23 Ultra",
+        "Galaxy S24 Ultra",
+        "Galaxy S25 Ultra",
+        "OnePlus 15",
+        "OnePlus Open",
+        "Xiaomi 15 Ultra",
+        "OPPO Find X9 Pro",
+        "vivo X100 Pro",
+        "realme GT 6"
+    ) {
         requireRestart()
         customOptionTranslationPath = "features.options.device_model"
     }

@@ -119,7 +119,7 @@ class FeaturesRootSection : Routes.Route() {
                     it.key.dataType.type == DataProcessors.Type.CONTAINER &&
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 ) {
-                    containers[it.key.name] = PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>)
+                    containers[it.key.name] = (it.key to it.value).toPropertyPair()
                     queryContainerRecursive(it.value.get() as ConfigContainer)
                 }
             }
@@ -286,7 +286,7 @@ class FeaturesRootSection : Routes.Route() {
                             context.translation[it.key.propertyName()].contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyDescription()].contains(keyword, ignoreCase = true)
                     )
-                }.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }
+                }.map { (it.key to it.value).toPropertyPair() }
 
                 PropertiesView(
                     properties = properties,
@@ -1316,7 +1316,7 @@ class FeaturesRootSection : Routes.Route() {
         val isActiveSearch = isSearchResults || liveSearchQuery.isNotBlank()
         val globalSearchProperties = remember(enableGlobalSearch) {
             if (enableGlobalSearch) {
-                allProperties.filter { isSearchVisibleProperty(it.key) }.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }
+                allProperties.filter { isSearchVisibleProperty(it.key) }.map { (it.key to it.value).toPropertyPair() }
             } else {
                 emptyList()
             }
@@ -1537,7 +1537,7 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         PropertiesView(
             properties = remember {
-                configContainer.properties.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }.filter {
+                configContainer.properties.map { (it.key to it.value).toPropertyPair() }.filter {
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 }
             },

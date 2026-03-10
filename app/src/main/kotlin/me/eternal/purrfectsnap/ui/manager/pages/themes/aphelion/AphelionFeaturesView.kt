@@ -6,10 +6,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import me.eternal.purrfectsnap.ui.manager.pages.features.FeaturesRootSection
 import me.eternal.purrfectsnap.ui.manager.pages.features.FeaturesRootSection.Companion.FEATURE_CONTAINER_ROUTE
 import me.eternal.purrfectsnap.ui.manager.pages.features.FeaturesRootSection.Companion.SEARCH_FEATURE_ROUTE
-import me.eternal.purrfectsnap.common.config.PropertyKey
-import me.eternal.purrfectsnap.common.config.PropertyValue
-import me.eternal.purrfectsnap.common.config.PropertyPair
 import me.eternal.purrfectsnap.common.config.ConfigContainer
+import me.eternal.purrfectsnap.common.config.PropertyPair
+import me.eternal.purrfectsnap.common.config.toPropertyPair
 
 @Composable
 fun FeaturesRootSection.AphelionFeaturesScreen(nav: NavBackStackEntry) {
@@ -36,7 +35,7 @@ fun FeaturesRootSection.AphelionFeaturesScreen(nav: NavBackStackEntry) {
                         context.translation[it.key.propertyName()].contains(keyword, ignoreCase = true) ||
                         context.translation[it.key.propertyDescription()].contains(keyword, ignoreCase = true)
                 )
-            }.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }
+            }.map { (it.key to it.value).toPropertyPair() }
 
             PropertiesView(
                 properties = properties,

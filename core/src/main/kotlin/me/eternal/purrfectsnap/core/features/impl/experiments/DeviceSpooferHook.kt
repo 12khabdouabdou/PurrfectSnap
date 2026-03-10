@@ -16,113 +16,82 @@ import java.security.SecureRandom
 
 class DeviceSpooferHook: Feature("Device Spoofer")  {
 	private var spoofedAndroidId: String? = null
-	private var hasLoggedId = false
-	private var randomizedFingerprints = mutableMapOf<String, String>()
+	private var spoofedDeviceInfo: DeviceInfo? = null
+	private var spoofedFingerprint: String? = null
 
 	private fun generateAndroidId(): String {
-		if (spoofedAndroidId != null) return spoofedAndroidId!!
+		// Always check custom ID first - this ensures changes take effect immediately
 		val customId = context.config.experimental.spoof.spoofDeviceId.customAndroidId.getNullable()
 		if (!customId.isNullOrEmpty()) {
-			spoofedAndroidId = customId.lowercase()
-			if (!hasLoggedId) {
-				context.log.info("Using custom Android ID: $spoofedAndroidId")
-				hasLoggedId = true
+			val normalizedId = customId.lowercase().trim()
+			if (normalizedId.length == 16 && normalizedId.all { it in '0'..'9' || it in 'a'..'f' }) {
+				// Only log when ID actually changes
+				if (spoofedAndroidId != normalizedId) {
+					spoofedAndroidId = normalizedId
+					context.log.info("Using custom Android ID: $spoofedAndroidId")
+				}
+				return spoofedAndroidId!!
+			} else {
+				context.log.warn("Invalid custom Android ID format (must be 16 hex chars), generating new one")
 			}
-			return spoofedAndroidId!!
 		}
+
+		// No custom ID set - use stored or generate new one
 		val sharedPrefs = context.androidContext.getSharedPreferences("purrfectsnap_spoof", 0)
-		spoofedAndroidId = sharedPrefs.getString("android_id", null)
-		if (spoofedAndroidId == null) {
-			spoofedAndroidId = generateRandomHexString(16)
+		val storedId = sharedPrefs.getString("android_id", null)
+		if (storedId == null || storedId.length != 16) {
+			spoofedAndroidId = DeviceSpoofer.generateAndroidId()
 			sharedPrefs.edit().putString("android_id", spoofedAndroidId).apply()
 			context.log.info("Generated new Android ID: $spoofedAndroidId")
-		} else if (!hasLoggedId) {
-			context.log.info("Using stored Android ID: $spoofedAndroidId")
+		} else {
+			// Only use cached value if it matches stored value (handles regeneration)
+			if (spoofedAndroidId != storedId) {
+				spoofedAndroidId = storedId
+				context.log.info("Using stored Android ID: $spoofedAndroidId")
+			}
 		}
-		hasLoggedId = true
 		return spoofedAndroidId!!
 	}
 
-	private fun generateRandomHexString(length: Int): String {
-		val random = SecureRandom()
-		val bytes = ByteArray(length / 2)
-		random.nextBytes(bytes)
-		return bytes.joinToString("") { "%02x".format(it) }
+	private fun getDeviceInfo(modelName: String): DeviceInfo? {
+		return DeviceSpoofer.getDeviceInfo(modelName)
 	}
 
-	private fun randomizeFingerprintBuildNumber(fingerprint: String, deviceKey: String): String {
-		if (randomizedFingerprints.containsKey(deviceKey)) {
-			return randomizedFingerprints[deviceKey]!!
-		}
-		val sharedPrefs = context.androidContext.getSharedPreferences("purrfectsnap_spoof", 0)
-		val savedFingerprint = sharedPrefs.getString("fingerprint_$deviceKey", null)
-		if (savedFingerprint != null) {
-			randomizedFingerprints[deviceKey] = savedFingerprint
-			return savedFingerprint
-		}
-		val parts = fingerprint.split("/")
-		if (parts.size >= 3) {
-			val buildPart = parts[2]
-			val buildSections = buildPart.split(":")
-			if (buildSections.size >= 2) {
-				val buildDetails = buildSections[1].split("/")
-				if (buildDetails.size >= 2) {
-					val randomBuildNumber = generateRandomBuildNumber()
-					val newBuildDetails = buildDetails.toMutableList()
-					newBuildDetails[1] = randomBuildNumber
-					val newBuildPart = "${buildSections[0]}:${newBuildDetails.joinToString("/")}"
-					val newFingerprint = "${parts[0]}/${parts[1]}/$newBuildPart"
-					randomizedFingerprints[deviceKey] = newFingerprint
-					sharedPrefs.edit().putString("fingerprint_$deviceKey", newFingerprint).apply()
-					return newFingerprint
-				}
+	private fun getSpoofedDeviceInfo(): DeviceInfo? {
+		val selectedModel = context.config.experimental.spoof.deviceModel.getNullable() ?: return null
+		if (selectedModel == "random") {
+			val sharedPrefs = context.androidContext.getSharedPreferences("purrfectsnap_spoof", 0)
+			val randomDevice = sharedPrefs.getString("random_device", null)
+			if (randomDevice == null) {
+				val availableDevices = DeviceSpoofer.getAvailableDevices()
+				val newRandomDevice = availableDevices.random()
+				sharedPrefs.edit().putString("random_device", newRandomDevice).apply()
+				context.log.info("Randomly selected device: $newRandomDevice")
+				spoofedDeviceInfo = getDeviceInfo(newRandomDevice)
+			} else {
+				context.log.info("Using stored random device: $randomDevice")
+				spoofedDeviceInfo = getDeviceInfo(randomDevice)
 			}
+			return spoofedDeviceInfo
 		}
-		randomizedFingerprints[deviceKey] = fingerprint
-		return fingerprint
+		if (selectedModel == "none" || selectedModel == "null") return null
+		spoofedDeviceInfo = getDeviceInfo(selectedModel)
+		return spoofedDeviceInfo
 	}
 
-	private fun generateRandomBuildNumber(): String {
-		val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		val random = SecureRandom()
-		return (1..10).map { chars[random.nextInt(chars.length)] }.joinToString("")
-	}
-
-	private fun randomizeDisplayId(display: String, deviceKey: String, buildNumber: String): String {
+	private fun getSpoofedFingerprint(deviceInfo: DeviceInfo): String {
 		val sharedPrefs = context.androidContext.getSharedPreferences("purrfectsnap_spoof", 0)
-		val savedDisplay = sharedPrefs.getString("display_$deviceKey", null)
-		if (savedDisplay != null) return savedDisplay
-		val parts = display.split(".")
-		val newDisplay = if (parts.size > 1) {
-			"${parts[0]}.${parts[1]}.$buildNumber"
+		val storedFingerprint = sharedPrefs.getString("device_fingerprint", null)
+		if (storedFingerprint == null) {
+			val buildVersion = Build.VERSION.RELEASE
+			spoofedFingerprint = DeviceSpoofer.generateFingerprint(deviceInfo, buildVersion)
+			sharedPrefs.edit().putString("device_fingerprint", spoofedFingerprint).apply()
+			context.log.info("Generated new device fingerprint: $spoofedFingerprint")
 		} else {
-			display
+			spoofedFingerprint = storedFingerprint
+			context.log.info("Using stored device fingerprint: $spoofedFingerprint")
 		}
-		sharedPrefs.edit().putString("display_$deviceKey", newDisplay).apply()
-		return newDisplay
-	}
-
-	private fun getRandomSerial(deviceKey: String): String {
-		val sharedPrefs = context.androidContext.getSharedPreferences("purrfectsnap_spoof", 0)
-		val savedSerial = sharedPrefs.getString("serial_$deviceKey", null)
-		if (savedSerial != null) return savedSerial
-		val random = SecureRandom()
-		val serial = (1..16).map { 
-			"0123456789ABCDEF"[random.nextInt(16)]
-		}.joinToString("")
-		sharedPrefs.edit().putString("serial_$deviceKey", serial).apply()
-		return serial
-	}
-
-	private fun getRandomBuildId(deviceKey: String): String {
-		val sharedPrefs = context.androidContext.getSharedPreferences("purrfectsnap_spoof", 0)
-		val savedBuildId = sharedPrefs.getString("build_id_$deviceKey", null)
-		if (savedBuildId != null) return savedBuildId
-		val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-		val random = SecureRandom()
-		val buildId = (1..8).map { chars[random.nextInt(chars.length)] }.joinToString("")
-		sharedPrefs.edit().putString("build_id_$deviceKey", buildId).apply()
-		return buildId
+		return spoofedFingerprint!!
 	}
 
 	private fun getRandomGsfId(): String {
@@ -165,65 +134,6 @@ class DeviceSpooferHook: Feature("Device Spoofer")  {
 		return mac
 	}
 
-	data class DeviceProfile(
-		val manufacturer: String,
-		val brand: String,
-		val model: String,
-		val device: String,
-		val product: String,
-		val hardware: String,
-		val board: String,
-		val fingerprint: String,
-		val display: String
-	)
-
-	private val deviceProfiles = mapOf(
-		"samsung_s25_ultra" to DeviceProfile(
-			manufacturer = "samsung",
-			brand = "samsung",
-			model = "SM-S938U",
-			device = "e3q",
-			product = "e3qsqw",
-			hardware = "qcom",
-			board = "taro",
-			fingerprint = "samsung/e3qsqw/e3q:15/AP2A.240805.005/S938USQU1AXL2:user/release-keys",
-			display = "AP2A.240805.005.S938USQU1AXL2"
-		),
-		"google_pixel_10_pro" to DeviceProfile(
-			manufacturer = "Google",
-			brand = "google",
-			model = "Pixel 10 Pro",
-			device = "caiman",
-			product = "caiman",
-			hardware = "caiman",
-			board = "caiman",
-			fingerprint = "google/caiman/caiman:15/AP2A.240805.005/12345678:user/release-keys",
-			display = "AP2A.240805.005"
-		),
-		"oneplus_13" to DeviceProfile(
-			manufacturer = "OnePlus",
-			brand = "OnePlus",
-			model = "CPH2649",
-			device = "OP5B41L1",
-			product = "CPH2649_EEA",
-			hardware = "qcom",
-			board = "kalama",
-			fingerprint = "OnePlus/CPH2649_EEA/OP5B41L1:15/SKQ1.240805.001/1730123456789:user/release-keys",
-			display = "CPH2649_15.0.0.300(EX01)"
-		),
-	"xiaomi_15_ultra" to DeviceProfile(
-		manufacturer = "Xiaomi",
-		brand = "Xiaomi",
-		model = "23127PN0CC",
-		device = "aurora",
-		product = "aurora_global",
-		hardware = "qcom",
-		board = "taro",
-		fingerprint = "Xiaomi/aurora_global/aurora:14/UKQ1.231003.002/V816.0.7.0.UMLMIXM:user/release-keys",
-		display = "UKQ1.231003.002"
-	)
-	)
-
 	private fun hookInstallerPackageName() {
 		context.androidContext.packageManager::class.java.hook("getInstallerPackageName", HookStage.BEFORE) { param ->
 			param.setResult("com.android.vending")
@@ -232,6 +142,15 @@ class DeviceSpooferHook: Feature("Device Spoofer")  {
 
 	@SuppressLint("MissingPermission")
 	override fun init() {
+		val spoofDevice by context.config.experimental.spoof.spoofDevice
+		if (spoofDevice) {
+			val deviceInfo = getSpoofedDeviceInfo()
+			if (deviceInfo != null) {
+				getSpoofedFingerprint(deviceInfo)
+				context.log.info("Device spoofing initialized: ${deviceInfo.manufacturer} ${deviceInfo.model}")
+			}
+		}
+
 		if (LSPatchUpdater.HAS_LSPATCH) {
 			hookInstallerPackageName()
 		}
@@ -380,66 +299,62 @@ class DeviceSpooferHook: Feature("Device Spoofer")  {
 			}
 		}
 
-		val spoofDevice by context.config.experimental.spoof.spoofDevice
 		if (spoofDevice) {
-			val selectedDevice = context.config.experimental.spoof.deviceModel.getNullable() ?: "samsung_s25_ultra"
-			val deviceProfile = deviceProfiles[selectedDevice] ?: deviceProfiles["samsung_s25_ultra"]!!
-			val randomizedFingerprint = randomizeFingerprintBuildNumber(deviceProfile.fingerprint, selectedDevice)
-			val buildNumber = randomizedFingerprint.split("/").getOrNull(2)?.split(":")?.getOrNull(1)?.split("/")?.getOrNull(1) ?: generateRandomBuildNumber()
-			val randomizedDisplay = randomizeDisplayId(deviceProfile.display, selectedDevice, buildNumber)
-			val randomSerial = getRandomSerial(selectedDevice)
-			val randomBuildId = getRandomBuildId(selectedDevice)
-			
-			context.log.info("Spoofing device as: ${deviceProfile.model}")
+			val deviceInfo = getSpoofedDeviceInfo()
+			if (deviceInfo != null) {
+				val fingerprint = getSpoofedFingerprint(deviceInfo)
 
-			Build::class.java.apply {
-				fields.forEach { field ->
-					if (!field.isAccessible) field.isAccessible = true
-					runCatching {
-						val modifiersField = java.lang.reflect.Field::class.java.getDeclaredField("modifiers")
-						modifiersField.isAccessible = true
-						modifiersField.setInt(field, field.modifiers and java.lang.reflect.Modifier.FINAL.inv())
-					}
-					when (field.name) {
-						"MANUFACTURER" -> field.set(null, deviceProfile.manufacturer)
-						"BRAND" -> field.set(null, deviceProfile.brand)
-						"MODEL" -> field.set(null, deviceProfile.model)
-						"DEVICE" -> field.set(null, deviceProfile.device)
-						"PRODUCT" -> field.set(null, deviceProfile.product)
-						"HARDWARE" -> field.set(null, deviceProfile.hardware)
-						"BOARD" -> field.set(null, deviceProfile.board)
-						"FINGERPRINT" -> field.set(null, randomizedFingerprint)
-						"DISPLAY" -> field.set(null, randomizedDisplay)
-						"SERIAL" -> field.set(null, randomSerial)
-						"ID" -> field.set(null, randomBuildId)
-						"TAGS" -> field.set(null, "release-keys")
-						"TYPE" -> field.set(null, "user")
-						"USER" -> field.set(null, "android-build")
-						"HOST" -> field.set(null, "build-host")
+				context.log.info("Device spoofing active: ${deviceInfo.manufacturer} ${deviceInfo.model}")
+
+				Build::class.java.apply {
+					fields.forEach { field ->
+						if (!field.isAccessible) field.isAccessible = true
+						runCatching {
+							val modifiersField = java.lang.reflect.Field::class.java.getDeclaredField("modifiers")
+							modifiersField.isAccessible = true
+							modifiersField.setInt(field, field.modifiers and java.lang.reflect.Modifier.FINAL.inv())
+						}
+						when (field.name) {
+							"MANUFACTURER" -> field.set(null, deviceInfo.manufacturer)
+							"MODEL" -> field.set(null, deviceInfo.model)
+							"BRAND" -> field.set(null, deviceInfo.brand)
+							"DEVICE" -> field.set(null, deviceInfo.device)
+							"PRODUCT" -> field.set(null, deviceInfo.product)
+							"HARDWARE" -> field.set(null, deviceInfo.hardware)
+							"FINGERPRINT" -> field.set(null, fingerprint)
+							"BOARD" -> try { field.set(null, deviceInfo.board) } catch (_: Exception) {}
+							"BOOTLOADER" -> try { field.set(null, deviceInfo.bootloader) } catch (_: Exception) {}
+							"DISPLAY" -> try { field.set(null, deviceInfo.display) } catch (_: Exception) {}
+							"HOST" -> try { field.set(null, deviceInfo.host) } catch (_: Exception) {}
+							"TIME" -> try {
+								val currentTime = System.currentTimeMillis()
+								val randomDaysAgo = (30..180).random()
+								val buildTime = currentTime - (randomDaysAgo * 24L * 60L * 60L * 1000L)
+								field.setLong(null, buildTime)
+							} catch (_: Exception) {}
+						}
 					}
 				}
-			}
 
-			findClass("android.os.SystemProperties").apply {
-				hook("get", HookStage.BEFORE) { param ->
-					val key = param.arg<String>(0)
-					when (key) {
-						"ro.product.manufacturer", "ro.product.vendor.manufacturer", "ro.product.system.manufacturer", "ro.product.odm.manufacturer" -> param.setResult(deviceProfile.manufacturer)
-						"ro.product.brand", "ro.product.vendor.brand", "ro.product.system.brand", "ro.product.odm.brand" -> param.setResult(deviceProfile.brand)
-						"ro.product.model", "ro.product.vendor.model", "ro.product.system.model", "ro.product.odm.model" -> param.setResult(deviceProfile.model)
-						"ro.product.device", "ro.product.vendor.device", "ro.product.system.device", "ro.product.odm.device" -> param.setResult(deviceProfile.device)
-						"ro.product.name", "ro.product.vendor.name", "ro.product.system.name", "ro.product.odm.name" -> param.setResult(deviceProfile.product)
-						"ro.hardware", "ro.hardware.chipname" -> param.setResult(deviceProfile.hardware)
-						"ro.product.board" -> param.setResult(deviceProfile.board)
-						"ro.build.fingerprint" -> param.setResult(randomizedFingerprint)
-						"ro.build.display.id" -> param.setResult(randomizedDisplay)
-						"ro.serialno", "ro.boot.serialno", "ril.serialnumber" -> param.setResult(randomSerial)
-						"ro.build.id" -> param.setResult(randomBuildId)
-						"ro.build.tags" -> param.setResult("release-keys")
-						"ro.build.type" -> param.setResult("user")
-						"ro.build.user" -> param.setResult("android-build")
-						"ro.build.host" -> param.setResult("build-host")
+				runCatching {
+					findClass("android.os.SystemProperties").hook("get", HookStage.BEFORE) { param ->
+						val key = param.argNullable<String>(0) ?: return@hook
+						when (key) {
+							"ro.product.manufacturer" -> param.setResult(deviceInfo.manufacturer)
+							"ro.product.model" -> param.setResult(deviceInfo.model)
+							"ro.product.brand" -> param.setResult(deviceInfo.brand)
+							"ro.product.device" -> param.setResult(deviceInfo.device)
+							"ro.product.name" -> param.setResult(deviceInfo.product)
+							"ro.product.board" -> param.setResult(deviceInfo.board)
+							"ro.hardware" -> param.setResult(deviceInfo.hardware)
+							"ro.build.fingerprint" -> param.setResult(fingerprint)
+							"ro.bootloader" -> param.setResult(deviceInfo.bootloader)
+							"ro.build.display.id" -> param.setResult(deviceInfo.display)
+						}
 					}
+					context.log.info("SystemProperties hooks installed successfully")
+				}.onFailure {
+					context.log.warn("Failed to hook SystemProperties: ${it.message}")
 				}
 			}
 		}

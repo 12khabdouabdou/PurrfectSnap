@@ -2296,11 +2296,23 @@
             "schedule_failed": "Scheduled snap failed",
             "schedule_cancelled_for": "Cancelled for {name}",
             "device_model": {
-                "samsung_s25_ultra": "Samsung Galaxy S25 Ultra",
-                "google_pixel_10_pro": "Google Pixel 10 Pro",
-                "oneplus_13": "OnePlus 13",
-                "xiaomi_15_ultra": "Xiaomi 15 Ultra",
-                "null": "Device Default"
+                "none": "Device Default",
+                "random": "Random",
+                "Pixel 8 Pro": "Pixel 8 Pro",
+                "Pixel 9 Pro XL": "Pixel 9 Pro XL",
+                "Pixel 10": "Pixel 10",
+                "Pixel 10 Pro": "Pixel 10 Pro",
+                "Pixel 10 Pro XL": "Pixel 10 Pro XL",
+                "Pixel 10 Pro Fold": "Pixel 10 Pro Fold",
+                "Galaxy S23 Ultra": "Galaxy S23 Ultra",
+                "Galaxy S24 Ultra": "Galaxy S24 Ultra",
+                "Galaxy S25 Ultra": "Galaxy S25 Ultra",
+                "OnePlus 15": "OnePlus 15",
+                "OnePlus Open": "OnePlus Open",
+                "Xiaomi 15 Ultra": "Xiaomi 15 Ultra",
+                "OPPO Find X9 Pro": "OPPO Find X9 Pro",
+                "vivo X100 Pro": "vivo X100 Pro",
+                "realme GT 6": "realme GT 6"
             },
             "settings_menu": {
                 "default": "Default",
