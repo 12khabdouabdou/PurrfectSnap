@@ -160,6 +160,7 @@ class FeatureManager(
             PreventForcedKeyboard(),
             CustomTheming(),
             HideTypingIndicator(),
+            FakeSnapScore(),
         )
 
         features.values.toList().forEach { feature ->
