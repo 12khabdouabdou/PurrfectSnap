@@ -1196,6 +1196,16 @@
                     "settings_menu": {
                         "name": "Settings Menu",
                         "description": "Choose between the new and legacy settings menu layouts"
+                    },
+                    "spoof_snap_score": {
+                        "name": "Spoof Snap Score",
+                        "description": "Spoof your Snap Score (locally)",
+                        "properties": {
+                            "custom_snap_score": {
+                                "name": "Custom Snap Score",
+                                "description": "The custom Snap Score to fake"
+                            }
+                        }
                     }
                 }
             },
