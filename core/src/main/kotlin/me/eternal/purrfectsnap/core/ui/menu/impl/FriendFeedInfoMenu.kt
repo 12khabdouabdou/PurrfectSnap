@@ -55,6 +55,7 @@ import me.eternal.purrfectsnap.core.features.impl.experiments.EndToEndEncryption
 import me.eternal.purrfectsnap.core.features.impl.messaging.AutoMarkAsRead
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
 import me.eternal.purrfectsnap.core.features.impl.spying.MessageLogger
+import me.eternal.purrfectsnap.core.features.impl.spying.StealthMode
 import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.ui.children
 import me.eternal.purrfectsnap.core.ui.PurrfectGlassCard
@@ -644,6 +645,41 @@ class FriendFeedInfoMenu : AbstractMenu() {
                             context.apply {
                                 closeMenu()
                                 feature(AutoMarkAsRead::class).markSnapsAsSeen(conversationId)
+                            }
+                        }
+                    )
+                }
+
+                if (friendFeedMenuOptions.contains("mark_chat_as_read")) {
+                    MenuElement(
+                        remember { elementIndex++ },
+                        Icons.Outlined.MarkChatRead,
+                        translation["mark_chat_as_read"],
+                        onClick = {
+                            context.apply {
+                                closeMenu()
+                                val latestMessageId = database.getMessagesFromConversationId(conversationId, 1)
+                                    ?.firstOrNull()
+                                    ?.clientMessageId
+                                    ?.toLong()
+                                    ?: return@apply
+
+                                feature(StealthMode::class).addDisplayedMessageException(latestMessageId)
+                                feature(Messaging::class).conversationManager?.displayedMessages(
+                                    conversationId,
+                                    latestMessageId
+                                ) { error ->
+                                    if (error != null) {
+                                        log.error("Failed to mark chat as read: $error")
+                                        shortToast(this.translation["toast_mark_conversation_read_failed"])
+                                    } else {
+                                        inAppOverlay.showStatusToast(
+                                            Icons.Default.Info,
+                                            translation["mark_chat_as_read_toast"],
+                                            durationMs = 1800
+                                        )
+                                    }
+                                }
                             }
                         }
                     )

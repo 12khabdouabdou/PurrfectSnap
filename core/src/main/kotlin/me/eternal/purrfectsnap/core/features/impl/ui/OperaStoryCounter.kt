@@ -113,9 +113,14 @@ class OperaStoryCounter : Feature("OperaStoryCounter") {
                         FrameLayout.LayoutParams.WRAP_CONTENT,
                         FrameLayout.LayoutParams.WRAP_CONTENT
                     ).apply {
-                        gravity = Gravity.TOP or Gravity.END
+                        val isOperaDownloadEnabled = this@OperaStoryCounter.context.config.downloader.operaDownloadButton.get()
+                        gravity = Gravity.TOP or if (isOperaDownloadEnabled) Gravity.START else Gravity.END
                         topMargin = this@OperaStoryCounter.context.userInterface.dpToPx(50)
-                        marginEnd = this@OperaStoryCounter.context.userInterface.dpToPx(10)
+                        if (isOperaDownloadEnabled) {
+                            marginStart = this@OperaStoryCounter.context.userInterface.dpToPx(10)
+                        } else {
+                            marginEnd = this@OperaStoryCounter.context.userInterface.dpToPx(10)
+                        }
                     }
                 }
                 viewGroup.addView(composeView)

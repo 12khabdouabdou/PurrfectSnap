@@ -30,9 +30,19 @@ class BridgeService : Service() {
     private lateinit var remoteSideContext: RemoteSideContext
     private var syncCallback: SyncCallback? = null
     var messagingBridge: MessagingBridge? = null
+    @Volatile
+    private var pendingSocialSnapshotCallback: ((List<MessagingFriendInfo>, List<MessagingGroupInfo>) -> Unit)? = null
 
     private fun clearSyncCallback() {
         syncCallback = null
+    }
+
+    fun requestEphemeralSocialSnapshot(callback: (List<MessagingFriendInfo>, List<MessagingGroupInfo>) -> Unit) {
+        pendingSocialSnapshotCallback = callback
+    }
+
+    fun clearEphemeralSocialSnapshotRequest() {
+        pendingSocialSnapshotCallback = null
     }
 
     override fun onDestroy() {
@@ -216,6 +226,11 @@ class BridgeService : Service() {
             remoteSideContext.log.verbose("Received ${groups.size} groups and ${friends.size} friends")
             val parsedFriends = friends.mapNotNull { toParcelable<MessagingFriendInfo>(it) }
             val parsedGroups = groups.mapNotNull { toParcelable<MessagingGroupInfo>(it) }
+            pendingSocialSnapshotCallback?.let { callback ->
+                pendingSocialSnapshotCallback = null
+                callback(parsedFriends, parsedGroups)
+                return
+            }
             remoteSideContext.database.replaceMessagingData(parsedFriends, parsedGroups)
             remoteSideContext.database.receiveMessagingDataCallback(parsedFriends, parsedGroups)
         }
