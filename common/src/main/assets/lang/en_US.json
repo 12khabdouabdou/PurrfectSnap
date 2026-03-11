@@ -2290,6 +2290,7 @@
                 "stealth": "\ud83d\udc7b Stealth Mode",
                 "auto_reply": "\ud83d\udce8 Auto Reply",
                 "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Auto Delete Sent Messages",
+                "mark_chat_as_read": "\ud83d\udcd6 Mark Chat as Read",
                 "mark_snaps_as_seen": "\ud83d\udc40 Mark Snaps as seen",
                 "mark_stories_as_seen_locally": "\ud83d\udc40 Mark Stories as seen locally",
                 "conversation_info": "\ud83d\udc64 Conversation Info",
@@ -2776,6 +2777,8 @@
         }
     },
     "friend_menu_option": {
+        "mark_chat_as_read": "Mark Chat as Read",
+        "mark_chat_as_read_toast": "Marked chat as read!",
         "mark_snaps_as_seen": "Mark Snaps as seen",
         "mark_stories_as_seen_locally": "Mark Stories as seen locally",
         "preview": "Preview",

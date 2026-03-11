@@ -219,19 +219,26 @@ class AddFriendDialog(
         var hasFetchError by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
-            context.database.receiveMessagingDataCallback = { friends, groups ->
-                cachedFriends = friends.run {
-                    if (pinnedIds != null) {
-                        sortedBy { -pinnedIds.indexOf(it.userId) }
-                    } else friends
+            val updateSnapshot: (List<MessagingFriendInfo>, List<MessagingGroupInfo>) -> Unit = { friends, groups ->
+                coroutineScope.launch {
+                    cachedFriends = friends.run {
+                        if (pinnedIds != null) {
+                            sortedBy { -pinnedIds.indexOf(it.userId) }
+                        } else friends
+                    }
+                    cachedGroups = groups.run {
+                        if (pinnedIds != null) {
+                            sortedBy { -pinnedIds.indexOf(it.conversationId) }
+                        } else groups
+                    }
+                    timeoutJob?.cancel()
+                    hasFetchError = false
                 }
-                cachedGroups = groups.run {
-                    if (pinnedIds != null) {
-                        sortedBy { -pinnedIds.indexOf(it.conversationId) }
-                    } else groups
-                }
-                timeoutJob?.cancel()
-                hasFetchError = false
+            }
+            if (context.bridgeService != null) {
+                context.bridgeService?.requestEphemeralSocialSnapshot(updateSnapshot)
+            } else {
+                context.database.receiveMessagingDataCallback = updateSnapshot
             }
             SnapWidgetBroadcastReceiverHelper.create(ReceiversConfig.BRIDGE_SYNC_ACTION) {}.also {
                 runCatching {
@@ -246,6 +253,13 @@ class AddFriendDialog(
                     delay(20000)
                     hasFetchError = true
                 }
+            }
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                timeoutJob?.cancel()
+                context.bridgeService?.clearEphemeralSocialSnapshotRequest()
+                context.database.receiveMessagingDataCallback = { _, _ -> }
             }
         }
 

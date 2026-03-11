@@ -37,10 +37,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import me.eternal.purrfectsnap.common.data.FileType
 import me.eternal.purrfectsnap.common.ui.createComposeView
 import me.eternal.purrfectsnap.common.util.ktx.getLongOrNull
 import me.eternal.purrfectsnap.common.util.ktx.getTypeArguments
-import me.eternal.purrfectsnap.common.data.FileType
 import me.eternal.purrfectsnap.core.event.events.impl.ActivityResultEvent
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
@@ -108,7 +108,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                 val handlerParamMethod = contextType.methods.firstOrNull { method ->
                     method.parameterTypes.size == 1 && (
                         method.parameterTypes[0].name.endsWith("ChatMediaDrawerActionHandler") ||
-                        actionHandlerCls.isAssignableFrom(method.parameterTypes[0])
+                            actionHandlerCls.isAssignableFrom(method.parameterTypes[0])
                     )
                 } ?: return@useMapper
                 val sendItems = handlerParamMethod.parameterTypes[0].methods.firstOrNull { it.name == sendItemsName } ?: return@useMapper
@@ -127,7 +127,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                     val uri = param.arg<Uri>(0)
                     if (!uri.toString().endsWith(firstVideoId.toString())) return@hook
 
-                    param.setResult(object: CursorWrapper(param.getResult() as Cursor) {
+                    param.setResult(object : CursorWrapper(param.getResult() as Cursor) {
                         override fun getLong(columnIndex: Int): Long {
                             if (getColumnName(columnIndex) == "duration") {
                                 return lastMediaDuration ?: -1
@@ -269,7 +269,7 @@ class MediaFilePicker : Feature("Media File Picker") {
             context.event.subscribe(AddViewEvent::class) { event ->
                 if (event.parent !is FrameLayout || drawerViewClass?.isInstance(event.view) != true) return@subscribe
 
-                event.view.addOnAttachStateChangeListener(object: View.OnAttachStateChangeListener {
+                event.view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
                     override fun onViewAttachedToWindow(v: View) {
                         if (event.parent.findViewWithTag<View>(buttonTag)?.run {
                                 visibility = View.VISIBLE
@@ -345,6 +345,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                             }
                         )
                     }
+
                     override fun onViewDetachedFromWindow(v: View) {
                         event.parent.findViewWithTag<View>(buttonTag)?.visibility = View.GONE
                     }
@@ -352,5 +353,4 @@ class MediaFilePicker : Feature("Media File Picker") {
             }
         }
     }
-
 }
