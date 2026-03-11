@@ -211,6 +211,10 @@ class BetterLocation : Feature("Better Location") {
         }
 
         val mapViewId = context.resources.getId("mapview")
+        val statusBarHeight = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+            .takeIf { it > 0 }
+            ?.let { context.resources.getDimensionPixelSize(it) }
+            ?: 0
 
         if (context.config.global.betterLocation.showBatteryLevel.get()) {
             findClass("snap.snap_maps_sdk.nano.SnapMapsSdk\$PublicUserInfo").hook("setDisplayName", HookStage.BEFORE) { param ->
@@ -259,8 +263,8 @@ class BetterLocation : Feature("Better Location") {
                     }.apply {
                         layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                             addRule(RelativeLayout.ALIGN_PARENT_LEFT)
-                            // Keep the button below the top map chips (Memories/Visited/Popular/Favorites).
-                            setMargins(0, (88 * context.resources.displayMetrics.density).toInt(), 0, 0)
+                            // Keep the button below the map chips and clear the status bar area on taller layouts.
+                            setMargins(0, statusBarHeight + this@BetterLocation.context.userInterface.dpToPx(84), 0, 0)
                         }
                     })
                 }

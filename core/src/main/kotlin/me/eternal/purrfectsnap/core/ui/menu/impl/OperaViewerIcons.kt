@@ -38,9 +38,11 @@ import me.eternal.purrfectsnap.core.ui.iterateParent
 import me.eternal.purrfectsnap.core.ui.menu.AbstractMenu
 import me.eternal.purrfectsnap.core.ui.randomTag
 import me.eternal.purrfectsnap.core.ui.triggerCloseTouchEvent
+import me.eternal.purrfectsnap.core.util.SNAPCHAT_13_80_VERSION
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.ktx.getObjectField
+import me.eternal.purrfectsnap.core.util.isSnapchatVersionAtLeast
 import me.eternal.purrfectsnap.core.util.ktx.vibrateLongPress
 import me.eternal.purrfectsnap.mapper.impl.OperaPageViewControllerMapper
 
@@ -54,8 +56,15 @@ class OperaViewerIcons : AbstractMenu() {
     private val inlineMarkButtonVisibleState = mutableStateOf(false)
     private var overlayRegistered = false
     private var hooksInitialized = false
+    private val useModernViewerBehavior by lazy {
+        isSnapchatVersionAtLeast(
+            context.mappings.getSnapchatPackageInfo()?.versionName,
+            SNAPCHAT_13_80_VERSION
+        )
+    }
 
     override fun init() {
+        if (!useModernViewerBehavior) return
         if (hooksInitialized) return
         hooksInitialized = true
 
@@ -205,6 +214,18 @@ class OperaViewerIcons : AbstractMenu() {
     }
 
     override fun onViewAdded(event: AddViewEvent) {
+        if (!useModernViewerBehavior) {
+            if (event.view is FrameLayout && event.parent.javaClass.superclass?.name?.endsWith("OpenLayout") == true) {
+                val viewGroup = event.view as? ViewGroup ?: return
+                if (
+                    viewGroup.childCount == 0 ||
+                    viewGroup.children().any { it !is ImageView } ||
+                    event.parent.children().none { it.javaClass.name.endsWith("ScalableCircleMaskFrameLayout") }
+                ) return
+                inject(viewGroup)
+            }
+            return
+        }
         if (!shouldInjectIntoViewer(event)) return
         val viewGroup = event.view as? ViewGroup ?: return
         viewGroup.setTag(injectedParentTag, true)
@@ -276,6 +297,45 @@ class OperaViewerIcons : AbstractMenu() {
         }
 
         if (context.config.messaging.markSnapAsSeenButton.get()) {
+            if (!useModernViewerBehavior) {
+                parent.addView(createComposeView(parent.context)  {
+                    Icon(
+                        imageVector = Icons.Default.RemoveRedEye,
+                        tint = Color.White,
+                        contentDescription = null
+                    )
+                }.apply {
+                    setOnClickListener {
+                        this@OperaViewerIcons.context.coroutineScope.launch {
+                            markCurrentSnapAsSeen(parent)
+                        }
+                    }
+
+                    addOnAttachStateChangeListener(object: View.OnAttachStateChangeListener {
+                        override fun onViewAttachedToWindow(v: View) {
+                            v.visibility = View.GONE
+                            this@OperaViewerIcons.context.coroutineScope.launch(Dispatchers.Main) {
+                                delay(250)
+                                v.visibility = if (resolveCurrentMessageContext(mediaDownloader) != null) View.VISIBLE else View.GONE
+                            }
+                        }
+
+                        override fun onViewDetachedFromWindow(v: View) {}
+                    })
+
+                    layoutParams = FrameLayout.LayoutParams(
+                        (actionMenuIconSize * 1.5).toInt(),
+                        (actionMenuIconSize * 1.5).toInt()
+                    ).apply {
+                        setMargins(0, 0, 0, actionMenuIconMarginTop * 2 + this@OperaViewerIcons.context.userInterface.dpToPx(80))
+                        marginEnd = actionMenuIconMarginTop * 2
+                        marginStart = actionMenuIconMarginTop * 2
+                        gravity = Gravity.BOTTOM or Gravity.END
+                    }
+                })
+                return
+            }
+
             parent.addView(createComposeView(parent.context)  {
                 Icon(
                     imageVector = Icons.Default.RemoveRedEye,

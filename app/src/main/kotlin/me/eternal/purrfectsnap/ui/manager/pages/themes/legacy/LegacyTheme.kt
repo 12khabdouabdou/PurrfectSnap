@@ -1095,7 +1095,6 @@ object LegacyTheme : ThemeContract {
                 groupList = groups
             }
             updateScopeLists()
-            requestLatestSnapshot()
         }
         DisposableEffect(Unit) {
             onDispose {
@@ -1223,6 +1222,7 @@ object LegacyTheme : ThemeContract {
         val listState = rememberLazyListState()
         var showConfirmDialog by remember { mutableStateOf(false) }
         var alsoDeleteFiles by remember { mutableStateOf(false) }
+        val hapticFeedback = LocalHapticFeedback.current
 
         LaunchedEffect(Unit) {
             fetchActiveTasks(this)
@@ -1296,6 +1296,27 @@ object LegacyTheme : ThemeContract {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            if (taskSelection.size > 1) {
+                                val canMergeSelection by rememberAsyncMutableState(defaultValue = false, keys = arrayOf(taskSelection.size)) {
+                                    taskSelection.all { it.second?.type?.contains("video") == true }
+                                }
+                                if (canMergeSelection) {
+                                    TopBarActionButton(
+                                        onClick = {
+                                            if (context.config.root.global.uiSettings.hapticFeedback.get()) {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                            mergeSelection(
+                                                taskSelection.toList()
+                                                    .also { taskSelection.clear() }
+                                                    .map { it.first to it.second!! }
+                                            )
+                                        },
+                                        icon = Icons.Filled.Merge,
+                                        text = translation["merge_button"]
+                                    )
+                                }
+                            }
                             Surface(
                                 shape = RoundedCornerShape(18.dp),
                                 color = Color.White.copy(alpha = 0.08f),
