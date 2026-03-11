@@ -69,8 +69,7 @@ class UserInterfaceTweaks : ConfigContainer() {
             inputCheck = { input -> 
                 if (input.isEmpty()) true
                 else {
-                    val digits = input.replace(Regex("[^0-9]"), "")
-                    digits.isNotEmpty() && digits.length <= 7 && digits.toLong() <= 9999999L
+                    input.replace(Regex("[^0-9]"), "").isNotEmpty()
                 }
             }
         }

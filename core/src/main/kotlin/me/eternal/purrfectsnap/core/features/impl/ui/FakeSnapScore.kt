@@ -11,17 +11,8 @@ class FakeSnapScore : Feature("Fake Snap Score") {
         val customScoreRaw = context.config.userInterface.spoofSnapScore.customSnapScore.getNullable()?.trim()?.takeIf { it.isNotBlank() }
             ?: return
 
-        val customScore = try {
-            val digitsOnly = customScoreRaw.replace(Regex("[^0-9]"), "")
-            if (digitsOnly.isNotEmpty()) {
-                val clampedVal = digitsOnly.toLong().coerceAtMost(9999999L)
-                java.text.NumberFormat.getNumberInstance(java.util.Locale.US).format(clampedVal)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            null
-        } ?: return
+        val customScore = customScoreRaw.replace(Regex("[^0-9]"), "")
+        if (customScore.isEmpty()) return
 
         onNextActivityCreate {
             android.widget.TextView::class.java.hook("setText", HookStage.BEFORE) { param ->
@@ -31,7 +22,8 @@ class FakeSnapScore : Feature("Fake Snap Score") {
                     val digits = text.replace(Regex("[^0-9]"), "")
                     
                     if (digits.length >= 4 || text.contains(",")) {
-                        var parent = (param.thisObject() as android.widget.TextView).parent
+                        val textView = param.thisObject() as android.widget.TextView
+                        var parent = textView.parent
                         var isProfile = false
                         
                         while (parent != null) {
@@ -45,6 +37,8 @@ class FakeSnapScore : Feature("Fake Snap Score") {
 
                         if (isProfile) {
                             param.setArg(0, customScore)
+                            textView.ellipsize = null
+                            textView.setSingleLine(false)
                         }
                     }
                 }
