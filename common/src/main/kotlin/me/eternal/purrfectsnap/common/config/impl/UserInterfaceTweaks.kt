@@ -62,18 +62,4 @@ class UserInterfaceTweaks : ConfigContainer() {
     }
     val preventForcedKeyboard = boolean("prevent_forced_keyboard") { requireRestart() }
     val settingsMenu = unique("settings_menu", "default", "legacy") { requireRestart() }.apply { set("default") }
-
-    inner class SpoofSnapScore : ConfigContainer(hasGlobalState = true) {
-        val customSnapScore = string("custom_snap_score") { 
-            requireRestart()
-            inputCheck = { input -> 
-                if (input.isEmpty()) true
-                else {
-                    input.replace(Regex("[^0-9]"), "").isNotEmpty()
-                }
-            }
-        }
-    }
-
-    val spoofSnapScore = container("spoof_snap_score", SpoofSnapScore()) { requireRestart() }
 }
