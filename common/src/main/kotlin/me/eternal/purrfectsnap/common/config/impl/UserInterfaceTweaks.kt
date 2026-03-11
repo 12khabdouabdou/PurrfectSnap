@@ -69,7 +69,22 @@ class UserInterfaceTweaks : ConfigContainer() {
             inputCheck = { input -> 
                 if (input.isEmpty()) true
                 else {
-                    input.replace(Regex("[^0-9]"), "").isNotEmpty()
+                    val digits = input.replace(Regex("[^0-9]"), "")
+                    val isTooLong = digits.isNotEmpty() && (digits.length > 7 || digits.toLong() > 9999999L)
+                    if (isTooLong) {
+                        try {
+                            val context = Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as? android.content.Context
+                            context?.let {
+                                val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                                handler.post {
+                                    android.widget.Toast.makeText(it, "The maximum Snap Score limit is 9,999,999", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } catch (_: Throwable) {}
+                        false
+                    } else {
+                        digits.isNotEmpty()
+                    }
                 }
             }
         }
