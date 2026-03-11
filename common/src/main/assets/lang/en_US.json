@@ -1203,7 +1203,7 @@
                         "properties": {
                             "custom_snap_score": {
                                 "name": "Custom Snap Score",
-                                "description": "The custom Snap Score to fake"
+                                "description": "The custom Snap Score you want to display (max 9,999,999)"
                             }
                         }
                     }
