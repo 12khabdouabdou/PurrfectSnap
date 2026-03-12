@@ -899,3 +899,4 @@ class ScriptingRootSection : Routes.Route() {
 
     override val topBarActions: @Composable() (RowScope.() -> Unit) = {}
 }
+

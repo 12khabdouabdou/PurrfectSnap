@@ -202,7 +202,6 @@ class TasksRootSection : Routes.Route() {
                 }
             }
             activeTasks = listOf()
-            context.taskManager.getActiveTasks().clear()
         }
     }
 
@@ -433,7 +432,14 @@ class TasksRootSection : Routes.Route() {
         val themeId by produceState(initialValue = context.config.root.global.uiSettings.managerTheme.get()) {
             while (true) { delay(300); value = context.config.root.global.uiSettings.managerTheme.get() }
         }
-        key(themeId) { with(ManagerTheme.fromId(themeId).theme) { this@TasksRootSection.TasksScreen(nav) } }
+        key(themeId) {
+            LaunchedEffect(themeId) {
+                routes.navigation?.globalScrollOffset = 0
+            }
+            with(ManagerTheme.fromId(themeId).theme) {
+                this@TasksRootSection.TasksScreen(nav)
+            }
+        }
     }
 
     override val topBarActions: @Composable RowScope.() -> Unit = {
@@ -482,3 +488,7 @@ class TasksRootSection : Routes.Route() {
         }
     }
 }
+
+
+
+

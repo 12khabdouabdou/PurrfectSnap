@@ -336,6 +336,7 @@
                 "summary_active": "{active} active \u00b7 {recent} recent",
                 "summary_idle": "Idle \u00b7 {recent} recent",
                 "running_count": "{count} running",
+                "tasks_tagline": "Monitor and manage background actions",
                 "clear_button_description": "Clear tasks",
                 "failed_to_open_file": "Failed to open file",
                 "merge_files_toast": "Merging {count} files",
