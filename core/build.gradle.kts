@@ -34,6 +34,8 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.documentfile)
     implementation(libs.rhino)
+    implementation(libs.androidx.constraintlayout)
+
 
     implementation(project(":common"))
     implementation(project(":mapper"))

@@ -57,6 +57,7 @@ class Camera : ConfigContainer() {
     val startupDefaultCamera = unique("startup_default_camera", "front", "back") { requireRestart() }
     val overrideFrontResolution get() = _overrideFrontResolution
     val overrideBackResolution get() = _overrideBackResolution
+    val videoRecordTimer = boolean("video_record_timer")
 
     val customResolution = string("custom_resolution") { addNotices(FeatureNotice.UNSTABLE); inputCheck = { it.matches(Regex("\\d+x\\d+")) } }
 }

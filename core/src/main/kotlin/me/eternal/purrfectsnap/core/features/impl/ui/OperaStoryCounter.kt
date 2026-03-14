@@ -41,8 +41,12 @@ class OperaStoryCounter : Feature("OperaStoryCounter") {
     override fun init() {
         val showCounter = this@OperaStoryCounter.context.config.userInterface.storyCounter.get()
         val showSourceIndicator = this@OperaStoryCounter.context.config.userInterface.storySourceIndicator.get()
+        val storySnapJump = this@OperaStoryCounter.context.config.userInterface.storySnapJump.get()
+        val storySnapListDownload = this@OperaStoryCounter.context.config.downloader.storySnapListDownload.get()
+        val operaDownloadButton = this@OperaStoryCounter.context.config.downloader.operaDownloadButton.get()
 
-        if (!showCounter && !showSourceIndicator) return
+        // OperaStoryOverlay handles counter/source/jump when any of these are enabled
+        if (showCounter || showSourceIndicator || storySnapJump || storySnapListDownload || operaDownloadButton) return
 
         this@OperaStoryCounter.context.event.subscribe(AddViewEvent::class) { event ->
             if (event.view is FrameLayout && event.parent.javaClass.superclass?.name?.endsWith("OpenLayout") == true) {

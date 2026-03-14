@@ -52,6 +52,7 @@ class UserInterfaceTweaks : ConfigContainer() {
     val operaMediaQuickInfo = boolean("opera_media_quick_info") { requireRestart() }
     val storyCounter = boolean("story_counter") { requireRestart() }
     val storySourceIndicator = boolean("story_source_indicator") { requireRestart() }
+    val storySnapJump = boolean("story_snap_jump") { requireRestart() }
     val oldBitmojiSelfie = unique("old_bitmoji_selfie", "2d", "3d") { requireCleanCache() }
     val disableSpotlight = boolean("disable_spotlight") { requireRestart() }
     val verticalStoryViewer = boolean("vertical_story_viewer") { requireRestart() }
@@ -68,24 +69,7 @@ class UserInterfaceTweaks : ConfigContainer() {
             requireRestart()
             inputCheck = { input -> 
                 if (input.isEmpty()) true
-                else {
-                    val digits = input.replace(Regex("[^0-9]"), "")
-                    val isTooLong = digits.isNotEmpty() && (digits.length > 7 || digits.toLong() > 9999999L)
-                    if (isTooLong) {
-                        try {
-                            val context = Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as? android.content.Context
-                            context?.let {
-                                val handler = android.os.Handler(android.os.Looper.getMainLooper())
-                                handler.post {
-                                    android.widget.Toast.makeText(it, "The maximum Snap Score limit is 9,999,999", android.widget.Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        } catch (_: Throwable) {}
-                        false
-                    } else {
-                        digits.isNotEmpty()
-                    }
-                }
+                else input.replace(Regex("[^0-9]"), "").isNotEmpty()
             }
         }
     }

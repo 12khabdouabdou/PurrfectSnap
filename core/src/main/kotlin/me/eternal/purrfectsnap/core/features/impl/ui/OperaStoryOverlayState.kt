@@ -20,6 +20,8 @@ class OperaStoryOverlayState {
     val sourceState = mutableStateOf("")
     val currentIndexState = mutableIntStateOf(-1)
     val totalCountState = mutableIntStateOf(0)
+    val snapSourceState = mutableStateOf<String?>(null)
+    val isInConversationState = mutableStateOf(false)
 
     fun setupDisplayStateHook(
         context: ModContext,
@@ -44,23 +46,14 @@ class OperaStoryOverlayState {
                     val mediaParamMap: ParamMap = operaLayerList.map { Layer(it) }.first().paramMap
                     val snapSource = mediaParamMap["SNAP_SOURCE"]?.toString()
 
-                    if (mediaParamMap.containsKey("MESSAGE_ID")) {
+                    if (mediaParamMap.containsKey("MESSAGE_ID") || snapSource == "SINGLE_SNAP_STORY") {
                         context.runOnUiThread {
                             counterState.value = ""
                             sourceState.value = ""
                             currentIndexState.intValue = -1
                             totalCountState.intValue = 0
-                            onClearState?.invoke()
-                        }
-                        return@hook
-                    }
-
-                    if (snapSource == "SINGLE_SNAP_STORY") {
-                        context.runOnUiThread {
-                            counterState.value = ""
-                            sourceState.value = ""
-                            currentIndexState.intValue = -1
-                            totalCountState.intValue = 0
+                            snapSourceState.value = snapSource
+                            isInConversationState.value = mediaParamMap.containsKey("MESSAGE_ID")
                             onClearState?.invoke()
                         }
                         return@hook
@@ -86,6 +79,8 @@ class OperaStoryOverlayState {
                         sourceState.value = mediaOrigin
                         currentIndexState.intValue = currentIndex ?: -1
                         totalCountState.intValue = totalCount ?: 0
+                        snapSourceState.value = snapSource
+                        isInConversationState.value = false
 
                         onSnapFullyDisplayed?.let { callback ->
                             if (currentIndex != null) callback(currentIndex)
