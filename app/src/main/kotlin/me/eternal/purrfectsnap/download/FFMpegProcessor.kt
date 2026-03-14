@@ -106,7 +106,18 @@ class FFMpegProcessor(
                     if (session.returnCode.isValueSuccess) {
                         Result.success(session)
                     } else {
-                        Result.failure(Exception(session.output))
+                        val output = session.output
+                        val errorMsg = when {
+                            output.isNullOrBlank() -> "FFmpeg failed (exit code: ${session.returnCode})"
+                            else -> {
+                                val lines = output.lines().filter { line ->
+                                    line.isNotBlank() && !line.startsWith("ffmpeg version", ignoreCase = true) && !line.contains("Copyright")
+                                }
+                                lines.lastOrNull()?.take(400)
+                                    ?: "FFmpeg failed. Try changing video codec in FFmpeg options (e.g. libx264)"
+                            }
+                        }
+                        Result.failure(Exception(errorMsg))
                     }
                 )
             }, logFunction@{ log ->
@@ -117,11 +128,6 @@ class FFMpegProcessor(
                     else -> return@logFunction
                 }, log.message)
             }, { onStatistics(it) }, Executors.newSingleThreadExecutor())
-    }
-
-    private fun isMediaCodecFailure(output: String): Boolean {
-        val lower = output.lowercase()
-        return lower.contains("mediacodec") || lower.contains("h264_mediacodec") || lower.contains("amediacodec")
     }
 
     suspend fun execute(args: Request) {
@@ -140,7 +146,7 @@ class FFMpegProcessor(
 
         val outputArguments = ArgumentList().apply {
             this += "-preset" to (ffmpegOptions.preset.getNullable() ?: "ultrafast")
-            this += "-c:v" to (ffmpegOptions.customVideoCodec.get().takeIf { it.isNotEmpty() } ?: "h264_mediacodec")
+            this += "-c:v" to (ffmpegOptions.customVideoCodec.get().takeIf { it.isNotEmpty() } ?: "libx264")
             this += "-c:a" to (ffmpegOptions.customAudioCodec.get().takeIf { it.isNotEmpty() } ?: "copy")
             this += "-crf" to ffmpegOptions.constantRateFactor.get().let { "\"$it\"" }
             this += "-b:v" to ffmpegOptions.videoBitrate.get().toString() + "K"
@@ -215,7 +221,7 @@ class FFMpegProcessor(
 
                 outputArguments += "-fps_mode" to "vfr"
 
-                outputArguments += "-filter_complex" to "\"$filterFirstPart ${filterSecondPart}concat=n=${args.inputs.size}:v=1:a=1[vout][aout]\""
+                outputArguments += "-filter_complex" to "\"$filterFirstPart ${filterSecondPart}concat=n=${filesInfo.size}:v=1:a=1[vout][aout]\""
                 outputArguments += "-map" to "\"[aout]\""
                 outputArguments += "-map" to "\"[vout]\""
 
@@ -232,7 +238,6 @@ class FFMpegProcessor(
                 }
                 globalArguments += "-ar" to args.audioStreamFormat.sampleRate.toString()
                 globalArguments += "-ac" to args.audioStreamFormat.channels.toString()
-                outputArguments += "-c:a" to "pcm_s16le"
             }
             Action.MERGE_AUDIO_STREAMS -> {
                 inputArguments.clear()
@@ -241,40 +246,21 @@ class FFMpegProcessor(
                 args.inputs.forEachIndexed { index, input ->
                     inputArguments += "-i" to input
                     val offset = args.inputDelayOffsets?.get(input) ?: 0L
-                    filterParts.append("[$index:a]aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo")
                     if (offset > 0) {
-                        filterParts.append(",adelay=$offset|$offset[a$index];")
+                        filterParts.append("[$index:a]adelay=$offset|$offset[a$index];")
                     } else {
-                        filterParts.append(",acopy[a$index];")
+                        filterParts.append("[$index:a]acopy[a$index];")
                     }
                 }
                 args.inputs.indices.forEach { index ->
                     filterParts.append("[a$index]")
                 }
-                filterParts.append("amix=inputs=${args.inputs.size}:duration=longest:dropout_transition=0:normalize=1,alimiter=limit=0.95[aout]")
+                filterParts.append("amix=inputs=${args.inputs.size}:duration=longest:normalize=0[aout]")
                 outputArguments += "-filter_complex" to "\"$filterParts\""
                 outputArguments += "-map" to "\"[aout]\""
-                outputArguments += "-c:a" to "libmp3lame"
-                outputArguments += "-b:a" to "192k"
-                outputArguments += "-ar" to "48000"
-                outputArguments += "-ac" to "2"
             }
         }
         outputArguments += args.output.absolutePath
-        try {
-            newFFMpegTask(globalArguments, inputArguments, outputArguments)
-        } catch (e: Exception) {
-            val output = e.message.orEmpty()
-            val usingMediaCodec = outputArguments["-c:v"] == "h264_mediacodec"
-            val canRetry = ffmpegOptions.customVideoCodec.get().isEmpty()
-            if (usingMediaCodec && canRetry && isMediaCodecFailure(output)) {
-                logManager.warn("MediaCodec failed, retrying with libx264", TAG)
-                outputArguments -= "-c:v"
-                outputArguments += "-c:v" to "libx264"
-                newFFMpegTask(globalArguments, inputArguments, outputArguments)
-            } else {
-                throw e
-            }
-        }
+        newFFMpegTask(globalArguments, inputArguments, outputArguments)
     }
 }
