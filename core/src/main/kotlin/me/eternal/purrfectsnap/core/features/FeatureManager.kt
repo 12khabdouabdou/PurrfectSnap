@@ -154,6 +154,7 @@ class FeatureManager(
             AutoDeleteSentMessages(),
             FriendNotes(),
             DoubleTapChatAction(),
+            VideoRecordTimer(),
             SnapScoreChanges(),
             DisableSnapModeRestrictions(),
             MessageTranslator(),

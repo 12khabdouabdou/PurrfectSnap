@@ -63,10 +63,16 @@ class CallRecorderUIState {
     var lastInteractionTime by mutableStateOf(0L)
 }
 
+class VideoRecordTimerState {
+    var isRecording by mutableStateOf(false)
+    var recordingStartTime by mutableStateOf(0L)
+}
+
 class InAppOverlay(
     private val context: ModContext
 ) {
     val callRecorderState = CallRecorderUIState()
+    val videoRecordTimerState = VideoRecordTimerState()
     companion object {
         fun showCrashOverlay(content: String, throwable: Throwable? = null) {
             // deny network requests
@@ -243,6 +249,79 @@ class InAppOverlay(
             }
 
             CallRecorderOverlay()
+            VideoRecordTimerOverlay()
+        }
+    }
+
+    @Composable
+    private fun VideoRecordTimerOverlay() {
+        var elapsedTime by remember { mutableStateOf(0L) }
+
+        LaunchedEffect(videoRecordTimerState.isRecording) {
+            if (videoRecordTimerState.isRecording) {
+                while (videoRecordTimerState.isRecording) {
+                    delay(100)
+                    elapsedTime = System.currentTimeMillis() - videoRecordTimerState.recordingStartTime
+                }
+            } else {
+                elapsedTime = 0L
+            }
+        }
+
+        AnimatedVisibility(
+            visible = videoRecordTimerState.isRecording,
+            enter = fadeIn(animationSpec = tween(300)) + scaleIn(
+                initialScale = 0.8f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            ),
+            exit = fadeOut(animationSpec = tween(200)) + scaleOut(
+                targetScale = 0.8f,
+                animationSpec = tween(200)
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 45.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                val seconds = (elapsedTime / 1000) % 60
+                val minutes = (elapsedTime / 1000) / 60
+
+                val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+                val pulseRatio by infiniteTransition.animateFloat(
+                    initialValue = 0.2f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1000, easing = LinearOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "pulseRatio"
+                )
+
+                Row(
+                    modifier = Modifier
+                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .background(Color.Red.copy(alpha = pulseRatio), CircleShape)
+                    )
+                    Text(
+                        text = String.format("%02d:%02d", minutes, seconds),
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 17.sp
+                    )
+                }
+            }
         }
     }
 
