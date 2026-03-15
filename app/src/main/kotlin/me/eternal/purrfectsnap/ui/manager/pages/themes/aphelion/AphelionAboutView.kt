@@ -51,7 +51,7 @@ fun HomeAbout.AphelionAboutScreen(nav: NavBackStackEntry) {
     }
     val scrollState = rememberScrollState()
     val aboutStory = remember { translation["about_story"]?.trim() ?: "" }
-    val horizontalPadding = 24.dp 
+    val horizontalPadding = 24.dp
     val bottomPadding = routes.bottomPadding
     val tapSource = remember { MutableInteractionSource() }
     val tapTimeoutMs = 1500L
@@ -74,10 +74,12 @@ fun HomeAbout.AphelionAboutScreen(nav: NavBackStackEntry) {
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
-                .padding(top = controlsHeight, bottom = bottomPadding + 4.dp),
+                .padding(bottom = bottomPadding + 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Spacer(modifier = Modifier.height(controlsHeight))
+
             Surface(
                 modifier = Modifier
                     .padding(horizontal = horizontalPadding)
@@ -111,9 +113,6 @@ fun HomeAbout.AphelionAboutScreen(nav: NavBackStackEntry) {
                                     }
                                     tapCount.intValue += 1
                                     lastTapTime.longValue = now
-                                    if (tapCount.intValue >= 3 && tapCount.intValue < 5) {
-                                        context.shortToast(translation.format("magic_toast", "count" to (5 - tapCount.intValue).toString()))
-                                    }
                                     if (tapCount.intValue >= 5) {
                                         tapCount.intValue = 0
                                         routes.retroGame.navigate()
@@ -216,7 +215,7 @@ fun HomeAbout.AphelionAboutScreen(nav: NavBackStackEntry) {
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(text = translation["github_button"] ?: "GitHub", maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
-                        OutlinedButton(modifier = Modifier.weight(1f), onClick = { context.androidContext.openLink("https://t.me/purrfectsnap_official", context.translation["toast_open_link_failed"] ?: "") }, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White), shape = RoundedCornerShape(14.dp)) {
+                        OutlinedButton(modifier = Modifier.weight(1f), onClick = { context.androidContext.openLink("https://t.me/purrfectsnap_official", context.translation["toast_open_link_failed"] ?: "") }, border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)), colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White), shape = RoundedCornerShape(14.dp)) {   
                             Icon(imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram), contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(text = translation["telegram_button"] ?: "Telegram", maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -231,6 +230,7 @@ fun HomeAbout.AphelionAboutScreen(nav: NavBackStackEntry) {
             title = routeInfo.translatedKey?.value ?: translation["manager.routes.home_about"] ?: "About Us",
             onBack = { routes.navController.popBackStack() },
             scrollOffset = scrollState.value,
+            enableMorph = true,
             modifier = Modifier.headerHeightTracker { controlsHeight = it }
         )
     }

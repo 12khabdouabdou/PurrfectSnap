@@ -1,7 +1,7 @@
 package me.eternal.purrfectsnap.ui.manager.pages.features
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
@@ -77,7 +77,6 @@ import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
-import me.eternal.purrfectsnap.ui.manager.theme.purrfectSwitchColors
 import me.eternal.purrfectsnap.ui.util.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -124,7 +123,7 @@ class FeaturesRootSection : Routes.Route() {
                     it.key.dataType.type == DataProcessors.Type.CONTAINER &&
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 ) {
-                    containers[it.key.name] = PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>)
+                    containers[it.key.name] = (it.key to it.value).toPropertyPair() as PropertyPair<Any>
                     queryContainerRecursive(it.value.get() as ConfigContainer)
                 }
             }
@@ -148,7 +147,22 @@ class FeaturesRootSection : Routes.Route() {
         return !propertyKey.params.flags.contains(ConfigFlag.HIDDEN)
     }
 
-    internal fun navigateToMainRoot() {
+    internal fun getFolderReadablePath(context: android.content.Context, folderUri: String?): String? {
+        if (folderUri == null) return null
+        return try {
+            val uri = android.net.Uri.parse(folderUri)
+            val path = uri.path ?: return folderUri
+            if (path.contains("tree/")) {
+                path.substringAfter("tree/").replace("primary:", "Internal Storage/").replace(":", "/")
+            } else {
+                folderUri
+            }
+        } catch (e: Exception) {
+            folderUri
+        }
+    }
+
+    fun navigateToMainRoot() {
         routes.navController.navigate(routeInfo.id, NavOptions.Builder()
             .setPopUpTo(routes.navController.graph.findStartDestination().id, false)
             .setLaunchSingleTop(true)
@@ -215,7 +229,7 @@ class FeaturesRootSection : Routes.Route() {
                             context.translation[it.key.propertyName()].contains(keyword, ignoreCase = true) ||
                             context.translation[it.key.propertyDescription()].contains(keyword, ignoreCase = true)
                     )
-                }.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }
+                }.map { (it.key to it.value).toPropertyPair() }
 
                 PropertiesView(
                     properties = properties,
@@ -335,21 +349,6 @@ class FeaturesRootSection : Routes.Route() {
 
         val propertyValue = property.value
         fun persistConfig() = context.config.writeConfig()
-
-        fun getFolderReadablePath(context: android.content.Context, folderUri: String?): String? {
-            if (folderUri == null) return null
-            return try {
-                val uri = android.net.Uri.parse(folderUri)
-                val path = uri.path ?: return folderUri
-                if (path.contains("tree/")) {
-                    path.substringAfter("tree/").replace("primary:", "Internal Storage/").replace(":", "/")
-                } else {
-                    folderUri
-                }
-            } catch (e: Exception) {
-                folderUri
-            }
-        }
 
         if (property.key.params.flags.contains(ConfigFlag.USER_IMPORT)) {
             registerDialogOnClickCallback()
@@ -502,20 +501,14 @@ class FeaturesRootSection : Routes.Route() {
         }
 
         if (property.key.params.flags.contains(ConfigFlag.FOLDER)) {
-            val folderUri = propertyValue.get() as? String
-            val readablePath = remember(folderUri) { getFolderReadablePath(context.androidContext, folderUri) }
-            
-            ValueGlowChip(
-                text = readablePath ?: folderUri ?: "None",
-                leadingIcon = Icons.Filled.FolderOpen,
-                modifier = Modifier.widthIn(min = 52.dp, max = 160.dp),
-                onClick = registerClickCallback {
-                    routes.activityLauncher.chooseFolder { uri ->
-                        propertyValue.setAny(uri)
-                        persistConfig()
-                    }
+            IconButton(onClick = registerClickCallback {
+                routes.activityLauncher.chooseFolder { uri ->
+                    propertyValue.setAny(uri)
+                    persistConfig()
                 }
-            )
+            }) {
+                Icon(Icons.Filled.FolderOpen, contentDescription = null, tint = Color.White)
+            }
             return
         }
 
@@ -685,48 +678,52 @@ class FeaturesRootSection : Routes.Route() {
     @Composable
     internal fun ValueGlowChip(
         text: String,
-        leadingIcon: ImageVector? = null,
-        modifier: Modifier = Modifier.size(52.dp),
         onClick: () -> Unit
     ) {
         Surface(
-            modifier = modifier
+            modifier = Modifier
+                .size(52.dp)
                 .clip(CircleShape)
                 .clickable { onClick() },
             shape = CircleShape,
             color = Color.White.copy(alpha = 0.08f),
-            border = BorderStroke(1.dp, Brush.linearGradient(listOf(PurrfectPalette.glowPrimary.copy(alpha = 0.5f), PurrfectPalette.glowSecondary.copy(alpha = 0.35f))))
+            tonalElevation = 0.dp,
+            shadowElevation = 10.dp,
+            border = BorderStroke(
+                1.dp,
+                Brush.linearGradient(
+                    listOf(
+                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
+                        PurrfectPalette.glowSecondary.copy(alpha = 0.45f)
+                    )
+                )
+            )
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Brush.radialGradient(listOf(PurrfectPalette.glowPrimary.copy(alpha = 0.25f), Color.Transparent))),
+                    .background(
+                        Brush.radialGradient(
+                            listOf(
+                                PurrfectPalette.glowPrimary.copy(alpha = 0.28f),
+                                Color.Transparent
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    if (leadingIcon != null) {
-                        Icon(imageVector = leadingIcon, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-                    Text(
-                        text = text,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                Text(
+                    text = text,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 
     @Composable
     internal fun PropertyCard(property: PropertyPair<*>, onOpen: (() -> Unit)? = null) {
+        val isAphelion = remember { context.config.root.global.uiSettings.managerTheme.get() == "APHELION" }
         var clickCallback by remember { mutableStateOf<(() -> Unit)?>(null) }
         val noticeColorMap = remember {
             mapOf(
@@ -857,17 +854,15 @@ class FeaturesRootSection : Routes.Route() {
                     ) {
                         PropertyAction(property, registerClickCallback = { callback ->
                             if (property.key.propertyTranslationPath().startsWith("rules.properties")) {
-                                val ruleCallback: () -> Unit = {
+                                clickCallback = {
                                     routes.manageRuleFeature.navigate {
                                         put("rule_type", property.key.name)
                                     }
                                 }
-                                clickCallback = ruleCallback
-                                ruleCallback  // return the callback
-                            } else {
-                                clickCallback = callback
-                                callback  // return the callback
+                                return@PropertyAction clickCallback!!
                             }
+                            clickCallback = callback
+                            callback
                         })
                     }
                 }
@@ -888,8 +883,10 @@ class FeaturesRootSection : Routes.Route() {
         onSearchQueryChange: (String) -> Unit,
         onBack: (() -> Unit)? = null,
         scrollOffset: Int = 0,
-        modifier: Modifier = Modifier
+        modifier: Modifier = Modifier,
+        onHeightMeasured: (androidx.compose.ui.unit.Dp) -> Unit = {}
     ) {
+        val isAphelion = remember { context.config.root.global.uiSettings.managerTheme.get() == "APHELION" }
         var showSearchBar by rememberSaveable { mutableStateOf(isSearchResults) }
         val focusRequester = remember { FocusRequester() }
         val isOverlay = activeSectionTitle != null
@@ -976,6 +973,7 @@ class FeaturesRootSection : Routes.Route() {
                                     onClick = {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         context.config.reset()
+                                        context.config.writeConfig()
                                         context.shortToast(context.translation["manager.dialogs.reset_config.success_toast"] ?: "Reset successful")
                                         showResetConfirmationDialog = false
                                     },
@@ -1045,7 +1043,7 @@ class FeaturesRootSection : Routes.Route() {
 
         val headerTitle = activeSectionTitle ?: translation["manager.routes.features"] ?: "Features"
         val subtitleText = when {
-            searchKeyword != null -> translation["search_button"] ?: "Search"
+            isSearchResults -> translation["search_button"] ?: "Search"
             !activeSectionSubtitle.isNullOrBlank() -> activeSectionSubtitle
             else -> translation["manager.sections.features.subtitle"] ?: ""
         }
@@ -1063,137 +1061,229 @@ class FeaturesRootSection : Routes.Route() {
             }
         }
 
-        Column(modifier = modifier.headerHeightTracker { controlsHeight = it }) {
-            me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
-                title = headerTitle,
-                subtitle = if (showSearchBar) null else subtitleText,
-                onBack = onBack,
-                scrollOffset = scrollOffset,
-                enableMorph = true,
-                actions = {
-                    if (showSearchBar) {
-                        TextField(
-                            value = searchValue,
-                            onValueChange = { keywordValue ->
-                                searchValue = keywordValue
-                                if (keywordValue.text.isEmpty()) {
-                                    updateSearch("", record = false)
-                                } else {
-                                    updateSearch(keywordValue.text, record = false)
-                                }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .focusRequester(focusRequester),
-                            singleLine = true,
-                            placeholder = { Text(text = translation["search_button"] ?: "Search", color = Color(0xFFE0DCFF)) },
-                            leadingIcon = {
+        Column(modifier = modifier.headerHeightTracker { onHeightMeasured(it) }) {
+            if (isAphelion) {
+                me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
+                    title = headerTitle,
+                    subtitle = if (showSearchBar) null else subtitleText,
+                    onBack = onBack,
+                    scrollOffset = scrollOffset,
+                    enableMorph = true,
+                    actions = {
+                        if (showSearchBar) {
+                            TextField(
+                                value = searchValue,
+                                onValueChange = { keywordValue ->
+                                    searchValue = keywordValue
+                                    if (keywordValue.text.isEmpty()) {
+                                        updateSearch("", record = false)
+                                    } else {
+                                        updateSearch(keywordValue.text, record = false)
+                                    }
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .focusRequester(focusRequester),
+                                singleLine = true,
+                                placeholder = { Text(text = translation["search_button"] ?: "Search", color = Color(0xFFE0DCFF)) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Filled.Search,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (searchValue.text.isNotEmpty()) {
+                                        IconButton(onClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            searchValue = TextFieldValue("", TextRange(0))
+                                            updateSearch("", record = false)
+                                            if (isSearchResults) {
+                                                if (isOverlay) {
+                                                    routes.navController.popBackStack(routeInfo.id, false)
+                                                }
+                                            } else {
+                                                showSearchBar = false
+                                            }
+                                        }) {
+                                            Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White)
+                                        }
+                                    }
+                                },
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        updateSearch(searchValue.text, record = true)
+                                    }
+                                ),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    cursorColor = Color.White,
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White,
+                                    disabledTextColor = Color.White.copy(alpha = 0.65f),
+                                    focusedPlaceholderColor = Color(0xFFE0DCFF),
+                                    unfocusedPlaceholderColor = Color(0xFFE0DCFF),
+                                    focusedLeadingIconColor = Color.White,
+                                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.9f),
+                                    focusedTrailingIconColor = Color.White,
+                                    unfocusedTrailingIconColor = Color.White.copy(alpha = 0.9f)
+                                )
+                            )
+                            LaunchedEffect(Unit) { focusRequester.requestFocus() }
+                        } else {
+                            IconButton(onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                showSearchBar = true
+                            }) {
                                 Icon(
                                     imageVector = Icons.Filled.Search,
                                     contentDescription = null,
                                     tint = Color.White
                                 )
-                            },
-                            trailingIcon = {
-                                if (searchValue.text.isNotEmpty()) {
-                                    IconButton(onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        searchValue = TextFieldValue("", TextRange(0))
-                                        updateSearch("", record = false)
-                                        if (isSearchResults) {
-                                            if (isOverlay) {
-                                                routes.navController.popBackStack(routeInfo.id, false)
-                                            }
-                                        } else {
-                                            showSearchBar = false
-                                        }
-                                    }) {
-                                        Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White)
+                            }
+                        }
+
+                        if (context.activity != null) {
+                            Box {
+                                IconButton(onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    showExportDropdownMenu = !showExportDropdownMenu
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.MoreVert,
+                                        contentDescription = null,
+                                        tint = PurrfectPalette.glowSecondary
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = showExportDropdownMenu,
+                                    onDismissRequest = { showExportDropdownMenu = false },
+                                    offset = DpOffset(0.dp, 8.dp),
+                                    containerColor = Color(0xFF161821),
+                                    shape = RoundedCornerShape(14.dp),
+                                    tonalElevation = 8.dp,
+                                    shadowElevation = 12.dp
+                                ) {
+                                    actions.forEach { (name, icon, action) ->
+                                        DropdownMenuItem(
+                                            leadingIcon = {
+                                                Icon(
+                                                    imageVector = icon,
+                                                    contentDescription = null,
+                                                    tint = PurrfectPalette.glowPrimary
+                                                )
+                                            },
+                                            text = { Text(text = name ?: "", color = Color.White) },
+                                            onClick = {
+                                                action()()
+                                                showExportDropdownMenu = false
+                                            },
+                                            colors = MenuDefaults.itemColors(
+                                                textColor = Color.White,
+                                                leadingIconColor = PurrfectPalette.glowPrimary
+                                            )
+                                        )
                                     }
                                 }
-                            },
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    updateSearch(searchValue.text, record = true)
-                                }
-                            ),
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                cursorColor = Color.White,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                disabledTextColor = Color.White.copy(alpha = 0.65f),
-                                focusedPlaceholderColor = Color(0xFFE0DCFF),
-                                unfocusedPlaceholderColor = Color(0xFFE0DCFF),
-                                focusedLeadingIconColor = Color.White,
-                                unfocusedLeadingIconColor = Color.White.copy(alpha = 0.9f),
-                                focusedTrailingIconColor = Color.White,
-                                unfocusedTrailingIconColor = Color.White.copy(alpha = 0.9f)
-                            )
-                        )
-                        LaunchedEffect(Unit) { focusRequester.requestFocus() }
-                    } else {
-                        IconButton(onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            showSearchBar = true
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
+                            }
                         }
                     }
+                )
+            } else {
+                val topBarShape = RoundedCornerShape(26.dp)
+                val topBarBackground = remember { PurrfectPalette.cardOverlay }
+                val topBarBorder = remember {
+                    Brush.linearGradient(
+                        listOf(
+                            PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
+                            PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
+                        )
+                    )
+                }
 
-                    if (context.activity != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                        .zIndex(1f)
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = topBarShape,
+                        color = PurrfectPalette.cardOverlayColor,
+                        border = BorderStroke(1.dp, topBarBorder),
+                        tonalElevation = 0.dp,
+                        shadowElevation = 8.dp
+                    ) {
                         Box {
-                            IconButton(onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                showExportDropdownMenu = !showExportDropdownMenu
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.MoreVert,
-                                    contentDescription = null,
-                                    tint = PurrfectPalette.glowSecondary
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = showExportDropdownMenu,
-                                onDismissRequest = { showExportDropdownMenu = false },
-                                offset = DpOffset(0.dp, 8.dp),
-                                containerColor = Color(0xFF161821),
-                                shape = RoundedCornerShape(14.dp),
-                                tonalElevation = 8.dp,
-                                shadowElevation = 12.dp
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(topBarShape)
+                                    .background(topBarBackground)
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                actions.forEach { (name, icon, action) ->
-                                    DropdownMenuItem(
-                                        leadingIcon = {
-                                            Icon(
-                                                imageVector = icon,
-                                                contentDescription = null,
-                                                tint = PurrfectPalette.glowPrimary
-                                            )
-                                        },
-                                        text = { Text(text = name ?: "", color = Color.White) },
-                                        onClick = {
-                                            action()()
-                                            showExportDropdownMenu = false
-                                        },
-                                        colors = MenuDefaults.itemColors(
-                                            textColor = Color.White,
-                                            leadingIconColor = PurrfectPalette.glowPrimary
+                                if (onBack != null) {
+                                    IconButton(onClick = onBack) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = context.translation["common.back"],
+                                            tint = Color.White
                                         )
+                                    }
+                                }
+                                
+                                if (showSearchBar) {
+                                    TextField(
+                                        value = searchValue,
+                                        onValueChange = { keywordValue ->
+                                            searchValue = keywordValue
+                                            updateSearch(keywordValue.text, record = false)
+                                        },
+                                        modifier = Modifier.weight(1f).focusRequester(focusRequester),
+                                        singleLine = true,
+                                        placeholder = { Text(text = translation["search_button"] ?: "Search", color = Color(0xFFE0DCFF)) },
+                                        colors = TextFieldDefaults.colors(focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent, cursorColor = Color.White, focusedTextColor = Color.White, unfocusedTextColor = Color.White)
                                     )
+                                    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+                                } else {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = headerTitle,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            fontSize = 18.sp
+                                        )
+                                        Text(
+                                            text = subtitleText,
+                                            color = Color(0xFFCEC8FF),
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                }
+
+                                IconButton(onClick = { 
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    showSearchBar = !showSearchBar 
+                                }) {
+                                    Icon(imageVector = if (showSearchBar) Icons.Filled.Close else Icons.Filled.Search, contentDescription = null, tint = Color.White)
                                 }
                             }
                         }
                     }
                 }
-            )
+            }
 
             if (showSearchBar && combinedSuggestions.isNotEmpty()) {
                 Surface(
@@ -1263,21 +1353,14 @@ class FeaturesRootSection : Routes.Route() {
         val density = LocalDensity.current
         var controlsHeight by remember { mutableStateOf(100.dp) }
         
-        // Claude Fix 2: Backstack-scoped scroll state
-        val navBackStackEntry by routes.navController.currentBackStackEntryAsState()
-        val listState = rememberSaveable(
-            navBackStackEntry?.id,
-            saver = LazyListState.Saver
-        ) {
-            LazyListState()
-        }
+        val listState = rememberLazyListState()
 
         val sharedSearchHistory = remember { mutableStateListOf<String>().apply { addAll(loadSearchHistory()) } }
         var liveSearchQuery by rememberSaveable { mutableStateOf(searchKeyword.orEmpty()) }
         val isActiveSearch = isSearchResults || liveSearchQuery.isNotBlank()
         val globalSearchProperties = remember(enableGlobalSearch) {
             if (enableGlobalSearch) {
-                allProperties.filter { isSearchVisibleProperty(it.key) }.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }
+                allProperties.filter { isSearchVisibleProperty(it.key) }.map { (it.key to it.value).toPropertyPair() } as List<PropertyPair<Any>>
             } else {
                 emptyList()
             }
@@ -1329,12 +1412,10 @@ class FeaturesRootSection : Routes.Route() {
                 contentPadding = PaddingValues(
                     start = 6.dp,
                     end = 6.dp,
+                    top = controlsHeight,
                     bottom = routes.bottomPadding
                 )
             ) {
-                item {
-                    Spacer(modifier = Modifier.height(controlsHeight + 12.dp))
-                }
                 if (displayProperties.isEmpty()) {
                     item { EmptyState(isActiveSearch) }
                 } else {
@@ -1359,7 +1440,7 @@ class FeaturesRootSection : Routes.Route() {
                 onSearchQueryChange = { liveSearchQuery = it },
                 onBack = onBack,
                 scrollOffset = computedScrollOffset,
-                modifier = Modifier.headerHeightTracker { controlsHeight = it }
+                onHeightMeasured = { controlsHeight = it }
             )
         }
     }
@@ -1500,7 +1581,7 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         PropertiesView(
             properties = remember {
-                configContainer.properties.map { PropertyPair(it.key as PropertyKey<Any>, it.value as PropertyValue<Any>) }.filter {
+                configContainer.properties.map { (it.key to it.value).toPropertyPair() as PropertyPair<Any> }.filter {
                     !it.key.params.flags.contains(ConfigFlag.HIDDEN)
                 }
             },
@@ -1531,7 +1612,7 @@ class FeaturesRootSection : Routes.Route() {
         if (a.isEmpty()) return b.length
         if (b.isEmpty()) return a.length
         val prev = IntArray(b.length + 1) { it }
-        val curr = IntArray(b.length + 1)
+        val curr = IntArray(b.length + 1) { it }
         for (i in a.indices) {
             curr[0] = i + 1
             for (j in b.indices) {
@@ -1584,6 +1665,3 @@ class FeaturesRootSection : Routes.Route() {
         saveSearchHistory(history.toList())
     }
 }
-
-
-

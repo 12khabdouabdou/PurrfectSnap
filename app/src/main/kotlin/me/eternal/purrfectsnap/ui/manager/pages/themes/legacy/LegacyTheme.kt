@@ -657,10 +657,11 @@ object LegacyTheme : ThemeContract {
             }
 
             Column(modifier = Modifier.fillMaxSize()) {
-                Spacer(modifier = Modifier.height(topPadding))
-                
                 Surface(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 12.dp)
+                        .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
                     shape = RoundedCornerShape(26.dp),
                     color = Color.White.copy(alpha = 0.07f),
                     border = BorderStroke(1.dp, Brush.linearGradient(listOf(Color.White.copy(alpha = 0.12f), Color.White.copy(alpha = 0.05f)))),
@@ -869,10 +870,27 @@ object LegacyTheme : ThemeContract {
                     .verticalScroll(scrollState)
                     .padding(bottom = bottomPadding)
             ) {
-                FloatingTopBar(
-                    title = routeInfo.translatedKey?.value ?: translation["manager.routes.home_about"] ?: "About",
-                    onBack = { routes.navController.popBackStack() }
-                )
+                val topPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                Spacer(modifier = Modifier.height(topPadding))
+
+                Surface(
+                    modifier = Modifier.padding(horizontal = pagePadding, vertical = 12.dp).fillMaxWidth(),
+                    shape = RoundedCornerShape(26.dp),
+                    color = Color.White.copy(alpha = 0.07f),
+                    border = BorderStroke(1.dp, Brush.linearGradient(listOf(Color.White.copy(alpha = 0.12f), Color.White.copy(alpha = 0.05f)))),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        IconButton(onClick = { routes.navController.popBackStack() }) {
+                            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
+                        }
+                        Text(text = routeInfo.translatedKey?.value ?: translation["manager.routes.home_about"] ?: "About", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                        Spacer(modifier = Modifier.width(48.dp))
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -893,20 +911,17 @@ object LegacyTheme : ThemeContract {
                             text = translation["about_title"] ?: "About",
                             fontSize = 28.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = PurrfectPalette.textPrimary,
+                            color = Color.White,
                             fontFamily = avenirNext,
                             modifier = Modifier.clickable(interactionSource = tapSource, indication = null) {
                                 val now = SystemClock.elapsedRealtime()
                                 if (now - lastTapTime.value > 1500L) { tapCount.intValue = 0 }
                                 tapCount.intValue += 1
                                 lastTapTime.value = now
-                                if (tapCount.intValue >= 3 && tapCount.intValue < 5) {
-                                    context.shortToast(translation.format("magic_toast", "count" to (5 - tapCount.intValue).toString()))
-                                }
                                 if (tapCount.intValue >= 5) { tapCount.intValue = 0; routes.retroGame.navigate() }
                             }
                         )
-                        Text(text = translation["about_tagline"] ?: "", fontSize = 13.sp, color = PurrfectPalette.textSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                        Text(text = translation["about_tagline"] ?: "", fontSize = 13.sp, color = Color(0xFFD9D3FF), textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                         Text(text = translation["about_lead_developers_title"] ?: "Lead Developers", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White, modifier = Modifier.padding(top = 10.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
                             DeveloperCard(name = "ΞTΞRNAL", imageRes = R.drawable.pfp_external, avenirNext = avenirNext, modifier = Modifier.weight(1f))
@@ -929,7 +944,7 @@ object LegacyTheme : ThemeContract {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(text = translation["about_story_title"] ?: "Our Story", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text(text = aboutStory, fontSize = 14.sp, color = PurrfectPalette.textSecondary, lineHeight = 20.sp)
+                        Text(text = aboutStory, fontSize = 14.sp, color = Color(0xFFD9D3FF), lineHeight = 20.sp)
                     }
                 }
 
@@ -963,6 +978,53 @@ object LegacyTheme : ThemeContract {
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+
+    @Composable
+    internal fun HomeAbout.DeveloperCard(
+        name: String,
+        imageRes: Int,
+        avenirNext: FontFamily,
+        modifier: Modifier = Modifier
+    ) {
+        val tapSource = remember { MutableInteractionSource() }
+        Surface(
+            modifier = modifier.scaleOnPress(tapSource),
+            shape = RoundedCornerShape(22.dp),
+            color = Color.White.copy(alpha = 0.06f),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Surface(
+                    modifier = Modifier.size(64.dp),
+                    shape = CircleShape,
+                    color = Color.Transparent,
+                    border = BorderStroke(2.dp, Brush.linearGradient(listOf(PurrfectPalette.glowPrimary, PurrfectPalette.glowSecondary)))
+                ) {
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape)
+                    )
+                }
+                PurrfectMarqueeText(
+                    text = name,
+                    color = Color.White,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        fontFamily = avenirNext
+                    )
+                )
             }
         }
     }
@@ -1144,7 +1206,7 @@ object LegacyTheme : ThemeContract {
                 val searchShape = RoundedCornerShape(18.dp)
                 val searchBorder = Brush.linearGradient(
                     listOf(
-                        PurrfectPalette.glowPrimary.copy(alpha = 0.45f),
+                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
                         PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
                     )
                 )
@@ -1225,12 +1287,10 @@ object LegacyTheme : ThemeContract {
         val hapticFeedback = LocalHapticFeedback.current
 
         LaunchedEffect(Unit) {
-            fetchActiveTasks(this)
-        }
-
-        OnLifecycleEvent { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                fetchActiveTasks(scope)
+            while (true) {
+                fetchActiveTasks(this)
+                fetchNewRecentTasks()
+                delay(1000)
             }
         }
 
@@ -1301,7 +1361,7 @@ object LegacyTheme : ThemeContract {
                                     taskSelection.all { it.second?.type?.contains("video") == true }
                                 }
                                 if (canMergeSelection) {
-                                    TopBarActionButton(
+                                    Surface(
                                         onClick = {
                                             if (context.config.root.global.uiSettings.hapticFeedback.get()) {
                                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1312,9 +1372,19 @@ object LegacyTheme : ThemeContract {
                                                     .map { it.first to it.second!! }
                                             )
                                         },
-                                        icon = Icons.Filled.Merge,
-                                        text = translation["merge_button"]
-                                    )
+                                        shape = RoundedCornerShape(18.dp),
+                                        color = Color.White.copy(alpha = 0.08f),
+                                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(Icons.Filled.Merge, contentDescription = translation["merge_button"], tint = Color.White, modifier = Modifier.size(16.dp))
+                                            Text(translation["merge_button"] ?: "Merge", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        }
+                                    }
                                 }
                             }
                             Surface(
@@ -1380,13 +1450,6 @@ object LegacyTheme : ThemeContract {
                                 TaskCard(modifier = Modifier.fillMaxWidth(), task)
                             }
                         }
-
-                        item {
-                            Spacer(modifier = Modifier.height(40.dp))
-                            LaunchedEffect(remember { derivedStateOf { listState.firstVisibleItemIndex } }) {
-                                fetchNewRecentTasks()
-                            }
-                        }
                     }
                 }
             }
@@ -1407,7 +1470,6 @@ object LegacyTheme : ThemeContract {
                 message = messageText ?: "",
                 showDeleteFiles = isSelection,
                 deleteFilesChecked = alsoDeleteFiles,
-                tasksTranslation = translation,
                 onToggleDeleteFiles = { alsoDeleteFiles = it },
                 onConfirm = {
                     showConfirmDialog = false

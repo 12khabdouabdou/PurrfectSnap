@@ -5,8 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Build
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.runtime.Composable
 import java.lang.reflect.Method
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,12 +34,14 @@ import me.eternal.purrfectsnap.core.data.SnapClassCache
 import me.eternal.purrfectsnap.core.event.events.impl.NativeUnaryCallEvent
 import me.eternal.purrfectsnap.core.event.events.impl.SnapWidgetBroadcastReceiveEvent
 import me.eternal.purrfectsnap.core.ui.InAppOverlay
+import me.eternal.purrfectsnap.core.ui.CustomComposable
 import me.eternal.purrfectsnap.core.util.LSPatchUpdater
 import me.eternal.purrfectsnap.core.util.hook.HookAdapter
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.findRestrictedMethod
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.mapper.impl.PlatformClientAttestationMapper
+import me.eternal.purrfectsnap.common.ui.components.AphelionFriendMutationToast
 import kotlin.reflect.KClass
 import kotlin.system.exitProcess
 import kotlin.system.measureTimeMillis
@@ -216,6 +220,26 @@ class PurrfectSnap {
             log.verbose("Initializing features...")
             runCatching {
                 features.init()
+                
+                // Wire up the premium friend mutation toast provider
+                features.get(me.eternal.purrfectsnap.core.features.impl.FriendMutationObserver::class)?.let { observer ->
+                    observer.aphelionToastProvider = { icon, text, bitmojiUrl, onDismiss ->
+                        lateinit var composable: CustomComposable
+                        composable = @Composable {
+                            AphelionFriendMutationToast(
+                                icon = icon,
+                                text = text,
+                                bitmojiUrl = bitmojiUrl,
+                                onDismiss = {
+                                    inAppOverlay.removeCustomComposable(composable)
+                                    onDismiss()
+                                }
+                            )
+                        }
+                        inAppOverlay.addCustomComposable(composable)
+                    }
+                }
+                
                 log.verbose("Features initialized successfully")
             }.onFailure { throwable ->
                 log.error("Failed to initialize features", throwable)

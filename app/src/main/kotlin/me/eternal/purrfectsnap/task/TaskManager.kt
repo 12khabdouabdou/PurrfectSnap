@@ -127,15 +127,26 @@ class TaskManager(
 
     fun getTaskByHash(hash: String?): Task? {
         if (hash == null) return null
-        taskDatabase.rawQuery("SELECT * FROM tasks WHERE hash = ?", arrayOf(hash)).use { cursor ->
-            if (cursor.moveToNext()) {
-                return readTaskFromCursor(cursor)
+        return runBlocking {
+            suspendCoroutine { continuation ->
+                queueExecutor.execute {
+                    runCatching {
+                        taskDatabase.rawQuery("SELECT * FROM tasks WHERE hash = ?", arrayOf(hash)).use { cursor ->
+                            if (cursor.moveToNext()) {
+                                continuation.resumeWith(Result.success(readTaskFromCursor(cursor)))
+                            } else {
+                                continuation.resumeWith(Result.success(null))
+                            }
+                        }
+                    }.onFailure {
+                        continuation.resumeWith(Result.failure(it))
+                    }
+                }
             }
         }
-        return null
     }
 
-    fun getActiveTasks() = activeTasks
+    fun getActiveTasks(): Map<Long, PendingTask> = activeTasks
 
     fun fetchStoredTasks(lastId: Long = Long.MAX_VALUE, limit: Int = 10): Map<Long, Task> {
         val tasks = mutableMapOf<Long, Task>()
