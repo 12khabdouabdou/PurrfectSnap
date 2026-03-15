@@ -52,6 +52,16 @@ class SaveFolderScreen : SetupScreen() {
         var currentFolder by remember {
             mutableStateOf(context.config.root.downloader.saveFolder.get().orEmpty())
         }
+        val readablePath = remember(currentFolder) {
+            if (currentFolder.isBlank()) null
+            else runCatching {
+                val uri = android.net.Uri.parse(currentFolder)
+                val path = uri.path ?: return@runCatching currentFolder
+                if (path.contains("tree/")) {
+                    path.substringAfter("tree/").replace("primary:", "Internal Storage/").replace(":", "/")
+                } else currentFolder
+            }.getOrElse { currentFolder }
+        }
         var showNoPickerDialog by remember { mutableStateOf(false) }
         SetupCard {
             StepTitle(
@@ -104,7 +114,7 @@ class SaveFolderScreen : SetupScreen() {
                             color = PurrfectPalette.textSecondary
                         )
                         Text(
-                            text = if (currentFolder.isBlank()) context.translation["setup.save_folder.system_default_label"] else currentFolder,
+                            text = readablePath ?: context.translation["setup.save_folder.system_default_label"],
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White,
