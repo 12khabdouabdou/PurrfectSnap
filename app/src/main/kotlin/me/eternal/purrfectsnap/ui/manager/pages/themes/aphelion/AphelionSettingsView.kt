@@ -47,12 +47,17 @@ import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.manager.pages.home.HomeSettings
+import me.eternal.purrfectsnap.ui.manager.theme.aphelion.AphelionHaptics
 import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 import me.eternal.purrfectsnap.ui.util.Motion
 import me.eternal.purrfectsnap.ui.setup.Requirements
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 import me.eternal.purrfectsnap.ui.util.saveFile
 import me.eternal.purrfectsnap.ui.util.openFile
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.drawToBitmap
 import java.io.File
 import java.net.URLEncoder
 
@@ -62,6 +67,8 @@ fun HomeSettings.AphelionSettingsScreen(nav: NavBackStackEntry) {
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val hapticFeedback = LocalHapticFeedback.current
+    val view = LocalView.current
+    var switchCenter by remember { mutableStateOf(androidx.compose.ui.geometry.Offset.Zero) }
     var controlsHeight by remember { mutableStateOf(100.dp) }
     var showResetSetupDialog by remember { mutableStateOf(false) }
 
@@ -134,17 +141,49 @@ fun HomeSettings.AphelionSettingsScreen(nav: NavBackStackEntry) {
                         RowTitle(title = translation["ui_theme_title"] ?: "UI Theme")
                         ShiftedRow {
                             Row(modifier = Modifier.fillMaxWidth().heightIn(min = 55.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(text = translation["settings_ui_theme"] ?: "Aphelion Theme", fontSize = 14.sp)
+                                Text(text = translation["settings_ui_theme"] ?: "Aphelion Theme", fontSize = 14.sp, color = Color.White)
                                 val currentThemeId = context.config.root.global.uiSettings.managerTheme.get()
+                                var localThemeId by remember { mutableStateOf(currentThemeId) }
+                                
                                 Switch(
-                                    checked = currentThemeId == "APHELION",
+                                    checked = localThemeId == "APHELION",
                                     onCheckedChange = { isAphelion ->
-                                        if (context.config.root.global.uiSettings.hapticFeedback.get()) { hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress) }
                                         val newId = if (isAphelion) "APHELION" else "LEGACY"
-                                        context.config.root.global.uiSettings.managerTheme.set(newId)
-                                        context.config.writeConfig()
+                                        localThemeId = newId // Update UI instantly
+                                        
+                                        AphelionHaptics.themeRevealTick(context, hapticFeedback)
+                                        
+                                        // 1. Capture bitmap BEFORE theme change
+                                        val bitmap = runCatching { view.drawToBitmap() }.getOrNull()
+                                        
+                                        // 2. Request Reveal
+                                        routes.navigation?.themeRevealState?.requestReveal(
+                                            newThemeId = newId,
+                                            originCenter = switchCenter,
+                                            bitmap = bitmap
+                                        )
+
+                                        // 3. Apply theme and persist
+                                        scope.launch {
+                                            kotlinx.coroutines.delay(50)
+                                            context.config.root.global.uiSettings.managerTheme.set(newId)
+                                            
+                                            // Write to disk immediately on IO thread and finish
+                                            val writeJob = launch(kotlinx.coroutines.Dispatchers.IO) {
+                                                context.config.writeConfig()
+                                            }
+                                            writeJob.join() // Ensure it finishes its work before scope potentially closes
+                                        }
                                     },
-                                    modifier = Modifier.padding(end = 26.dp),
+                                    modifier = Modifier
+                                        .padding(end = 26.dp)
+                                        .onGloballyPositioned { coords ->
+                                            val rootPos = coords.positionInRoot()
+                                            switchCenter = androidx.compose.ui.geometry.Offset(
+                                                x = rootPos.x + coords.size.width / 2f,
+                                                y = rootPos.y + coords.size.height / 2f
+                                            )
+                                        },
                                     colors = purrfectSwitchColors()
                                 )
                             }

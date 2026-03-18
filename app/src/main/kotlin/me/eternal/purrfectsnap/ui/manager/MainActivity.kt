@@ -46,6 +46,7 @@ import me.eternal.purrfectsnap.common.ui.ThemePreferences
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.ActivityLauncherHelper
+import me.eternal.purrfectsnap.ui.manager.theme.aphelion.CircularRevealOverlay
 import me.eternal.purrfectsnap.ui.util.ThankYouDialog
 import android.content.IntentFilter
 
@@ -212,6 +213,16 @@ class MainActivity : ComponentActivity() {
                             }
                             val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
                             navigation.NavContent(contentPadding, startDestination)
+
+                            // Theme Reveal Overlay
+                            navigation.themeRevealState.pendingReveal?.let { revealRequest ->
+                                CircularRevealOverlay(
+                                    context = managerContext,
+                                    request = revealRequest,
+                                    onComplete = { navigation.themeRevealState.clearReveal() }
+                                )
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopCenter)
