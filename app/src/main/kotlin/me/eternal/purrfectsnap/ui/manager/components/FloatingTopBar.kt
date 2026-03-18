@@ -30,6 +30,7 @@ import androidx.compose.ui.zIndex
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.PurrfectMarqueeText
 import me.eternal.purrfectsnap.ui.util.Motion
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 
 @Immutable
 data class FloatingTopBarColors(
@@ -49,6 +50,10 @@ fun rememberDefaultFloatingTopBarColors(): FloatingTopBarColors {
     }
 }
 
+/**
+ * Unified Floating Top Bar for Aphelion.
+ * Handles the signature morphing animation and provides a "Bottom Content" slot.
+ */
 @Composable
 fun FloatingTopBar(
     title: String,
@@ -56,16 +61,21 @@ fun FloatingTopBar(
     onBack: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     scrollOffset: Int = 0,
+    enableMorph: Boolean = false,
     containerAlpha: Float = 1f,
     titleAlignment: Alignment.Horizontal = Alignment.Start,
     actions: @Composable RowScope.() -> Unit = {},
+    bottomContent: @Composable ColumnScope.(Float) -> Unit = {},
     colors: FloatingTopBarColors = rememberDefaultFloatingTopBarColors()
 ) {
     val haptic = LocalHapticFeedback.current
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     
-    val focusFactor by remember(scrollOffset) {
-        derivedStateOf { (scrollOffset.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f) }
+    val focusFactor by remember(scrollOffset, enableMorph) {
+        derivedStateOf { 
+            if (!enableMorph) 0f 
+            else (scrollOffset.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f) 
+        }
     }
 
     val morphingParams by remember(focusFactor, statusBarHeight) {
@@ -88,10 +98,10 @@ fun FloatingTopBar(
 
     var hasSnapped by remember { mutableStateOf(false) }
     LaunchedEffect(focusFactor) {
-        if (focusFactor >= 1f && !hasSnapped) {
+        if (focusFactor >= 1f && !hasSnapped && scrollOffset > 10) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             hasSnapped = true
-        } else if (focusFactor < 0.9f) {
+        } else if (focusFactor < 0.5f) {
             hasSnapped = false
         }
     }
@@ -115,7 +125,7 @@ fun FloatingTopBar(
                 .fillMaxWidth()
                 .padding(horizontal = morphingParams.sidePadding)
                 .padding(top = morphingParams.containerTopPadding)
-                .height(morphingParams.internalTopPadding + morphingParams.headerHeight + 32.dp)
+                .height(morphingParams.internalTopPadding + morphingParams.headerHeight + 32.dp) 
                 .background(
                     Brush.verticalGradient(
                         0.0f to refractiveColor.copy(alpha = 0.95f * focusFactor),
@@ -183,87 +193,91 @@ fun FloatingTopBar(
                         }
                     }
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = morphingParams.internalTopPadding)
-                        .padding(horizontal = 16.dp, vertical = morphingParams.internalVerticalPadding)
-                        .height(morphingParams.headerHeight),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    if (onBack != null) {
-                        IconButton(
-                            onClick = { 
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onBack() 
-                            }, 
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = morphingParams.internalTopPadding)
+                            .padding(horizontal = 16.dp, vertical = morphingParams.internalVerticalPadding)
+                            .height(morphingParams.headerHeight),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (onBack != null) {
+                            IconButton(
+                                onClick = { 
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onBack() 
+                                }, 
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .graphicsLayer { 
+                                        scaleX = morphingParams.iconScale
+                                        scaleY = morphingParams.iconScale
+                                        translationX = -morphingParams.horizontalShift.toPx()
+                                    }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+                        }
+
+                        Column(
                             modifier = Modifier
-                                .size(44.dp)
+                                .weight(1f)
+                                .padding(vertical = 2.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = titleAlignment
+                        ) {
+                            Text(
+                                text = title,
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 19.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = if (titleAlignment == Alignment.CenterHorizontally) TextAlign.Center else TextAlign.Start,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            if (!subtitle.isNullOrBlank() && morphingParams.subtitleAlpha > 0.01f) {
+                                PurrfectMarqueeText(
+                                    text = subtitle,
+                                    color = PurrfectPalette.textSecondary.copy(alpha = morphingParams.subtitleAlpha),
+                                    style = TextStyle(fontSize = 13.sp),
+                                    textAlign = if (titleAlignment == Alignment.CenterHorizontally) TextAlign.Center else TextAlign.Start,
+                                    contentAlignment = if (titleAlignment == Alignment.CenterHorizontally) Alignment.Center else Alignment.CenterStart,
+                                    enabled = true,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .graphicsLayer { 
+                                            translationY = morphingParams.subtitleTranslationY.toPx()
+                                            alpha = morphingParams.subtitleAlpha
+                                        }
+                                )
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .wrapContentWidth()
                                 .graphicsLayer { 
                                     scaleX = morphingParams.iconScale
                                     scaleY = morphingParams.iconScale
-                                    translationX = -morphingParams.horizontalShift.toPx()
-                                }
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                        }
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(vertical = 2.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = titleAlignment
-                    ) {
-                        Text(
-                            text = title,
-                            color = Color.White,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 19.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = if (titleAlignment == Alignment.CenterHorizontally) TextAlign.Center else TextAlign.Start,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        if (!subtitle.isNullOrBlank() && morphingParams.subtitleAlpha > 0.01f) {
-                            PurrfectMarqueeText(
-                                text = subtitle,
-                                color = PurrfectPalette.textSecondary.copy(alpha = morphingParams.subtitleAlpha),
-                                style = TextStyle(fontSize = 13.sp),
-                                textAlign = if (titleAlignment == Alignment.CenterHorizontally) TextAlign.Center else TextAlign.Start,
-                                contentAlignment = if (titleAlignment == Alignment.CenterHorizontally) Alignment.Center else Alignment.CenterStart,
-                                enabled = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .graphicsLayer { 
-                                        translationY = morphingParams.subtitleTranslationY.toPx()
-                                        alpha = morphingParams.subtitleAlpha
+                                    if (onBack != null) {
+                                        translationX = morphingParams.horizontalShift.toPx()
                                     }
-                            )
+                                },
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            actions()
                         }
                     }
-
-                    Row(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .graphicsLayer { 
-                                scaleX = morphingParams.iconScale
-                                scaleY = morphingParams.iconScale
-                                if (onBack != null) {
-                                    translationX = morphingParams.horizontalShift.toPx()
-                                }
-                            },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        actions()
-                    }
+                    
+                    bottomContent(focusFactor)
                 }
             }
         }

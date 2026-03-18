@@ -49,7 +49,7 @@ class HomeAbout : Routes.Route() {
         }
 
         LaunchedEffect(Unit) {
-            context.shortToast(translation["about_magic_toast"])
+            context.shortToast(translation["about_magic_toast"] ?: "Tap 5 times in this screen to see some magic 😉!")
         }
 
         key(themeId) {

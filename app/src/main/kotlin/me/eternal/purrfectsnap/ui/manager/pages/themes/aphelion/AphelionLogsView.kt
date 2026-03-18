@@ -122,6 +122,7 @@ fun HomeLogs.AphelionLogsScreen(nav: NavBackStackEntry) {
             title = context.translation["manager.routes.home_logs"] ?: "Logs",
             onBack = { routes.navController.popBackStack() },
             scrollOffset = if (logListState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else logListState.firstVisibleItemScrollOffset,
+            enableMorph = true,
             modifier = Modifier.headerHeightTracker { controlsHeight = it },
             actions = {
                 if (isRefreshing) {

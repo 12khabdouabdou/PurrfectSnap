@@ -58,12 +58,14 @@ import me.eternal.purrfectsnap.ui.util.OnLifecycleEvent
 import me.eternal.purrfectsnap.ui.util.coil.cacheKey
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
 import me.eternal.purrfectsnap.ui.util.Motion
+import me.eternal.purrfectsnap.ui.util.headerHeightTracker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
     val scrollState = rememberLazyListState()
     val haptic = LocalHapticFeedback.current
+    var controlsHeight by remember { mutableStateOf(100.dp) }
 
     LaunchedEffect(scrollState.firstVisibleItemScrollOffset, scrollState.firstVisibleItemIndex) {
         val offset = if (scrollState.firstVisibleItemIndex > 0) Motion.HEADER_MORPH_THRESHOLD.toInt() else scrollState.firstVisibleItemScrollOffset
@@ -95,98 +97,39 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
             .fillMaxSize()
             .background(PurrfectPalette.backgroundGradient)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            val subtitle = if (activeTasks.isNotEmpty()) {
-                translation.format(
-                    "summary_active",
-                    "active" to activeTasks.size.toString(),
-                    "recent" to recentTasks.size.toString()
-                )
-            } else {
-                translation.format(
-                    "summary_idle",
-                    "recent" to recentTasks.size.toString()
-                )
-            }
-
-            me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
-                title = context.translation["manager.routes.tasks"] ?: "Tasks",
-                subtitle = subtitle,
-                scrollOffset = routes.navigation?.globalScrollOffset ?: 0,
-                actions = {
-                    Surface(
-                        shape = RoundedCornerShape(18.dp),
-                        color = Color.White.copy(alpha = 0.08f),
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(Icons.Filled.PlaylistAddCheckCircle, contentDescription = null, tint = Color.White)
-                            Text(
-                                text = translation.format("running_count", "count" to activeTasks.size.toString()),
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    if (taskSelection.size > 1 && taskSelection.all { it.second?.type?.contains("video") == true }) {     
-                        Surface(
-                            shape = RoundedCornerShape(50),
-                            color = Color.White.copy(alpha = 0.1f),
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .clickable {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    mergeSelection(
-                                        taskSelection.toList().also { taskSelection.clear() }
-                                            .map { it.first to it.second!! }
-                                    )
-                                }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Filled.Merge,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    translation["merge_button"] ?: "Merge",
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-                    IconButton(onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)     
-                        showConfirmDialog = true
-                    }) {
-                        Icon(Icons.Filled.DeleteSweep, contentDescription = translation["clear_button_description"], tint = Color.White)
-                    }
-                }
+        val subtitle = if (activeTasks.isNotEmpty()) {
+            translation.format(
+                "summary_active",
+                "active" to activeTasks.size.toString(),
+                "recent" to recentTasks.size.toString()
             )
+        } else {
+            translation.format(
+                "summary_idle",
+                "recent" to recentTasks.size.toString()
+            )
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
+        // The "Structured Glass" Container (1:1 with build 33a7e8f)
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp)
+                .padding(top = 12.dp),
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
+            color = Color.White.copy(alpha = 0.04f),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+        ) {
             LazyColumn(
                 state = scrollState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = 12.dp,
-                    end = 12.dp,
-                    top = 0.dp,
-                    bottom = routes.bottomPadding
+                    start = 10.dp,
+                    end = 10.dp,
+                    top = controlsHeight,
+                    bottom = routes.bottomPadding + 20.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
@@ -209,6 +152,69 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
                 }
             }
         }
+
+        me.eternal.purrfectsnap.ui.manager.components.FloatingTopBar(
+            title = context.translation["manager.routes.tasks"] ?: "Tasks",
+            subtitle = subtitle,
+            scrollOffset = routes.navigation?.globalScrollOffset ?: 0,
+            enableMorph = true,
+            modifier = Modifier.headerHeightTracker { controlsHeight = it },
+            actions = {
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = Color.White.copy(alpha = 0.08f),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.PlaylistAddCheckCircle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = activeTasks.size.toString(),
+                            color = Color.White,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                if (taskSelection.size > 1 && taskSelection.all { it.second?.type?.contains("video") == true }) {     
+                    Surface(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            mergeSelection(
+                                taskSelection.toList().also { taskSelection.clear() }
+                                    .map { it.first to it.second!! }
+                            )
+                        },
+                        shape = RoundedCornerShape(18.dp),
+                        color = PurrfectPalette.glowPrimary.copy(alpha = 0.2f),
+                        border = BorderStroke(1.dp, PurrfectPalette.glowPrimary.copy(alpha = 0.4f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(Icons.Filled.Merge, contentDescription = translation["merge_button"], tint = Color.White, modifier = Modifier.size(16.dp))
+                            Text(translation["merge_button"], color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        }
+                    }
+                }
+                IconButton(onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)     
+                    showConfirmDialog = true
+                }) {
+                    Icon(Icons.Filled.DeleteSweep, contentDescription = translation["clear_button_description"], tint = Color.White)
+                }
+            }
+        )
     }
 
     if (showConfirmDialog) {
@@ -222,11 +228,10 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
 
         TaskDangerDialog(
             visible = showConfirmDialog,
-            title = titleText ?: "",
-            message = messageText ?: "",
+            title = titleText,
+            message = messageText,
             showDeleteFiles = isSelection,
             deleteFilesChecked = alsoDeleteFiles,
-            tasksTranslation = translation,
             onToggleDeleteFiles = { alsoDeleteFiles = it },
             onConfirm = {
                 showConfirmDialog = false
@@ -291,11 +296,14 @@ internal fun TasksRootSection.AphelionTaskCard(modifier: Modifier, task: Task, p
 
     var documentFileMimeType by remember { mutableStateOf("") }
     var isDocumentFileReadable by remember { mutableStateOf(true) }
+    
+    val docVal = task.extra?.toUri()
     val documentFile by rememberAsyncMutableState(
         defaultValue = null as DocumentFile?,
-        keys = arrayOf(taskStatus.key)
+        keys = arrayOf(taskStatus.name)
     ) {
-        DocumentFile.fromSingleUri(context.androidContext, task.extra?.toUri() ?: return@rememberAsyncMutableState null)?.apply {
+        if (docVal == null) null
+        else DocumentFile.fromSingleUri(context.androidContext, docVal)?.apply {
             documentFileMimeType = type ?: ""
             isDocumentFileReadable = canRead()
         }
@@ -409,48 +417,32 @@ internal fun TasksRootSection.AphelionTaskCard(modifier: Modifier, task: Task, p
         Row(modifier = Modifier.background(PurrfectPalette.cardOverlay, cardShape).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.padding(end = 15.dp).size(50.dp).clipToBounds(), contentAlignment = Alignment.Center) {
                 var loadFailed by remember { mutableStateOf(false) }
-                documentFile?.let { doc ->
-                    if (taskStatus.isFinalStage() && isDocumentFileReadable && !loadFailed && (documentFileMimeType.contains("image") || documentFileMimeType.contains("video"))) {
-                        val imageRequest = ImageRequest.Builder(context.androidContext)
-                            .data(doc.uri)
-                            .cacheKey(doc.uri.toString())
-                            .placeholder(ColorDrawable(PurrfectPalette.cardOverlayColor.toArgb()))
-                            .build()
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                model = imageRequest,
-                                imageLoader = context.imageLoader,
-                                onState = { state ->
-                                    if (state is coil.compose.AsyncImagePainter.State.Error) loadFailed = true
-                                }
-                            ),
-                            contentDescription = null, 
-                            contentScale = ContentScale.FillWidth, 
-                            modifier = Modifier.size(50.dp).clip(MaterialTheme.shapes.medium)
-                        )
-                    } else {
-                        when {
-                            !isDocumentFileReadable -> Icon(Icons.Filled.DeleteOutline, contentDescription = null)
-                            documentFileMimeType.contains("image") -> Icon(Icons.Filled.Photo, contentDescription = null)
-                            documentFileMimeType.contains("video") -> Icon(Icons.Filled.Videocam, contentDescription = null)
-                            documentFileMimeType.contains("audio") -> Icon(Icons.Filled.MusicNote, contentDescription = null)
-                            else -> Icon(Icons.Filled.FileCopy, contentDescription = null)
-                        }
-                    }
-                } ?: run {
-                    when (task.type) {
-                        TaskType.DOWNLOAD -> Icon(Icons.Filled.Download, contentDescription = null)
-                        TaskType.CHAT_ACTION -> Icon(Icons.Filled.ChatBubble, contentDescription = null)
-                        TaskType.SCHEDULED_SEND -> {
-                            val active = !taskStatus.isFinalStage()
-                            val rotation = if (active) {
-                                val transition = rememberInfiniteTransition(label = "scheduled_send")
-                                transition.animateFloat(initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(tween(1200, easing = LinearEasing)), label = "rotation").value
-                            } else 0f
-                            Box(modifier = Modifier.size(50.dp).clip(CircleShape).background(if (active) Brush.linearGradient(listOf(PurrfectPalette.glowPrimary.copy(alpha = 0.25f), PurrfectPalette.glowSecondary.copy(alpha = 0.22f))) else SolidColor(Color.White.copy(alpha = 0.06f))), contentAlignment = Alignment.Center) {
-                                Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(28.dp).rotate(rotation), tint = if (active) PurrfectPalette.glowSecondary else PurrfectPalette.textSecondary)
+                val doc = documentFile
+                if (taskStatus.isFinalStage() && isDocumentFileReadable && !loadFailed && doc != null && (documentFileMimeType.contains("image") || documentFileMimeType.contains("video"))) {
+                    val imageRequest = ImageRequest.Builder(context.androidContext)
+                        .data(doc.uri)
+                        .cacheKey(doc.uri.toString())
+                        .placeholder(ColorDrawable(PurrfectPalette.cardOverlayColor.toArgb()))
+                        .build()
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            model = imageRequest,
+                            imageLoader = context.imageLoader,
+                            onState = { state ->
+                                if (state is coil.compose.AsyncImagePainter.State.Error) loadFailed = true
                             }
-                        }
+                        ),
+                        contentDescription = null, 
+                        contentScale = ContentScale.FillWidth, 
+                        modifier = Modifier.size(50.dp).clip(MaterialTheme.shapes.medium)
+                    )
+                } else {
+                    when {
+                        !isDocumentFileReadable -> Icon(Icons.Filled.DeleteOutline, contentDescription = null)
+                        documentFileMimeType.contains("image") -> Icon(Icons.Filled.Photo, contentDescription = null)
+                        documentFileMimeType.contains("video") -> Icon(Icons.Filled.Videocam, contentDescription = null)
+                        documentFileMimeType.contains("audio") -> Icon(Icons.Filled.MusicNote, contentDescription = null)
+                        else -> Icon(Icons.Filled.FileCopy, contentDescription = null)
                     }
                 }
             }

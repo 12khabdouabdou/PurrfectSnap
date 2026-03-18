@@ -336,6 +336,7 @@
                 "summary_active": "{active} active \u00b7 {recent} recent",
                 "summary_idle": "Idle \u00b7 {recent} recent",
                 "running_count": "{count} running",
+                "tasks_tagline": "Monitor and manage background actions",
                 "clear_button_description": "Clear tasks",
                 "failed_to_open_file": "Failed to open file",
                 "merge_files_toast": "Merging {count} files",
@@ -361,7 +362,7 @@
                 "search_button": "Search",
                 "search_results_count": "{count} messages",
                 "clear_history": "Clear search history",
-                "subtitle": "Search and manage features"
+                "subtitle": "Explore and manage premium features"
             },
             "bypass_status": {
                 "active": "PurrAura Active",
@@ -391,7 +392,7 @@
                 "friends_empty_title": "No friends added yet",
                 "groups_empty_title": "No groups synced yet",
                 "streaks_expiration_short": "{hours}h",
-                "social_tagline": "Manage scopes, streaks, and previews",
+                "social_tagline": "Manage friends, groups, and streaks",
                 "social_empty_hint": "Tap the + button to sync friends or groups.",
                 "messaging_preview": {
                     "bridge_connection_failed": "Failed to connect to bridge. Make sure Snapchat is running in the background",

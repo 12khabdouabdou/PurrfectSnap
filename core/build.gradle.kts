@@ -49,6 +49,8 @@ dependencies {
     implementation(libs.androidx.material.ripple)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.hiddenapibypass)
     implementation(libs.colorpicker.compose)
 }

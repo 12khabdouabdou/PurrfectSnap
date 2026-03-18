@@ -12,11 +12,9 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.documentfile.provider.DocumentFile
 import com.google.gson.GsonBuilder
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.job
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import me.eternal.purrfectsnap.RemoteSideContext
 import me.eternal.purrfectsnap.bridge.DownloadCallback
 import me.eternal.purrfectsnap.common.Constants
@@ -62,6 +60,10 @@ class DownloadProcessor (
     private val remoteSideContext: RemoteSideContext,
     private val callback: DownloadCallback
 ) {
+    companion object {
+        private val downloadSemaphore = Semaphore(3)
+    }
+
     private data class GallerySaveResult(
         val uri: Uri,
         val alreadyDownloaded: Boolean = false
@@ -441,8 +443,7 @@ class DownloadProcessor (
         return File.createTempFile("media", ".tmp")
     }
 
-    private fun downloadInputMedias(pendingTask: PendingTask, downloadRequest: DownloadRequest) = runBlocking {
-        val jobs = mutableListOf<Job>()
+    private suspend fun downloadInputMedias(pendingTask: PendingTask, downloadRequest: DownloadRequest): Map<InputMedia, File> {
         val downloadedMedias = mutableMapOf<InputMedia, File>()
         var totalSize = 1L
         val inputMediaDownloadedBytes = mutableMapOf<InputMedia, Long>()
@@ -455,71 +456,72 @@ class DownloadProcessor (
             )
         }
 
-        downloadRequest.inputMedias.forEach { inputMedia ->
-            fun setProgress(progress: String) {
-                inputMediaProgress[inputMedia] = progress
-                updateDownloadProgress()
-            }
+        coroutineScope {
+            downloadRequest.inputMedias.forEach { inputMedia ->
+                fun setProgress(progress: String) {
+                    inputMediaProgress[inputMedia] = progress
+                    updateDownloadProgress()
+                }
 
-            fun handleInputStream(inputStream: InputStream, estimatedSize: Long = 0L) {
-                createMediaTempFile().apply {
-                    val decryptedInputStream = (inputMedia.encryption?.decryptInputStream(inputStream) ?: inputStream).buffered()
-                    val buffer = ByteArray(1024 * 1024 * 2) // 2MB
-                    var read: Int
-                    var totalRead = 0L
+                fun handleInputStream(inputStream: InputStream, estimatedSize: Long = 0L) {
+                    createMediaTempFile().apply {
+                        val decryptedInputStream = (inputMedia.encryption?.decryptInputStream(inputStream) ?: inputStream).buffered()
+                        val buffer = ByteArray(1024 * 1024 * 2) // 2MB
+                        var read: Int
+                        var totalRead = 0L
 
-                    outputStream().use { outputStream ->
-                        while (decryptedInputStream.read(buffer).also { read = it } != -1) {
-                            outputStream.write(buffer, 0, read)
-                            totalRead += read
-                            inputMediaDownloadedBytes[inputMedia] = totalRead
-                            setProgress("${totalRead / 1024}KB/${estimatedSize / 1024}KB")
-                        }
-                    }
-                }.also { downloadedMedias[inputMedia] = it }
-            }
-
-            launch {
-                when (inputMedia.type) {
-                    DownloadMediaType.PROTO_MEDIA -> {
-                        RemoteMediaResolver.downloadBoltMedia(Base64.UrlSafe.decode(inputMedia.content), decryptionCallback = { it }, resultCallback = { inputStream, length ->
-                            totalSize += length
-                            inputStream.use {
-                                handleInputStream(it, estimatedSize = length)
-                            }
-                        })
-                    }
-                    DownloadMediaType.REMOTE_MEDIA -> {
-                        with(URL(inputMedia.content).openConnection() as HttpURLConnection) {
-                            requestMethod = "GET"
-                            setRequestProperty("User-Agent", Constants.USER_AGENT)
-                            connect()
-                            totalSize += contentLength.toLong()
-                            inputStream.use {
-                                handleInputStream(it, estimatedSize = contentLength.toLong())
+                        outputStream().use { outputStream ->
+                            while (decryptedInputStream.read(buffer).also { read = it } != -1) {
+                                outputStream.write(buffer, 0, read)
+                                totalRead += read
+                                inputMediaDownloadedBytes[inputMedia] = totalRead
+                                setProgress("${totalRead / 1024}KB/${estimatedSize / 1024}KB")
                             }
                         }
-                    }
-                    DownloadMediaType.DIRECT_MEDIA -> {
-                        val decoded = Base64.UrlSafe.decode(inputMedia.content)
-                        totalSize += decoded.size.toLong()
-                        handleInputStream(decoded.inputStream(), estimatedSize = decoded.size.toLong())
-                    }
-                    else -> {
-                        File(inputMedia.content).inputStream().use {
-                            totalSize += it.available().toLong()
-                            handleInputStream(it, estimatedSize = it.available().toLong())
+                    }.also { downloadedMedias[inputMedia] = it }
+                }
+
+                launch {
+                    when (inputMedia.type) {
+                        DownloadMediaType.PROTO_MEDIA -> {
+                            RemoteMediaResolver.downloadBoltMedia(Base64.UrlSafe.decode(inputMedia.content), decryptionCallback = { it }, resultCallback = { inputStream, length ->
+                                totalSize += length
+                                inputStream.use {
+                                    handleInputStream(it, estimatedSize = length)
+                                }
+                            })
+                        }
+                        DownloadMediaType.REMOTE_MEDIA -> {
+                            with(URL(inputMedia.content).openConnection() as HttpURLConnection) {
+                                requestMethod = "GET"
+                                setRequestProperty("User-Agent", Constants.USER_AGENT)
+                                connect()
+                                totalSize += contentLength.toLong()
+                                inputStream.use {
+                                    handleInputStream(it, estimatedSize = contentLength.toLong())
+                                }
+                            }
+                        }
+                        DownloadMediaType.DIRECT_MEDIA -> {
+                            val decoded = Base64.UrlSafe.decode(inputMedia.content)
+                            totalSize += decoded.size.toLong()
+                            handleInputStream(decoded.inputStream(), estimatedSize = decoded.size.toLong())
+                        }
+                        else -> {
+                            File(inputMedia.content).inputStream().use {
+                                totalSize += it.available().toLong()
+                                handleInputStream(it, estimatedSize = it.available().toLong())
+                            }
                         }
                     }
                 }
-            }.also { jobs.add(it) }
+            }
         }
 
-        jobs.joinAll()
-        downloadedMedias
+        return downloadedMedias
     }
 
-    private suspend fun downloadRemoteMedia(pendingTask: PendingTask, metadata: DownloadMetadata, downloadedMedias: Map<InputMedia, DownloadedFile>, downloadRequest: DownloadRequest) {
+    private suspend fun downloadRemoteMedia(pendingTask: PendingTask, metadata: DownloadMetadata, downloadedMedias: Map<InputMedia, File>, downloadRequest: DownloadRequest) {
         downloadRequest.inputMedias.first().let { inputMedia ->
             val mediaType = inputMedia.type
             val media = downloadedMedias[inputMedia]!!
@@ -530,24 +532,24 @@ class DownloadProcessor (
                         val outputFile = File.createTempFile("voice_note", ".$format")
                         newFFMpegProcessor(pendingTask).execute(FFMpegProcessor.Request(
                             action = FFMpegProcessor.Action.CONVERSION,
-                            inputs = listOf(media.file.absolutePath),
+                            inputs = listOf(media.absolutePath),
                             output = outputFile
                         ))
-                        media.file.delete()
+                        media.delete()
                         saveMediaToGallery(pendingTask, outputFile, metadata)
                         outputFile.delete()
                         return
                     }
                 }
 
-                saveMediaToGallery(pendingTask, media.file, metadata)
-                media.file.delete()
+                saveMediaToGallery(pendingTask, media, metadata)
+                media.delete()
                 return
             }
 
             assert(mediaType == DownloadMediaType.REMOTE_MEDIA)
 
-            val playlistXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(media.file)
+            val playlistXml = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(media)
             val baseUrlNodeList = playlistXml.getElementsByTagName("BaseURL")
             for (i in 0 until baseUrlNodeList.length) {
                 val baseUrlNode = baseUrlNodeList.item(i)
@@ -557,7 +559,7 @@ class DownloadProcessor (
 
             val dashOptions = downloadRequest.dashOptions!!
 
-            val dashPlaylistFile = renameFromFileType(media.file, FileType.MPD)
+            val dashPlaylistFile = renameFromFileType(media, FileType.MPD)
             dashPlaylistFile.outputStream().use {
                 TransformerFactory.newInstance().newTransformer().transform(DOMSource(playlistXml), StreamResult(it))
             }
@@ -582,7 +584,7 @@ class DownloadProcessor (
 
             dashPlaylistFile.delete()
             outputFile.delete()
-            media.file.delete()
+            media.delete()
         }
     }
 
@@ -602,7 +604,7 @@ class DownloadProcessor (
                     // check if the media file has been deleted
                     if (task.type == TaskType.DOWNLOAD) {
                         val outputFile = runCatching {
-                            DocumentFile.fromTreeUri(remoteSideContext.androidContext, Uri.parse(task.extra))
+                            DocumentFile.fromSingleUri(remoteSideContext.androidContext, Uri.parse(task.extra))
                         }.getOrNull()
 
                         if (outputFile != null && !outputFile.exists()) {
@@ -617,113 +619,115 @@ class DownloadProcessor (
                 return@launch
             }
 
-            callbackOnProgress(translation["download_started_toast"])
-            remoteSideContext.log.debug("downloading media")
-            val pendingTask = remoteSideContext.taskManager.createPendingTask(
-                Task(
-                    type = TaskType.DOWNLOAD,
-                    title = downloadMetadata.downloadSource,
-                    author = downloadMetadata.mediaAuthor,
-                    hash = downloadMetadata.mediaIdentifier
-                )
-            ).apply {
-                status = TaskStatus.RUNNING
-                addListener(PendingTaskListener(onCancel = {
-                    coroutineContext.job.cancel()
-                }))
-                updateProgress("Downloading...")
-            }
-
-            runCatching {
-                if (downloadRequest.isAudioStream) {
-                    val streamUrl = downloadRequest.inputMedias.first().content
-                    val outputFile = File.createTempFile("audio_stream", ".mp3")
-
-                    callbackOnProgress("Downloading audio stream")
-                    pendingTask.updateProgress("Downloading audio stream")
-                    newFFMpegProcessor(pendingTask).execute(FFMpegProcessor.Request(
-                        action = FFMpegProcessor.Action.DOWNLOAD_AUDIO_STREAM,
-                        inputs = listOf(streamUrl),
-                        output = outputFile,
-                        audioStreamFormat = downloadRequest.audioStreamFormat
-                    ))
-                    saveMediaToGallery(pendingTask, outputFile, downloadMetadata)
-                    return@launch
+            downloadSemaphore.withPermit {
+                callbackOnProgress(translation["download_started_toast"])
+                remoteSideContext.log.debug("downloading media")
+                val pendingTask = remoteSideContext.taskManager.createPendingTask(
+                    Task(
+                        type = TaskType.DOWNLOAD,
+                        title = downloadMetadata.downloadSource,
+                        author = downloadMetadata.mediaAuthor,
+                        hash = downloadMetadata.mediaIdentifier
+                    )
+                ).apply {
+                    status = TaskStatus.RUNNING
+                    addListener(PendingTaskListener(onCancel = {
+                        coroutineContext.job.cancel()
+                    }))
+                    updateProgress("Downloading...")
                 }
 
-                //first download all input medias into cache
-                val downloadedMedias = downloadInputMedias(pendingTask, downloadRequest).map {
-                    it.key to DownloadedFile(it.value, FileType.fromFile(it.value))
-                }.toMap().toMutableMap()
-                remoteSideContext.log.verbose("downloaded ${downloadedMedias.size} medias")
+                runCatching {
+                    if (downloadRequest.isAudioStream) {
+                        val streamUrl = downloadRequest.inputMedias.first().content
+                        val outputFile = File.createTempFile("audio_stream", ".mp3")
 
-                var shouldMergeOverlay = downloadRequest.shouldMergeOverlay
+                        callbackOnProgress("Downloading audio stream")
+                        pendingTask.updateProgress("Downloading audio stream")
+                        newFFMpegProcessor(pendingTask).execute(FFMpegProcessor.Request(
+                            action = FFMpegProcessor.Action.DOWNLOAD_AUDIO_STREAM,
+                            inputs = listOf(streamUrl),
+                            output = outputFile,
+                            audioStreamFormat = downloadRequest.audioStreamFormat
+                        ))
+                        saveMediaToGallery(pendingTask, outputFile, downloadMetadata)
+                        return@launch
+                    }
 
-                //if there is a zip file, extract it and replace the downloaded media with the extracted ones
-                downloadedMedias.values.find { it.fileType == FileType.ZIP }?.let { zipFile ->
-                    val oldDownloadedMedias = downloadedMedias.toMap()
-                    downloadedMedias.clear()
+                    //first download all input medias into cache
+                    val downloadedMedias = downloadInputMedias(pendingTask, downloadRequest).map {
+                        it.key to it.value
+                    }.toMap().toMutableMap()
+                    remoteSideContext.log.verbose("downloaded ${downloadedMedias.size} medias")
 
-                    zipFile.file.inputStream().use { zipFileInputStream ->
-                        MediaDownloaderHelper.getSplitElements(zipFileInputStream) { type, inputStream ->
-                            createMediaTempFile().apply {
-                                outputStream().use {
-                                    inputStream.copyTo(it)
+                    var shouldMergeOverlay = downloadRequest.shouldMergeOverlay
+
+                    //if there is a zip file, extract it and replace the downloaded media with the extracted ones
+                    downloadedMedias.values.find { FileType.fromFile(it) == FileType.ZIP }?.let { zipFile ->
+                        val oldDownloadedMedias = downloadedMedias.toMap()
+                        downloadedMedias.clear()
+
+                        zipFile.inputStream().use { zipFileInputStream ->
+                            MediaDownloaderHelper.getSplitElements(zipFileInputStream) { type, inputStream ->
+                                createMediaTempFile().apply {
+                                    outputStream().use {
+                                        inputStream.copyTo(it)
+                                    }
+                                }.also {
+                                    downloadedMedias[InputMedia(
+                                        type = DownloadMediaType.LOCAL_MEDIA,
+                                        content = it.absolutePath,
+                                        isOverlay = type == SplitMediaAssetType.OVERLAY
+                                    )] = it
                                 }
-                            }.also {
-                                downloadedMedias[InputMedia(
-                                    type = DownloadMediaType.LOCAL_MEDIA,
-                                    content = it.absolutePath,
-                                    isOverlay = type == SplitMediaAssetType.OVERLAY
-                                )] = DownloadedFile(it, FileType.fromFile(it))
                             }
                         }
+
+                        oldDownloadedMedias.forEach { (_, value) ->
+                            value.delete()
+                        }
+
+                        shouldMergeOverlay = true
                     }
 
-                    oldDownloadedMedias.forEach { (_, value) ->
-                        value.file.delete()
+                    if (shouldMergeOverlay) {
+                        assert(downloadedMedias.size == 2)
+                        val media = downloadedMedias.entries.first { !it.key.isOverlay }.value
+                        val overlayMedia = downloadedMedias.entries.first { it.key.isOverlay }.value
+
+                        val renamedMedia = renameFromFileType(media, FileType.fromFile(media))
+                        val renamedOverlayMedia = renameFromFileType(overlayMedia, FileType.fromFile(overlayMedia))
+                        val mergedOverlay: File = File.createTempFile("merged", ".mp4")
+                        runCatching {
+                            callbackOnProgress(translation.format("processing_toast", "path" to media.nameWithoutExtension))
+
+                            newFFMpegProcessor(pendingTask).execute(FFMpegProcessor.Request(
+                                action = FFMpegProcessor.Action.MERGE_OVERLAY,
+                                inputs = listOf(renamedMedia.absolutePath),
+                                output = mergedOverlay,
+                                overlay = renamedOverlayMedia
+                            ))
+
+                            saveMediaToGallery(pendingTask, mergedOverlay, downloadMetadata)
+                        }.onFailure { exception ->
+                            if (coroutineContext.job.isCancelled) return@onFailure
+                            remoteSideContext.log.error("Failed to merge overlay", exception)
+                            callbackOnFailure(translation.format("failed_processing_toast", "error" to exception.toString()), exception.message)
+                            pendingTask.fail("Failed to merge overlay")
+                        }
+
+                        mergedOverlay.delete()
+                        renamedOverlayMedia.delete()
+                        renamedMedia.delete()
+                        return@launch
                     }
 
-                    shouldMergeOverlay = true
+                    downloadRemoteMedia(pendingTask, downloadMetadata, downloadedMedias, downloadRequest)
+                }.onFailure { exception ->
+                    pendingTask.fail("Failed to download media")
+                    remoteSideContext.log.error("Failed to download media", exception)
+                    callbackOnFailure(translation["failed_generic_toast"], exception.message)
                 }
-
-                if (shouldMergeOverlay) {
-                    assert(downloadedMedias.size == 2)
-                    val media = downloadedMedias.entries.first { !it.key.isOverlay }.value
-                    val overlayMedia = downloadedMedias.entries.first { it.key.isOverlay }.value
-
-                    val renamedMedia = renameFromFileType(media.file, media.fileType)
-                    val renamedOverlayMedia = renameFromFileType(overlayMedia.file, overlayMedia.fileType)
-                    val mergedOverlay: File = File.createTempFile("merged", ".mp4")
-                    runCatching {
-                        callbackOnProgress(translation.format("processing_toast", "path" to media.file.nameWithoutExtension))
-
-                        newFFMpegProcessor(pendingTask).execute(FFMpegProcessor.Request(
-                            action = FFMpegProcessor.Action.MERGE_OVERLAY,
-                            inputs = listOf(renamedMedia.absolutePath),
-                            output = mergedOverlay,
-                            overlay = renamedOverlayMedia
-                        ))
-
-                        saveMediaToGallery(pendingTask, mergedOverlay, downloadMetadata)
-                    }.onFailure { exception ->
-                        if (coroutineContext.job.isCancelled) return@onFailure
-                        remoteSideContext.log.error("Failed to merge overlay", exception)
-                        callbackOnFailure(translation.format("failed_processing_toast", "error" to exception.toString()), exception.message)
-                        pendingTask.fail("Failed to merge overlay")
-                    }
-
-                    mergedOverlay.delete()
-                    renamedOverlayMedia.delete()
-                    renamedMedia.delete()
-                    return@launch
-                }
-
-                downloadRemoteMedia(pendingTask, downloadMetadata, downloadedMedias, downloadRequest)
-            }.onFailure { exception ->
-                pendingTask.fail("Failed to download media")
-                remoteSideContext.log.error("Failed to download media", exception)
-                callbackOnFailure(translation["failed_generic_toast"], exception.message)
             }
         }
     }

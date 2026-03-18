@@ -462,6 +462,10 @@ fun HomeRootSection.AphelionHomeScreen(nav: NavBackStackEntry) {
     val scrollState = rememberScrollState()
     var showQuickActionsMenu by rememberSaveable { mutableStateOf(false) }
     var showChangelogDialog by rememberSaveable { mutableStateOf(false) }
+    var changelogText by rememberSaveable { mutableStateOf<String?>(null) }
+    var changelogLoading by remember { mutableStateOf(false) }
+    var changelogError by remember { mutableStateOf<String?>(null) }
+    var changelogVersion by remember { mutableStateOf<String?>(null) }
     var showAnnouncementsDialog by rememberSaveable { mutableStateOf(false) }
     var announcementsText by rememberSaveable { mutableStateOf<String?>(null) }
     var announcementsLoading by remember { mutableStateOf(false) }
@@ -483,6 +487,33 @@ fun HomeRootSection.AphelionHomeScreen(nav: NavBackStackEntry) {
             } else {
                 abiName?.let { arch -> latest.assetDownloads[arch] }?.let { url ->
                     UpdateDownloader.downloadAndInstall(context, url, url.substringAfterLast('/'), coroutineScope)
+                }
+            }
+        }
+    }
+
+    fun loadChangelog() {
+        val targetVersion = latestUpdate?.versionName ?: BuildConfig.VERSION_NAME
+        if (changelogVersion == targetVersion && changelogText != null) return
+        changelogLoading = true
+        changelogError = null
+        coroutineScope.launch(Dispatchers.IO) {
+            val url = if (updateChannel == "prerelease") changelogPrereleaseUrl else changelogStableUrl
+            runCatching {
+                OkHttpClient().newCall(Request.Builder().url(url).build()).execute().use { response ->
+                    val body = response.body?.string() ?: throw IllegalStateException("Empty body")
+                    extractChangelogForVersion(body, targetVersion).ifBlank { body.trim() }
+                }
+            }.onSuccess { text ->
+                withContext(Dispatchers.Main) { 
+                    changelogText = text
+                    changelogVersion = targetVersion
+                    changelogLoading = false 
+                }
+            }.onFailure { e ->
+                withContext(Dispatchers.Main) { 
+                    changelogError = e.message ?: "Failed to fetch"
+                    changelogLoading = false 
                 }
             }
         }
@@ -624,7 +655,7 @@ fun HomeRootSection.AphelionHomeScreen(nav: NavBackStackEntry) {
                 latestUpdate = latestUpdate,
                 downloadState = downloadState,
                 downloadProgress = downloadProgress,
-                onUpdateAction = { latestUpdate?.let { showChangelogDialog = true } },
+                onUpdateAction = { latestUpdate?.let { showChangelogDialog = true; loadChangelog() } },
                 channelLabel = channelLabel,
                 isPurrAuraActive = isPurrAuraActive,
                 onAboutClick = { routes.about.navigate() },
@@ -759,13 +790,19 @@ fun HomeRootSection.AphelionHomeScreen(nav: NavBackStackEntry) {
     if (showChangelogDialog) {
         AestheticDialog(
             onDismissRequest = { showChangelogDialog = false },
-            title = translation["changelog_dialog_title"] ?: "",
-            text = translation["changelog_dialog_empty"] ?: "",
-            icon = Icons.Filled.Info,
-            confirmButtonText = translation["changelog_dialog_update_button"] ?: "",
+            title = translation["changelog_dialog_title"] ?: "Changelog",
+            text = "", icon = Icons.Filled.Info,
+            confirmButtonText = translation["changelog_dialog_update_button"] ?: "Update",
             onConfirm = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); showChangelogDialog = false; handleUpdateAction() },
-            dismissButtonText = translation["changelog_dialog_cancel_button"] ?: "",
-            onDismiss = { showChangelogDialog = false }
+            dismissButtonText = translation["changelog_dialog_cancel_button"] ?: "Cancel",
+            onDismiss = { showChangelogDialog = false },
+            customContent = {
+                Column(modifier = Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (changelogLoading) CircularProgressIndicator(color = Color.White)
+                    else if (changelogError != null) Text(changelogError!!, color = Color.Red, fontSize = 14.sp)
+                    else Text(changelogText ?: translation["changelog_dialog_empty"] ?: "", color = PurrfectPalette.textPrimary, fontSize = 14.sp)
+                }
+            }
         )
     }
 
