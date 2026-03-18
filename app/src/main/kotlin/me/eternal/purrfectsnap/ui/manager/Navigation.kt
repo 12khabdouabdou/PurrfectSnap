@@ -104,6 +104,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import me.eternal.purrfectsnap.RemoteSideContext
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
+import me.eternal.purrfectsnap.ui.manager.theme.aphelion.ThemeRevealState
 import kotlin.math.round
 import kotlin.math.PI
 import kotlin.math.sin
@@ -122,6 +123,7 @@ class Navigation(
     private val translation by lazy { context.translation.getCategory("manager.navigation") }
     var openBottomBarCustomization by mutableStateOf(false)
     var globalScrollOffset by mutableIntStateOf(0)
+    val themeRevealState = ThemeRevealState()
 
     @Composable
     fun TopBar() {
