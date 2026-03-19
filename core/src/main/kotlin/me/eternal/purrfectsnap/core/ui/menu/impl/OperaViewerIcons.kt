@@ -64,6 +64,7 @@ class OperaViewerIcons : AbstractMenu() {
     private val inlineMarkButtonVisibleState = mutableStateOf(false)
     private var overlayRegistered = false
     private var hooksInitialized = false
+    private var hasSeenVisibleModernViewerContainer = false
     private val modernViewerHideToken = AtomicInteger(0)
     private val useModernViewerBehavior by lazy {
         isSnapchatVersionAtLeast(
@@ -163,7 +164,6 @@ class OperaViewerIcons : AbstractMenu() {
             val messageContext = viewerMessageContextState.value
             if (
                 !viewerVisibleState.value ||
-                !hasVisibleModernViewerContainer() ||
                 messageContext == null
             ) return@addCustomComposable
 
@@ -172,9 +172,12 @@ class OperaViewerIcons : AbstractMenu() {
                 while (viewerVisibleState.value && viewerMessageContextState.value == messageContext) {
                     delay(160)
                     if (hasVisibleModernViewerContainer()) {
+                        hasSeenVisibleModernViewerContainer = true
                         hiddenChecks = 0
                         continue
                     }
+
+                    if (!hasSeenVisibleModernViewerContainer) continue
 
                     hiddenChecks++
                     if (hiddenChecks >= 2) {
@@ -235,6 +238,7 @@ class OperaViewerIcons : AbstractMenu() {
         viewerMessageContextState.value = null
         inlineDownloadButtonVisibleState.value = false
         inlineMarkButtonVisibleState.value = false
+        hasSeenVisibleModernViewerContainer = false
     }
 
     private fun scheduleHideIfViewerActuallyClosed() {

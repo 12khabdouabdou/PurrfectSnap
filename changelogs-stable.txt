@@ -1,3 +1,18 @@
+## v1.4.5
+- New: Spoof Snap Score Locally(tq to RSR)
+- New: Video Recording Timer(tq to RSR)
+- New: Auto Skip(tq to RSR)
+- Fix: Processing failed to save snaps(tq to RSR)
+- Fix: Story counter & story source for newer versions of snapchat(tq to RSR)
+- Fix: Features page using Aphelion scroll even when Aphelion is not in use(tq to Kaladin)
+- Fix: Aphelion Task page not showing the thumbnails of the completed tasks(tq to Kaladin)
+- Fix: Tasks page not showing the merge button when Aphelion is not in use(tq to Kaladin)
+- Fix: Features and its sub pages scroll state is remembered infintely, causing the pages to load where they were exited even after the app is closed(tq to Kaladin)
+- New: Expanded Friend Mutation Observer to include the new layout when Aphelion is in use(tq to Kaladin)
+- New: Theme Transition Animation(tq to Kaladin)
+- Fix: Friend feed menu button overlapping for group chats
+- Fix: Duplicate opera download & mark snaps as seen buttons
+
 ## v1.4.1
 - New: Improved device spoofing, now you can create accounts & bypass login issue where login doesn't work(tq to RSR)
 - Fix: Story Counter/Story Source position(tq to AhmedRaza)

@@ -254,7 +254,7 @@ class HomeLogs : Routes.Route() {
                                         tint = PurrfectPalette.glowPrimary
                                     )
                                 },
-                                text = { Text(text = translation["export_button"] ?: "Export", color = Color.White) },
+                                text = { Text(text = translation["export_logs_button"] ?: "Export Logs", color = Color.White) },
                                 onClick = {
                                     onExport()
                                     showMenu = false
@@ -268,7 +268,7 @@ class HomeLogs : Routes.Route() {
                                         tint = Color(0xFFFF9CAB)
                                     )
                                 },
-                                text = { Text(text = translation["clear_button"] ?: "Clear", color = Color.White) },
+                                text = { Text(text = translation["clear_logs_button"] ?: "Clear Logs", color = Color.White) },
                                 onClick = {
                                     onClear()
                                     showMenu = false
