@@ -1,13 +1,16 @@
 package me.eternal.purrfectsnap.core.ui.menu.impl
 
+import android.graphics.Rect
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,10 +21,14 @@ import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -45,17 +52,19 @@ import me.eternal.purrfectsnap.core.util.ktx.getObjectField
 import me.eternal.purrfectsnap.core.util.isSnapchatVersionAtLeast
 import me.eternal.purrfectsnap.core.util.ktx.vibrateLongPress
 import me.eternal.purrfectsnap.mapper.impl.OperaPageViewControllerMapper
+import java.util.concurrent.atomic.AtomicInteger
 
 class OperaViewerIcons : AbstractMenu() {
     private val actionMenuIconSize by lazy { context.userInterface.dpToPx(32) }
     private val actionMenuIconMargin by lazy { context.userInterface.dpToPx(5) }
     private val actionMenuIconMarginTop by lazy { context.userInterface.dpToPx(10) }
-    private val injectedParentTag = randomTag()
     private val viewerVisibleState = mutableStateOf(false)
     private val viewerMessageContextState = mutableStateOf<OperaViewerMessageContext?>(null)
+    private val inlineDownloadButtonVisibleState = mutableStateOf(false)
     private val inlineMarkButtonVisibleState = mutableStateOf(false)
     private var overlayRegistered = false
     private var hooksInitialized = false
+    private val modernViewerHideToken = AtomicInteger(0)
     private val useModernViewerBehavior by lazy {
         isSnapchatVersionAtLeast(
             context.mappings.getSnapchatPackageInfo()?.versionName,
@@ -69,9 +78,10 @@ class OperaViewerIcons : AbstractMenu() {
         hooksInitialized = true
 
         registerOverlayFallback()
+        val mediaDownloader = context.feature(MediaDownloader::class)
 
         context.event.subscribe(OnSnapInteractionEvent::class) {
-            viewerMessageContextState.value = context.feature(MediaDownloader::class).resolveCurrentSnapMessageContext()
+            refreshViewerMessageContext(mediaDownloader)
         }
 
         context.mappings.useMapper(OperaPageViewControllerMapper::class) {
@@ -82,16 +92,64 @@ class OperaViewerIcons : AbstractMenu() {
                 ) { param ->
                     val viewState = param.thisObject<Any>().getObjectField(viewStateField.get()!!).toString()
                     val isVisible = viewState == "FULLY_DISPLAYED"
-                    viewerVisibleState.value = isVisible
 
                     if (!isVisible) {
-                        viewerMessageContextState.value = null
-                        inlineMarkButtonVisibleState.value = false
+                        scheduleHideIfViewerActuallyClosed()
                         return@hook
                     }
 
-                    viewerMessageContextState.value = context.feature(MediaDownloader::class).resolveCurrentSnapMessageContext()
+                    modernViewerHideToken.incrementAndGet()
+                    viewerVisibleState.value = true
+                    refreshViewerMessageContext(mediaDownloader)
                 }
+            }
+        }
+    }
+
+    private fun refreshViewerMessageContext(
+        mediaDownloader: MediaDownloader,
+        retryCount: Int = 4
+    ) {
+        context.coroutineScope.launch(Dispatchers.Main) {
+            repeat(retryCount) { attempt ->
+                mediaDownloader.resolveViewerMessageContextFromParamMap()?.let {
+                    viewerMessageContextState.value = it
+                    return@launch
+                }
+                if (attempt < retryCount - 1) {
+                    delay(120L * (attempt + 1))
+                }
+            }
+            viewerMessageContextState.value = null
+        }
+    }
+
+    @Composable
+    private fun OverlayActionButton(
+        icon: ImageVector,
+        onTap: () -> Unit,
+        onLongPress: (() -> Unit)? = null
+    ) {
+        Surface(
+            modifier = Modifier
+                .size(52.dp)
+                .pointerInput(onLongPress) {
+                    detectTapGestures(
+                        onTap = { onTap() },
+                        onLongPress = {
+                            onLongPress?.invoke()
+                        }
+                    )
+                },
+            shape = CircleShape,
+            color = Color.Black.copy(alpha = 0.55f)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    tint = Color.White,
+                    contentDescription = null
+                )
             }
         }
     }
@@ -101,13 +159,37 @@ class OperaViewerIcons : AbstractMenu() {
         overlayRegistered = true
 
         context.inAppOverlay.addCustomComposable {
+            val mediaDownloader = context.feature(MediaDownloader::class)
             val messageContext = viewerMessageContextState.value
             if (
-                !context.config.messaging.markSnapAsSeenButton.get() ||
                 !viewerVisibleState.value ||
-                inlineMarkButtonVisibleState.value ||
+                !hasVisibleModernViewerContainer() ||
                 messageContext == null
             ) return@addCustomComposable
+
+            LaunchedEffect(messageContext) {
+                var hiddenChecks = 0
+                while (viewerVisibleState.value && viewerMessageContextState.value == messageContext) {
+                    delay(160)
+                    if (hasVisibleModernViewerContainer()) {
+                        hiddenChecks = 0
+                        continue
+                    }
+
+                    hiddenChecks++
+                    if (hiddenChecks >= 2) {
+                        clearModernViewerState()
+                        break
+                    }
+                }
+            }
+
+            val showDownloadFallback = context.config.downloader.operaDownloadButton.get() &&
+                !inlineDownloadButtonVisibleState.value
+            val showMarkFallback = context.config.messaging.markSnapAsSeenButton.get() &&
+                !inlineMarkButtonVisibleState.value
+
+            if (!showDownloadFallback && !showMarkFallback) return@addCustomComposable
 
             Box(
                 modifier = Modifier
@@ -115,27 +197,81 @@ class OperaViewerIcons : AbstractMenu() {
                     .padding(end = 18.dp, bottom = 118.dp),
                 contentAlignment = Alignment.BottomEnd
             ) {
-                Surface(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clickable {
-                            context.coroutineScope.launch {
-                                markCurrentSnapAsSeen(parent = null)
-                            }
-                        },
-                    shape = CircleShape,
-                    color = Color.Black.copy(alpha = 0.55f)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.RemoveRedEye,
-                            tint = Color.White,
-                            contentDescription = null
+                    if (showDownloadFallback) {
+                        OverlayActionButton(
+                            icon = Icons.Outlined.Download,
+                            onTap = {
+                                mediaDownloader.downloadLastOperaMediaAsync(allowDuplicate = false)
+                            },
+                            onLongPress = {
+                                context.androidContext.vibrateLongPress()
+                                mediaDownloader.downloadLastOperaMediaAsync(allowDuplicate = true)
+                            }
+                        )
+                    }
+
+                    if (showMarkFallback) {
+                        OverlayActionButton(
+                            icon = Icons.Default.RemoveRedEye,
+                            onTap = {
+                                context.coroutineScope.launch {
+                                    markCurrentSnapAsSeen(parent = null)
+                                }
+                            }
                         )
                     }
                 }
             }
         }
+    }
+
+    private fun clearModernViewerState() {
+        modernViewerHideToken.incrementAndGet()
+        viewerVisibleState.value = false
+        viewerMessageContextState.value = null
+        inlineDownloadButtonVisibleState.value = false
+        inlineMarkButtonVisibleState.value = false
+    }
+
+    private fun scheduleHideIfViewerActuallyClosed() {
+        val token = modernViewerHideToken.incrementAndGet()
+        context.coroutineScope.launch(Dispatchers.Main) {
+            delay(240)
+            if (modernViewerHideToken.get() != token) return@launch
+            if (hasVisibleModernViewerContainer()) return@launch
+            clearModernViewerState()
+        }
+    }
+
+    private fun isActuallyVisible(view: View): Boolean {
+        val visibleRect = Rect()
+        return view.isShown &&
+            view.getGlobalVisibleRect(visibleRect) &&
+            visibleRect.height() > 0 &&
+            visibleRect.width() > 0
+    }
+
+    private fun hasVisibleOpenLayout(view: View): Boolean {
+        if (view.javaClass.hasNameSuffixInHierarchy("OpenLayout") && isActuallyVisible(view)) {
+            return true
+        }
+
+        val viewGroup = view as? ViewGroup ?: return false
+        for (index in 0 until viewGroup.childCount) {
+            if (hasVisibleOpenLayout(viewGroup.getChildAt(index))) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun hasVisibleModernViewerContainer(): Boolean {
+        val contentView = context.mainActivity?.findViewById<ViewGroup>(android.R.id.content) ?: return false
+        return hasVisibleOpenLayout(contentView)
     }
 
     private fun Class<*>?.hasNameSuffixInHierarchy(suffix: String): Boolean {
@@ -152,20 +288,31 @@ class OperaViewerIcons : AbstractMenu() {
         if (!event.parent.javaClass.hasNameSuffixInHierarchy("OpenLayout")) return false
 
         val viewGroup = event.view as? ViewGroup ?: return false
-        if (viewGroup.getTag(injectedParentTag) != null) return false
 
         val hasOnlyImageChildren = viewGroup.childCount > 0 && viewGroup.children().all { it is ImageView }
-        val hasMaskFrameSibling = event.parent.children().any {
+        val hasMaskFrameSibling = (event.parent as? ViewGroup)?.children()?.any {
             it.javaClass.hasNameSuffixInHierarchy("ScalableCircleMaskFrameLayout")
-        }
+        } == true
 
         return hasOnlyImageChildren || hasMaskFrameSibling
     }
 
     private fun resolveCurrentMessageContext(mediaDownloader: MediaDownloader): OperaViewerMessageContext? {
-        return mediaDownloader.resolveCurrentSnapMessageContext()?.also {
+        return mediaDownloader.resolveViewerMessageContextFromParamMap()?.also {
             viewerMessageContextState.value = it
         }
+    }
+
+    private fun hasPreviewToolbar(parent: ViewGroup): Boolean {
+        return (parent.parent as? ViewGroup)?.children()?.any { child ->
+            child is ViewGroup && child.children().any { it::class.java.name.endsWith("PreviewToolbar") }
+        } == true
+    }
+
+    private fun syncInlineDownloadButtonVisibility(view: View, mediaDownloader: MediaDownloader, parent: ViewGroup) {
+        val isVisible = resolveCurrentMessageContext(mediaDownloader) != null && !hasPreviewToolbar(parent)
+        view.visibility = if (isVisible) View.VISIBLE else View.GONE
+        inlineDownloadButtonVisibleState.value = isVisible
     }
 
     private fun syncInlineMarkButtonVisibility(view: View, mediaDownloader: MediaDownloader) {
@@ -214,33 +361,23 @@ class OperaViewerIcons : AbstractMenu() {
     }
 
     override fun onViewAdded(event: AddViewEvent) {
-        if (!useModernViewerBehavior) {
-            if (event.view is FrameLayout && event.parent.javaClass.superclass?.name?.endsWith("OpenLayout") == true) {
-                val viewGroup = event.view as? ViewGroup ?: return
-                if (
-                    viewGroup.childCount == 0 ||
-                    viewGroup.children().any { it !is ImageView } ||
-                    event.parent.children().none { it.javaClass.name.endsWith("ScalableCircleMaskFrameLayout") }
-                ) return
-                inject(viewGroup)
+        if (useModernViewerBehavior) {
+            if (shouldInjectIntoViewer(event)) {
+                modernViewerHideToken.incrementAndGet()
+                viewerVisibleState.value = true
+                refreshViewerMessageContext(context.feature(MediaDownloader::class))
             }
             return
         }
-        if (!shouldInjectIntoViewer(event)) return
-        val viewGroup = event.view as? ViewGroup ?: return
-        viewGroup.setTag(injectedParentTag, true)
-        viewerVisibleState.value = true
-        viewGroup.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-            override fun onViewAttachedToWindow(v: View) {
-                viewerVisibleState.value = true
-            }
-
-            override fun onViewDetachedFromWindow(v: View) {
-                viewerVisibleState.value = false
-                inlineMarkButtonVisibleState.value = false
-            }
-        })
-        inject(viewGroup)
+        if (event.view is FrameLayout && event.parent.javaClass.superclass?.name?.endsWith("OpenLayout") == true) {
+            val viewGroup = event.view as? ViewGroup ?: return
+            if (
+                viewGroup.childCount == 0 ||
+                viewGroup.children().any { it !is ImageView } ||
+                event.parent.children().none { it.javaClass.name.endsWith("ScalableCircleMaskFrameLayout") }
+            ) return
+            inject(viewGroup)
+        }
     }
 
     private fun inject(parent: ViewGroup) {
@@ -259,16 +396,16 @@ class OperaViewerIcons : AbstractMenu() {
                 }
                 addOnAttachStateChangeListener(object: View.OnAttachStateChangeListener {
                     override fun onViewAttachedToWindow(v: View) {
-                        v.visibility = View.VISIBLE
-                        (parent.parent as? ViewGroup)?.children()?.forEach { child ->
-                            if (child !is ViewGroup) return@forEach
-                            child.children().forEach {
-                                if (it::class.java.name.endsWith("PreviewToolbar")) v.visibility = View.GONE
-                            }
+                        inlineDownloadButtonVisibleState.value = false
+                        this@OperaViewerIcons.context.coroutineScope.launch(Dispatchers.Main) {
+                            delay(250)
+                            syncInlineDownloadButtonVisibility(v, mediaDownloader, parent)
                         }
                     }
 
-                    override fun onViewDetachedFromWindow(v: View) {}
+                    override fun onViewDetachedFromWindow(v: View) {
+                        inlineDownloadButtonVisibleState.value = false
+                    }
                 })
 
                 addView(createComposeView(parent.context) {
