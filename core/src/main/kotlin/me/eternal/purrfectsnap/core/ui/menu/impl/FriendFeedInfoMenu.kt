@@ -547,6 +547,25 @@ class FriendFeedInfoMenu : AbstractMenu() {
             }
 
             (event.view as? ViewGroup)?.addView(actionSheetItemsContainerLayout, 0)
+            actionSheetItemsContainerLayout.post {
+                val parentViewGroup = actionSheetItemsContainerLayout.parent as? ViewGroup ?: return@post
+                val topOffset = parentViewGroup.children()
+                    .filter { it !== actionSheetItemsContainerLayout && it.visibility != View.GONE }
+                    .maxOfOrNull { child ->
+                        child.bottom.takeIf { it > 0 } ?: child.measuredHeight
+                    } ?: 0
+
+                val desiredPadding = topOffset + this@FriendFeedInfoMenu.context.userInterface.dpToPx(10)
+                if (actionSheetItemsContainerLayout.paddingTop != desiredPadding) {
+                    actionSheetItemsContainerLayout.setPadding(
+                        actionSheetItemsContainerLayout.paddingLeft,
+                        desiredPadding,
+                        actionSheetItemsContainerLayout.paddingRight,
+                        actionSheetItemsContainerLayout.paddingBottom
+                    )
+                    actionSheetItemsContainerLayout.requestLayout()
+                }
+            }
         }
 
         if (event.parent is LinearLayout && event.viewClassName.endsWith("SnapCardView") && hasAvatarHeader(event.parent)) {
