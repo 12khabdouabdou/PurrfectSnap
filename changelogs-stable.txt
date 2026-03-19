@@ -1,3 +1,7 @@
+## v1.4.6
+- Fix: Half Swipe Notifications for newer versions of snapchat
+- Fix: No Config import/export button if Aphelion theme is turned off
+
 ## v1.4.5
 - New: Spoof Snap Score Locally(tq to RSR)
 - New: Video Recording Timer(tq to RSR)

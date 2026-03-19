@@ -117,18 +117,29 @@ class ConversationManager(
             set("mServerConversationId",  conversationId.toSnapUUID().instanceNonNull())
             set("mServerMessageId", serverMessageId)
         }
+        val conversationUuid = conversationId.toSnapUUID().instanceNonNull()
 
-        fetchMessageByServerId.invoke(
-            instanceNonNull(),
-            serverMessageIdentifier,
-            CallbackBuilder(getCallbackClass("FetchMessageCallback"))
-                .override("onFetchMessageComplete") { param ->
-                    onSuccess(Message(param.arg(0)))
-                }
-                .override("onError") {
-                    onError(it.arg<Any>(0).toString())
-                }.build()
-        )
+        val callback = CallbackBuilder(getCallbackClass("FetchMessageCallback"))
+            .override("onFetchMessageComplete") { param ->
+                onSuccess(Message(param.arg(0)))
+            }
+            .override("onError") {
+                onError(it.arg<Any>(0).toString())
+            }.build()
+
+        val args = fetchMessageByServerId.parameterTypes.mapIndexed { index, parameterType ->
+            when {
+                parameterType.isInstance(serverMessageIdentifier) -> serverMessageIdentifier
+                parameterType.isInstance(callback) -> callback
+                parameterType.isInstance(conversationUuid) -> conversationUuid
+                parameterType == Boolean::class.javaPrimitiveType || parameterType == Boolean::class.javaObjectType -> false
+                else -> throw IllegalStateException(
+                    "Unsupported fetchMessageByServerId parameter at index $index: ${parameterType.name}"
+                )
+            }
+        }.toTypedArray()
+
+        fetchMessageByServerId.invoke(instanceNonNull(), *args)
     }
 
     fun fetchMessagesByServerIds(conversationId: String, serverMessageIds: List<Long>, onSuccess: (List<Message>) -> Unit, onError: (error: String) -> Unit) {

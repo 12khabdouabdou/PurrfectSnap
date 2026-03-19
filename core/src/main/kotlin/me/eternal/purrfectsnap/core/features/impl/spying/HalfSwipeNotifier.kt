@@ -6,17 +6,10 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import me.eternal.purrfectsnap.common.Constants
 import me.eternal.purrfectsnap.core.features.Feature
-import me.eternal.purrfectsnap.core.util.hook.HookStage
-import me.eternal.purrfectsnap.core.util.hook.hook
-import me.eternal.purrfectsnap.core.util.hook.hookConstructor
-import me.eternal.purrfectsnap.core.util.ktx.getObjectField
-import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration.Companion.milliseconds
 
 class HalfSwipeNotifier : Feature("Half Swipe Notifier") {
-    private val peekingConversations = ConcurrentHashMap<String, List<String>>()
-    private val startPeekingTimestamps = ConcurrentHashMap<String, Long>()
+    private val startPeekingTimestamps = java.util.concurrent.ConcurrentHashMap<String, Long>()
     private val halfSwipeListeners = mutableListOf<(String, String, Long) -> Unit>()
 
     private val notificationManager get() = context.androidContext.getSystemService(NotificationManager::class.java)
@@ -39,44 +32,11 @@ class HalfSwipeNotifier : Feature("Half Swipe Notifier") {
 
     override fun init() {
         if (context.config.messaging.halfSwipeNotifier.globalState != true) return
-        lateinit var presenceService: Any
-
-        findClass("com.snapchat.talkcorev3.PresenceService\$CppProxy").hookConstructor(HookStage.AFTER) {
-            presenceService = it.thisObject()
-        }
-
-        context.mappings.useMapper(CallbackMapper::class) {
-            callbacks.getClass("PresenceServiceDelegate")?.hook("notifyActiveConversationsChanged", HookStage.BEFORE) {
-                val activeConversations = presenceService::class.java.methods.find { it.name == "getActiveConversations" }?.invoke(presenceService) as? Map<*, *> ?: return@hook // conversationId, conversationInfo (this.mPeekingParticipants)
-
-                if (activeConversations.isEmpty()) {
-                    peekingConversations.forEach {
-                        val conversationId = it.key
-                        val peekingParticipantsIds = it.value
-                        peekingParticipantsIds.forEach { userId ->
-                            endPeeking(conversationId, userId)
-                        }
-                    }
-                    peekingConversations.clear()
-                    return@hook
-                }
-
-                activeConversations.forEach { (conversationId, conversationInfo) ->
-                    val peekingParticipantsIds = (conversationInfo?.getObjectField("mPeekingParticipants") as? List<*>)?.map { it.toString() } ?: return@forEach
-                    val cachedPeekingParticipantsIds = peekingConversations[conversationId] ?: emptyList()
-
-                    val newPeekingParticipantsIds = peekingParticipantsIds - cachedPeekingParticipantsIds.toSet()
-                    val exitedPeekingParticipantsIds = cachedPeekingParticipantsIds - peekingParticipantsIds.toSet()
-
-                    newPeekingParticipantsIds.forEach { userId ->
-                        startPeeking(conversationId.toString(), userId)
-                    }
-
-                    exitedPeekingParticipantsIds.forEach { userId ->
-                        endPeeking(conversationId.toString(), userId)
-                    }
-                    peekingConversations[conversationId.toString()] = peekingParticipantsIds
-                }
+        context.feature(FriendTracker::class).addOnPeekingStateChangedListener { conversationId, userId, peeking ->
+            if (peeking) {
+                startPeeking(conversationId, userId)
+            } else {
+                endPeeking(conversationId, userId)
             }
         }
     }

@@ -37,6 +37,11 @@ class FriendTracker : Feature("Friend Tracker") {
         ))
     } }
     private val conversationEntries = mutableMapOf<Pair<String, String>, Long>()
+    private val peekingStateListeners = mutableListOf<(String, String, Boolean) -> Unit>()
+
+    fun addOnPeekingStateChangedListener(listener: (conversationId: String, userId: String, peeking: Boolean) -> Unit) {
+        peekingStateListeners.add(listener)
+    }
 
     private fun getTrackedEvents(eventType: TrackerEventType): TrackerEventsResult? {
         return runCatching {
@@ -207,6 +212,12 @@ class FriendTracker : Feature("Friend Tracker") {
             else -> {}
         }
 
+        when (eventType) {
+            TrackerEventType.STARTED_PEEKING -> peekingStateListeners.forEach { it(conversationId, userId, true) }
+            TrackerEventType.STOPPED_PEEKING -> peekingStateListeners.forEach { it(conversationId, userId, false) }
+            else -> {}
+        }
+
         dispatchEvents(eventType, conversationId, userId)
     }
 
@@ -261,7 +272,8 @@ class FriendTracker : Feature("Friend Tracker") {
                 typing = stateMap[4],
                 wasTyping = stateMap[5],
                 speaking = stateMap[6] && stateMap[4],
-                peeking = stateMap[8]
+                // Snapchat appears to have shifted the peeking flag by one bit on newer builds.
+                peeking = stateMap.getOrElse(8) { false } || stateMap.getOrElse(9) { false }
             )
         }
 
@@ -385,7 +397,8 @@ class FriendTracker : Feature("Friend Tracker") {
 
     override fun init() {
         val sessionEventsConfig = context.config.friendTracker
-        if (sessionEventsConfig.globalState != true) return
+        val shouldProcessSessionEvents = sessionEventsConfig.globalState == true || peekingStateListeners.isNotEmpty()
+        if (!shouldProcessSessionEvents) return
 
         if (sessionEventsConfig.allowRunningInBackground.get()) {
             findClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").apply {
@@ -402,7 +415,7 @@ class FriendTracker : Feature("Friend Tracker") {
             }
         }
 
-        if (sessionEventsConfig.recordMessagingEvents.get()) {
+        if (sessionEventsConfig.recordMessagingEvents.get() || peekingStateListeners.isNotEmpty()) {
             val messageHandlerClass = findClass("com.snapchat.client.duplex.MessageHandler\$CppProxy").apply {
                 hook("onReceive", HookStage.BEFORE) { param ->
                     param.setResult(null)

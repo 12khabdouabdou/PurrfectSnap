@@ -1273,11 +1273,65 @@ class FeaturesRootSection : Routes.Route() {
                                     }
                                 }
 
-                                IconButton(onClick = { 
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    showSearchBar = !showSearchBar 
-                                }) {
-                                    Icon(imageVector = if (showSearchBar) Icons.Filled.Close else Icons.Filled.Search, contentDescription = null, tint = Color.White)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    IconButton(onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        showSearchBar = !showSearchBar
+                                    }) {
+                                        Icon(
+                                            imageVector = if (showSearchBar) Icons.Filled.Close else Icons.Filled.Search,
+                                            contentDescription = null,
+                                            tint = Color.White
+                                        )
+                                    }
+
+                                    if (context.activity != null) {
+                                        Box {
+                                            IconButton(onClick = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                showExportDropdownMenu = !showExportDropdownMenu
+                                            }) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.MoreVert,
+                                                    contentDescription = null,
+                                                    tint = Color.White
+                                                )
+                                            }
+                                            DropdownMenu(
+                                                expanded = showExportDropdownMenu,
+                                                onDismissRequest = { showExportDropdownMenu = false },
+                                                offset = DpOffset(0.dp, 8.dp),
+                                                containerColor = Color(0xFF161821),
+                                                shape = RoundedCornerShape(14.dp),
+                                                tonalElevation = 8.dp,
+                                                shadowElevation = 12.dp
+                                            ) {
+                                                actions.forEach { (name, icon, action) ->
+                                                    DropdownMenuItem(
+                                                        leadingIcon = {
+                                                            Icon(
+                                                                imageVector = icon,
+                                                                contentDescription = null,
+                                                                tint = PurrfectPalette.glowPrimary
+                                                            )
+                                                        },
+                                                        text = { Text(text = name ?: "", color = Color.White) },
+                                                        onClick = {
+                                                            action()()
+                                                            showExportDropdownMenu = false
+                                                        },
+                                                        colors = MenuDefaults.itemColors(
+                                                            textColor = Color.White,
+                                                            leadingIconColor = PurrfectPalette.glowPrimary
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
