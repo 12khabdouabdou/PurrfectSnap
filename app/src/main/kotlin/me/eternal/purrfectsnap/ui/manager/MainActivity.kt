@@ -214,13 +214,20 @@ class MainActivity : ComponentActivity() {
                             val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
                             navigation.NavContent(contentPadding, startDestination)
 
-                            // Theme Reveal Overlay
-                            navigation.themeRevealState.pendingReveal?.let { revealRequest ->
-                                CircularRevealOverlay(
-                                    context = managerContext,
-                                    request = revealRequest,
-                                    onComplete = { navigation.themeRevealState.clearReveal() }
-                                )
+                            // Theme Reveal Overlay (Android 13+ only for stability)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                navigation.themeRevealState.pendingReveal?.let { revealRequest ->
+                                    CircularRevealOverlay(
+                                        context = managerContext,
+                                        request = revealRequest,
+                                        onComplete = { navigation.themeRevealState.clearReveal() }
+                                    )
+                                }
+                            } else {
+                                // Instantly clear reveal state on older versions
+                                navigation.themeRevealState.pendingReveal?.let {
+                                    navigation.themeRevealState.clearReveal()
+                                }
                             }
 
                             Box(
