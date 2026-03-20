@@ -6,8 +6,13 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
+import android.media.audiofx.AcousticEchoCanceler
+import android.media.audiofx.NoiseSuppressor
 import android.os.ParcelFileDescriptor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.core.ui.InAppOverlay
 import me.eternal.purrfectsnap.bridge.call.CallDownloadSession
@@ -26,12 +31,21 @@ class CallRecorder : Feature("Call Recorder") {
     private var wasInCall = false
     private var callDownloadSession: CallDownloadSession? = null
     private val streams = ConcurrentHashMap<Int, CallStreamWrapper>()
+    private val activeRemoteStreams = ConcurrentHashMap.newKeySet<Int>()
+    private var fallbackMicRecord: AudioRecord? = null
+    private var fallbackMicJob: Job? = null
+    private var fallbackMicStartupJob: Job? = null
+    private var pendingCallEndJob: Job? = null
+    private var lastRemoteActivityTimestamp = 0L
+    private var selfSideStreamOpened = false
 
     private val uiState get() = context.inAppOverlay.callRecorderState
     private val callRecorderConfig get() = context.config.downloader.callRecorder
 
     inner class CallStreamWrapper(
         private val audioFormat: AudioFormat,
+        private val sourceLabel: String = "unknown",
+        private val onStreamOpened: (() -> Unit)? = null,
         private val startTimestamp: Long = System.currentTimeMillis(),
     ) {
         private var stream: OutputStream? = null
@@ -49,6 +63,11 @@ class CallRecorder : Feature("Call Recorder") {
                             audioFormat.encoding
                         ) ?: return
                     )
+                    context.log.verbose(
+                        "Opened call stream source=$sourceLabel sampleRate=${audioFormat.sampleRate} channels=${audioFormat.channelCount} encoding=${audioFormat.encoding}",
+                        "CallRecorder"
+                    )
+                    onStreamOpened?.invoke()
                 }
             }
             runCatching { stream?.write(buffer) }
@@ -63,6 +82,9 @@ class CallRecorder : Feature("Call Recorder") {
     private fun finalizeSession() {
         val session = callDownloadSession ?: return
         context.log.verbose("Finalizing call recording session")
+        pendingCallEndJob?.cancel()
+        pendingCallEndJob = null
+        stopFallbackMicCapture("finalizeSession")
         runCatching { session.end() }
         callDownloadSession = null
         streams.values.forEach { it.close() }
@@ -80,12 +102,14 @@ class CallRecorder : Feature("Call Recorder") {
             }
             
             ensureSessionStarted()
+            scheduleFallbackMicCapture()
         }
     }
     
     private fun stopRecording() {
         if (uiState.isRecording) {
             uiState.isRecording = false
+            stopFallbackMicCapture("stopRecording")
             finalizeSession()
         }
     }
@@ -93,6 +117,11 @@ class CallRecorder : Feature("Call Recorder") {
     private fun onCallStarted(conversationId: String) {
         if (wasInCall) return
         wasInCall = true
+        activeRemoteStreams.clear()
+        lastRemoteActivityTimestamp = 0L
+        pendingCallEndJob?.cancel()
+        pendingCallEndJob = null
+        selfSideStreamOpened = false
         
         val author = (if (context.database.getConversationType(conversationId) == 1) {
             context.database.getFeedEntryByConversationId(conversationId)?.feedDisplayName
@@ -120,6 +149,11 @@ class CallRecorder : Feature("Call Recorder") {
     private fun onCallEnded() {
         context.log.verbose("onCallEnded cleanup. wasInCall=$wasInCall, showOverlay=${uiState.showOverlay}")
         wasInCall = false
+        activeRemoteStreams.clear()
+        lastRemoteActivityTimestamp = 0L
+        pendingCallEndJob?.cancel()
+        pendingCallEndJob = null
+        stopFallbackMicCapture("onCallEnded")
         finalizeSession()
         streams.clear()
         
@@ -178,12 +212,245 @@ class CallRecorder : Feature("Call Recorder") {
         }
     }
 
+    private fun markRemoteStreamActive(streamId: Int, reason: String) {
+        lastRemoteActivityTimestamp = System.currentTimeMillis()
+        pendingCallEndJob?.cancel()
+        pendingCallEndJob = null
+        if (activeRemoteStreams.add(streamId)) {
+            context.log.verbose("Remote stream active id=$streamId reason=$reason", "CallRecorder")
+        }
+    }
+
+    private fun markRemoteStreamInactive(streamId: Int, reason: String) {
+        if (activeRemoteStreams.remove(streamId)) {
+            context.log.verbose("Remote stream inactive id=$streamId reason=$reason", "CallRecorder")
+        }
+        scheduleCallEndCheck(reason)
+    }
+
+    private fun scheduleCallEndCheck(reason: String, delayMs: Long = 1500L) {
+        if (!wasInCall || lastRemoteActivityTimestamp == 0L || activeRemoteStreams.isNotEmpty()) return
+        pendingCallEndJob?.cancel()
+        pendingCallEndJob = context.coroutineScope.launch {
+            delay(delayMs)
+            if (!wasInCall) return@launch
+            if (activeRemoteStreams.isNotEmpty()) return@launch
+            val idleFor = System.currentTimeMillis() - lastRemoteActivityTimestamp
+            if (idleFor < delayMs) return@launch
+            context.log.verbose("Call end detected via remote inactivity reason=$reason idleFor=${idleFor}ms", "CallRecorder")
+            onCallEnded()
+        }
+    }
+
     private fun ensureSessionStarted() {
         if (callDownloadSession != null) return
         val conversationId = context.feature(Messaging::class).openedConversationUUID?.toString()
             ?: context.feature(Messaging::class).lastFocusedConversationId
             ?: "unknown"
         onCallStarted(conversationId)
+    }
+
+    private fun isCallContextActive(): Boolean {
+        return wasInCall || uiState.showOverlay || uiState.isRecording
+    }
+
+    private fun isDirectVoiceCaptureSource(audioSource: Int?): Boolean {
+        return audioSource == MediaRecorder.AudioSource.VOICE_COMMUNICATION ||
+            audioSource == MediaRecorder.AudioSource.VOICE_CALL ||
+            audioSource == MediaRecorder.AudioSource.VOICE_UPLINK
+    }
+
+    private fun isLikelyCallMicSource(audioSource: Int?): Boolean {
+        return audioSource == MediaRecorder.AudioSource.DEFAULT ||
+            audioSource == MediaRecorder.AudioSource.MIC ||
+            audioSource == MediaRecorder.AudioSource.VOICE_RECOGNITION ||
+            audioSource == MediaRecorder.AudioSource.UNPROCESSED ||
+            audioSource == MediaRecorder.AudioSource.VOICE_PERFORMANCE
+    }
+
+    private fun registerAudioRecordStream(audioRecord: AudioRecord, reason: String): CallStreamWrapper? {
+        val streamId = audioRecord.hashCode()
+        streams[streamId]?.let { return it }
+
+        val audioSource = runCatching { audioRecord.audioSource }.getOrNull()
+        val shouldCapture = isDirectVoiceCaptureSource(audioSource) ||
+            (isCallContextActive() && isLikelyCallMicSource(audioSource))
+        if (!shouldCapture) return null
+
+        val format = runCatching { audioRecord.format }.getOrNull() ?: return null
+        if (format.sampleRate <= 0 || format.channelCount <= 0) return null
+
+        return CallStreamWrapper(
+            audioFormat = format,
+            sourceLabel = "self-internal:$reason",
+            onStreamOpened = {
+                selfSideStreamOpened = true
+                if (audioRecord !== fallbackMicRecord) {
+                    stopFallbackMicCapture("internalSelfStreamOpened")
+                }
+            }
+        ).also {
+            streams[streamId] = it
+            context.log.verbose(
+                "Registered AudioRecord stream source=$audioSource reason=$reason sampleRate=${format.sampleRate} channels=${format.channelCount}",
+                "CallRecorder"
+            )
+            if (isDirectVoiceCaptureSource(audioSource) || isCallContextActive()) {
+                ensureSessionStarted()
+            }
+        }
+    }
+
+    private fun shouldCaptureSelfSide(): Boolean {
+        return callRecorderConfig.callRecorder.get() != "only_record_others"
+    }
+
+    private fun scheduleFallbackMicCapture() {
+        if (!shouldCaptureSelfSide() || selfSideStreamOpened || fallbackMicJob != null) return
+        fallbackMicStartupJob?.cancel()
+        fallbackMicStartupJob = context.coroutineScope.launch {
+            delay(1200)
+            if (!isActive || !uiState.isRecording || selfSideStreamOpened || fallbackMicJob != null) return@launch
+            startFallbackMicCapture()
+        }
+    }
+
+    private fun startFallbackMicCapture() {
+        if (!shouldCaptureSelfSide() || selfSideStreamOpened || fallbackMicJob != null || !uiState.isRecording) return
+
+        val sampleRate = 48_000
+        val channelMask = AudioFormat.CHANNEL_IN_MONO
+        val encoding = AudioFormat.ENCODING_PCM_16BIT
+        val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelMask, encoding)
+        if (minBufferSize <= 0) {
+            context.log.warn("Fallback mic capture unavailable: invalid min buffer size $minBufferSize", "CallRecorder")
+            return
+        }
+
+        val audioFormat = AudioFormat.Builder()
+            .setSampleRate(sampleRate)
+            .setChannelMask(channelMask)
+            .setEncoding(encoding)
+            .build()
+
+        val audioRecord = runCatching {
+            AudioRecord.Builder()
+                .setAudioSource(MediaRecorder.AudioSource.MIC)
+                .setAudioFormat(audioFormat)
+                .setBufferSizeInBytes(minBufferSize * 2)
+                .build()
+        }.getOrElse {
+            context.log.error("Failed to create fallback mic recorder", it)
+            return
+        }
+
+        if (audioRecord.state != AudioRecord.STATE_INITIALIZED) {
+            context.log.warn("Fallback mic recorder failed to initialize", "CallRecorder")
+            runCatching { audioRecord.release() }
+            return
+        }
+
+        fallbackMicRecord = audioRecord
+        context.log.verbose("Starting fallback mic capture", "CallRecorder")
+
+        fallbackMicJob = context.coroutineScope.launch(Dispatchers.IO) {
+            val buffer = ByteArray(minBufferSize.coerceAtLeast(2048))
+            val fallbackWrapper = CallStreamWrapper(
+                audioFormat = audioFormat,
+                sourceLabel = "self-fallback",
+                onStreamOpened = {
+                    selfSideStreamOpened = true
+                }
+            )
+            val echoCanceler = AcousticEchoCanceler.create(audioRecord.audioSessionId)?.apply {
+                enabled = true
+            }
+            val noiseSuppressor = NoiseSuppressor.create(audioRecord.audioSessionId)?.apply {
+                enabled = true
+            }
+
+            try {
+                audioRecord.startRecording()
+                while (isActive && uiState.isRecording && isCallContextActive() && fallbackMicRecord === audioRecord) {
+                    val bytesRead = runCatching {
+                        audioRecord.read(buffer, 0, buffer.size, AudioRecord.READ_BLOCKING)
+                    }.getOrElse {
+                        context.log.error("Fallback mic read failed", it)
+                        break
+                    }
+
+                    if (bytesRead > 0) {
+                        fallbackWrapper.write(buffer.copyOf(bytesRead))
+                    } else {
+                        delay(10)
+                    }
+                }
+            } catch (e: Exception) {
+                context.log.error("Fallback mic capture crashed", e)
+            } finally {
+                fallbackWrapper.close()
+                runCatching { audioRecord.stop() }
+                echoCanceler?.release()
+                noiseSuppressor?.release()
+                runCatching { audioRecord.release() }
+                if (fallbackMicRecord === audioRecord) {
+                    fallbackMicRecord = null
+                    fallbackMicJob = null
+                }
+                context.log.verbose("Stopped fallback mic capture", "CallRecorder")
+            }
+        }
+    }
+
+    private fun stopFallbackMicCapture(reason: String) {
+        fallbackMicStartupJob?.cancel()
+        fallbackMicStartupJob = null
+        if (fallbackMicJob != null || fallbackMicRecord != null) {
+            context.log.verbose("Stopping fallback mic capture reason=$reason", "CallRecorder")
+        }
+        fallbackMicJob?.cancel()
+        fallbackMicJob = null
+        fallbackMicRecord?.let { record ->
+            runCatching { record.stop() }
+            runCatching { record.release() }
+        }
+        fallbackMicRecord = null
+    }
+
+    private fun isVoiceCommunicationTrack(attributes: AudioAttributes?, streamType: Int?): Boolean {
+        return attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION ||
+            streamType == AudioManager.STREAM_VOICE_CALL ||
+            streamType == 6
+    }
+
+    private fun registerAudioTrackStream(audioTrack: AudioTrack, reason: String): CallStreamWrapper? {
+        val streamId = audioTrack.hashCode()
+        streams[streamId]?.let { return it }
+
+        val attributes = runCatching { audioTrack.audioAttributes }.getOrNull()
+        val streamType = runCatching { audioTrack.streamType }.getOrNull()
+        val isVoiceCommunication = isVoiceCommunicationTrack(attributes, streamType)
+        val shouldCapture = isVoiceCommunication ||
+            (isCallContextActive() && attributes?.usage == AudioAttributes.USAGE_UNKNOWN)
+        if (!shouldCapture) return null
+
+        val format = runCatching { audioTrack.format }.getOrNull() ?: return null
+        if (format.sampleRate <= 0 || format.channelCount <= 0) return null
+
+        return CallStreamWrapper(
+            audioFormat = format,
+            sourceLabel = "remote:$reason"
+        ).also {
+            streams[streamId] = it
+            markRemoteStreamActive(streamId, "register:$reason")
+            context.log.verbose(
+                "Registered AudioTrack stream streamType=$streamType usage=${attributes?.usage} reason=$reason sampleRate=${format.sampleRate} channels=${format.channelCount}",
+                "CallRecorder"
+            )
+            if (isVoiceCommunication || isCallContextActive()) {
+                ensureSessionStarted()
+            }
+        }
     }
 
     private fun clampCopyRange(offset: Int, requestedLength: Int, maxLength: Int): Pair<Int, Int>? {
@@ -209,6 +476,13 @@ class CallRecorder : Feature("Call Recorder") {
         }
     }
 
+    private fun copyFloatArrayToByteArray(data: FloatArray, offset: Int, sampleCount: Int): ByteArray? {
+        val (safeOffset, safeLength) = clampCopyRange(offset, sampleCount, data.size) ?: return null
+        return ByteArray(safeLength * Float.SIZE_BYTES).also {
+            ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().put(data, safeOffset, safeLength)
+        }
+    }
+
     override fun init() {
         if (callRecorderConfig.callRecorder.getNullable() == null) return
         
@@ -224,30 +498,16 @@ class CallRecorder : Feature("Call Recorder") {
         AudioRecord::class.java.apply {
             if (recorderConfig == "only_record_others") return@apply
             hookConstructor(HookStage.AFTER) { param ->
-                val attributes = runCatching { param.arg<AudioAttributes>(0) }.getOrNull()
-                val audioSource = runCatching { param.arg<Int>(0) }.getOrNull()
-                val isVoiceCommunication = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION ||
-                    audioSource == MediaRecorder.AudioSource.VOICE_COMMUNICATION
-                val shouldCapture = isVoiceCommunication ||
-                    (wasInCall && attributes?.usage == AudioAttributes.USAGE_UNKNOWN)
-
-                if (shouldCapture) {
-                    val format = AudioFormat.Builder()
-                        .setSampleRate(if (attributes != null) param.arg<AudioFormat>(1).sampleRate else param.arg(1))
-                        .setChannelMask(if (attributes != null) param.arg<AudioFormat>(1).channelMask else param.arg(2))
-                        .setEncoding(if (attributes != null) param.arg<AudioFormat>(1).encoding else param.arg(3))
-                        .build()
-                    streams[param.thisObject<Any>().hashCode()] = CallStreamWrapper(format)
-                    if (isVoiceCommunication) {
-                        ensureSessionStarted()
-                    }
-                }
+                registerAudioRecordStream(param.thisObject<AudioRecord>(), "constructor")
             }
 
             hook("read", HookStage.AFTER) { param ->
                 val result = param.getResult() as? Int ?: 0
                 if (result <= 0) return@hook
-                val wrapper = streams[param.thisObject<Any>().hashCode()] ?: return@hook
+                val audioRecord = param.thisObject<AudioRecord>()
+                val wrapper = streams[param.thisObject<Any>().hashCode()]
+                    ?: registerAudioRecordStream(audioRecord, "read")
+                    ?: return@hook
                 
                 val buffer = when (val data = param.arg<Any>(0)) {
                     is ByteBuffer -> copyAudioRecordByteBuffer(data, result) ?: return@hook
@@ -263,9 +523,17 @@ class CallRecorder : Feature("Call Recorder") {
                             ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data, safeOffset, safeLength)
                         }
                     }
+                    is FloatArray -> {
+                        val offset = param.argNullable<Int>(1) ?: 0
+                        copyFloatArrayToByteArray(data, offset, result) ?: return@hook
+                    }
                     else -> return@hook
                 }
                 wrapper.write(buffer)
+            }
+
+            hook("startRecording", HookStage.AFTER) {
+                registerAudioRecordStream(it.thisObject<AudioRecord>(), "startRecording")
             }
 
             hook("stop", HookStage.BEFORE) { checkStreamsAndCleanup() }
@@ -278,29 +546,15 @@ class CallRecorder : Feature("Call Recorder") {
         AudioTrack::class.java.apply {
             if (recorderConfig == "only_record_self") return@apply
             hookConstructor(HookStage.AFTER) { param ->
-                val attributes = runCatching { param.arg<AudioAttributes>(0) }.getOrNull()
-                val streamType = runCatching { param.arg<Int>(0) }.getOrNull()
-                val isVoiceCommunication = attributes?.usage == AudioAttributes.USAGE_VOICE_COMMUNICATION ||
-                    streamType == AudioManager.STREAM_VOICE_CALL ||
-                    streamType == 6
-                val shouldCapture = isVoiceCommunication ||
-                    (wasInCall && attributes?.usage == AudioAttributes.USAGE_UNKNOWN)
-
-                if (shouldCapture) {
-                    val format = AudioFormat.Builder()
-                        .setSampleRate(if (attributes != null) param.arg<AudioFormat>(1).sampleRate else param.arg(1))
-                        .setChannelMask(if (attributes != null) param.arg<AudioFormat>(1).channelMask else param.arg(2))
-                        .setEncoding(if (attributes != null) param.arg<AudioFormat>(1).encoding else param.arg(3))
-                        .build()
-                    streams[param.thisObject<Any>().hashCode()] = CallStreamWrapper(format)
-                    if (isVoiceCommunication) {
-                        ensureSessionStarted()
-                    }
-                }
+                registerAudioTrackStream(param.thisObject<AudioTrack>(), "constructor")
             }
 
             hook("write", HookStage.BEFORE) { param ->
-                val wrapper = streams[param.thisObject<Any>().hashCode()] ?: return@hook
+                val streamId = param.thisObject<Any>().hashCode()
+                markRemoteStreamActive(streamId, "write")
+                val wrapper = streams[streamId]
+                    ?: registerAudioTrackStream(param.thisObject<AudioTrack>(), "write")
+                    ?: return@hook
                 val data = param.arg<Any>(0)
 
                 val buffer = when (data) {
@@ -328,13 +582,34 @@ class CallRecorder : Feature("Call Recorder") {
                             ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(data, safeOffset, safeLength)
                         }
                     }
+                    is FloatArray -> {
+                        val offset = param.argNullable<Int>(1) ?: 0
+                        val requestedSize = param.argNullable<Int>(2) ?: data.size
+                        copyFloatArrayToByteArray(data, offset, requestedSize) ?: return@hook
+                    }
                     else -> return@hook
                 }
                 wrapper.write(buffer)
             }
 
-            hook("stop", HookStage.BEFORE) { checkStreamsAndCleanup() }
+            hook("play", HookStage.AFTER) {
+                val audioTrack = it.thisObject<AudioTrack>()
+                markRemoteStreamActive(audioTrack.hashCode(), "play")
+                registerAudioTrackStream(audioTrack, "play")
+            }
+
+            hook("stop", HookStage.AFTER) {
+                markRemoteStreamInactive(it.thisObject<Any>().hashCode(), "stop")
+                checkStreamsAndCleanup()
+            }
+            hook("pause", HookStage.AFTER) {
+                markRemoteStreamInactive(it.thisObject<Any>().hashCode(), "pause")
+            }
+            hook("flush", HookStage.AFTER) {
+                markRemoteStreamInactive(it.thisObject<Any>().hashCode(), "flush")
+            }
             hook("release", HookStage.BEFORE) { 
+                markRemoteStreamInactive(it.thisObject<Any>().hashCode(), "release")
                 streams.remove(it.thisObject<Any>().hashCode())?.close()
                 checkStreamsAndCleanup()
             }

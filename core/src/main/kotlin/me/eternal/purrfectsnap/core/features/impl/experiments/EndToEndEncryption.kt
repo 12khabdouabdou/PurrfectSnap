@@ -8,13 +8,20 @@ import android.graphics.drawable.shapes.Shape
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.data.MessageState
@@ -29,9 +36,10 @@ import me.eternal.purrfectsnap.common.util.protobuf.ProtoWriter
 import me.eternal.purrfectsnap.core.event.events.impl.*
 import me.eternal.purrfectsnap.core.features.MessagingRuleFeature
 import me.eternal.purrfectsnap.core.features.impl.ui.ConversationToolbox
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.ui.addForegroundDrawable
-import me.eternal.purrfectsnap.core.ui.findParent
 import me.eternal.purrfectsnap.core.ui.removeForegroundDrawable
 import me.eternal.purrfectsnap.core.util.EvictingMap
 import me.eternal.purrfectsnap.core.util.hook.HookStage
@@ -185,6 +193,16 @@ class EndToEndEncryption : MessagingRuleFeature(
         }
     }
 
+    private fun resolveKeyActionContainer(startView: View): ViewGroup? {
+        val ancestors = generateSequence(startView) { current ->
+            current.parent as? View
+        }.filterIsInstance<ViewGroup>().toList()
+
+        return ancestors.firstOrNull { candidate ->
+            candidate is LinearLayout && candidate.orientation == LinearLayout.VERTICAL
+        } ?: ancestors.firstOrNull()
+    }
+
     @SuppressLint("SetTextI18n", "DiscouragedApi")
     override fun init() {
         if (!isEnabled) return
@@ -264,9 +282,7 @@ class EndToEndEncryption : MessagingRuleFeature(
 
             context.event.subscribe(BindViewEvent::class) { event ->
                 event.chatMessage { conversationId, messageId ->
-                    val viewGroup = event.view.findParent(maxIteration = 3) {
-                        it is LinearLayout
-                    } as? ViewGroup ?: event.view.parent as? ViewGroup ?: return@chatMessage
+                    val viewGroup = resolveKeyActionContainer(event.view) ?: return@chatMessage
 
                     viewGroup.findViewWithTag<View>(specialCard)?.also {
                         viewGroup.removeView(it)
@@ -289,27 +305,45 @@ class EndToEndEncryption : MessagingRuleFeature(
                     val publicKey = pkRequests[messageId.toLong()]
 
                     if (publicKey != null || secret != null) {
-                        viewGroup.addView(createComposeView(context.mainActivity!!) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                onClick = {
-                                    if (publicKey != null) {
-                                        handlePublicKeyRequest(conversationId, publicKey)
-                                    }
-                                    if (secret != null) {
-                                        handleSecretResponse(conversationId, secret)
-                                    }
-                                }
-                            ) {
+                        createComposeView(viewGroup.context) {
+                            PurrfectOverlayTheme {
+                                val actionShape = RoundedCornerShape(22.dp)
+                                val borderBrush = Brush.linearGradient(
+                                    listOf(
+                                        PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.70f),
+                                        PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.55f),
+                                    )
+                                )
+
                                 Box(
-                                    modifier = Modifier.fillMaxWidth().padding(5.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp, bottom = 6.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    if (publicKey != null) {
-                                        Text(translation["accept_public_key_button"])
-                                    }
-                                    if (secret != null) {
-                                        Text(translation["accept_secret_button"])
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(actionShape)
+                                            .background(PurrfectOverlayPalette.cardOverlay, actionShape)
+                                            .border(1.15.dp, borderBrush, actionShape)
+                                            .padding(horizontal = 18.dp, vertical = 11.dp)
+                                    ) {
+                                        if (publicKey != null) {
+                                            Text(
+                                                text = translation["accept_public_key_button"],
+                                                color = PurrfectOverlayPalette.textPrimary,
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                        if (secret != null) {
+                                            Text(
+                                                text = translation["accept_secret_button"],
+                                                color = PurrfectOverlayPalette.textPrimary,
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -319,7 +353,16 @@ class EndToEndEncryption : MessagingRuleFeature(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.WRAP_CONTENT,
                             )
-                        })
+                            setOnClickListener {
+                                if (publicKey != null) {
+                                    handlePublicKeyRequest(conversationId, publicKey)
+                                }
+                                if (secret != null) {
+                                    handleSecretResponse(conversationId, secret)
+                                }
+                            }
+                            viewGroup.addView(this)
+                        }
                     }
                 }
             }

@@ -1,3 +1,8 @@
+## v1.4.8
+- Fix: Crash Issues for some devices
+- Fix: Both side call recording for newer versions of snapchat
+- Fix: Missing Accept Key button for E2E Encryption for newer versions of snapchat
+
 ## v1.4.6
 - Fix: Half Swipe Notifications for newer versions of snapchat
 - Fix: No Config import/export button if Aphelion theme is turned off
