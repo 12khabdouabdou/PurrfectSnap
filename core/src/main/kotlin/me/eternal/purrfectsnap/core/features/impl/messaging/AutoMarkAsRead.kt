@@ -1,18 +1,31 @@
 package me.eternal.purrfectsnap.core.features.impl.messaging
 
-import android.widget.ProgressBar
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.eternal.purrfectsnap.common.ui.createComposeAlertDialog
 import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.data.MessageUpdate
 import me.eternal.purrfectsnap.core.event.events.impl.OnSnapInteractionEvent
 import me.eternal.purrfectsnap.core.event.events.impl.SendMessageWithContentEvent
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.features.impl.spying.StealthMode
+import me.eternal.purrfectsnap.core.ui.PurrfectGlassCard
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.util.CallbackBuilder
 import me.eternal.purrfectsnap.core.util.hook.HookStage
@@ -61,20 +74,41 @@ class AutoMarkAsRead : Feature("Auto Mark As Read") {
         }
 
         var job: Job? = null
-        val dialog = ViewAppearanceHelper.newAlertDialogBuilder(context.mainActivity)
-            .setTitle("Processing...")
-            .setView(ProgressBar(context.mainActivity).apply {
-                setPadding(10, 10, 10, 10)
-            })
-            .setOnDismissListener { job?.cancel() }
-            .show()
+        val processedCount = mutableIntStateOf(0)
+        val dialog = createComposeAlertDialog(context.mainActivity!!, builder = {
+            setOnDismissListener { job?.cancel() }
+        }) {
+            PurrfectOverlayTheme {
+                PurrfectGlassCard(
+                    modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+                    title = "Marking Snaps as Seen",
+                    subtitle = "Updating read state for queued snaps",
+                    icon = Icons.Default.Visibility
+                ) {
+                    Column(
+                        modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(
+                            color = PurrfectOverlayPalette.glowSecondary,
+                            trackColor = PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.18f)
+                        )
+                        Text(
+                            text = "${processedCount.intValue}/${messageIds.size}",
+                            color = PurrfectOverlayPalette.textSecondary
+                        )
+                    }
+                }
+            }
+        }.apply { show() }
 
         context.coroutineScope.launch(Dispatchers.IO) {
-            messageIds.forEach { messageId ->
+            messageIds.forEachIndexed { index, messageId ->
                 markSnapAsSeen(conversationId, messageId)
                 delay(Random.nextLong(20, 60))
                 context.runOnUiThread {
-                    dialog.setTitle("Processing... (${messageIds.indexOf(messageId) + 1}/${messageIds.size})")
+                    processedCount.intValue = index + 1
                 }
             }
         }.also { job = it }.invokeOnCompletion {

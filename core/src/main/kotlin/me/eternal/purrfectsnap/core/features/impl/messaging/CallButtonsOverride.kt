@@ -3,8 +3,28 @@ package me.eternal.purrfectsnap.core.features.impl.messaging
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import me.eternal.purrfectsnap.common.ui.createComposeAlertDialog
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
+import me.eternal.purrfectsnap.core.ui.PurrfectGlassCard
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.ui.children
 import me.eternal.purrfectsnap.core.ui.hideViewCompletely
@@ -16,12 +36,46 @@ class CallButtonsOverride : Feature("CallButtonsOverride") {
     private fun hookTouchEvent(param: HookAdapter, motionEvent: MotionEvent, onConfirm: () -> Unit) {
         if (motionEvent.action != MotionEvent.ACTION_UP) return
         param.setResult(true)
-        ViewAppearanceHelper.newAlertDialogBuilder(context.mainActivity)
-            .setTitle(context.translation["call_start_confirmation.dialog_title"])
-            .setMessage(context.translation["call_start_confirmation.dialog_message"])
-            .setPositiveButton(context.translation["button.positive"]) { _, _ -> onConfirm() }
-            .setNeutralButton(context.translation["button.negative"]) { _, _ -> }
-            .show()
+        createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+            PurrfectOverlayTheme {
+                PurrfectGlassCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = context.translation["call_start_confirmation.dialog_title"],
+                    subtitle = context.translation["call_start_confirmation.dialog_message"],
+                    icon = Icons.Default.Call
+                ) {
+                    val actionShape = RoundedCornerShape(16.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp, androidx.compose.ui.Alignment.CenterHorizontally)
+                    ) {
+                        Button(
+                            modifier = Modifier.width(120.dp),
+                            onClick = { alertDialog.dismiss() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White.copy(alpha = 0.08f),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(context.translation["button.negative"])
+                        }
+                        Button(
+                            modifier = Modifier.width(120.dp),
+                            onClick = {
+                                alertDialog.dismiss()
+                                onConfirm()
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.26f),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text(context.translation["button.positive"])
+                        }
+                    }
+                }
+            }
+        }.show()
     }
 
     override fun init() {

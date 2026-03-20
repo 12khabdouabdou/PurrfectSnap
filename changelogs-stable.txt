@@ -1,3 +1,7 @@
+## v1.4.9
+- Fix: Force AMOLED Theme for newer versions of Snapchat
+- New: Redesign some dialogs(Call confirmation & Mark Snaps as seen)
+
 ## v1.4.8
 - Fix: Crash Issues for some devices
 - Fix: Crash when using the theme button in android 11 & 12(tq to Kaladin) 
