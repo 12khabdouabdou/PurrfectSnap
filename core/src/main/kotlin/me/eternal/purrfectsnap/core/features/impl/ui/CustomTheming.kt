@@ -1,10 +1,13 @@
 package me.eternal.purrfectsnap.core.features.impl.ui
 
 import android.content.res.TypedArray
+import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
+import android.view.View
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
+import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.core.util.ktx.getObjectField
 
 class CustomTheming : Feature("Custom Theming") {
@@ -50,37 +53,80 @@ class CustomTheming : Feature("Custom Theming") {
         ).any { it in name }
     }
 
+    private fun patchTypedArray(result: TypedArray, attrIds: IntArray?) {
+        val requestedAttrs = attrIds?.takeIf { it.isNotEmpty() } ?: return
+        val typedArrayData = runCatching { result.getObjectField("mData") as IntArray }.getOrNull() ?: return
+        val stride = (typedArrayData.size / requestedAttrs.size).takeIf { it >= 2 } ?: return
+
+        requestedAttrs.forEachIndexed { index, attrId ->
+            val offset = index * stride
+            if (offset + 1 >= typedArrayData.size) return@forEachIndexed
+
+            val type = typedArrayData[offset]
+            if (type !in colorTypes) return@forEachIndexed
+
+            val originalColor = runCatching { result.getColor(index, Int.MIN_VALUE) }.getOrNull()
+                ?.takeIf { it != Int.MIN_VALUE }
+                ?: return@forEachIndexed
+
+            val attrName = runCatching { context.androidContext.resources.getResourceEntryName(attrId) }.getOrNull()
+            val shouldPatch = attrId in patchedAttrIds || shouldPatch(attrId, attrName, originalColor)
+            if (!shouldPatch) return@forEachIndexed
+
+            typedArrayData[offset + 1] = amoledBlack
+            if (patchedAttrIds.add(attrId)) {
+                context.log.verbose(
+                    "[AMOLED PATCH] Patched attrId 0x${attrId.toString(16)} (${attrName ?: "unknown"}) from 0x${originalColor.toUInt().toString(16)} to AMOLED black"
+                )
+            }
+        }
+    }
+
+    private fun patchProgrammaticColor(color: Int): Int {
+        return if (isNearBlackOpaque(color) && color != amoledBlack) amoledBlack else color
+    }
+
     override fun init() {
         if (!context.config.userInterface.forceAmoledTheme.get()) return
 
         onNextActivityCreate {
             context.androidContext.theme.javaClass
-                .getMethod("obtainStyledAttributes", IntArray::class.java)
-                .hook(HookStage.AFTER) { param ->
-                    val array = param.arg<IntArray>(0)
-                    val attrId = array[0]
-                    val result = param.getResult() as TypedArray
-                    val type = result.getType(0)
-                    if (type !in colorTypes) return@hook
-
-                    val originalColor = runCatching { result.getColor(0, Int.MIN_VALUE) }.getOrNull()
-                        ?.takeIf { it != Int.MIN_VALUE }
-                        ?: return@hook
-
-                    val attrName = runCatching { context.androidContext.resources.getResourceEntryName(attrId) }.getOrNull()
-                    val shouldPatch = attrId in patchedAttrIds || shouldPatch(attrId, attrName, originalColor)
-                    if (!shouldPatch) return@hook
-
-                    val typedArrayData = runCatching { result.getObjectField("mData") as IntArray }.getOrNull() ?: return@hook
-                    if (typedArrayData.size < 2) return@hook
-
-                    typedArrayData[1] = amoledBlack
-                    if (patchedAttrIds.add(attrId)) {
-                        context.log.verbose(
-                            "[AMOLED PATCH] Patched attrId 0x${attrId.toString(16)} (${attrName ?: "unknown"}) from 0x${originalColor.toUInt().toString(16)} to AMOLED black"
-                        )
-                    }
+                .hook("obtainStyledAttributes", HookStage.AFTER) { param ->
+                    val requestedAttrs = param.args().firstOrNull { it is IntArray } as? IntArray
+                    val result = param.getResult() as? TypedArray ?: return@hook
+                    patchTypedArray(result, requestedAttrs)
                 }
+
+            context.androidContext.javaClass
+                .hook("obtainStyledAttributes", HookStage.AFTER) { param ->
+                    val requestedAttrs = param.args().firstOrNull { it is IntArray } as? IntArray
+                    val result = param.getResult() as? TypedArray ?: return@hook
+                    patchTypedArray(result, requestedAttrs)
+                }
+
+            View::class.java.hook("setBackgroundColor", HookStage.BEFORE) { param ->
+                val color = param.argNullable<Int>(0) ?: return@hook
+                val patched = patchProgrammaticColor(color)
+                if (patched != color) {
+                    param.setArg(0, patched)
+                }
+            }
+
+            ColorDrawable::class.java.hookConstructor(HookStage.BEFORE) { param ->
+                val color = param.argNullable<Int>(0) ?: return@hookConstructor
+                val patched = patchProgrammaticColor(color)
+                if (patched != color) {
+                    param.setArg(0, patched)
+                }
+            }
+
+            ColorDrawable::class.java.hook("setColor", HookStage.BEFORE) { param ->
+                val color = param.argNullable<Int>(0) ?: return@hook
+                val patched = patchProgrammaticColor(color)
+                if (patched != color) {
+                    param.setArg(0, patched)
+                }
+            }
         }
     }
 }
