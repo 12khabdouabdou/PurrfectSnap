@@ -1,5 +1,6 @@
 ## v1.4.8
 - Fix: Crash Issues for some devices
+- Fix: Crash when using the theme button in android 11 & 12(tq to Kaladin) 
 - Fix: Both side call recording for newer versions of snapchat
 - Fix: Missing Accept Key button for E2E Encryption for newer versions of snapchat
 
