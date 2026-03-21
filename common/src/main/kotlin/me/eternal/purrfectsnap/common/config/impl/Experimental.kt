@@ -51,6 +51,7 @@ class Experimental : ConfigContainer() {
     class E2EEConfig : ConfigContainer(hasGlobalState = true) {
         val encryptedMessageIndicator = boolean("encrypted_message_indicator")
         val forceMessageEncryption = boolean("force_message_encryption")
+        val hideConversationToolboxUi = boolean("hide_conversation_toolbox_ui")
     }
 
     class AccountSwitcherConfig : ConfigContainer(hasGlobalState = true) {

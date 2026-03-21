@@ -2190,6 +2190,10 @@
                             "force_message_encryption": {
                                 "name": "Force Message Encryption",
                                 "description": "Prevents sending encrypted messages to people who don't have E2E Encryption enabled only when multiple conversations are selected"
+                            },
+                            "hide_conversation_toolbox_ui": {
+                                "name": "Hide Conversation Toolbox UI",
+                                "description": "Hides the PurrfectSnap conversation toolbox button that appears in Snapchat when End-To-End Encryption is enabled"
                             }
                         }
                     },

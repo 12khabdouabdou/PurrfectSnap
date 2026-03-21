@@ -1,3 +1,7 @@
+## v1.5.0
+- Fix: Skip when marking as seen for newer versions of Snapchat
+- New: Hide Conversation Toolbox UI
+
 ## v1.4.9
 - Fix: Force AMOLED Theme for newer versions of Snapchat
 - New: Redesign some dialogs(Call confirmation & Mark Snaps as seen)

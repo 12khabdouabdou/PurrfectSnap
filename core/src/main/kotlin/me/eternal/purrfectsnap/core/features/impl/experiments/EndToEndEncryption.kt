@@ -249,30 +249,34 @@ class EndToEndEncryption : MessagingRuleFeature(
         }
 
         onNextActivityCreate(defer = true) {
-            context.feature(ConversationToolbox::class).addComposable(translation["confirmation_dialogs.title"], filter = {
-                context.database.getDMOtherParticipant(it) != null
-            }) { dialog, conversationId ->
-                val friendId = remember {
-                    context.database.getDMOtherParticipant(conversationId)
-                } ?: return@addComposable
-                val fingerprint = remember {
-                    runCatching {
-                        e2eeInterface.getSecretFingerprint(friendId)
-                    }.getOrNull()
-                }
-                if (fingerprint != null) {
-                    Text(translation.format("toolbox.shared_key_fingerprint", "fingerprint" to fingerprint))
-                } else {
-                    Text(translation["toolbox.no_shared_key"])
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                Button(onClick = {
-                    dialog.dismiss()
-                    warnKeyOverwrite(friendId) {
-                        askForKeys(conversationId)
+            val hideConversationToolboxUi by context.config.experimental.e2eEncryption.hideConversationToolboxUi
+
+            if (!hideConversationToolboxUi) {
+                context.feature(ConversationToolbox::class).addComposable(translation["confirmation_dialogs.title"], filter = {
+                    context.database.getDMOtherParticipant(it) != null
+                }) { dialog, conversationId ->
+                    val friendId = remember {
+                        context.database.getDMOtherParticipant(conversationId)
+                    } ?: return@addComposable
+                    val fingerprint = remember {
+                        runCatching {
+                            e2eeInterface.getSecretFingerprint(friendId)
+                        }.getOrNull()
                     }
-                }) {
-                    Text(translation["toolbox.initiate_exchange_button"])
+                    if (fingerprint != null) {
+                        Text(translation.format("toolbox.shared_key_fingerprint", "fingerprint" to fingerprint))
+                    } else {
+                        Text(translation["toolbox.no_shared_key"])
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(onClick = {
+                        dialog.dismiss()
+                        warnKeyOverwrite(friendId) {
+                            askForKeys(conversationId)
+                        }
+                    }) {
+                        Text(translation["toolbox.initiate_exchange_button"])
+                    }
                 }
             }
 
