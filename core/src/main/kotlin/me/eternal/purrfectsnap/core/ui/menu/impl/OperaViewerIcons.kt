@@ -45,6 +45,7 @@ import me.eternal.purrfectsnap.core.ui.iterateParent
 import me.eternal.purrfectsnap.core.ui.menu.AbstractMenu
 import me.eternal.purrfectsnap.core.ui.randomTag
 import me.eternal.purrfectsnap.core.ui.triggerCloseTouchEvent
+import me.eternal.purrfectsnap.core.ui.triggerCloseTouchEventAtFraction
 import me.eternal.purrfectsnap.core.util.SNAPCHAT_13_80_VERSION
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -259,23 +260,113 @@ class OperaViewerIcons : AbstractMenu() {
             visibleRect.width() > 0
     }
 
-    private fun hasVisibleOpenLayout(view: View): Boolean {
+    private fun findVisibleOpenLayout(view: View): View? {
         if (view.javaClass.hasNameSuffixInHierarchy("OpenLayout") && isActuallyVisible(view)) {
-            return true
+            return view
         }
 
-        val viewGroup = view as? ViewGroup ?: return false
+        val viewGroup = view as? ViewGroup ?: return null
         for (index in 0 until viewGroup.childCount) {
-            if (hasVisibleOpenLayout(viewGroup.getChildAt(index))) {
-                return true
-            }
+            findVisibleOpenLayout(viewGroup.getChildAt(index))?.let { return it }
         }
-        return false
+        return null
+    }
+
+    private fun findVisibleModernViewerContainer(): View? {
+        val contentView = context.mainActivity?.findViewById<ViewGroup>(android.R.id.content) ?: return null
+        return findVisibleOpenLayout(contentView)
     }
 
     private fun hasVisibleModernViewerContainer(): Boolean {
-        val contentView = context.mainActivity?.findViewById<ViewGroup>(android.R.id.content) ?: return false
-        return hasVisibleOpenLayout(contentView)
+        return findVisibleModernViewerContainer() != null
+    }
+
+    private fun currentViewerMessageContext(mediaDownloader: MediaDownloader): OperaViewerMessageContext? {
+        return mediaDownloader.resolveViewerMessageContextFromParamMap()?.also {
+            viewerMessageContextState.value = it
+        } ?: viewerMessageContextState.value
+    }
+
+    private fun hasViewerAdvanced(
+        mediaDownloader: MediaDownloader,
+        originalMessageContext: OperaViewerMessageContext
+    ): Boolean {
+        if (!hasVisibleModernViewerContainer()) {
+            return true
+        }
+
+        return currentViewerMessageContext(mediaDownloader)?.let { it != originalMessageContext } == true
+    }
+
+    private suspend fun waitForViewerAdvance(
+        mediaDownloader: MediaDownloader,
+        originalMessageContext: OperaViewerMessageContext,
+        timeoutMs: Long
+    ): Boolean {
+        var elapsedMs = 0L
+        while (elapsedMs < timeoutMs) {
+            delay(40)
+            elapsedMs += 40
+            if (hasViewerAdvanced(mediaDownloader, originalMessageContext)) {
+                return true
+            }
+        }
+
+        return hasViewerAdvanced(mediaDownloader, originalMessageContext)
+    }
+
+    private fun dispatchLegacySkipGesture(parent: ViewGroup?) {
+        if (parent != null) {
+            var touchedParent = false
+            parent.iterateParent {
+                touchedParent = true
+                it.triggerCloseTouchEvent()
+                false
+            }
+            if (touchedParent) return
+        }
+
+        context.mainActivity
+            ?.findViewById<View>(android.R.id.content)
+            ?.triggerCloseTouchEvent()
+    }
+
+    private fun dispatchForwardHotZoneTap(target: View?, xFraction: Float) {
+        target?.triggerCloseTouchEventAtFraction(xFraction = xFraction, yFraction = 0.5f)
+    }
+
+    private suspend fun skipMarkedSnap(
+        parent: ViewGroup?,
+        mediaDownloader: MediaDownloader,
+        originalMessageContext: OperaViewerMessageContext
+    ) {
+        val contentView = context.mainActivity?.findViewById<ViewGroup>(android.R.id.content)
+        val skipAttempts = listOf<suspend () -> Unit>(
+            {
+                dispatchLegacySkipGesture(parent)
+            },
+            {
+                dispatchForwardHotZoneTap(findVisibleModernViewerContainer() ?: contentView, 0.88f)
+            },
+            {
+                dispatchForwardHotZoneTap(contentView ?: findVisibleModernViewerContainer(), 0.88f)
+            },
+            {
+                val target = findVisibleModernViewerContainer() ?: contentView
+                dispatchForwardHotZoneTap(target, 0.88f)
+                delay(55)
+                if (!hasViewerAdvanced(mediaDownloader, originalMessageContext)) {
+                    dispatchForwardHotZoneTap(target, 0.94f)
+                }
+            }
+        )
+
+        for ((index, attempt) in skipAttempts.withIndex()) {
+            attempt()
+            if (waitForViewerAdvance(mediaDownloader, originalMessageContext, if (index == 0) 120L else 180L)) {
+                return
+            }
+        }
     }
 
     private fun Class<*>?.hasNameSuffixInHierarchy(suffix: String): Boolean {
@@ -326,7 +417,8 @@ class OperaViewerIcons : AbstractMenu() {
     }
 
     private suspend fun markCurrentSnapAsSeen(parent: ViewGroup?) {
-        val messageContext = resolveCurrentMessageContext(context.feature(MediaDownloader::class)) ?: return
+        val mediaDownloader = context.feature(MediaDownloader::class)
+        val messageContext = resolveCurrentMessageContext(mediaDownloader) ?: return
         val result = context.feature(AutoMarkAsRead::class).markSnapAsSeen(
             messageContext.conversationId,
             messageContext.clientMessageId
@@ -335,16 +427,7 @@ class OperaViewerIcons : AbstractMenu() {
         if (result == "DUPLICATEREQUEST" || result == null) {
             if (context.config.messaging.skipWhenMarkingAsSeen.get()) {
                 withContext(Dispatchers.Main) {
-                    if (parent != null) {
-                        parent.iterateParent {
-                            it.triggerCloseTouchEvent()
-                            false
-                        }
-                    } else {
-                        context.mainActivity
-                            ?.findViewById<View>(android.R.id.content)
-                            ?.triggerCloseTouchEvent()
-                    }
+                    skipMarkedSnap(parent, mediaDownloader, messageContext)
                 }
             }
         }

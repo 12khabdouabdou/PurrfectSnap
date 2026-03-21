@@ -47,16 +47,31 @@ fun View.addForegroundDrawable(tag: String, drawable: Drawable) {
     updateForegroundDrawable()
 }
 
-fun View.triggerCloseTouchEvent() {
-    arrayOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP).forEach {
-        this.dispatchTouchEvent(
-            MotionEvent.obtain(
-                SystemClock.uptimeMillis(),
-                SystemClock.uptimeMillis(),
-                it, 0f, 0f, 0
-            )
-        )
-    }
+fun View.dispatchSyntheticTap(x: Float, y: Float, tapDurationMs: Long = 50L) {
+    val downTime = SystemClock.uptimeMillis()
+    val downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0)
+    dispatchTouchEvent(downEvent)
+    downEvent.recycle()
+
+    val upEvent = MotionEvent.obtain(downTime, downTime + tapDurationMs, MotionEvent.ACTION_UP, x, y, 0)
+    dispatchTouchEvent(upEvent)
+    upEvent.recycle()
+}
+
+fun View.triggerCloseTouchEvent(x: Float = 0f, y: Float = 0f, tapDurationMs: Long = 50L) {
+    dispatchSyntheticTap(x, y, tapDurationMs)
+}
+
+fun View.triggerCloseTouchEventAtFraction(
+    xFraction: Float,
+    yFraction: Float = 0.5f,
+    tapDurationMs: Long = 50L
+) {
+    val targetWidth = width.takeIf { it > 0 } ?: measuredWidth
+    val targetHeight = height.takeIf { it > 0 } ?: measuredHeight
+    val x = if (targetWidth > 0) targetWidth * xFraction.coerceIn(0f, 1f) else 0f
+    val y = if (targetHeight > 0) targetHeight * yFraction.coerceIn(0f, 1f) else 0f
+    triggerCloseTouchEvent(x, y, tapDurationMs)
 }
 
 fun Activity.triggerRootCloseTouchEvent() {
