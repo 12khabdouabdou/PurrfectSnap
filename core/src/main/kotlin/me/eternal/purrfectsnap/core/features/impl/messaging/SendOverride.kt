@@ -2,6 +2,8 @@ package me.eternal.purrfectsnap.core.features.impl.messaging
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -48,6 +50,7 @@ import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -72,7 +75,22 @@ class SendOverride : Feature("Send Override") {
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
     private var backgroundHooks: List<Hooker.HookHandle>? = null
-    
+
+    private fun extractMediaDuration(uri: Uri): Long? {
+        val retriever = MediaMetadataRetriever()
+        return runCatching {
+            retriever.setDataSource(context.androidContext, uri)
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+        }.recoverCatching {
+            context.androidContext.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                retriever.setDataSource(pfd.fileDescriptor)
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            }
+        }.getOrNull().also {
+            runCatching { retriever.release() }
+        }
+    }
+
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
         var enableFailed = false
@@ -404,6 +422,7 @@ class SendOverride : Feature("Send Override") {
                     "SNAP", "SAVEABLE_SNAP" -> {
                         val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 2 else 1
                         postSavePolicy = savePolicyValue
+
                         val extras = targetReader.followPath(3, 3, 13)?.getBuffer()
 
                         if (targetMessageContent.contentType != ContentType.SNAP) {
@@ -618,27 +637,35 @@ class SendOverride : Feature("Send Override") {
                     context.log.verbose("SendOverride: Duration extracted from Metadata = $rawDurationMs ms (Metadata object was present: ${metadata != null})")
                 }
 
-                // NEW: Base64 Protobuf Extraction if Duration is 0
+                // NEW: Deep Regex extraction of physical URI from LocalMediaReference
                 if (rawDurationMs == 0L) {
-                    context.log.verbose("SendOverride: CRITICAL - Duration is still 0. Dumping raw payload for analysis:")
+                    context.log.verbose("SendOverride: Protobuf duration is 0. Attempting deep Regex URI extraction...")
                     runCatching {
-                        localMessageContent.content?.let { bytes ->
-                            val base64Str = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-                            context.log.verbose("PROTO_BASE64: $base64Str")
-                        }
-                        
                         val refs = localMessageContent.localMediaReferences
-                        refs?.forEachIndexed { index, ref ->
+                        refs?.forEach { ref ->
                             ref.javaClass.declaredFields.forEach { f ->
                                 f.isAccessible = true
                                 val v = f.get(ref)
-                                if (v is ByteArray) {
-                                    context.log.verbose("SendOverride: ref field ${f.name} as String = ${String(v)}")
+                                val strValue = when (v) {
+                                    is ByteArray -> String(v)
+                                    is String -> v
+                                    else -> null
+                                }
+                                if (strValue != null) {
+                                    // Extract content:// or file://, stopping at the first space, null byte, or query string (?)
+                                    val match = Regex("(content://[^\\s\\x00\\?]+|file://[^\\s\\x00\\?]+)").find(strValue)
+                                    if (match != null) {
+                                        val cleanUriString = match.value
+                                        context.log.verbose("SendOverride: Regex found hidden URI: $cleanUriString")
+                                        val d = extractMediaDuration(Uri.parse(cleanUriString))
+                                        context.log.verbose("SendOverride: Extracted physical duration = $d ms")
+                                        if (d != null && d > rawDurationMs) rawDurationMs = d
+                                    }
                                 }
                             }
                         }
-                    }.onFailure { 
-                        context.log.error("SendOverride: Failed to dump proto", it)
+                    }.onFailure {
+                        context.log.warn("SendOverride: Deep Regex extraction failed: ${it.message}")
                     }
                 }
 
