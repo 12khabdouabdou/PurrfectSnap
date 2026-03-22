@@ -2,6 +2,8 @@ package me.eternal.purrfectsnap.core.features.impl.messaging
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -48,6 +50,7 @@ import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -72,7 +75,22 @@ class SendOverride : Feature("Send Override") {
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
     private var backgroundHooks: List<Hooker.HookHandle>? = null
-    
+
+    private fun extractMediaDuration(uri: Uri): Long? {
+        val retriever = MediaMetadataRetriever()
+        return runCatching {
+            retriever.setDataSource(context.androidContext, uri)
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+        }.recoverCatching {
+            context.androidContext.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                retriever.setDataSource(pfd.fileDescriptor)
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            }
+        }.getOrNull().also {
+            runCatching { retriever.release() }
+        }
+    }
+
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
         var enableFailed = false
@@ -161,7 +179,6 @@ class SendOverride : Feature("Send Override") {
         if (configOverrideType == null && stripMediaMetadata.isEmpty()) return
 
         context.event.subscribe(MediaUploadEvent::class) { event ->
-            // Handle audio notes separately since they don't have path 11, 5
             if (stripMediaMetadata.isNotEmpty() && 
                 (event.localMessageContent.contentType == ContentType.NOTE || 
                  stripMediaMetadata.contains("remove_audio_note_duration") || 
@@ -170,7 +187,6 @@ class SendOverride : Feature("Send Override") {
                     if (result.messageContent.contentType == ContentType.NOTE) {
                         val contentReader = ProtoReader(result.messageContent.content!!)
                         result.messageContent.content = ProtoEditor(result.messageContent.content!!).apply {
-                            // Check which path structure exists - try both to be safe
                             val hasFullPath = contentReader.followPath(4, 4, 6, 1, 1) != null
                             val hasDirectPath = contentReader.followPath(6, 1, 1) != null
                             
@@ -214,7 +230,6 @@ class SendOverride : Feature("Send Override") {
                                 }
                             }
 
-                            // set back the original snap duration
                             snapDocPlayback.getByteArray(2)?.let {
                                 val originalHasSound = firstOrNull(2)?.toReader()?.getVarInt(5)
                                 remove(2)
@@ -272,7 +287,6 @@ class SendOverride : Feature("Send Override") {
                 context.log.verbose("postSavePolicy=$savePolicy")
                 val protoReader = ProtoReader(event.buffer)
                 event.buffer = ProtoEditor(event.buffer).apply {
-                    // Handle chat messages (field 4)
                     if (protoReader.followPath(4) != null) {
                         edit(4) {
                             remove(7)
@@ -283,7 +297,6 @@ class SendOverride : Feature("Send Override") {
                         }
                     }
                     
-                    // Handle NOTE messages (field 6) - audio notes
                     val noteAtRoot = protoReader.followPath(6) != null
                     val noteNested = protoReader.followPath(4, 4, 6) != null
                     
@@ -309,7 +322,6 @@ class SendOverride : Feature("Send Override") {
                         }
                     }
 
-                    // Handle SNAP messages (field 11)
                     val snapAtRoot = protoReader.followPath(11) != null
                     val snapNested = protoReader.followPath(4, 4, 11) != null
                     if (snapAtRoot || snapNested) {
@@ -333,14 +345,12 @@ class SendOverride : Feature("Send Override") {
             if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
             val localMessageContent = event.messageContent
             
-            // Allow both EXTERNAL_MEDIA (gallery) and SNAP (camera)
             if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
                 localMessageContent.contentType != ContentType.SNAP &&
                 localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata") == null) return@subscribe
             val includeCameraSnaps = context.config.messaging.galleryMediaSendOverride.includeCameraSnaps.get()
             if (localMessageContent.contentType == ContentType.SNAP && !includeCameraSnaps) return@subscribe
 
-            //prevent story replies
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
             if (messageProtoReader.contains(7)) return@subscribe
 
@@ -412,7 +422,6 @@ class SendOverride : Feature("Send Override") {
                     "SNAP", "SAVEABLE_SNAP" -> {
                         val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 2 else 1
                         postSavePolicy = savePolicyValue
-
                         val extras = targetReader.followPath(3, 3, 13)?.getBuffer()
 
                         if (targetMessageContent.contentType != ContentType.SNAP) {
@@ -465,18 +474,18 @@ class SendOverride : Feature("Send Override") {
                         targetMessageContent.contentType = ContentType.NOTE
                         val stripMeta = context.config.messaging.stripMediaMetadata.get()
                         val omitTranscript = stripMeta.contains("remove_audio_note_transcript_capability")
-                        val rawDurationMs = targetReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
+                        val protoDurationMs = targetReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
                             ?: targetReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000)
                             ?: (context.feature(MediaFilePicker::class).lastMediaDuration ?: 0).toLong()
-                        val durationForProto = minOf(rawDurationMs, MessageSender.VOICE_NOTE_MAX_DURATION_MS)
+                        val durationForProto = minOf(protoDurationMs, MessageSender.VOICE_NOTE_MAX_DURATION_MS)
                         val audioNoteProto = MessageSender.audioNoteProto(
                             durationForProto,
                             if (omitTranscript) null else Locale.getDefault().toLanguageTag()
                         )
                         
                         targetMessageContent.content = if (shouldPreventSave) {
-                            val protoReader = ProtoReader(audioNoteProto)
-                            val hasNestedPath = protoReader.followPath(6, 1, 1) != null
+                            val audioReader = ProtoReader(audioNoteProto)
+                            val hasNestedPath = audioReader.followPath(6, 1, 1) != null
                             ProtoEditor(audioNoteProto).apply {
                                 if (hasNestedPath) {
                                     edit(6, 1, 1) { remove(7); addVarInt(7, 1) }
@@ -612,7 +621,6 @@ class SendOverride : Feature("Send Override") {
                 // VIRTUAL SPLIT LOGIC FOR LONG MEMORIES/GALLERY VIDEOS
                 // ==========================================
                 
-                // Aggressively hunt for the duration across all known Protobuf paths
                 var rawDurationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
                     ?: messageProtoReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000) 
                     ?: messageProtoReader.getVarInt(11, 5, 2, 8)?.toLong()?.times(1000) 
@@ -621,12 +629,50 @@ class SendOverride : Feature("Send Override") {
 
                 context.log.verbose("SendOverride: Duration extracted from Protobuf = $rawDurationMs ms")
 
-                // Fallback to local MessageContent metadata if proto duration is missing
                 if (rawDurationMs == 0L) {
                     val metadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
                     val metaDuration = metadata?.getObjectFieldOrNull("mDurationMs") as? Number
                     rawDurationMs = metaDuration?.toLong() ?: 0L
                     context.log.verbose("SendOverride: Duration extracted from Metadata = $rawDurationMs ms (Metadata object was present: ${metadata != null})")
+                }
+
+                // NEW: Aggressive LocalMediaReference Physical Duration Hunt
+                if (rawDurationMs == 0L) {
+                    context.log.verbose("SendOverride: Attempting aggressive LocalMediaReference extraction...")
+                    runCatching {
+                        val refs = localMessageContent.localMediaReferences
+                        context.log.verbose("SendOverride: localMediaReferences count = ${refs?.size}")
+                        refs?.forEachIndexed { index, ref ->
+                            ref.javaClass.declaredFields.forEach { f ->
+                                f.isAccessible = true
+                                val v = f.get(ref)
+                                if (v is Uri) {
+                                    val d = extractMediaDuration(v)
+                                    context.log.verbose("SendOverride: extracted duration from Uri (${f.name}) = $d")
+                                    if (d != null && d > rawDurationMs) rawDurationMs = d
+                                } else if (v is String && (v.startsWith("content://") || v.startsWith("file://") || v.startsWith("/"))) {
+                                    val parseUri = if (v.startsWith("/")) Uri.fromFile(File(v)) else Uri.parse(v)
+                                    val d = extractMediaDuration(parseUri)
+                                    context.log.verbose("SendOverride: extracted duration from String Uri (${f.name}) = $d")
+                                    if (d != null && d > rawDurationMs) rawDurationMs = d
+                                }
+                            }
+                        }
+                    }.onFailure {
+                        context.log.warn("SendOverride: Failed LocalMediaReference extraction: ${it.message}")
+                    }
+                }
+
+                // NEW: Extreme Reflection Dump (If it still fails, this shows us where Snapchat hid it)
+                if (rawDurationMs == 0L) {
+                    context.log.verbose("SendOverride: CRITICAL - Duration is still 0. Dumping MessageContent fields:")
+                    runCatching {
+                        localMessageContent.instanceNonNull().javaClass.declaredFields.forEach { f ->
+                            f.isAccessible = true
+                            val v = f.get(localMessageContent.instanceNonNull())
+                            context.log.verbose("SendOverride: localMessageContent.${f.name} = $v")
+                        }
+                    }
                 }
 
                 context.log.verbose("SendOverride: Final Evaluated Duration = $rawDurationMs ms")
@@ -732,7 +778,6 @@ class SendOverride : Feature("Send Override") {
                     return true
                 }
 
-                // Normal single send execution
                 return applyOverride(localMessageContent, messageProtoReader, overrideType, snapDurationMs)
             }
 
@@ -763,7 +808,9 @@ class SendOverride : Feature("Send Override") {
                 
                 createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
                     PurrfectOverlayTheme {
-                        val mainTranslation = remember { context.translation.getCategory("send_override_dialog") }
+                        val mainTranslation = remember {
+                            context.translation.getCategory("send_override_dialog")
+                        }
                         val dialogShape = RoundedCornerShape(24.dp)
                         val dialogSurfaceColor = Color(0xFF2A2452)
                         val border = remember {
@@ -955,7 +1002,7 @@ class SendOverride : Feature("Send Override") {
                                         }
                                     }
                                 }
-
+                                
                                 if (mediaCount <= 1 && localMessageContent.contentType == ContentType.EXTERNAL_MEDIA && selectedType == "SNAP") {
                                     Surface(
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
