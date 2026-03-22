@@ -2,8 +2,6 @@ package me.eternal.purrfectsnap.core.features.impl.messaging
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.media.MediaMetadataRetriever
-import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -50,7 +48,6 @@ import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -75,22 +72,7 @@ class SendOverride : Feature("Send Override") {
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
     private var backgroundHooks: List<Hooker.HookHandle>? = null
-
-    private fun extractMediaDuration(uri: Uri): Long? {
-        val retriever = MediaMetadataRetriever()
-        return runCatching {
-            retriever.setDataSource(context.androidContext, uri)
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-        }.recoverCatching {
-            context.androidContext.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                retriever.setDataSource(pfd.fileDescriptor)
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-            }
-        }.getOrNull().also {
-            runCatching { retriever.release() }
-        }
-    }
-
+    
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
         var enableFailed = false
@@ -636,42 +618,27 @@ class SendOverride : Feature("Send Override") {
                     context.log.verbose("SendOverride: Duration extracted from Metadata = $rawDurationMs ms (Metadata object was present: ${metadata != null})")
                 }
 
-                // NEW: Aggressive LocalMediaReference Physical Duration Hunt
+                // NEW: Base64 Protobuf Extraction if Duration is 0
                 if (rawDurationMs == 0L) {
-                    context.log.verbose("SendOverride: Attempting aggressive LocalMediaReference extraction...")
+                    context.log.verbose("SendOverride: CRITICAL - Duration is still 0. Dumping raw payload for analysis:")
                     runCatching {
+                        localMessageContent.content?.let { bytes ->
+                            val base64Str = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                            context.log.verbose("PROTO_BASE64: $base64Str")
+                        }
+                        
                         val refs = localMessageContent.localMediaReferences
-                        context.log.verbose("SendOverride: localMediaReferences count = ${refs?.size}")
                         refs?.forEachIndexed { index, ref ->
                             ref.javaClass.declaredFields.forEach { f ->
                                 f.isAccessible = true
                                 val v = f.get(ref)
-                                if (v is Uri) {
-                                    val d = extractMediaDuration(v)
-                                    context.log.verbose("SendOverride: extracted duration from Uri (${f.name}) = $d")
-                                    if (d != null && d > rawDurationMs) rawDurationMs = d
-                                } else if (v is String && (v.startsWith("content://") || v.startsWith("file://") || v.startsWith("/"))) {
-                                    val parseUri = if (v.startsWith("/")) Uri.fromFile(File(v)) else Uri.parse(v)
-                                    val d = extractMediaDuration(parseUri)
-                                    context.log.verbose("SendOverride: extracted duration from String Uri (${f.name}) = $d")
-                                    if (d != null && d > rawDurationMs) rawDurationMs = d
+                                if (v is ByteArray) {
+                                    context.log.verbose("SendOverride: ref field ${f.name} as String = ${String(v)}")
                                 }
                             }
                         }
-                    }.onFailure {
-                        context.log.warn("SendOverride: Failed LocalMediaReference extraction: ${it.message}")
-                    }
-                }
-
-                // NEW: Extreme Reflection Dump (If it still fails, this shows us where Snapchat hid it)
-                if (rawDurationMs == 0L) {
-                    context.log.verbose("SendOverride: CRITICAL - Duration is still 0. Dumping MessageContent fields:")
-                    runCatching {
-                        localMessageContent.instanceNonNull().javaClass.declaredFields.forEach { f ->
-                            f.isAccessible = true
-                            val v = f.get(localMessageContent.instanceNonNull())
-                            context.log.verbose("SendOverride: localMessageContent.${f.name} = $v")
-                        }
+                    }.onFailure { 
+                        context.log.error("SendOverride: Failed to dump proto", it)
                     }
                 }
 
@@ -1002,7 +969,7 @@ class SendOverride : Feature("Send Override") {
                                         }
                                     }
                                 }
-                                
+
                                 if (mediaCount <= 1 && localMessageContent.contentType == ContentType.EXTERNAL_MEDIA && selectedType == "SNAP") {
                                     Surface(
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
