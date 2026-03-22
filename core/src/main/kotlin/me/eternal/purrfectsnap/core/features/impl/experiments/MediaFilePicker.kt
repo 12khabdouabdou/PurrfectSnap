@@ -189,7 +189,6 @@ class MediaFilePicker : Feature("Media File Picker") {
                     val mime = format.getString(MediaFormat.KEY_MIME) ?: return@repeat
                     if (!mime.startsWith("video/") && !mime.startsWith("audio/")) return@repeat
                     
-                    // Format Sanitization: Strip OEM-specific undocumented keys to prevent hardware muxer crashes
                     val cleanFormat = MediaFormat().apply {
                         setString(MediaFormat.KEY_MIME, mime)
                         if (mime.startsWith("video/")) {
@@ -202,7 +201,6 @@ class MediaFilePicker : Feature("Media File Picker") {
                             setInteger(MediaFormat.KEY_SAMPLE_RATE, format.getInteger(MediaFormat.KEY_SAMPLE_RATE))
                             setInteger(MediaFormat.KEY_CHANNEL_COUNT, format.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
                         }
-                        // Copy Codec Specific Data (CSD) to the file header
                         if (format.containsKey("csd-0")) setByteBuffer("csd-0", format.getByteBuffer("csd-0")!!)
                         if (format.containsKey("csd-1")) setByteBuffer("csd-1", format.getByteBuffer("csd-1")!!)
                         if (format.containsKey("csd-2")) setByteBuffer("csd-2", format.getByteBuffer("csd-2")!!)
@@ -254,8 +252,6 @@ class MediaFilePicker : Feature("Media File Picker") {
 
                     val sampleFlags = extractor.sampleFlags
 
-                    // CRITICAL FIX: Skip Codec Config frames!
-                    // Writing these as normal frames double-injects CSD and permanently corrupts Chunk 1.
                     if ((sampleFlags and android.media.MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
                         context.log.verbose("MediaFilePicker: Skipped CODEC_CONFIG frame in chunk $chunkIndex to prevent corruption.")
                         extractor.advance()
@@ -263,7 +259,14 @@ class MediaFilePicker : Feature("Media File Picker") {
                     }
 
                     val sampleTimeUs = extractor.sampleTime
-                    if (sampleTimeUs < 0) break
+                    
+                    // THE BUG FIX: Do NOT break on negative timestamps. Skip them!
+                    if (sampleTimeUs < 0) {
+                        context.log.verbose("MediaFilePicker: Dropped negative PTS frame ($sampleTimeUs) for chunk $chunkIndex")
+                        extractor.advance()
+                        continue
+                    }
+                    
                     if (sampleTimeUs >= chunkEndMs * 1000) {
                         context.log.verbose("MediaFilePicker: Reached target chunk end time: $sampleTimeUs")
                         break
@@ -282,7 +285,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                         if (pts < 0) pts = 0 // Enforce non-negative zero-based timestamps
                         
                         bufferInfo.presentationTimeUs = pts
-                        bufferInfo.flags = sampleFlags // Use the extracted flags
+                        bufferInfo.flags = sampleFlags
                         
                         buffer.position(bufferInfo.offset)
                         buffer.limit(bufferInfo.offset + bufferInfo.size)
@@ -321,7 +324,6 @@ class MediaFilePicker : Feature("Media File Picker") {
         context.log.verbose("MediaFilePicker: Registering temp video '$displayName'")
         val resolver = context.androidContext.contentResolver
         
-        // Path fallback to bypass MIUI/ColorOS/One UI strict scoped storage rules
         val pathsToTry = listOf("Movies/PurrfectSnap", "Movies", "Download")
         var uri: Uri? = null
 
@@ -381,8 +383,7 @@ class MediaFilePicker : Feature("Media File Picker") {
             itemClass.dataBuilder {
                 from("_item") {
                     set("_cameraRollSource", "Snapchat")
-                    // Critical Fix: Pass the actual URI so Snapchat doesn't silently abort sending
-                    set("_contentUri", mediaItem.uri) 
+                    set("_contentUri", mediaItem.uri)
                     set("_durationMs", mediaItem.durationMs.toDouble())
                     set("_disabled", false)
                     set("_imageRotation", 0.0)
@@ -439,7 +440,6 @@ class MediaFilePicker : Feature("Media File Picker") {
             retriever.setDataSource(context.androidContext, uri)
             retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
         }.recoverCatching {
-            // Robust Fallback: Handles restrictive OEM OS's that fail with normal URI paths
             context.androidContext.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
                 retriever.setDataSource(pfd.fileDescriptor)
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
