@@ -54,7 +54,6 @@ import java.util.Locale
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 class SendOverride : Feature("Send Override") {
     companion object {
@@ -73,6 +72,7 @@ class SendOverride : Feature("Send Override") {
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
     private var backgroundHooks: List<Hooker.HookHandle>? = null
+    
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
         var enableFailed = false
@@ -412,6 +412,7 @@ class SendOverride : Feature("Send Override") {
                     "SNAP", "SAVEABLE_SNAP" -> {
                         val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 2 else 1
                         postSavePolicy = savePolicyValue
+
                         val extras = targetReader.followPath(3, 3, 13)?.getBuffer()
 
                         if (targetMessageContent.contentType != ContentType.SNAP) {
@@ -610,26 +611,38 @@ class SendOverride : Feature("Send Override") {
                 // ==========================================
                 // VIRTUAL SPLIT LOGIC FOR LONG MEMORIES/GALLERY VIDEOS
                 // ==========================================
-                var rawDurationMs = messageProtoReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000) 
+                
+                // Aggressively hunt for the duration across all known Protobuf paths
+                var rawDurationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
+                    ?: messageProtoReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000) 
                     ?: messageProtoReader.getVarInt(11, 5, 2, 8)?.toLong()?.times(1000) 
+                    ?: messageProtoReader.getVarInt(11, 5, 1, 1, 15)?.toLong()
                     ?: 0L
+
+                context.log.verbose("SendOverride: Duration extracted from Protobuf = $rawDurationMs ms")
 
                 // Fallback to local MessageContent metadata if proto duration is missing
                 if (rawDurationMs == 0L) {
                     val metadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
-                    rawDurationMs = (metadata?.getObjectFieldOrNull("mDurationMs") as? Number)?.toLong() ?: 0L
+                    val metaDuration = metadata?.getObjectFieldOrNull("mDurationMs") as? Number
+                    rawDurationMs = metaDuration?.toLong() ?: 0L
+                    context.log.verbose("SendOverride: Duration extracted from Metadata = $rawDurationMs ms (Metadata object was present: ${metadata != null})")
                 }
+
+                context.log.verbose("SendOverride: Final Evaluated Duration = $rawDurationMs ms")
 
                 val chunkDurationMs = 10_000L
                 val shouldVirtualSplit = (overrideType == "SNAP" || overrideType == "SAVEABLE_SNAP") && rawDurationMs > chunkDurationMs
 
+                context.log.verbose("SendOverride: shouldVirtualSplit = $shouldVirtualSplit (disableSplitForCurrentSend = $disableSplitForCurrentSend)")
+
                 if (shouldVirtualSplit && disableSplitForCurrentSend == false) {
-                    context.log.verbose("SendOverride: Virtual split condition met. Duration=$rawDurationMs ms.")
+                    context.log.verbose("SendOverride: Virtual split condition met. Splitting video.")
                     val originalJson = context.gson.toJson(localMessageContent.instanceNonNull())
                     val originalCallback = event.adapter.args().getOrNull(2)
                     val totalChunks = kotlin.math.ceil(rawDurationMs.toDouble() / chunkDurationMs).toInt()
 
-                    context.log.verbose("SendOverride: Splitting into $totalChunks virtual chunks.")
+                    context.log.verbose("SendOverride: Target virtual chunks = $totalChunks")
 
                     fun buildVirtualChunkContent(chunkIndex: Int): MessageContent {
                         val chunkContent = MessageContent(
