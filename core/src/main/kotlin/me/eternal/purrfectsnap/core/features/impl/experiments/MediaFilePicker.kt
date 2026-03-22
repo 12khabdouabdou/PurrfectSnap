@@ -151,7 +151,13 @@ class MediaFilePicker : Feature("Media File Picker") {
         inputFile: File,
         chunkDurationMs: Long = SNAP_CHUNK_DURATION_MS
     ): List<File> {
-        val durationMs = extractMediaDuration(Uri.fromFile(inputFile)) ?: return emptyList()
+        context.log.verbose("MediaFilePicker: Starting splitVideoIntoChunks for ${inputFile.absolutePath}")
+        val durationMs = extractMediaDuration(Uri.fromFile(inputFile)) ?: run {
+            context.log.error("MediaFilePicker: Failed to extract duration for split.")
+            return emptyList()
+        }
+        
+        context.log.verbose("MediaFilePicker: Source duration is $durationMs ms. Target chunk size: $chunkDurationMs ms")
         if (durationMs <= chunkDurationMs) return listOf(inputFile)
 
         val retriever = MediaMetadataRetriever()
@@ -172,6 +178,8 @@ class MediaFilePicker : Feature("Media File Picker") {
             val extractor = MediaExtractor()
             val muxer = MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
             val trackMap = mutableMapOf<Int, Int>()
+
+            context.log.verbose("MediaFilePicker: Processing chunk $chunkIndex (${chunkStartMs}ms to ${chunkEndMs}ms)")
 
             try {
                 extractor.setDataSource(inputFile.absolutePath)
@@ -194,14 +202,19 @@ class MediaFilePicker : Feature("Media File Picker") {
                             setInteger(MediaFormat.KEY_SAMPLE_RATE, format.getInteger(MediaFormat.KEY_SAMPLE_RATE))
                             setInteger(MediaFormat.KEY_CHANNEL_COUNT, format.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
                         }
-                        // Copy Codec Specific Data (CSD)
+                        // Copy Codec Specific Data (CSD) to the file header
                         if (format.containsKey("csd-0")) setByteBuffer("csd-0", format.getByteBuffer("csd-0")!!)
                         if (format.containsKey("csd-1")) setByteBuffer("csd-1", format.getByteBuffer("csd-1")!!)
                         if (format.containsKey("csd-2")) setByteBuffer("csd-2", format.getByteBuffer("csd-2")!!)
                     }
 
                     extractor.selectTrack(trackIndex)
-                    trackMap[trackIndex] = muxer.addTrack(cleanFormat)
+                    try {
+                        trackMap[trackIndex] = muxer.addTrack(cleanFormat)
+                    } catch (e: Exception) {
+                        context.log.error("MediaFilePicker: Muxer rejected sanitized format for track $trackIndex", e)
+                        throw e
+                    }
                 }
 
                 if (rotation != 0) {
@@ -218,54 +231,76 @@ class MediaFilePicker : Feature("Media File Picker") {
                     }
                 } ?: (1024 * 1024)
 
+                context.log.verbose("MediaFilePicker: Allocating buffer of size $maxBufferSize bytes for chunk $chunkIndex")
                 val buffer = ByteBuffer.allocateDirect(maxBufferSize)
                 val bufferInfo = android.media.MediaCodec.BufferInfo()
                 muxer.start()
 
-                extractor.seekTo(chunkStartMs * 1000, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+                if (chunkStartMs > 0) {
+                    extractor.seekTo(chunkStartMs * 1000, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+                }
 
-                // Used to calculate zero-based timestamps for each chunk
                 var chunkStartOffsetUs = -1L
 
                 while (true) {
-                    // Critical Fix: Clear ghost data from buffer limits
                     buffer.clear()
                     bufferInfo.offset = 0
                     
                     bufferInfo.size = extractor.readSampleData(buffer, 0)
-                    if (bufferInfo.size < 0) break
+                    if (bufferInfo.size < 0) {
+                        context.log.verbose("MediaFilePicker: End of stream reached for chunk $chunkIndex")
+                        break
+                    }
+
+                    val sampleFlags = extractor.sampleFlags
+
+                    // CRITICAL FIX: Skip Codec Config frames!
+                    // Writing these as normal frames double-injects CSD and permanently corrupts Chunk 1.
+                    if ((sampleFlags and android.media.MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
+                        context.log.verbose("MediaFilePicker: Skipped CODEC_CONFIG frame in chunk $chunkIndex to prevent corruption.")
+                        extractor.advance()
+                        continue
+                    }
 
                     val sampleTimeUs = extractor.sampleTime
                     if (sampleTimeUs < 0) break
-                    if (sampleTimeUs >= chunkEndMs * 1000) break
+                    if (sampleTimeUs >= chunkEndMs * 1000) {
+                        context.log.verbose("MediaFilePicker: Reached target chunk end time: $sampleTimeUs")
+                        break
+                    }
 
                     if (chunkStartOffsetUs == -1L) {
                         chunkStartOffsetUs = sampleTimeUs
+                        context.log.verbose("MediaFilePicker: Set starting PTS offset for chunk $chunkIndex to $chunkStartOffsetUs us")
                     }
 
                     val sampleTrackIndex = extractor.sampleTrackIndex
                     val muxerTrackIndex = trackMap[sampleTrackIndex]
                     
                     if (muxerTrackIndex != null) {
-                        // Critical Fix: Prevent negative timestamps
                         var pts = sampleTimeUs - chunkStartOffsetUs
-                        if (pts < 0) pts = 0
+                        if (pts < 0) pts = 0 // Enforce non-negative zero-based timestamps
                         
                         bufferInfo.presentationTimeUs = pts
-                        bufferInfo.flags = extractor.sampleFlags
+                        bufferInfo.flags = sampleFlags // Use the extracted flags
                         
-                        // Set specific buffer position and limit for the hardware muxer
                         buffer.position(bufferInfo.offset)
                         buffer.limit(bufferInfo.offset + bufferInfo.size)
                         
-                        muxer.writeSampleData(muxerTrackIndex, buffer, bufferInfo)
+                        try {
+                            muxer.writeSampleData(muxerTrackIndex, buffer, bufferInfo)
+                        } catch (e: Exception) {
+                            context.log.error("MediaFilePicker: Crash writing sample data at PTS $pts in chunk $chunkIndex", e)
+                            throw e
+                        }
                     }
                     extractor.advance()
                 }
 
                 outputFiles += outputFile
+                context.log.verbose("MediaFilePicker: Successfully saved chunk $chunkIndex")
             } catch (throwable: Throwable) {
-                context.log.error("MediaFilePicker: Failed to extract/mux chunk $chunkIndex", throwable)
+                context.log.error("MediaFilePicker: Fatal error processing chunk $chunkIndex", throwable)
                 outputFile.delete()
                 outputFiles.forEach { it.delete() }
                 throw throwable
@@ -283,16 +318,13 @@ class MediaFilePicker : Feature("Media File Picker") {
     }
 
     private fun registerTemporaryVideo(file: File, displayName: String): PreparedMediaItem {
+        context.log.verbose("MediaFilePicker: Registering temp video '$displayName'")
         val resolver = context.androidContext.contentResolver
         
         // Path fallback to bypass MIUI/ColorOS/One UI strict scoped storage rules
-        val pathsToTry = listOf(
-            "Movies/PurrfectSnap",
-            "Movies",
-            "Download"
-        )
-
+        val pathsToTry = listOf("Movies/PurrfectSnap", "Movies", "Download")
         var uri: Uri? = null
+
         for (path in pathsToTry) {
             val values = ContentValues().apply {
                 put(MediaStore.Video.Media.DISPLAY_NAME, displayName)
@@ -302,15 +334,19 @@ class MediaFilePicker : Feature("Media File Picker") {
                     put(MediaStore.Video.Media.IS_PENDING, 1)
                 }
             }
-            
-            uri = runCatching { 
-                resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values) 
-            }.getOrNull()
-            
-            if (uri != null) break
+            uri = runCatching { resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values) }
+                .onFailure { context.log.warn("MediaFilePicker: Rejected insert path '$path': ${it.message}") }
+                .getOrNull()
+            if (uri != null) {
+                context.log.verbose("MediaFilePicker: Inserted successfully into '$path' with URI: $uri")
+                break
+            }
         }
 
-        val finalUri = uri ?: error("Failed to create MediaStore entry. Check scoped storage permissions.")
+        val finalUri = uri ?: run {
+            context.log.error("MediaFilePicker: Exhausted all MediaStore fallback paths. Write failed.")
+            error("Failed to create MediaStore entry.")
+        }
 
         runCatching {
             resolver.openOutputStream(finalUri)?.use { output ->
@@ -323,6 +359,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                 }, null, null)
             }
         }.onFailure {
+            context.log.error("MediaFilePicker: Error copying file to MediaStore URI $finalUri", it)
             resolver.delete(finalUri, null, null)
             throw it
         }
@@ -339,12 +376,13 @@ class MediaFilePicker : Feature("Media File Picker") {
     }
 
     private fun buildDrawerItems(itemClass: Any, mediaItems: List<PreparedMediaItem>): List<Any> {
+        context.log.verbose("MediaFilePicker: Building drawer items for ${mediaItems.size} chunks")
         return mediaItems.mapIndexedNotNull { index, mediaItem ->
             itemClass.dataBuilder {
                 from("_item") {
                     set("_cameraRollSource", "Snapchat")
                     // Critical Fix: Pass the actual URI so Snapchat doesn't silently abort sending
-                    set("_contentUri", mediaItem.uri)
+                    set("_contentUri", mediaItem.uri) 
                     set("_durationMs", mediaItem.durationMs.toDouble())
                     set("_disabled", false)
                     set("_imageRotation", 0.0)
@@ -362,11 +400,16 @@ class MediaFilePicker : Feature("Media File Picker") {
     }
 
     private fun prepareChunkedItemsFromMediaStoreId(itemId: String, durationMs: Long): List<PreparedMediaItem>? {
+        context.log.verbose("MediaFilePicker: Checking chunk requirements for gallery itemId: $itemId")
         val numericId = itemId.toLongOrNull() ?: return null
         val effectiveDurationMs = durationMs.takeIf { it > 0 } ?: extractMediaDuration(
             ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, numericId)
         ) ?: return null
-        if (effectiveDurationMs <= SNAP_CHUNK_DURATION_MS) return null
+        
+        if (effectiveDurationMs <= SNAP_CHUNK_DURATION_MS) {
+            context.log.verbose("MediaFilePicker: Duration ($effectiveDurationMs) under limit. Skipping chunking.")
+            return null
+        }
 
         val sourceUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, numericId)
         val sourceFile = File.createTempFile("purrfectsnap_gallery_source_", ".mp4", context.androidContext.cacheDir)
@@ -385,7 +428,7 @@ class MediaFilePicker : Feature("Media File Picker") {
         }.also {
             sourceFile.delete()
         }.getOrElse {
-            context.log.error("Failed to prepare split gallery items", it)
+            context.log.error("MediaFilePicker: Failed to prepare split gallery items", it)
             null
         }
     }
@@ -395,6 +438,12 @@ class MediaFilePicker : Feature("Media File Picker") {
         return runCatching {
             retriever.setDataSource(context.androidContext, uri)
             retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+        }.recoverCatching {
+            // Robust Fallback: Handles restrictive OEM OS's that fail with normal URI paths
+            context.androidContext.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                retriever.setDataSource(pfd.fileDescriptor)
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            }
         }.getOrNull().also {
             runCatching { retriever.release() }
         }
@@ -574,16 +623,15 @@ class MediaFilePicker : Feature("Media File Picker") {
                     val itemClass = method.genericParameterTypes.getOrNull(1)?.getTypeArguments()?.firstOrNull()
                         ?: sendItemsListItemClassFallback
                     if (itemClass == null) {
-                        context.log.warn("MediaFilePicker: sendItems second parameter type has no generic info (type erasure). genericParameterTypes[1]=${method.genericParameterTypes.getOrNull(1)}")
-                        context.inAppOverlay.showStatusToast(Icons.Default.Error, "Failed to send media (incompatible version).")
+                        context.log.warn("MediaFilePicker: sendItems second parameter type has no generic info")
+                        context.inAppOverlay.showStatusToast(Icons.Default.Error, "Failed to send media.")
                         return
                     }
-                    val mediaItems = items ?: listOf(PreparedMediaItem(firstVideoId.toString(), lastMediaDuration ?: 0L, ""))
+                    
+                    val fallbackUri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, firstVideoId!!).toString()
+                    val mediaItems = items ?: listOf(PreparedMediaItem(firstVideoId.toString(), lastMediaDuration ?: 0L, fallbackUri))
+                    
                     val builtItems = buildDrawerItems(itemClass, mediaItems)
-                    if (builtItems.size != mediaItems.size) {
-                        context.inAppOverlay.showStatusToast(Icons.Default.Error, "Failed to build media item.")
-                        return
-                    }
                     method.invoke(chatMediaDrawerActionHandler, listOf<Any>(), builtItems)
                 }
 
@@ -643,7 +691,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                             }
                         }.onFailure {
                             mediaInputStream = null
-                            context.log.error(it)
+                            context.log.error("MediaFilePicker: Routing error in send flow", it)
                             context.inAppOverlay.showStatusToast(Icons.Default.Error, "Failed to send media.")
                         }
                     }
