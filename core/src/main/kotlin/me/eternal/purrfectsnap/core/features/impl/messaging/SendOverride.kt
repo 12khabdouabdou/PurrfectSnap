@@ -175,28 +175,19 @@ class SendOverride : Feature("Send Override") {
                             val hasDirectPath = contentReader.followPath(6, 1, 1) != null
                             
                             if (stripMediaMetadata.contains("remove_audio_note_duration")) {
-                                // Audio note duration is at field 13 (confirmed from MessageDecoder line 94 and MessageSender line 27)
                                 if (hasFullPath) {
-                                    edit(4, 4, 6, 1, 1) {
-                                        remove(13)
-                                    }
+                                    edit(4, 4, 6, 1, 1) { remove(13) }
                                 }
                                 if (hasDirectPath || !hasFullPath) {
-                                    edit(6, 1, 1) {
-                                        remove(13)
-                                    }
+                                    edit(6, 1, 1) { remove(13) }
                                 }
                             }
                             if (stripMediaMetadata.contains("remove_audio_note_transcript_capability")) {
                                 if (hasFullPath) {
-                                    edit(4, 4, 6, 1) {
-                                        remove(3) // locale string
-                                    }
+                                    edit(4, 4, 6, 1) { remove(3) }
                                 }
                                 if (hasDirectPath || !hasFullPath) {
-                                    edit(6, 1) {
-                                        remove(3) // locale string
-                                    }
+                                    edit(6, 1) { remove(3) }
                                 }
                                 runCatching {
                                     result.messageContent.instanceNonNull().setObjectField("mAllowsTranscription", false)
@@ -243,11 +234,7 @@ class SendOverride : Feature("Send Override") {
                                 ContentType.SNAP, ContentType.EXTERNAL_MEDIA -> {
                                     edit(*(if (result.messageContent.contentType == ContentType.SNAP) intArrayOf(11) else intArrayOf(3, 3))) {
                                         if (stripMediaMetadata.contains("hide_caption_text")) {
-                                            edit(5) {
-                                                editEach(1) {
-                                                    remove(2)
-                                                }
-                                            }
+                                            edit(5) { editEach(1) { remove(2) } }
                                         }
                                         if (stripMediaMetadata.contains("hide_snap_filters")) {
                                             remove(9)
@@ -255,31 +242,23 @@ class SendOverride : Feature("Send Override") {
                                         }
                                         if (stripMediaMetadata.contains("hide_extras")) {
                                             remove(13)
-                                            edit(5, 1) {
-                                                remove(2)
-                                            }
+                                            edit(5, 1) { remove(2) }
                                         }
                                     }
                                 }
                                 ContentType.NOTE -> {
                                     if (stripMediaMetadata.contains("remove_audio_note_duration")) {
-                                        edit(6, 1, 1) {
-                                            remove(13)
-                                        }
+                                        edit(6, 1, 1) { remove(13) }
                                     }
                                     if (stripMediaMetadata.contains("remove_audio_note_transcript_capability")) {
-                                        edit(6, 1) {
-                                            remove(3)
-                                        }
+                                        edit(6, 1) { remove(3) }
                                     }
                                 }
                                 else -> {}
                             }
                         }
 
-                        edit(11, 5, 2) {
-                            remove(99)
-                        }
+                        edit(11, 5, 2) { remove(99) }
                     }.toByteArray()
                 }
             }
@@ -299,22 +278,16 @@ class SendOverride : Feature("Send Override") {
                             remove(7)
                             addVarInt(7, savePolicy)
                         }
-
-                        // remove Keep Snaps in Chat ability
                         if (savePolicy == 1/* PROHIBITED */) {
-                            edit(6, 9) {
-                                remove(1)
-                            }
+                            edit(6, 9) { remove(1) }
                         }
                     }
                     
                     // Handle NOTE messages (field 6) - audio notes
-                    // Check both root level (6) and nested under media (4, 4, 6)
                     val noteAtRoot = protoReader.followPath(6) != null
                     val noteNested = protoReader.followPath(4, 4, 6) != null
                     
                     if (noteAtRoot || noteNested) {
-                        // Set save policy in the NOTE path
                         val hasNestedPath = if (noteNested) {
                             protoReader.followPath(4, 4, 6, 1, 1) != null
                         } else {
@@ -323,27 +296,15 @@ class SendOverride : Feature("Send Override") {
                         
                         if (noteNested) {
                             if (hasNestedPath) {
-                                edit(4, 4, 6, 1, 1) {
-                                    remove(7)
-                                    addVarInt(7, savePolicy)
-                                }
+                                edit(4, 4, 6, 1, 1) { remove(7); addVarInt(7, savePolicy) }
                             } else {
-                                edit(4, 4, 6, 1) {
-                                    remove(7)
-                                    addVarInt(7, savePolicy)
-                                }
+                                edit(4, 4, 6, 1) { remove(7); addVarInt(7, savePolicy) }
                             }
                         } else {
                             if (hasNestedPath) {
-                                edit(6, 1, 1) {
-                                    remove(7)
-                                    addVarInt(7, savePolicy)
-                                }
+                                edit(6, 1, 1) { remove(7); addVarInt(7, savePolicy) }
                             } else {
-                                edit(6, 1) {
-                                    remove(7)
-                                    addVarInt(7, savePolicy)
-                                }
+                                edit(6, 1) { remove(7); addVarInt(7, savePolicy) }
                             }
                         }
                     }
@@ -353,15 +314,9 @@ class SendOverride : Feature("Send Override") {
                     val snapNested = protoReader.followPath(4, 4, 11) != null
                     if (snapAtRoot || snapNested) {
                         if (snapNested) {
-                            edit(4, 4, 11) {
-                                remove(7)
-                                addVarInt(7, savePolicy)
-                            }
+                            edit(4, 4, 11) { remove(7); addVarInt(7, savePolicy) }
                         } else {
-                            edit(11) {
-                                remove(7)
-                                addVarInt(7, savePolicy)
-                            }
+                            edit(11) { remove(7); addVarInt(7, savePolicy) }
                         }
                     }
                 }.toByteArray()
@@ -377,6 +332,7 @@ class SendOverride : Feature("Send Override") {
             postSavePolicy = null
             if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
             val localMessageContent = event.messageContent
+            
             // Allow both EXTERNAL_MEDIA (gallery) and SNAP (camera)
             if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA && 
                 localMessageContent.contentType != ContentType.SNAP &&
@@ -403,7 +359,6 @@ class SendOverride : Feature("Send Override") {
             }.ifEmpty { listOf("Unknown") }
             
             val recipientName = recipientNames.joinToString(", ")
-
             event.canceled = true
 
             fun invokeOriginalAndRestoreResult(ev: SendMessageWithContentEvent) {
@@ -457,7 +412,6 @@ class SendOverride : Feature("Send Override") {
                     "SNAP", "SAVEABLE_SNAP" -> {
                         val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 2 else 1
                         postSavePolicy = savePolicyValue
-
                         val extras = targetReader.followPath(3, 3, 13)?.getBuffer()
 
                         if (targetMessageContent.contentType != ContentType.SNAP) {
@@ -474,9 +428,7 @@ class SendOverride : Feature("Send Override") {
                                         }
                                         from(2) {}
                                     }
-                                    extras?.let {
-                                        addBuffer(13, it)
-                                    }
+                                    extras?.let { addBuffer(13, it) }
                                     from(22) {}
                                 }
                             }.toByteArray()
@@ -496,14 +448,10 @@ class SendOverride : Feature("Send Override") {
                                     addBuffer(6, byteArrayOf())
                                 }
                             }
-
-                            // set app source (same as SnapEnhance - no save policy in proto for story+chat)
                             edit(11, 22) {
                                 remove(4)
                                 addVarInt(4, 5) // APP_SOURCE_CAMERA
                             }
-
-                            // Enforce save policy directly on SNAP message body.
                             edit(11) {
                                 remove(7)
                                 addVarInt(7, savePolicyValue)
@@ -511,11 +459,8 @@ class SendOverride : Feature("Send Override") {
                         }.toByteArray()
                     }
                     "NOTE" -> {
-                        // Check if "prevent audio" is enabled in UnsaveableMessages
                         val shouldPreventSave = context.config.messaging.unsaveableMessages.note.get()
-                        if (shouldPreventSave) {
-                            postSavePolicy = 1 // PROHIBITED
-                        }
+                        if (shouldPreventSave) postSavePolicy = 1
                         targetMessageContent.contentType = ContentType.NOTE
                         val stripMeta = context.config.messaging.stripMediaMetadata.get()
                         val omitTranscript = stripMeta.contains("remove_audio_note_transcript_capability")
@@ -528,30 +473,19 @@ class SendOverride : Feature("Send Override") {
                             if (omitTranscript) null else Locale.getDefault().toLanguageTag()
                         )
                         
-                        // Set save policy in the proto if prevent audio is enabled
                         targetMessageContent.content = if (shouldPreventSave) {
-                            // Check which path structure exists in the audio note proto
                             val protoReader = ProtoReader(audioNoteProto)
                             val hasNestedPath = protoReader.followPath(6, 1, 1) != null
-                            
                             ProtoEditor(audioNoteProto).apply {
-                                // Set save policy to PROHIBITED (1) in the NOTE path
                                 if (hasNestedPath) {
-                                    edit(6, 1, 1) {
-                                        remove(7)
-                                        addVarInt(7, 1)
-                                    }
+                                    edit(6, 1, 1) { remove(7); addVarInt(7, 1) }
                                 } else {
-                                    edit(6, 1) {
-                                        remove(7)
-                                        addVarInt(7, 1)
-                                    }
+                                    edit(6, 1) { remove(7); addVarInt(7, 1) }
                                 }
                             }.toByteArray()
                         } else {
                             audioNoteProto
                         }
-                        
                     }
                 }
 
@@ -574,10 +508,7 @@ class SendOverride : Feature("Send Override") {
                                 else -> null
                             }
                             if (policyName != null) {
-                                val policyEnum = runCatching {
-                                    java.lang.Enum.valueOf(enumClass, policyName)
-                                }.getOrNull()
-
+                                val policyEnum = runCatching { java.lang.Enum.valueOf(enumClass, policyName) }.getOrNull()
                                 if (policyEnum != null) {
                                     targetMessageContent.instanceNonNull().setObjectField("mSavePolicy", policyEnum)
                                 }
@@ -587,13 +518,15 @@ class SendOverride : Feature("Send Override") {
                         context.log.warn("SendOverride: Failed to set mSavePolicy: ${e.message}")
                     }
                 }
-
                 return true
             }
 
             fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
+                context.log.verbose("SendOverride: sendMedia triggered with overrideType=$overrideType")
                 val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
+                
                 if (overrideType != "ORIGINAL" && mediaCount > 1) {
+                    context.log.verbose("SendOverride: Handling physical multi-selection (mediaCount = $mediaCount)")
                     val originalJson = context.gson.toJson(localMessageContent.instanceNonNull())
                     val originalCallback = event.adapter.args().getOrNull(2)
                     val mediaBuffers = mutableListOf<ByteArray>()
@@ -603,22 +536,20 @@ class SendOverride : Feature("Send Override") {
                     if (mediaBuffers.isEmpty()) return false
 
                     fun buildPartMessageContent(partIndex: Int): MessageContent {
-                        val partContent = MessageContent(
-                            context.gson.fromJson(originalJson, context.classCache.localMessageContent)
-                        )
+                        val partContent = MessageContent(context.gson.fromJson(originalJson, context.classCache.localMessageContent))
                         val metadata = partContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
                         val refs = ArrayList(partContent.localMediaReferences ?: arrayListOf())
                         val contentRefs = (metadata?.getObjectFieldOrNull("mContentReferences") as? ArrayList<*>)?.toCollection(ArrayList())
                         val encryptionRefs = (metadata?.getObjectFieldOrNull("mRemoteMediaEncryption") as? ArrayList<*>)?.toCollection(ArrayList())
+                        
                         partContent.content = ProtoEditor(partContent.content!!).apply {
                             edit(3) {
                                 remove(3)
                                 addBuffer(3, mediaBuffers[partIndex])
                             }
                         }.toByteArray()
-                        if (partIndex < refs.size) {
-                            partContent.localMediaReferences = arrayListOf(refs[partIndex])
-                        }
+                        
+                        if (partIndex < refs.size) partContent.localMediaReferences = arrayListOf(refs[partIndex])
                         metadata?.let {
                             if (contentRefs != null && partIndex < contentRefs.size) {
                                 it.setObjectField("mContentReferences", arrayListOf(contentRefs[partIndex]))
@@ -640,9 +571,7 @@ class SendOverride : Feature("Send Override") {
                             originalCallback
                         } else {
                             CallbackBuilder(sendMessageCallbackClass)
-                                .override("onSuccess") {
-                                    sendPart(partIndex + 1)
-                                }
+                                .override("onSuccess") { sendPart(partIndex + 1) }
                                 .override("onError", shouldUnhook = false) {
                                     runCatching {
                                         originalCallback?.javaClass?.methods?.firstOrNull { method ->
@@ -666,6 +595,8 @@ class SendOverride : Feature("Send Override") {
                                     partContent.instanceNonNull(),
                                     callback
                                 )
+                            } catch (e: Exception) {
+                                context.log.error("SendOverride: Exception sending physical chunk $partIndex", e)
                             } finally {
                                 internalMultipartSend.set(false)
                             }
@@ -676,6 +607,119 @@ class SendOverride : Feature("Send Override") {
                     return true
                 }
 
+                // ==========================================
+                // VIRTUAL SPLIT LOGIC FOR LONG MEMORIES/GALLERY VIDEOS
+                // ==========================================
+                var rawDurationMs = messageProtoReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000) 
+                    ?: messageProtoReader.getVarInt(11, 5, 2, 8)?.toLong()?.times(1000) 
+                    ?: 0L
+
+                // Fallback to local MessageContent metadata if proto duration is missing
+                if (rawDurationMs == 0L) {
+                    val metadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
+                    rawDurationMs = (metadata?.getObjectFieldOrNull("mDurationMs") as? Number)?.toLong() ?: 0L
+                }
+
+                val chunkDurationMs = 10_000L
+                val shouldVirtualSplit = (overrideType == "SNAP" || overrideType == "SAVEABLE_SNAP") && rawDurationMs > chunkDurationMs
+
+                if (shouldVirtualSplit && disableSplitForCurrentSend == false) {
+                    context.log.verbose("SendOverride: Virtual split condition met. Duration=$rawDurationMs ms.")
+                    val originalJson = context.gson.toJson(localMessageContent.instanceNonNull())
+                    val originalCallback = event.adapter.args().getOrNull(2)
+                    val totalChunks = kotlin.math.ceil(rawDurationMs.toDouble() / chunkDurationMs).toInt()
+
+                    context.log.verbose("SendOverride: Splitting into $totalChunks virtual chunks.")
+
+                    fun buildVirtualChunkContent(chunkIndex: Int): MessageContent {
+                        val chunkContent = MessageContent(
+                            context.gson.fromJson(originalJson, context.classCache.localMessageContent)
+                        )
+                        
+                        val startMs = chunkIndex * chunkDurationMs
+                        val endMs = minOf(startMs + chunkDurationMs, rawDurationMs)
+                        val actualChunkDuration = endMs - startMs
+
+                        chunkContent.content = ProtoEditor(chunkContent.content!!).apply {
+                            edit(11, 5) {
+                                edit(1) {
+                                    edit(1) {
+                                        remove(15)
+                                        addVarInt(15, actualChunkDuration)
+                                    }
+                                }
+                                edit(2) {
+                                    remove(2) // startOffsetMs
+                                    addVarInt(2, startMs)
+                                    remove(3) // endOffsetMs
+                                    addVarInt(3, endMs)
+                                }
+                            }
+                        }.toByteArray()
+                        
+                        return chunkContent
+                    }
+
+                    fun sendVirtualChunk(chunkIndex: Int) {
+                        context.log.verbose("SendOverride: Preparing virtual chunk $chunkIndex")
+                        postSavePolicy = null
+                        val chunkContent = runCatching { buildVirtualChunkContent(chunkIndex) }.getOrElse {
+                            context.log.error("SendOverride: Failed to build virtual chunk $chunkIndex", it)
+                            return
+                        }
+                        
+                        val chunkReader = ProtoReader(chunkContent.content ?: return)
+                        
+                        if (!applyOverride(chunkContent, chunkReader, overrideType, null)) {
+                            context.log.warn("SendOverride: applyOverride returned false for virtual chunk $chunkIndex")
+                            return
+                        }
+
+                        val callback = if (chunkIndex == totalChunks - 1) {
+                            originalCallback
+                        } else {
+                            CallbackBuilder(sendMessageCallbackClass)
+                                .override("onSuccess") {
+                                    context.log.verbose("SendOverride: Virtual chunk $chunkIndex success. Sending next.")
+                                    sendVirtualChunk(chunkIndex + 1)
+                                }
+                                .override("onError", shouldUnhook = false) {
+                                    context.log.error("SendOverride: Error sending virtual chunk $chunkIndex.")
+                                    runCatching {
+                                        originalCallback?.javaClass?.methods?.firstOrNull { method ->
+                                            method.name == "onError" && method.parameterCount == 1
+                                        }?.invoke(originalCallback, it.argNullable<Any>(0))
+                                    }
+                                }
+                                .build()
+                        }
+
+                        if (chunkIndex == 0) {
+                            event.adapter.setArg(1, chunkContent.instanceNonNull())
+                            event.adapter.setArg(2, callback)
+                            invokeOriginalAndRestoreResult(event)
+                        } else {
+                            internalMultipartSend.set(true)
+                            try {
+                                sendMessageWithContentMethod.invoke(
+                                    context.feature(Messaging::class).conversationManager?.instanceNonNull(),
+                                    cloneDestinations(event.destinations),
+                                    chunkContent.instanceNonNull(),
+                                    callback
+                                )
+                            } catch (e: Exception) {
+                                context.log.error("SendOverride: Exception sending virtual chunk $chunkIndex", e)
+                            } finally {
+                                internalMultipartSend.set(false)
+                            }
+                        }
+                    }
+
+                    sendVirtualChunk(0)
+                    return true
+                }
+
+                // Normal single send execution
                 return applyOverride(localMessageContent, messageProtoReader, overrideType, snapDurationMs)
             }
 
@@ -706,9 +750,7 @@ class SendOverride : Feature("Send Override") {
                 
                 createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
                     PurrfectOverlayTheme {
-                        val mainTranslation = remember {
-                            context.translation.getCategory("send_override_dialog")
-                        }
+                        val mainTranslation = remember { context.translation.getCategory("send_override_dialog") }
                         val dialogShape = RoundedCornerShape(24.dp)
                         val dialogSurfaceColor = Color(0xFF2A2452)
                         val border = remember {
@@ -838,368 +880,389 @@ class SendOverride : Feature("Send Override") {
                                     else -> ((duration * 1000).toInt() / 1000) * 1000
                                 }
                         
-                        fun formatTimeText(ms: Long): String {
-                            val days = (ms / (24 * 60 * 60 * 1000)).toInt()
-                            val hours = ((ms / (60 * 60 * 1000)) % 24).toInt()
-                            val minutes = ((ms / (60 * 1000)) % 60).toInt()
-                            val seconds = ((ms / 1000) % 60).toInt()
-                            return buildString {
-                                if (days > 0) append("${days}d ")
-                                if (hours > 0 || days > 0) append("${hours}h ")
-                                if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
-                                append("${seconds}s")
-                            }
-                        }
-
-                        when (selectedType) {
-                            "SNAP", "SAVEABLE_SNAP" -> {
-                                fun toggleSaveable() {
-                                    selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
+                                fun formatTimeText(ms: Long): String {
+                                    val days = (ms / (24 * 60 * 60 * 1000)).toInt()
+                                    val hours = ((ms / (60 * 60 * 1000)) % 24).toInt()
+                                    val minutes = ((ms / (60 * 1000)) % 60).toInt()
+                                    val seconds = ((ms / 1000) % 60).toInt()
+                                    return buildString {
+                                        if (days > 0) append("${days}d ")
+                                        if (hours > 0 || days > 0) append("${hours}h ")
+                                        if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
+                                        append("${seconds}s")
+                                    }
                                 }
+
+                                when (selectedType) {
+                                    "SNAP", "SAVEABLE_SNAP" -> {
+                                        fun toggleSaveable() {
+                                            selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().clickable {
+                                                disableSplitForCurrentSend = !disableSplitForCurrentSend
+                                            },
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Checkbox(
+                                                checked = disableSplitForCurrentSend,
+                                                onCheckedChange = { disableSplitForCurrentSend = it }
+                                            )
+                                            Text(text = mainTranslation["single_send_hint"], lineHeight = 15.sp)
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().clickable {
+                                                toggleSaveable()
+                                            },
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ){
+                                            Checkbox(
+                                                checked = selectedType == "SAVEABLE_SNAP",
+                                                onCheckedChange = { toggleSaveable() }
+                                            )
+                                            Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
+                                        }
+                                        Column(
+                                            modifier = Modifier.padding(start = 8.dp)
+                                        ) {
+                                            Text(
+                                                text = mainTranslation.format("duration",
+                                                    "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
+                                                )
+                                            )
+                                            Slider(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                enabled = selectedType != "SAVEABLE_SNAP",
+                                                value = customDuration,
+                                                onValueChange = { customDuration = it },
+                                                valueRange = -2f..11f,
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (mediaCount <= 1 && localMessageContent.contentType == ContentType.EXTERNAL_MEDIA && selectedType == "SNAP") {
+                                    Surface(
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                                        color = Color(0xFF3E3478).copy(alpha = 0.3f),
+                                        shape = RoundedCornerShape(12.dp),
+                                        border = BorderStroke(1.dp, Color(0xFF3E3478))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Info,
+                                                contentDescription = null,
+                                                tint = PurrfectOverlayPalette.glowSecondary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Text(
+                                                text = "Long gallery videos will be virtually split into multiple Snaps.",
+                                                color = Color.White.copy(alpha = 0.8f),
+                                                fontSize = 12.sp,
+                                                lineHeight = 16.sp
+                                            )
+                                        }
+                                    }
+                                }
+
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().clickable {
-                                        disableSplitForCurrentSend = !disableSplitForCurrentSend
-                                    },
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Checkbox(
-                                        checked = disableSplitForCurrentSend,
+                                        checked = scheduleEnabled,
                                         onCheckedChange = {
-                                            disableSplitForCurrentSend = it
+                                            scheduleEnabled = it
+                                            if (!it) scheduledTime = null
                                         }
                                     )
-                                    Text(text = mainTranslation["single_send_hint"], lineHeight = 15.sp)
+                                    Text(text = mainTranslation["schedule"], modifier = Modifier.weight(1f))
+                                    if (scheduleEnabled) {
+                                        Button(onClick = { showClockPicker = true }) {
+                                            scheduledTime?.let { time ->
+                                                Text(text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(time))
+                                            } ?: Text(context.translation["select"])
+                                        }
+                                    }
                                 }
+
+                                if (scheduleEnabled && showClockPicker) {
+                                    val datePickerState = rememberDatePickerState(
+                                        initialSelectedDateMillis = scheduledTime ?: System.currentTimeMillis()
+                                    )
+                                    val timePickerState = rememberTimePickerState(
+                                        initialHour = clockPickerHour,
+                                        initialMinute = clockPickerMinute
+                                    )
+                                    
+                                    var showDatePickerDialog by remember { mutableStateOf(false) }
+                                    var showTimePickerDialog by remember { mutableStateOf(false) }
+                                    
+                                    if (showDatePickerDialog) {
+                                        DatePickerDialog(
+                                            onDismissRequest = { showDatePickerDialog = false },
+                                            confirmButton = {
+                                                TextButton(onClick = { showDatePickerDialog = false }) {
+                                                    Text(context.translation["button.ok"])
+                                                }
+                                            },
+                                            dismissButton = {
+                                                TextButton(onClick = { showDatePickerDialog = false }) {
+                                                    Text(context.translation["button.cancel"])
+                                                }
+                                            }
+                                        ) {
+                                            DatePicker(state = datePickerState)
+                                        }
+                                    }
+                                    
+                                    if (showTimePickerDialog) {
+                                        AlertDialog(
+                                            onDismissRequest = { showTimePickerDialog = false },
+                                            confirmButton = {
+                                                TextButton(onClick = { 
+                                                    clockPickerHour = timePickerState.hour
+                                                    clockPickerMinute = timePickerState.minute
+                                                    showTimePickerDialog = false 
+                                                }) {
+                                                    Text(context.translation["button.ok"])
+                                                }
+                                            },
+                                            dismissButton = {
+                                                TextButton(onClick = { showTimePickerDialog = false }) {
+                                                    Text(context.translation["button.cancel"])
+                                                }
+                                            },
+                                            text = {
+                                                TimePicker(state = timePickerState)
+                                            }
+                                        )
+                                    }
+                                    
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = MaterialTheme.shapes.medium
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(16.dp),
+                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            Text(
+                                                mainTranslation["select_time"], 
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.titleMedium
+                                            )
+                                            
+                                            OutlinedButton(
+                                                onClick = { showDatePickerDialog = true },
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Icon(Icons.Default.CalendarToday, contentDescription = null)
+                                                Spacer(Modifier.width(8.dp))
+                                                Text(
+                                                    datePickerState.selectedDateMillis?.let {
+                                                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it)
+                                                    } ?: context.translation.getOrNull("select_date") ?: "Select Date"
+                                                )
+                                            }
+                                            
+                                            OutlinedButton(
+                                                onClick = { showTimePickerDialog = true },
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Icon(Icons.Default.Schedule, contentDescription = null)
+                                                Spacer(Modifier.width(8.dp))
+                                                Text(String.format("%02d:%02d", clockPickerHour, clockPickerMinute))
+                                            }
+                                            
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceEvenly
+                                            ) {
+                                                OutlinedButton(onClick = { showClockPicker = false }) {
+                                                    Text(context.translation["button.cancel"])
+                                                }
+                                                Button(onClick = {
+                                                    val selectedDateMillis = datePickerState.selectedDateMillis
+                                                    if (selectedDateMillis == null) {
+                                                        context.inAppOverlay.showStatusToast(
+                                                            icon = Icons.Default.WarningAmber,
+                                                            text = mainTranslation.getOrNull("select_date_first") ?: "Please select a date"
+                                                        )
+                                                        return@Button
+                                                    }
+                                                    
+                                                    val calendar = Calendar.getInstance()
+                                                    calendar.timeInMillis = selectedDateMillis
+                                                    calendar.set(Calendar.HOUR_OF_DAY, clockPickerHour)
+                                                    calendar.set(Calendar.MINUTE, clockPickerMinute)
+                                                    calendar.set(Calendar.SECOND, 0)
+                                                    calendar.set(Calendar.MILLISECOND, 0)
+                                                    
+                                                    if (calendar.timeInMillis <= System.currentTimeMillis()) {
+                                                        context.inAppOverlay.showStatusToast(
+                                                            icon = Icons.Default.WarningAmber,
+                                                            text = mainTranslation.getOrNull("invalid_time") ?: "Please select a future time"
+                                                        )
+                                                        return@Button
+                                                    }
+                                                    
+                                                    scheduledTime = calendar.timeInMillis
+                                                    showClockPicker = false
+                                                }) {
+                                                    Text(context.translation["button.ok"])
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().clickable {
-                                        toggleSaveable()
-                                    },
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
                                     verticalAlignment = Alignment.CenterVertically
-                                ){
-                                    Checkbox(
-                                        checked = selectedType == "SAVEABLE_SNAP",
-                                        onCheckedChange = {
-                                            toggleSaveable()
-                                        }
-                                    )
-                                    Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
-                                }
-                                Column(
-                                    modifier = Modifier.padding(start = 8.dp)
                                 ) {
-                                    Text(
-                                        text = mainTranslation.format("duration",
-                                            "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
-                                        )
-                                    )
-                                    Slider(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        enabled = selectedType != "SAVEABLE_SNAP",
-                                        value = customDuration,
-                                        onValueChange = {
-                                            customDuration = it
-                                        },
-                                        valueRange = -2f..11f,
-                                    )
-                                }
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = scheduleEnabled,
-                                onCheckedChange = {
-                                    scheduleEnabled = it
-                                    if (!it) scheduledTime = null
-                                }
-                            )
-                            Text(text = mainTranslation["schedule"], modifier = Modifier.weight(1f))
-                            if (scheduleEnabled) {
-                                Button(onClick = { showClockPicker = true }) {
-                                    scheduledTime?.let { time ->
-                                        Text(text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(time))
-                                    } ?: Text(context.translation["select"])
-                                }
-                            }
-                        }
-
-                        if (scheduleEnabled && showClockPicker) {
-                            val datePickerState = rememberDatePickerState(
-                                initialSelectedDateMillis = scheduledTime ?: System.currentTimeMillis()
-                            )
-                            val timePickerState = rememberTimePickerState(
-                                initialHour = clockPickerHour,
-                                initialMinute = clockPickerMinute
-                            )
-                            
-                            var showDatePickerDialog by remember { mutableStateOf(false) }
-                            var showTimePickerDialog by remember { mutableStateOf(false) }
-                            
-                            if (showDatePickerDialog) {
-                                DatePickerDialog(
-                                    onDismissRequest = { showDatePickerDialog = false },
-                                    confirmButton = {
-                                        TextButton(onClick = { showDatePickerDialog = false }) {
-                                            Text(context.translation["button.ok"])
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(onClick = { showDatePickerDialog = false }) {
-                                            Text(context.translation["button.cancel"])
-                                        }
+                                    OutlinedButton(onClick = {
+                                        alertDialog.dismiss()
+                                    }) {
+                                        Text(context.translation["button.cancel"])
                                     }
-                                ) {
-                                    DatePicker(state = datePickerState)
-                                }
-                            }
-                            
-                            if (showTimePickerDialog) {
-                                AlertDialog(
-                                    onDismissRequest = { showTimePickerDialog = false },
-                                    confirmButton = {
-                                        TextButton(onClick = { 
-                                            clockPickerHour = timePickerState.hour
-                                            clockPickerMinute = timePickerState.minute
-                                            showTimePickerDialog = false 
-                                        }) {
-                                            Text(context.translation["button.ok"])
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(onClick = { showTimePickerDialog = false }) {
-                                            Text(context.translation["button.cancel"])
-                                        }
-                                    },
-                                    text = {
-                                        TimePicker(state = timePickerState)
-                                    }
-                                )
-                            }
-                            
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = MaterialTheme.shapes.medium
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    Text(
-                                        mainTranslation["select_time"], 
-                                        fontWeight = FontWeight.Bold,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    
-                                    OutlinedButton(
-                                        onClick = { showDatePickerDialog = true },
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Icon(Icons.Default.CalendarToday, contentDescription = null)
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            datePickerState.selectedDateMillis?.let {
-                                                SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it)
-                                            } ?: context.translation.getOrNull("select_date") ?: "Select Date"
-                                        )
-                                    }
-                                    
-                                    OutlinedButton(
-                                        onClick = { showTimePickerDialog = true },
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Icon(Icons.Default.Schedule, contentDescription = null)
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(String.format("%02d:%02d", clockPickerHour, clockPickerMinute))
-                                    }
-                                    
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceEvenly
-                                    ) {
-                                        OutlinedButton(onClick = { showClockPicker = false }) {
-                                            Text(context.translation["button.cancel"])
-                                        }
-                                        Button(onClick = {
-                                            val selectedDateMillis = datePickerState.selectedDateMillis
-                                            if (selectedDateMillis == null) {
-                                                context.inAppOverlay.showStatusToast(
-                                                    icon = Icons.Default.WarningAmber,
-                                                    text = mainTranslation.getOrNull("select_date_first") ?: "Please select a date"
-                                                )
-                                                return@Button
+                                    Button(onClick = {
+                                        alertDialog.dismiss()
+                                        val finalSelectedType = selectedType
+                                        if (disableSplitForCurrentSend && MediaFilePicker.hasOriginalUnsplitItem()) {
+                                            MediaFilePicker.setQueuedOverrideType(finalSelectedType)
+                                            if (!MediaFilePicker.sendOriginalUnsplitItem()) {
+                                                MediaFilePicker.setQueuedOverrideType(null)
                                             }
-                                            
-                                            val calendar = Calendar.getInstance()
-                                            calendar.timeInMillis = selectedDateMillis
-                                            calendar.set(Calendar.HOUR_OF_DAY, clockPickerHour)
-                                            calendar.set(Calendar.MINUTE, clockPickerMinute)
-                                            calendar.set(Calendar.SECOND, 0)
-                                            calendar.set(Calendar.MILLISECOND, 0)
-                                            
-                                            if (calendar.timeInMillis <= System.currentTimeMillis()) {
-                                                context.inAppOverlay.showStatusToast(
-                                                    icon = Icons.Default.WarningAmber,
-                                                    text = mainTranslation.getOrNull("invalid_time") ?: "Please select a future time"
-                                                )
-                                                return@Button
+                                            return@Button
+                                        } else if (MediaFilePicker.hasPendingSplitCleanup()) {
+                                            MediaFilePicker.setQueuedOverrideType(finalSelectedType)
+                                            event.addCallbackResult("onSuccess") {
+                                                context.runOnUiThread {
+                                                    if (!MediaFilePicker.handleCurrentQueuedItemSuccess()) {
+                                                        MediaFilePicker.clearQueuedSplitItems()
+                                                    }
+                                                }
                                             }
-                                            
-                                            scheduledTime = calendar.timeInMillis
-                                            showClockPicker = false
-                                        }) {
-                                            Text(context.translation["button.ok"])
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedButton(onClick = {
-                                alertDialog.dismiss()
-                            }) {
-                                Text(context.translation["button.cancel"])
-                            }
-                            Button(onClick = {
-                                alertDialog.dismiss()
-                                val finalSelectedType = selectedType
-                                if (disableSplitForCurrentSend && MediaFilePicker.hasOriginalUnsplitItem()) {
-                                    MediaFilePicker.setQueuedOverrideType(finalSelectedType)
-                                    if (!MediaFilePicker.sendOriginalUnsplitItem()) {
-                                        MediaFilePicker.setQueuedOverrideType(null)
-                                    }
-                                    return@Button
-                                } else if (MediaFilePicker.hasPendingSplitCleanup()) {
-                                    MediaFilePicker.setQueuedOverrideType(finalSelectedType)
-                                    event.addCallbackResult("onSuccess") {
-                                        context.runOnUiThread {
-                                            if (!MediaFilePicker.handleCurrentQueuedItemSuccess()) {
+                                            event.addCallbackResult("onError") {
                                                 MediaFilePicker.clearQueuedSplitItems()
                                             }
                                         }
-                                    }
-                                    event.addCallbackResult("onError") {
-                                        MediaFilePicker.clearQueuedSplitItems()
-                                    }
-                                }
-                                val delayMs = scheduledTime?.let { it - System.currentTimeMillis() }
-                                if (delayMs != null && delayMs > 0) {
-                                    val taskHash = java.util.UUID.randomUUID().toString()
-                                    // Format the scheduled time for display
-                                    val scheduledDateTime = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault()).format(scheduledTime)
-                                    context.bridgeClient.getTaskInterface().createTask(
-                                        "scheduled_send",
-                                        scheduledDateTime,
-                                        recipientNameForTask,
-                                        taskHash
-                                    )
-                                    val scheduledTimeText = formatTimeText(delayMs)
-                                    context.inAppOverlay.showStatusToast(
-                                        icon = Icons.Filled.Schedule,
-                                        text = context.translation.format("schedule_scheduled_for", "name" to recipientNameForTask, "time" to scheduledTimeText) ?: "Scheduled for $recipientNameForTask in $scheduledTimeText"
-                                    )
-                                    val releaseBackground = acquireScheduledSendBackground()
-                                    
-                                    event.addCallbackResult("onSuccess") {
-                                        context.bridgeClient.getTaskInterface().successTask(taskHash)
-                                    }
-                                    event.addCallbackResult("onError") { 
-                                        context.bridgeClient.getTaskInterface().failTask(taskHash, it.getOrNull(0)?.toString() ?: "Unknown error")
-                                    }
-
-                                    val job = context.coroutineScope.launch {
-                                        val startTime = System.currentTimeMillis()
-                                        while (true) {
-                                            val elapsed = System.currentTimeMillis() - startTime
-                                            val remaining = delayMs - elapsed
-                                            if (remaining <= 0) break
-                                            
-                                            val timeText = formatTimeText(remaining)
-                                            val progress = (elapsed * 100 / delayMs).toInt().coerceIn(0, 99)
-                                            
-                                            context.bridgeClient.getTaskInterface().updateTaskProgress(
-                                                taskHash,
-                                                context.translation.getOrNull("schedule_sending_in")?.replace("{time}", timeText) ?: "Sending in $timeText",
-                                                progress
+                                        val delayMs = scheduledTime?.let { it - System.currentTimeMillis() }
+                                        if (delayMs != null && delayMs > 0) {
+                                            val taskHash = java.util.UUID.randomUUID().toString()
+                                            val scheduledDateTime = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault()).format(scheduledTime)
+                                            context.bridgeClient.getTaskInterface().createTask(
+                                                "scheduled_send",
+                                                scheduledDateTime,
+                                                recipientNameForTask,
+                                                taskHash
                                             )
-                                            delay(1000)
-                                        }
-
-                                        context.bridgeClient.getTaskInterface().updateTaskProgress(taskHash, "Sending...", 100)
-
-                                        if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                            if (event.canceled) {
-                                                invokeOriginalAndRestoreResult(event)
+                                            val scheduledTimeText = formatTimeText(delayMs)
+                                            context.inAppOverlay.showStatusToast(
+                                                icon = Icons.Filled.Schedule,
+                                                text = context.translation.format("schedule_scheduled_for", "name" to recipientNameForTask, "time" to scheduledTimeText) ?: "Scheduled for $recipientNameForTask in $scheduledTimeText"
+                                            )
+                                            val releaseBackground = acquireScheduledSendBackground()
+                                            
+                                            event.addCallbackResult("onSuccess") {
+                                                context.bridgeClient.getTaskInterface().successTask(taskHash)
                                             }
-                                            val successText = context.translation.format("schedule_sent_to", "name" to recipientNameForTask) ?: "Sent to $recipientNameForTask"
-                                            context.inAppOverlay.showStatusToast(
-                                                icon = Icons.Filled.CheckCircle,
-                                                text = successText
-                                            )
-                                            val notificationTitle = context.translation.getOrNull("schedule_sent") ?: "Scheduled snap sent"
-                                            val notificationContent = "$scheduledDateTime\n$recipientNameForTask"
-                                            showNotification(
-                                                notificationTitle,
-                                                notificationContent
-                                            )
+                                            event.addCallbackResult("onError") { 
+                                                context.bridgeClient.getTaskInterface().failTask(taskHash, it.getOrNull(0)?.toString() ?: "Unknown error")
+                                            }
+
+                                            val job = context.coroutineScope.launch {
+                                                val startTime = System.currentTimeMillis()
+                                                while (true) {
+                                                    val elapsed = System.currentTimeMillis() - startTime
+                                                    val remaining = delayMs - elapsed
+                                                    if (remaining <= 0) break
+                                                    
+                                                    val timeText = formatTimeText(remaining)
+                                                    val progress = (elapsed * 100 / delayMs).toInt().coerceIn(0, 99)
+                                                    
+                                                    context.bridgeClient.getTaskInterface().updateTaskProgress(
+                                                        taskHash,
+                                                        context.translation.getOrNull("schedule_sending_in")?.replace("{time}", timeText) ?: "Sending in $timeText",
+                                                        progress
+                                                    )
+                                                    delay(1000)
+                                                }
+
+                                                context.bridgeClient.getTaskInterface().updateTaskProgress(taskHash, "Sending...", 100)
+
+                                                if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
+                                                    if (event.canceled) {
+                                                        invokeOriginalAndRestoreResult(event)
+                                                    }
+                                                    val successText = context.translation.format("schedule_sent_to", "name" to recipientNameForTask) ?: "Sent to $recipientNameForTask"
+                                                    context.inAppOverlay.showStatusToast(
+                                                        icon = Icons.Filled.CheckCircle,
+                                                        text = successText
+                                                    )
+                                                    val notificationTitle = context.translation.getOrNull("schedule_sent") ?: "Scheduled snap sent"
+                                                    val notificationContent = "$scheduledDateTime\n$recipientNameForTask"
+                                                    showNotification(
+                                                        notificationTitle,
+                                                        notificationContent
+                                                    )
+                                                } else {
+                                                    context.bridgeClient.getTaskInterface().failTask(taskHash, "Failed to send")
+                                                    val failureText = context.translation.format("schedule_failed_to", "name" to recipientNameForTask) ?: "Failed to send to $recipientNameForTask"
+                                                    context.inAppOverlay.showStatusToast(
+                                                        icon = Icons.Filled.WarningAmber,
+                                                        text = failureText
+                                                    )
+                                                    val failNotificationTitle = context.translation.getOrNull("schedule_failed") ?: "Scheduled snap failed"
+                                                    val failNotificationContent = "$scheduledDateTime\n$recipientNameForTask"
+                                                    showNotification(
+                                                        failNotificationTitle,
+                                                        failNotificationContent
+                                                    )
+                                                }
+                                            }
+                                            val listener = object : TaskListener.Stub() {
+                                                override fun onCancel() {
+                                                    job.cancel()
+                                                }
+                                                override fun onProgress(label: String, progress: Int) {}
+                                                override fun onStateChange(status: String) {}
+                                                override fun onSuccess() {}
+                                            }
+                                            context.bridgeClient.getTaskInterface().registerTaskListener(taskHash, listener)
+                                            job.invokeOnCompletion { throwable ->
+                                                releaseBackground()
+                                                context.bridgeClient.getTaskInterface().unregisterTaskListener(taskHash, listener)
+                                                if (throwable is CancellationException) {
+                                                    context.inAppOverlay.showStatusToast(
+                                                        icon = Icons.Filled.Cancel,
+                                                        text = context.translation.format("schedule_cancelled_for", "name" to recipientNameForTask) ?: "Cancelled for $recipientNameForTask"
+                                                    )
+                                                }
+                                            }
                                         } else {
-                                            context.bridgeClient.getTaskInterface().failTask(taskHash, "Failed to send")
-                                            val failureText = context.translation.format("schedule_failed_to", "name" to recipientNameForTask) ?: "Failed to send to $recipientNameForTask"
-                                            context.inAppOverlay.showStatusToast(
-                                                icon = Icons.Filled.WarningAmber,
-                                                text = failureText
-                                            )
-                                            val failNotificationTitle = context.translation.getOrNull("schedule_failed") ?: "Scheduled snap failed"
-                                            val failNotificationContent = "$scheduledDateTime\n$recipientNameForTask"
-                                            showNotification(
-                                                failNotificationTitle,
-                                                failNotificationContent
-                                            )
+                                            if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
+                                                if (event.canceled) {
+                                                    invokeOriginalAndRestoreResult(event)
+                                                }
+                                            }
                                         }
-                                    }
-                                    val listener = object : TaskListener.Stub() {
-                                        override fun onCancel() {
-                                            job.cancel()
-                                        }
-                                        override fun onProgress(label: String, progress: Int) {}
-                                        override fun onStateChange(status: String) {}
-                                        override fun onSuccess() {}
-                                    }
-                                    context.bridgeClient.getTaskInterface().registerTaskListener(taskHash, listener)
-                                    job.invokeOnCompletion { throwable ->
-                                        releaseBackground()
-                                        context.bridgeClient.getTaskInterface().unregisterTaskListener(taskHash, listener)
-                                        if (throwable is CancellationException) {
-                                            context.inAppOverlay.showStatusToast(
-                                                icon = Icons.Filled.Cancel,
-                                                text = context.translation.format("schedule_cancelled_for", "name" to recipientNameForTask) ?: "Cancelled for $recipientNameForTask"
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                        if (event.canceled) {
-                                            invokeOriginalAndRestoreResult(event)
-                                        }
+                                    }) {
+                                        Text(if (scheduledTime != null) mainTranslation["schedule"] else context.translation["button.send"])
                                     }
                                 }
-                            }) {
-                                Text(if (scheduledTime != null) mainTranslation["schedule"] else context.translation["button.send"])
                             }
                         }
                     }
-                }
-                }
                 }.show()
             }
         }
