@@ -3327,6 +3327,7 @@
         "title": "Send media as",
         "duration": "Duration: {duration}",
         "saveable_snap_hint": "Make Snap saveable in the chat",
+        "single_send_hint": "Send as one snap",
         "unlimited_duration": "Unlimited",
         "schedule": "Schedule",
         "select_time": "Select time",

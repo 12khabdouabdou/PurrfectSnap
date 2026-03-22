@@ -32,17 +32,22 @@ import me.eternal.purrfectsnap.common.util.protobuf.ProtoWriter
 import me.eternal.purrfectsnap.core.event.events.impl.MediaUploadEvent
 import me.eternal.purrfectsnap.core.event.events.impl.NativeUnaryCallEvent
 import me.eternal.purrfectsnap.core.event.events.impl.SendMessageWithContentEvent
+import me.eternal.purrfectsnap.core.event.events.impl.UnaryCallEvent
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.features.impl.experiments.MediaFilePicker
 import me.eternal.purrfectsnap.core.messaging.MessageSender
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
+import me.eternal.purrfectsnap.core.wrapper.impl.MessageContent
+import me.eternal.purrfectsnap.core.wrapper.impl.MessageDestinations
 import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
 import me.eternal.purrfectsnap.core.util.ktx.setObjectField
+import me.eternal.purrfectsnap.core.util.CallbackBuilder
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
+import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -54,9 +59,11 @@ import kotlin.time.toDuration
 class SendOverride : Feature("Send Override") {
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "scheduled_send"
+        private val internalMultipartSend = ThreadLocal.withInitial { false }
     }
     
     private var selectedType by mutableStateOf("SNAP")
+    private var disableSplitForCurrentSend by mutableStateOf(false)
     private var customDuration by mutableFloatStateOf(10f)
     private var scheduledTime by mutableStateOf<Long?>(null)
     private var showClockPicker by mutableStateOf(false)
@@ -66,7 +73,6 @@ class SendOverride : Feature("Send Override") {
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
     private var backgroundHooks: List<Hooker.HookHandle>? = null
-
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
         var enableFailed = false
@@ -362,7 +368,12 @@ class SendOverride : Feature("Send Override") {
             }
         }
 
+        context.event.subscribe(UnaryCallEvent::class, priority = 100) { event ->
+            if (event.uri != "/messagingcoreservice.MessagingCoreService/CreateContentMessage") return@subscribe
+        }
+
         context.event.subscribe(SendMessageWithContentEvent::class, priority = -100) { event ->
+            if (internalMultipartSend.get() == true) return@subscribe
             postSavePolicy = null
             if (event.destinations.stories?.isNotEmpty() == true && event.destinations.conversations?.isEmpty() == true) return@subscribe
             val localMessageContent = event.messageContent
@@ -401,9 +412,40 @@ class SendOverride : Feature("Send Override") {
                 ev.canceled = false
             }
 
-            fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
+            val sendMessageCallbackClass by lazy {
+                lateinit var result: Class<*>
+                context.mappings.useMapper(CallbackMapper::class) {
+                    result = callbacks.getClass("SendMessageCallback") ?: error("Failed to resolve SendMessageCallback")
+                }
+                result
+            }
+
+            fun cloneDestinations(source: MessageDestinations): Any {
+                return context.gson.fromJson(
+                    context.gson.toJson(source.instanceNonNull()),
+                    context.classCache.messageDestinations
+                )
+            }
+
+            val sendMessageWithContentMethod by lazy {
+                sequence {
+                    var current: Class<*>? = context.classCache.conversationManager
+                    while (current != null && current != Any::class.java && current != Object::class.java) {
+                        yield(current)
+                        current = current.superclass
+                    }
+                }.flatMap { it.declaredMethods.asSequence() }
+                    .first { it.name == "sendMessageWithContent" }
+            }
+
+            fun applyOverride(
+                targetMessageContent: MessageContent,
+                targetReader: ProtoReader,
+                overrideType: String,
+                snapDurationMs: Int?
+            ): Boolean {
                 val bypassLimit = context.config.experimental.nativeHooks.valdiHooks.bypassCameraRollLimit.get()
-                if (overrideType != "ORIGINAL" && !bypassLimit && (messageProtoReader.followPath(3)?.getCount(3) ?: 0) > 1) {
+                if (overrideType != "ORIGINAL" && !bypassLimit && (targetReader.followPath(3)?.getCount(3) ?: 0) > 1) {
                     context.inAppOverlay.showStatusToast(
                         icon = Icons.Default.WarningAmber,
                         context.translation["gallery_media_send_override.multiple_media_toast"]
@@ -416,10 +458,10 @@ class SendOverride : Feature("Send Override") {
                         val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 2 else 1
                         postSavePolicy = savePolicyValue
 
-                        val extras = messageProtoReader.followPath(3, 3, 13)?.getBuffer()
+                        val extras = targetReader.followPath(3, 3, 13)?.getBuffer()
 
-                        if (localMessageContent.contentType != ContentType.SNAP) {
-                            localMessageContent.content = ProtoWriter().apply {
+                        if (targetMessageContent.contentType != ContentType.SNAP) {
+                            targetMessageContent.content = ProtoWriter().apply {
                                 from(11) {
                                     from(5) {
                                         from(1) {
@@ -440,11 +482,11 @@ class SendOverride : Feature("Send Override") {
                             }.toByteArray()
                         }
 
-                        localMessageContent.contentType = ContentType.SNAP
-                        localMessageContent.content = ProtoEditor(localMessageContent.content!!).apply {
+                        targetMessageContent.contentType = ContentType.SNAP
+                        targetMessageContent.content = ProtoEditor(targetMessageContent.content!!).apply {
                             edit(11, 5, 2) {
                                 arrayOf(6, 7, 8).forEach { remove(it) }
-                                addVarInt(5, messageProtoReader.getVarInt(3, 3, 5, 2, 5) ?: messageProtoReader.getVarInt(11, 5, 2, 5) ?: 1)
+                                addVarInt(5, targetReader.getVarInt(3, 3, 5, 2, 5) ?: targetReader.getVarInt(11, 5, 2, 5) ?: 1)
                                 if (snapDurationMs != null && overrideType != "SAVEABLE_SNAP") {
                                     addVarInt(8, snapDurationMs / 1000)
                                     if (snapDurationMs / 1000 <= 0) {
@@ -474,11 +516,11 @@ class SendOverride : Feature("Send Override") {
                         if (shouldPreventSave) {
                             postSavePolicy = 1 // PROHIBITED
                         }
-                        localMessageContent.contentType = ContentType.NOTE
+                        targetMessageContent.contentType = ContentType.NOTE
                         val stripMeta = context.config.messaging.stripMediaMetadata.get()
                         val omitTranscript = stripMeta.contains("remove_audio_note_transcript_capability")
-                        val rawDurationMs = messageProtoReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
-                            ?: messageProtoReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000)
+                        val rawDurationMs = targetReader.getVarInt(3, 3, 5, 1, 1, 15)?.toLong()
+                            ?: targetReader.getVarInt(3, 3, 5, 2, 8)?.toLong()?.times(1000)
                             ?: (context.feature(MediaFilePicker::class).lastMediaDuration ?: 0).toLong()
                         val durationForProto = minOf(rawDurationMs, MessageSender.VOICE_NOTE_MAX_DURATION_MS)
                         val audioNoteProto = MessageSender.audioNoteProto(
@@ -487,7 +529,7 @@ class SendOverride : Feature("Send Override") {
                         )
                         
                         // Set save policy in the proto if prevent audio is enabled
-                        localMessageContent.content = if (shouldPreventSave) {
+                        targetMessageContent.content = if (shouldPreventSave) {
                             // Check which path structure exists in the audio note proto
                             val protoReader = ProtoReader(audioNoteProto)
                             val hasNestedPath = protoReader.followPath(6, 1, 1) != null
@@ -519,7 +561,7 @@ class SendOverride : Feature("Send Override") {
                             Class.forName(
                                 "com.snapchat.client.messaging.SavePolicy",
                                 false,
-                                localMessageContent.instanceNonNull().javaClass.classLoader
+                                targetMessageContent.instanceNonNull().javaClass.classLoader
                             )
                         }.getOrNull()
 
@@ -537,7 +579,7 @@ class SendOverride : Feature("Send Override") {
                                 }.getOrNull()
 
                                 if (policyEnum != null) {
-                                    localMessageContent.instanceNonNull().setObjectField("mSavePolicy", policyEnum)
+                                    targetMessageContent.instanceNonNull().setObjectField("mSavePolicy", policyEnum)
                                 }
                             }
                         }
@@ -549,10 +591,111 @@ class SendOverride : Feature("Send Override") {
                 return true
             }
 
-            val resolvedOverrideType = configOverrideType?.takeIf { it != "always_ask" }
+            fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
+                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
+                if (overrideType != "ORIGINAL" && mediaCount > 1) {
+                    val originalJson = context.gson.toJson(localMessageContent.instanceNonNull())
+                    val originalCallback = event.adapter.args().getOrNull(2)
+                    val mediaBuffers = mutableListOf<ByteArray>()
+                    messageProtoReader.followPath(3)?.eachBuffer { id, buffer ->
+                        if (id == 3) mediaBuffers.add(buffer)
+                    }
+                    if (mediaBuffers.isEmpty()) return false
+
+                    fun buildPartMessageContent(partIndex: Int): MessageContent {
+                        val partContent = MessageContent(
+                            context.gson.fromJson(originalJson, context.classCache.localMessageContent)
+                        )
+                        val metadata = partContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
+                        val refs = ArrayList(partContent.localMediaReferences ?: arrayListOf())
+                        val contentRefs = (metadata?.getObjectFieldOrNull("mContentReferences") as? ArrayList<*>)?.toCollection(ArrayList())
+                        val encryptionRefs = (metadata?.getObjectFieldOrNull("mRemoteMediaEncryption") as? ArrayList<*>)?.toCollection(ArrayList())
+                        partContent.content = ProtoEditor(partContent.content!!).apply {
+                            edit(3) {
+                                remove(3)
+                                addBuffer(3, mediaBuffers[partIndex])
+                            }
+                        }.toByteArray()
+                        if (partIndex < refs.size) {
+                            partContent.localMediaReferences = arrayListOf(refs[partIndex])
+                        }
+                        metadata?.let {
+                            if (contentRefs != null && partIndex < contentRefs.size) {
+                                it.setObjectField("mContentReferences", arrayListOf(contentRefs[partIndex]))
+                            }
+                            if (encryptionRefs != null && partIndex < encryptionRefs.size) {
+                                it.setObjectField("mRemoteMediaEncryption", arrayListOf(encryptionRefs[partIndex]))
+                            }
+                        }
+                        return partContent
+                    }
+
+                    fun sendPart(partIndex: Int) {
+                        postSavePolicy = null
+                        val partContent = buildPartMessageContent(partIndex)
+                        val partReader = ProtoReader(partContent.content ?: return)
+                        if (!applyOverride(partContent, partReader, overrideType, snapDurationMs)) return
+
+                        val callback = if (partIndex == mediaCount - 1) {
+                            originalCallback
+                        } else {
+                            CallbackBuilder(sendMessageCallbackClass)
+                                .override("onSuccess") {
+                                    sendPart(partIndex + 1)
+                                }
+                                .override("onError", shouldUnhook = false) {
+                                    runCatching {
+                                        originalCallback?.javaClass?.methods?.firstOrNull { method ->
+                                            method.name == "onError" && method.parameterCount == 1
+                                        }?.invoke(originalCallback, it.argNullable<Any>(0))
+                                    }
+                                }
+                                .build()
+                        }
+
+                        if (partIndex == 0) {
+                            event.adapter.setArg(1, partContent.instanceNonNull())
+                            event.adapter.setArg(2, callback)
+                            invokeOriginalAndRestoreResult(event)
+                        } else {
+                            internalMultipartSend.set(true)
+                            try {
+                                sendMessageWithContentMethod.invoke(
+                                    context.feature(Messaging::class).conversationManager?.instanceNonNull(),
+                                    cloneDestinations(event.destinations),
+                                    partContent.instanceNonNull(),
+                                    callback
+                                )
+                            } finally {
+                                internalMultipartSend.set(false)
+                            }
+                        }
+                    }
+
+                    sendPart(0)
+                    return true
+                }
+
+                return applyOverride(localMessageContent, messageProtoReader, overrideType, snapDurationMs)
+            }
+
+            val resolvedOverrideType = MediaFilePicker.getQueuedOverrideType()
+                ?: configOverrideType?.takeIf { it != "always_ask" }
             if (resolvedOverrideType != null) {
+                if (MediaFilePicker.hasPendingSplitCleanup() || MediaFilePicker.getQueuedOverrideType() != null) {
+                    event.addCallbackResult("onSuccess") {
+                        context.runOnUiThread {
+                            if (!MediaFilePicker.handleCurrentQueuedItemSuccess()) {
+                                MediaFilePicker.clearQueuedSplitItems()
+                            }
+                        }
+                    }
+                    event.addCallbackResult("onError") {
+                        MediaFilePicker.clearQueuedSplitItems()
+                    }
+                }
                 if (sendMedia(resolvedOverrideType, 10000)) {
-                    invokeOriginalAndRestoreResult(event)
+                    if (event.canceled) invokeOriginalAndRestoreResult(event)
                 }
                 return@subscribe
             }
@@ -712,6 +855,21 @@ class SendOverride : Feature("Send Override") {
                             "SNAP", "SAVEABLE_SNAP" -> {
                                 fun toggleSaveable() {
                                     selectedType = if (selectedType == "SAVEABLE_SNAP") "SNAP" else "SAVEABLE_SNAP"
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().clickable {
+                                        disableSplitForCurrentSend = !disableSplitForCurrentSend
+                                    },
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = disableSplitForCurrentSend,
+                                        onCheckedChange = {
+                                            disableSplitForCurrentSend = it
+                                        }
+                                    )
+                                    Text(text = mainTranslation["single_send_hint"], lineHeight = 15.sp)
                                 }
                                 Row(
                                     modifier = Modifier.fillMaxWidth().clickable {
@@ -915,6 +1073,25 @@ class SendOverride : Feature("Send Override") {
                             Button(onClick = {
                                 alertDialog.dismiss()
                                 val finalSelectedType = selectedType
+                                if (disableSplitForCurrentSend && MediaFilePicker.hasOriginalUnsplitItem()) {
+                                    MediaFilePicker.setQueuedOverrideType(finalSelectedType)
+                                    if (!MediaFilePicker.sendOriginalUnsplitItem()) {
+                                        MediaFilePicker.setQueuedOverrideType(null)
+                                    }
+                                    return@Button
+                                } else if (MediaFilePicker.hasPendingSplitCleanup()) {
+                                    MediaFilePicker.setQueuedOverrideType(finalSelectedType)
+                                    event.addCallbackResult("onSuccess") {
+                                        context.runOnUiThread {
+                                            if (!MediaFilePicker.handleCurrentQueuedItemSuccess()) {
+                                                MediaFilePicker.clearQueuedSplitItems()
+                                            }
+                                        }
+                                    }
+                                    event.addCallbackResult("onError") {
+                                        MediaFilePicker.clearQueuedSplitItems()
+                                    }
+                                }
                                 val delayMs = scheduledTime?.let { it - System.currentTimeMillis() }
                                 if (delayMs != null && delayMs > 0) {
                                     val taskHash = java.util.UUID.randomUUID().toString()
@@ -961,7 +1138,9 @@ class SendOverride : Feature("Send Override") {
                                         context.bridgeClient.getTaskInterface().updateTaskProgress(taskHash, "Sending...", 100)
 
                                         if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                            invokeOriginalAndRestoreResult(event)
+                                            if (event.canceled) {
+                                                invokeOriginalAndRestoreResult(event)
+                                            }
                                             val successText = context.translation.format("schedule_sent_to", "name" to recipientNameForTask) ?: "Sent to $recipientNameForTask"
                                             context.inAppOverlay.showStatusToast(
                                                 icon = Icons.Filled.CheckCircle,
@@ -1009,7 +1188,9 @@ class SendOverride : Feature("Send Override") {
                                     }
                                 } else {
                                     if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                        invokeOriginalAndRestoreResult(event)
+                                        if (event.canceled) {
+                                            invokeOriginalAndRestoreResult(event)
+                                        }
                                     }
                                 }
                             }) {
