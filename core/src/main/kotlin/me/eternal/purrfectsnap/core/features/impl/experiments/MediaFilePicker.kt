@@ -243,42 +243,58 @@ class MediaFilePicker : Feature("Media File Picker") {
 
     private fun registerTemporaryVideo(file: File, displayName: String): PreparedMediaItem {
         val resolver = context.androidContext.contentResolver
-        val values = ContentValues().apply {
-            put(MediaStore.Video.Media.DISPLAY_NAME, displayName)
-            put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
-            put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/.PurrfectSnap")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Video.Media.IS_PENDING, 1)
+        
+        // Path fallback to bypass MIUI/ColorOS/One UI strict scoped storage rules
+        val pathsToTry = listOf(
+            "Movies/PurrfectSnap",
+            "Movies",
+            "Download"
+        )
+
+        var uri: Uri? = null
+        for (path in pathsToTry) {
+            val values = ContentValues().apply {
+                put(MediaStore.Video.Media.DISPLAY_NAME, displayName)
+                put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                put(MediaStore.Video.Media.RELATIVE_PATH, path)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    put(MediaStore.Video.Media.IS_PENDING, 1)
+                }
             }
+            
+            uri = runCatching { 
+                resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values) 
+            }.getOrNull()
+            
+            if (uri != null) break
         }
 
-        val uri = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
-            ?: error("Failed to create MediaStore entry")
+        val finalUri = uri ?: error("Failed to create MediaStore entry across all fallback paths.")
 
         runCatching {
-            resolver.openOutputStream(uri)?.use { output ->
+            resolver.openOutputStream(finalUri)?.use { output ->
                 file.inputStream().use { input -> input.copyTo(output) }
             } ?: error("Failed to open MediaStore output stream")
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                resolver.update(uri, ContentValues().apply {
+                resolver.update(finalUri, ContentValues().apply {
                     put(MediaStore.Video.Media.IS_PENDING, 0)
                 }, null, null)
             }
         }.onFailure {
-            resolver.delete(uri, null, null)
+            resolver.delete(finalUri, null, null)
             throw it
         }
 
-        val durationMs = extractMediaDuration(uri) ?: 0L
-        val itemId = uri.lastPathSegment ?: error("Failed to resolve MediaStore item id")
+        val durationMs = extractMediaDuration(finalUri) ?: 0L
+        val itemId = finalUri.lastPathSegment ?: error("Failed to resolve MediaStore item id")
 
         context.coroutineScope.launch {
             delay(120_000)
-            runCatching { resolver.delete(uri, null, null) }
+            runCatching { resolver.delete(finalUri, null, null) }
         }
 
-        return PreparedMediaItem(itemId = itemId, durationMs = durationMs, uri = uri.toString())
+        return PreparedMediaItem(itemId = itemId, durationMs = durationMs, uri = finalUri.toString())
     }
 
     private fun buildDrawerItems(itemClass: Any, mediaItems: List<PreparedMediaItem>): List<Any> {
