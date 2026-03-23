@@ -22,6 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.text.input.KeyboardType
 import kotlinx.coroutines.*
 import me.eternal.purrfectsnap.bridge.task.TaskListener
 import me.eternal.purrfectsnap.common.data.ContentType
@@ -50,6 +53,8 @@ import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Collections
+import java.util.IdentityHashMap
 import java.util.Locale
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -60,6 +65,40 @@ class SendOverride : Feature("Send Override") {
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "scheduled_send"
         private val internalMultipartSend = ThreadLocal.withInitial { false }
+        private var queuedOriginalItemRepeatCount = 0
+        private var queuedOriginalItemRepeatOverrideType: String? = null
+
+        private fun queueOriginalItemRepeats(repeatCount: Int, overrideType: String) {
+            queuedOriginalItemRepeatCount = repeatCount
+            queuedOriginalItemRepeatOverrideType = overrideType
+            MediaFilePicker.setQueuedOverrideType(overrideType)
+        }
+
+        private fun clearQueuedOriginalItemRepeats() {
+            queuedOriginalItemRepeatCount = 0
+            queuedOriginalItemRepeatOverrideType = null
+        }
+
+        private fun handleQueuedOriginalItemRepeatSuccess(): Boolean {
+            if (queuedOriginalItemRepeatCount <= 0) {
+                clearQueuedOriginalItemRepeats()
+                return false
+            }
+
+            val overrideType = queuedOriginalItemRepeatOverrideType ?: run {
+                clearQueuedOriginalItemRepeats()
+                return false
+            }
+
+            queuedOriginalItemRepeatCount--
+            MediaFilePicker.setQueuedOverrideType(overrideType)
+            val result = MediaFilePicker.sendReusableOriginalItem()
+            if (!result) {
+                queuedOriginalItemRepeatCount++
+                clearQueuedOriginalItemRepeats()
+            }
+            return result
+        }
     }
     
     private var selectedType by mutableStateOf("SNAP")
@@ -405,6 +444,7 @@ class SendOverride : Feature("Send Override") {
             val recipientName = recipientNames.joinToString(", ")
 
             event.canceled = true
+            event.adapter.setResult(null)
 
             fun invokeOriginalAndRestoreResult(ev: SendMessageWithContentEvent) {
                 val result = ev.adapter.invokeOriginal()
@@ -436,6 +476,20 @@ class SendOverride : Feature("Send Override") {
                     }
                 }.flatMap { it.declaredMethods.asSequence() }
                     .first { it.name == "sendMessageWithContent" }
+            }
+
+            val originalMessageJson = context.gson.toJson(localMessageContent.instanceNonNull())
+            val originalCallback = event.adapter.args().getOrNull(2)
+            val conversationManagerInstance by lazy {
+                context.feature(Messaging::class).conversationManager?.instanceNonNull()
+            }
+
+            fun invokeCallbackError(callback: Any?, error: Any?) {
+                runCatching {
+                    callback?.javaClass?.methods?.firstOrNull { method ->
+                        method.name == "onError" && method.parameterCount == 1
+                    }?.invoke(callback, error)
+                }
             }
 
             fun applyOverride(
@@ -591,21 +645,98 @@ class SendOverride : Feature("Send Override") {
                 return true
             }
 
-            fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
-                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
+            fun createMessageContentFromOriginal(): MessageContent {
+                return MessageContent(
+                    context.gson.fromJson(originalMessageJson, context.classCache.localMessageContent)
+                ).also { messageContent ->
+                    val visited = Collections.newSetFromMap(IdentityHashMap<Any, Boolean>())
+
+                    fun shouldScrubField(fieldName: String): Boolean {
+                        if (fieldName == "mId") return false
+                        return fieldName in setOf("mMessageId", "mQuotedMessageId") ||
+                            fieldName.contains("AttemptId", ignoreCase = true) ||
+                            fieldName.contains("ClientMessageId", ignoreCase = true) ||
+                            fieldName.contains("ClientId", ignoreCase = true) ||
+                            fieldName.contains("MessageUuid", ignoreCase = true) ||
+                            fieldName.contains("UUID", ignoreCase = true)
+                    }
+
+                    fun scrubValue(value: Any?) {
+                        if (value == null) return
+                        if (!visited.add(value)) return
+
+                        when (value) {
+                            is String, is Number, is Boolean, is ByteArray, is Enum<*> -> return
+                            is Iterable<*> -> {
+                                value.forEach { scrubValue(it) }
+                                return
+                            }
+                            is Map<*, *> -> {
+                                value.values.forEach { scrubValue(it) }
+                                return
+                            }
+                        }
+
+                        sequence<Class<*>> {
+                            var current: Class<*>? = value.javaClass
+                            while (current != null && current != Any::class.java && current != Object::class.java) {
+                                yield(current)
+                                current = current.superclass
+                            }
+                        }.flatMap { it.declaredFields.asSequence() }
+                            .forEach { field ->
+                                runCatching {
+                                    field.isAccessible = true
+                                    if (shouldScrubField(field.name)) {
+                                        when (field.type) {
+                                            java.lang.Long.TYPE -> field.setLong(value, 0L)
+                                            java.lang.Integer.TYPE -> field.setInt(value, 0)
+                                            java.lang.Boolean.TYPE -> field.setBoolean(value, false)
+                                            else -> field.set(value, null)
+                                        }
+                                    } else {
+                                        scrubValue(field.get(value))
+                                    }
+                                }
+                            }
+                    }
+
+                    scrubValue(messageContent.instanceNonNull())
+                }
+            }
+
+            fun invokeSendManually(messageContent: MessageContent, callback: Any?) {
+                val conversationManager = conversationManagerInstance ?: error("ConversationManager is null")
+                internalMultipartSend.set(true)
+                try {
+                    sendMessageWithContentMethod.invoke(
+                        conversationManager,
+                        cloneDestinations(event.destinations),
+                        messageContent.instanceNonNull(),
+                        callback
+                    )
+                } finally {
+                    internalMultipartSend.set(false)
+                }
+            }
+
+            fun sendMediaManual(
+                sourceMessageContent: MessageContent,
+                overrideType: String,
+                snapDurationMs: Int?,
+                completionCallback: Any?
+            ): Boolean {
+                val sourceReader = ProtoReader(sourceMessageContent.content ?: return false)
+                val mediaCount = sourceReader.followPath(3)?.getCount(3) ?: 0
                 if (overrideType != "ORIGINAL" && mediaCount > 1) {
-                    val originalJson = context.gson.toJson(localMessageContent.instanceNonNull())
-                    val originalCallback = event.adapter.args().getOrNull(2)
                     val mediaBuffers = mutableListOf<ByteArray>()
-                    messageProtoReader.followPath(3)?.eachBuffer { id, buffer ->
+                    sourceReader.followPath(3)?.eachBuffer { id, buffer ->
                         if (id == 3) mediaBuffers.add(buffer)
                     }
                     if (mediaBuffers.isEmpty()) return false
 
                     fun buildPartMessageContent(partIndex: Int): MessageContent {
-                        val partContent = MessageContent(
-                            context.gson.fromJson(originalJson, context.classCache.localMessageContent)
-                        )
+                        val partContent = createMessageContentFromOriginal()
                         val metadata = partContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
                         val refs = ArrayList(partContent.localMediaReferences ?: arrayListOf())
                         val contentRefs = (metadata?.getObjectFieldOrNull("mContentReferences") as? ArrayList<*>)?.toCollection(ArrayList())
@@ -637,62 +768,95 @@ class SendOverride : Feature("Send Override") {
                         if (!applyOverride(partContent, partReader, overrideType, snapDurationMs)) return
 
                         val callback = if (partIndex == mediaCount - 1) {
-                            originalCallback
+                            completionCallback
                         } else {
                             CallbackBuilder(sendMessageCallbackClass)
                                 .override("onSuccess") {
                                     sendPart(partIndex + 1)
                                 }
                                 .override("onError", shouldUnhook = false) {
-                                    runCatching {
-                                        originalCallback?.javaClass?.methods?.firstOrNull { method ->
-                                            method.name == "onError" && method.parameterCount == 1
-                                        }?.invoke(originalCallback, it.argNullable<Any>(0))
-                                    }
+                                    invokeCallbackError(completionCallback, it.argNullable<Any>(0))
                                 }
                                 .build()
                         }
 
-                        if (partIndex == 0) {
-                            event.adapter.setArg(1, partContent.instanceNonNull())
-                            event.adapter.setArg(2, callback)
-                            invokeOriginalAndRestoreResult(event)
-                        } else {
-                            internalMultipartSend.set(true)
-                            try {
-                                sendMessageWithContentMethod.invoke(
-                                    context.feature(Messaging::class).conversationManager?.instanceNonNull(),
-                                    cloneDestinations(event.destinations),
-                                    partContent.instanceNonNull(),
-                                    callback
-                                )
-                            } finally {
-                                internalMultipartSend.set(false)
-                            }
-                        }
+                        invokeSendManually(partContent, callback)
                     }
 
                     sendPart(0)
                     return true
                 }
 
+                postSavePolicy = null
+                val targetReader = ProtoReader(sourceMessageContent.content ?: return false)
+                if (!applyOverride(sourceMessageContent, targetReader, overrideType, snapDurationMs)) return false
+                invokeSendManually(sourceMessageContent, completionCallback)
+                return true
+            }
+
+            fun sendRepeatedMediaManual(
+                repeatCount: Int,
+                overrideType: String,
+                snapDurationMs: Int?
+            ): Boolean {
+                if (repeatCount <= 0) return false
+
+                fun sendIteration(index: Int) {
+                    val callback = if (index == repeatCount - 1) {
+                        originalCallback
+                    } else {
+                        CallbackBuilder(sendMessageCallbackClass)
+                            .override("onSuccess") {
+                                sendIteration(index + 1)
+                            }
+                            .override("onError", shouldUnhook = false) {
+                                invokeCallbackError(originalCallback, it.argNullable<Any>(0))
+                            }
+                            .build()
+                    }
+
+                    val preparedContent = createMessageContentFromOriginal()
+                    if (!sendMediaManual(preparedContent, overrideType, snapDurationMs, callback)) {
+                        invokeCallbackError(originalCallback, "Failed to send")
+                    }
+                }
+
+                sendIteration(0)
+                return true
+            }
+
+            fun sendMedia(overrideType: String, snapDurationMs: Int?): Boolean {
+                postSavePolicy = null
                 return applyOverride(localMessageContent, messageProtoReader, overrideType, snapDurationMs)
             }
 
             val resolvedOverrideType = MediaFilePicker.getQueuedOverrideType()
                 ?: configOverrideType?.takeIf { it != "always_ask" }
-            if (resolvedOverrideType != null) {
-                if (MediaFilePicker.hasPendingSplitCleanup() || MediaFilePicker.getQueuedOverrideType() != null) {
-                    event.addCallbackResult("onSuccess") {
-                        context.runOnUiThread {
-                            if (!MediaFilePicker.handleCurrentQueuedItemSuccess()) {
-                                MediaFilePicker.clearQueuedSplitItems()
-                            }
+
+            fun attachQueuedRepeatCallbacks(sendEvent: SendMessageWithContentEvent) {
+                sendEvent.addCallbackResult("onSuccess") {
+                    context.runOnUiThread {
+                        val handledSplit = MediaFilePicker.handleCurrentQueuedItemSuccess()
+                        val handledRepeat = if (!handledSplit) {
+                            handleQueuedOriginalItemRepeatSuccess()
+                        } else {
+                            false
+                        }
+                        if (!handledSplit && !handledRepeat) {
+                            MediaFilePicker.clearQueuedSplitItems()
+                            clearQueuedOriginalItemRepeats()
                         }
                     }
-                    event.addCallbackResult("onError") {
-                        MediaFilePicker.clearQueuedSplitItems()
-                    }
+                }
+                sendEvent.addCallbackResult("onError") {
+                    MediaFilePicker.clearQueuedSplitItems()
+                    clearQueuedOriginalItemRepeats()
+                }
+            }
+
+            if (resolvedOverrideType != null) {
+                if (MediaFilePicker.hasPendingSplitCleanup() || MediaFilePicker.getQueuedOverrideType() != null || queuedOriginalItemRepeatCount > 0) {
+                    attachQueuedRepeatCallbacks(event)
                 }
                 if (sendMedia(resolvedOverrideType, 10000)) {
                     if (event.canceled) invokeOriginalAndRestoreResult(event)
@@ -702,7 +866,7 @@ class SendOverride : Feature("Send Override") {
 
             context.runOnUiThread {
                 val recipientNameForTask = recipientName
-                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
+                                val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
                 
                 createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
                     PurrfectOverlayTheme {
@@ -792,6 +956,8 @@ class SendOverride : Feature("Send Override") {
                                     context.translation.getCategory("features.options.gallery_media_send_override")
                                 }
                                 var scheduleEnabled by remember { mutableStateOf(false) }
+                                var continuousSendEnabled by remember { mutableStateOf(false) }
+                                var continuousSendCount by remember { mutableStateOf("2") }
 
                                 Text(
                                     fontSize = 20.sp,
@@ -905,6 +1071,42 @@ class SendOverride : Feature("Send Override") {
                                     )
                                 }
                             }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                continuousSendEnabled = !continuousSendEnabled
+                            },
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = continuousSendEnabled,
+                                onCheckedChange = {
+                                    continuousSendEnabled = it
+                                }
+                            )
+                            Text(text = mainTranslation["continuous_send_toggle"], lineHeight = 15.sp)
+                        }
+
+                        if (continuousSendEnabled) {
+                            OutlinedTextField(
+                                value = continuousSendCount,
+                                onValueChange = { value ->
+                                    continuousSendCount = value.filter(Char::isDigit).take(3)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                                label = { Text(mainTranslation["continuous_send_count_label"]) },
+                                placeholder = { Text(mainTranslation["continuous_send_count_placeholder"]) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                keyboardActions = KeyboardActions.Default
+                            )
+                            Text(
+                                text = mainTranslation["continuous_send_hint"],
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.72f)
+                            )
                         }
 
                         Row(
@@ -1071,8 +1273,27 @@ class SendOverride : Feature("Send Override") {
                                 Text(context.translation["button.cancel"])
                             }
                             Button(onClick = {
-                                alertDialog.dismiss()
                                 val finalSelectedType = selectedType
+                                val repeatCount = if (continuousSendEnabled) {
+                                    continuousSendCount.toIntOrNull()?.takeIf { it > 0 }
+                                } else {
+                                    1
+                                }
+                                if (repeatCount == null) {
+                                    context.inAppOverlay.showStatusToast(
+                                        icon = Icons.Default.WarningAmber,
+                                        text = mainTranslation["continuous_send_invalid_count"]
+                                    )
+                                    return@Button
+                                }
+                                if (repeatCount > 1 && disableSplitForCurrentSend && MediaFilePicker.hasOriginalUnsplitItem()) {
+                                    context.inAppOverlay.showStatusToast(
+                                        icon = Icons.Default.WarningAmber,
+                                        text = mainTranslation["continuous_send_single_send_conflict"]
+                                    )
+                                    return@Button
+                                }
+                                alertDialog.dismiss()
                                 if (disableSplitForCurrentSend && MediaFilePicker.hasOriginalUnsplitItem()) {
                                     MediaFilePicker.setQueuedOverrideType(finalSelectedType)
                                     if (!MediaFilePicker.sendOriginalUnsplitItem()) {
@@ -1137,10 +1358,11 @@ class SendOverride : Feature("Send Override") {
 
                                         context.bridgeClient.getTaskInterface().updateTaskProgress(taskHash, "Sending...", 100)
 
-                                        if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                            if (event.canceled) {
-                                                invokeOriginalAndRestoreResult(event)
-                                            }
+                                        if (sendRepeatedMediaManual(
+                                                repeatCount,
+                                                finalSelectedType,
+                                                if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null
+                                            )) {
                                             val successText = context.translation.format("schedule_sent_to", "name" to recipientNameForTask) ?: "Sent to $recipientNameForTask"
                                             context.inAppOverlay.showStatusToast(
                                                 icon = Icons.Filled.CheckCircle,
@@ -1187,10 +1409,24 @@ class SendOverride : Feature("Send Override") {
                                         }
                                     }
                                 } else {
-                                    if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
-                                        if (event.canceled) {
+                                    if (repeatCount == 1) {
+                                        if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
                                             invokeOriginalAndRestoreResult(event)
                                         }
+                                    } else if (MediaFilePicker.hasReusableOriginalItem()) {
+                                        queueOriginalItemRepeats(repeatCount - 1, finalSelectedType)
+                                        attachQueuedRepeatCallbacks(event)
+                                        if (sendMedia(finalSelectedType, if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null)) {
+                                            invokeOriginalAndRestoreResult(event)
+                                        } else {
+                                            clearQueuedOriginalItemRepeats()
+                                        }
+                                    } else {
+                                        sendRepeatedMediaManual(
+                                            repeatCount,
+                                            finalSelectedType,
+                                            if (finalSelectedType != "SAVEABLE_SNAP") convertDuration(customDuration) else null
+                                        )
                                     }
                                 }
                             }) {

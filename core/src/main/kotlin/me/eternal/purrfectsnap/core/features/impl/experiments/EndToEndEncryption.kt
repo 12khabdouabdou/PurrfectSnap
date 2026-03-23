@@ -400,6 +400,7 @@ class EndToEndEncryption : MessagingRuleFeature(
             context.event.subscribe(SendMessageWithContentEvent::class) { event ->
                 val messageContent = event.messageContent
                 val destinations = event.destinations
+                if (messageContent.contentType != ContentType.CHAT) return@subscribe
 
                 val e2eeConversations = destinations.getEndToEndConversations().takeIf { it.isNotEmpty() } ?: return@subscribe
 
@@ -430,10 +431,6 @@ class EndToEndEncryption : MessagingRuleFeature(
                             context.log.error("Failed to encrypt message", it)
                             context.longToast(translation["encryption_failed_toast"])
                         }
-                    }
-
-                    if (event.messageContent.contentType == ContentType.SNAP) {
-                        event.messageContent.contentType = ContentType.EXTERNAL_MEDIA
                     }
                 }
             }

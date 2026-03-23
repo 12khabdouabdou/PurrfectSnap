@@ -1,3 +1,7 @@
+## v1.5.2
+- New: Continuous snap sender feature!
+- Fix: Snap send failure for E2E Chats
+
 ## v1.5.1
 - Fix: Splitting issue for video snaps sent through gallery media send override!
 - New: Toggle to turn off/on splitting for video snaps sent through send override

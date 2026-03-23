@@ -72,6 +72,7 @@ class MediaFilePicker : Feature("Media File Picker") {
         private val queuedSplitItemIds = ArrayDeque<String>()
         private val queuedSplitCleanupUris = mutableMapOf<String, String>()
         private var originalUnsplitItem: Any? = null
+        private var reusableOriginalItem: Any? = null
         private var queuedOverrideType: String? = null
         private var bypassSplitOnce = false
         private var sendSingleItemHandler: ((Any) -> Boolean)? = null
@@ -80,6 +81,7 @@ class MediaFilePicker : Feature("Media File Picker") {
         fun hasQueuedSplitItems(): Boolean = queuedSplitItems.isNotEmpty()
         fun hasPendingSplitCleanup(): Boolean = queuedSplitItemIds.isNotEmpty()
         fun hasOriginalUnsplitItem(): Boolean = originalUnsplitItem != null
+        fun hasReusableOriginalItem(): Boolean = reusableOriginalItem != null
         fun setQueuedOverrideType(value: String?) {
             queuedOverrideType = value
         }
@@ -96,6 +98,12 @@ class MediaFilePicker : Feature("Media File Picker") {
             queuedSplitCleanupUris.clear()
             originalUnsplitItem = null
             queuedOverrideType = null
+        }
+        fun sendReusableOriginalItem(): Boolean {
+            val item = reusableOriginalItem ?: return false
+            bypassSplitOnce = true
+            val sender = sendSingleItemHandler ?: return false
+            return sender(item)
         }
         private fun queueSplitItems(items: List<Any>, preparedItems: List<PreparedMediaItem>, originalItem: Any?) {
             clearQueuedSplitItems(deleteTempItems = false)
@@ -172,6 +180,10 @@ class MediaFilePicker : Feature("Media File Picker") {
             val extractor = MediaExtractor()
             val muxer = MediaMuxer(outputFile.absolutePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
             val trackMap = mutableMapOf<Int, Int>()
+            val chunkStartUs = chunkStartMs * 1000
+            val chunkEndUs = chunkEndMs * 1000
+            var muxerStarted = false
+            var wroteAnySample = false
 
             try {
                 extractor.setDataSource(inputFile.absolutePath)
@@ -201,8 +213,9 @@ class MediaFilePicker : Feature("Media File Picker") {
                 val buffer = ByteBuffer.allocateDirect(maxBufferSize)
                 val bufferInfo = android.media.MediaCodec.BufferInfo()
                 muxer.start()
+                muxerStarted = true
 
-                extractor.seekTo(chunkStartMs * 1000, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
+                extractor.seekTo(chunkStartUs, MediaExtractor.SEEK_TO_PREVIOUS_SYNC)
 
                 while (true) {
                     bufferInfo.offset = 0
@@ -211,25 +224,36 @@ class MediaFilePicker : Feature("Media File Picker") {
 
                     val sampleTimeUs = extractor.sampleTime
                     if (sampleTimeUs < 0) break
-                    if (sampleTimeUs >= chunkEndMs * 1000) break
+                    if (sampleTimeUs < chunkStartUs) {
+                        extractor.advance()
+                        continue
+                    }
+                    if (sampleTimeUs >= chunkEndUs) break
 
                     val sampleTrackIndex = extractor.sampleTrackIndex
                     val muxerTrackIndex = trackMap[sampleTrackIndex]
                     if (muxerTrackIndex != null) {
-                        bufferInfo.presentationTimeUs = sampleTimeUs - (chunkStartMs * 1000)
+                        bufferInfo.presentationTimeUs = sampleTimeUs - chunkStartUs
                         bufferInfo.flags = extractor.sampleFlags
                         muxer.writeSampleData(muxerTrackIndex, buffer, bufferInfo)
+                        wroteAnySample = true
                     }
                     extractor.advance()
                 }
 
-                outputFiles += outputFile
+                if (wroteAnySample) {
+                    outputFiles += outputFile
+                } else {
+                    outputFile.delete()
+                }
             } catch (throwable: Throwable) {
                 outputFile.delete()
                 outputFiles.forEach { it.delete() }
                 throw throwable
             } finally {
-                runCatching { muxer.stop() }
+                if (muxerStarted) {
+                    runCatching { muxer.stop() }
+                }
                 runCatching { muxer.release() }
                 runCatching { extractor.release() }
             }
@@ -422,6 +446,7 @@ class MediaFilePicker : Feature("Media File Picker") {
                         }
                         val currentItems = (param.argNullable<Any>(1) as? List<*>)?.filterNotNull() ?: return@hookObjectMethod
                         if (currentItems.isEmpty()) return@hookObjectMethod
+                        reusableOriginalItem = currentItems.firstOrNull()
 
                         val itemClass = sendItems.genericParameterTypes.getOrNull(1)?.getTypeArguments()?.firstOrNull()
                             ?: sendItemsListItemClassFallback
