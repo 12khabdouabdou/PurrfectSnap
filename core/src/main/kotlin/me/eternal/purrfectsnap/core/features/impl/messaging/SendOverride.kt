@@ -2,8 +2,6 @@ package me.eternal.purrfectsnap.core.features.impl.messaging
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.media.MediaMetadataRetriever
-import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -50,6 +48,7 @@ import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
+import me.eternal.purrfectsnap.mapper.impl.EditsMapper
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -62,11 +61,15 @@ class SendOverride : Feature("Send Override") {
     companion object {
         private const val NOTIFICATION_CHANNEL_ID = "scheduled_send"
         private val internalMultipartSend = ThreadLocal.withInitial { false }
+        
+        // GLOBAL STATE: Stores the duration we steal from Edits upstream
+        var interceptedNativeDurationMs: Long = 0L
     }
     
     private var selectedType by mutableStateOf("SNAP")
     private var disableSplitForCurrentSend by mutableStateOf(false)
     private var customDuration by mutableFloatStateOf(10f)
+    private var virtualSplitChunks by mutableIntStateOf(1)
     private var scheduledTime by mutableStateOf<Long?>(null)
     private var showClockPicker by mutableStateOf(false)
     private var clockPickerHour by mutableIntStateOf(12)
@@ -75,21 +78,6 @@ class SendOverride : Feature("Send Override") {
     private val backgroundHookLock = Any()
     private var backgroundHookRefs = 0
     private var backgroundHooks: List<Hooker.HookHandle>? = null
-
-    private fun extractMediaDuration(uri: Uri): Long? {
-        val retriever = MediaMetadataRetriever()
-        return runCatching {
-            retriever.setDataSource(context.androidContext, uri)
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-        }.recoverCatching {
-            context.androidContext.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
-                retriever.setDataSource(pfd.fileDescriptor)
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
-            }
-        }.getOrNull().also {
-            runCatching { retriever.release() }
-        }
-    }
 
     private fun acquireScheduledSendBackground(): () -> Unit {
         if (!context.config.messaging.scheduledSendAllowRunningInBackground.get()) return {}
@@ -171,6 +159,31 @@ class SendOverride : Feature("Send Override") {
     @OptIn(ExperimentalLayoutApi::class)
     override fun init() {
         createNotificationChannel()
+        
+        // ==========================================
+        // DYNAMIC MAPPER: STEAL DURATION UPSTREAM
+        // ==========================================
+        context.mappings.useMapper(EditsMapper::class) { mapper ->
+            val editsClass = mapper.classes.getClass("EditsClass")
+            val durationField = mapper.durationField
+
+            if (editsClass != null && durationField != null) {
+                editsClass.hookConstructor(HookStage.AFTER) { param ->
+                    val editsInstance = param.thisObject()
+                    try {
+                        val duration = durationField.getLong(editsInstance)
+                        if (duration in 1L..299999L) { // Sanity check, less than 5 mins
+                            interceptedNativeDurationMs = duration
+                            context.log.verbose("SendOverride: Dynamically intercepted duration upstream! $duration ms")
+                        }
+                    } catch (e: Exception) {
+                        context.log.warn("SendOverride: Failed to read mapped duration field")
+                    }
+                }
+            } else {
+                context.log.warn("SendOverride: EditsMapper failed to find class or field")
+            }
+        }
         
         val stripMediaMetadata = context.config.messaging.stripMediaMetadata.get()
         var postSavePolicy: Int? = null
@@ -370,6 +383,7 @@ class SendOverride : Feature("Send Override") {
             
             val recipientName = recipientNames.joinToString(", ")
             event.canceled = true
+            virtualSplitChunks = 1 // Reset slider default
 
             fun invokeOriginalAndRestoreResult(ev: SendMessageWithContentEvent) {
                 val result = ev.adapter.invokeOriginal()
@@ -409,15 +423,6 @@ class SendOverride : Feature("Send Override") {
                 overrideType: String,
                 snapDurationMs: Int?
             ): Boolean {
-                val bypassLimit = context.config.experimental.nativeHooks.valdiHooks.bypassCameraRollLimit.get()
-                if (overrideType != "ORIGINAL" && !bypassLimit && (targetReader.followPath(3)?.getCount(3) ?: 0) > 1) {
-                    context.inAppOverlay.showStatusToast(
-                        icon = Icons.Default.WarningAmber,
-                        context.translation["gallery_media_send_override.multiple_media_toast"]
-                    )
-                    return false
-                }
-
                 when (overrideType) {
                     "SNAP", "SAVEABLE_SNAP" -> {
                         val savePolicyValue = if (overrideType == "SAVEABLE_SNAP") 2 else 1
@@ -537,7 +542,6 @@ class SendOverride : Feature("Send Override") {
                 val mediaCount = messageProtoReader.followPath(3)?.getCount(3) ?: 0
                 
                 if (overrideType != "ORIGINAL" && mediaCount > 1) {
-                    context.log.verbose("SendOverride: Handling physical multi-selection (mediaCount = $mediaCount)")
                     val originalJson = context.gson.toJson(localMessageContent.instanceNonNull())
                     val originalCallback = event.adapter.args().getOrNull(2)
                     val mediaBuffers = mutableListOf<ByteArray>()
@@ -628,58 +632,36 @@ class SendOverride : Feature("Send Override") {
                     ?: messageProtoReader.getVarInt(11, 5, 1, 1, 15)?.toLong()
                     ?: 0L
 
-                context.log.verbose("SendOverride: Duration extracted from Protobuf = $rawDurationMs ms")
+                // 1. Consume the Stolen Mapped Duration
+                if (rawDurationMs == 0L && interceptedNativeDurationMs > 0L) {
+                    context.log.verbose("SendOverride: Recovered hidden duration from Mapper = $interceptedNativeDurationMs ms")
+                    rawDurationMs = interceptedNativeDurationMs
+                    interceptedNativeDurationMs = 0L // Reset for next snap
+                }
 
+                // 2. Metadata Fallback
                 if (rawDurationMs == 0L) {
                     val metadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
                     val metaDuration = metadata?.getObjectFieldOrNull("mDurationMs") as? Number
                     rawDurationMs = metaDuration?.toLong() ?: 0L
-                    context.log.verbose("SendOverride: Duration extracted from Metadata = $rawDurationMs ms")
                 }
 
-                // EXTRACT THE HIDDEN URI DIRECTLY FROM THE BYTE ARRAY
-                if (rawDurationMs == 0L) {
-                    context.log.verbose("SendOverride: Attempting Regex extraction from raw references...")
-                    runCatching {
-                        val refs = localMessageContent.localMediaReferences
-                        refs?.forEach { ref ->
-                            ref.javaClass.declaredFields.forEach { f ->
-                                f.isAccessible = true
-                                val v = f.get(ref)
-                                if (v is ByteArray) {
-                                    val strValue = String(v)
-                                    val match = Regex("(content://[^&\\?]+|file://[^&\\?]+)").find(strValue)
-                                    if (match != null) {
-                                        val extractedUriStr = match.value
-                                        context.log.verbose("SendOverride: Regex found URI: $extractedUriStr")
-                                        val d = extractMediaDuration(Uri.parse(extractedUriStr))
-                                        context.log.verbose("SendOverride: Extracted physical duration = $d ms")
-                                        if (d != null && d > rawDurationMs) {
-                                            rawDurationMs = d
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }.onFailure {
-                        context.log.error("SendOverride: Failed Regex extraction", it)
-                    }
+                // 3. User Override Slider
+                val chunkDurationMs = 10_000L
+                if (virtualSplitChunks > 1) {
+                    rawDurationMs = virtualSplitChunks * chunkDurationMs
+                    context.log.verbose("SendOverride: User FORCED virtual split into $virtualSplitChunks parts! Overriding duration to $rawDurationMs ms")
                 }
 
                 context.log.verbose("SendOverride: Final Evaluated Duration = $rawDurationMs ms")
 
-                val chunkDurationMs = 10_000L
                 val shouldVirtualSplit = (overrideType == "SNAP" || overrideType == "SAVEABLE_SNAP") && rawDurationMs > chunkDurationMs
-
-                context.log.verbose("SendOverride: shouldVirtualSplit = $shouldVirtualSplit (disableSplitForCurrentSend = $disableSplitForCurrentSend)")
 
                 if (shouldVirtualSplit && disableSplitForCurrentSend == false) {
                     context.log.verbose("SendOverride: Virtual split condition met. Splitting video.")
                     val originalJson = context.gson.toJson(localMessageContent.instanceNonNull())
                     val originalCallback = event.adapter.args().getOrNull(2)
                     val totalChunks = kotlin.math.ceil(rawDurationMs.toDouble() / chunkDurationMs).toInt()
-
-                    context.log.verbose("SendOverride: Target virtual chunks = $totalChunks")
 
                     fun buildVirtualChunkContent(chunkIndex: Int): MessageContent {
                         val chunkContent = MessageContent(
@@ -711,30 +693,21 @@ class SendOverride : Feature("Send Override") {
                     }
 
                     fun sendVirtualChunk(chunkIndex: Int) {
-                        context.log.verbose("SendOverride: Preparing virtual chunk $chunkIndex")
                         postSavePolicy = null
                         val chunkContent = runCatching { buildVirtualChunkContent(chunkIndex) }.getOrElse {
-                            context.log.error("SendOverride: Failed to build virtual chunk $chunkIndex", it)
                             return
                         }
                         
                         val chunkReader = ProtoReader(chunkContent.content ?: return)
                         
-                        if (!applyOverride(chunkContent, chunkReader, overrideType, null)) {
-                            context.log.warn("SendOverride: applyOverride returned false for virtual chunk $chunkIndex")
-                            return
-                        }
+                        if (!applyOverride(chunkContent, chunkReader, overrideType, null)) return
 
                         val callback = if (chunkIndex == totalChunks - 1) {
                             originalCallback
                         } else {
                             CallbackBuilder(sendMessageCallbackClass)
-                                .override("onSuccess") {
-                                    context.log.verbose("SendOverride: Virtual chunk $chunkIndex success. Sending next.")
-                                    sendVirtualChunk(chunkIndex + 1)
-                                }
+                                .override("onSuccess") { sendVirtualChunk(chunkIndex + 1) }
                                 .override("onError", shouldUnhook = false) {
-                                    context.log.error("SendOverride: Error sending virtual chunk $chunkIndex.")
                                     runCatching {
                                         originalCallback?.javaClass?.methods?.firstOrNull { method ->
                                             method.name == "onError" && method.parameterCount == 1
@@ -757,8 +730,6 @@ class SendOverride : Feature("Send Override") {
                                     chunkContent.instanceNonNull(),
                                     callback
                                 )
-                            } catch (e: Exception) {
-                                context.log.error("SendOverride: Exception sending virtual chunk $chunkIndex", e)
                             } finally {
                                 internalMultipartSend.set(false)
                             }
@@ -975,49 +946,41 @@ class SendOverride : Feature("Send Override") {
                                             )
                                             Text(text = mainTranslation["saveable_snap_hint"], lineHeight = 15.sp)
                                         }
-                                        Column(
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        ) {
-                                            Text(
-                                                text = mainTranslation.format("duration",
-                                                    "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
+                                        
+                                        // SLIDER 1: Force Virtual Split
+                                        if (mediaCount <= 1 && (localMessageContent.contentType == ContentType.EXTERNAL_MEDIA || localMessageContent.contentType == ContentType.SNAP)) {
+                                            Column(modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp)) {
+                                                Text(
+                                                    text = if (virtualSplitChunks > 1) "Force Virtual Split: $virtualSplitChunks parts (${virtualSplitChunks * 10}s)" else "Force Virtual Split: Auto",
+                                                    fontSize = 13.sp,
+                                                    color = Color.White.copy(alpha = 0.9f)
                                                 )
-                                            )
-                                            Slider(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                enabled = selectedType != "SAVEABLE_SNAP",
-                                                value = customDuration,
-                                                onValueChange = { customDuration = it },
-                                                valueRange = -2f..11f,
-                                            )
-                                        }
-                                    }
-                                }
-
-                                if (mediaCount <= 1 && localMessageContent.contentType == ContentType.EXTERNAL_MEDIA && selectedType == "SNAP") {
-                                    Surface(
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-                                        color = Color(0xFF3E3478).copy(alpha = 0.3f),
-                                        shape = RoundedCornerShape(12.dp),
-                                        border = BorderStroke(1.dp, Color(0xFF3E3478))
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.Default.Info,
-                                                contentDescription = null,
-                                                tint = PurrfectOverlayPalette.glowSecondary,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                            Text(
-                                                text = "Long gallery videos will be virtually split into multiple Snaps.",
-                                                color = Color.White.copy(alpha = 0.8f),
-                                                fontSize = 12.sp,
-                                                lineHeight = 16.sp
-                                            )
+                                                Slider(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    value = virtualSplitChunks.toFloat(),
+                                                    onValueChange = { virtualSplitChunks = it.toInt() },
+                                                    valueRange = 1f..12f,
+                                                    steps = 10
+                                                )
+                                            }
+                                        } else {
+                                            // SLIDER 2: Standard Duration Trim
+                                            Column(
+                                                modifier = Modifier.padding(start = 8.dp)
+                                            ) {
+                                                Text(
+                                                    text = mainTranslation.format("duration",
+                                                        "duration" to (convertDuration(customDuration)?.toDuration(DurationUnit.MILLISECONDS)?.toString(DurationUnit.SECONDS, 2) ?: mainTranslation["unlimited_duration"])
+                                                    )
+                                                )
+                                                Slider(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    enabled = selectedType != "SAVEABLE_SNAP",
+                                                    value = customDuration,
+                                                    onValueChange = { customDuration = it },
+                                                    valueRange = -2f..11f,
+                                                )
+                                            }
                                         }
                                     }
                                 }
