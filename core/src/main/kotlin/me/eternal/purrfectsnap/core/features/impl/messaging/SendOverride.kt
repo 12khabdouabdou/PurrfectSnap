@@ -634,38 +634,35 @@ class SendOverride : Feature("Send Override") {
                     val metadata = localMessageContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
                     val metaDuration = metadata?.getObjectFieldOrNull("mDurationMs") as? Number
                     rawDurationMs = metaDuration?.toLong() ?: 0L
-                    context.log.verbose("SendOverride: Duration extracted from Metadata = $rawDurationMs ms (Metadata object was present: ${metadata != null})")
+                    context.log.verbose("SendOverride: Duration extracted from Metadata = $rawDurationMs ms")
                 }
 
-                // NEW: Deep Regex extraction of physical URI from LocalMediaReference
+                // EXTRACT THE HIDDEN URI DIRECTLY FROM THE BYTE ARRAY
                 if (rawDurationMs == 0L) {
-                    context.log.verbose("SendOverride: Protobuf duration is 0. Attempting deep Regex URI extraction...")
+                    context.log.verbose("SendOverride: Attempting Regex extraction from raw references...")
                     runCatching {
                         val refs = localMessageContent.localMediaReferences
                         refs?.forEach { ref ->
                             ref.javaClass.declaredFields.forEach { f ->
                                 f.isAccessible = true
                                 val v = f.get(ref)
-                                val strValue = when (v) {
-                                    is ByteArray -> String(v)
-                                    is String -> v
-                                    else -> null
-                                }
-                                if (strValue != null) {
-                                    // Extract content:// or file://, stopping at the first space, null byte, or query string (?)
-                                    val match = Regex("(content://[^\\s\\x00\\?]+|file://[^\\s\\x00\\?]+)").find(strValue)
+                                if (v is ByteArray) {
+                                    val strValue = String(v)
+                                    val match = Regex("(content://[^&\\?]+|file://[^&\\?]+)").find(strValue)
                                     if (match != null) {
-                                        val cleanUriString = match.value
-                                        context.log.verbose("SendOverride: Regex found hidden URI: $cleanUriString")
-                                        val d = extractMediaDuration(Uri.parse(cleanUriString))
+                                        val extractedUriStr = match.value
+                                        context.log.verbose("SendOverride: Regex found URI: $extractedUriStr")
+                                        val d = extractMediaDuration(Uri.parse(extractedUriStr))
                                         context.log.verbose("SendOverride: Extracted physical duration = $d ms")
-                                        if (d != null && d > rawDurationMs) rawDurationMs = d
+                                        if (d != null && d > rawDurationMs) {
+                                            rawDurationMs = d
+                                        }
                                     }
                                 }
                             }
                         }
                     }.onFailure {
-                        context.log.warn("SendOverride: Deep Regex extraction failed: ${it.message}")
+                        context.log.error("SendOverride: Failed Regex extraction", it)
                     }
                 }
 
