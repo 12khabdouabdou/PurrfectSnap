@@ -97,6 +97,13 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
             .fillMaxSize()
             .background(PurrfectPalette.backgroundGradient)
     ) {
+        val scrollOffset = routes.navigation?.globalScrollOffset ?: 0
+        val focusFactor = (scrollOffset.toFloat() / Motion.HEADER_MORPH_THRESHOLD).coerceIn(0f, 1f)
+        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        
+        val containerTopPadding = androidx.compose.ui.unit.lerp(statusBarHeight + 2.dp, 0.dp, focusFactor)
+        val topCorners = androidx.compose.ui.unit.lerp(28.dp, 0.dp, focusFactor)
+
         val subtitle = if (activeTasks.isNotEmpty()) {
             translation.format(
                 "summary_active",
@@ -110,13 +117,13 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
             )
         }
 
-        // The "Structured Glass" Container (1:1 with build 33a7e8f)
+        // The "Structured Glass" Container (Dynamically Morphed)
         Surface(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 12.dp)
-                .padding(top = 12.dp),
-            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
+                .padding(top = containerTopPadding),
+            shape = RoundedCornerShape(topStart = topCorners, topEnd = topCorners, bottomStart = 0.dp, bottomEnd = 0.dp),
             color = Color.White.copy(alpha = 0.04f),
             tonalElevation = 0.dp,
             shadowElevation = 0.dp,
@@ -128,7 +135,7 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
                 contentPadding = PaddingValues(
                     start = 10.dp,
                     end = 10.dp,
-                    top = controlsHeight,
+                    top = controlsHeight - 44.dp,
                     bottom = routes.bottomPadding + 20.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

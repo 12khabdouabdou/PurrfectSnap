@@ -5,6 +5,7 @@
 ## v1.5.1
 - Fix: Splitting issue for video snaps sent through gallery media send override!
 - New: Toggle to turn off/on splitting for video snaps sent through send override
+- Fix: Aphelion task page layout optimization(tq to Kaladin)
 
 ## v1.5.0
 - Fix: Skip when marking as seen for newer versions of Snapchat
