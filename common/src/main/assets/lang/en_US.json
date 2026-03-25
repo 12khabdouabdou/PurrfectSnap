@@ -1254,6 +1254,14 @@
                         "name": "Mark Snap as Seen Button",
                         "description": "Adds a button to mark a Snap as seen when viewing it.\nThis will work even when Stealth Mode is enabled"
                     },
+                    "mark_snap_as_seen_processing_mode": {
+                        "name": "Mark Snaps as Seen Mode",
+                        "description": "Choose whether to process a limited number of snaps per run or the entire queue at once"
+                    },
+                    "mark_snap_as_seen_limit": {
+                        "name": "Mark Snaps as Seen Limit",
+                        "description": "How many snaps to process per run when the mode is set to limit"
+                    },
                     "skip_when_marking_as_seen": {
                         "name": "Skip When Marking as Seen",
                         "description": "Automatically skips to the next Snap when marking a Snap as seen.\nUse in combination with Mark Snap as Seen Button"
@@ -2514,6 +2522,10 @@
                 "remove_audio_note_duration": "Remove Audio Note Duration",
                 "remove_audio_note_transcript_capability": "Remove Audio Note Transcript Capability"
             },
+            "mark_snap_as_seen_processing_mode": {
+                "limit": "Limit Per Run",
+                "complete": "Complete Queue"
+            },
             "hide_ui_components": {
                 "hide_profile_call_buttons": "Remove Profile Call Buttons",
                 "hide_chat_call_buttons": "Remove Chat Call Buttons",
@@ -3437,10 +3449,10 @@
         "search": {
             "placeholder": "Search"
         },
-        "filters": {
-            "newest_first": "Newest first",
-            "pick_a_date": "Pick a date",
-            "title": "Filters",
+    "filters": {
+        "newest_first": "Newest first",
+        "pick_a_date": "Pick a date",
+        "title": "Filters",
             "search_by": "Search by",
             "since": "Since",
             "until": "Until",
@@ -3455,7 +3467,7 @@
                 "started_typing": "Started typing",
                 "stopped_typing": "Stopped typing",
                 "started_speaking": "Started speaking",
-                "stopped_speaking": "Stopped speaking",
+            "stopped_speaking": "Stopped speaking",
                 "started_peeking": "Started peeking",
                 "stopped_peeking": "Stopped peeking",
                 "message_read": "Read message",

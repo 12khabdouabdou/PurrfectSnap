@@ -1190,6 +1190,14 @@
                         "name": "Mark Snap as Seen Button",
                         "description": "Adds a button to mark a Snap as seen when viewing it.\nThis will work even when Stealth Mode is enabled"
                     },
+                    "mark_snap_as_seen_processing_mode": {
+                        "name": "Mark Snaps as Seen Mode",
+                        "description": "Choose whether to process a limited number of snaps per run or the entire queue at once"
+                    },
+                    "mark_snap_as_seen_limit": {
+                        "name": "Mark Snaps as Seen Limit",
+                        "description": "How many snaps to process per run when the mode is set to limit"
+                    },
                     "skip_when_marking_as_seen": {
                         "name": "Skip When Marking as Seen",
                         "description": "Automatically skips to the next Snap when marking a Snap as seen.\nUse in combination with Mark Snap as Seen Button"

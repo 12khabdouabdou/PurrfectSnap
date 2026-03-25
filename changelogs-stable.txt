@@ -1,3 +1,9 @@
+## v1.5.3
+- New: Mark as Seen Mode(Limit per run[Custom] or Complete Queue)
+- Fix: PurrfectSnap crash if you try to open any dialog setting through in-app overlay
+- New: Translucent Dialogs & refreshed animation
+- Fix: Adjusted Snap Preview Location
+
 ## v1.5.2
 - New: Continuous snap sender feature!
 - Fix: Snap send failure for E2E Chats

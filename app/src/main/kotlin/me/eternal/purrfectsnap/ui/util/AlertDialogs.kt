@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.eternal.purrfectsnap.common.config.ConfigFlag
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog as StandardDialog
 import androidx.core.net.toUri
 import com.github.skydoves.colorpicker.compose.*
 import com.google.gson.JsonParser
@@ -67,6 +66,7 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Overlay
 import java.io.File
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
+import me.eternal.purrfectsnap.ui.util.Dialog as StandardDialog
 
 
 class AlertDialogs(
@@ -1093,7 +1093,7 @@ class AlertDialogs(
                 val lat = remember { mutableStateOf(coordinates.first.toString()) }
                 val lon = remember { mutableStateOf(coordinates.second.toString()) }
 
-                Dialog(
+                StandardDialog(
                     onDismissRequest = {
                     customCoordinatesDialog = false
                     },
@@ -1398,7 +1398,7 @@ class AlertDialogs(
 
         // Add/Edit message dialog
         if (showAddDialog) {
-            Dialog(
+            StandardDialog(
                 onDismissRequest = { showAddDialog = false },
                 properties = DialogProperties(
                     usePlatformDefaultWidth = false

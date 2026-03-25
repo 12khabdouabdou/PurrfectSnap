@@ -4,12 +4,28 @@ package me.eternal.purrfectsnap.ui.util
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Outline
 import android.os.Build
 import android.provider.Settings
 import android.view.*
+import android.view.View.OnAttachStateChangeListener
 import androidx.activity.ComponentDialog
 import androidx.activity.addCallback
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -19,9 +35,12 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.semantics.dialog
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.findViewTreeLifecycleOwner
@@ -32,6 +51,12 @@ import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import java.util.UUID
 import kotlin.math.roundToInt
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext?.findActivity()
+    else -> null
+}
 
 class DialogProperties constructor(
     val dismissOnBackPress: Boolean = true,
@@ -83,6 +108,17 @@ fun Dialog(
     content: @Composable () -> Unit
 ) {
     val view = LocalView.current
+    var forceInline by remember(view) { mutableStateOf(false) }
+    val hostActivity = remember(view) { view.context.findActivity() }
+    val shouldUseInline = forceInline || hostActivity == null || hostActivity.isFinishing || hostActivity.isDestroyed
+    if (shouldUseInline) {
+        InlineDialog(
+            onDismissRequest = onDismissRequest,
+            dismissOnClickOutside = properties.dismissOnClickOutside,
+            content = content
+        )
+        return
+    }
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val composition = rememberCompositionContext()
@@ -110,11 +146,30 @@ fun Dialog(
     }
 
     DisposableEffect(dialog) {
-        // Set the dialog's window type to TYPE_APPLICATION_OVERLAY so it's compatible with compose overlays
-        if (Settings.canDrawOverlays(view.context) && view.context !is Activity) {
-            dialog.window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+        val showDialog = {
+            try {
+                dialog.prepareWindowForHost()
+                if (!dialog.isShowing) {
+                    dialog.show()
+                }
+            } catch (_: WindowManager.BadTokenException) {
+                forceInline = true
+            }
         }
-        dialog.show()
+
+        if (view.isAttachedToWindow || view.windowToken != null || view.rootView?.windowToken != null) {
+            showDialog()
+        } else {
+            val listener = object : OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    v.removeOnAttachStateChangeListener(this)
+                    showDialog()
+                }
+
+                override fun onViewDetachedFromWindow(v: View) = Unit
+            }
+            view.addOnAttachStateChangeListener(listener)
+        }
 
         onDispose {
             dialog.dismiss()
@@ -128,6 +183,75 @@ fun Dialog(
             properties = properties,
             layoutDirection = layoutDirection
         )
+    }
+}
+
+@Composable
+private fun InlineDialog(
+    onDismissRequest: () -> Unit,
+    dismissOnClickOutside: Boolean,
+    content: @Composable () -> Unit
+) {
+    val density = LocalDensity.current
+    val displayMetrics = LocalContext.current.resources.displayMetrics
+    val screenWidthDp = with(density) { displayMetrics.widthPixels.toDp() }
+    val screenHeightDp = with(density) { displayMetrics.heightPixels.toDp() }
+    val interactionSource = remember { MutableInteractionSource() }
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
+    Popup(
+        alignment = androidx.compose.ui.Alignment.Center,
+        properties = PopupProperties(
+            focusable = true,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = dismissOnClickOutside
+        ),
+        onDismissRequest = onDismissRequest
+    ) {
+        Box(
+            modifier = Modifier
+                .width(screenWidthDp)
+                .height(screenHeightDp)
+                .then(
+                    if (dismissOnClickOutside) {
+                        Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            onClick = onDismissRequest
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .semantics { dialog() },
+            contentAlignment = androidx.compose.ui.Alignment.Center
+        ) {
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn(animationSpec = tween(180)) + scaleIn(
+                    initialScale = 0.92f,
+                    animationSpec = spring(dampingRatio = 0.82f, stiffness = 520f)
+                ),
+                exit = fadeOut(animationSpec = tween(120)) + scaleOut(
+                    targetScale = 0.96f,
+                    animationSpec = tween(120)
+                )
+            ) {
+                Box(
+                    modifier = Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = {}
+                    )
+                ) {
+                    content()
+                }
+            }
+        }
     }
 }
 
@@ -277,6 +401,26 @@ private class DialogWrapper(
                 onDismissRequest()
             }
         }
+    }
+
+    fun prepareWindowForHost() {
+        val hostActivity = composeView.context.findActivity()
+        val hostToken = composeView.applicationWindowToken
+            ?: composeView.windowToken
+            ?: composeView.rootView?.applicationWindowToken
+            ?: composeView.rootView?.windowToken
+        if (hostActivity == null) {
+            when {
+                hostToken != null -> window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG)
+                Settings.canDrawOverlays(composeView.context) -> window?.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY)
+            }
+        }
+        if (hostToken != null) {
+            window?.attributes = window?.attributes?.apply {
+                token = hostToken
+            }
+        }
+        hostActivity?.let { setOwnerActivity(it) }
     }
 
     private fun setLayoutDirection(layoutDirection: LayoutDirection) {

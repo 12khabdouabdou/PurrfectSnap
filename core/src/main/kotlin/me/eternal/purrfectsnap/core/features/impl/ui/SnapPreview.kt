@@ -28,6 +28,8 @@ class SnapPreview : Feature("SnapPreview") {
     private val bitmapCache = EvictingMap<String, Bitmap>(50) // filePath => bitmap
 
     private val fetchJobTab = randomTag()
+    private val previewHorizontalAdjustmentDp = 16
+    private val previewVerticalAdjustmentDp = 10
 
     override fun init() {
         if (!context.config.userInterface.snapPreview.get()) return
@@ -47,9 +49,11 @@ class SnapPreview : Feature("SnapPreview") {
         }
 
         onNextActivityCreate {
-            val (chatMediaCardHeight, chatMediaCardSnapMargin, chatMediaCardSnapMarginStartSdl) = context.userInterface.run {
-                Triple(dpToPx(60), dpToPx(10), dpToPx(15))
-            }
+            val chatMediaCardHeight = context.userInterface.dpToPx(60)
+            val chatMediaCardSnapMargin = context.userInterface.dpToPx(10)
+            val chatMediaCardSnapMarginStartSdl = context.userInterface.dpToPx(15)
+            val previewHorizontalAdjustment = context.userInterface.dpToPx(previewHorizontalAdjustmentDp)
+            val previewVerticalAdjustment = context.userInterface.dpToPx(previewVerticalAdjustmentDp)
 
             fun decodeMedia(file: File) = runCatching {
                 bitmapCache.getOrPut(file.absolutePath) {
@@ -91,8 +95,8 @@ class SnapPreview : Feature("SnapPreview") {
                             val bitmap = bitmapCache[mediaFilePath] ?: return
 
                             canvas.drawBitmap(bitmap,
-                                canvas.width.toFloat() - bitmap.width - chatMediaCardSnapMarginStartSdl.toFloat() - chatMediaCardSnapMargin.toFloat(),
-                                (canvas.height - bitmap.height) / 2f,
+                                canvas.width.toFloat() - bitmap.width - chatMediaCardSnapMarginStartSdl.toFloat() - chatMediaCardSnapMargin.toFloat() + previewHorizontalAdjustment,
+                                (canvas.height - bitmap.height) / 2f + previewVerticalAdjustment,
                                 null
                             )
                         }

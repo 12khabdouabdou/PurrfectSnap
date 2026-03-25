@@ -205,6 +205,12 @@ class MessagingTweaks : ConfigContainer() {
     val unlimitedSnapViewTime = boolean("unlimited_snap_view_time")
     val autoMarkAsRead = multiple("auto_mark_as_read", "snap_reply", "conversation_read", "save_snap_in_chat") { requireRestart() }
     val markSnapAsSeenButton = boolean("mark_snap_as_seen_button") { requireRestart() }
+    val markSnapAsSeenProcessingMode = unique("mark_snap_as_seen_processing_mode", "limit", "complete").apply {
+        set("limit")
+    }
+    val markSnapAsSeenLimit = integer("mark_snap_as_seen_limit", defaultValue = 50) {
+        inputCheck = { it.toIntOrNull()?.coerceAtLeast(1) != null }
+    }
     val skipWhenMarkingAsSeen = boolean("skip_when_marking_as_seen") { requireRestart() }
     val loopMediaPlayback = boolean("loop_media_playback") { requireRestart() }
     val disableReplayInFF = boolean("disable_replay_in_ff")

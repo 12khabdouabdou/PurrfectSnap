@@ -53,8 +53,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
@@ -78,6 +76,8 @@ import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.*
+import me.eternal.purrfectsnap.ui.util.Dialog
+import me.eternal.purrfectsnap.ui.util.DialogProperties
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.max
