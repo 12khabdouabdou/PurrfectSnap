@@ -11,21 +11,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,15 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.setup.screens.SetupScreen
 import me.eternal.purrfectsnap.ui.util.AlertDialogs
@@ -55,16 +44,7 @@ class MappingsScreen : SetupScreen() {
         val translation = context.translation
         var infoText by remember { mutableStateOf(null as String?) }
         var isGenerating by remember { mutableStateOf(false) }
-        var showCompletionNotice by remember { mutableStateOf(false) }
-        var completionCountdown by remember { mutableIntStateOf(10) }
-
-        fun finishMappings() {
-            if (isFirstRunFlow) {
-                showCompletionNotice = true
-            } else {
-                goNext()
-            }
-        }
+        fun finishMappings() = goNext()
 
         if (infoText != null) {
             fun dismiss() {
@@ -85,103 +65,6 @@ class MappingsScreen : SetupScreen() {
                     }
                 }
             }
-        }
-
-        LaunchedEffect(showCompletionNotice) {
-            if (showCompletionNotice) {
-                completionCountdown = 10
-                while (completionCountdown > 0) {
-                    delay(1000)
-                    completionCountdown--
-                }
-            }
-        }
-
-        if (showCompletionNotice) {
-            val confirmLabel = if (completionCountdown > 0) {
-                translation.format(
-                    "setup.mappings.confirm_understand_timeout",
-                    "seconds" to completionCountdown.toString()
-                )
-            } else {
-                translation["setup.mappings.confirm_understand"]
-            }
-            AestheticDialog(
-                onDismissRequest = { if (completionCountdown == 0) { showCompletionNotice = false; goNext() } },
-                title = translation["setup.mappings.notice_title"],
-                text = "",
-                icon = Icons.Filled.Warning,
-                confirmButtonText = confirmLabel,
-                onConfirm = { if (completionCountdown == 0) { showCompletionNotice = false; goNext() } },
-                confirmEnabled = completionCountdown == 0,
-                showCloseButton = false,
-                customContent = {
-                    val bodyStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = PurrfectPalette.textSecondary,
-                        lineHeight = 18.sp
-                    )
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = PurrfectPalette.cardOverlayColor,
-                        tonalElevation = 0.dp,
-                        shadowElevation = 0.dp,
-                        border = BorderStroke(
-                            1.dp,
-                            Brush.linearGradient(
-                                listOf(
-                                    PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
-                                    PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                                )
-                            )
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(max = 360.dp)
-                                .verticalScroll(rememberScrollState())
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Text(
-                                text = translation["setup.mappings.notice_intro"],
-                                style = bodyStyle,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Text(
-                                text = translation["setup.mappings.notice_step_1"],
-                                style = bodyStyle,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Text(
-                                text = translation["setup.mappings.notice_step_2"],
-                                style = bodyStyle,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Text(
-                                text = translation["setup.mappings.notice_step_3"],
-                                style = bodyStyle,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Text(
-                                text = translation["setup.mappings.notice_rooted_title"],
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = Color.White,
-                                    fontWeight = FontWeight.SemiBold,
-                                    lineHeight = 18.sp
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Text(
-                                text = translation["setup.mappings.notice_rooted_body"],
-                                style = bodyStyle,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                }
-            )
         }
 
         LaunchedEffect(Unit) {

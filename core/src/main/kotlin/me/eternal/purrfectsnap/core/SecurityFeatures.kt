@@ -2,21 +2,36 @@ package me.eternal.purrfectsnap.core
 
 import android.system.Os
 import android.view.ViewGroup
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.rounded.NotInterested
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import me.eternal.purrfectsnap.common.bridge.FileHandleScope
 import me.eternal.purrfectsnap.common.bridge.toWrapper
@@ -25,6 +40,8 @@ import me.eternal.purrfectsnap.common.config.VersionRequirement
 import me.eternal.purrfectsnap.common.ui.createComposeView
 import me.eternal.purrfectsnap.core.event.events.impl.UnaryCallEvent
 import me.eternal.purrfectsnap.core.ui.CustomComposable
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
+import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.util.dataBuilder
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -46,6 +63,162 @@ class SecurityFeatures(
 
     private fun getStatus() = token?.run {
         transact(this, 0)?.toString(2)?.padStart(32, '0')?.count { it == '1' }
+    }
+
+    private fun isLoginSignupActivity() = context.mainActivity?.javaClass?.name?.endsWith("LoginSignupActivity") == true
+
+    @Composable
+    private fun LoginSignupHelpButton(onClick: () -> Unit) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.92f),
+                                PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.62f)
+                            )
+                        ),
+                        RoundedCornerShape(999.dp)
+                    )
+                    .border(
+                        BorderStroke(1.dp, PurrfectOverlayPalette.textPrimary.copy(alpha = 0.18f)),
+                        RoundedCornerShape(999.dp)
+                    )
+                    .clickable(onClick = onClick)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.16f))
+                        .border(BorderStroke(1.dp, PurrfectOverlayPalette.textPrimary.copy(alpha = 0.28f)), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.HelpOutline,
+                        contentDescription = "Login Help",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Text(
+                    text = "Can't Login?",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                )
+            }
+        }
+    }
+
+    @Composable
+    private fun LoginSignupHelpDialog(onDismiss: () -> Unit) {
+        Dialog(onDismissRequest = onDismiss) {
+            PurrfectOverlayTheme {
+                val shape = RoundedCornerShape(20.dp)
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = shape,
+                    color = Color.Transparent,
+                    border = BorderStroke(
+                        1.dp,
+                        Brush.linearGradient(
+                            listOf(
+                                PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.55f),
+                                PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.35f)
+                            )
+                        )
+                    ),
+                    shadowElevation = 0.dp,
+                    tonalElevation = 0.dp
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(PurrfectOverlayPalette.cardOverlay, shape)
+                            .padding(20.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Icon(
+                                Icons.Filled.Info,
+                                contentDescription = null,
+                                tint = PurrfectOverlayPalette.textPrimary,
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .size(28.dp)
+                            )
+                            Text(
+                                text = context.translation["setup.mappings.notice_title"],
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PurrfectOverlayPalette.textPrimary,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Text(
+                                text = context.translation["setup.mappings.notice_intro"],
+                                color = PurrfectOverlayPalette.textSecondary,
+                                textAlign = TextAlign.Start
+                            )
+                            Text(
+                                text = "For non-rooted users:",
+                                color = PurrfectOverlayPalette.textPrimary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = context.translation["setup.mappings.notice_step_1"],
+                                color = PurrfectOverlayPalette.textSecondary,
+                                textAlign = TextAlign.Start
+                            )
+                            Text(
+                                text = context.translation["setup.mappings.notice_step_2"],
+                                color = PurrfectOverlayPalette.textSecondary,
+                                textAlign = TextAlign.Start
+                            )
+                            Text(
+                                text = context.translation["setup.mappings.notice_step_3"],
+                                color = PurrfectOverlayPalette.textSecondary,
+                                textAlign = TextAlign.Start
+                            )
+                            Text(
+                                text = context.translation["setup.mappings.notice_rooted_title"],
+                                color = PurrfectOverlayPalette.textPrimary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Text(
+                                text = context.translation["setup.mappings.notice_rooted_body"],
+                                color = PurrfectOverlayPalette.textSecondary,
+                                textAlign = TextAlign.Start
+                            )
+                            Button(
+                                onClick = onDismiss,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = PurrfectOverlayPalette.glowPrimary.copy(alpha = 0.92f),
+                                    contentColor = Color.Black
+                                ),
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("OK")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun init() {
@@ -100,6 +273,34 @@ class SecurityFeatures(
                 )
             }
         }
+
+        lateinit var loginHelpComposable: CustomComposable
+        loginHelpComposable = {
+            var showDialog by remember { mutableStateOf(false) }
+            var isLoginScreen by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                while (true) {
+                    val currentlyInLogin = isLoginSignupActivity()
+                    isLoginScreen = currentlyInLogin
+                    if (!currentlyInLogin) showDialog = false
+                    delay(150)
+                }
+            }
+
+            if (isLoginScreen) {
+                LoginSignupHelpButton(
+                    onClick = { showDialog = true }
+                )
+            }
+
+            if (isLoginScreen && showDialog) {
+                LoginSignupHelpDialog(
+                    onDismiss = { showDialog = false }
+                )
+            }
+        }
+        context.inAppOverlay.addCustomComposable(loginHelpComposable)
 
         if (!context.disablePlugin) return
 
