@@ -1,3 +1,8 @@
+## v1.5.4
+- Fix: Streak & Non-Streak category in Bulk Messaging Action for newer versions of snap
+- Fix: Spoof Coordinates Title
+- New: Changelogs feature
+
 ## v1.5.3
 - New: Mark as Seen Mode(Limit per run[Custom] or Complete Queue)
 - Fix: PurrfectSnap crash if you try to open any dialog setting through in-app overlay

@@ -345,6 +345,10 @@ object LegacyTheme : ThemeContract {
         var changelogError by remember { mutableStateOf<String?>(null) }
         var changelogText by remember { mutableStateOf<String?>(null) }
         var changelogVersion by remember { mutableStateOf<String?>(null) }
+        var showFullChangelogDialog by remember { mutableStateOf(false) }
+        var fullChangelogLoading by remember { mutableStateOf(false) }
+        var fullChangelogError by remember { mutableStateOf<String?>(null) }
+        var fullChangelogText by remember { mutableStateOf<String?>(null) }
         var showAnnouncementsDialog by remember { mutableStateOf(false) }
         var announcementsLoading by remember { mutableStateOf(false) }
         var announcementsError by remember { mutableStateOf<String?>(null) }
@@ -415,6 +419,23 @@ object LegacyTheme : ThemeContract {
             }
         }
 
+        fun loadFullChangelog(url: String) {
+            if (fullChangelogText != null) return
+            fullChangelogLoading = true; fullChangelogError = null
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching {
+                    changelogClient.newCall(Request.Builder().url(url).build()).execute().use { response ->
+                        if (!response.isSuccessful) throw IllegalStateException("Failed to fetch changelog (${response.code})")
+                        response.body?.string()?.trim() ?: throw IllegalStateException("Empty changelog body")
+                    }
+                }.onSuccess { text ->
+                    withContext(Dispatchers.Main) { fullChangelogText = text; fullChangelogLoading = false }
+                }.onFailure { error ->
+                    withContext(Dispatchers.Main) { fullChangelogError = error.message ?: "Failed to load changelog"; fullChangelogLoading = false }
+                }
+            }
+        }
+
         LaunchedEffect(Unit) {
             if (context.sharedPreferences.getBoolean("show_changelog_on_launch", false)) {
                 val version = context.sharedPreferences.getString("changelog_version_on_launch", null)
@@ -449,6 +470,9 @@ object LegacyTheme : ThemeContract {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                         LocalTopBarActionChip(icon = Icons.Filled.Notifications, label = null, contentDescription = translation["announcements_button_description"]) {
                             showAnnouncementsDialog = true; loadAnnouncements()
+                        }
+                        LocalTopBarActionChip(icon = Icons.Filled.Description, label = null, contentDescription = translation.getOrNull("changelog_button_description") ?: "Open full changelog") {
+                            showFullChangelogDialog = true; loadFullChangelog(changelogUrl)
                         }
                     }
                     Row(modifier = Modifier.wrapContentWidth(Alignment.End), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -570,6 +594,7 @@ object LegacyTheme : ThemeContract {
                 onConfirm = { showChangelogDialog = false; handleUpdateAction() },
                 dismissButtonText = translation["changelog_dialog_cancel_button"] ?: "Cancel",
                 onDismiss = { showChangelogDialog = false },
+                showCloseButton = false,
                 customContent = {
                     Column(modifier = Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (changelogLoading) CircularProgressIndicator(color = Color.White)
@@ -587,11 +612,30 @@ object LegacyTheme : ThemeContract {
                 text = "", icon = Icons.Filled.Notifications,
                 confirmButtonText = translation["announcements_dialog_close_button"] ?: "Close",
                 onConfirm = { showAnnouncementsDialog = false },
+                showCloseButton = false,
                 customContent = {
                     Column(modifier = Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (announcementsLoading) CircularProgressIndicator(color = Color.White)
                         else if (announcementsError != null) Text(announcementsError!!, color = Color.Red, fontSize = 14.sp)
                         else Text(announcementsText ?: translation["announcements_dialog_empty"] ?: "", color = PurrfectPalette.textPrimary, fontSize = 14.sp)
+                    }
+                }
+            )
+        }
+
+        if (showFullChangelogDialog) {
+            AestheticDialog(
+                onDismissRequest = { showFullChangelogDialog = false },
+                title = translation["changelog_dialog_title"] ?: "Changelog",
+                text = "", icon = Icons.Filled.Description,
+                confirmButtonText = translation["announcements_dialog_close_button"] ?: "Close",
+                onConfirm = { showFullChangelogDialog = false },
+                showCloseButton = false,
+                customContent = {
+                    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 340.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        if (fullChangelogLoading) CircularProgressIndicator(color = Color.White)
+                        else if (fullChangelogError != null) Text(fullChangelogError!!, color = Color.Red, fontSize = 14.sp)
+                        else Text(fullChangelogText ?: translation["changelog_dialog_empty"] ?: "", color = PurrfectPalette.textPrimary, fontSize = 14.sp)
                     }
                 }
             )

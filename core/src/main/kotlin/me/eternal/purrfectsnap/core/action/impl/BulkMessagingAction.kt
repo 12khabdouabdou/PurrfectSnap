@@ -113,6 +113,18 @@ class BulkMessagingAction : AbstractAction() {
     private val translation by lazy { context.translation.getCategory("bulk_messaging_action") }
     private val betterLocation by lazy { context.feature(BetterLocation::class) }
 
+    private fun hasReliableStreak(friend: FriendInfo, streakFeedUserIds: Set<String>): Boolean {
+        val userId = friend.userId ?: return false
+        if (userId in streakFeedUserIds) return true
+        if (friend.streakExpirationTimestamp > 0L) return true
+        if (friend.streakLength > 0) return true
+        val categories = friend.friendmojiCategories?.split(",") ?: return false
+        return categories.any { category ->
+            category.contains("streak", ignoreCase = true) ||
+                category.contains("hourglass", ignoreCase = true)
+        }
+    }
+
     private object BulkMessagingPalette {
         val background = Brush.verticalGradient(
             listOf(
@@ -286,7 +298,12 @@ class BulkMessagingAction : AbstractAction() {
         }
     }
 
-    private fun filterFriends(friends: List<FriendInfo>, filter: Filter, nameFilter: String): List<FriendInfo> {
+    private fun filterFriends(
+        friends: List<FriendInfo>,
+        filter: Filter,
+        nameFilter: String,
+        streakFeedUserIds: Set<String> = emptySet()
+    ): List<FriendInfo> {
         val userIdBlacklist = arrayOf(
             context.database.myUserId,
             "b42f1f70-5a8b-4c53-8c25-34e7ec9e6781", // myai
@@ -310,8 +327,12 @@ class BulkMessagingAction : AbstractAction() {
                 Filter.SUGGESTED -> friend.friendLinkType == FriendLinkType.SUGGESTED.value
                 Filter.DELETED -> friend.friendLinkType == FriendLinkType.DELETED.value
                 Filter.BUSINESS_ACCOUNTS -> friend.businessCategory > 0
-                Filter.STREAKS -> friend.friendLinkType == FriendLinkType.MUTUAL.value && friend.addedTimestamp > 0 && friend.streakLength != 0
-                Filter.NON_STREAKS -> friend.friendLinkType == FriendLinkType.MUTUAL.value&& friend.addedTimestamp > 0 && friend.streakLength == 0
+                Filter.STREAKS -> friend.friendLinkType == FriendLinkType.MUTUAL.value &&
+                    friend.addedTimestamp > 0 &&
+                    hasReliableStreak(friend, streakFeedUserIds)
+                Filter.NON_STREAKS -> friend.friendLinkType == FriendLinkType.MUTUAL.value &&
+                    friend.addedTimestamp > 0 &&
+                    !hasReliableStreak(friend, streakFeedUserIds)
                 Filter.FOLLOWING -> {
                     val isFollowing = friend.friendLinkType == FriendLinkType.FOLLOWING.value ||
                         (friend.friendLinkType == FriendLinkType.OUTGOING.value &&
@@ -390,10 +411,21 @@ class BulkMessagingAction : AbstractAction() {
                 val incomingRequestUserIds = if (filter == Filter.INCOMING || filter == Filter.INCOMING_FOLLOWER) {
                     runCatching { context.database.getIncomingRequestUserIds() }.getOrElse { emptySet() }
                 } else emptySet()
+                val streakFeedUserIds = if (filter == Filter.STREAKS || filter == Filter.NON_STREAKS) {
+                    runCatching {
+                        context.database.getFeedEntries(Int.MAX_VALUE)
+                            .filter { it.conversationType == 0 && it.participantsSize == 2 }
+                            .filter { (it.streakCount ?: 0) > 0 || (it.streakExpirationTimestampMs ?: 0L) > 0L }
+                            .mapNotNull { entry ->
+                                entry.friendUserId ?: entry.participants?.firstOrNull { id -> id != context.database.myUserId }
+                            }
+                            .toSet()
+                    }.getOrElse { emptySet() }
+                } else emptySet()
 
                 val newFriends = if (conversationType == ConversationType.FRIENDS_ONLY || conversationType == ConversationType.BOTH) {
                     context.database.getAllFriends().let { friends ->
-                        filterFriends(friends, filter, nameFilter)
+                        filterFriends(friends, filter, nameFilter, streakFeedUserIds)
                     }
                         .filter { it.userId?.let { id -> !hiddenFriendIds.contains(id) } == true }
                         .filter { friend ->
