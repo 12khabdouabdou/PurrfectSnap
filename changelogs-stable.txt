@@ -1,3 +1,6 @@
+## v1.5.6
+- New: Add "Can't login" hint directly in the login screen
+
 ## v1.5.5
 - Fix: Custom Emoji now works for all devices!
 - New: Story preview in story batch download dialog
