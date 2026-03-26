@@ -22,6 +22,7 @@ class OperaStoryOverlayState {
     val totalCountState = mutableIntStateOf(0)
     val snapSourceState = mutableStateOf<String?>(null)
     val isInConversationState = mutableStateOf(false)
+    val storyIdentityState = mutableStateOf<String?>(null)
 
     fun setupDisplayStateHook(
         context: ModContext,
@@ -63,6 +64,14 @@ class OperaStoryOverlayState {
                         ?: mediaParamMap["SNAP_POSITION_IN_STORY"]?.toString()?.toIntOrNull()
                     val totalCount = mediaParamMap["snap_story_length"]?.toString()?.toIntOrNull()
                         ?: mediaParamMap["NUM_SNAPS_IN_STORY"]?.toString()?.toIntOrNull()
+                    val storyIdentity = mediaParamMap["STORY_ID"]?.toString()
+                        ?.takeIf { it.isNotBlank() && it != "null" }
+                        ?: mediaParamMap["TOPIC_SNAP_CREATOR_USER_ID"]?.toString()
+                            ?.takeIf { it.isNotBlank() && it != "null" }
+                        ?: mediaParamMap["PLAYABLE_STORY_SNAP_RECORD"]?.toString()
+                            ?.substringAfter("storyUserId=", "")
+                            ?.substringBefore(",")
+                            ?.takeIf { it.isNotBlank() && it != "null" }
 
                     var mediaOrigin = ""
                     if (showSourceIndicator) {
@@ -81,6 +90,7 @@ class OperaStoryOverlayState {
                         totalCountState.intValue = totalCount ?: 0
                         snapSourceState.value = snapSource
                         isInConversationState.value = false
+                        storyIdentityState.value = storyIdentity
 
                         onSnapFullyDisplayed?.let { callback ->
                             if (currentIndex != null) callback(currentIndex)

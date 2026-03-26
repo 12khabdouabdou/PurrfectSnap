@@ -52,6 +52,39 @@ enum class FileType(
             return result.toString()
         }
 
+        private fun looksLikeIsoBmffVideo(array: ByteArray): Boolean {
+            if (array.size < 12) return false
+            // ISO BMFF containers like MP4 expose an `ftyp` box at byte offset 4.
+            if (array[4] != 'f'.code.toByte() ||
+                array[5] != 't'.code.toByte() ||
+                array[6] != 'y'.code.toByte() ||
+                array[7] != 'p'.code.toByte()
+            ) {
+                return false
+            }
+
+            val majorBrand = String(array, 8, 4, Charsets.US_ASCII).trim('\u0000').lowercase()
+            return majorBrand in setOf(
+                "mp41",
+                "mp42",
+                "isom",
+                "iso2",
+                "iso3",
+                "iso4",
+                "iso5",
+                "iso6",
+                "avc1",
+                "dash",
+                "mif1",
+                "msnv",
+                "3gp4",
+                "3gp5",
+                "3gp6",
+                "3g2a",
+                "3g2b"
+            )
+        }
+
         fun fromFile(file: File): FileType {
             file.inputStream().use { inputStream ->
                 val buffer = ByteArray(16)
@@ -64,7 +97,8 @@ enum class FileType(
             val headerBytes = ByteArray(16)
             System.arraycopy(array, 0, headerBytes, 0, 16)
             val hex = bytesToHex(headerBytes)
-            return fileSignatures.entries.firstOrNull { hex.startsWith(it.key) }?.value ?: UNKNOWN
+            return fileSignatures.entries.firstOrNull { hex.startsWith(it.key) }?.value
+                ?: if (looksLikeIsoBmffVideo(headerBytes)) MP4 else UNKNOWN
         }
 
         fun fromInputStream(inputStream: InputStream): FileType {

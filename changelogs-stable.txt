@@ -1,3 +1,9 @@
+## v1.5.5
+- Fix: Custom Emoji now works for all devices!
+- New: Story preview in story batch download dialog
+- Fix: Auto Skip Stories getting stuck
+- Fix: Stories ending up saving in .dat format
+
 ## v1.5.4
 - Fix: Streak & Non-Streak category in Bulk Messaging Action for newer versions of snap
 - Fix: Spoof Coordinates Title

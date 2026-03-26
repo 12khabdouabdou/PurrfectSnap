@@ -26,6 +26,8 @@ class OperaStorySnapJump(
     private var retryRunnable: Runnable? = null
     private var nextTapRunnable: Runnable? = null
     private var lastHandledIndex = -1
+    private var jumpOriginStoryIdentity: String? = null
+    private var jumpOriginTotalCount: Int = 0
 
     fun simulateTap(forward: Boolean) {
         val activity = context.mainActivity ?: return
@@ -83,6 +85,8 @@ class OperaStorySnapJump(
         isJumping = false
         jumpTargetIndex = -1
         lastHandledIndex = -1
+        jumpOriginStoryIdentity = null
+        jumpOriginTotalCount = 0
         mainHandler.postDelayed({
             val overlay = storyFrameLayout()?.findViewWithTag<View>("jump_overlay") ?: return@postDelayed
             overlay.animate()
@@ -96,6 +100,14 @@ class OperaStorySnapJump(
     private fun dispatchTapAndWaitForChange(fromIndex: Int, gen: Int, retryCount: Int = 0) {
         if (!isJumping || jumpTargetIndex < 0 || gen != jumpGeneration) return
         if (storyFrameLayout()?.isAttachedToWindow != true) {
+            removeJumpOverlay()
+            return
+        }
+        if (jumpOriginStoryIdentity != null && overlayState.storyIdentityState.value != null && jumpOriginStoryIdentity != overlayState.storyIdentityState.value) {
+            removeJumpOverlay()
+            return
+        }
+        if (jumpOriginTotalCount > 0 && overlayState.totalCountState.intValue > 0 && jumpOriginTotalCount != overlayState.totalCountState.intValue) {
             removeJumpOverlay()
             return
         }
@@ -114,6 +126,14 @@ class OperaStorySnapJump(
         val retry = Runnable {
             if (!isJumping || gen != jumpGeneration) return@Runnable
             val currentIdx = overlayState.currentIndexState.intValue
+            if (jumpOriginStoryIdentity != null && overlayState.storyIdentityState.value != null && jumpOriginStoryIdentity != overlayState.storyIdentityState.value) {
+                removeJumpOverlay()
+                return@Runnable
+            }
+            if (jumpOriginTotalCount > 0 && overlayState.totalCountState.intValue > 0 && jumpOriginTotalCount != overlayState.totalCountState.intValue) {
+                removeJumpOverlay()
+                return@Runnable
+            }
             if (currentIdx == fromIndex) {
                 if (retryCount >= maxRetries) {
                     removeJumpOverlay()
@@ -129,6 +149,14 @@ class OperaStorySnapJump(
     fun onSnapFullyDisplayed(currentIndex: Int) {
         if (!isJumping || jumpTargetIndex < 0) return
         if (currentIndex == lastHandledIndex) return
+        if (jumpOriginStoryIdentity != null && overlayState.storyIdentityState.value != null && jumpOriginStoryIdentity != overlayState.storyIdentityState.value) {
+            removeJumpOverlay()
+            return
+        }
+        if (jumpOriginTotalCount > 0 && overlayState.totalCountState.intValue > 0 && jumpOriginTotalCount != overlayState.totalCountState.intValue) {
+            removeJumpOverlay()
+            return
+        }
 
         cancelPendingRetry()
         cancelPendingNextTap()
@@ -136,6 +164,18 @@ class OperaStorySnapJump(
         if (currentIndex == jumpTargetIndex) {
             removeJumpOverlay()
             return
+        }
+
+        if (lastHandledIndex >= 0) {
+            val expectedForward = jumpTargetIndex > lastHandledIndex
+            if (expectedForward && currentIndex < lastHandledIndex) {
+                removeJumpOverlay()
+                return
+            }
+            if (!expectedForward && currentIndex > lastHandledIndex) {
+                removeJumpOverlay()
+                return
+            }
         }
 
         lastHandledIndex = currentIndex
@@ -179,6 +219,8 @@ class OperaStorySnapJump(
         jumpTargetIndex = targetIndex
         lastHandledIndex = -1
         isJumping = true
+        jumpOriginStoryIdentity = overlayState.storyIdentityState.value
+        jumpOriginTotalCount = overlayState.totalCountState.intValue
 
         showJumpOverlay()
 
