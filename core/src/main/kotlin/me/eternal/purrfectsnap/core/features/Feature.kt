@@ -34,6 +34,8 @@ abstract class Feature(
 
     open fun init() {}
 
+    open fun onBridgeAction(action: String, extras: Map<String, Any>?, callback: (Any?) -> Unit) {}
+
 
     protected fun findClass(name: String): Class<*> {
         return context.androidContext.classLoader.loadClass(name)

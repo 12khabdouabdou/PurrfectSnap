@@ -10,11 +10,13 @@ class RemoteTaskInterface(
     private val activeTasks = context.taskManager.getActiveTasks()
 
     override fun createTask(type: String, title: String, author: String, hash: String): String {
+        val taskType = TaskType.fromKey(type)
         val task = Task(
-            type = TaskType.fromKey(type),
+            type = taskType,
             title = title,
             author = author.takeIf { it.isNotBlank() },
-            hash = hash
+            hash = hash,
+            isAutoOpen = taskType == TaskType.CHAT_ACTION
         )
         context.taskManager.createPendingTask(task)
         return hash

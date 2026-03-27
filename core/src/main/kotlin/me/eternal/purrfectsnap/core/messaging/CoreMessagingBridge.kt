@@ -117,4 +117,8 @@ class CoreMessagingBridge(
     }
 
     override fun getOneToOneConversationId(userId: String) = context.database.getDMConversationId(userId)
+
+    override fun getAutoOpenInterface(): me.eternal.purrfectsnap.bridge.AutoOpenInterface? {
+        return context.feature(me.eternal.purrfectsnap.core.features.impl.experiments.AutoOpenSnaps::class).getInterface()
+    }
 }

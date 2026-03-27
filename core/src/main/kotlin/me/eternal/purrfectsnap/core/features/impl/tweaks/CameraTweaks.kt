@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.media.MediaRecorder
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraCharacteristics.Key
 import android.hardware.camera2.CameraManager
@@ -26,6 +28,34 @@ class CameraTweaks : Feature("Camera Tweaks") {
     @SuppressLint("MissingPermission", "DiscouragedApi")
     override fun init() {
         val config = context.config.camera
+
+        // Toggle A: Audio & Video Optimizations (Bitrates)
+        if (config.audioVideoOptimizations.get()) {
+            MediaRecorder::class.java.hook("setVideoEncodingBitRate", HookStage.BEFORE) { param ->
+                val currentRate = param.arg<Int>(0)
+                if (currentRate < 30_000_000) param.setArg(0, 30_000_000) 
+            }
+            MediaRecorder::class.java.hook("setAudioEncodingBitRate", HookStage.BEFORE) { param ->
+                param.setArg(0, 320_000)
+            }
+            MediaRecorder::class.java.hook("setAudioSamplingRate", HookStage.BEFORE) { param ->
+                param.setArg(0, 48_000)
+            }
+        }
+
+        // Toggle B: Camera Optimizations (Hardware ISP - UNSTABLE)
+        if (config.cameraOptimizations.get()) {
+            CaptureRequest.Builder::class.java.hook("set", HookStage.BEFORE) { param ->
+                val key = param.arg<CaptureRequest.Key<*>>(0)
+                when (key) {
+                    CaptureRequest.EDGE_MODE -> param.setArg(1, CaptureRequest.EDGE_MODE_HIGH_QUALITY)
+                    CaptureRequest.NOISE_REDUCTION_MODE -> param.setArg(1, CaptureRequest.NOISE_REDUCTION_MODE_HIGH_QUALITY)
+                    CaptureRequest.HOT_PIXEL_MODE -> param.setArg(1, CaptureRequest.HOT_PIXEL_MODE_HIGH_QUALITY)
+                    CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE -> param.setArg(1, CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY)
+                    CaptureRequest.CONTROL_AF_MODE -> param.setArg(1, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                }
+            }
+        }
 
         val frontCameraId by lazy {
             runCatching { context.androidContext.getSystemService(CameraManager::class.java).run {

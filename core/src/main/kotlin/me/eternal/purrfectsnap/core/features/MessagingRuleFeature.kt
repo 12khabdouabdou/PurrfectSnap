@@ -36,4 +36,20 @@ abstract class MessagingRuleFeature(name: String, val ruleType: MessagingRuleTyp
         }
         return state
     }
+
+    override fun onBridgeAction(action: String, extras: Map<String, Any>?, callback: (Any?) -> Unit) {
+        if (action == "get_state") {
+            val conversationId = extras?.get("conversationId") as? String ?: return
+            callback(getState(conversationId))
+            return
+        }
+        if (action == "set_state") {
+            val conversationId = extras?.get("conversationId") as? String ?: return
+            val state = extras["state"] as? Boolean ?: return
+            setState(conversationId, state)
+            callback(true)
+            return
+        }
+        super.onBridgeAction(action, extras, callback)
+    }
 }

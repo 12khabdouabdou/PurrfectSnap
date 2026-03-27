@@ -38,11 +38,13 @@ class TaskManager(
     private val activeTasks = mutableMapOf<Long, PendingTask>()
 
     private fun readTaskFromCursor(cursor: android.database.Cursor): Task {
+        val taskType = TaskType.fromKey(cursor.getStringOrNull("type")!!)
         val task = Task(
-            type = TaskType.fromKey(cursor.getStringOrNull("type")!!),
+            type = taskType,
             title = cursor.getStringOrNull("title")!!,
             author = cursor.getStringOrNull("author"),
-            hash = cursor.getStringOrNull("hash")!!
+            hash = cursor.getStringOrNull("hash")!!,
+            isAutoOpen = taskType == TaskType.CHAT_ACTION
         )
         task.status = TaskStatus.fromKey(cursor.getStringOrNull("status")!!)
         task.extra = cursor.getStringOrNull("extra")

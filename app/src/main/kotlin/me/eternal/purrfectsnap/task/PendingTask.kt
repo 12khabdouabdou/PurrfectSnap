@@ -46,7 +46,8 @@ data class Task(
     val type: TaskType,
     val title: String,
     val author: String?,
-    val hash: String
+    val hash: String,
+    val isAutoOpen: Boolean = false
 ) {
     var changeListener: () -> Unit = {}
 

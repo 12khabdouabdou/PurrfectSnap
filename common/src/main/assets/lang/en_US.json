@@ -1,4 +1,4 @@
-{
+﻿{
     "setup": {
         "activity": {
             "wrong_apk_title": "Wrong APK installed",
@@ -1611,6 +1611,13 @@
                         }
                     },
                     "auto_open_snaps": {
+                        "title": "Auto Open Snaps",
+                        "status_monitoring": "Monitoring",
+                        "status_active": "Active",
+                        "status_paused": "Paused",
+                        "processed_count": "Opened",
+                        "queue_size": "Queue",
+                        "action_reset": "Reset Statistics",
                         "name": "Auto Open Snaps Settings",
                         "description": "Configure delay and queue settings for Auto Open Snaps",
                         "properties": {
@@ -1637,7 +1644,18 @@
                             "retry_delay": {
                                 "name": "Retry Delay (ms)",
                                 "description": "Delay in milliseconds between retry attempts"
-                            }
+                            },
+                            "compact_notification": {
+                                "name": "Auto Open Compact Notification",
+                                "description": "Use a smaller, single-line notification for status updates"
+                            },
+                            "only_on_wifi": { "name": "Auto Open only on Wi-Fi", "description": "Only process queue when connected to a Wi-Fi network to save mobile data" },
+                            "only_when_idle": {
+                                "name": "Auto Open only when Idle",
+                                "description": "Only process queue when the device is not in active use"
+                            },
+                            "pause_during_gaming": { "name": "Pause Auto Open During Gaming", "description": "Automatically slow down processing when a resource intensive app or a game is in the foreground" },
+                            "safe_processing": { "name": "Auto Open with stealth pace", "description": "Adds variable delays and natural breaks to remain undetected. Turn off for maximum speed." }
                         }
                     },
                     "auto_delete_sent_messages": {
@@ -1989,7 +2007,7 @@
                         "name": "HEVC Recording",
                         "description": "Uses HEVC (H.265) codec for video recording"
                     },
-                    "video_record_timer": {
+                    "camera_tweaks": { "name": "Upgraded Camera Engine", "description": "Enables professional hardware ISP processing modes for better dynamic range" }, "audio_video": { "name": "Upgraded Audio and Video", "description": "Increases Video bitrate to 30Mbps and Audio to 320kbps/48kHz" }, "video_record_timer": {
                         "name": "Video Recording Timer",
                         "description": "Shows a recording timer overlay when recording video"
                     }
@@ -2127,7 +2145,7 @@
                             }
                         }
                     },
-                    "better_transcript": {
+                    "network_optimization": { "name": "Network Optimization", "description": "Optimizes network socket buffers for higher throughput" }, "better_transcript": {
                         "name": "Better Transcript",
                         "description": "Improves the voice note transcript",
                         "properties": {
@@ -3199,9 +3217,7 @@
         "export_failed_toast": "Failed to export account. Check logs for more info.",
         "forced_logout_toast": "Removed account due to forced logout"
     },
-    "auto_open_snaps": {
-        "title": "Auto Open Snaps",
-        "priority_title": "Auto Open Snaps (Priority)",
+    "auto_open_snaps": { "title": "Auto Open Snaps", "processed_count": "Opened", "queue_size": "Queue", "action_reset": "Reset Statistics", "priority_title": "Auto Open Snaps (Priority)",
         "error_title": "Auto Open Snaps (Errors)",
         "channel_description": "Notifications for auto-opening snaps queue status",
         "priority_channel_description": "High priority notifications for auto-opening snaps",
@@ -3768,4 +3784,30 @@
         "openai": "OpenAI",
         "openrouter": "OpenRouter"
     }
+    ,
+    "tasks_no_tasks": "No tasks",
+    "tasks_no_active_tasks": "No active tasks",
+    "tasks_no_scheduled_tasks": "No scheduled snaps",
+    "tasks_tab_active": "Active",
+    "tasks_tab_scheduled": "Scheduled",
+    "tasks_clear_button_description": "Clear tasks",
+    "tasks_delete_button": "Delete",
+    "tasks_merge_button": "Merge",
+    "tasks_summary_active": "{active} active · {recent} recent",
+    "tasks_summary_idle": "Idle · {recent} recent",
+    "tasks_running_count": "{count} running",
+    "tasks_tagline": "Monitor and manage background actions",
+    "tasks_failed_to_open_file": "Failed to open file",
+    "tasks_merge_files_toast": "Merging {count} files",
+    "tasks_remove_selected_tasks_title": "Are you sure you want to remove selected tasks?",
+    "tasks_remove_all_tasks_title": "Are you sure you want to remove all tasks?",
+    "tasks_remove_selected_tasks_confirm": "Remove {count} selected tasks?",
+    "tasks_remove_all_tasks_confirm": "This will stop all running tasks and clear the history."
 }
+
+
+
+
+
+
+

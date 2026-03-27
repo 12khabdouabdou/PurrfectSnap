@@ -175,7 +175,13 @@ class MessagingTweaks : ConfigContainer() {
         val retryDelay = integer("retry_delay", defaultValue = 3000) {
             inputCheck = { it.toIntOrNull()?.coerceAtLeast(1000) != null }
         }
-
+        val compactNotification = boolean("compact_notification", false)
+        
+        // Resource Intelligence: Smart triggers for battery and data safety
+        val onlyOnWifi = boolean("only_on_wifi", false)
+        val onlyWhenIdle = boolean("only_when_idle", false)
+        val pauseDuringGaming = boolean("pause_during_gaming", false)
+        val safeProcessing = boolean("safe_processing", true)
     }
 
     class AutoDeleteSentMessagesConfig : ConfigContainer(hasGlobalState = true) {

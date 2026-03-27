@@ -161,6 +161,7 @@ class DeviceSpooferHook: Feature("Device Spoofer")  {
 		val overridePlayStoreInstallerPackageName by context.config.experimental.spoof.overridePlayStoreInstallerPackageName
 		val removeVpnTransportFlag by context.config.experimental.spoof.removeVpnTransportFlag
 		val forceWifiTransportFlag by context.config.experimental.spoof.forceWifiTransportFlag
+		val networkOptimization by context.config.experimental.networkOptimization
 		val spoofAndroidId by context.config.experimental.spoof.spoofDeviceId.spoofAndroidId
 
 		if(overridePlayStoreInstallerPackageName) {
@@ -266,6 +267,20 @@ class DeviceSpooferHook: Feature("Device Spoofer")  {
 			
 			if (!actuallyOnWifi) {
 				param.setResult(true)
+			}
+		}
+	}
+
+	if (networkOptimization) {
+		// Internal Buffer Optimization
+		findClass("java.net.Socket").apply {
+			hook("setSendBufferSize", HookStage.BEFORE) { param ->
+				val size = param.arg<Int>(0)
+				if (size < 1024 * 1024) param.setArg(0, 1024 * 1024) // Force 1MB Buffer
+			}
+			hook("setReceiveBufferSize", HookStage.BEFORE) { param ->
+				val size = param.arg<Int>(0)
+				if (size < 1024 * 1024) param.setArg(0, 1024 * 1024) // Force 1MB Buffer
 			}
 		}
 	}
