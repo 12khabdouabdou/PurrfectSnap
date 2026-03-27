@@ -7,8 +7,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.HelpOutline
@@ -153,6 +155,8 @@ class SecurityFeatures(
                             horizontalAlignment = Alignment.Start,
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
+                            val scrollState = rememberScrollState()
+
                             Icon(
                                 Icons.Filled.Info,
                                 contentDescription = null,
@@ -169,41 +173,78 @@ class SecurityFeatures(
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth()
                             )
-                            Text(
-                                text = context.translation["setup.mappings.notice_intro"],
-                                color = PurrfectOverlayPalette.textSecondary,
-                                textAlign = TextAlign.Start
-                            )
-                            Text(
-                                text = "For non-rooted users:",
-                                color = PurrfectOverlayPalette.textPrimary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = context.translation["setup.mappings.notice_step_1"],
-                                color = PurrfectOverlayPalette.textSecondary,
-                                textAlign = TextAlign.Start
-                            )
-                            Text(
-                                text = context.translation["setup.mappings.notice_step_2"],
-                                color = PurrfectOverlayPalette.textSecondary,
-                                textAlign = TextAlign.Start
-                            )
-                            Text(
-                                text = context.translation["setup.mappings.notice_step_3"],
-                                color = PurrfectOverlayPalette.textSecondary,
-                                textAlign = TextAlign.Start
-                            )
-                            Text(
-                                text = context.translation["setup.mappings.notice_rooted_title"],
-                                color = PurrfectOverlayPalette.textPrimary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = context.translation["setup.mappings.notice_rooted_body"],
-                                color = PurrfectOverlayPalette.textSecondary,
-                                textAlign = TextAlign.Start
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 360.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(end = 10.dp)
+                                        .verticalScroll(scrollState),
+                                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                                ) {
+                                    Text(
+                                        text = context.translation["setup.mappings.notice_intro"],
+                                        color = PurrfectOverlayPalette.textSecondary,
+                                        textAlign = TextAlign.Start
+                                    )
+                                    Text(
+                                        text = "For non-rooted users:",
+                                        color = PurrfectOverlayPalette.textPrimary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = context.translation["setup.mappings.notice_step_1"],
+                                        color = PurrfectOverlayPalette.textSecondary,
+                                        textAlign = TextAlign.Start
+                                    )
+                                    Text(
+                                        text = context.translation["setup.mappings.notice_step_2"],
+                                        color = PurrfectOverlayPalette.textSecondary,
+                                        textAlign = TextAlign.Start
+                                    )
+                                    Text(
+                                        text = context.translation["setup.mappings.notice_step_3"],
+                                        color = PurrfectOverlayPalette.textSecondary,
+                                        textAlign = TextAlign.Start
+                                    )
+                                    Text(
+                                        text = context.translation["setup.mappings.notice_rooted_title"],
+                                        color = PurrfectOverlayPalette.textPrimary,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = context.translation["setup.mappings.notice_rooted_body"],
+                                        color = PurrfectOverlayPalette.textSecondary,
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+
+                                val maxScroll = scrollState.maxValue
+                                val thumbRatio = if (maxScroll > 0) {
+                                    ((scrollState.value.toFloat() / maxScroll.toFloat()) * 0.7f).coerceIn(0f, 0.7f)
+                                } else 0f
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .width(4.dp)
+                                        .fillMaxHeight()
+                                        .background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(999.dp))
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight(if (maxScroll > 0) 0.28f else 1f)
+                                            .offset(y = (320.dp * thumbRatio))
+                                            .background(
+                                                PurrfectOverlayPalette.glowSecondary.copy(alpha = 0.75f),
+                                                RoundedCornerShape(999.dp)
+                                            )
+                                    )
+                                }
+                            }
                             Button(
                                 onClick = onDismiss,
                                 colors = ButtonDefaults.buttonColors(

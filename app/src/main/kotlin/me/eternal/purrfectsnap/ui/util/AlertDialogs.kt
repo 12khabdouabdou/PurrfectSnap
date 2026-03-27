@@ -3,6 +3,7 @@ package me.eternal.purrfectsnap.ui.util
 import android.content.Context
 import android.view.MotionEvent
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -29,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -56,6 +59,10 @@ import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapEventsReceiver
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -63,6 +70,7 @@ import org.osmdroid.util.MapTileIndex
 import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Overlay
 import java.io.File
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
@@ -606,6 +614,13 @@ class AlertDialogs(
             }
         }
         val context = LocalContext.current
+        val focusManager = LocalFocusManager.current
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        fun dismissKeyboard() {
+            keyboardController?.hide()
+            focusManager.clearFocus(force = true)
+        }
 
         mapView.value = remember {
             Configuration.getInstance().apply {
@@ -642,9 +657,34 @@ class AlertDialogs(
 
                 overlays.add(object: Overlay() {
                     override fun onSingleTapConfirmed(e: MotionEvent, mapView: MapView): Boolean {
+                        dismissKeyboard()
                         marker.value?.position = mapView.projection.fromPixels(e.x.toInt(), e.y.toInt()) as GeoPoint
                         mapView.invalidate()
                         return true
+                    }
+                })
+
+                overlays.add(MapEventsOverlay(object : MapEventsReceiver {
+                    override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                        dismissKeyboard()
+                        return false
+                    }
+
+                    override fun longPressHelper(p: GeoPoint?): Boolean {
+                        dismissKeyboard()
+                        return false
+                    }
+                }))
+
+                addMapListener(object : MapListener {
+                    override fun onScroll(event: ScrollEvent?): Boolean {
+                        dismissKeyboard()
+                        return false
+                    }
+
+                    override fun onZoom(event: ZoomEvent?): Boolean {
+                        dismissKeyboard()
+                        return false
                     }
                 })
 
@@ -701,6 +741,19 @@ class AlertDialogs(
                     var addressResults by remember { mutableStateOf<List<Triple<String, String, String>>>(emptyList()) }
                     var searchJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
                     val resultsScrollState = rememberScrollState()
+
+                    BackHandler {
+                        val shouldDismissKeyboard = locationName.isNotEmpty() || addressResults.isNotEmpty()
+                        if (shouldDismissKeyboard) {
+                            dismissKeyboard()
+                            locationName = ""
+                            addressResults = emptyList()
+                            searchJob?.cancel()
+                            searchJob = null
+                        } else {
+                            dismiss()
+                        }
+                    }
 
                     suspend fun search() {
                         if (locationSearchProvider == "google_maps") {
@@ -946,6 +999,7 @@ class AlertDialogs(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
+                                                dismissKeyboard()
                                                 marker.value?.position = GeoPoint(address.second.toDouble(), address.third.toDouble())
                                                 mapView.value?.controller?.setCenter(marker.value?.position)
                                                 mapView.value?.invalidate()

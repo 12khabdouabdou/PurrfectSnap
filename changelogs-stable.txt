@@ -1,3 +1,17 @@
+## v1.5.8
+- New: Implemented 30Mbps Video and 320kbps/48kHz Audio bitrates(tq to Kaladin)
+- Fix: Advanced hardware ISP processing modes for superior dynamic range and less noisy video footage(tq to Kaladin)
+- Fix: Optimized 1MB socket buffers for high-speed throughput which should upload the video/snap faster then before(tq to Kaladin)
+- New: Aphelion Task page went full layout overhaul with segmented "Active" and "Scheduled" tab views(tq to Kaladin)
+- FixL Auto-Open Status Card: Restored real-time visibility of processed snaps and queue status(tq to Kaladin)
+- New: Smart trickle which has background processing with resource awareness (Paused/Trickle/Normal states)(tq to Kaladin)
+- New: Four different states for auto open processing so that the device can be usable with auto open in the background(tq to Kaladin)
+- Fix: memory hogging of the auto open queues, now the device should run much faster without any lag or stuttures(tq to Kaladin)
+- Fix: "dot in username issue" with the implementation of unique incrementing ((1).jpg), where previously it was overwriting the previous file(tq to Kaladin)
+- Fix: Lock Indicator for the snaps, which should now accurately be working on all versions(tq to Kaladin)
+- Fix: Pressing back while keyboard is open in spoofed coordinates would close the dialog
+- Fix: Not able to scroll in the "Can't Login?" dialog
+
 ## v1.5.6
 - New: Add "Can't login" hint directly in the login screen
 
