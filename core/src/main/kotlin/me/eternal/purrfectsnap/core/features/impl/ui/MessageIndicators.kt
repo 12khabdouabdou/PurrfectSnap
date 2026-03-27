@@ -52,7 +52,11 @@ class MessageIndicators : Feature("Message Indicators") {
                             contentAlignment = Alignment.TopEnd
                         ) {
                             val hasEncryption by rememberAsyncMutableState(defaultValue = false) {
-                                reader.getByteArray(4, 3, 3) != null || reader.containsPath(3, 99, 3)
+                                // Strictly detect Private Fidelius Wrap (1-on-1 private snaps)
+                                reader.containsPath(4, 4, 1, 1) || 
+                                reader.containsPath(4, 4, 1, 1, 1) ||
+                                reader.getByteArray(4, 3, 3) != null || 
+                                reader.containsPath(3, 99, 3)
                             }
                             val sentFromIosDevice by rememberAsyncMutableState(defaultValue = false) {
                                 if (reader.containsPath(4, 4, 3)) !reader.containsPath(4, 4, 3, 3, 17) else reader.getVarInt(4, 4, 11, 17, 7) != null

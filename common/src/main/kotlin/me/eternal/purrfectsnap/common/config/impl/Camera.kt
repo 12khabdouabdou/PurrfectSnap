@@ -59,5 +59,8 @@ class Camera : ConfigContainer() {
     val overrideBackResolution get() = _overrideBackResolution
     val videoRecordTimer = boolean("video_record_timer")
 
+    val audioVideoOptimizations = boolean("audio_video", defaultValue = true) { requireRestart() }
+    val cameraOptimizations = boolean("camera_tweaks", defaultValue = false) { addNotices(FeatureNotice.UNSTABLE); requireRestart() }
+
     val customResolution = string("custom_resolution") { addNotices(FeatureNotice.UNSTABLE); inputCheck = { it.matches(Regex("\\d+x\\d+")) } }
 }
