@@ -58,7 +58,9 @@ import me.eternal.purrfectsnap.ui.util.OnLifecycleEvent
 import me.eternal.purrfectsnap.ui.util.coil.cacheKey
 import me.eternal.purrfectsnap.ui.util.scaleOnPress
 import me.eternal.purrfectsnap.ui.util.Motion
+import me.eternal.purrfectsnap.ui.manager.pages.TasksRootSection.TaskTab
 import me.eternal.purrfectsnap.ui.util.headerHeightTracker
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,7 +119,6 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
             )
         }
 
-        // The "Structured Glass" Container (Dynamically Morphed)
         Surface(
             modifier = Modifier
                 .fillMaxSize()
@@ -129,32 +130,226 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
             shadowElevation = 0.dp,
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
         ) {
-            LazyColumn(
-                state = scrollState,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 10.dp,
-                    end = 10.dp,
-                    top = controlsHeight - 44.dp,
-                    bottom = routes.bottomPadding + 20.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    if (activeTasks.isEmpty() && recentTasks.isEmpty()) {
-                        AphelionTasksEmptyState(text = translation["no_tasks"] ?: "No tasks")
+            Column(modifier = Modifier.fillMaxSize().padding(top = controlsHeight - 44.dp)) {
+                Surface(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    color = Color.White.copy(alpha = 0.05f),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        TaskTab.entries.forEach { tab ->
+                            val isSelected = selectedTab == tab
+                            val backgroundAlpha by animateFloatAsState(if (isSelected) 0.12f else 0f, label = "tabBg")
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(38.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(Color.White.copy(alpha = backgroundAlpha))
+                                    .clickable { 
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        selectedTab = tab 
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (tab == TaskTab.ACTIVE) (translation["tasks_tab_active"] ?: "Active") else (translation["tasks_tab_scheduled"] ?: "Scheduled"),
+                                    color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f),
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
                     }
                 }
-                items(activeTasks, key = { it.taskId }) { pendingTask ->
-                    AphelionTaskCard(modifier = Modifier.fillMaxWidth(), pendingTask.task, pendingTask = pendingTask)
+
+                val activeList = activeTasks.filter { it.task.type != TaskType.SCHEDULED_SEND }
+                val recentList = recentTasks.filter { task -> 
+                    task.type != TaskType.SCHEDULED_SEND && activeList.none { it.task.hash == task.hash } 
                 }
-                items(recentTasks, key = { it.hash }) { task ->
-                    AphelionTaskCard(modifier = Modifier.fillMaxWidth(), task)
+
+                val scheduledActive = activeTasks.filter { it.task.type == TaskType.SCHEDULED_SEND }
+                val scheduledRecent = recentTasks.filter { task -> 
+                    task.type == TaskType.SCHEDULED_SEND && scheduledActive.none { it.task.hash == task.hash } 
                 }
-                item {
-                    Spacer(modifier = Modifier.height(40.dp))
-                    LaunchedEffect(remember { derivedStateOf { scrollState.firstVisibleItemIndex } }) {
-                        fetchNewRecentTasks()
+
+                LazyColumn(
+                    state = scrollState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 10.dp,
+                        end = 10.dp,
+                        top = 8.dp,
+                        bottom = routes.bottomPadding + 20.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (selectedTab == TaskTab.ACTIVE) {
+                        item(key = "auto_open_card") {
+                            var queueItems by remember { mutableStateOf(listOf<Any>()) }
+                            var processedCount by remember { mutableIntStateOf(0) }
+                            
+                            LaunchedEffect(Unit) {
+                                while (true) {
+                                    runCatching {
+                                        val autoOpen = context.bridgeService?.messagingBridge?.autoOpenInterface
+                                        processedCount = autoOpen?.processedCount ?: 0
+                                        val items = autoOpen?.queueItems ?: emptyList()
+                                        queueItems = items.mapNotNull { 
+                                            runCatching { context.gson.fromJson(it, Map::class.java) }.getOrNull()
+                                        }
+                                    }
+                                    delay(2000)
+                                }
+                            }
+                            
+                            val queueSize = queueItems.size
+                            
+                            if (queueSize > 0 || processedCount > 0) {
+                                var isExpanded by remember { mutableStateOf(false) }
+                                Surface(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                    shape = RoundedCornerShape(18.dp),
+                                    color = Color.White.copy(alpha = 0.06f),
+                                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+                                    onClick = { 
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        isExpanded = !isExpanded 
+                                    }
+                                ) {
+                                    Column(modifier = Modifier.padding(14.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Icon(Icons.Default.AutoFixHigh, null, tint = PurrfectPalette.glowSecondary, modifier = Modifier.size(20.dp))
+                                                Spacer(Modifier.width(10.dp))
+                                                Text(translation["auto_open_snaps.title"] ?: "Auto Open Snaps", fontWeight = FontWeight.Bold, color = Color.White)
+                                            }
+                                            Icon(
+                                                if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                                null,
+                                                tint = Color.White.copy(alpha = 0.5f)
+                                            )
+                                        }
+                                        Row(modifier = Modifier.padding(top = 4.dp, start = 30.dp)) {
+                                            Text(
+                                                "${translation["auto_open_snaps.queue_size"] ?: "Queue"}: $queueSize \u00b7 ${translation["auto_open_snaps.processed_count"] ?: "Opened"}: $processedCount",
+                                                fontSize = 12.sp,
+                                                color = Color.White.copy(alpha = 0.6f)
+                                            )
+                                        }
+                                        
+                                        AnimatedVisibility(
+                                            visible = isExpanded,
+                                            enter = expandVertically() + fadeIn(),
+                                            exit = shrinkVertically() + fadeOut()
+                                        ) {
+                                            Column(modifier = Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                queueItems.forEach { rawItem ->
+                                                    val item = rawItem as? Map<String, String> ?: return@forEach
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth().background(Color.White.copy(alpha = 0.03f), RoundedCornerShape(8.dp)).padding(8.dp),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Column {
+                                                            Text(item["senderInfo"] ?: "", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Medium)
+                                                            Text(item["contentType"] ?: "", fontSize = 11.sp, color = Color.White.copy(alpha = 0.5f))
+                                                        }
+                                                        Text(item["conversationType"] ?: "", fontSize = 10.sp, color = PurrfectPalette.glowSecondary.copy(alpha = 0.7f))
+                                                    }
+                                                }
+                                                
+                                                if (processedCount > 0 || queueSize > 0) {
+                                                    OutlinedButton(
+                                                        onClick = { 
+                                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                            runCatching { context.bridgeService?.messagingBridge?.autoOpenInterface?.reset() }
+                                                        },
+                                                        modifier = Modifier.fillMaxWidth().height(36.dp),
+                                                        shape = RoundedCornerShape(10.dp),
+                                                        border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.3f)),
+                                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red.copy(alpha = 0.7f))
+                                                    ) {
+                                                        Text(translation["auto_open_snaps.action_reset"] ?: "Reset Statistics", fontSize = 12.sp)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (activeList.isEmpty() && recentList.isEmpty()) {
+                            item(key = "active_empty") { AphelionTasksEmptyState(text = translation["tasks_no_active_tasks"] ?: "No active tasks") }
+                        }
+
+                        val groupedActiveTasks = activeList.distinctBy { it.task.hash }
+
+                        items(groupedActiveTasks, key = { it.task.hash }) { pendingTask ->
+                            val isAutoOpenTask = pendingTask.task.isAutoOpen
+                            val pulseAnimation = rememberInfiniteTransition(label = "pulse")
+                            val pulseAlpha by pulseAnimation.animateFloat(
+                                initialValue = 0.15f,
+                                targetValue = 0.45f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(1200, easing = LinearEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "alpha"
+                            )
+
+                            AphelionTaskCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .let { 
+                                        if (isAutoOpenTask) {
+                                            it.border(
+                                                width = 1.5.dp,
+                                                brush = Brush.linearGradient(
+                                                    listOf(
+                                                        PurrfectPalette.glowPrimary.copy(alpha = pulseAlpha),
+                                                        PurrfectPalette.glowSecondary.copy(alpha = pulseAlpha)
+                                                    )
+                                                ),
+                                                shape = RoundedCornerShape(22.dp)
+                                            )
+                                        } else it
+                                    },
+                                task = pendingTask.task,
+                                pendingTask = pendingTask
+                            )
+                        }
+                        
+                        items(recentList.filter { task -> groupedActiveTasks.none { it.task.hash == task.hash } }, key = { it.hash }) { task ->
+                            AphelionTaskCard(modifier = Modifier.fillMaxWidth(), task)
+                        }
+                    } else {
+                        if (scheduledActive.isEmpty() && scheduledRecent.isEmpty()) {
+                            item(key = "scheduled_empty") { AphelionTasksEmptyState(text = translation["tasks_no_scheduled_tasks"] ?: "No scheduled snaps") }
+                        }
+
+                        items(scheduledActive, key = { it.taskId }) { pendingTask ->
+                            AphelionTaskCard(modifier = Modifier.fillMaxWidth(), pendingTask.task, pendingTask = pendingTask)
+                        }
+                        items(scheduledRecent, key = { it.hash }) { task ->
+                            AphelionTaskCard(modifier = Modifier.fillMaxWidth(), task)
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(40.dp))
+                        LaunchedEffect(remember { derivedStateOf { scrollState.firstVisibleItemIndex } }) {
+                            fetchNewRecentTasks()
+                        }
                     }
                 }
             }
@@ -167,6 +362,35 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
             enableMorph = true,
             modifier = Modifier.headerHeightTracker { controlsHeight = it },
             actions = {
+                if (taskSelection.size > 1) {
+                    val canMergeSelection by rememberAsyncMutableState(defaultValue = false, keys = arrayOf(taskSelection.size)) {
+                        taskSelection.all { it.second?.type?.contains("video") == true }
+                    }
+
+                    if (canMergeSelection) {
+                        Surface(
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                mergeSelection(taskSelection.toList().also {
+                                    taskSelection.clear()
+                                }.map { it.first to it.second!! })
+                            },
+                            shape = RoundedCornerShape(18.dp),
+                            color = PurrfectPalette.glowPrimary.copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, PurrfectPalette.glowPrimary.copy(alpha = 0.4f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(Icons.Filled.Merge, contentDescription = translation["tasks_merge_button"], tint = Color.White, modifier = Modifier.size(16.dp))
+                                Text(translation["tasks_merge_button"] ?: "Merge", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            }
+                        }
+                    }
+                }
+
                 Surface(
                     shape = RoundedCornerShape(18.dp),
                     color = Color.White.copy(alpha = 0.08f),
@@ -191,34 +415,12 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
                         )
                     }
                 }
-                if (taskSelection.size > 1 && taskSelection.all { it.second?.type?.contains("video") == true }) {     
-                    Surface(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            mergeSelection(
-                                taskSelection.toList().also { taskSelection.clear() }
-                                    .map { it.first to it.second!! }
-                            )
-                        },
-                        shape = RoundedCornerShape(18.dp),
-                        color = PurrfectPalette.glowPrimary.copy(alpha = 0.2f),
-                        border = BorderStroke(1.dp, PurrfectPalette.glowPrimary.copy(alpha = 0.4f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(Icons.Filled.Merge, contentDescription = translation["merge_button"], tint = Color.White, modifier = Modifier.size(16.dp))
-                            Text(translation["merge_button"], color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                        }
-                    }
-                }
+
                 IconButton(onClick = {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)     
                     showConfirmDialog = true
                 }) {
-                    Icon(Icons.Filled.DeleteSweep, contentDescription = translation["clear_button_description"], tint = Color.White)
+                    Icon(Icons.Filled.DeleteSweep, contentDescription = translation["tasks_clear_button_description"], tint = Color.White)
                 }
             }
         )
@@ -227,11 +429,11 @@ fun TasksRootSection.AphelionTasksScreen(nav: NavBackStackEntry) {
     if (showConfirmDialog) {
         val isSelection = taskSelection.isNotEmpty()
         val titleText = if (isSelection) {
-            translation.format("remove_selected_tasks_confirm", "count" to taskSelection.size.toString())
+            translation.format("tasks_remove_selected_tasks_confirm", "count" to taskSelection.size.toString())
         } else {
-            translation["remove_all_tasks_confirm"]
+            translation["tasks_remove_all_tasks_confirm"]
         }
-        val messageText = if (isSelection) translation["remove_selected_tasks_title"] else translation["remove_all_tasks_title"]
+        val messageText = if (isSelection) translation["tasks_remove_selected_tasks_title"] else translation["tasks_remove_all_tasks_title"]
 
         TaskDangerDialog(
             visible = showConfirmDialog,
@@ -494,10 +696,19 @@ internal fun TasksRootSection.AphelionTaskCard(modifier: Modifier, task: Task, p
                     }
                     
                     if (!taskStatus.isFinalStage()) {
-                        if (!isActive) {
+                        if (isActive) {
+                            taskProgressLabel?.let {
+                                val labelText = if (task.isAutoOpen) {
+                                    val sessionTimeMins = (System.currentTimeMillis() - 0L) / 60000.0
+                                    val speed = if (sessionTimeMins > 0.1) String.format("%.1f", 0 / sessionTimeMins) else "0.0"
+                                    "$it • $speed snaps/min"
+                                } else it
+                                Text(labelText, style = MaterialTheme.typography.bodySmall, color = Color.White)
+                            }
+                        } else {
                             taskProgressLabel?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Color.White) }
                         }
-                        if (taskProgress != -1 && taskProgressLabel == null) {
+                        if (taskProgress != -1 && (taskProgressLabel == null || isActive)) {
                             LinearProgressIndicator(
                                 progress = { taskProgress.toFloat() / 100f },
                                 strokeCap = StrokeCap.Round, modifier = Modifier.fillMaxWidth(),

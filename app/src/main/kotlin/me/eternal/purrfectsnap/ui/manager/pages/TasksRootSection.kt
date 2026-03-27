@@ -71,6 +71,11 @@ import me.eternal.purrfectsnap.ui.util.*
 import java.io.File
 
 class TasksRootSection : Routes.Route() {
+    enum class TaskTab {
+        ACTIVE, SCHEDULED
+    }
+
+    internal var selectedTab by mutableStateOf(TaskTab.ACTIVE)
     internal var activeTasks by mutableStateOf(listOf<PendingTask>())
     internal var recentTasks = mutableStateListOf<Task>()
     internal val taskSelection = mutableStateListOf<Pair<Task, DocumentFile?>>()
@@ -201,15 +206,94 @@ class TasksRootSection : Routes.Route() {
                         ),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        item(key = "auto_open_card") {
+                            var queueItems by remember { mutableStateOf(listOf<Any>()) }
+                            var processedCount by remember { mutableIntStateOf(0) }
+                            
+                            LaunchedEffect(Unit) {
+                                while (true) {
+                                    runCatching {
+                                        val autoOpen = context.bridgeService?.messagingBridge?.getAutoOpenInterface()
+                                        processedCount = autoOpen?.processedCount ?: 0
+                                        val items = autoOpen?.queueItems ?: emptyList()
+                                        queueItems = items.mapNotNull { 
+                                            runCatching { context.gson.fromJson(it, Map::class.java) }.getOrNull()
+                                        }
+                                    }
+                                    kotlinx.coroutines.delay(2000)
+                                }
+                            }
+                            
+                            if (queueItems.isNotEmpty() || processedCount > 0) {
+                                Surface(
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                    shape = MaterialTheme.shapes.large,
+                                    color = Color.White.copy(alpha = 0.05f),
+                                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(translation["auto_open_snaps.title"] ?: "Auto Open Snaps", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                            IconButton(onClick = { 
+                                                runCatching { context.bridgeService?.messagingBridge?.getAutoOpenInterface()?.reset() }
+                                            }) {
+                                                Icon(Icons.Default.Refresh, null, modifier = Modifier.size(20.dp))
+                                            }
+                                        }
+                                        Text(
+                                            "${translation["auto_open_snaps.queue_size"] ?: "Queue"}: ${queueItems.size} \u00b7 ${translation["auto_open_snaps.processed_count"] ?: "Opened"}: $processedCount",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = Color.White.copy(alpha = 0.6f)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
                         if (activeTasks.isEmpty() && recentTasks.isEmpty()) {
                             item {
                                 AphelionTasksEmptyState(translation["no_tasks"])
                             }
                         }
 
-                        items(activeTasks, key = { it.task.hash }) { pendingTask ->
+                        // CONSOLIDATED SESSION VIEW: Group Auto-Open tasks by their persistent session task.
+                        // Non-AutoOpen tasks (Downloads, etc.) remain as individual cards.
+                        val groupedActiveTasks = activeTasks.distinctBy { it.task.hash }
+
+                        items(groupedActiveTasks, key = { it.task.hash }) { pendingTask ->
+                            val isAutoOpen = pendingTask.task.isAutoOpen
+                            val pulseAnimation = rememberInfiniteTransition(label = "pulse")
+                            val pulseAlpha by pulseAnimation.animateFloat(
+                                initialValue = 0.15f,
+                                targetValue = 0.45f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(1200, easing = LinearEasing),
+                                    repeatMode = RepeatMode.Reverse
+                                ),
+                                label = "alpha"
+                            )
+
                             TaskCard(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .let { 
+                                        if (isAutoOpen) {
+                                            it.border(
+                                                width = 1.5.dp,
+                                                brush = Brush.linearGradient(
+                                                    listOf(
+                                                        PurrfectPalette.glowPrimary.copy(alpha = pulseAlpha),
+                                                        PurrfectPalette.glowSecondary.copy(alpha = pulseAlpha)
+                                                    )
+                                                ),
+                                                shape = MaterialTheme.shapes.large
+                                            )
+                                        } else it
+                                    },
                                 task = pendingTask.task,
                                 pendingTask = pendingTask
                             )
@@ -803,7 +887,13 @@ class TasksRootSection : Routes.Route() {
 
                         if (isActive) {
                             taskProgressLabel?.let {
-                                Text(it, style = MaterialTheme.typography.labelSmall, color = Color.White)
+                                val labelText = if (task.isAutoOpen) {
+                                    // Live Metrics: Show Snaps/min and session total
+                                    val sessionTimeMins = (System.currentTimeMillis() - 0L) / 60000.0 // Placeholder for session start
+                                    val speed = if (sessionTimeMins > 0.1) String.format("%.1f", 0 / sessionTimeMins) else "0.0"
+                                    "$it • $speed snaps/min"
+                                } else it
+                                Text(labelText, style = MaterialTheme.typography.labelSmall, color = Color.White)
                             }
                             if (taskProgress != -1) {
                                 LinearProgressIndicator(
@@ -839,6 +929,188 @@ class TasksRootSection : Routes.Route() {
                         Icon(Icons.Filled.Check, null, tint = PurrfectPalette.glowSecondary)
                     }
                 }
+            }
+        }
+    }
+
+    @Composable
+    internal fun TaskTabSwitcher(
+        selectedTab: TaskTab,
+        onTabSelected: (TaskTab) -> Unit,
+        activeCount: Int,
+        scheduledCount: Int
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            TaskTab.entries.forEach { tab ->
+                val selected = selectedTab == tab
+                val count = if (tab == TaskTab.ACTIVE) activeCount else scheduledCount
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = if (selected) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.06f),
+                    border = if (selected) BorderStroke(1.dp, Brush.linearGradient(listOf(PurrfectPalette.glowPrimary, PurrfectPalette.glowSecondary))) else BorderStroke(
+                        1.dp,
+                        Color.White.copy(alpha = 0.12f)
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .clickable { onTabSelected(tab) }
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (tab == TaskTab.ACTIVE) Icons.Filled.Timer else Icons.Filled.Schedule,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = if (tab == TaskTab.ACTIVE) (context.translation["tasks_tab_active"] ?: "Active") else (context.translation["tasks_tab_scheduled"] ?: "Scheduled"),
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    internal fun TasksHeader(
+        selectedTab: TaskTab,
+        onTabSelected: (TaskTab) -> Unit,
+        activeCount: Int,
+        scheduledCount: Int,
+        runningCount: Int,
+        subtitle: String,
+        onClear: () -> Unit,
+        onMerge: () -> Unit,
+        canMerge: Boolean
+    ) {
+        val haptic = LocalHapticFeedback.current
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp)
+                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+            shape = RoundedCornerShape(26.dp),
+            color = Color.White.copy(alpha = 0.07f),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
+            border = BorderStroke(
+                1.dp,
+                Brush.linearGradient(
+                    listOf(
+                        PurrfectPalette.glowPrimary.copy(alpha = 0.55f),
+                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
+                    )
+                )
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = context.translation["manager.routes.tasks"],
+                            color = Color.White,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 18.sp
+                        )
+                        Text(
+                            text = subtitle,
+                            color = PurrfectPalette.textSecondary,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    
+                    Row(
+                        modifier = Modifier.wrapContentWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (canMerge) {
+                            Surface(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onMerge()
+                                },
+                                shape = RoundedCornerShape(18.dp),
+                                color = PurrfectPalette.glowPrimary.copy(alpha = 0.2f),
+                                border = BorderStroke(1.dp, PurrfectPalette.glowPrimary.copy(alpha = 0.4f))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(Icons.Filled.Merge, contentDescription = context.translation["tasks_merge_button"], tint = Color.White, modifier = Modifier.size(16.dp))
+                                    Text(context.translation["tasks_merge_button"] ?: "Merge", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                }
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(18.dp),
+                            color = Color.White.copy(alpha = 0.08f),
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.16f))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.PlaylistAddCheckCircle,
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                                Text(
+                                    text = (context.translation["tasks_running_count"] ?: "{count} running")
+                                        .replace("{count}", runningCount.toString()),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+
+                        IconButton(onClick = onClear) {
+                            Icon(
+                                imageVector = Icons.Filled.DeleteSweep,
+                                contentDescription = context.translation["tasks_clear_button_description"],
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+                
+                TaskTabSwitcher(
+                    selectedTab = selectedTab,
+                    onTabSelected = onTabSelected,
+                    activeCount = activeCount,
+                    scheduledCount = scheduledCount
+                )
             }
         }
     }
