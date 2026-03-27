@@ -20,4 +20,6 @@ interface MessagingBridge {
     @nullable String updateMessage(String conversationId, long clientMessageId, String messageUpdate);
 
     @nullable String getOneToOneConversationId(String userId);
+
+    me.eternal.purrfectsnap.bridge.AutoOpenInterface getAutoOpenInterface();
 }

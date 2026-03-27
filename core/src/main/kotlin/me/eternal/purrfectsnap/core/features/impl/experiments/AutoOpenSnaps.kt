@@ -9,6 +9,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.os.PowerManager
+import android.app.ActivityManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -26,15 +31,21 @@ import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.random.Random
+
+import me.eternal.purrfectsnap.bridge.AutoOpenInterface
+import com.google.gson.Gson
 
 class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.AUTO_OPEN_SNAPS) {
     companion object {
         const val ACTION_PAUSE_RESUME = "me.eternal.purrfectsnap.AUTO_OPEN_SNAPS_PAUSE_RESUME"
         const val ACTION_CLEAR_QUEUE = "me.eternal.purrfectsnap.AUTO_OPEN_SNAPS_CLEAR_QUEUE"
     }
+
+    private val gson = Gson()
 
     data class SnapQueueItem(
         val conversationId: String,
@@ -45,18 +56,38 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         val timestamp: Long = System.currentTimeMillis()
     )
 
+    private val autoOpenInterface = object : AutoOpenInterface.Stub() {
+        override fun getProcessedCount(): Int = totalProcessed
+        override fun getQueueItems(): List<String> {
+            return synchronized(queuedSnaps) {
+                queuedSnaps.map { gson.toJson(it) }
+            }
+        }
+        override fun reset() {
+            synchronized(queuedSnaps) {
+                queuedSnaps.clear()
+            }
+            totalProcessed = 0
+            updateStatusNotification()
+        }
+    }
+
+    fun getInterface(): AutoOpenInterface = autoOpenInterface
+
     private val snapQueue = MutableSharedFlow<SnapQueueItem>()
-    private var snapQueueSize = AtomicInteger(0)
-    private val openedSnaps = mutableListOf<Long>()
+    private val openedSnaps = ArrayDeque<Long>()
     private val isPaused = AtomicBoolean(false)
-    private val queuedSnaps = mutableListOf<SnapQueueItem>()
-    private var totalProcessed = AtomicInteger(0)
+    val queuedSnaps = mutableListOf<SnapQueueItem>()
+    var totalProcessed = 0
+        private set
     
-    private var sessionStartTime = System.currentTimeMillis()
+    var sessionStartTime = System.currentTimeMillis()
+        private set
     private var lastResetTime = System.currentTimeMillis()
     
-    private var currentBatchSize = AtomicInteger(0)
-    private var currentBatchProcessed = AtomicInteger(0)
+    private var currentBatchSize = 0
+    private var currentBatchProcessed = 0
+    private var batchSnapCount = 0 // For jitter batch cooldown
 
     private val config by lazy { context.config.messaging.autoOpenSnaps }
 
@@ -92,20 +123,20 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     val feedbackContent = if (wasPaused) {
                         this@AutoOpenSnaps.context.translation["auto_open_snaps.resumed_message"]
                     } else {
-                        this@AutoOpenSnaps.context.translation["auto_open_snaps.paused_message"].replace("{count}", snapQueueSize.get().toString())
+                        this@AutoOpenSnaps.context.translation["auto_open_snaps.paused_message"].replace("{count}", synchronized(queuedSnaps) { queuedSnaps.size }.toString())
                     }
                     
                     showTemporaryNotification(feedbackTitle, feedbackContent)
                     updateStatusNotification()
                     
             
-                    if (wasPaused && snapQueueSize.get() > 0) {
-                        this@AutoOpenSnaps.context.log.debug("Resumed with ${snapQueueSize.get()} snaps in queue")
+                    if (wasPaused && synchronized(queuedSnaps) { queuedSnaps.size } > 0) {
+                        this@AutoOpenSnaps.context.log.debug("[AUTO-OPEN] Resumed with ${synchronized(queuedSnaps) { queuedSnaps.size }} snaps in queue")
                     }
                 }
                 ACTION_CLEAR_QUEUE -> {
-                    val queueSize = snapQueueSize.get()
-                    val processedCount = totalProcessed.get()
+                    val queueSize = synchronized(queuedSnaps) { queuedSnaps.size }
+                    val processedCount = totalProcessed
                     
                     clearQueue(resetTotalCount = true, showNotification = false)
                     
@@ -129,26 +160,25 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         notificationManager.createNotificationChannel(
             NotificationChannel(baseChannelId, 
                 context.translation["auto_open_snaps.title"], 
-                NotificationManager.IMPORTANCE_LOW).apply {
+                // Visible Presence Fix: Upgrade importance to DEFAULT so it stays in status bar.
+                NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = context.translation["auto_open_snaps.channel_description"]
-                setShowBadge(false)
+                setShowBadge(true)
                 setSound(null, null)
                 enableVibration(false)
             }
         )
-        
+
         notificationManager.createNotificationChannel(
             NotificationChannel(priorityChannelId,
                 context.translation["auto_open_snaps.priority_title"],
-                NotificationManager.IMPORTANCE_DEFAULT).apply {
+                NotificationManager.IMPORTANCE_HIGH).apply {
                 description = context.translation["auto_open_snaps.priority_channel_description"]
                 setShowBadge(true)
                 setSound(null, null)
                 enableVibration(false)
             }
         )
-        
-
     }
 
     private fun createPendingIntent(action: String): PendingIntent {
@@ -165,12 +195,8 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
 
     private fun verifyQueueSync(): Boolean {
         return synchronized(queuedSnaps) {
-            val actualSize = queuedSnaps.size
-            val atomicSize = snapQueueSize.get()
-            
             val currentTime = System.currentTimeMillis()
             val timeoutMs = 5 * 60 * 1000L
-            val originalSize = queuedSnaps.size
             
             val removed = mutableListOf<Long>()
             queuedSnaps.removeAll { item ->
@@ -180,23 +206,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
             }
             
             if (removed.isNotEmpty()) {
-                context.log.warn("Cleaned up ${removed.size} stuck items")
+                context.log.warn("[AUTO-OPEN] Cleaned up ${removed.size} stuck items")
             }
             
-            if (actualSize != atomicSize) {
-                context.log.warn("Queue size mismatch! Actual: $actualSize, Atomic: $atomicSize")
-                snapQueueSize.set(queuedSnaps.size)
-                
-                val uniqueItems = queuedSnaps.distinctBy { it.messageId }.toMutableList()
-                if (uniqueItems.size != queuedSnaps.size) {
-                    context.log.warn("Found ${queuedSnaps.size - uniqueItems.size} duplicate items")
-                    queuedSnaps.clear()
-                    queuedSnaps.addAll(uniqueItems)
-                    snapQueueSize.set(queuedSnaps.size)
-                }
-                return@synchronized false
-            } else {
-                snapQueueSize.set(queuedSnaps.size)
+            val uniqueItems = queuedSnaps.distinctBy { it.messageId }.toMutableList()
+            if (uniqueItems.size != queuedSnaps.size) {
+                context.log.warn("[AUTO-OPEN] Found ${queuedSnaps.size - uniqueItems.size} duplicate items")
+                queuedSnaps.clear()
+                queuedSnaps.addAll(uniqueItems)
             }
             
             return@synchronized true
@@ -222,15 +239,25 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         lastNotificationUpdate.set(currentTime)
         updateStatusNotificationInternal()
     }
-    
+
     private fun updateStatusNotificationInternal() {
         verifyQueueSync()
         
-        val queueCount = snapQueueSize.get()
-        val processed = totalProcessed.get()
+        val queueCount = synchronized(queuedSnaps) { queuedSnaps.size }
+        val processed = totalProcessed
         
-        if (queueCount <= 0 && processed <= 0) {
-            notificationManager.cancel(statusNotificationId)
+        // Self-Cleaning Logic: If work is done, wait 10s then auto-clear.
+        if (queueCount <= 0) {
+            if (processed > 0) {
+                context.coroutineScope.launch {
+                    delay(10000)
+                    if (synchronized(queuedSnaps) { queuedSnaps.size } <= 0) {
+                        notificationManager.cancel(statusNotificationId)
+                    }
+                }
+            } else {
+                notificationManager.cancel(statusNotificationId)
+            }
             return
         }
 
@@ -258,10 +285,8 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
             .setContentText(statusText)
 
         if (queueCount > 0) {
-            val batchSize = currentBatchSize.get()
-            val batchProcessed = currentBatchProcessed.get()
-            val progressMax = maxOf(batchSize, queueCount + batchProcessed)
-            val progressCurrent = batchProcessed
+            val progressMax = maxOf(currentBatchSize, queueCount + currentBatchProcessed)
+            val progressCurrent = currentBatchProcessed
             
             notificationBuilder.setProgress(progressMax, progressCurrent, false)
             
@@ -299,7 +324,12 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
             )
         }
 
-        val recentSnaps = queuedSnaps.takeLast(5)
+        if (config.compactNotification.get()) {
+            notificationManager.notify(statusNotificationId, notificationBuilder.build())
+            return
+        }
+
+        val recentSnaps = synchronized(queuedSnaps) { queuedSnaps.takeLast(5) }
         val bigTextStyle = Notification.BigTextStyle()
         
         val detailText = buildString {
@@ -352,7 +382,6 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         val clearedCount = synchronized(queuedSnaps) {
             val count = queuedSnaps.size
             queuedSnaps.clear()
-            snapQueueSize.set(0)
             count
         }
         
@@ -361,12 +390,12 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         }
         
         if (resetTotalCount) {
-            totalProcessed.set(0)
+            totalProcessed = 0
             lastResetTime = System.currentTimeMillis()
         }
         
-        currentBatchSize.set(0)
-        currentBatchProcessed.set(0)
+        currentBatchSize = 0
+        currentBatchProcessed = 0
         
         verifyQueueSync()
         
@@ -376,7 +405,7 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
             val message = if (resetTotalCount) {
                 context.translation["auto_open_snaps.queue_cleared"]
             } else {
-                context.translation["auto_open_snaps.notification_queue_cleared_opened"].replace("{opened}", totalProcessed.get().toString())
+                context.translation["auto_open_snaps.notification_queue_cleared_opened"].replace("{opened}", totalProcessed.toString())
             }
             showTemporaryNotification(context.translation["auto_open_snaps.queue_cleared_title"], message)
         }
@@ -488,7 +517,6 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                         synchronized(queuedSnaps) {
                             if (!queuedSnaps.any { it.messageId == snapItem.messageId }) {
                                 queuedSnaps.add(snapItem)
-                                snapQueueSize.set(queuedSnaps.size)
                                 wasAddedToPausedQueue = true
                                 updateStatusNotification()
                             }
@@ -497,26 +525,63 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     delay(2000)
                 }
 
-                val queueSizeAfterRemoval = synchronized(queuedSnaps) {
+                synchronized(queuedSnaps) {
                     queuedSnaps.removeAll { it.messageId == snapItem.messageId }
-                    snapQueueSize.set(queuedSnaps.size)
-                    queuedSnaps.size
                 }
 
-                val minDelayMs = config.minDelay.get().toLong()
-                val maxDelayMs = config.maxDelayMs.get().toLong()
-                val delayMs = if (maxDelayMs > minDelayMs) {
-                    Random.nextLong(minDelayMs, maxDelayMs)
-                } else {
-                    minDelayMs
+                // RESOURCE AWARENESS
+                val connectivityManager = context.androidContext.getSystemService(ConnectivityManager::class.java)
+                val isWifi = connectivityManager?.activeNetwork?.let { 
+                    connectivityManager.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) 
+                } == true
+                
+                val powerManager = context.androidContext.getSystemService(PowerManager::class.java)
+                val isIdle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) powerManager?.isDeviceIdleMode == true else false
+                
+                val activityManager = context.androidContext.getSystemService(ActivityManager::class.java)
+                val isGaming = activityManager?.runningAppProcesses?.firstOrNull { 
+                    it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND 
+                }?.processName?.let { name ->
+                    !name.contains("snapchat") && !name.contains("purrfectsnap")
+                } ?: false
+
+                // Immediate logging for visibility in [RESOURCE] filter
+                context.log.info("[RESOURCE] AutoOpen: Processing snap from ${snapItem.senderInfo}. Current state: WiFi=$isWifi, Idle=$isIdle, Gaming=$isGaming")
+
+                while (
+                    (config.onlyOnWifi.get() && !isWifi) ||
+                    (config.onlyWhenIdle.get() && !isIdle) ||
+                    (config.pauseDuringGaming.get() && isGaming)
+                ) {
+                    val waitTime = if (isGaming) 60000L else 5000L
+                    context.log.warn("[RESOURCE] AutoOpen: Throttling queue due to resource constraints. Waiting ${waitTime}ms")
+                    delay(waitTime)
+                    if (!kotlin.coroutines.coroutineContext.isActive) return@collect
                 }
-                delay(delayMs)
+
+                // Stealth Pacing: Apply variable delays to remain undetected
+                if (config.safeProcessing.get()) {
+                    batchSnapCount++
+                    val isRollingCooldown = batchSnapCount % 10 == 0
+                    val minDelayMs = if (isRollingCooldown) 5000L else config.minDelay.get().toLong()
+                    val maxDelayMs = if (isRollingCooldown) 10000L else config.maxDelayMs.get().toLong()
+                    
+                    val jitter = if (maxDelayMs > minDelayMs) {
+                        java.util.concurrent.ThreadLocalRandom.current().nextLong(minDelayMs, maxDelayMs)
+                    } else minDelayMs
+                    
+                    context.log.verbose("[AUTO-OPEN] Stealth Pacing active. Waiting ${jitter}ms")
+                    delay(jitter)
+                } else {
+                    context.log.verbose("[AUTO-OPEN] Stealth Pacing disabled. Executing at maximum speed.")
+                }
+
                 var result: String? = null
                 var lastError = ""
 
                 for (i in 0 until config.retryAttempts.get()) {
                     while ((!config.allowRunningInBackground.get() && context.isMainActivityPaused) || messaging.conversationManager == null) {
-                        delay(2000)
+                        delay(1000)
                     }
 
                     result = suspendCoroutine { continuation ->
@@ -538,17 +603,16 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                 }
 
                 if (result == null || result == "DUPLICATEREQUEST") {
-                    totalProcessed.incrementAndGet()
-                    currentBatchProcessed.incrementAndGet()
+                    totalProcessed++
+                    currentBatchProcessed++
+                    context.log.verbose("[AUTO-OPEN] Successfully opened ${snapItem.contentType} from ${snapItem.senderInfo}")
                 } else {
-                    context.log.error("Failed to open ${snapItem.contentType} from ${snapItem.senderInfo}: $lastError")
+                    context.log.error("[AUTO-OPEN] Failed to open ${snapItem.contentType} from ${snapItem.senderInfo}: $lastError")
                 }
 
-                val finalQueueSize = snapQueueSize.get()
-                
-                if (finalQueueSize <= 0) {
-                    currentBatchSize.set(0)
-                    currentBatchProcessed.set(0)
+                if (synchronized(queuedSnaps) { queuedSnaps.size } <= 0) {
+                    currentBatchSize = 0
+                    currentBatchProcessed = 0
                 }
                 
                 updateStatusNotification()
@@ -576,7 +640,8 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     if (openedSnaps.contains(clientMessageId)) {
                         return@launch
                     }
-                    openedSnaps.add(clientMessageId)
+                    if (openedSnaps.size >= 500) openedSnaps.removeFirst()
+                    openedSnaps.addLast(clientMessageId)
                 }
 
                 val senderId = event.message.senderId?.toString() ?: context.translation["auto_open_snaps.unknown_sender"]
@@ -592,7 +657,7 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     contentType = contentType
                 )
 
-                val actualQueueSize = synchronized(queuedSnaps) {
+                synchronized(queuedSnaps) {
                     val existingItem = queuedSnaps.find { it.messageId == snapItem.messageId }
                     if (existingItem != null) {
                         return@launch
@@ -603,18 +668,30 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     }
                     
                     queuedSnaps.add(snapItem)
-                    snapQueueSize.set(queuedSnaps.size)
-                    
-                    val newSize = queuedSnaps.size
-                    currentBatchSize.set(maxOf(currentBatchSize.get(), newSize))
-                    
-                    queuedSnaps.size
+                    currentBatchSize = maxOf(currentBatchSize, queuedSnaps.size)
                 }
                 
                 updateStatusNotification()
                 
                 snapQueue.emit(snapItem)
             }
+        }
+    }
+
+    override fun onBridgeAction(action: String, extras: Map<String, Any>?, callback: (Any?) -> Unit) {
+        if (action == "get_auto_open_status") {
+            val status = mutableMapOf<String, Any>()
+            status["processed"] = totalProcessed
+            status["queue"] = synchronized(queuedSnaps) {
+                queuedSnaps.map { item ->
+                    mapOf(
+                        "senderInfo" to item.senderInfo,
+                        "contentType" to item.contentType,
+                        "conversationType" to item.conversationType
+                    )
+                }
+            }
+            callback(status)
         }
     }
 
