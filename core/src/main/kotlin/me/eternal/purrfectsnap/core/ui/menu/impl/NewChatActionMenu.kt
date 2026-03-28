@@ -41,6 +41,7 @@ import me.eternal.purrfectsnap.core.features.impl.downloader.decoder.MessageDeco
 import me.eternal.purrfectsnap.core.features.impl.experiments.ConvertMessageLocally
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
 import me.eternal.purrfectsnap.core.features.impl.spying.MessageLogger
+import me.eternal.purrfectsnap.core.features.impl.ui.LocalPinnedMessages
 import me.eternal.purrfectsnap.core.ui.ViewAppearanceHelper
 import me.eternal.purrfectsnap.core.ui.debugEditText
 import me.eternal.purrfectsnap.core.ui.iterateParent
@@ -343,6 +344,20 @@ class NewChatActionMenu : AbstractMenu() {
                         )
                     })
                 }
+
+                val pinnedMessages = context.feature(LocalPinnedMessages::class)
+                ListButton(
+                    icon = Icons.Outlined.PushPin,
+                    text = if (pinnedMessages.hasPinnedMessageForOpenedConversation()) context.translation["chat_action_menu.unpin_local_message"] else context.translation["chat_action_menu.pin_local_message"],
+                    modifier = Modifier.clickable {
+                        closeActionMenu()
+                        if (pinnedMessages.hasPinnedMessageForOpenedConversation()) {
+                            pinnedMessages.unpinFocusedConversation()
+                        } else {
+                            pinnedMessages.pinFocusedMessage()
+                        }
+                    }
+                )
             }
         }.apply {
             layoutParams = LinearLayout.LayoutParams(

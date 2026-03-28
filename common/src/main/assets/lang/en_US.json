@@ -1296,6 +1296,18 @@
                         "name": "Block Calls",
                         "description": "Blocks Snapchat call session updates so call UI and incoming call overlays do not appear"
                     },
+                    "call_metadata_notifier": {
+                        "name": "Call Metadata Notifier",
+                        "description": "Shows a notification with captured call metadata after the call ends"
+                    },
+                    "conversation_sound_effects": {
+                        "name": "Conversation Sound Effects",
+                        "description": "Plays send and receive sounds inside an open conversation"
+                    },
+                    "conversation_sound_effects_style": {
+                        "name": "Conversation Sound Style",
+                        "description": "Choose the sound style used for in-conversation send and receive sounds"
+                    },
                     "unlimited_conversation_pinning": {
                         "name": "Unlimited Conversation Pinning",
                         "description": "Allows you to pin an unlimited amount of conversations locally"
@@ -2516,6 +2528,12 @@
             "back_custom_frame_rate": {
                 "null": "Device default FPS"
             },
+            "conversation_sound_effects_style": {
+                "imessage": "iMessage",
+                "telegram": "Telegram",
+                "whatsapp": "WhatsApp",
+                "subtle": "Subtle"
+            },
             "force_voice_note_format": {
                 "null": "Use Snapchat default"
             },
@@ -2894,7 +2912,9 @@
         "download_button": "Download",
         "delete_logged_message_button": "Delete Logged Message",
         "show_chat_edit_history": "Show Chat Edit History",
-        "convert_message": "Convert Message"
+        "convert_message": "Convert Message",
+        "pin_local_message": "Pin Message Locally",
+        "unpin_local_message": "Unpin Local Message"
     },
     "chat_wallpaper_downloader": {
         "download_button": "Download Chat Wallpaper"
@@ -3133,6 +3153,16 @@
     "call_start_confirmation": {
         "dialog_title": "Start Call",
         "dialog_message": "Are you sure you want to start a call?"
+    },
+    "call_metadata_notifier": {
+        "notification_channel_name": "Call Metadata",
+        "notification_title": "Call Metadata Captured",
+        "notification_empty": "No call metadata was captured"
+    },
+    "local_pinned_messages": {
+        "banner_title": "Pinned Message",
+        "pinned_toast": "Pinned message locally",
+        "unpinned_toast": "Removed local pinned message"
     },
     "half_swipe_notifier": {
         "notification_channel_name": "Half Swipe",

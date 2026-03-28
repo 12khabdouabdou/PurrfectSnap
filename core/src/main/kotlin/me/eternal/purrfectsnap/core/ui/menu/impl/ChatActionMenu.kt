@@ -14,6 +14,7 @@ import me.eternal.purrfectsnap.core.features.impl.downloader.MediaDownloader
 import me.eternal.purrfectsnap.core.features.impl.experiments.ConvertMessageLocally
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
 import me.eternal.purrfectsnap.core.features.impl.spying.MessageLogger
+import me.eternal.purrfectsnap.core.features.impl.ui.LocalPinnedMessages
 import me.eternal.purrfectsnap.core.ui.ViewTagState
 import me.eternal.purrfectsnap.core.ui.menu.AbstractMenu
 import me.eternal.purrfectsnap.core.ui.triggerCloseTouchEvent
@@ -211,6 +212,23 @@ class ChatActionMenu : AbstractMenu() {
                 }
             })
         }
+
+        val pinnedMessages = context.feature(LocalPinnedMessages::class)
+        injectButton(Button(viewGroup.context).apply {
+            text = if (pinnedMessages.hasPinnedMessageForOpenedConversation()) {
+                this@ChatActionMenu.context.translation["chat_action_menu.unpin_local_message"]
+            } else {
+                this@ChatActionMenu.context.translation["chat_action_menu.pin_local_message"]
+            }
+            setOnClickListener {
+                closeActionMenu()
+                if (pinnedMessages.hasPinnedMessageForOpenedConversation()) {
+                    pinnedMessages.unpinFocusedConversation()
+                } else {
+                    pinnedMessages.pinFocusedMessage()
+                }
+            }
+        })
 
 
         viewGroup.addView(buttonContainer)

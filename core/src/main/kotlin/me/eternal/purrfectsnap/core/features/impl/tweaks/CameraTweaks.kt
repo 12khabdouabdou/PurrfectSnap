@@ -121,6 +121,11 @@ class CameraTweaks : Feature("Camera Tweaks") {
             param.setArg(1, captureResolutionConfig[1])
         }
 
+        CaptureRequest.Builder::class.java.hook("set", HookStage.BEFORE) { param ->
+            val key = param.arg<CaptureRequest.Key<*>>(0)
+            if (key == CaptureRequest.CONTROL_ZOOM_RATIO) return@hook
+        }
+
         CameraCharacteristics::class.java.hook("get", HookStage.AFTER)  { param ->
             val key = param.argNullable<Key<*>>(0) ?: return@hook
 
@@ -145,14 +150,6 @@ class CameraTweaks : Feature("Camera Tweaks") {
                         param.setResult(Range(1f, maxZoom))
                     }
                 }
-            }
-
-            if (key == CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES) {
-                val isFrontCamera = param.invokeOriginal(
-                    arrayOf(CameraCharacteristics.LENS_FACING)
-                ) == CameraCharacteristics.LENS_FACING_FRONT
-                val customFrameRate = (if (isFrontCamera) config.frontCustomFrameRate.getNullable() else config.backCustomFrameRate.getNullable())?.toIntOrNull() ?: return@hook
-                param.setResult(arrayOf(Range(customFrameRate, customFrameRate)))
             }
         }
 

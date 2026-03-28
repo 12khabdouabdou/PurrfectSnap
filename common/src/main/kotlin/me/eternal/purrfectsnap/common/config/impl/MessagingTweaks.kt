@@ -223,6 +223,13 @@ class MessagingTweaks : ConfigContainer() {
     val halfSwipeNotifier = container("half_swipe_notifier", HalfSwipeNotifierConfig()) { requireRestart()}
     val callStartConfirmation = boolean("call_start_confirmation") { requireRestart() }
     val blockCalls = boolean("block_calls") { requireRestart() }
+    val callMetadataNotifier = boolean("call_metadata_notifier") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
+    val conversationSoundEffects = boolean("conversation_sound_effects") { requireRestart() }
+    val conversationSoundEffectsStyle = unique("conversation_sound_effects_style", "imessage", "telegram", "whatsapp", "subtle") {
+        requireRestart()
+        customOptionTranslationPath = "conversation_sound_effects_style"
+        addFlags(ConfigFlag.NO_TRANSLATE)
+    }.apply { set("imessage") }
     val unlimitedConversationPinning = boolean("unlimited_conversation_pinning") { requireRestart() }
     val disableSnapModeRestrictions = boolean("disable_snap_mode_restrictions") { requireRestart() }
     val autoSaveMessagesInConversations = multiple("auto_save_messages_in_conversations",

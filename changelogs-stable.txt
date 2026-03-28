@@ -1,3 +1,9 @@
+## v1.6.0
+- New: Conversation Sound Effects!(Sound when you send or receive a msg while in chat)
+- New: Call Metadata Notifier!
+- New: Pin Messages!(Locally)
+- Fix: Select highest quality media by comparing resolution(tq to Issac XT)
+
 ## v1.5.9
 - New: Block Calls Feature!
 - New: Unlock Zoom Limit Feature!
