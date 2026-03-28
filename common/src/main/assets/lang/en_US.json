@@ -1292,6 +1292,10 @@
                         "name": "Call Start Confirmation",
                         "description": "Shows a confirmation dialog when starting a call"
                     },
+                    "block_calls": {
+                        "name": "Block Calls",
+                        "description": "Blocks Snapchat call session updates so call UI and incoming call overlays do not appear"
+                    },
                     "unlimited_conversation_pinning": {
                         "name": "Unlimited Conversation Pinning",
                         "description": "Allows you to pin an unlimited amount of conversations locally"
@@ -2010,6 +2014,14 @@
                     "camera_tweaks": { "name": "Upgraded Camera Engine", "description": "Enables professional hardware ISP processing modes for better dynamic range" }, "audio_video": { "name": "Upgraded Audio and Video", "description": "Increases Video bitrate to 30Mbps and Audio to 320kbps/48kHz" }, "video_record_timer": {
                         "name": "Video Recording Timer",
                         "description": "Shows a recording timer overlay when recording video"
+                    },
+                    "unlock_zoom_limit": {
+                        "name": "Unlock Zoom Limit",
+                        "description": "Overrides the max camera zoom Snapchat reads from the device"
+                    },
+                    "max_zoom_override": {
+                        "name": "Max Zoom Override",
+                        "description": "Maximum zoom ratio to report to Snapchat, for example 120"
                     }
                 }
             },

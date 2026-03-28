@@ -58,6 +58,12 @@ class Camera : ConfigContainer() {
     val overrideFrontResolution get() = _overrideFrontResolution
     val overrideBackResolution get() = _overrideBackResolution
     val videoRecordTimer = boolean("video_record_timer")
+    val unlockZoomLimit = boolean("unlock_zoom_limit") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
+    val maxZoomOverride = float("max_zoom_override", 120f) {
+        requireRestart()
+        addFlags(ConfigFlag.NO_TRANSLATE)
+        inputCheck = { (it.toFloatOrNull() ?: 0f) in 1f..500f }
+    }
 
     val audioVideoOptimizations = boolean("audio_video", defaultValue = true) { requireRestart() }
     val cameraOptimizations = boolean("camera_tweaks", defaultValue = false) { addNotices(FeatureNotice.UNSTABLE); requireRestart() }

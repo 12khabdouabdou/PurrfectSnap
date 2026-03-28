@@ -80,12 +80,13 @@ class CallButtonsOverride : Feature("CallButtonsOverride") {
 
     override fun init() {
         val hideUiComponents by context.config.userInterface.hideUiComponents
+        val blockCalls = context.config.messaging.blockCalls.get()
 
-        val hideProfileCallButtons = hideUiComponents.contains("hide_profile_call_buttons")
-        val hideChatCallButtons = hideUiComponents.contains("hide_chat_call_buttons")
+        val hideProfileCallButtons = blockCalls || hideUiComponents.contains("hide_profile_call_buttons")
+        val hideChatCallButtons = blockCalls || hideUiComponents.contains("hide_chat_call_buttons")
         val callStartConfirmation = context.config.messaging.callStartConfirmation.get()
 
-        if (!hideProfileCallButtons && !hideChatCallButtons && !callStartConfirmation) return
+        if (!hideProfileCallButtons && !hideChatCallButtons && !callStartConfirmation && !blockCalls) return
 
         var actionSheetVideoCallButtonId = -1
         var actionSheetAudioCallButtonId = -1
@@ -111,7 +112,7 @@ class CallButtonsOverride : Feature("CallButtonsOverride") {
         }
 
         onNextActivityCreate {
-            if (callStartConfirmation) {
+            if (callStartConfirmation || blockCalls) {
                 (runCatching { findClass("com.snap.valdi.views.ValdiRootView") }.getOrNull()
                     ?: findClass("com.snap.composer.views.ComposerRootView"))
                     .hook("dispatchTouchEvent", HookStage.BEFORE) { param ->
@@ -122,6 +123,10 @@ class CallButtonsOverride : Feature("CallButtonsOverride") {
                     if (childComposerView.children().count {
                             it::class.java == childComposerView::class.java
                         } != 2) return@hook
+                    if (blockCalls) {
+                        param.setResult(true)
+                        return@hook
+                    }
                     hookTouchEvent(param, param.arg(0)) {
                         param.invokeOriginal()
                     }
@@ -131,6 +136,10 @@ class CallButtonsOverride : Feature("CallButtonsOverride") {
                     val view = param.thisObject<View>().takeIf { it.id != -1 } ?: return@hook
                     if (view.id != actionSheetAudioCallButtonId && view.id != actionSheetVideoCallButtonId) return@hook
 
+                    if (blockCalls) {
+                        param.setResult(true)
+                        return@hook
+                    }
                     hookTouchEvent(param, param.arg(0)) {
                         arrayOf(
                             MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0f, 0f, 0),

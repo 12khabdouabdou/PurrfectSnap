@@ -135,6 +135,18 @@ class CameraTweaks : Feature("Camera Tweaks") {
                 }
             }
 
+            if (config.unlockZoomLimit.get()) {
+                val maxZoom = config.maxZoomOverride.get().coerceAtLeast(1f)
+                when {
+                    key == CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM -> {
+                        param.setResult(maxZoom)
+                    }
+                    key.name == "android.control.zoomRatioRange" -> {
+                        param.setResult(Range(1f, maxZoom))
+                    }
+                }
+            }
+
             if (key == CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES) {
                 val isFrontCamera = param.invokeOriginal(
                     arrayOf(CameraCharacteristics.LENS_FACING)

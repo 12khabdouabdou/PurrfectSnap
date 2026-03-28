@@ -1,3 +1,7 @@
+## v1.5.9
+- New: Block Calls Feature!
+- New: Unlock Zoom Limit Feature!
+
 ## v1.5.8
 - New: Implemented 30Mbps Video and 320kbps/48kHz Audio bitrates(tq to Kaladin)
 - Fix: Advanced hardware ISP processing modes for superior dynamic range and less noisy video footage(tq to Kaladin)

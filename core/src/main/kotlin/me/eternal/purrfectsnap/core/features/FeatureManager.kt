@@ -114,6 +114,7 @@ class FeatureManager(
             HideFriendFeedEntry(),
             RequerySqlite(),
             RefreshFriendSuggestions(),
+            BlockCalls(),
             CallButtonsOverride(),
             SnapPreview(),
             BypassScreenshotDetection(),

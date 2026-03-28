@@ -7,7 +7,7 @@ import me.eternal.purrfectsnap.core.util.hook.hook
 
 class DisableTelecomFramework: Feature("Disable Telecom Framework") {
     override fun init() {
-        if (!context.config.global.disableTelecomFramework.get()) return
+        if (!context.config.global.disableTelecomFramework.get() && !context.config.messaging.blockCalls.get()) return
 
         ContextWrapper::class.java.hook("getSystemService", HookStage.BEFORE) { param ->
             if (param.arg<Any>(0).toString() == "telecom") param.setResult(null)
