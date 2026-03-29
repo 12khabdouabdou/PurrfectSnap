@@ -1300,10 +1300,6 @@
                         "name": "Call Metadata Notifier",
                         "description": "Shows a notification with captured call metadata after the call ends"
                     },
-                    "conversation_sound_effects": {
-                        "name": "Conversation Sound Effects",
-                        "description": "Plays send and receive sounds inside an open conversation"
-                    },
                     "conversation_sound_effects_style": {
                         "name": "Conversation Sound Style",
                         "description": "Choose the sound style used for in-conversation send and receive sounds"
@@ -2529,6 +2525,7 @@
                 "null": "Device default FPS"
             },
             "conversation_sound_effects_style": {
+                "disabled": "Disabled",
                 "imessage": "iMessage",
                 "telegram": "Telegram",
                 "whatsapp": "WhatsApp",

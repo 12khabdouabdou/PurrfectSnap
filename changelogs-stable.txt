@@ -1,3 +1,8 @@
+## v1.6.1
+- Fix: Custom Frame Rate
+- Fix: Conversation Sound Style
+- Fix: Auto Reactions when downloading stories(Removed story thumbnail feature)
+
 ## v1.6.0
 - New: Conversation Sound Effects!(Sound when you send or receive a msg while in chat)
 - New: Call Metadata Notifier!

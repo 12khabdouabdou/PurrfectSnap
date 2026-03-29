@@ -12,7 +12,6 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.compose.foundation.background
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
@@ -30,14 +29,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,8 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -125,11 +119,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
     private var lastSeenMediaInfoMap: MutableMap<SplitMediaAssetType, MediaInfo>? = null
     var lastSeenMapParams: ParamMap? = null
         private set
-    private val storyPreviewCache = mutableMapOf<String, MutableMap<Int, Bitmap>>()
-    @Volatile
-    private var pendingBatchDownloadIndices: MutableList<Int>? = null
-    @Volatile
-    private var batchForceAllowDuplicate: Boolean = false
     private val translations by lazy {
         context.translation.getCategory("download_processor")
     }
@@ -267,68 +256,10 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         val tr = context.translation.getCategory("download_processor.story_snap_dialog")
         val cancelStr = context.translation["button.cancel"]
         val downloadStr = context.translation["button.download"]
-        val previewCacheKey = buildString {
-            append(paramMap["STORY_ID"]?.toString() ?: "story")
-            append("|")
-            append(paramMap["TOPIC_SNAP_CREATOR_USER_ID"]?.toString() ?: "user")
-            append("|")
-            append(totalCount)
-        }
         context.runOnUiThread {
             createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
                 PurrfectOverlayTheme {
                     val selected = remember { mutableStateListOf<Int>().apply { add(currentIndex) } }
-                    val previewBitmaps = remember { mutableStateMapOf<Int, Bitmap?>() }
-                    val previewLoading = remember { mutableStateMapOf<Int, Boolean>() }
-
-                    LaunchedEffect(Unit) {
-                        if (!selected.contains(currentIndex)) selected.add(currentIndex)
-                        mediaInfoMap[SplitMediaAssetType.ORIGINAL]?.uri?.let { currentUri ->
-                            previewLoading[currentIndex] = true
-                            previewBitmaps[currentIndex] = withContext(Dispatchers.IO) { loadStoryPreviewBitmap(currentUri) }
-                            previewLoading[currentIndex] = false
-                        }
-                        synchronized(storyPreviewCache) {
-                            storyPreviewCache[previewCacheKey]?.forEach { (index, bitmap) ->
-                                previewBitmaps[index] = bitmap
-                            }
-                        }
-                    }
-
-                    LaunchedEffect(previewCacheKey) {
-                        val overlay = context.feature(OperaStoryOverlay::class)
-                        val cachedIndices = synchronized(storyPreviewCache) {
-                            storyPreviewCache.getOrPut(previewCacheKey) { mutableMapOf() }.keys.toSet()
-                        }
-                        val indicesToScan = (0 until totalCount).filter { it != currentIndex && it !in cachedIndices }
-
-                        try {
-                            for (targetIndex in indicesToScan) {
-                                val jumped = withContext(Dispatchers.Main) {
-                                    overlay.requestJumpToSnap(targetIndex, totalCount)
-                                }
-                                if (!jumped) continue
-
-                                val reached = waitForStoryIndex(targetIndex)
-                                if (!reached) continue
-
-                                val uri = lastSeenMediaInfoMap?.get(SplitMediaAssetType.ORIGINAL)?.uri ?: continue
-                                previewLoading[targetIndex] = true
-                                val bitmap = withContext(Dispatchers.IO) { loadStoryPreviewBitmap(uri) }
-                                previewLoading[targetIndex] = false
-                                if (bitmap != null) {
-                                    previewBitmaps[targetIndex] = bitmap
-                                    synchronized(storyPreviewCache) {
-                                        storyPreviewCache.getOrPut(previewCacheKey) { mutableMapOf() }[targetIndex] = bitmap
-                                    }
-                                }
-                            }
-                        } finally {
-                            withContext(Dispatchers.Main) {
-                                overlay.requestJumpToSnap(currentIndex, totalCount)
-                            }
-                        }
-                    }
 
                     PurrfectGlassCard(
                         title = tr["title"],
@@ -362,35 +293,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                                             },
                                             colors = CheckboxDefaults.colors(checkedColor = PurrfectOverlayPalette.glowPrimary)
                                         )
-                                        Box(
-                                            modifier = Modifier
-                                                .size(54.dp)
-                                                .background(Color.White.copy(alpha = 0.06f), RoundedCornerShape(12.dp)),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            val rowBitmap = previewBitmaps[index]
-                                            val rowLoading = previewLoading[index] == true
-                                            when {
-                                                rowBitmap != null -> Image(
-                                                    bitmap = rowBitmap.asImageBitmap(),
-                                                    contentDescription = null,
-                                                    modifier = Modifier
-                                                        .size(54.dp)
-                                                        .background(Color.Transparent, RoundedCornerShape(12.dp)),
-                                                    contentScale = ContentScale.Crop
-                                                )
-                                                rowLoading -> CircularProgressIndicator(
-                                                    color = PurrfectOverlayPalette.glowPrimary,
-                                                    modifier = Modifier.size(22.dp),
-                                                    strokeWidth = 2.dp
-                                                )
-                                                else -> Icon(
-                                                    imageVector = Icons.Outlined.Image,
-                                                    contentDescription = null,
-                                                    tint = PurrfectOverlayPalette.textSecondary
-                                                )
-                                            }
-                                        }
                                         Text(
                                             label,
                                             style = MaterialTheme.typography.bodyMedium,
@@ -435,10 +337,15 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                                 }
                                 Button(
                                     onClick = {
-                                        if (selected.isNotEmpty()) {
-                                            startBatchDownload(selected.sorted().toMutableList(), allowDuplicate)
-                                            alertDialog.dismiss()
+                                        if (!selected.contains(currentIndex)) return@Button
+                                        context.executeAsync {
+                                            runCatching { handleOperaMedia(paramMap, mediaInfoMap, true, allowDuplicate) }
+                                                .onFailure {
+                                                    context.log.error("Story download failed", it)
+                                                    context.shortToast(translations["failed_generic_toast"])
+                                                }
                                         }
+                                        alertDialog.dismiss()
                                     },
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(14.dp),
@@ -455,124 +362,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                 show()
             }
         }
-    }
-
-    private suspend fun waitForStoryIndex(targetIndex: Int, timeoutMs: Long = 3000L): Boolean {
-        val startedAt = System.currentTimeMillis()
-        while (System.currentTimeMillis() - startedAt < timeoutMs) {
-            if (lastSeenMapParams?.getStorySnapIndex() == targetIndex) return true
-            kotlinx.coroutines.delay(60L)
-        }
-        return false
-    }
-
-    private fun loadStoryPreviewBitmap(uriString: String): Bitmap? {
-        return runCatching {
-            val uri = Uri.parse(uriString)
-            when (uri.scheme?.lowercase()) {
-                "content" -> context.androidContext.contentResolver.openInputStream(uri)?.use(BitmapFactory::decodeStream)
-                "file", null -> BitmapFactory.decodeFile(uri.path)
-                "http", "https" -> {
-                    runCatching {
-                        OkHttpClient().newCall(Request.Builder().url(uriString).build()).execute().use { response ->
-                            response.body?.byteStream()?.use { stream -> BitmapFactory.decodeStream(stream) }
-                        }
-                    }.getOrNull() ?: run {
-                        val retriever = MediaMetadataRetriever()
-                        try {
-                            retriever.setDataSource(uriString, emptyMap())
-                            retriever.frameAtTime
-                        } finally {
-                            runCatching { retriever.release() }
-                        }
-                    }
-                }
-                else -> null
-            } ?: run {
-                val retriever = MediaMetadataRetriever()
-                try {
-                    retriever.setDataSource(context.androidContext, uri)
-                    retriever.frameAtTime
-                } finally {
-                    runCatching { retriever.release() }
-                }
-            }
-        }.getOrNull()
-    }
-
-    private fun startBatchDownload(indices: MutableList<Int>, allowDuplicate: Boolean) {
-        if (indices.isEmpty()) return
-        val paramMap = lastSeenMapParams ?: return
-        val mediaInfoMap = lastSeenMediaInfoMap ?: return
-
-        pendingBatchDownloadIndices = indices
-        batchForceAllowDuplicate = allowDuplicate
-
-        val currentIndex = paramMap.getStorySnapIndex() ?: 0
-        val targetIndex = indices.first()
-        val totalCount = paramMap.getStorySnapTotal()
-
-        if (currentIndex == targetIndex) {
-            processNextBatchDownload(paramMap, mediaInfoMap)
-        } else {
-            val jumped = context.feature(OperaStoryOverlay::class).requestJumpToSnap(targetIndex, totalCount)
-            if (!jumped) {
-                pendingBatchDownloadIndices = null
-                context.shortToast(translations["batch_download_jump_failed_toast"])
-            }
-        }
-    }
-
-    private fun downloadSingleSnap(paramMap: ParamMap, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>) {
-        context.executeAsync {
-            runCatching { handleOperaMedia(paramMap, mediaInfoMap, true, batchForceAllowDuplicate) }
-                .onFailure {
-                    context.log.error("Batch download failed", it)
-                    context.shortToast(translations["failed_generic_toast"])
-                }
-        }
-    }
-
-    private fun processNextBatchDownload(paramMap: ParamMap, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>) {
-        val queue = pendingBatchDownloadIndices ?: return
-        if (queue.isEmpty()) {
-            flushPendingMergeAndComplete()
-            return
-        }
-
-        val currentIndex = paramMap.getStorySnapIndex() ?: -1
-        if (currentIndex != queue.first()) return
-
-        queue.removeAt(0)
-        downloadSingleSnap(paramMap, mediaInfoMap)
-
-        if (queue.isEmpty()) {
-            flushPendingMergeAndComplete()
-        } else {
-            val totalCount = paramMap.getStorySnapTotal()
-            context.runOnUiThread {
-                fun tryJump(retryCount: Int = 0) {
-                    val delayMs = if (retryCount == 0) 120L else 220L
-                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                        val jumped = runCatching {
-                            context.feature(OperaStoryOverlay::class).requestJumpToSnap(queue.first(), totalCount)
-                        }.getOrNull() == true
-                        if (!jumped && retryCount < 1) {
-                            tryJump(retryCount + 1)
-                        } else if (!jumped) {
-                            pendingBatchDownloadIndices = null
-                            context.shortToast(translations["batch_download_jump_failed_toast"])
-                        }
-                    }, delayMs)
-                }
-                tryJump()
-            }
-        }
-    }
-
-    private fun flushPendingMergeAndComplete() {
-        pendingBatchDownloadIndices = null
-        context.shortToast(translations["batch_download_complete_toast"])
     }
 
     fun showLastOperaDebugMediaInfo() {
@@ -1062,15 +851,6 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
 
                         lastSeenMapParams = mediaParamMap
                         lastSeenMediaInfoMap = mediaInfoMap
-
-                        if (pendingBatchDownloadIndices != null) {
-                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                                if (pendingBatchDownloadIndices != null) {
-                                    processNextBatchDownload(mediaParamMap, mediaInfoMap)
-                                }
-                            }, 80L)
-                            return@onOperaViewStateCallback
-                        }
 
                         if (!shouldAutoDownload) {
                             return@onOperaViewStateCallback
