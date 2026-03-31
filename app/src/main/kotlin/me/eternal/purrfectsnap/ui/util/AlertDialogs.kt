@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -27,6 +28,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -80,6 +82,146 @@ import me.eternal.purrfectsnap.ui.util.Dialog as StandardDialog
 class AlertDialogs(
     private val translation: LocaleWrapper,
 ){
+    @Composable
+    fun MessageListPropertyDialog(property: PropertyPair<*>, onDismiss: () -> Unit = {}) {
+        val currentValue = property.value.getNullable()?.toString() ?: "[]"
+        val propertyName = translation[property.key.propertyName()]
+        
+        MessageListManagerDialog(
+            title = propertyName ?: "",
+            messageListJson = currentValue,
+            onSave = { newValue: String ->
+                property.value.setAny(newValue)
+            },
+            onDismiss = onDismiss
+        )
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun AutoOpenScheduleDialog(
+        property: PropertyPair<String>,
+        onDismiss: () -> Unit
+    ) {
+        val windowParts = (property.value.get() as String).split("-")
+        val startTime = windowParts.getOrNull(0)?.split(":") ?: listOf("23", "00")
+        val endTime = windowParts.getOrNull(1)?.split(":") ?: listOf("07", "00")
+
+        var isEditingEnd by remember { mutableStateOf(false) }
+        
+        val startState = rememberTimePickerState(
+            initialHour = startTime.getOrNull(0)?.toIntOrNull() ?: 23,
+            initialMinute = startTime.getOrNull(1)?.toIntOrNull() ?: 0,
+            is24Hour = true
+        )
+        val endState = rememberTimePickerState(
+            initialHour = endTime.getOrNull(0)?.toIntOrNull() ?: 7,
+            initialMinute = endTime.getOrNull(1)?.toIntOrNull() ?: 0,
+            is24Hour = true
+        )
+
+        DefaultDialogCard {
+            Column(
+                modifier = Modifier.padding(18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = translation["auto_open_snaps.auto_open_schedule.title"] ?: "Auto Open Scheduler",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.White.copy(alpha = 0.05f))
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    val activeColor = PurrfectPalette.glowPrimary.copy(alpha = 0.25f)
+                    val inactiveColor = Color.Transparent
+                    
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (!isEditingEnd) activeColor else inactiveColor)
+                            .clickable { isEditingEnd = false }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${translation["auto_open_snaps.auto_open_schedule.start"] ?: "Start"}: ${String.format("%02d:%02d", startState.hour, startState.minute)}",
+                            color = if (!isEditingEnd) Color.White else Color.White.copy(alpha = 0.6f),
+                            fontWeight = if (!isEditingEnd) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isEditingEnd) activeColor else inactiveColor)
+                            .clickable { isEditingEnd = true }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${translation["auto_open_snaps.auto_open_schedule.end"] ?: "End"}: ${String.format("%02d:%02d", endState.hour, endState.minute)}",
+                            color = if (isEditingEnd) Color.White else Color.White.copy(alpha = 0.6f),
+                            fontWeight = if (isEditingEnd) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                }
+
+                TimePicker(
+                    state = if (isEditingEnd) endState else startState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = Color.White.copy(alpha = 0.05f),
+                        clockDialSelectedContentColor = Color.White,
+                        clockDialUnselectedContentColor = Color.White.copy(alpha = 0.7f),
+                        selectorColor = PurrfectPalette.glowPrimary,
+                        periodSelectorBorderColor = PurrfectPalette.glowPrimary,
+                        periodSelectorSelectedContainerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.2f),
+                        periodSelectorUnselectedContainerColor = Color.Transparent,
+                        periodSelectorSelectedContentColor = Color.White,
+                        periodSelectorUnselectedContentColor = Color.White.copy(alpha = 0.7f),
+                        timeSelectorSelectedContainerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.2f),
+                        timeSelectorUnselectedContainerColor = Color.White.copy(alpha = 0.05f),
+                        timeSelectorSelectedContentColor = Color.White,
+                        timeSelectorUnselectedContentColor = Color.White.copy(alpha = 0.7f)
+                    )
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(text = translation["button.negative"], color = Color.White)
+                    }
+                    Button(
+                        onClick = {
+                            val startStr = String.format("%02d:%02d", startState.hour, startState.minute)
+                            val endStr = String.format("%02d:%02d", endState.hour, endState.minute)
+                            property.value.setAny("$startStr-$endStr")
+                            onDismiss()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.35f),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(text = translation["button.positive"])
+                    }
+                }
+            }
+        }
+    }
+
     @Composable
     fun DefaultDialogCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
         val scrollState = rememberScrollState()
@@ -1260,23 +1402,7 @@ class AlertDialogs(
             }
         }
     }
-
-    }
-
-    @Composable
-    fun MessageListPropertyDialog(property: PropertyPair<*>, onDismiss: () -> Unit = {}) {
-        val currentValue = property.value.getNullable()?.toString() ?: "[]"
-        val propertyName = translation[property.key.propertyName()]
-        
-        MessageListManagerDialog(
-            title = propertyName,
-            messageListJson = currentValue,
-            onSave = { newValue ->
-                property.value.setAny(newValue)
-            },
-            onDismiss = onDismiss
-        )
-    }
+}
 
     @Composable
     fun MessageListManagerDialog(
@@ -1313,7 +1439,6 @@ class AlertDialogs(
                     textAlign = TextAlign.Center
                 )
 
-                // Message list
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1329,7 +1454,7 @@ class AlertDialogs(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = translation["auto_reply_messages.dialog.no_messages"],
+                                text = translation["bulk_messaging_action.no_messages_found"] ?: "No messages",
                                 style = MaterialTheme.typography.bodyMedium,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1371,24 +1496,14 @@ class AlertDialogs(
                                                     showAddDialog = true
                                                 }
                                             ) {
-                                                Icon(
-                                                    Icons.Default.Edit,
-                                                    contentDescription = "Edit",
-                                                    tint = MaterialTheme.colorScheme.primary
-                                                )
+                                                Icon(Icons.Default.Edit, contentDescription = translation["common.edit"] ?: "Edit", tint = MaterialTheme.colorScheme.primary)
                                             }
                                             IconButton(
                                                 onClick = { 
-                                                    messageList = messageList.toMutableList().apply {
-                                                        removeAt(index)
-                                                    }
+                                                    messageList = messageList.toMutableList().apply { removeAt(index) }
                                                 }
                                             ) {
-                                                Icon(
-                                                    Icons.Default.Delete,
-                                                    contentDescription = "Delete",
-                                                    tint = MaterialTheme.colorScheme.error
-                                                )
+                                                Icon(Icons.Default.Delete, contentDescription = translation["common.delete"] ?: "Delete", tint = MaterialTheme.colorScheme.error)
                                             }
                                         }
                                     }
@@ -1398,7 +1513,6 @@ class AlertDialogs(
                     }
                 }
 
-                // Add button
                 Button(
                     onClick = { 
                         editingIndex = -1
@@ -1408,20 +1522,13 @@ class AlertDialogs(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = translation["auto_reply_messages.dialog.add_message"])
+                    Text(text = translation["common.add"] ?: "Add Message")
                 }
 
-                // Dialog buttons
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1430,17 +1537,14 @@ class AlertDialogs(
                 ) {
                     Button(
                         onClick = { onDismiss() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Text(text = translation["button.cancel"])
                     }
                     Button(
                         onClick = {
                             val gson = com.google.gson.Gson()
-                            val jsonString = gson.toJson(messageList)
-                            onSave(jsonString)
+                            onSave(gson.toJson(messageList))
                             onDismiss()
                         }
                     ) {
@@ -1450,7 +1554,6 @@ class AlertDialogs(
             }
         }
 
-        // Add/Edit message dialog
         if (showAddDialog) {
             StandardDialog(
                 onDismissRequest = { showAddDialog = false },
@@ -1460,7 +1563,7 @@ class AlertDialogs(
             ) {
                 DefaultDialogCard {
                     Text(
-                        text = if (editingIndex == -1) translation["auto_reply_messages.dialog.add_message"] else translation["auto_reply_messages.dialog.edit_message"],
+                        text = if (editingIndex == -1) translation["common.add"] ?: "Add Message" else translation["common.edit"] ?: "Edit Message",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier
@@ -1472,13 +1575,13 @@ class AlertDialogs(
                     TextField(
                         value = editingText,
                         onValueChange = { editingText = it },
-                        label = { Text(translation["auto_reply_messages.dialog.message_label"]) },
+                        label = { Text(translation["common.message"] ?: "Message") },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
                         minLines = 2,
                         maxLines = 4,
-                        placeholder = { Text(translation["auto_reply_messages.dialog.message_placeholder"]) }
+                        placeholder = { Text(translation["common.type_message"] ?: "Type message...") }
                     )
                     
                     Row(
@@ -1489,32 +1592,22 @@ class AlertDialogs(
                     ) {
                         Button(
                             onClick = { showAddDialog = false },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
                             Text(text = translation["button.cancel"])
                         }
                         Button(
                             onClick = {
                                 if (editingText.isNotBlank()) {
-                                    if (editingIndex == -1) {
-                                        // Add new message
-                                        messageList = messageList.toMutableList().apply {
-                                            add(editingText)
-                                        }
-                                    } else {
-                                        // Edit existing message
-                                        messageList = messageList.toMutableList().apply {
-                                            set(editingIndex, editingText)
-                                        }
+                                    messageList = messageList.toMutableList().apply {
+                                        if (editingIndex == -1) add(editingText) else set(editingIndex, editingText)
                                     }
                                 }
                                 showAddDialog = false
                             },
                             enabled = editingText.isNotBlank()
                         ) {
-                            Text(text = if (editingIndex == -1) translation["auto_reply_messages.dialog.add_message"] else translation["button.save"])
+                            Text(text = if (editingIndex == -1) translation["common.add"] ?: "Add" else translation["button.save"])
                         }
                     }
                 }
@@ -1522,3 +1615,4 @@ class AlertDialogs(
         }
     }
 }
+

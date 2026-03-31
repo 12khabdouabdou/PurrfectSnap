@@ -176,12 +176,19 @@ class MessagingTweaks : ConfigContainer() {
             inputCheck = { it.toIntOrNull()?.coerceAtLeast(1000) != null }
         }
         val compactNotification = boolean("compact_notification", false)
+        val showProgressBar = boolean("show_progress_bar", true)
+        val showLifetimeStats = boolean("show_lifetime_stats", false)
+        val showQueuePreview = boolean("show_queue_preview", true)
         
         // Resource Intelligence: Smart triggers for battery and data safety
         val onlyOnWifi = boolean("only_on_wifi", false)
-        val onlyWhenIdle = boolean("only_when_idle", false)
         val pauseDuringGaming = boolean("pause_during_gaming", false)
         val safeProcessing = boolean("safe_processing", true)
+        val onlyWhenIdle = boolean("only_when_idle", false)
+        val sleepWindow = string("sleep_window", defaultValue = "23:00-07:00") {
+            addFlags(ConfigFlag.NO_DISABLE_KEY)
+            inputCheck = { it.matches(Regex("^([01]\\d|2[0-3]):([0-5]\\d)-([01]\\d|2[0-3]):([0-5]\\d)$")) }
+        }
     }
 
     class AutoDeleteSentMessagesConfig : ConfigContainer(hasGlobalState = true) {
@@ -324,4 +331,3 @@ class MessagingTweaks : ConfigContainer() {
     
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
 }
-

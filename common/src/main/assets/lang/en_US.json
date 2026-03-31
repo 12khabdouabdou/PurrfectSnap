@@ -1,4 +1,4 @@
-﻿{
+{
     "setup": {
         "activity": {
             "wrong_apk_title": "Wrong APK installed",
@@ -1661,10 +1661,26 @@
                                 "name": "Auto Open Compact Notification",
                                 "description": "Use a smaller, single-line notification for status updates"
                             },
+                            "show_progress_bar": {
+                                "name": "Show Progress Bar",
+                                "description": "Display a visual progress bar in the status notification"
+                            },
+                            "show_lifetime_stats": {
+                                "name": "Show Lifetime Statistics",
+                                "description": "Include the total number of snaps opened since installation in the notification"
+                            },
+                            "show_queue_preview": {
+                                "name": "Show Queue Preview",
+                                "description": "Show a list of the most recent snaps waiting in the queue (Expanded only)"
+                            },
                             "only_on_wifi": { "name": "Auto Open only on Wi-Fi", "description": "Only process queue when connected to a Wi-Fi network to save mobile data" },
                             "only_when_idle": {
-                                "name": "Auto Open only when Idle",
-                                "description": "Only process queue when the device is not in active use"
+                                "name": "Auto Open Schedule",
+                                "description": "Configure a specific time window where the engine will throttle its speed."
+                            },
+                            "sleep_window": {
+                                "name": "Auto Open Scheduler",
+                                "description": "Define the start and end times for scheduled throttled processing."
                             },
                             "pause_during_gaming": { "name": "Pause Auto Open During Gaming", "description": "Automatically slow down processing when a resource intensive app or a game is in the foreground" },
                             "safe_processing": { "name": "Auto Open with stealth pace", "description": "Adds variable delays and natural breaks to remain undetected. Turn off for maximum speed." }
@@ -2165,7 +2181,7 @@
                             }
                         }
                     },
-                    "network_optimization": { "name": "Network Optimization", "description": "Optimizes network socket buffers for higher throughput" }, "better_transcript": {
+                    "network_optimization": { "name": "Improved Network Connectivity", "description": "Optimizes network socket buffers for maximum stability and high-speed upload/download performance" }, "better_transcript": {
                         "name": "Better Transcript",
                         "description": "Improves the voice note transcript",
                         "properties": {
@@ -3257,6 +3273,11 @@
         "forced_logout_toast": "Removed account due to forced logout"
     },
     "auto_open_snaps": { "title": "Auto Open Snaps", "processed_count": "Opened", "queue_size": "Queue", "action_reset": "Reset Statistics", "priority_title": "Auto Open Snaps (Priority)",
+        "auto_open_schedule": {
+            "title": "Auto Open Scheduler",
+            "start": "Start",
+            "end": "End"
+        },
         "error_title": "Auto Open Snaps (Errors)",
         "channel_description": "Notifications for auto-opening snaps queue status",
         "priority_channel_description": "High priority notifications for auto-opening snaps",
@@ -3277,6 +3298,16 @@
         "status_paused": "Paused",
         "status_monitoring": "Monitoring",
         "status_active": "Active",
+        "status_failed": "Failed to open {sender}",
+        "status_retrying": "Retrying in background...",
+        "processing_speed_full": "Full Speed",
+        "processing_speed": "Processing Speed",
+        "speed_throttled": "Throttled",
+        "estimated_time": "Estimated Time",
+        "notification_statistics": "STATISTICS",
+        "notification_total_opened": "Lifetime Opened",
+        "notification_queue_preview": "QUEUE PREVIEW",
+        "notification_no_snaps_queue": "Monitoring snaps in background...",
         "queue_cleared": "Queue cleared and statistics reset",
         "queue_cleared_title": "Queue cleared",
         "queue_cleared_reset": "Queue Cleared & Reset",
@@ -3686,17 +3717,25 @@
     "include_saved_locations_description": "Export your saved location coordinates",
     "common": {
         "cancel": "Cancel",
+        "save": "Save",
+        "edit": "Edit",
+        "delete": "Delete",
         "close": "Close",
         "add": "Add",
         "ok": "OK",
         "quit": "Quit",
         "done": "Done",
         "back": "Back",
+        "message": "Message",
+        "type_message": "Type message...",
         "unknown": "Unknown",
         "unknown_error": "Unknown error",
         "not_available": "N/A",
         "added": "Added",
         "no_friends_found": "No friends found",
+        "no_messages": "No messages",
+        "message": "Message",
+        "type_message": "Type message...",
         "exporting_memories": "Exporting memories... ({failed} failed)"
     },
     "clear_friend_feed": "Clear Friend Feed",

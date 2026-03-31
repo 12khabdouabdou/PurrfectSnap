@@ -573,8 +573,12 @@ class FeaturesRootSection : Routes.Route() {
                         }
                         DataProcessors.Type.STRING, DataProcessors.Type.INTEGER, DataProcessors.Type.FLOAT -> {
                             val isMessageListProperty = property.key.name.endsWith("_messages")
+                            val isSleepWindowProperty = property.key.name.contains("sleep_window")
+
                             if (isMessageListProperty) {
                                 alertDialogs.MessageListPropertyDialog(property) { showDialog = false }
+                            } else if (isSleepWindowProperty) {
+                                alertDialogs.AutoOpenScheduleDialog(property as PropertyPair<String>) { showDialog = false }
                             } else {
                                 alertDialogs.KeyboardInputDialog(property) { showDialog = false }
                             }

@@ -21,6 +21,8 @@ enum class FileType(
     JPG("jpg", "image/jpg",false, true, false),
     ZIP("zip", "application/zip", false, false, false),
     WEBP("webp", "image/webp", false, true, false),
+    HEIC("heic", "image/heic", false, true, false),
+    HEIF("heif", "image/heif", false, true, false),
     MPD("mpd", "text/xml", false, false, false),
     UNKNOWN("dat", "application/octet-stream", false, false, false);
 
@@ -64,6 +66,11 @@ enum class FileType(
             }
 
             val majorBrand = String(array, 8, 4, Charsets.US_ASCII).trim('\u0000').lowercase()
+            
+            // Explicitly exclude known IMAGE-only brands to prevent false positives (HEIC/HEIF)
+            val imageBrands = setOf("heic", "heix", "hevc", "hevx", "mif1", "msf1")
+            if (majorBrand in imageBrands) return false
+
             return majorBrand in setOf(
                 "mp41",
                 "mp42",
@@ -76,14 +83,13 @@ enum class FileType(
                 "avc1",
                 "dash",
                 "cmfc",
-                "mif1",
                 "msnv",
                 "3gp4",
                 "3gp5",
                 "3gp6",
                 "3g2a",
                 "3g2b"
-            ) || majorBrand.isNotEmpty() // FALLBACK: If it has the ftyp box, it's a video
+            ) || majorBrand.isNotEmpty() // FALLBACK: If it has the ftyp box and isn't a known image brand, it's a video
         }
 
         fun fromFile(file: File): FileType {
@@ -98,8 +104,24 @@ enum class FileType(
             val headerBytes = ByteArray(16)
             System.arraycopy(array, 0, headerBytes, 0, 16)
             val hex = bytesToHex(headerBytes)
-            return fileSignatures.entries.firstOrNull { hex.startsWith(it.key) }?.value
-                ?: if (looksLikeIsoBmffVideo(headerBytes)) MP4 else UNKNOWN
+            
+            // 1. Check strict signatures
+            fileSignatures.entries.firstOrNull { hex.startsWith(it.key) }?.value?.let { return it }
+
+            // 2. Check ISO BMFF container type
+            val majorBrand = if (headerBytes.size >= 12 && 
+                headerBytes[4] == 'f'.code.toByte() && headerBytes[5] == 't'.code.toByte() &&
+                headerBytes[6] == 'y'.code.toByte() && headerBytes[7] == 'p'.code.toByte()) {
+                String(headerBytes, 8, 4, Charsets.US_ASCII).trim('\u0000').lowercase()
+            } else null
+
+            if (majorBrand != null) {
+                if (majorBrand in setOf("heic", "heix")) return HEIC
+                if (majorBrand in setOf("mif1", "msf1")) return HEIF
+                if (looksLikeIsoBmffVideo(headerBytes)) return MP4
+            }
+
+            return UNKNOWN
         }
 
         fun fromInputStream(inputStream: InputStream): FileType {
