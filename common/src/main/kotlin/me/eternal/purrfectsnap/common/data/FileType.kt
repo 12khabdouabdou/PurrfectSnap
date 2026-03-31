@@ -75,6 +75,7 @@ enum class FileType(
                 "iso6",
                 "avc1",
                 "dash",
+                "cmfc",
                 "mif1",
                 "msnv",
                 "3gp4",
@@ -82,7 +83,7 @@ enum class FileType(
                 "3gp6",
                 "3g2a",
                 "3g2b"
-            )
+            ) || majorBrand.isNotEmpty() // FALLBACK: If it has the ftyp box, it's a video
         }
 
         fun fromFile(file: File): FileType {

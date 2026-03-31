@@ -504,7 +504,10 @@ class DownloadProcessor (
             for (i in 0 until baseUrlNodeList.length) {
                 val baseUrlNode = baseUrlNodeList.item(i)
                 val baseUrl = baseUrlNode.textContent
-                baseUrlNode.textContent = "${RemoteMediaResolver.CF_ST_CDN_D}$baseUrl"
+                // FIX: Only add prefix if it's not already a full URL
+                if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+                    baseUrlNode.textContent = "${RemoteMediaResolver.CF_ST_CDN_D}$baseUrl"
+                }
             }
 
             val dashOptions = downloadRequest.dashOptions!!
