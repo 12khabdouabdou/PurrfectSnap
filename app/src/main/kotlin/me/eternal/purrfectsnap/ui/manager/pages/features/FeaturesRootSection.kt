@@ -77,6 +77,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import me.eternal.purrfectsnap.common.ui.TopBarActionButton
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
+import me.eternal.purrfectsnap.core.features.impl.experiments.RandomizedDeviceProfile
 import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.ManagerTheme
@@ -188,7 +189,72 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     internal fun isRandomizedProfileActionProperty(propertyName: String): Boolean {
-        return propertyName == "generate_fresh_profile_action" || propertyName == "view_current_profile_action"
+        return propertyName == "generate_fresh_profile_action" ||
+            propertyName == "view_current_profile_action" ||
+            propertyName == "backup_profile_action" ||
+            propertyName == "restore_profile_action"
+    }
+
+    internal fun backupRandomizedProfile(onConfigChanged: () -> Unit) {
+        val profileSnapshot = getRandomizedProfileSnapshot()
+        if (profileSnapshot.startsWith("No generated profile")) {
+            context.shortToast(
+                context.translation["manager.dialogs.randomize_device_profile.empty"]
+                    ?: "No generated profile is available yet. Enable the feature in Snapchat first."
+            )
+            return
+        }
+        activityLauncher {
+            saveFile("randomized-device-profile.json", "application/json") { uri ->
+                runCatching {
+                    context.androidContext.contentResolver.openOutputStream(uri.toUri())?.bufferedWriter()?.use {
+                        it.write(profileSnapshot)
+                    } ?: error("Failed to open backup destination")
+                    onConfigChanged()
+                    context.shortToast("Randomized profile backup saved")
+                }.onFailure {
+                    context.log.error("Failed to back up randomized profile", it)
+                    context.shortToast("Failed to back up randomized profile")
+                }
+            }
+        }
+    }
+
+    internal fun restoreRandomizedProfile(onConfigChanged: () -> Unit) {
+        activityLauncher {
+            openFile("application/json") { uri ->
+                runCatching {
+                    val importedJson = context.androidContext.contentResolver.openInputStream(uri.toUri())
+                        ?.bufferedReader()
+                        ?.use { it.readText() }
+                        ?.trim()
+                        ?: error("Failed to read randomized profile backup")
+                    val profile = RandomizedDeviceProfile.fromJson(importedJson)
+                    val generationToken = UUID.randomUUID().toString()
+                    context.androidContext.getSharedPreferences("purrfectsnap_spoof", 0)
+                        .edit()
+                        .putString("randomized_device_profile", profile.toJson().toString())
+                        .putString("randomized_device_profile_token", generationToken)
+                        .putString("android_id", profile.androidId)
+                        .putString("advertising_id", profile.advertisingId)
+                        .putString("bluetooth_address", profile.bluetoothMacAddress)
+                        .putString("gsf_id", profile.gsfId)
+                        .putString("random_device", profile.deviceInfo.model)
+                        .putString("device_fingerprint", profile.buildFingerprint)
+                        .apply()
+
+                    val randomizeConfig = context.config.root.experimental.spoof.randomizeDeviceProfile
+                    randomizeConfig.profileGenerationToken.set(generationToken)
+                    randomizeConfig.currentProfileSnapshot.set(profile.toJson().toString(2))
+                    context.config.writeConfig()
+                    onConfigChanged()
+                    context.shortToast("Randomized profile restored. Restart Snapchat to apply it.")
+                }.onFailure {
+                    context.log.error("Failed to restore randomized profile", it)
+                    context.shortToast("Failed to restore randomized profile")
+                }
+            }
+        }
     }
 
     fun navigateToMainRoot() {
@@ -664,6 +730,8 @@ class FeaturesRootSection : Routes.Route() {
                     val actionLabel = when (property.name) {
                         "generate_fresh_profile_action" -> context.translation[property.key.propertyName()] ?: "Generate Fresh Profile"
                         "view_current_profile_action" -> context.translation[property.key.propertyName()] ?: "View Current Profile"
+                        "backup_profile_action" -> context.translation[property.key.propertyName()] ?: "Backup Profile"
+                        "restore_profile_action" -> context.translation[property.key.propertyName()] ?: "Restore Profile"
                         else -> property.name
                     }
                     Button(
@@ -685,8 +753,12 @@ class FeaturesRootSection : Routes.Route() {
                                             ?: "Fresh randomized profile requested. Restart Snapchat to apply it."
                                     )
                                 }
-                            } else {
+                            } else if (property.name == "view_current_profile_action") {
                                 showCurrentRandomProfileDialog = true
+                            } else if (property.name == "backup_profile_action") {
+                                backupRandomizedProfile(onConfigChanged)
+                            } else if (property.name == "restore_profile_action") {
+                                restoreRandomizedProfile(onConfigChanged)
                             }
                         },
                         colors = ButtonDefaults.buttonColors(

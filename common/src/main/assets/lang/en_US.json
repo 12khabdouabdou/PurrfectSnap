@@ -2410,7 +2410,7 @@
                                         "name": "Settings Details",
                                         "description": "Enable settings spoofing and fine-tune its namespaces",
                                         "properties": {
-                                            "secure": {
+                                            "secure_settings": {
                                                 "name": "Secure Settings",
                                                 "description": "Enable secure settings spoofing and fine-tune secure values",
                                                 "properties": {
@@ -2424,7 +2424,7 @@
                                                     }
                                                 }
                                             },
-                                            "system": {
+                                            "system_settings": {
                                                 "name": "System Settings",
                                                 "description": "Enable system settings spoofing and fine-tune system values",
                                                 "properties": {
@@ -2438,7 +2438,7 @@
                                                     }
                                                 }
                                             },
-                                            "global": {
+                                            "global_settings": {
                                                 "name": "Global Settings",
                                                 "description": "Enable global settings spoofing and fine-tune global values",
                                                 "properties": {
@@ -2565,6 +2565,14 @@
                                     "view_current_profile_action": {
                                         "name": "View Current Profile",
                                         "description": "Inspect the latest randomized profile snapshot"
+                                    },
+                                    "backup_profile_action": {
+                                        "name": "Backup Profile",
+                                        "description": "Export the full randomized profile as a backup file"
+                                    },
+                                    "restore_profile_action": {
+                                        "name": "Restore Profile",
+                                        "description": "Import and restore a previously backed up randomized profile"
                                     }
                                 }
                             },

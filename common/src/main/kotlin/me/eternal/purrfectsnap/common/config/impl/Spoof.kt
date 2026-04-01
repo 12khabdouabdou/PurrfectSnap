@@ -115,9 +115,9 @@ class Spoof : ConfigContainer(hasGlobalState = true) {
         }
 
         inner class RandomizedSettingsConfig : ConfigContainer(hasGlobalState = true) {
-            val secure = container("secure", RandomizedSecureSettingsConfig().apply { globalState = true })
-            val system = container("system", RandomizedSystemSettingsConfig().apply { globalState = true })
-            val global = container("global", RandomizedGlobalSettingsConfig().apply { globalState = true })
+            val secureSettings = container("secure_settings", RandomizedSecureSettingsConfig().apply { globalState = true })
+            val systemSettings = container("system_settings", RandomizedSystemSettingsConfig().apply { globalState = true })
+            val globalSettings = container("global_settings", RandomizedGlobalSettingsConfig().apply { globalState = true })
         }
 
         inner class RandomizedWifiConfig : ConfigContainer(hasGlobalState = true) {
@@ -178,6 +178,8 @@ class Spoof : ConfigContainer(hasGlobalState = true) {
         }
         val generateFreshProfileAction = string("generate_fresh_profile_action")
         val viewCurrentProfileAction = string("view_current_profile_action")
+        val backupProfileAction = string("backup_profile_action")
+        val restoreProfileAction = string("restore_profile_action")
         val profileGenerationToken = string("profile_generation_token") {
             addFlags(ConfigFlag.HIDDEN)
         }

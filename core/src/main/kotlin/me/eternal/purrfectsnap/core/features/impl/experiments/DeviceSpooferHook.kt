@@ -296,9 +296,9 @@ class DeviceSpooferHook : Feature("Device Spoofer") {
 
     private fun getRandomizedSettingsToggleState(): RandomizedSettingsToggleState {
         val config = context.config.experimental.spoof.randomizeDeviceProfile.settingsOptions
-        val secure = config.secure
-        val system = config.system
-        val global = config.global
+        val secure = config.secureSettings
+        val system = config.systemSettings
+        val global = config.globalSettings
         return RandomizedSettingsToggleState(
             secure = secure.globalState == true && (secure.base.get() || secure.tts.get()),
             system = system.globalState == true && (system.base.get() || system.bluetooth.get()),

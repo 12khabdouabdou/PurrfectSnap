@@ -1,3 +1,7 @@
+## v1.6.3
+- Fix: Blank Global Settings page
+- New: Backup & Restore option for Randomized Device Profile feature!
+
 ## v1.6.2
 - New: Randomized Device Profile Feature!
   - Show Activation Overlay

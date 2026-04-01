@@ -2057,6 +2057,14 @@
                                     "view_current_profile_action": {
                                         "name": "View Current Profile",
                                         "description": "Inspect the latest randomized profile snapshot"
+                                    },
+                                    "backup_profile_action": {
+                                        "name": "Backup Profile",
+                                        "description": "Export the full randomized profile as a backup file"
+                                    },
+                                    "restore_profile_action": {
+                                        "name": "Restore Profile",
+                                        "description": "Import and restore a previously backed up randomized profile"
                                     }
                                 }
                             },
