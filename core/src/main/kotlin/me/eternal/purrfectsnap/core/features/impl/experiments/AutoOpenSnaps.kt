@@ -1,5 +1,6 @@
 package me.eternal.purrfectsnap.core.features.impl.experiments
 
+import android.app.ActivityManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,39 +10,41 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.os.Build
-import android.os.PowerManager
-import android.app.ActivityManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
+import android.os.PowerManager
 import androidx.core.content.edit
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
+import me.eternal.purrfectsnap.bridge.AutoOpenInterface
+import me.eternal.purrfectsnap.common.BuildConfig
 import me.eternal.purrfectsnap.common.data.ContentType
 import me.eternal.purrfectsnap.common.data.MessageUpdate
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
 import me.eternal.purrfectsnap.core.event.events.impl.BuildMessageEvent
 import me.eternal.purrfectsnap.core.features.MessagingRuleFeature
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
+import me.eternal.purrfectsnap.core.features.impl.tweaks.PerformanceMode
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.Calendar
-import kotlin.random.Random
-import me.eternal.purrfectsnap.bridge.AutoOpenInterface
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.coroutines.resume
+import kotlin.random.Random
 
 class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.AUTO_OPEN_SNAPS) {
     companion object {
         const val ACTION_PAUSE_RESUME = "me.eternal.purrfectsnap.AUTO_OPEN_SNAPS_PAUSE_RESUME"
         const val ACTION_CLEAR_QUEUE = "me.eternal.purrfectsnap.AUTO_OPEN_SNAPS_CLEAR_QUEUE"
         private const val STATUS_NOTIFICATION_ID = 54321
+        private const val NOTIFICATION_GROUP_KEY = "purrfectsnap.AUTO_OPEN"
         private const val PREF_TOTAL_OPENED = "auto_open_total_opened"
         private const val PREF_TOTAL_DETECTED = "auto_open_total_detected"
         private const val PREF_SESSION_START = "auto_open_session_start"
@@ -62,6 +65,7 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
     private val snapQueue = MutableSharedFlow<Long>(extraBufferCapacity = 100)
     private val openedSnaps = ConcurrentHashMap.newKeySet<Long>()
     private val queuedSnaps = mutableListOf<SnapQueueItem>()
+    private val deadLetterQueue = mutableListOf<SnapQueueItem>()
 
     private val nameCache = ConcurrentHashMap<String, String>()
     private val conversationTypeCache = ConcurrentHashMap<String, String>()
@@ -76,6 +80,20 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
     private var currentSpeedText = "Full Speed"
     private var isCurrentlyWaiting = false
     private var wakeLock: PowerManager.WakeLock? = null
+    private var lastQueueActivity = System.currentTimeMillis()
+
+    // Throttling & Performance fields
+    private val lastNotificationUpdate = AtomicLong(0)
+    private val notificationUpdateDelay = 1000L
+    private val pendingNotificationUpdate = AtomicBoolean(false)
+    private val processedSinceLastSave = AtomicInteger(0)
+    private val snapTimestamps = LinkedList<Long>()
+    
+    // Safety & Synergy
+    private val isSaving = AtomicBoolean(false)
+    private val needsSaving = AtomicBoolean(false)
+    private var isThermalThrottled = false
+    private var lastThermalThrottleAt = 0L
 
     data class SnapQueueItem(
         val conversationId: String,
@@ -84,7 +102,8 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         var senderName: String = "Pending...",
         var conversationType: String = "Processing",
         val contentType: String,
-        val timestamp: Long = System.currentTimeMillis()
+        val timestamp: Long = System.currentTimeMillis(),
+        var retryCount: Int = 0
     )
 
     private val autoOpenInterface = object : AutoOpenInterface.Stub() {
@@ -104,6 +123,7 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         lastPausedAt.set(0)
         sessionStartTime.set(System.currentTimeMillis())
         synchronized(queuedSnaps) { queuedSnaps.clear() }
+        synchronized(deadLetterQueue) { deadLetterQueue.clear() }
         openedSnaps.clear()
 
         prefs.edit()
@@ -127,32 +147,30 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     if (paused) {
                         lastPausedAt.set(System.currentTimeMillis())
                     } else {
-                        val pauseStarted = lastPausedAt.get()
-                        if (pauseStarted > 0) {
-                            totalPausedDuration.addAndGet(System.currentTimeMillis() - pauseStarted)
-                            lastPausedAt.set(0)
+                        if (lastPausedAt.get() > 0) {
+                            totalPausedDuration.addAndGet(System.currentTimeMillis() - lastPausedAt.get())
                         }
                         snapQueue.tryEmit(System.currentTimeMillis())
                     }
                     updateStatusNotification()
                 }
                 ACTION_CLEAR_QUEUE -> {
-                    clearInternalState()
-                    this@AutoOpenSnaps.context.log.info("[AutoOpen] All statistics and queue reset.")
+                    synchronized(queuedSnaps) { queuedSnaps.clear() }
+                    synchronized(deadLetterQueue) { deadLetterQueue.clear() }
+                    triggerLazySave()
+                    updateStatusNotification()
                 }
             }
         }
     }
 
     override fun init() {
-        if (config.globalState != true) return
-        context.log.info("[AutoOpen] Initializing Ultra Premium engine...")
-
         val messaging = context.feature(Messaging::class)
         restorePersistence()
         hasBeenActive.set(true)
 
         if (config.allowRunningInBackground.get()) {
+            acquireWakeLock()
             findClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").apply {
                 hook("appStateChanged", HookStage.BEFORE) { param ->
                     if (config.allowRunningInBackground.get()) {
@@ -163,8 +181,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     }
                 }
                 hookConstructor(HookStage.AFTER) { param ->
-                    methods.first { it.name == "appStateChanged" }.let { method ->
-                        method.invoke(param.thisObject(), method.parameterTypes[0].enumConstants!!.first { it.toString() == "ACTIVE" })
+                    methods.firstOrNull { it.name == "appStateChanged" }?.let { method ->
+                        val enumClass = method.parameterTypes[0]
+                        val activeState = enumClass.enumConstants?.firstOrNull { 
+                            it.toString() == "ACTIVE" || it.toString() == "FOREGROUND" 
+                        }
+                        if (activeState != null) {
+                            method.invoke(param.thisObject<Any>(), activeState)
+                        }
                     }
                 }
             }
@@ -182,11 +206,35 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         val filter = IntentFilter().apply {
             addAction(ACTION_PAUSE_RESUME)
             addAction(ACTION_CLEAR_QUEUE)
+            addAction(Intent.ACTION_BATTERY_CHANGED)
         }
+        
+        val batteryReceiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_BATTERY_CHANGED && config.thermalProtection.get()) {
+                    val temp = intent.getIntExtra("temperature", 0) / 10f
+                    if (temp >= 40f && !isThermalThrottled) {
+                        isThermalThrottled = true
+                        lastThermalThrottleAt = System.currentTimeMillis()
+                        context.log.warn("[THERMAL] Device hit ${temp}C. Throttling AutoOpen.")
+                    } else if (isThermalThrottled && temp <= 36f && System.currentTimeMillis() - lastThermalThrottleAt > 600000) {
+                        isThermalThrottled = false
+                        context.log.info("[THERMAL] Device cooled to ${temp}C. Resuming full speed.")
+                    }
+                }
+            }
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             context.androidContext.registerReceiver(actionReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            context.androidContext.registerReceiver(batteryReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {
             context.androidContext.registerReceiver(actionReceiver, filter)
+            context.androidContext.registerReceiver(batteryReceiver, filter)
+        }
+
+        if (synchronized(queuedSnaps) { queuedSnaps.isNotEmpty() }) {
+            snapQueue.tryEmit(System.currentTimeMillis())
         }
 
         context.coroutineScope.launch(Dispatchers.Default) {
@@ -198,9 +246,31 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                 val remainingCount = synchronized(queuedSnaps) { queuedSnaps.size }
                 if (remainingCount == 0 && sessionProcessed.get() > 0) {
                     sessionProcessed.set(0)
+                    triggerLazySave()
                 }
+                
+                if (remainingCount > 0) {
+                    lastQueueActivity = System.currentTimeMillis()
+                    acquireWakeLock()
+                    if (!isPaused.get()) snapQueue.tryEmit(System.currentTimeMillis())
+                } else {
+                    // IDLE REVIVAL: Check dead letter queue every 5 mins when idle
+                    if (!isPaused.get() && System.currentTimeMillis() - lastQueueActivity > 300000) {
+                        val revived = synchronized(deadLetterQueue) {
+                            if (deadLetterQueue.isNotEmpty()) deadLetterQueue.removeAt(0) else null
+                        }
+                        if (revived != null) {
+                            synchronized(queuedSnaps) { queuedSnaps.add(revived) }
+                            snapQueue.tryEmit(System.currentTimeMillis())
+                        }
+                    }
+                    
+                    if (System.currentTimeMillis() - lastQueueActivity > 600000) { // 10 mins true idle
+                        releaseWakeLock()
+                    }
+                }
+
                 updateStatusNotification()
-                if (remainingCount > 0) snapQueue.tryEmit(System.currentTimeMillis())
                 delay(5000)
             }
         }
@@ -208,15 +278,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         context.coroutineScope.launch(Dispatchers.Default, CoroutineStart.UNDISPATCHED) {
             snapQueue.collect { _ ->
                 while (isActive && config.globalState == true) {
-                    val item = synchronized(queuedSnaps) { queuedSnaps.firstOrNull() } ?: break
-
-                    while (isPaused.get() || config.globalState != true) {
-                        if (config.globalState != true) return@collect
-                        currentStatusText = context.translation["auto_open_snaps.status_paused"] ?: "Paused"
-                        isCurrentlyWaiting = true
-                        updateStatusNotification()
-                        delay(2000)
+                    if (isPaused.get()) {
+                        delay(1000)
+                        continue
                     }
+                    
+                    val item = synchronized(queuedSnaps) { 
+                        if (queuedSnaps.isNotEmpty()) queuedSnaps.removeAt(0) else null 
+                    } ?: break
 
                     var resourceWaiting = true
                     while (resourceWaiting) {
@@ -229,55 +298,56 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                         when {
                             config.onlyOnWifi.get() && !isWifi -> {
                                 currentStatusText = context.translation["auto_open_snaps.only_on_wifi.name"] ?: "Waiting for WiFi..."
-                                currentSpeedText = context.translation["auto_open_snaps.paused_status"] ?: "Paused (No WiFi)"
+                                currentSpeedText = "Throttled"
                                 isCurrentlyWaiting = true
                                 delay(5000)
                             }
                             config.onlyWhenIdle.get() && !isIdle && !inSleepWindow -> {
                                 currentStatusText = context.translation["auto_open_snaps.only_when_idle.name"] ?: "Waiting for idle..."
-                                currentSpeedText = context.translation["auto_open_snaps.paused_status"] ?: "Paused (Device Active)"
+                                currentSpeedText = "Throttled"
                                 isCurrentlyWaiting = true
                                 delay(5000)
                             }
                             config.pauseDuringGaming.get() && isGaming -> {
                                 currentStatusText = context.translation["auto_open_snaps.pause_during_gaming.name"] ?: "Paused (Gaming Mode)"
-                                currentSpeedText = context.translation["auto_open_snaps.paused_status"] ?: "Paused (Gaming)"
+                                currentSpeedText = "Paused"
                                 isCurrentlyWaiting = true
                                 delay(60000)
                             }
                             else -> {
                                 resourceWaiting = false
-                                currentSpeedText = if (inSleepWindow) context.translation["auto_open_snaps.speed_throttled"] ?: "Throttled" else context.translation["auto_open_snaps.processing_speed_full"] ?: "Full Speed"
+                                currentSpeedText = if (inSleepWindow || isThermalThrottled) "Throttled" else "Full Speed"
                             }
                         }
                         if (resourceWaiting) updateStatusNotification()
                     }
 
-                    if (isPaused.get() || config.globalState != true) continue
+                    if (isPaused.get() || config.globalState != true) {
+                        synchronized(queuedSnaps) { queuedSnaps.add(0, item) }
+                        continue
+                    }
                     isCurrentlyWaiting = false
 
                     val inSleepWindow = if (config.onlyWhenIdle.get()) isInsideSleepWindow() else false
-                    if (inSleepWindow) {
-                        currentStatusText = context.translation["auto_open_snaps.speed_throttled"] ?: "Throttled"
+                    if (inSleepWindow || isThermalThrottled) {
+                        currentStatusText = if (isThermalThrottled) context.translation["auto_open_snaps.thermal_status_title"] ?: "Thermal Cooling" else context.translation["auto_open_snaps.speed_throttled"] ?: "Throttled"
                         delay(Random.nextLong(3000, 5000))
                     } else if (lastConversationId != null && lastConversationId != item.conversationId) {
-                        currentStatusText = "..."
+                        currentStatusText = "Switching chats..."
                         delay(Random.nextLong(1500, 2500))
                         batchSnapCount = 0
+                        triggerLazySave()
+                    } else if (lastConversationId == item.conversationId) {
+                        when {
+                            isThermalThrottled -> delay(Random.nextLong(100, 150))
+                            config.safeProcessing.get() -> delay(Random.nextLong(50, 150))
+                            else -> delay(Random.nextLong(10, 40))
+                        }
                     }
 
                     lastConversationId = item.conversationId
-                    currentStatusText = if (inSleepWindow) context.translation["auto_open_snaps.status_active"] ?: "Active" else context.translation["auto_open_snaps.status_active"] ?: "Opening snap..."
+                    currentStatusText = context.translation["auto_open_snaps.status_active"] ?: "Opening snap..."
                     updateStatusNotification()
-
-                    if (config.safeProcessing.get() && !inSleepWindow) {
-                        batchSnapCount++
-                        if (batchSnapCount % 10 == 0) {
-                            currentStatusText = "..."
-                            updateStatusNotification()
-                            delay(Random.nextLong(3000, 5000))
-                        }
-                    }
 
                     var success = false
                     val startTime = System.currentTimeMillis()
@@ -287,7 +357,7 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                         if (isPaused.get() || config.globalState != true) break
                         while ((!config.allowRunningInBackground.get() && context.isMainActivityPaused) || (messaging.conversationManager == null && !config.allowRunningInBackground.get())) {
                             if (config.globalState != true || isPaused.get()) break
-                            currentStatusText = "..."
+                            currentStatusText = "Waiting for UI..."
                             isCurrentlyWaiting = true
                             updateStatusNotification()
                             delay(2000)
@@ -299,9 +369,19 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                         if (success) {
                             totalProcessed.incrementAndGet()
                             sessionProcessed.incrementAndGet()
+                            synchronized(snapTimestamps) { 
+                                snapTimestamps.addLast(System.currentTimeMillis())
+                                if (snapTimestamps.size > 100) snapTimestamps.removeFirst()
+                            }
                             val duration = System.currentTimeMillis() - startTime
                             averageProcessingTime.set((averageProcessingTime.get() * 0.7 + duration * 0.3).toLong())
-                            saveStatsToDisk()
+                            
+                            val remaining = synchronized(queuedSnaps) { queuedSnaps.size }
+                            val threshold = if (remaining > 100) 100 else 25
+                            if (processedSinceLastSave.incrementAndGet() >= threshold) {
+                                triggerLazySave()
+                                processedSinceLastSave.set(0)
+                            }
                             break
                         }
                         if (i < config.retryAttempts.get() - 1) {
@@ -311,20 +391,26 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                         }
                     }
 
-                    if (success) {
-                        synchronized(queuedSnaps) { queuedSnaps.removeAll { it.messageId == item.messageId }; saveQueueToDisk() }
-                    } else if (!isPaused.get()) {
+                    if (!success && !isPaused.get()) {
                         currentStatusText = context.translation["auto_open_snaps.status_failed"]?.replace("{sender}", item.senderName) ?: "Failed to open"
                         updateStatusNotification()
-                        delay(5000)
-                        synchronized(queuedSnaps) { queuedSnaps.removeAll { it.messageId == item.messageId }; saveQueueToDisk() }
+                        
+                        // MOVE TO DEAD LETTER QUEUE (Revival Engine)
+                        synchronized(deadLetterQueue) {
+                            if (deadLetterQueue.size < 100) deadLetterQueue.add(item)
+                            else { deadLetterQueue.removeAt(0); deadLetterQueue.add(item) }
+                        }
+                        delay(2000)
                     }
 
                     if (synchronized(queuedSnaps) { queuedSnaps.isEmpty() }) {
-                        currentStatusText = context.translation["auto_open_snaps.status_monitoring"] ?: "Monitoring..."
-                        isCurrentlyWaiting = false
-                        updateStatusNotification()
-                        releaseWakeLock()
+                        delay(500)
+                        if (synchronized(queuedSnaps) { queuedSnaps.isEmpty() }) {
+                            currentStatusText = context.translation["auto_open_snaps.status_monitoring"] ?: "Monitoring..."
+                            isCurrentlyWaiting = false
+                            triggerLazySave()
+                            updateStatusNotification()
+                        }
                     }
                 }
             }
@@ -339,6 +425,8 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
             if (contentType != ContentType.SNAP && contentType != ContentType.EXTERNAL_MEDIA) return@subscribe
             if (event.message.messageMetadata?.openedBy?.any { it.toString() == context.database.myUserId } == true) return@subscribe
 
+            acquireWakeLock()
+            
             context.coroutineScope.launch(Dispatchers.Default) {
                 if (!canUseRule(conversationId)) return@launch
                 if (!openedSnaps.add(clientMessageId)) return@launch
@@ -347,10 +435,11 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                 val item = SnapQueueItem(conversationId, clientMessageId, senderId, getSenderDisplayName(senderId), getConversationType(conversationId, senderId), getSnapContentType(contentType))
                 synchronized(queuedSnaps) {
                     if (queuedSnaps.size >= config.queueSize.get()) queuedSnaps.removeFirstOrNull()
-                    queuedSnaps.add(item); totalDetected.incrementAndGet(); saveQueueToDisk()
+                    queuedSnaps.add(item); totalDetected.incrementAndGet()
                 }
-                acquireWakeLock()
-                snapQueue.tryEmit(System.currentTimeMillis())
+                if (!isPaused.get()) {
+                    snapQueue.tryEmit(System.currentTimeMillis())
+                }
             }
         }
     }
@@ -373,80 +462,97 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         return when { h > 0 -> "${h}h ${m}m ${s}s"; m > 0 -> "${m}m ${s}s"; else -> "${s}s" }
     }
 
+    private fun getSnapsPerSecond(): Double {
+        val now = System.currentTimeMillis()
+        val window = 5000L
+        synchronized(snapTimestamps) {
+            snapTimestamps.removeIf { now - it > window }
+            return (snapTimestamps.size.toDouble() / (window / 1000.0))
+        }
+    }
+
     private fun updateStatusNotification() {
+        val currentTime = System.currentTimeMillis()
+        val lastUpdate = lastNotificationUpdate.get()
+
+        if ((currentTime - lastUpdate) < notificationUpdateDelay) {
+            if (pendingNotificationUpdate.compareAndSet(false, true)) {
+                context.coroutineScope.launch {
+                    delay(notificationUpdateDelay - (currentTime - lastUpdate))
+                    pendingNotificationUpdate.set(false)
+                    updateStatusNotificationInternal()
+                }
+            }
+            return
+        }
+
+        lastNotificationUpdate.set(currentTime)
+        updateStatusNotificationInternal()
+    }
+
+    private fun updateStatusNotificationInternal() {
         val processed = sessionProcessed.get()
         val total = totalProcessed.get()
         val remaining = synchronized(queuedSnaps) { queuedSnaps.size }
         if (total <= 0 && remaining <= 0 && processed <= 0) return
 
         val isWorking = remaining > 0
-        val showProgressBar = config.showProgressBar.get() == true
+        val isCompact = config.compactNotification.get() == true
         val sessionTotal = processed + remaining
         val progressPercent = if (sessionTotal > 0) (processed * 100) / sessionTotal else 0
+        val speed = getSnapsPerSecond()
 
         val builder = Notification.Builder(context.androidContext, "auto_open_snaps")
             .setSmallIcon(if (isPaused.get()) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
             .setOngoing(isWorking).setAutoCancel(!isWorking).setOnlyAlertOnce(true)
-
-        // Disable native progress bar to avoid "Double Bar" issue with our Premium Unicode bar
-        builder.setProgress(0, 0, false)
+            .setGroup(NOTIFICATION_GROUP_KEY).setGroupSummary(false)
 
         val eta = if (isWorking && !isCurrentlyWaiting && !isPaused.get()) formatDuration(remaining * averageProcessingTime.get()) else null
 
-        if (config.compactNotification.get() == true) {
-            builder.setContentTitle("Auto-Open: $currentStatusText")
-            builder.setContentText("Remaining: $remaining | Opened: $processed" + (eta?.let { " | ETA: $it" } ?: ""))
+        // Refined Collapsed Logic
+        builder.setContentTitle("Auto-Open: $currentStatusText")
+        
+        if (isWorking) {
+            builder.setContentText("Opened: $processed │ ETA: ${eta ?: "..."}")
+            builder.setSubText("$progressPercent% • $remaining Queued")
         } else {
-            builder.setContentTitle("Auto-Open: $currentStatusText")
-            builder.setContentText("Remaining: $remaining | Opened: $processed")
+            // Idle stats for collapsed view
+            builder.setContentText("$processed Opened Today │ $total Lifetime")
+            builder.setSubText("Monitoring Snaps...")
         }
+        
+        builder.setProgress(if (isWorking) sessionTotal else 0, if (isWorking) processed else 0, !isWorking) 
 
         builder.addAction(Notification.Action.Builder(null, if (isPaused.get()) "Resume" else "Pause", createPendingIntent(ACTION_PAUSE_RESUME)).build())
         builder.addAction(Notification.Action.Builder(null, "Clear Queue", createPendingIntent(ACTION_CLEAR_QUEUE)).build())
 
-        if (config.compactNotification.get() != true) {
+        if (!isCompact) {
             val recentSnaps = synchronized(queuedSnaps) { queuedSnaps.takeLast(5) }
             val bigTextStyle = Notification.BigTextStyle()
+            
             val detailText = buildString {
-                if (showProgressBar) append("${context.translation["auto_open_snaps.notification_statistics"] ?: "STATISTICS"} - ${drawProgressBar(progressPercent)}\n")
-                else append("${context.translation["auto_open_snaps.notification_statistics"] ?: "STATISTICS"}\n")
-                
-                append("\u251c\u2500 ${context.translation["auto_open_snaps.processed_count"] ?: "Opened"}: $processed snaps\n")
-                append("\u251c\u2500 ${context.translation["auto_open_snaps.queue_size"] ?: "Remaining"}: $remaining snaps\n")
-                
-                if (eta != null) {
-                    append("\u251c\u2500 ${context.translation["auto_open_snaps.estimated_time"] ?: "Estimated time"}: $eta\n")
-                }
-                
-                if (config.showLifetimeStats.get()) {
-                    append("\u251c\u2500 ${context.translation["auto_open_snaps.notification_total_opened"] ?: "Lifetime Opened"}: $total snaps\n")
-                }
-                
-                if (config.showQueuePreview.get()) {
-                    append("\u2514\u2500 ${context.translation["auto_open_snaps.processing_speed"] ?: "Speed"}: $currentSpeedText\n\n${context.translation["auto_open_snaps.notification_queue_preview"] ?: "QUEUE PREVIEW"}\n")
-                    if (isWorking) {
-                        recentSnaps.reversed().forEach { item ->
-                            append("\u2022 ${item.senderName}")
-                            if (item.conversationType != "Friend DM" && item.conversationType != "Processing") append(" \u2502 ${item.conversationType}")
-                            append(" (${item.contentType})\n")
-                        }
-                    } else append(context.translation["auto_open_snaps.notification_no_snaps_queue"] ?: "Monitoring snaps in background...")
-                } else append("\u2514\u2500 ${context.translation["auto_open_snaps.processing_speed"] ?: "Speed"}: $currentSpeedText")
-            }
-            bigTextStyle.bigText(detailText); builder.setStyle(bigTextStyle)
-        }
-        notificationManager.notify(STATUS_NOTIFICATION_ID, builder.build())
-    }
+                append("QUEUE STATISTICS\n")
+                append("├─ Opened: $processed snaps\n")
+                append("├─ Remaining: $remaining snaps\n")
+                if (eta != null) append("├─ Estimated time: $eta\n")
+                append("├─ Lifetime Opened: $total snaps\n")
+                append("└─ Speed: $currentSpeedText (${String.format("%.1f", speed)}/s)\n\n")
 
-    private fun drawProgressBar(percent: Int): String {
-        val totalBlocks = 12; val filledBlocks = (percent * totalBlocks) / 100
-        return buildString {
-            append("[")
-            repeat(totalBlocks) { i ->
-                when { i < filledBlocks -> append("\u2501"); i == filledBlocks -> append("\u2B26"); else -> append("\u2500") }
+                append("QUEUE PREVIEW\n")
+                if (isWorking) {
+                    recentSnaps.reversed().forEach { item ->
+                        append("• ${item.senderName} │ ${item.conversationType} (${item.contentType})\n")
+                    }
+                } else {
+                    append(context.translation["auto_open_snaps.notification_no_snaps_queue"] ?: "Monitoring snaps in background...")
+                }
             }
-            append("] $percent%")
+            bigTextStyle.bigText(detailText)
+            bigTextStyle.setSummaryText(null) 
+            builder.setStyle(bigTextStyle)
         }
+        
+        notificationManager.notify(STATUS_NOTIFICATION_ID, builder.build())
     }
 
     private fun shutdownFeature() {
@@ -459,19 +565,38 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle("Auto-Open: Deactivated")
                 .setContentText("Opened: $finalCount snaps | Session: ${durationMins}m")
+                .setGroup(NOTIFICATION_GROUP_KEY)
                 .setAutoCancel(true).build()
             notificationManager.notify(Random.nextInt(), summary)
             hasBeenActive.set(false)
         }
-        resetPersistence(); releaseWakeLock()
+        triggerLazySave()
+        releaseWakeLock()
     }
 
-    private fun saveStatsToDisk() {
-        prefs.edit().putInt(PREF_TOTAL_OPENED, totalProcessed.get()).putInt(PREF_TOTAL_DETECTED, totalDetected.get()).putLong(PREF_SESSION_START, sessionStartTime.get()).apply()
+    private fun triggerLazySave() {
+        needsSaving.set(true)
+        if (isSaving.compareAndSet(false, true)) {
+            context.coroutineScope.launch(Dispatchers.IO) {
+                while (needsSaving.get()) {
+                    needsSaving.set(false)
+                    saveToDiskInternal()
+                    delay(1000)
+                }
+                isSaving.set(false)
+            }
+        }
     }
 
-    private fun saveQueueToDisk() {
-        synchronized(queuedSnaps) { prefs.edit().putString(PREF_SAVED_QUEUE, gson.toJson(queuedSnaps)).apply() }
+    private fun saveToDiskInternal() {
+        prefs.edit {
+            putInt(PREF_TOTAL_OPENED, totalProcessed.get())
+            putInt(PREF_TOTAL_DETECTED, totalDetected.get())
+            putLong(PREF_SESSION_START, sessionStartTime.get())
+            synchronized(queuedSnaps) {
+                putString(PREF_SAVED_QUEUE, gson.toJson(queuedSnaps))
+            }
+        }
     }
 
     private fun restorePersistence() {
@@ -483,8 +608,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
             try {
                 val type = object : TypeToken<List<SnapQueueItem>>() {}.type
                 val restored: List<SnapQueueItem> = gson.fromJson(savedQueueJson, type)
-                synchronized(queuedSnaps) { queuedSnaps.clear(); queuedSnaps.addAll(restored) }
-            } catch (e: Exception) { resetPersistence() }
+                val now = System.currentTimeMillis()
+                synchronized(queuedSnaps) { 
+                    queuedSnaps.clear()
+                    queuedSnaps.addAll(restored.filter { (now - it.timestamp) < 3600000 }) 
+                }
+            } catch (e: Exception) { 
+                prefs.edit().remove(PREF_SAVED_QUEUE).apply()
+            }
         }
     }
 
@@ -497,30 +628,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         try {
             val sleepWindow = config.sleepWindow.get()
             if (!sleepWindow.contains("-") || !sleepWindow.contains(":")) return false
-            
             val window = sleepWindow.split("-")
             if (window.size != 2) return false
-            
             val startStr = window[0].split(":")
             val endStr = window[1].split(":")
             if (startStr.size != 2 || endStr.size != 2) return false
-
-            val now = Calendar.getInstance().apply {
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            val start = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, startStr[0].toInt())
-                set(Calendar.MINUTE, startStr[1].toInt())
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-            val end = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, endStr[0].toInt())
-                set(Calendar.MINUTE, endStr[1].toInt())
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
+            val now = Calendar.getInstance().apply { set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }
+            val start = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, startStr[0].toInt()); set(Calendar.MINUTE, startStr[1].toInt()); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }
+            val end = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, endStr[0].toInt()); set(Calendar.MINUTE, endStr[1].toInt()); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }
             return if (end.before(start)) now.after(start) || now.before(end) else now.after(start) && now.before(end)
         } catch (e: Exception) { return false }
     }
