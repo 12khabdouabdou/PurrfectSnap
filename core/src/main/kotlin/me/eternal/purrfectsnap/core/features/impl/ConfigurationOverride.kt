@@ -37,9 +37,30 @@ class ConfigurationOverride : Feature("Configuration Override") {
             }.getOrNull()
 
             val propertyOverrides = mutableMapOf<String, ConfigFilter>()
+            val loggedOverrides = mutableSetOf<String>()
 
             fun overrideProperty(key: String, filter: (ConfigKeyInfo) -> Boolean, value: (ConfigKeyInfo) -> Any?, isAppExperiment: Boolean = false) {
                 propertyOverrides[key] = ConfigFilter(filter, value, isAppExperiment)
+            }
+
+            fun logPerformanceOverride(key: String, value: Any?) {
+                if (!key.contains("PRELOAD") &&
+                    !key.contains("PERFORMANCE") &&
+                    !key.contains("WARM") &&
+                    !key.contains("PREFETCH") &&
+                    !key.contains("LATENCY") &&
+                    !key.contains("ANALYTICS") &&
+                    !key.contains("THREAD_PRIORITY") &&
+                    !key.contains("HD_MODE") &&
+                    !key.contains("LENS") &&
+                    !key.contains("THUMBNAIL")
+                ) {
+                    return
+                }
+                synchronized(loggedOverrides) {
+                    if (!loggedOverrides.add(key)) return
+                }
+                context.log.info("Performance override applied: $key=$value", "PerformanceMode")
             }
 
             overrideProperty("STREAK_EXPIRATION_INFO", { context.config.userInterface.streakExpirationInfo.get() },
@@ -84,6 +105,44 @@ class ConfigurationOverride : Feature("Configuration Override") {
                 { true })
             overrideProperty("MEDIA_RECORDER_MAX_QUALITY_LEVEL", { context.config.camera.forceCameraSourceEncoding.get() },
                 { true })
+            overrideProperty("PREVIEW_PRELOAD_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },
+                { true })
+            overrideProperty("BUFFERED_VIDEO_RECORDING_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },
+                { true })
+            overrideProperty("CAMERA_THREAD_PRIORITY", { context.config.global.performanceMode.profile.getNullable() != null },
+                { true })
+            overrideProperty("HD_MODE_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() == "max" },
+                { true })
+
+            arrayOf(
+                "FEATURE_PRELOADER",
+                "USER_STORY_PRELOAD",
+                "STARTUP_LENS_ACTIVATOR",
+                "LENSES_PREVIEW_ACTIVATOR",
+                "THUMBNAIL_PRESENTER_ACTIVATOR",
+                "SINGLE_SEGMENT_THUMBNAIL_ACTIVATOR",
+                "SERVER_PREFETCH",
+                "SERVER_PREFETCH_WITH_COF",
+                "DISCOVER_FEED_PERFORMANCE",
+                "DISCOVER_FEED_STORY_PREFETCH",
+                "DISCOVER_FEED_THUMBNAILS",
+                "LOGIN_PRELOAD",
+                "PREFETCH_REPO_SUBSCRIBE_ON_CPU",
+                "COMPUTE_FEED_CACHE_WITH_TTL",
+                "COMPUTE_FEED_NETWORK_WITH_CACHE",
+                "OPERA_WARMUP",
+                "REFACTORED_WITH_WARMUP_LENS",
+                "SHOW_PREFETCH",
+            ).forEach { key ->
+                overrideProperty(key, { context.config.global.performanceMode.profile.getNullable() != null }, { true })
+            }
+
+            overrideProperty("LOAD_LATENCY_TRACKER_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },
+                { false })
+            overrideProperty("ANALYTICS_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },
+                { false })
+            overrideProperty("LOCK_SCREEN_ANALYTICS_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },
+                { false })
             overrideProperty("REDUCE_MY_PROFILE_UI_COMPLEXITY", { context.config.userInterface.mapFriendNameTags.get() },
                 { true })
 
@@ -115,7 +174,10 @@ class ConfigurationOverride : Feature("Configuration Override") {
 
                 propertyOverrides[propertyKey.name]?.let { (filter, value) ->
                     if (!filter(propertyKey)) return@let
-                    param.setResult(value(propertyKey))
+                    value(propertyKey).also {
+                        logPerformanceOverride(propertyKey.name ?: return@also, it)
+                        param.setResult(it)
+                    }
                 }
             }
 
@@ -135,7 +197,10 @@ class ConfigurationOverride : Feature("Configuration Override") {
                 propertyOverrides[key]?.let { (filter, value) ->
                     val keyInfo = getConfigKeyInfo(enumData) ?: return@let
                     if (!filter(keyInfo)) return@let
-                    setValue(value(keyInfo))
+                    value(keyInfo).also {
+                        logPerformanceOverride(key, it)
+                        setValue(it)
+                    }
                 }
             }
 
@@ -151,7 +216,10 @@ class ConfigurationOverride : Feature("Configuration Override") {
                         }
                         propertyOverrides[keyInfo.name]?.let { (filter, value, isAppExperiment) ->
                             if (isAppExperiment != true || !filter(keyInfo)) return@let
-                            param.setResult(value(keyInfo))
+                            value(keyInfo).also {
+                                logPerformanceOverride(keyInfo.name ?: return@also, it)
+                                param.setResult(it)
+                            }
                         }
                     }
 
@@ -174,7 +242,10 @@ class ConfigurationOverride : Feature("Configuration Override") {
                         }
 
                         val propertyOverride = propertyOverrides[keyInfo.name] ?: return@hook
-                        propertyOverride.isAppExperiment.takeIf { propertyOverride.filter(keyInfo) }?.let { param.setResult(it) }
+                        propertyOverride.isAppExperiment.takeIf { propertyOverride.filter(keyInfo) }?.let {
+                            logPerformanceOverride(keyInfo.name ?: return@let, it)
+                            param.setResult(it)
+                        }
                     }
                 }
             }.onFailure {

@@ -7,7 +7,7 @@ import me.eternal.purrfectsnap.core.features.Feature
 
 class DisableMetrics : Feature("DisableMetrics") {
     override fun init() {
-        if (!context.config.global.disableMetrics.get()) return
+        if (!context.config.global.disableMetrics.get() && context.config.global.performanceMode.profile.getNullable() == null) return
 
         context.event.subscribe(NetworkApiRequestEvent::class) { param ->
             val url = param.url

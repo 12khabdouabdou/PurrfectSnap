@@ -1909,6 +1909,16 @@
                         "name": "Disable Metrics",
                         "description": "Blocks sending specific analytic data to Snapchat"
                     },
+                    "performance_mode": {
+                        "name": "Performance Mode",
+                        "description": "Applies an app-wide speed profile for navigation, preview loading, background work, and camera responsiveness",
+                        "properties": {
+                            "performance_profile": {
+                                "name": "Performance Profile",
+                                "description": "Select how aggressively PurrfectSnap pushes app-wide performance tuning"
+                            }
+                        }
+                    },
                     "disable_story_sections": {
                         "name": "Disable Story Sections",
                         "description": "Removes sections from the Stories page\nMay require a refresh to work properly"
@@ -3064,6 +3074,11 @@
             },
             "custom_image_upload_format": {
                 "null": "Automatic"
+            },
+            "performance_profile": {
+                "smooth": "Smooth",
+                "max": "Max",
+                "null": "Disabled"
             },
             "update_check_frequency": {
                 "daily": "Daily",

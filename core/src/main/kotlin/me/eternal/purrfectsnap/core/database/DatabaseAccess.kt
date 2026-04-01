@@ -47,6 +47,14 @@ class DatabaseAccess(
         } == true
     }
 
+    private val hasArroyoUserConversationTable by lazy {
+        useDatabase(DatabaseType.ARROYO)?.performOperation {
+            safeRawQuery("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'user_conversation'")?.use { query ->
+                query.moveToFirst() && query.getStringOrNull("name") == "user_conversation"
+            }
+        } == true
+    }
+
     private fun useDatabase(database: DatabaseType, writeMode: Boolean = false): SQLiteDatabase? {
         // only cache read-only databases
         if (!writeMode && openedDatabases.containsKey(database) && openedDatabases[database]?.isOpen == true) {
@@ -146,6 +154,10 @@ class DatabaseAccess(
                     result
                 }
             }?.toMutableMap() ?: mutableMapOf()
+        }
+
+        if (!hasArroyoUserConversationTable) {
+            return@lazy mutableMapOf()
         }
 
         (useDatabase(DatabaseType.ARROYO)?.performOperation {
@@ -354,7 +366,7 @@ class DatabaseAccess(
     }
 
     fun getConversationType(conversationId: String): Int? {
-        if (hasArroyoConversationTable) {
+        if (hasArroyoConversationTable || !hasArroyoUserConversationTable) {
             return getFeedEntryByConversationId(conversationId)?.conversationType
         }
 
@@ -372,7 +384,9 @@ class DatabaseAccess(
     }
 
     fun getDMConversationId(userId: String): String? {
-        if (hasArroyoConversationTable) {
+        friendDMsCache[userId]?.let { return it }
+
+        if (hasArroyoConversationTable || !hasArroyoUserConversationTable) {
             return friendDMsCache[userId]
         }
 
@@ -406,6 +420,10 @@ class DatabaseAccess(
                     participants
                 }
             }
+        }
+
+        if (!hasArroyoUserConversationTable) {
+            return getFeedEntryByConversationId(conversationId)?.participants
         }
 
         return useDatabase(DatabaseType.ARROYO)?.performOperation {

@@ -99,6 +99,7 @@ class FeatureManager(
             MeoPasscodeBypass(),
             AppLock(),
             CameraTweaks(),
+            PerformanceMode(),
             InfiniteStoryBoost(),
             PinConversations(),
             DeviceSpooferHook(),

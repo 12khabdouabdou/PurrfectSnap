@@ -385,7 +385,7 @@ object RandomizedDeviceProfileStore {
             bluetoothMacAddress = bluetoothMac,
             ipAddress = ipAddress,
             wifiSsid = region.randomWifiSsid(),
-            wifiRssi = random.nextInt(-72, -36),
+            wifiRssi = randomInt(-72, -36),
             localeTag = locale.toLanguageTag(),
             countryIso = region.countryIso,
             timeZoneId = region.timeZoneId,
@@ -450,7 +450,7 @@ object RandomizedDeviceProfileStore {
 
     private fun randomPublicIpv4(prefixes: List<Int>? = null): String {
         val firstOctet = prefixes?.takeIf { it.isNotEmpty() }?.let { pick(it) } ?: run {
-            generateSequence { random.nextInt(1, 224) }
+            generateSequence { randomInt(1, 224) }
                 .first { candidate ->
                     candidate != 10 &&
                         candidate != 127 &&
@@ -459,11 +459,16 @@ object RandomizedDeviceProfileStore {
                         candidate != 192
                 }
         }
-        val secondOctet = random.nextInt(1, 255)
-        val thirdOctet = random.nextInt(1, 255)
-        val fourthOctet = random.nextInt(2, 255)
+        val secondOctet = randomInt(1, 255)
+        val thirdOctet = randomInt(1, 255)
+        val fourthOctet = randomInt(2, 255)
         val candidate = "$firstOctet.$secondOctet.$thirdOctet.$fourthOctet"
         return runCatching { InetAddress.getByName(candidate).hostAddress }.getOrDefault(candidate)
+    }
+
+    private fun randomInt(minInclusive: Int, maxExclusive: Int): Int {
+        require(maxExclusive > minInclusive)
+        return minInclusive + random.nextInt(maxExclusive - minInclusive)
     }
 
     private fun randomLong(minInclusive: Long, maxExclusive: Long): Long {
