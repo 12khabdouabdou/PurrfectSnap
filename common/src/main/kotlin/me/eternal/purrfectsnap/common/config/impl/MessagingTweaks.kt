@@ -207,6 +207,8 @@ class MessagingTweaks : ConfigContainer() {
     val preventStoryRewatchIndicator = boolean("prevent_story_rewatch_indicator") { requireRestart() }
     val hidePeekAPeek = boolean("hide_peek_a_peek")
     val hideBitmojiPresence = boolean("hide_bitmoji_presence")
+    val spoofViewingGalleryPresence = boolean("spoof_viewing_gallery_presence")
+    val spoofReplyCameraPresence = boolean("spoof_reply_camera_presence")
     val hideTypingNotifications = boolean("hide_typing_notifications")
     val unlimitedSnapViewTime = boolean("unlimited_snap_view_time")
     val autoMarkAsRead = multiple("auto_mark_as_read", "snap_reply", "conversation_read", "save_snap_in_chat") { requireRestart() }

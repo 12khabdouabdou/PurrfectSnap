@@ -319,6 +319,7 @@ class SecurityFeatures(
         loginHelpComposable = {
             var showDialog by remember { mutableStateOf(false) }
             var isLoginScreen by remember { mutableStateOf(false) }
+            val disableHelpButton = context.bridgeClient.getDebugProp("disable_cant_login_button", "false") == "true"
 
             LaunchedEffect(Unit) {
                 while (true) {
@@ -329,13 +330,13 @@ class SecurityFeatures(
                 }
             }
 
-            if (isLoginScreen) {
+            if (isLoginScreen && !disableHelpButton) {
                 LoginSignupHelpButton(
                     onClick = { showDialog = true }
                 )
             }
 
-            if (isLoginScreen && showDialog) {
+            if (isLoginScreen && !disableHelpButton && showDialog) {
                 LoginSignupHelpDialog(
                     onDismiss = { showDialog = false }
                 )
@@ -433,6 +434,9 @@ class SecurityFeatures(
 
         context.features.addActivityCreateListener { activity ->
             if (!activity.javaClass.name.endsWith("LoginSignupActivity")) return@addActivityCreateListener
+            if (context.bridgeClient.getDebugProp("disable_cant_login_button", "false") == "true") {
+                return@addActivityCreateListener
+            }
 
             activity.findViewById<ViewGroup>(android.R.id.content).apply {
                 visibility = ViewGroup.INVISIBLE

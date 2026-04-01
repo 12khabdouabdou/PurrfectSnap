@@ -93,24 +93,6 @@ fun AppDatabase.replaceMessagingData(
     executeAsync {
         database.beginTransaction()
         try {
-            val friendIds = friends.map { it.userId }.toSet()
-            val groupIds = groups.map { it.conversationId }.toSet()
-
-            getFriends().forEach { friend ->
-                if (friend.userId !in friendIds) {
-                    database.execSQL("DELETE FROM friends WHERE userId = ?", arrayOf(friend.userId))
-                    database.execSQL("DELETE FROM streaks WHERE id = ?", arrayOf(friend.userId))
-                    database.execSQL("DELETE FROM rules WHERE targetUuid = ?", arrayOf(friend.userId))
-                }
-            }
-
-            getGroups().forEach { group ->
-                if (group.conversationId !in groupIds) {
-                    database.execSQL("DELETE FROM groups WHERE conversationId = ?", arrayOf(group.conversationId))
-                    database.execSQL("DELETE FROM rules WHERE targetUuid = ?", arrayOf(group.conversationId))
-                }
-            }
-
             friends.forEach { friend ->
                 database.execSQL(
                     "INSERT OR REPLACE INTO friends (userId, dmConversationId, displayName, mutableUsername, bitmojiId, selfieId) VALUES (?, ?, ?, ?, ?, ?)",

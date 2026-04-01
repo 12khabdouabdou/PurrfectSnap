@@ -25,6 +25,12 @@ import java.text.DateFormat
 import java.util.Date
 
 class FriendTracker : Feature("Friend Tracker") {
+    companion object {
+        private const val PRESENCE_PEEKING_BIT = 8
+        private const val PRESENCE_REPLY_CAMERA_BIT = 9
+        private const val PRESENCE_CHAT_MEDIA_BIT = 10
+    }
+
     private val conversationPresenceState = mutableMapOf<String, MutableMap<String, FriendPresenceState?>>() // conversationId -> (userId -> state)
     private val tracker by lazyBridge { context.bridgeClient.getTracker() }
     private val translation by lazy { context.translation.getCategory("friend_tracker_notifications") }
@@ -37,6 +43,8 @@ class FriendTracker : Feature("Friend Tracker") {
         ))
     } }
     private val conversationEntries = mutableMapOf<Pair<String, String>, Long>()
+    private val galleryEntries = mutableMapOf<Pair<String, String>, Long>()
+    private val replyCameraEntries = mutableMapOf<Pair<String, String>, Long>()
     private val peekingStateListeners = mutableListOf<(String, String, Boolean) -> Unit>()
 
     fun addOnPeekingStateChangedListener(listener: (conversationId: String, userId: String, peeking: Boolean) -> Unit) {
@@ -104,7 +112,12 @@ class FriendTracker : Feature("Friend Tracker") {
 
             context.log.verbose("dispatching $action for $eventType in $conversationName")
 
-            val iCanSeeYouDetails = if (eventType == TrackerEventType.I_CAN_SEE_YOU) buildICanSeeYouDetails(extras) else ""
+            val iCanSeeYouDetails = when (eventType) {
+                TrackerEventType.I_CAN_SEE_YOU,
+                TrackerEventType.I_CAN_SEE_YOU_2,
+                TrackerEventType.I_CAN_SEE_YOU_3 -> buildICanSeeYouDetails(extras)
+                else -> ""
+            }
             val notificationText = translation[eventType.key]
                 .replace("{friend}", authorName)
                 .replace("{conversation}", conversationName)
@@ -133,7 +146,7 @@ class FriendTracker : Feature("Friend Tracker") {
         }
     }
 
-    private fun buildICanSeeYouExtras(entry: Long?, exit: Long?, duration: Long?) = listOf(
+    private fun buildTimedActivityExtras(entry: Long?, exit: Long?, duration: Long?) = listOf(
         entry ?: -1,
         exit ?: -1,
         duration ?: -1
@@ -189,10 +202,22 @@ class FriendTracker : Feature("Friend Tracker") {
             (currentState == null || oldState?.bitmojiPresent == false) && oldState?.bitmojiPresent == true -> TrackerEventType.CONVERSATION_EXIT
             oldState?.typing == false && currentState?.typing == true -> if (currentState.speaking) TrackerEventType.STARTED_SPEAKING else TrackerEventType.STARTED_TYPING
             oldState?.typing == true && (currentState == null || !currentState.typing) -> if (oldState.speaking) TrackerEventType.STOPPED_SPEAKING else TrackerEventType.STOPPED_TYPING
-            (oldState == null || !oldState.peeking) && currentState?.peeking == true -> TrackerEventType.STARTED_PEEKING
-            oldState?.peeking == true && (currentState == null || !currentState.peeking) -> TrackerEventType.STOPPED_PEEKING
+            (oldState == null || !oldState.usingReplyCamera) && currentState?.usingReplyCamera == true -> TrackerEventType.STARTED_USING_REPLY_CAMERA
+            oldState?.usingReplyCamera == true && (currentState == null || !currentState.usingReplyCamera) -> TrackerEventType.STOPPED_USING_REPLY_CAMERA
+            (oldState == null || !oldState.viewingChatMedia) && currentState?.viewingChatMedia == true -> TrackerEventType.STARTED_VIEWING_CHAT_MEDIA
+            oldState?.viewingChatMedia == true && (currentState == null || !currentState.viewingChatMedia) -> TrackerEventType.STOPPED_VIEWING_CHAT_MEDIA
+            (oldState == null || !oldState.peeking) &&
+                currentState?.peeking == true &&
+                currentState.usingReplyCamera != true &&
+                oldState?.usingReplyCamera != true -> TrackerEventType.STARTED_PEEKING
+            oldState?.peeking == true &&
+                (currentState == null || !currentState.peeking) &&
+                currentState?.usingReplyCamera != true &&
+                oldState.usingReplyCamera != true -> TrackerEventType.STOPPED_PEEKING
             else -> null
-        } ?: return
+        }
+
+        eventType ?: return
 
         when (eventType) {
             TrackerEventType.CONVERSATION_ENTER -> {
@@ -206,7 +231,35 @@ class FriendTracker : Feature("Friend Tracker") {
                     TrackerEventType.I_CAN_SEE_YOU,
                     conversationId,
                     userId,
-                    buildICanSeeYouExtras(entry, exit, entry?.let { exit - it })
+                    buildTimedActivityExtras(entry, exit, entry?.let { exit - it })
+                )
+            }
+            TrackerEventType.STARTED_VIEWING_CHAT_MEDIA -> {
+                galleryEntries[conversationId to userId] = System.currentTimeMillis()
+            }
+            TrackerEventType.STOPPED_VIEWING_CHAT_MEDIA -> {
+                val key = conversationId to userId
+                val exit = System.currentTimeMillis()
+                val entry = galleryEntries.remove(key)
+                dispatchEvents(
+                    TrackerEventType.I_CAN_SEE_YOU_2,
+                    conversationId,
+                    userId,
+                    buildTimedActivityExtras(entry, exit, entry?.let { exit - it })
+                )
+            }
+            TrackerEventType.STARTED_USING_REPLY_CAMERA -> {
+                replyCameraEntries[conversationId to userId] = System.currentTimeMillis()
+            }
+            TrackerEventType.STOPPED_USING_REPLY_CAMERA -> {
+                val key = conversationId to userId
+                val exit = System.currentTimeMillis()
+                val entry = replyCameraEntries.remove(key)
+                dispatchEvents(
+                    TrackerEventType.I_CAN_SEE_YOU_3,
+                    conversationId,
+                    userId,
+                    buildTimedActivityExtras(entry, exit, entry?.let { exit - it })
                 )
             }
             else -> {}
@@ -266,14 +319,20 @@ class FriendTracker : Feature("Friend Tracker") {
             userIds.add(participantUserId)
             if (participantUserId == context.database.myUserId) return@eachBuffer
             val stateMap = getVarInt(2, 1)?.toString(2)?.padStart(16, '0')?.reversed()?.map { it == '1' } ?: return@eachBuffer
+            val usingReplyCamera = stateMap.getOrElse(PRESENCE_REPLY_CAMERA_BIT) { false }
+            val viewingChatMedia = stateMap.getOrElse(PRESENCE_CHAT_MEDIA_BIT) { false }
+            val peeking = stateMap.getOrElse(PRESENCE_PEEKING_BIT) { false }
 
             presenceMap[participantUserId] = FriendPresenceState(
                 bitmojiPresent = stateMap[0],
                 typing = stateMap[4],
                 wasTyping = stateMap[5],
                 speaking = stateMap[6] && stateMap[4],
-                // Snapchat appears to have shifted the peeking flag by one bit on newer builds.
-                peeking = stateMap.getOrElse(8) { false } || stateMap.getOrElse(9) { false }
+                // Snapchat moved peeking by one bit on newer builds and added
+                // dedicated chat-presence flags for reply camera and chat media viewing.
+                peeking = peeking,
+                usingReplyCamera = usingReplyCamera,
+                viewingChatMedia = viewingChatMedia
             )
         }
 

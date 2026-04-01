@@ -63,7 +63,7 @@ class Experimental : ConfigContainer() {
     }
 
     val nativeHooks = container("native_hooks", NativeHooks()) { icon = Icons.Default.Memory; requireRestart() }
-    val spoof = container("spoof", Spoof()) { icon = Icons.Default.Fingerprint ; addNotices(FeatureNotice.BAN_RISK); requireRestart() }
+    val spoof = container("spoof", Spoof()) { icon = Icons.Default.Fingerprint ; requireRestart() }
     val convertMessageLocally = boolean("convert_message_locally") { requireRestart() }
     val mediaFilePicker = boolean("media_file_picker") { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
     val storyLogger = boolean("story_logger") { requireRestart(); addNotices(FeatureNotice.UNSTABLE); }

@@ -9,7 +9,9 @@ data class FriendPresenceState(
     val typing: Boolean,
     val wasTyping: Boolean,
     val speaking: Boolean,
-    val peeking: Boolean
+    val peeking: Boolean,
+    val usingReplyCamera: Boolean,
+    val viewingChatMedia: Boolean
 )
 
 open class SessionEvent(
@@ -44,6 +46,8 @@ enum class SessionEventType(
     SNAP_SCREENSHOT("snap_screenshot"),
     SNAP_SCREEN_RECORD("snap_screen_record"),
     I_CAN_SEE_YOU("i_can_see_you"),
+    I_CAN_SEE_YOU_2("i_can_see_you_2"),
+    I_CAN_SEE_YOU_3("i_can_see_you_3"),
 }
 
 enum class TrackerEventType(
@@ -58,6 +62,10 @@ enum class TrackerEventType(
     STOPPED_SPEAKING("stopped_speaking"),
     STARTED_PEEKING("started_peeking"),
     STOPPED_PEEKING("stopped_peeking"),
+    STARTED_USING_REPLY_CAMERA("started_using_reply_camera"),
+    STOPPED_USING_REPLY_CAMERA("stopped_using_reply_camera"),
+    STARTED_VIEWING_CHAT_MEDIA("started_viewing_chat_media"),
+    STOPPED_VIEWING_CHAT_MEDIA("stopped_viewing_chat_media"),
 
     // mcs events
     MESSAGE_READ("message_read"),
@@ -73,6 +81,8 @@ enum class TrackerEventType(
     SNAP_SCREENSHOT("snap_screenshot"),
     SNAP_SCREEN_RECORD("snap_screen_record"),
     I_CAN_SEE_YOU("i_can_see_you"),
+    I_CAN_SEE_YOU_2("i_can_see_you_2"),
+    I_CAN_SEE_YOU_3("i_can_see_you_3"),
 }
 
 

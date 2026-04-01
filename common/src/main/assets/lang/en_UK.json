@@ -532,6 +532,18 @@
                 "title": "Export Sensitive Data?",
                 "content": "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)"
             },
+            "randomize_device_profile": {
+                "title": "Generating random device profile",
+                "done": "Randomized device profile generated",
+                "view_title": "Current randomized profile",
+                "empty": "No generated profile is available yet. Enable the feature in Snapchat first.",
+                "refresh_requested": "Fresh randomized profile requested. Restart Snapchat to apply it.",
+                "phase": {
+                    "allocating": "Allocating a randomized device fingerprint",
+                    "network": "Preparing network, locale, and telephony values",
+                    "finalizing": "Finalizing the all-in-one profile and disabling manual overrides"
+                }
+            },
             "messaging_action": {
                 "title": "Choose content types to process",
                 "select_all_button": "Select All"
@@ -898,7 +910,8 @@
         "notices": {
             "unstable": "\u26a0 Unstable",
             "ban_risk": "\u26a0 This feature may cause bans",
-            "internal_behavior": "\u26a0 This may break Snapchat internal behaviour"
+            "internal_behavior": "\u26a0 This may break Snapchat internal behaviour",
+            "randomize_device_profile_override": "Controlled by Randomized Device Profile"
         },
         "properties": {
             "downloader": {
@@ -1173,6 +1186,14 @@
                     "hide_bitmoji_presence": {
                         "name": "Hide Bitmoji Presence",
                         "description": "Prevents your Bitmoji from popping up while in Chat"
+                    },
+                    "spoof_viewing_gallery_presence": {
+                        "name": "Spoof Viewing Gallery Presence",
+                        "description": "Keeps your Bitmoji visible in Chat while viewing chat media"
+                    },
+                    "spoof_reply_camera_presence": {
+                        "name": "Spoof Reply Camera Presence",
+                        "description": "Keeps your Bitmoji visible in Chat while using the reply camera"
                     },
                     "hide_typing_notifications": {
                         "name": "Hide Typing Notifications",
@@ -2013,6 +2034,32 @@
                                 "name": "Force Wi-Fi Transport Flag",
                                 "description": "Force network transport to report Wi-Fi instead of mobile data"
                             },
+                            "randomize_device_profile": {
+                                "name": "Randomized Device Profile",
+                                "description": "Generate and apply a full randomized device, network, locale, and settings profile in one restart-safe profile",
+                                "properties": {
+                                    "show_activation_overlay": {
+                                        "name": "Show Activation Overlay",
+                                        "description": "Show the in-app toast when the randomized profile becomes active"
+                                    },
+                                    "randomize_ip_address": {
+                                        "name": "Randomize IP Address",
+                                        "description": "Generate and spoof a randomized IP address whenever a fresh randomized profile is created"
+                                    },
+                                    "persistent_app_language": {
+                                        "name": "Persistent App Language",
+                                        "description": "Force Snapchat to stay on a specific supported app language"
+                                    },
+                                    "generate_fresh_profile_action": {
+                                        "name": "Generate Fresh Profile",
+                                        "description": "Request a newly generated randomized profile"
+                                    },
+                                    "view_current_profile_action": {
+                                        "name": "View Current Profile",
+                                        "description": "Inspect the latest randomized profile snapshot"
+                                    }
+                                }
+                            },
                             "spoof_device_id": {
                                 "name": "Spoof Device ID",
                                 "description": "Override the Android ID sent to Snapchat",
@@ -2348,7 +2395,10 @@
             "custom_android_id": {
                 "null": "Use real Android ID"
             },
-	            "add_friend_source_spoof": {
+            "persistent_app_language": {
+                "system_default": "System Default"
+            },
+            "add_friend_source_spoof": {
 	                "added_by_username": "By Username",
 	                "added_by_mention": "By Mention",
 	                "added_by_group_chat": "By Group Chat",
@@ -2965,6 +3015,10 @@
         "stopped_speaking": "Stopped Speaking",
         "started_peeking": "Started Peeking",
         "stopped_peeking": "Stopped Peeking",
+        "started_using_reply_camera": "Started Using Reply Camera",
+        "stopped_using_reply_camera": "Stopped Using Reply Camera",
+        "started_viewing_chat_media": "Started Viewing Chat Media",
+        "stopped_viewing_chat_media": "Stopped Viewing Chat Media",
         "message_read": "Message Read",
         "message_deleted": "Message Deleted",
         "message_saved": "Message Saved",
@@ -2977,7 +3031,9 @@
         "snap_replayed_twice": "Snap Replayed Twice",
         "snap_screenshot": "Snap Screenshot",
         "snap_screen_record": "Snap Screen Record",
-        "i_can_see_you": "I Can See You"
+        "i_can_see_you": "I Can See You",
+        "i_can_see_you_2": "I Can See You 2",
+        "i_can_see_you_3": "I Can See You 3"
     },
     "cleared_from_feed": "Cleared from feed",
     "tracker_actions": {
@@ -3186,6 +3242,10 @@
         "stopped_speaking": "{friend} stopped speaking in {conversation}",
         "started_peeking": "{friend} started peeking in {conversation}",
         "stopped_peeking": "{friend} stopped peeking in {conversation}",
+        "started_using_reply_camera": "{friend} opened the reply camera in {conversation}",
+        "stopped_using_reply_camera": "{friend} closed the reply camera in {conversation}",
+        "started_viewing_chat_media": "{friend} started viewing chat media in {conversation}",
+        "stopped_viewing_chat_media": "{friend} stopped viewing chat media in {conversation}",
         "message_read": "{friend} read a message in {conversation}",
         "message_deleted": "{friend} deleted a message in {conversation}",
         "message_saved": "{friend} saved a message in {conversation}",
@@ -3198,7 +3258,9 @@
         "snap_replayed_twice": "{friend} replayed a snap twice in {conversation}",
         "snap_screenshot": "{friend} took a screenshot in {conversation}",
         "snap_screen_record": "{friend} screen recorded in {conversation}",
-        "i_can_see_you": "{friend} activity in {conversation}: {details}"
+        "i_can_see_you": "{friend} activity in {conversation}: {details}",
+        "i_can_see_you_2": "{friend} gallery activity in {conversation}: {details}",
+        "i_can_see_you_3": "{friend} reply camera activity in {conversation}: {details}"
     },
     "friend_mutation_observer": {
         "notification_channel_name": "Friend Mutation Observer",
@@ -3351,6 +3413,10 @@
                 "stopped_speaking": "Stopped speaking",
                 "started_peeking": "Started peeking",
                 "stopped_peeking": "Stopped peeking",
+                "started_using_reply_camera": "Opened reply camera",
+                "stopped_using_reply_camera": "Closed reply camera",
+                "started_viewing_chat_media": "Started viewing chat media",
+                "stopped_viewing_chat_media": "Stopped viewing chat media",
                 "message_read": "Read message",
                 "message_deleted": "Deleted message",
                 "message_saved": "Saved message",
@@ -3402,6 +3468,10 @@
                     "stopped_speaking": "stopped speaking",
                     "started_peeking": "started peeking",
                     "stopped_peeking": "stopped peeking",
+                    "started_using_reply_camera": "opened the reply camera",
+                    "stopped_using_reply_camera": "closed the reply camera",
+                    "started_viewing_chat_media": "started viewing chat media",
+                    "stopped_viewing_chat_media": "stopped viewing chat media",
                     "message_read": "read a message",
                     "message_deleted": "deleted a message",
                     "message_saved": "saved a message",
@@ -3414,7 +3484,9 @@
                     "snap_replayed_twice": "replayed a snap twice",
                     "snap_screenshot": "took a screenshot",
                     "snap_screen_record": "screen recorded",
-                    "i_can_see_you": "was active"
+                    "i_can_see_you": "was active",
+                    "i_can_see_you_2": "was viewing gallery",
+                    "i_can_see_you_3": "was using the reply camera"
                 }
             }
         },
@@ -3474,6 +3546,7 @@
     "disable_feature_loading_label": "Disable Feature Loading",
     "disable_auto_mapper_label": "Disable Auto Mapper",
     "disable_bypass_indicator_label": "Disable Bypass Indicator",
+    "disable_cant_login_button_label": "Disable Can't Login Button",
     "friend_list": {
         "manage_title": "Manage Friend List",
         "export_description": "Export friends allows you to save a list of your friends' IDs in a text file. Importing from a file will display the friends in a list where you can add them.",

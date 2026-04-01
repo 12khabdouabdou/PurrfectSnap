@@ -77,7 +77,6 @@ class MediaFilePicker : Feature("Media File Picker") {
         private var bypassSplitOnce = false
         private var sendSingleItemHandler: ((Any) -> Boolean)? = null
         private var cleanupItemHandler: ((String) -> Unit)? = null
-
         fun hasQueuedSplitItems(): Boolean = queuedSplitItems.isNotEmpty()
         fun hasPendingSplitCleanup(): Boolean = queuedSplitItemIds.isNotEmpty()
         fun hasOriginalUnsplitItem(): Boolean = originalUnsplitItem != null

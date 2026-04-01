@@ -30,6 +30,7 @@ import me.eternal.purrfectsnap.common.data.SocialScope
 import me.eternal.purrfectsnap.common.ui.OverlayType
 import me.eternal.purrfectsnap.common.util.toSerialized
 import me.eternal.purrfectsnap.core.ModContext
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.Executors
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -234,10 +235,48 @@ class BridgeClient(
 
     fun passGroupsAndFriends(groups: List<MessagingGroupInfo>, friends: List<MessagingFriendInfo>) =
         safeServiceCall {
-            service.passGroupsAndFriends(
-                groups.mapNotNull { it.toSerialized() },
-                friends.mapNotNull { it.toSerialized() }
+            val serializedGroups = groups.mapNotNull { it.toSerialized() }
+            val serializedFriends = friends.mapNotNull { it.toSerialized() }
+            val maxChunkBytes = 128 * 1024
+
+            fun chunkSerialized(values: List<String>): List<List<String>> {
+                if (values.isEmpty()) return listOf(emptyList())
+                val result = mutableListOf<List<String>>()
+                val currentChunk = mutableListOf<String>()
+                var currentSize = 0
+
+                values.forEach { value ->
+                    val valueSize = value.toByteArray(StandardCharsets.UTF_8).size + 32
+                    if (currentChunk.isNotEmpty() && currentSize + valueSize > maxChunkBytes) {
+                        result += currentChunk.toList()
+                        currentChunk.clear()
+                        currentSize = 0
+                    }
+                    currentChunk += value
+                    currentSize += valueSize
+                }
+
+                if (currentChunk.isNotEmpty()) {
+                    result += currentChunk.toList()
+                }
+                return result
+            }
+
+            val groupChunks = chunkSerialized(serializedGroups)
+            val friendChunks = chunkSerialized(serializedFriends)
+            val chunkCount = maxOf(groupChunks.size, friendChunks.size)
+
+            context.log.info(
+                "Sending social snapshot in $chunkCount chunk(s): " +
+                    "${serializedGroups.size} groups, ${serializedFriends.size} friends"
             )
+
+            repeat(chunkCount) { index ->
+                service.passGroupsAndFriends(
+                    groupChunks.getOrElse(index) { emptyList() },
+                    friendChunks.getOrElse(index) { emptyList() }
+                )
+            }
         }
 
     fun getRules(targetUuid: String): List<MessagingRuleType> = safeServiceCall {

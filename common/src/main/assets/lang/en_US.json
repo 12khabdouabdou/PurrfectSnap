@@ -570,6 +570,19 @@
                 "title": "Export Sensitive Data?",
                 "content": "Do you want to export the config with sensitive data? (Such as location coordinates, etc.)"
             },
+            "randomize_device_profile": {
+                "title": "Generating random device profile",
+                "done": "Randomized device profile generated",
+                "view_title": "Current randomized profile",
+                "copied": "Randomized profile copied",
+                "empty": "No generated profile is available yet. Enable the feature in Snapchat first.",
+                "refresh_requested": "Fresh randomized profile requested. Restart Snapchat to apply it.",
+                "phase": {
+                    "allocating": "Allocating a randomized device fingerprint",
+                    "network": "Preparing network, locale, and telephony values",
+                    "finalizing": "Finalizing the all-in-one profile and disabling manual overrides"
+                }
+            },
             "messaging_action": {
                 "title": "Choose content types to process",
                 "select_all_button": "Select All"
@@ -1237,6 +1250,14 @@
                     "hide_bitmoji_presence": {
                         "name": "Hide Bitmoji Presence",
                         "description": "Prevents your Bitmoji from popping up while in Chat"
+                    },
+                    "spoof_viewing_gallery_presence": {
+                        "name": "Spoof Viewing Gallery Presence",
+                        "description": "Keeps your Bitmoji visible in Chat while viewing chat media"
+                    },
+                    "spoof_reply_camera_presence": {
+                        "name": "Spoof Reply Camera Presence",
+                        "description": "Keeps your Bitmoji visible in Chat while using the reply camera"
                     },
                     "hide_typing_notifications": {
                         "name": "Hide Typing Notifications",
@@ -2119,6 +2140,418 @@
                                 "name": "Force Wi-Fi Transport Flag",
                                 "description": "Force network transport to report Wi-Fi instead of mobile data"
                             },
+                            "randomize_device_profile": {
+                                "name": "Randomized Device Profile",
+                                "description": "Generate and apply a full randomized device, network, locale, and settings profile",
+                                "properties": {
+                                    "show_activation_overlay": {
+                                        "name": "Show Activation Overlay",
+                                        "description": "Show the in-app toast when the randomized profile becomes active"
+                                    },
+                                    "randomize_ip_address": {
+                                        "name": "Randomize IP Address",
+                                        "description": "Generate and spoof a randomized IP address whenever a fresh randomized profile is created"
+                                    },
+                                    "spoof_build_properties": {
+                                        "name": "Spoof Build Properties",
+                                        "description": "Apply randomized build fields, fingerprints, and device property values"
+                                    },
+                                    "build_properties": {
+                                        "name": "Build Properties",
+                                        "description": "Enable build property spoofing and fine-tune its subsets",
+                                        "properties": {
+                                            "device_identity": {
+                                                "name": "Device Identity",
+                                                "description": "Enable device identity spoofing and fine-tune its values",
+                                                "properties": {
+                                                    "manufacturer_model": {
+                                                        "name": "Manufacturer And Model",
+                                                        "description": "Randomize the reported manufacturer and model"
+                                                    },
+                                                    "brand_product": {
+                                                        "name": "Brand And Product",
+                                                        "description": "Randomize the reported brand, device, and product values"
+                                                    },
+                                                    "hardware_board": {
+                                                        "name": "Hardware And Board",
+                                                        "description": "Randomize the reported hardware and board values"
+                                                    }
+                                                }
+                                            },
+                                            "build_version": {
+                                                "name": "Build Version",
+                                                "description": "Enable build version spoofing and fine-tune its values",
+                                                "properties": {
+                                                    "fingerprint": {
+                                                        "name": "Fingerprint",
+                                                        "description": "Randomize the reported build fingerprint"
+                                                    },
+                                                    "display": {
+                                                        "name": "Display ID",
+                                                        "description": "Randomize the reported build display ID"
+                                                    },
+                                                    "host": {
+                                                        "name": "Host",
+                                                        "description": "Randomize the reported build host"
+                                                    },
+                                                    "bootloader": {
+                                                        "name": "Bootloader",
+                                                        "description": "Randomize the reported bootloader value"
+                                                    },
+                                                    "build_time": {
+                                                        "name": "Build Time",
+                                                        "description": "Randomize the reported build timestamp"
+                                                    }
+                                                }
+                                            },
+                                            "abi_lists": {
+                                                "name": "ABI Lists",
+                                                "description": "Enable ABI spoofing and fine-tune its values",
+                                                "properties": {
+                                                    "combined_abis": {
+                                                        "name": "Combined ABI List",
+                                                        "description": "Randomize the combined supported ABI list"
+                                                    },
+                                                    "split_abis": {
+                                                        "name": "32-bit And 64-bit ABI Lists",
+                                                        "description": "Randomize the split 32-bit and 64-bit ABI lists"
+                                                    }
+                                                }
+                                            },
+                                            "system_properties": {
+                                                "name": "System Properties",
+                                                "description": "Expose randomized values through Android system property lookups",
+                                                "properties": {
+                                                    "build": {
+                                                        "name": "Build Properties",
+                                                        "description": "Expose randomized build values through system properties"
+                                                    },
+                                                    "locale": {
+                                                        "name": "Locale Properties",
+                                                        "description": "Expose randomized locale values through system properties"
+                                                    },
+                                                    "telephony": {
+                                                        "name": "Telephony Properties",
+                                                        "description": "Expose randomized telephony values through system properties"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "spoof_locale": {
+                                        "name": "Spoof Locale",
+                                        "description": "Apply the randomized locale and language hooks"
+                                    },
+                                    "locale_options": {
+                                        "name": "Locale Details",
+                                        "description": "Enable locale spoofing and fine-tune its subsets",
+                                        "properties": {
+                                            "locale": {
+                                                "name": "Locale",
+                                                "description": "Enable locale spoofing and fine-tune language and region values",
+                                                "properties": {
+                                                    "language": {
+                                                        "name": "Language",
+                                                        "description": "Randomize the reported language value"
+                                                    },
+                                                    "region": {
+                                                        "name": "Region",
+                                                        "description": "Randomize the reported region value"
+                                                    }
+                                                }
+                                            },
+                                            "time": {
+                                                "name": "Time",
+                                                "description": "Enable time spoofing and fine-tune time-related values",
+                                                "properties": {
+                                                    "time_zone_id": {
+                                                        "name": "Time Zone ID",
+                                                        "description": "Randomize the reported time zone ID"
+                                                    },
+                                                    "time_zone_display_name": {
+                                                        "name": "Time Zone Display Name",
+                                                        "description": "Randomize the reported time zone display name"
+                                                    },
+                                                    "auto_time": {
+                                                        "name": "Auto Time",
+                                                        "description": "Randomize the global auto-time setting"
+                                                    },
+                                                    "auto_time_zone": {
+                                                        "name": "Auto Time Zone",
+                                                        "description": "Randomize the global auto-time-zone setting"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "spoof_telephony": {
+                                        "name": "Spoof Telephony",
+                                        "description": "Apply randomized carrier, SIM, and phone capability values"
+                                    },
+                                    "telephony_options": {
+                                        "name": "Telephony Details",
+                                        "description": "Enable telephony spoofing and fine-tune its subsets",
+                                        "properties": {
+                                            "mms": {
+                                                "name": "MMS",
+                                                "description": "Enable MMS spoofing and fine-tune MMS values",
+                                                "properties": {
+                                                    "user_agent": {
+                                                        "name": "User Agent",
+                                                        "description": "Randomize the MMS user agent string"
+                                                    }
+                                                }
+                                            },
+                                            "network_identity": {
+                                                "name": "Network Identity",
+                                                "description": "Enable network identity spoofing and fine-tune network values",
+                                                "properties": {
+                                                    "network_type": {
+                                                        "name": "Network Type",
+                                                        "description": "Randomize the reported network type"
+                                                    },
+                                                    "operator_numeric": {
+                                                        "name": "Operator Numeric",
+                                                        "description": "Randomize the reported operator numeric code"
+                                                    },
+                                                    "operator_name": {
+                                                        "name": "Operator Name",
+                                                        "description": "Randomize the reported operator name"
+                                                    },
+                                                    "country_iso": {
+                                                        "name": "Country ISO",
+                                                        "description": "Randomize the reported network country ISO"
+                                                    }
+                                                }
+                                            },
+                                            "sim_identity": {
+                                                "name": "SIM Identity",
+                                                "description": "Enable SIM identity spoofing and fine-tune SIM values",
+                                                "properties": {
+                                                    "country_iso": {
+                                                        "name": "Country ISO",
+                                                        "description": "Randomize the reported SIM country ISO"
+                                                    },
+                                                    "operator_numeric": {
+                                                        "name": "Operator Numeric",
+                                                        "description": "Randomize the reported SIM operator numeric code"
+                                                    },
+                                                    "operator_name": {
+                                                        "name": "Operator Name",
+                                                        "description": "Randomize the reported SIM operator name"
+                                                    },
+                                                    "sim_state": {
+                                                        "name": "SIM State",
+                                                        "description": "Randomize the reported SIM state"
+                                                    },
+                                                    "has_icc_card": {
+                                                        "name": "ICC Card",
+                                                        "description": "Randomize whether a SIM card is reported as present"
+                                                    }
+                                                }
+                                            },
+                                            "phone_capabilities": {
+                                                "name": "Phone Capabilities",
+                                                "description": "Enable phone capability spoofing and fine-tune capability values",
+                                                "properties": {
+                                                    "phone_count": {
+                                                        "name": "Phone Count",
+                                                        "description": "Randomize the reported phone count"
+                                                    },
+                                                    "hearing_aid": {
+                                                        "name": "Hearing Aid",
+                                                        "description": "Randomize hearing aid compatibility support"
+                                                    },
+                                                    "tty": {
+                                                        "name": "TTY",
+                                                        "description": "Randomize TTY support"
+                                                    },
+                                                    "world_phone": {
+                                                        "name": "World Phone",
+                                                        "description": "Randomize world phone support"
+                                                    },
+                                                    "roaming": {
+                                                        "name": "Roaming",
+                                                        "description": "Randomize roaming status"
+                                                    },
+                                                    "sms_voice": {
+                                                        "name": "SMS And Voice",
+                                                        "description": "Randomize SMS and voice capability support"
+                                                    },
+                                                    "phone_type": {
+                                                        "name": "Phone Type",
+                                                        "description": "Randomize the reported phone type"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "spoof_settings": {
+                                        "name": "Spoof Settings",
+                                        "description": "Apply the randomized Android settings overrides"
+                                    },
+                                    "settings_options": {
+                                        "name": "Settings Details",
+                                        "description": "Enable settings spoofing and fine-tune its namespaces",
+                                        "properties": {
+                                            "secure": {
+                                                "name": "Secure Settings",
+                                                "description": "Enable secure settings spoofing and fine-tune secure values",
+                                                "properties": {
+                                                    "base": {
+                                                        "name": "Base",
+                                                        "description": "Randomize the base secure settings values"
+                                                    },
+                                                    "tts": {
+                                                        "name": "Text To Speech",
+                                                        "description": "Randomize text-to-speech secure settings values"
+                                                    }
+                                                }
+                                            },
+                                            "system": {
+                                                "name": "System Settings",
+                                                "description": "Enable system settings spoofing and fine-tune system values",
+                                                "properties": {
+                                                    "base": {
+                                                        "name": "Base",
+                                                        "description": "Randomize the base system settings values"
+                                                    },
+                                                    "bluetooth": {
+                                                        "name": "Bluetooth",
+                                                        "description": "Randomize Bluetooth-related system settings values"
+                                                    }
+                                                }
+                                            },
+                                            "global": {
+                                                "name": "Global Settings",
+                                                "description": "Enable global settings spoofing and fine-tune global values",
+                                                "properties": {
+                                                    "base": {
+                                                        "name": "Base",
+                                                        "description": "Randomize the base global settings values"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "spoof_network": {
+                                        "name": "Spoof Network",
+                                        "description": "Apply randomized Wi-Fi and DNS network values"
+                                    },
+                                    "network_options": {
+                                        "name": "Network Details",
+                                        "description": "Enable network spoofing and fine-tune its subsets",
+                                        "properties": {
+                                            "wifi": {
+                                                "name": "Wi-Fi Info",
+                                                "description": "Enable Wi-Fi spoofing and fine-tune Wi-Fi values",
+                                                "properties": {
+                                                    "ssid": {
+                                                        "name": "SSID",
+                                                        "description": "Randomize the reported Wi-Fi SSID"
+                                                    },
+                                                    "rssi": {
+                                                        "name": "Signal Strength",
+                                                        "description": "Randomize the reported Wi-Fi RSSI value"
+                                                    }
+                                                }
+                                            },
+                                            "dns": {
+                                                "name": "DNS",
+                                                "description": "Enable DNS spoofing and fine-tune DNS values",
+                                                "properties": {
+                                                    "servers": {
+                                                        "name": "Servers",
+                                                        "description": "Randomize the reported DNS server list"
+                                                    },
+                                                    "search_domains": {
+                                                        "name": "Search Domains",
+                                                        "description": "Randomize the reported DNS search domains"
+                                                    },
+                                                    "private_dns": {
+                                                        "name": "Private DNS",
+                                                        "description": "Randomize the reported private DNS values"
+                                                    }
+                                                }
+                                            },
+                                            "captive_portal": {
+                                                "name": "Captive Portal",
+                                                "description": "Enable captive portal spoofing and fine-tune portal values",
+                                                "properties": {
+                                                    "capability": {
+                                                        "name": "Capability",
+                                                        "description": "Randomize the reported captive portal capability"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "spoof_identifiers": {
+                                        "name": "Spoof Identifiers",
+                                        "description": "Apply randomized Android ID, advertising ID, and hardware address overrides"
+                                    },
+                                    "identifier_options": {
+                                        "name": "Identifier Details",
+                                        "description": "Enable identifier spoofing and fine-tune its subsets",
+                                        "properties": {
+                                            "android_id": {
+                                                "name": "Android ID",
+                                                "description": "Enable Android ID spoofing and fine-tune Android ID values",
+                                                "properties": {
+                                                    "string_value": {
+                                                        "name": "String Value",
+                                                        "description": "Randomize the string Android ID value"
+                                                    },
+                                                    "long_value": {
+                                                        "name": "Long Value",
+                                                        "description": "Randomize the long Android ID value"
+                                                    }
+                                                }
+                                            },
+                                            "advertising_id": {
+                                                "name": "Advertising ID",
+                                                "description": "Enable advertising ID spoofing and fine-tune advertising ID values",
+                                                "properties": {
+                                                    "settings_value": {
+                                                        "name": "Settings Value",
+                                                        "description": "Randomize the advertising ID returned through settings"
+                                                    },
+                                                    "play_services": {
+                                                        "name": "Play Services",
+                                                        "description": "Randomize the advertising ID returned through Play Services"
+                                                    }
+                                                }
+                                            },
+                                            "hardware_addresses": {
+                                                "name": "Hardware Addresses",
+                                                "description": "Enable hardware address spoofing and fine-tune address values",
+                                                "properties": {
+                                                    "wifi_mac": {
+                                                        "name": "Wi-Fi MAC",
+                                                        "description": "Randomize the reported Wi-Fi MAC address"
+                                                    },
+                                                    "bluetooth_mac": {
+                                                        "name": "Bluetooth MAC",
+                                                        "description": "Randomize the reported Bluetooth MAC address"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "persistent_app_language": {
+                                        "name": "Persistent App Language",
+                                        "description": "Force Snapchat to stay on a specific supported app language"
+                                    },
+                                    "generate_fresh_profile_action": {
+                                        "name": "Generate Fresh Profile",
+                                        "description": "Request a newly generated randomized profile"
+                                    },
+                                    "view_current_profile_action": {
+                                        "name": "View Current Profile",
+                                        "description": "Inspect the latest randomized profile snapshot"
+                                    }
+                                }
+                            },
                             "spoof_device_id": {
                                 "name": "Spoof Device ID",
                                 "description": "Override the Android ID sent to Snapchat",
@@ -2470,6 +2903,9 @@
             },
             "custom_android_id": {
                 "null": "Use real Android ID"
+            },
+            "persistent_app_language": {
+                "system_default": "System Default"
             },
             "add_friend_source_spoof": {
                 "added_by_username": "By Username",
@@ -3085,6 +3521,7 @@
         "positive": "Yes",
         "negative": "No",
         "cancel": "Cancel",
+        "copy": "Copy",
         "save": "Save",
         "open": "Open",
         "download": "Download",
@@ -3102,6 +3539,10 @@
         "stopped_speaking": "Stopped Speaking",
         "started_peeking": "Started Peeking",
         "stopped_peeking": "Stopped Peeking",
+        "started_using_reply_camera": "Started Using Reply Camera",
+        "stopped_using_reply_camera": "Stopped Using Reply Camera",
+        "started_viewing_chat_media": "Started Viewing Chat Media",
+        "stopped_viewing_chat_media": "Stopped Viewing Chat Media",
         "message_read": "Message Read",
         "message_deleted": "Message Deleted",
         "message_saved": "Message Saved",
@@ -3114,7 +3555,9 @@
         "snap_replayed_twice": "Snap Replayed Twice",
         "snap_screenshot": "Snap Screenshot",
         "snap_screen_record": "Snap Screen Record",
-        "i_can_see_you": "I Can See You"
+        "i_can_see_you": "I Can See You",
+        "i_can_see_you_2": "I Can See You 2",
+        "i_can_see_you_3": "I Can See You 3"
     },
     "cleared_from_feed": "Cleared from feed",
     "tracker_actions": {
@@ -3350,6 +3793,10 @@
         "stopped_speaking": "{friend} stopped speaking in {conversation}",
         "started_peeking": "{friend} started peeking in {conversation}",
         "stopped_peeking": "{friend} stopped peeking in {conversation}",
+        "started_using_reply_camera": "{friend} opened the reply camera in {conversation}",
+        "stopped_using_reply_camera": "{friend} closed the reply camera in {conversation}",
+        "started_viewing_chat_media": "{friend} started viewing chat media in {conversation}",
+        "stopped_viewing_chat_media": "{friend} stopped viewing chat media in {conversation}",
         "message_read": "{friend} read a message in {conversation}",
         "message_deleted": "{friend} deleted a message in {conversation}",
         "message_saved": "{friend} saved a message in {conversation}",
@@ -3362,7 +3809,9 @@
         "snap_replayed_twice": "{friend} replayed a snap twice in {conversation}",
         "snap_screenshot": "{friend} took a screenshot in {conversation}",
         "snap_screen_record": "{friend} screen recorded in {conversation}",
-        "i_can_see_you": "{friend} activity in {conversation}: {details}"
+        "i_can_see_you": "{friend} activity in {conversation}: {details}",
+        "i_can_see_you_2": "{friend} gallery activity in {conversation}: {details}",
+        "i_can_see_you_3": "{friend} reply camera activity in {conversation}: {details}"
     },
     "friend_mutation_observer": {
         "notification_channel_name": "Friend Mutation Observer",
@@ -3522,9 +3971,13 @@
                 "started_typing": "Started typing",
                 "stopped_typing": "Stopped typing",
                 "started_speaking": "Started speaking",
-            "stopped_speaking": "Stopped speaking",
+                "stopped_speaking": "Stopped speaking",
                 "started_peeking": "Started peeking",
                 "stopped_peeking": "Stopped peeking",
+                "started_using_reply_camera": "Opened reply camera",
+                "stopped_using_reply_camera": "Closed reply camera",
+                "started_viewing_chat_media": "Started viewing chat media",
+                "stopped_viewing_chat_media": "Stopped viewing chat media",
                 "message_read": "Read message",
                 "message_deleted": "Deleted message",
                 "message_saved": "Saved message",
@@ -3576,6 +4029,10 @@
                     "stopped_speaking": "stopped speaking",
                     "started_peeking": "started peeking",
                     "stopped_peeking": "stopped peeking",
+                    "started_using_reply_camera": "opened the reply camera",
+                    "stopped_using_reply_camera": "closed the reply camera",
+                    "started_viewing_chat_media": "started viewing chat media",
+                    "stopped_viewing_chat_media": "stopped viewing chat media",
                     "message_read": "read a message",
                     "message_deleted": "deleted a message",
                     "message_saved": "saved a message",
@@ -3588,7 +4045,9 @@
                     "snap_replayed_twice": "replayed a snap twice",
                     "snap_screenshot": "took a screenshot",
                     "snap_screen_record": "screen recorded",
-                    "i_can_see_you": "was active"
+                    "i_can_see_you": "was active",
+                    "i_can_see_you_2": "was viewing gallery",
+                    "i_can_see_you_3": "was using the reply camera"
                 }
             }
         },
@@ -3648,6 +4107,7 @@
     "disable_feature_loading_label": "Disable Feature Loading",
     "disable_auto_mapper_label": "Disable Auto Mapper",
     "disable_bypass_indicator_label": "Disable Bypass Indicator",
+    "disable_cant_login_button_label": "Disable Can't Login Button",
     "friend_list": {
         "manage_title": "Manage Friend List",
         "export_description": "Export friends allows you to save a list of your friends' IDs in a text file. Importing from a file will display the friends in a list where you can add them.",

@@ -60,6 +60,14 @@ class Messaging : Feature("Messaging") {
             currentConversationId()?.let { stealthMode.canUseRule(it) } == true
     }
 
+    private fun shouldSpoofViewingGalleryPresence(stealthMode: StealthMode): Boolean {
+        return shouldHideBitmojiPresence(stealthMode) || context.config.messaging.spoofViewingGalleryPresence.get()
+    }
+
+    private fun shouldSpoofReplyCameraPresence(stealthMode: StealthMode): Boolean {
+        return shouldHideBitmojiPresence(stealthMode) || context.config.messaging.spoofReplyCameraPresence.get()
+    }
+
     private fun shouldHideTyping(stealthMode: StealthMode, hideTypingIndicator: HideTypingIndicator): Boolean {
         return context.config.messaging.hideTypingNotifications.get() ||
             currentConversationId()?.let { stealthMode.canUseRule(it) || hideTypingIndicator.canUseRule(it) } == true
@@ -156,6 +164,8 @@ class Messaging : Feature("Messaging") {
 
                 classReference.getAsClass()?.let { wrapperClass ->
                     val bitmojiMethodNames = mutableSetOf<String>()
+                    val viewingGalleryMethodNames = mutableSetOf<String>()
+                    val replyCameraMethodNames = mutableSetOf<String>()
                     val typingMethodNames = mutableSetOf<String>()
                     val peekingMethodNames = mutableSetOf<String>()
 
@@ -165,12 +175,22 @@ class Messaging : Feature("Messaging") {
                         if (parameterTypes.any { parameterType ->
                                 listOf(
                                     "PlatformChatVisibleAction",
-                                    "PlatformChatHiddenAction",
-                                    "PlatformViewingChatMediaAction",
-                                    "PlatformUsingReplyCameraAction"
+                                    "PlatformChatHiddenAction"
                                 ).any { parameterType.name.contains(it) }
                             }) {
                             bitmojiMethodNames.add(method.name)
+                        }
+
+                        if (parameterTypes.any { parameterType ->
+                                parameterType.name.contains("PlatformViewingChatMediaAction")
+                            }) {
+                            viewingGalleryMethodNames.add(method.name)
+                        }
+
+                        if (parameterTypes.any { parameterType ->
+                                parameterType.name.contains("PlatformUsingReplyCameraAction")
+                            }) {
+                            replyCameraMethodNames.add(method.name)
                         }
 
                         if (parameterTypes.any { parameterType ->
@@ -189,6 +209,22 @@ class Messaging : Feature("Messaging") {
                     bitmojiMethodNames.forEach { methodName ->
                         wrapperClass.hook(methodName, HookStage.BEFORE, {
                             shouldHideBitmojiPresence(stealthMode)
+                        }) {
+                            it.setResult(null)
+                        }
+                    }
+
+                    viewingGalleryMethodNames.forEach { methodName ->
+                        wrapperClass.hook(methodName, HookStage.BEFORE, {
+                            shouldSpoofViewingGalleryPresence(stealthMode)
+                        }) {
+                            it.setResult(null)
+                        }
+                    }
+
+                    replyCameraMethodNames.forEach { methodName ->
+                        wrapperClass.hook(methodName, HookStage.BEFORE, {
+                            shouldSpoofReplyCameraPresence(stealthMode)
                         }) {
                             it.setResult(null)
                         }
@@ -214,8 +250,8 @@ class Messaging : Feature("Messaging") {
                         val instance = param.thisObject<Any>()
                         clearField(instance, "PlatformChatVisibleAction", shouldHideBitmojiPresence(stealthMode))
                         clearField(instance, "PlatformChatHiddenAction", shouldHideBitmojiPresence(stealthMode))
-                        clearField(instance, "PlatformViewingChatMediaAction", shouldHideBitmojiPresence(stealthMode))
-                        clearField(instance, "PlatformUsingReplyCameraAction", shouldHideBitmojiPresence(stealthMode))
+                        clearField(instance, "PlatformViewingChatMediaAction", shouldSpoofViewingGalleryPresence(stealthMode))
+                        clearField(instance, "PlatformUsingReplyCameraAction", shouldSpoofReplyCameraPresence(stealthMode))
                         clearField(instance, "PlatformTypingAction", shouldHideTyping(stealthMode, hideTypingIndicator))
                         clearField(instance, "PlatformStartPeekingAction", shouldHidePeek(stealthMode))
                     }

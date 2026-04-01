@@ -9,6 +9,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -43,8 +46,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -72,6 +77,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import me.eternal.purrfectsnap.common.ui.TopBarActionButton
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableStateList
+import me.eternal.purrfectsnap.ui.manager.components.AestheticDialog
 import me.eternal.purrfectsnap.ui.manager.Routes
 import me.eternal.purrfectsnap.ui.manager.ManagerTheme
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
@@ -80,6 +86,7 @@ import me.eternal.purrfectsnap.ui.util.Dialog
 import me.eternal.purrfectsnap.ui.util.DialogProperties
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
 
@@ -160,6 +167,28 @@ class FeaturesRootSection : Routes.Route() {
         } catch (e: Exception) {
             folderUri
         }
+    }
+
+    internal fun isRandomizedProfileEnabled(): Boolean {
+        return context.config.root.experimental.spoof.randomizeDeviceProfile.globalState == true
+    }
+
+    internal fun requestFreshRandomizedProfile() {
+        val randomizeConfig = context.config.root.experimental.spoof.randomizeDeviceProfile
+        randomizeConfig.profileGenerationToken.set(UUID.randomUUID().toString())
+        randomizeConfig.currentProfileSnapshot.set("")
+    }
+
+    internal fun getRandomizedProfileSnapshot(): String {
+        context.config.load()
+        return context.config.root.experimental.spoof.randomizeDeviceProfile.currentProfileSnapshot.getNullable()
+            ?.takeIf { it.isNotBlank() }
+            ?: (context.translation["manager.dialogs.randomize_device_profile.empty"]
+                ?: "No generated profile is available yet. Enable the feature in Snapchat first.")
+    }
+
+    internal fun isRandomizedProfileActionProperty(propertyName: String): Boolean {
+        return propertyName == "generate_fresh_profile_action" || propertyName == "view_current_profile_action"
     }
 
     fun navigateToMainRoot() {
@@ -330,9 +359,17 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    internal fun PropertyAction(property: PropertyPair<*>, registerClickCallback: ( () -> Unit ) -> (() -> Unit)) {
+    internal fun PropertyAction(
+        property: PropertyPair<*>,
+        onConfigChanged: () -> Unit,
+        registerClickCallback: (() -> Unit) -> (() -> Unit)
+    ) {
         var showDialog by remember { mutableStateOf(false) }
         var dialogComposable by remember { mutableStateOf<@Composable () -> Unit>({}) }
+        var showRandomProfileProgressDialog by remember { mutableStateOf(false) }
+        var randomProfileStatus by remember { mutableStateOf("") }
+        var showCurrentRandomProfileDialog by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
 
         fun registerDialogOnClickCallback() = registerClickCallback { showDialog = true }
 
@@ -348,7 +385,64 @@ class FeaturesRootSection : Routes.Route() {
         }
 
         val propertyValue = property.value
-        fun persistConfig() = context.config.writeConfig()
+        val randomProfileEnabled = isRandomizedProfileEnabled()
+        val isRandomizedProfileContainer = property.name == "randomize_device_profile"
+        fun persistConfig() {
+            context.config.writeConfig()
+            onConfigChanged()
+        }
+
+        if (showRandomProfileProgressDialog) {
+            AestheticDialog(
+                onDismissRequest = {},
+                title = context.translation["manager.dialogs.randomize_device_profile.title"]
+                    ?: "Generating random device profile",
+                text = randomProfileStatus,
+                icon = Icons.Filled.AutoAwesome,
+                confirmButtonText = "",
+                onConfirm = {},
+                loading = true,
+                showIcon = false,
+                showCloseButton = false,
+                confirmEnabled = false
+            )
+        }
+
+        if (showCurrentRandomProfileDialog) {
+            val profileSnapshot = getRandomizedProfileSnapshot()
+            val clipboardManager = LocalClipboardManager.current
+            AestheticDialog(
+                onDismissRequest = { showCurrentRandomProfileDialog = false },
+                title = context.translation["manager.dialogs.randomize_device_profile.view_title"]
+                    ?: "Current randomized profile",
+                text = "",
+                icon = Icons.Filled.Visibility,
+                dismissButtonText = context.translation["button.copy"] ?: "Copy",
+                onDismiss = {
+                    clipboardManager.setText(AnnotatedString(profileSnapshot))
+                    context.shortToast(
+                        context.translation["manager.dialogs.randomize_device_profile.copied"]
+                            ?: "Randomized profile copied"
+                    )
+                },
+                confirmButtonText = context.translation["button.positive"],
+                onConfirm = { showCurrentRandomProfileDialog = false },
+                showCloseButton = false,
+                customContent = {
+                    SelectionContainer {
+                        Text(
+                            text = profileSnapshot,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 360.dp)
+                                .verticalScroll(rememberScrollState()),
+                            color = PurrfectPalette.textSecondary,
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                }
+            )
+        }
 
         if (property.key.params.flags.contains(ConfigFlag.USER_IMPORT)) {
             registerDialogOnClickCallback()
@@ -518,12 +612,12 @@ class FeaturesRootSection : Routes.Route() {
                 val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
-                    onCheckedChange = {
+                    onCheckedChange = { requestedState ->
                         if (context.config.root.global.uiSettings.hapticFeedback.get()) {
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
-                        state = state.not()
-                        propertyValue.setAny(state)
+                        state = requestedState
+                        propertyValue.setAny(requestedState)
                         persistConfig()
                     },
                     colors = purrfectSwitchColors()
@@ -566,6 +660,45 @@ class FeaturesRootSection : Routes.Route() {
             }
 
             DataProcessors.Type.STRING_MULTIPLE_SELECTION, DataProcessors.Type.STRING, DataProcessors.Type.INTEGER, DataProcessors.Type.FLOAT -> {
+                if (dataType == DataProcessors.Type.STRING && isRandomizedProfileActionProperty(property.name)) {
+                    val actionLabel = when (property.name) {
+                        "generate_fresh_profile_action" -> context.translation[property.key.propertyName()] ?: "Generate Fresh Profile"
+                        "view_current_profile_action" -> context.translation[property.key.propertyName()] ?: "View Current Profile"
+                        else -> property.name
+                    }
+                    Button(
+                        onClick = {
+                            if (property.name == "generate_fresh_profile_action") {
+                                showRandomProfileProgressDialog = true
+                                coroutineScope.launch {
+                                    randomProfileStatus = context.translation["manager.dialogs.randomize_device_profile.phase.allocating"]
+                                        ?: "Allocating a randomized device fingerprint"
+                                    delay(260)
+                                    requestFreshRandomizedProfile()
+                                    persistConfig()
+                                    randomProfileStatus = context.translation["manager.dialogs.randomize_device_profile.phase.finalizing"]
+                                        ?: "Finalizing the all-in-one profile and disabling manual overrides"
+                                    delay(260)
+                                    showRandomProfileProgressDialog = false
+                                    context.shortToast(
+                                        context.translation["manager.dialogs.randomize_device_profile.refresh_requested"]
+                                            ?: "Fresh randomized profile requested. Restart Snapchat to apply it."
+                                    )
+                                }
+                            } else {
+                                showCurrentRandomProfileDialog = true
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PurrfectPalette.glowPrimary.copy(alpha = 0.28f),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text(actionLabel, maxLines = 1)
+                    }
+                    return
+                }
+
                 dialogComposable = {
                     when (dataType) {
                         DataProcessors.Type.STRING_MULTIPLE_SELECTION -> {
@@ -660,12 +793,35 @@ class FeaturesRootSection : Routes.Route() {
                 val hapticFeedback = LocalHapticFeedback.current
                 Switch(
                     checked = state,
-                    onCheckedChange = {
+                    onCheckedChange = { requestedState ->
                         if (context.config.root.global.uiSettings.hapticFeedback.get()) {
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
-                        state = state.not()
-                        container.globalState = state
+                        if (isRandomizedProfileContainer && requestedState) {
+                            showRandomProfileProgressDialog = true
+                            coroutineScope.launch {
+                                randomProfileStatus = context.translation["manager.dialogs.randomize_device_profile.phase.allocating"]
+                                    ?: "Allocating a randomized device fingerprint"
+                                delay(260)
+                                randomProfileStatus = context.translation["manager.dialogs.randomize_device_profile.phase.network"]
+                                    ?: "Preparing network, locale, and telephony values"
+                                delay(260)
+                                container.globalState = true
+                                state = true
+                                persistConfig()
+                                randomProfileStatus = context.translation["manager.dialogs.randomize_device_profile.done"]
+                                    ?: "Randomized device profile generated"
+                                delay(220)
+                                showRandomProfileProgressDialog = false
+                                context.log.info("Enabled randomized device profile mode from manager UI")
+                            }
+                            return@Switch
+                        }
+                        state = requestedState
+                        container.globalState = requestedState
+                        if (!requestedState && isRandomizedProfileContainer) {
+                            context.log.info("Disabled randomized device profile mode from manager UI")
+                        }
                         persistConfig()
                     },
                     colors = purrfectSwitchColors()
@@ -722,7 +878,12 @@ class FeaturesRootSection : Routes.Route() {
     }
 
     @Composable
-    internal fun PropertyCard(property: PropertyPair<*>, onOpen: (() -> Unit)? = null) {
+    internal fun PropertyCard(
+        property: PropertyPair<*>,
+        configRefreshNonce: Int,
+        onConfigChanged: () -> Unit,
+        onOpen: (() -> Unit)? = null
+    ) {
         val isAphelion = remember { context.config.root.global.uiSettings.managerTheme.get() == "APHELION" }
         var clickCallback by remember { mutableStateOf<(() -> Unit)?>(null) }
         val noticeColorMap = remember {
@@ -736,6 +897,7 @@ class FeaturesRootSection : Routes.Route() {
         val versionCheck = remember { property.key.params.versionCheck }
         val versionCheckPair = remember(property) { versionCheck?.checkVersion(context.installationSummary.snapchatInfo?.versionCode ?: return@remember null)}
         val isComponentDisabled = remember { versionCheckPair != null && versionCheck?.isDisabled == true }
+        val isInteractionEnabled = !isComponentDisabled
 
         val cardShape = RoundedCornerShape(22.dp)
         val interactionSource = remember { MutableInteractionSource() }
@@ -753,8 +915,9 @@ class FeaturesRootSection : Routes.Route() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 7.dp)
-                .graphicsLayer { if (isComponentDisabled) alpha = 0.5f }
+                .graphicsLayer { if (!isInteractionEnabled) alpha = 0.5f }
                 .clickable(
+                    enabled = isInteractionEnabled,
                     interactionSource = interactionSource,
                     indication = null
                 ) {
@@ -852,7 +1015,7 @@ class FeaturesRootSection : Routes.Route() {
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End
                     ) {
-                        PropertyAction(property, registerClickCallback = { callback ->
+                        PropertyAction(property, onConfigChanged = onConfigChanged, registerClickCallback = { callback ->
                             if (property.key.propertyTranslationPath().startsWith("rules.properties")) {
                                 clickCallback = {
                                     routes.manageRuleFeature.navigate {
@@ -1406,6 +1569,7 @@ class FeaturesRootSection : Routes.Route() {
     ) {
         val density = LocalDensity.current
         var controlsHeight by remember { mutableStateOf(100.dp) }
+        var configRefreshNonce by rememberSaveable { mutableStateOf(0) }
         
         val listState = rememberLazyListState()
 
@@ -1479,7 +1643,12 @@ class FeaturesRootSection : Routes.Route() {
                                 upsertHistory(liveSearchQuery, sharedSearchHistory)
                             }
                         } else null
-                        PropertyCard(item, onOpen = onOpen)
+                        PropertyCard(
+                            property = item,
+                            configRefreshNonce = configRefreshNonce,
+                            onConfigChanged = { configRefreshNonce++ },
+                            onOpen = onOpen
+                        )
                     }
                 }
                 item { Spacer(modifier = Modifier.height(12.dp)) }
@@ -1634,9 +1803,14 @@ class FeaturesRootSection : Routes.Route() {
         onBack: (() -> Unit)? = null,
     ) {
         PropertiesView(
-            properties = remember {
+            properties = remember(configContainer.globalState) {
                 configContainer.properties.map { (it.key to it.value).toPropertyPair() as PropertyPair<Any> }.filter {
-                    !it.key.params.flags.contains(ConfigFlag.HIDDEN)
+                    !it.key.params.flags.contains(ConfigFlag.HIDDEN) &&
+                        (
+                            configContainer !== context.config.root.experimental.spoof.randomizeDeviceProfile ||
+                                configContainer.globalState == true ||
+                                !isRandomizedProfileActionProperty(it.key.name)
+                        )
                 }
             },
             stateKey = stateKey,

@@ -24,11 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.*
 import me.eternal.purrfectsnap.RemoteSideContext
-import me.eternal.purrfectsnap.common.ReceiversConfig
 import me.eternal.purrfectsnap.common.data.MessagingFriendInfo
 import me.eternal.purrfectsnap.common.data.MessagingGroupInfo
 import me.eternal.purrfectsnap.common.util.snap.BitmojiSelfie
-import me.eternal.purrfectsnap.common.util.snap.SnapWidgetBroadcastReceiverHelper
+import me.eternal.purrfectsnap.storage.getFriends
+import me.eternal.purrfectsnap.storage.getGroups
 import me.eternal.purrfectsnap.ui.manager.theme.PurrfectPalette
 import me.eternal.purrfectsnap.ui.util.coil.BitmojiImage
 
@@ -219,39 +219,70 @@ class AddFriendDialog(
         var hasFetchError by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
-            val updateSnapshot: (List<MessagingFriendInfo>, List<MessagingGroupInfo>) -> Unit = { friends, groups ->
-                coroutineScope.launch {
-                    cachedFriends = friends.run {
-                        if (pinnedIds != null) {
-                            sortedBy { -pinnedIds.indexOf(it.userId) }
-                        } else friends
+            fun applySnapshot(
+                friends: List<MessagingFriendInfo>,
+                groups: List<MessagingGroupInfo>
+            ) {
+                cachedFriends = friends.run {
+                    if (pinnedIds != null) {
+                        sortedBy { -pinnedIds.indexOf(it.userId) }
+                    } else {
+                        this
                     }
-                    cachedGroups = groups.run {
-                        if (pinnedIds != null) {
-                            sortedBy { -pinnedIds.indexOf(it.conversationId) }
-                        } else groups
+                }
+                cachedGroups = groups.run {
+                    if (pinnedIds != null) {
+                        sortedBy { -pinnedIds.indexOf(it.conversationId) }
+                    } else {
+                        this
                     }
+                }
+                if (friends.isNotEmpty() || groups.isNotEmpty()) {
                     timeoutJob?.cancel()
                     hasFetchError = false
                 }
             }
+
+            val updateSnapshot: (List<MessagingFriendInfo>, List<MessagingGroupInfo>) -> Unit = { friends, groups ->
+                coroutineScope.launch {
+                    applySnapshot(friends, groups)
+                }
+            }
+
+            withContext(Dispatchers.IO) {
+                applySnapshot(
+                    context.database.getFriends(descOrder = true),
+                    context.database.getGroups()
+                )
+            }
+
             if (context.bridgeService != null) {
                 context.bridgeService?.requestEphemeralSocialSnapshot(updateSnapshot)
             } else {
                 context.database.receiveMessagingDataCallback = updateSnapshot
             }
-            SnapWidgetBroadcastReceiverHelper.create(ReceiversConfig.BRIDGE_SYNC_ACTION) {}.also {
-                runCatching {
-                    context.androidContext.sendBroadcast(it)
-                }.onFailure {
-                    context.log.error("Failed to send broadcast", it)
-                    hasFetchError = true
+            context.requestSocialSnapshotRefresh()
+
+            coroutineScope.launch(Dispatchers.IO) {
+                repeat(25) {
+                    delay(1000)
+                    val dbFriends = context.database.getFriends(descOrder = true)
+                    val dbGroups = context.database.getGroups()
+                    if (dbFriends.isNotEmpty() || dbGroups.isNotEmpty()) {
+                        withContext(Dispatchers.Main) {
+                            applySnapshot(dbFriends, dbGroups)
+                        }
+                        return@launch
+                    }
                 }
             }
+
             timeoutJob = coroutineScope.launch {
                 withContext(Dispatchers.IO) {
-                    delay(20000)
-                    hasFetchError = true
+                    delay(25000)
+                    if ((cachedFriends?.isNullOrEmpty() != false) && (cachedGroups?.isNullOrEmpty() != false)) {
+                        hasFetchError = true
+                    }
                 }
             }
         }

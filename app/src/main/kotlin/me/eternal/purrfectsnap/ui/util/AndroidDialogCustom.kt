@@ -11,7 +11,10 @@ import android.provider.Settings
 import android.view.*
 import android.view.View.OnAttachStateChangeListener
 import androidx.activity.ComponentDialog
+import androidx.activity.OnBackPressedDispatcher
+import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.activity.addCallback
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -47,6 +50,8 @@ import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleRegistry
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import java.util.UUID
@@ -197,6 +202,21 @@ private fun InlineDialog(
     val screenWidthDp = with(density) { displayMetrics.widthPixels.toDp() }
     val screenHeightDp = with(density) { displayMetrics.heightPixels.toDp() }
     val interactionSource = remember { MutableInteractionSource() }
+    val fallbackBackDispatcherOwner = remember(onDismissRequest) {
+        object : OnBackPressedDispatcherOwner {
+            private val lifecycleRegistry = LifecycleRegistry(this).apply {
+                currentState = Lifecycle.State.RESUMED
+            }
+            private val dispatcher = OnBackPressedDispatcher(onDismissRequest)
+
+            override val lifecycle: Lifecycle
+                get() = lifecycleRegistry
+
+            override val onBackPressedDispatcher: OnBackPressedDispatcher
+                get() = dispatcher
+        }
+    }
+    val backDispatcherOwner = LocalOnBackPressedDispatcherOwner.current ?: fallbackBackDispatcherOwner
     var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
@@ -212,43 +232,45 @@ private fun InlineDialog(
         ),
         onDismissRequest = onDismissRequest
     ) {
-        Box(
-            modifier = Modifier
-                .width(screenWidthDp)
-                .height(screenHeightDp)
-                .then(
-                    if (dismissOnClickOutside) {
-                        Modifier.clickable(
-                            interactionSource = interactionSource,
-                            indication = null,
-                            onClick = onDismissRequest
-                        )
-                    } else {
-                        Modifier
-                    }
-                )
-                .semantics { dialog() },
-            contentAlignment = androidx.compose.ui.Alignment.Center
-        ) {
-            AnimatedVisibility(
-                visible = visible,
-                enter = fadeIn(animationSpec = tween(180)) + scaleIn(
-                    initialScale = 0.92f,
-                    animationSpec = spring(dampingRatio = 0.82f, stiffness = 520f)
-                ),
-                exit = fadeOut(animationSpec = tween(120)) + scaleOut(
-                    targetScale = 0.96f,
-                    animationSpec = tween(120)
-                )
+        CompositionLocalProvider(LocalOnBackPressedDispatcherOwner provides backDispatcherOwner) {
+            Box(
+                modifier = Modifier
+                    .width(screenWidthDp)
+                    .height(screenHeightDp)
+                    .then(
+                        if (dismissOnClickOutside) {
+                            Modifier.clickable(
+                                interactionSource = interactionSource,
+                                indication = null,
+                                onClick = onDismissRequest
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .semantics { dialog() },
+                contentAlignment = androidx.compose.ui.Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier.clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = {}
+                AnimatedVisibility(
+                    visible = visible,
+                    enter = fadeIn(animationSpec = tween(180)) + scaleIn(
+                        initialScale = 0.92f,
+                        animationSpec = spring(dampingRatio = 0.82f, stiffness = 520f)
+                    ),
+                    exit = fadeOut(animationSpec = tween(120)) + scaleOut(
+                        targetScale = 0.96f,
+                        animationSpec = tween(120)
                     )
                 ) {
-                    content()
+                    Box(
+                        modifier = Modifier.clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            onClick = {}
+                        )
+                    ) {
+                        content()
+                    }
                 }
             }
         }

@@ -7,6 +7,8 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.app.CoreComponentFactory
@@ -30,12 +32,14 @@ import androidx.work.WorkManager
 import me.eternal.purrfectsnap.bridge.BridgeService
 import me.eternal.purrfectsnap.common.BuildConfig
 import me.eternal.purrfectsnap.common.Constants
+import me.eternal.purrfectsnap.common.ReceiversConfig
 import me.eternal.purrfectsnap.common.action.EnumAction
 import me.eternal.purrfectsnap.common.bridge.wrapper.LocaleWrapper
 import me.eternal.purrfectsnap.common.bridge.wrapper.LoggerWrapper
 import me.eternal.purrfectsnap.common.bridge.wrapper.MappingsWrapper
 import me.eternal.purrfectsnap.common.config.ModConfig
 import me.eternal.purrfectsnap.common.logger.fatalCrash
+import me.eternal.purrfectsnap.common.util.snap.SnapWidgetBroadcastReceiverHelper
 import me.eternal.purrfectsnap.common.util.constantLazyBridge
 import me.eternal.purrfectsnap.common.util.getPurgeTime
 import me.eternal.purrfectsnap.e2ee.E2EEImplementation
@@ -273,6 +277,67 @@ class RemoteSideContext(
         }
         intent.putExtra(EnumAction.ACTION_PARAMETER, action.key)
         androidContext.startActivity(intent)
+    }
+
+    fun requestSocialSnapshotRefresh(
+        openSnapchatFirst: Boolean = true,
+        snapchatWarmupDelayMs: Long = 1200L,
+        returnDelayMs: Long = 1200L
+    ) {
+        fun sendSocialSnapshotBroadcast() {
+            runCatching {
+                androidContext.sendBroadcast(
+                    SnapWidgetBroadcastReceiverHelper.create(ReceiversConfig.BRIDGE_SYNC_ACTION) {}
+                )
+            }.onFailure {
+                log.error("Failed to request latest social snapshot", it)
+            }
+        }
+
+        if (!openSnapchatFirst) {
+            sendSocialSnapshotBroadcast()
+            return
+        }
+
+        val snapchatIntent = androidContext.packageManager
+            .getLaunchIntentForPackage(Constants.SNAPCHAT_PACKAGE_NAME)
+            ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
+        if (snapchatIntent == null) {
+            shortToast(translation["toast_snapchat_not_installed"])
+            sendSocialSnapshotBroadcast()
+            return
+        }
+
+        val returnIntent = Intent(androidContext, MainActivity::class.java).apply {
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+            )
+        }
+
+        val mainHandler = Handler(Looper.getMainLooper())
+        runCatching {
+            androidContext.startActivity(snapchatIntent)
+            mainHandler.postDelayed(
+                {
+                    runCatching {
+                        androidContext.startActivity(returnIntent)
+                    }.onFailure {
+                        log.error("Failed to return to PurrfectSnap after Snapchat handoff", it)
+                    }
+                    mainHandler.postDelayed(
+                        { sendSocialSnapshotBroadcast() },
+                        returnDelayMs
+                    )
+                },
+                snapchatWarmupDelayMs
+            )
+        }.onFailure {
+            log.error("Failed to launch Snapchat for social snapshot refresh", it)
+            sendSocialSnapshotBroadcast()
+        }
     }
 
     private fun scheduleAnnouncementCheck() {

@@ -57,7 +57,16 @@ fun SocialRootSection.AphelionSocialScreen(nav: NavBackStackEntry) {
     var searchActive by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        context.database.receiveMessagingDataCallback = { friends, groups ->
+            friendList = friends
+            groupList = groups
+        }
         updateScopeLists()
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            context.database.receiveMessagingDataCallback = { _, _ -> }
+        }
     }
     val normalizedQuery = remember(searchQuery) { searchQuery.trim() }
     val filteredFriends = remember(friendList, normalizedQuery) {
