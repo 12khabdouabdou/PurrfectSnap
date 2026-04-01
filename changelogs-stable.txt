@@ -1,3 +1,105 @@
+## v1.6.2
+- New: Randomized Device Profile Feature!
+  - Show Activation Overlay
+  - Build Properties
+    - Device Identity
+      - Manufacturer + Model
+      - Brand + Product
+      - Hardware + Board
+    - ABI Lists
+      - Combined ABIs
+      - Split ABIs
+    - System Properties
+      - Build
+      - Locale
+      - Telephony
+    - Build Version
+      - Fingerprint
+      - Display
+      - Host
+      - Bootloader
+      - Build Time
+  - Locale Options
+    - Locale
+      - Language
+      - Region
+    - Time
+      - Time Zone ID
+      - Time Zone Display Name
+      - Auto Time
+      - Auto Time Zone
+  - Telephony Options
+    - MMS
+      - User Agent
+    - Network Identity
+      - Network Type
+      - Operator Numeric
+      - Operator Name
+      - Country ISO
+    - SIM Identity
+      - Country ISO
+      - Operator Numeric
+      - Operator Name
+      - SIM State
+      - Has ICC Card
+    - Phone Capabilities
+      - Phone Count
+      - Hearing Aid Support
+      - TTY Support
+      - World Phone
+      - Roaming
+      - SMS + Voice Capability
+      - Phone Type
+  - Settings Options
+    - Secure Settings
+      - Base
+      - TTS
+    - System Settings
+      - Base
+      - Bluetooth
+    - Global Settings
+      - Base
+  - Network Options
+    - Wi-Fi
+      - SSID
+      - RSSI
+    - DNS
+      - Servers
+      - Search Domains
+      - Private DNS
+    - Captive Portal
+      - Capability
+  - Identifier Options
+    - Android ID
+      - String Value
+      - Long Value
+    - Advertising ID
+      - Settings Value
+      - Play Services
+    - Hardware Addresses
+      - Wi-Fi MAC
+      - Bluetooth MAC
+  - Persistent App Language
+  - Randomize IP Address
+  - Generate Fresh Profile
+  - View Current Profile
+- New: Spoof Viewing Gallery Presence
+- New: Spoof Reply Camera Presence
+- New: I Can See you 2 Friend Tracker Rule
+- New: I Can See you 3 Friend Tracker Rule
+- New: Disable "Can't Login?" overlay feature
+- Fix: Social Tab showing Failed to fetch Data for some accounts
+- Fix: Pick a Location Dialog Crash
+- Fix: Auto Open Notification duplication when snapchat is killed or force closed(tq to Kaladin)
+- Fix: Fixed a logic error where AutoOpenSnaps would ignore per-conversation rules(tq to Kaladin)
+- Fix: Auto Open engine stuck in "Monitoring" even when there are snaps in the queue(tq to Kaladin)
+- Fix: Auto Open session toggles not working as expected(tq to Kaladin)
+- Fix: Auto Open engine is now optimmized to work with the lower end devices to reduce the overheating and excessive lag(tq to Kaladin)
+- New: Auto Open Scheduler, a new toggle and a new clock picker to schedule time period for your auto open engine to process(tq to Kaladin)
+- New: Auto Open Notification session statistics toggles, now you can choose which stats to show in the notification(tq to Kaladin)
+- New: Updated Auto Open notification stats which now includes a tiered "Processing Speed" and "Estimated Finish" stats(tq to Kaladin)
+- Fix: Video Downloader is saving the video files from spotlight and stories with extension as ".dat file"(tq to Kaladin)
+
 ## v1.6.1
 - Fix: Custom Frame Rate
 - Fix: Conversation Sound Style
