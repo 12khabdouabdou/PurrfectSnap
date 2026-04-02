@@ -2,9 +2,11 @@ package me.eternal.purrfectsnap.core.features
 
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
 import me.eternal.purrfectsnap.common.data.RuleState
+import java.util.concurrent.ConcurrentHashMap
 
 abstract class MessagingRuleFeature(name: String, val ruleType: MessagingRuleType) : Feature(name) {
     private val listeners = mutableListOf<(String, Boolean) -> Unit>()
+    private val ruleCache = ConcurrentHashMap<String, Boolean>()
 
     fun addStateListener(listener: (conversationId: String, newState: Boolean) -> Unit) {
         listeners.add(listener)
@@ -13,18 +15,22 @@ abstract class MessagingRuleFeature(name: String, val ruleType: MessagingRuleTyp
     open fun getRuleState() = context.config.rules.getRuleState(ruleType)
 
     fun setState(conversationId: String, state: Boolean) {
+        val targetId = context.database.getDMOtherParticipant(conversationId) ?: conversationId
         context.bridgeClient.setRule(
-            context.database.getDMOtherParticipant(conversationId) ?: conversationId,
+            targetId,
             ruleType,
             state
         )
+        ruleCache[targetId] = state
         listeners.forEach { it(conversationId, state) }
     }
 
-    fun getState(conversationId: String) =
-        context.bridgeClient.getRules(
-            context.database.getDMOtherParticipant(conversationId) ?: conversationId
-        ).contains(ruleType) && getRuleState() != null
+    fun getState(conversationId: String): Boolean {
+        val targetId = context.database.getDMOtherParticipant(conversationId) ?: conversationId
+        return ruleCache.getOrPut(targetId) {
+            context.bridgeClient.getRules(targetId).contains(ruleType)
+        } && getRuleState() != null
+    }
 
     fun canUseRule(conversationId: String): Boolean {
         if (ruleType.key == "translation" && context.config.messaging.instantTranslation.globalState != true) {

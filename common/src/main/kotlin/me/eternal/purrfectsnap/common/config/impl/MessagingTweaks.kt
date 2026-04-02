@@ -176,9 +176,9 @@ class MessagingTweaks : ConfigContainer() {
             inputCheck = { it.toIntOrNull()?.coerceAtLeast(1000) != null }
         }
         val compactNotification = boolean("compact_notification", false)
-        val showProgressBar = boolean("show_progress_bar", true)
         val showLifetimeStats = boolean("show_lifetime_stats", false)
         val showQueuePreview = boolean("show_queue_preview", true)
+        val thermalProtection = boolean("thermal_protection", false)
         
         // Resource Intelligence: Smart triggers for battery and data safety
         val onlyOnWifi = boolean("only_on_wifi", false)
