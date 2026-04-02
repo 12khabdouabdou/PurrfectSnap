@@ -357,6 +357,10 @@ class DeviceSpooferHook : Feature("Device Spoofer") {
         supported32BitAbis: List<String>? = null,
         supported64BitAbis: List<String>? = null
     ) {
+        val safeSupportedAbis = supportedAbis?.takeIf { it.isNotEmpty() } ?: (Build.SUPPORTED_ABIS?.toList() ?: emptyList())
+        val safeSupported32BitAbis = supported32BitAbis?.takeIf { it.isNotEmpty() } ?: (Build.SUPPORTED_32_BIT_ABIS?.toList() ?: emptyList())
+        val safeSupported64BitAbis = supported64BitAbis?.takeIf { it.isNotEmpty() } ?: (Build.SUPPORTED_64_BIT_ABIS?.toList() ?: emptyList())
+
         Build::class.java.fields.forEach { field ->
             if (!field.isAccessible) field.isAccessible = true
             runCatching {
@@ -377,9 +381,9 @@ class DeviceSpooferHook : Feature("Device Spoofer") {
                 "DISPLAY" -> if (overrideDisplay) runCatching { field.set(null, display) }
                 "HOST" -> if (overrideHost) runCatching { field.set(null, host) }
                 "TIME" -> if (overrideBuildTime) runCatching { field.setLong(null, buildTime) }
-                "SUPPORTED_ABIS" -> if (overrideAbiLists) runCatching { field.set(null, supportedAbis?.toTypedArray()) }
-                "SUPPORTED_32_BIT_ABIS" -> if (overrideAbiLists) runCatching { field.set(null, supported32BitAbis?.toTypedArray()) }
-                "SUPPORTED_64_BIT_ABIS" -> if (overrideAbiLists) runCatching { field.set(null, supported64BitAbis?.toTypedArray()) }
+                "SUPPORTED_ABIS" -> if (overrideAbiLists) runCatching { field.set(null, safeSupportedAbis.toTypedArray()) }
+                "SUPPORTED_32_BIT_ABIS" -> if (overrideAbiLists) runCatching { field.set(null, safeSupported32BitAbis.toTypedArray()) }
+                "SUPPORTED_64_BIT_ABIS" -> if (overrideAbiLists) runCatching { field.set(null, safeSupported64BitAbis.toTypedArray()) }
             }
         }
 

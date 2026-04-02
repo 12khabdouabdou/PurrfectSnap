@@ -1,3 +1,13 @@
+## v1.6.5
+- New: Performance mode will now be set to max by default!
+- Fix: Several optimizations to the performance mode feature which will make your snapchat experience more smooth!
+- Fix: Crash issues for some devices after enabling spoof
+- Fix: Notification Icon for the Announcements(tq to Kaladin)
+- Fix: Auto Open Engine not processing, stuck on monitor/retry/failed loop causing overheating of the devices(tq to Kaladin)
+- Fix: Refactor the Notification card for the Auto Open to remove dynamic progress bar to add the native progress bar(tq to Kaladin)
+- Fix: Auto Open Statistics have been refactored to now show the dynamic queue status(tq to Kaladin)
+- New: Auto Open Thermal Protection/Throttle toggle, when turned on the processing will be doubled down to reduce the temps of the device to maintain a study temp of 40 C and below(tq to Kaladin)
+
 ## v1.6.4
 - New: Performance mode feature!(Smooth & Max)
 - Fix: Failed to init feature Device Spoofer for some devices
