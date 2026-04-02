@@ -182,6 +182,7 @@ class MessagingTweaks : ConfigContainer() {
         
         // Resource Intelligence: Smart triggers for battery and data safety
         val onlyOnWifi = boolean("only_on_wifi", false)
+        val preFetchSnaps = boolean("pre_fetch_snaps", false)
         val pauseDuringGaming = boolean("pause_during_gaming", false)
         val safeProcessing = boolean("safe_processing", true)
         val onlyWhenIdle = boolean("only_when_idle", false)

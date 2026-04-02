@@ -1696,6 +1696,8 @@
                                 "description": "Automatically throttles the engine and increases delays if the device temperature exceeds 40°C to prevent overheating"
                             },
                             "only_on_wifi": { "name": "Auto Open only on Wi-Fi", "description": "Only process queue when connected to a Wi-Fi network to save mobile data" },
+                            "pre_fetch_snaps": { "name": "Pre-fetch Snaps", "description": "Fetches snap media into Snapchat's internal cache once the snap arrives. Note: Turning it on increases background data usage." },
+                            "content_type_snap": "Snap",
                             "only_when_idle": {
                                 "name": "Auto Open Schedule",
                                 "description": "Configure a specific time window where the engine will throttle its speed."

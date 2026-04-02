@@ -22,9 +22,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import me.eternal.purrfectsnap.bridge.AutoOpenInterface
 import me.eternal.purrfectsnap.common.BuildConfig
 import me.eternal.purrfectsnap.common.data.ContentType
+import me.eternal.purrfectsnap.common.data.MessageState
 import me.eternal.purrfectsnap.common.data.MessageUpdate
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
 import me.eternal.purrfectsnap.core.event.events.impl.BuildMessageEvent
+import me.eternal.purrfectsnap.core.wrapper.impl.Message
 import me.eternal.purrfectsnap.core.features.MessagingRuleFeature
 import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
 import me.eternal.purrfectsnap.core.features.impl.tweaks.PerformanceMode
@@ -163,8 +165,18 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                     updateStatusNotification()
                 }
                 ACTION_CLEAR_QUEUE -> {
-                    synchronized(queuedSnaps) { queuedSnaps.clear() }
-                    synchronized(deadLetterQueue) { deadLetterQueue.clear() }
+                    synchronized(queuedSnaps) { 
+                        queuedSnaps.clear() 
+                    }
+                    synchronized(deadLetterQueue) { 
+                        deadLetterQueue.clear() 
+                    }
+                    
+                    // Reset session and persistent counters to zero
+                    totalProcessed.set(0)
+                    sessionProcessed.set(0)
+                    totalDetected.set(0)
+                    
                     triggerLazySave()
                     updateStatusNotification()
                 }
@@ -175,7 +187,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
     override fun init() {
         val messaging = context.feature(Messaging::class)
         restorePersistence()
-        hasBeenActive.set(true)
+
+        // Verify configuration state before marking as active to prevent background process notification spam
+        if (config.globalState == true) {
+            hasBeenActive.set(true)
+        } else {
+            // Feature is disabled; silent exit to avoid process-wide 'Deactivated' notices
+            return
+        }
 
         if (config.allowRunningInBackground.get()) {
             acquireWakeLock()
@@ -426,29 +445,80 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
 
         context.event.subscribe(BuildMessageEvent::class, priority = 103) { event ->
             if (config.globalState != true) return@subscribe
-            if (event.message.senderId?.toString() == context.database.myUserId) return@subscribe
-            val conversationId = event.message.messageDescriptor?.conversationId?.toString() ?: return@subscribe
-            val clientMessageId = event.message.messageDescriptor?.messageId ?: return@subscribe
-            val contentType = event.message.messageContent?.contentType
+            
+            val message = event.message
+            // Stability: Only process committed messages to avoid ghost events during sending/failure
+            if (message.messageState != me.eternal.purrfectsnap.common.data.MessageState.COMMITTED) return@subscribe
+            if (message.senderId?.toString() == context.database.myUserId) return@subscribe
+            
+            val conversationId = message.messageDescriptor?.conversationId?.toString() ?: return@subscribe
+            val clientMessageId = message.messageDescriptor?.messageId ?: return@subscribe
+            val contentType = message.messageContent?.contentType
+            
+            // Validation: Only process viewable snaps and external media
             if (contentType != ContentType.SNAP && contentType != ContentType.EXTERNAL_MEDIA) return@subscribe
-            if (event.message.messageMetadata?.openedBy?.any { it.toString() == context.database.myUserId } == true) return@subscribe
+            if (contentType == ContentType.SNAP_NOT_VIEWABLE) return@subscribe
+            
+            if (message.messageMetadata?.openedBy?.any { it.toString() == context.database.myUserId } == true) return@subscribe
 
             acquireWakeLock()
             
             context.coroutineScope.launch(Dispatchers.Default) {
                 if (!canUseRule(conversationId)) return@launch
-                if (!openedSnaps.add(clientMessageId)) return@launch
-                if (openedSnaps.size > 15000) openedSnaps.clear()
-                val senderId = event.message.senderId?.toString() ?: "unknown"
-                val item = SnapQueueItem(conversationId, clientMessageId, senderId, getSenderDisplayName(senderId), getConversationType(conversationId, senderId), getSnapContentType(contentType))
-                synchronized(queuedSnaps) {
-                    if (queuedSnaps.size >= config.queueSize.get()) queuedSnaps.removeFirstOrNull()
-                    queuedSnaps.add(item); totalDetected.incrementAndGet()
+                
+                synchronized(openedSnaps) {
+                    if (openedSnaps.contains(clientMessageId)) return@launch
+                    openedSnaps.add(clientMessageId)
+                    // Periodic cache maintenance to ensure O(1) performance
+                    if (openedSnaps.size > 5000) openedSnaps.clear()
                 }
+
+                val senderId = message.senderId?.toString() ?: "unknown"
+                val item = SnapQueueItem(conversationId, clientMessageId, senderId, getSenderDisplayName(senderId), getConversationType(conversationId, senderId), getSnapContentType(contentType))
+                
+                val currentQueueSize = synchronized(queuedSnaps) {
+                    if (queuedSnaps.size >= config.queueSize.get()) queuedSnaps.removeFirstOrNull()
+                    queuedSnaps.add(item)
+                    queuedSnaps.size
+                }
+                totalDetected.incrementAndGet()
+
+                // Smart Pre-fetch Engine: Early media loading into internal cache
+                if (config.preFetchSnaps.get()) {
+                    val isWifi = isWifiConnected()
+                    val mobileLimit = 250
+                    
+                    // Connection-Aware Limit: 1000 for WiFi, 250 for Mobile
+                    val canFetch = if (isWifi) currentQueueSize <= 1000 else currentQueueSize <= mobileLimit
+                    
+                    // Dynamic RAM Window (20/50/100) to prevent UI jitter on low-end devices
+                    if (canFetch && currentQueueSize <= getFetchWindowSize()) {
+                        runCatching {
+                            // Stable feature access via explicit KClass resolution
+                            context.feature(Messaging::class).conversationManager?.fetchMessage(conversationId, clientMessageId, {}, {})
+                        }
+                    }
+                }
+
                 if (!isPaused.get()) {
                     snapQueue.tryEmit(System.currentTimeMillis())
                 }
+                
+                updateStatusNotification()
+                triggerLazySave()
             }
+        }
+    }
+
+    private fun getFetchWindowSize(): Int {
+        val am = context.androidContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val memInfo = ActivityManager.MemoryInfo()
+        am.getMemoryInfo(memInfo)
+        val totalRamGb = memInfo.totalMem / (1024 * 1024 * 1024)
+        return when {
+            totalRamGb <= 2 -> 20
+            totalRamGb <= 4 -> 50
+            else -> 100
         }
     }
 
@@ -498,10 +568,19 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         updateStatusNotificationInternal()
     }
 
+    // Notification state cache to prevent redundant UI updates and save battery
+    private var lastNotificationState: String? = null
+
     private fun updateStatusNotificationInternal() {
         val processed = sessionProcessed.get()
         val total = totalProcessed.get()
         val remaining = synchronized(queuedSnaps) { queuedSnaps.size }
+        
+        // Generate a state fingerprint to check if a notification update is actually necessary
+        val currentStateFingerprint = "$processed|$total|$remaining|$currentStatusText|$isPaused"
+        if (currentStateFingerprint == lastNotificationState && remaining == 0) return
+        lastNotificationState = currentStateFingerprint
+
         if (total <= 0 && remaining <= 0 && processed <= 0) return
 
         val isWorking = remaining > 0
@@ -517,19 +596,21 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
 
         val eta = if (isWorking && !isCurrentlyWaiting && !isPaused.get()) formatDuration(remaining * averageProcessingTime.get()) else null
 
-        // Refined Collapsed Logic
         builder.setContentTitle("Auto-Open: $currentStatusText")
         
         if (isWorking) {
             builder.setContentText("Opened: $processed │ ETA: ${eta ?: "..."}")
             builder.setSubText("$progressPercent% • $remaining Queued")
+            // Show progress bar only when actively processing snaps
+            builder.setProgress(sessionTotal, processed, false)
         } else {
-            // Idle stats for collapsed view
+            // Static status for monitoring stage to save battery
             builder.setContentText("$processed Opened Today │ $total Lifetime")
-            builder.setSubText("Monitoring Snaps...")
+            // Remove subtext entirely when idle to prevent redundancy with the title
+            builder.setSubText(null)
+            // Remove progress bar entirely during idle/monitoring stage to stop animation CPU drain
+            builder.setProgress(0, 0, false)
         }
-        
-        builder.setProgress(if (isWorking) sessionTotal else 0, if (isWorking) processed else 0, !isWorking) 
 
         builder.addAction(Notification.Action.Builder(null, if (isPaused.get()) "Resume" else "Pause", createPendingIntent(ACTION_PAUSE_RESUME)).build())
         builder.addAction(Notification.Action.Builder(null, "Clear Queue", createPendingIntent(ACTION_CLEAR_QUEUE)).build())
@@ -538,6 +619,9 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
             val recentSnaps = synchronized(queuedSnaps) { queuedSnaps.takeLast(5) }
             val bigTextStyle = Notification.BigTextStyle()
             
+            // Set summary text to empty to force the header to stay clean in expanded view
+            bigTextStyle.setSummaryText("")
+
             val detailText = buildString {
                 append("QUEUE STATISTICS\n")
                 append("├─ Opened: $processed snaps\n")
@@ -556,7 +640,6 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                 }
             }
             bigTextStyle.bigText(detailText)
-            bigTextStyle.setSummaryText(null) 
             builder.setStyle(bigTextStyle)
         }
         
@@ -565,7 +648,20 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
 
     private fun shutdownFeature() {
         cancelStatusNotification()
-        hasBeenActive.set(false)
+        val finalCount = totalProcessed.get()
+        if (hasBeenActive.get()) {
+            val elapsedMillis = System.currentTimeMillis() - sessionStartTime.get() - totalPausedDuration.get()
+            val durationMins = maxOf(0, elapsedMillis / 60000)
+            val summary = Notification.Builder(context.androidContext, "auto_open_snaps")
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setContentTitle("Auto-Open: Deactivated")
+                .setContentText("Opened: $finalCount snaps | Session: ${durationMins}m")
+                .setGroup(NOTIFICATION_GROUP_KEY)
+                .setAutoCancel(true).build()
+            // Use static ID to overwrite previous deactivate notice and prevent icon stacking
+            notificationManager.notify(STATUS_NOTIFICATION_ID + 1, summary)
+            hasBeenActive.set(false)
+        }
         triggerLazySave()
         releaseWakeLock()
     }
@@ -683,18 +779,26 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
         }
     }
 
-    private fun getSenderDisplayName(senderId: String): String = nameCache.getOrPut(senderId) {
-        context.database.getFriendInfo(senderId)?.let { it.displayName ?: it.mutableUsername } ?: "Unknown"
+    private fun getSenderDisplayName(senderId: String): String {
+        // Memory Safety: Prevent cache bloat during high-volume bursts
+        if (nameCache.size > 500) nameCache.clear()
+        return nameCache.getOrPut(senderId) {
+            context.database.getFriendInfo(senderId)?.let { it.displayName ?: it.mutableUsername } ?: "Unknown"
+        }
     }
 
-    private fun getConversationType(conversationId: String, senderId: String): String = conversationTypeCache.getOrPut("$conversationId:$senderId") {
-        if (context.database.getDMOtherParticipant(conversationId) != null) "Friend DM"
-        else context.database.getFeedEntryByConversationId(conversationId)?.feedDisplayName ?: "Group Chat"
+    private fun getConversationType(conversationId: String, senderId: String): String {
+        // Memory Safety: Prevent cache bloat during high-volume bursts
+        if (conversationTypeCache.size > 500) conversationTypeCache.clear()
+        return conversationTypeCache.getOrPut("$conversationId:$senderId") {
+            if (context.database.getDMOtherParticipant(conversationId) != null) "Friend DM"
+            else context.database.getFeedEntryByConversationId(conversationId)?.feedDisplayName ?: "Group Chat"
+        }
     }
 
     private fun getSnapContentType(type: ContentType?): String = when (type) {
         ContentType.SNAP -> "Photo/Video"
         ContentType.EXTERNAL_MEDIA -> "Media"
-        else -> "Snap"
+        else -> context.translation["auto_open_snaps.content_type_snap"] ?: "Snap"
     }
 }
