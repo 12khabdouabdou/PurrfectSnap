@@ -1,3 +1,8 @@
+## v1.6.6
+- Fix: Persistent auto open snap disabled notification
+- Fix: Crash issues for some devices
+- Fix: upload quality for snaps sent through send override
+
 ## v1.6.5
 - New: Performance mode will now be set to max by default!
 - Fix: Several optimizations to the performance mode feature which will make your snapchat experience more smooth!

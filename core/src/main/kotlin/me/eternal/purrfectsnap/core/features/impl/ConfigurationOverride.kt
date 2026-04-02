@@ -65,11 +65,11 @@ class ConfigurationOverride : Feature("Configuration Override") {
 
             overrideProperty("STREAK_EXPIRATION_INFO", { context.config.userInterface.streakExpirationInfo.get() },
                 { true })
-            overrideProperty("TRANSCODING_MAX_QUALITY", { context.config.global.mediaUploadQualityConfig.forceVideoUploadSourceQuality.get() },
+            overrideProperty("TRANSCODING_MAX_QUALITY", { context.config.global.mediaUploadQualityConfig.forceVideoUploadSourceQuality.get() || context.config.messaging.galleryMediaSendOverride.mode.getNullable() != null },
                 { true }, isAppExperiment = true)
 
             run {
-                val isForceQuality = { _: ConfigKeyInfo -> context.config.global.mediaUploadQualityConfig.forceVideoUploadSourceQuality.get() }
+                val isForceQuality = { _: ConfigKeyInfo -> context.config.global.mediaUploadQualityConfig.forceVideoUploadSourceQuality.get() || context.config.messaging.galleryMediaSendOverride.mode.getNullable() != null }
                 val level7Value = { _: ConfigKeyInfo -> 700 }
                 arrayOf(
                     "MY_STORY_UPLOAD_QUALITY_LEVEL",
@@ -93,10 +93,14 @@ class ConfigurationOverride : Feature("Configuration Override") {
                     isForceQuality, { true })
                 overrideProperty("MEDIA_QUALITY_LEVEL_DOWNGRADING_PERCENTAGE",
                     isForceQuality, { 0.0f })
+                overrideProperty("CHAT_MEDIA_IMPORT_TRANSCODED_QUALITY",
+                    isForceQuality, { 4 })
+                overrideProperty("POSTED_STORY_IMPORT_TRANSCODED_QUALITY",
+                    isForceQuality, { 4 })
             }
 
             run {
-                val isDisableCompression = { _: ConfigKeyInfo -> context.config.global.mediaUploadQualityConfig.disableImageCompression.get() }
+                val isDisableCompression = { _: ConfigKeyInfo -> context.config.global.mediaUploadQualityConfig.disableImageCompression.get() || context.config.messaging.galleryMediaSendOverride.mode.getNullable() != null }
                 overrideProperty("LIBJPEG_IMAGE_ENCODING_QUALITY", isDisableCompression, { 100 })
                 overrideProperty("LIBJPEG_IMAGE_ENCODING_QUALITY_V2", isDisableCompression, { 100 })
             }

@@ -95,6 +95,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
     private var isThermalThrottled = false
     private var lastThermalThrottleAt = 0L
 
+    private fun cancelStatusNotification() {
+        runCatching {
+            notificationManager.cancel(STATUS_NOTIFICATION_ID)
+        }.onFailure {
+            context.log.warn("Failed to cancel Auto Open Snaps notification: ${it.message}")
+        }
+    }
+
     data class SnapQueueItem(
         val conversationId: String,
         val messageId: Long,
@@ -556,20 +564,8 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
     }
 
     private fun shutdownFeature() {
-        notificationManager.cancel(STATUS_NOTIFICATION_ID)
-        val finalCount = totalProcessed.get()
-        if (hasBeenActive.get()) {
-            val elapsedMillis = System.currentTimeMillis() - sessionStartTime.get() - totalPausedDuration.get()
-            val durationMins = maxOf(0, elapsedMillis / 60000)
-            val summary = Notification.Builder(context.androidContext, "auto_open_snaps")
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("Auto-Open: Deactivated")
-                .setContentText("Opened: $finalCount snaps | Session: ${durationMins}m")
-                .setGroup(NOTIFICATION_GROUP_KEY)
-                .setAutoCancel(true).build()
-            notificationManager.notify(Random.nextInt(), summary)
-            hasBeenActive.set(false)
-        }
+        cancelStatusNotification()
+        hasBeenActive.set(false)
         triggerLazySave()
         releaseWakeLock()
     }
@@ -677,10 +673,14 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
     }
 
     private fun createNotificationChannels() {
-        val channel = NotificationChannel("auto_open_snaps", "Auto Open Snaps", NotificationManager.IMPORTANCE_LOW).apply {
-            enableVibration(false); setSound(null, null)
+        runCatching {
+            val channel = NotificationChannel("auto_open_snaps", "Auto Open Snaps", NotificationManager.IMPORTANCE_LOW).apply {
+                enableVibration(false); setSound(null, null)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }.onFailure {
+            context.log.warn("Failed to create Auto Open Snaps notification channel: ${it.message}")
         }
-        notificationManager.createNotificationChannel(channel)
     }
 
     private fun getSenderDisplayName(senderId: String): String = nameCache.getOrPut(senderId) {
