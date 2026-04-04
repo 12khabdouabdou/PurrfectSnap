@@ -146,8 +146,8 @@ class FFMpegProcessor(
 
         val outputArguments = ArgumentList().apply {
             this += "-preset" to (ffmpegOptions.preset.getNullable() ?: "ultrafast")
-            this += "-c:v" to (ffmpegOptions.customVideoCodec.get().takeIf { it.isNotEmpty() } ?: "libx264")
-            this += "-c:a" to (ffmpegOptions.customAudioCodec.get().takeIf { it.isNotEmpty() } ?: "copy")
+            this += "-c:v" to (ffmpegOptions.customVideoCodec.get().takeIf { it.isNotEmpty() }?.lowercase() ?: "libx264")
+            this += "-c:a" to (ffmpegOptions.customAudioCodec.get().takeIf { it.isNotEmpty() }?.lowercase() ?: "copy")
             this += "-crf" to ffmpegOptions.constantRateFactor.get().let { "\"$it\"" }
             this += "-b:v" to ffmpegOptions.videoBitrate.get().toString() + "K"
             this += "-b:a" to ffmpegOptions.audioBitrate.get().toString() + "K"

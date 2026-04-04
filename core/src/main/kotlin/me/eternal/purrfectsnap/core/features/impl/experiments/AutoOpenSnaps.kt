@@ -454,8 +454,10 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
                 append("├─ Opened: $processed snaps\n")
                 append("├─ Queue: $remaining snaps\n")
                 append("├─ Total Opened: $total snaps\n")
-                val speedText = if (remaining > 0) "${String.format("%.1f", speed)}/s" else "0.0/s"
-                append("└─ Speed: $currentSpeedText ($speedText)")
+                val speedNotion = if (remaining > 0) currentSpeedText else "Idle"
+                val speedValue = if (remaining > 0) "${String.format("%.1f", speed)}/s" else "0.0/s"
+                append("└─ Speed: $speedNotion ($speedValue)\n\n")
+
 
                 if (config.showQueuePreview.get()) {
                     append("\n\nQUEUE PREVIEW\n")

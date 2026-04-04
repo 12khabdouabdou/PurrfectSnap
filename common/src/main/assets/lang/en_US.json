@@ -3681,12 +3681,13 @@
         "failed_gallery_toast": "Failed saving to gallery {error}",
         "dash_no_chapter": "No chapter found",
         "dash_dialog": {
-            "title": "Download dash media",
+            "title": "DASH Download",
             "download_all": "Download All",
-            "segment_text": "Segment {from} - {to}"
+            "snap_text": "Snap {from} - {to}"
         },
         "story_snap_dialog": {
             "title": "Download story snaps",
+            "download_all": "Download All",
             "select_all": "Select All",
             "deselect_all": "Deselect All",
             "snap_item": "Snap {index} of {total}"
