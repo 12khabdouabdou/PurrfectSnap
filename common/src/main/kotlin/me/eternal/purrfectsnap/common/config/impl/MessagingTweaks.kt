@@ -180,10 +180,7 @@ class MessagingTweaks : ConfigContainer() {
         val showQueuePreview = boolean("show_queue_preview", true)
         val thermalProtection = boolean("thermal_protection", false)
         
-        // Resource Intelligence: Smart triggers for battery and data safety
         val onlyOnWifi = boolean("only_on_wifi", false)
-        val preFetchSnaps = boolean("pre_fetch_snaps", false)
-        val pauseDuringGaming = boolean("pause_during_gaming", false)
         val safeProcessing = boolean("safe_processing", true)
         val onlyWhenIdle = boolean("only_when_idle", false)
         val sleepWindow = string("sleep_window", defaultValue = "23:00-07:00") {
@@ -208,6 +205,38 @@ class MessagingTweaks : ConfigContainer() {
         }
         val showCountdown = boolean("show_countdown", defaultValue = true)
         val showNotification = boolean("show_notification", defaultValue = true)
+    }
+
+    class InstantTranslationConfig : ConfigContainer(hasGlobalState = true) {
+        val enabled = boolean("enabled", false)
+        val sourceLanguage = string("source_language", defaultValue = "auto") {
+            inputCheck = { it.isNotBlank() }
+        }
+        val targetLanguage = string("target_language", defaultValue = "en") {
+            inputCheck = { it.isNotBlank() }
+        }
+        val showOriginal = boolean("show_original", defaultValue = true)
+        val showTranslation = boolean("show_translation", defaultValue = true)
+        val translationPosition = unique("translation_position", "above", "below", "inline") {
+            customOptionTranslationPath = "translation_position"
+        }.apply { set("below") }
+        val autoTranslate = boolean("auto_translate", defaultValue = true)
+        val translateOnTap = boolean("translate_on_tap", defaultValue = false)
+        val pauseOnError = boolean("pause_on_error", defaultValue = true)
+        val maxRetries = integer("max_retries", defaultValue = 3) {
+            inputCheck = { it.toIntOrNull()?.coerceIn(1, 10) != null }
+        }
+        val retryDelay = integer("retry_delay", defaultValue = 1000) {
+            inputCheck = { it.toIntOrNull()?.coerceAtLeast(500) != null }
+        }
+
+        val supportedLanguages = multiple("supported_languages",
+            "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr", "nl", "pl", "sv", "da", "no", "fi", "cs", "hu", "ro", "bg", "hr", "sk", "sl", "et", "lv", "lt", "mt", "ga", "cy"
+        ) {
+            customOptionTranslationPath = "language_codes"
+        }.apply {
+            set(mutableListOf("en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr"))
+        }
     }
 
     val bypassScreenshotDetection = boolean("bypass_screenshot_detection") { requireRestart() }
@@ -297,40 +326,9 @@ class MessagingTweaks : ConfigContainer() {
     val doubleTapChatActionCustomEmoji = string("double_tap_chat_action_custom_emoji") {
         inputCheck = { it.length == 2 && it.toByteArray(Charsets.UTF_8).size >= 4 } }
     val autoReply = container("auto_reply", AutoReplyConfig()) { requireRestart() }
-    val autoOpenSnaps = container("auto_open_snaps", AutoOpenSnapsConfig()) { requireRestart(); addNotices(FeatureNotice.BAN_RISK, FeatureNotice.UNSTABLE) }
     val autoDeleteSentMessages = container("auto_delete_sent_messages", AutoDeleteSentMessagesConfig()) { requireRestart() }
     
-    class InstantTranslationConfig : ConfigContainer(hasGlobalState = true) {
-        val enabled = boolean("enabled", false)
-        val sourceLanguage = string("source_language", defaultValue = "auto") {
-            inputCheck = { it.isNotBlank() }
-        }
-        val targetLanguage = string("target_language", defaultValue = "en") {
-            inputCheck = { it.isNotBlank() }
-        }
-        val showOriginal = boolean("show_original", defaultValue = true)
-        val showTranslation = boolean("show_translation", defaultValue = true)
-        val translationPosition = unique("translation_position", "above", "below", "inline") {
-            customOptionTranslationPath = "translation_position"
-        }.apply { set("below") }
-        val autoTranslate = boolean("auto_translate", defaultValue = true)
-        val translateOnTap = boolean("translate_on_tap", defaultValue = false)
-        val pauseOnError = boolean("pause_on_error", defaultValue = true)
-        val maxRetries = integer("max_retries", defaultValue = 3) {
-            inputCheck = { it.toIntOrNull()?.coerceIn(1, 10) != null }
-        }
-        val retryDelay = integer("retry_delay", defaultValue = 1000) {
-            inputCheck = { it.toIntOrNull()?.coerceAtLeast(500) != null }
-        }
-
-        val supportedLanguages = multiple("supported_languages",
-            "en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr", "nl", "pl", "sv", "da", "no", "fi", "cs", "hu", "ro", "bg", "hr", "sk", "sl", "et", "lv", "lt", "mt", "ga", "cy"
-        ) {
-            customOptionTranslationPath = "language_codes"
-        }.apply {
-            set(mutableListOf("en", "es", "fr", "de", "it", "pt", "ru", "ja", "ko", "zh", "ar", "hi", "tr"))
-        }
-    }
-    
+    val autoOpenSnaps = container("auto_open_snaps", AutoOpenSnapsConfig()) { requireRestart(); addNotices(FeatureNotice.BAN_RISK, FeatureNotice.UNSTABLE) }
+    val preFetchSnaps = boolean("pre_fetch_snaps", false)
     val instantTranslation = container("instant_translation", InstantTranslationConfig()) { requireRestart() }
 }
