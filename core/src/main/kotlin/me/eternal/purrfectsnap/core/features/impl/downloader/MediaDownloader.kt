@@ -166,7 +166,29 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
             callback = object: DownloadCallback.Stub() {
                 override fun onSuccess(outputFile: String) {
                     if (!downloadLogging.contains("success")) return
-                    context.log.verbose("onSuccess: outputFile=$outputFile")
+                    
+                    var finalOutputFile = outputFile
+                    runCatching {
+                        val file = java.io.File(outputFile)
+                        if (file.exists()) {
+                            val header = file.inputStream().use { input ->
+                                val buffer = ByteArray(16)
+                                input.read(buffer)
+                                buffer
+                            }
+                            val fileType = FileType.fromByteArray(header)
+                            if (fileType.isVideo && !outputFile.endsWith(".mp4", ignoreCase = true)) {
+                                val newPath = outputFile.removeSuffix(".dat") + ".mp4"
+                                val newFile = java.io.File(newPath)
+                                if (file.renameTo(newFile)) {
+                                    finalOutputFile = newPath
+                                    context.log.verbose("corrected video extension: $outputFile -> $newPath")
+                                }
+                            }
+                        }
+                    }
+
+                    context.log.verbose("onSuccess: outputFile=$finalOutputFile")
                     context.inAppOverlay.showStatusToast(
                         icon = Icons.Outlined.DownloadDone,
                         durationMs = 1300,
@@ -685,74 +707,120 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
             }
 
             context.runOnUiThread {
-                val selectedChapters = mutableListOf<Int>()
-                val dialogTranslation = translations.getCategory("dash_dialog")
+                val tr = context.translation.getCategory("download_processor.dash_dialog")
                 val chapters = snapChapterList.mapIndexed { index, snapChapter ->
                     val nextChapter = snapChapterList.getOrNull(index + 1)
                     val duration = nextChapter?.startTimeMs?.minus(snapChapter.startTimeMs)
                     SnapChapterInfo(snapChapter.startTimeMs, duration)
                 }
-                ViewAppearanceHelper.newAlertDialogBuilder(context.mainActivity!!).apply {
-                    setTitle(dialogTranslation["title"])
-                    setMultiChoiceItems(
-                        chapters.map { dialogTranslation.format("segment_text", "from" to prettyPrintTime(it.offset), "to" to prettyPrintTime(it.offset + (it.duration ?: 0))) }.toTypedArray(),
-                        List(chapters.size) { index ->
-                            if (currentChapterIndex == index) {
-                                selectedChapters.add(index)
-                                true
-                            } else false
-                        }.toBooleanArray()
-                    ) { _, which, isChecked ->
-                        if (isChecked) {
-                            selectedChapters.add(which)
-                        } else if (selectedChapters.contains(which)) {
-                            selectedChapters.remove(which)
-                        }
-                    }
-                    setNegativeButton(this@MediaDownloader.context.translation["button.cancel"]) { dialog, _ -> dialog.dismiss() }
-                    setNeutralButton(dialogTranslation["download_all"]) { _, _ ->
-                        provideDownloadManagerClient(
-                            mediaIdentifier = paramMap["STORY_ID"].toString(),
-                            downloadSource = MediaDownloadSource.PUBLIC_STORY,
-                            mediaAuthor = storyName
-                        ).downloadDashMedia(playlistUrl, 0, null)
-                    }
-                    setPositiveButton(this@MediaDownloader.context.translation["button.download"]) { _, _ ->
-                        val groups = mutableListOf<MutableList<SnapChapterInfo>>()
+                val cancelStr = context.translation["button.cancel"]
+                val downloadStr = context.translation["button.download"]
 
-                        var lastChapterIndex = -1
-                        // group consecutive chapters
-                        chapters.forEachIndexed { index, snapChapter ->
-                            lastChapterIndex = if (selectedChapters.contains(index)) {
-                                if (lastChapterIndex == -1) {
-                                    groups.add(mutableListOf())
+                createComposeAlertDialog(context.mainActivity!!) { alertDialog ->
+                    PurrfectOverlayTheme {
+                        val selected = remember { mutableStateListOf<Int>().apply { add(currentChapterIndex) } }
+                        PurrfectGlassCard(
+                            title = tr["title"],
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 120.dp, max = 320.dp)
+                                        .background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(14.dp))
+                                        .padding(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    itemsIndexed(chapters) { index, item ->
+                                        val label = tr.format("snap_text", "from" to prettyPrintTime(item.offset), "to" to prettyPrintTime(item.offset + (item.duration ?: 0)))
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 10.dp, horizontal = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            Checkbox(
+                                                checked = selected.contains(index),
+                                                onCheckedChange = { checked ->
+                                                    if (checked) selected.add(index) else selected.remove(index)
+                                                },
+                                                colors = CheckboxDefaults.colors(checkedColor = PurrfectOverlayPalette.glowPrimary)
+                                            )
+                                            Text(
+                                                label,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = PurrfectOverlayPalette.textPrimary
+                                            )
+                                        }
+                                    }
                                 }
-                                groups.last().add(snapChapter)
-                                index
-                            } else {
-                                -1
-                            }
-                        }
 
-                        groups.forEach { group ->
-                            val firstChapter = group.first()
-                            val lastChapter = group.last()
-                            val duration = if (firstChapter == lastChapter) {
-                                firstChapter.duration
-                            } else {
-                                lastChapter.duration?.let { lastChapter.offset - firstChapter.offset + it }
-                            }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Checkbox(
+                                        checked = selected.size == chapters.size,
+                                        onCheckedChange = { checked ->
+                                            if (checked) {
+                                                selected.clear()
+                                                selected.addAll(0 until chapters.size)
+                                            } else {
+                                                selected.clear()
+                                            }
+                                        },
+                                        colors = CheckboxDefaults.colors(checkedColor = PurrfectOverlayPalette.glowPrimary)
+                                    )
+                                    Text(
+                                        tr["download_all"] ?: "Select All",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = PurrfectOverlayPalette.textPrimary
+                                    )
+                                }
 
-                            provideDownloadManagerClient(
-                                mediaIdentifier = "${paramMap["STORY_ID"]}-${firstChapter.offset}-${lastChapter.offset}",
-                                downloadSource = MediaDownloadSource.PUBLIC_STORY,
-                                mediaAuthor = storyName,
-                                forceAllowDuplicate = forceAllowDuplicate,
-                            ).downloadDashMedia(
-                                playlistUrl,
-                                firstChapter.offset.plus(100),
-                                duration
-                            )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    OutlinedButton(
+                                        onClick = { alertDialog.dismiss() },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.outlinedButtonColors(contentColor = PurrfectOverlayPalette.textPrimary)
+                                    ) {
+                                        Text(cancelStr)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            val groups = mutableListOf<MutableList<SnapChapterInfo>>()
+                                            var lastIdx = -1
+                                            chapters.forEachIndexed { index, info ->
+                                                if (selected.contains(index)) {
+                                                    if (lastIdx == -1 || index != lastIdx + 1) groups.add(mutableListOf())
+                                                    groups.last().add(info)
+                                                    lastIdx = index
+                                                }
+                                            }
+                                            groups.forEach { group ->
+                                                val first = group.first()
+                                                val last = group.last()
+                                                val duration = if (first == last) first.duration else last.duration?.let { last.offset - first.offset + it }
+                                                provideDownloadManagerClient("${paramMap["STORY_ID"]}-${first.offset}", storyName, null, MediaDownloadSource.PUBLIC_STORY, null, forceAllowDuplicate)
+                                                    .downloadDashMedia(playlistUrl, first.offset.plus(100), duration)
+                                            }
+                                            alertDialog.dismiss()
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(14.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PurrfectOverlayPalette.glowPrimary)
+                                    ) {
+                                        Text(downloadStr)
+                                    }
+                                }
+                            }
                         }
                     }
                 }.show()

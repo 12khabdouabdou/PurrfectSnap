@@ -1481,6 +1481,7 @@
                         "name": "Bypass Message Action Restrictions",
                         "description": "Allows you to react to a snap without having opened it or to save an unsaveable message"
                     },
+                    "pre_fetch_snaps": { "name": "Snap Pre-Fetch", "description": "Fetches snap media into Snapchat's internal cache once the snap arrives. Note: Turning it on increases background data usage." },
                     "remove_groups_locked_status": {
                         "name": "Remove Groups Locked Status",
                         "description": "Allows you to view group information after being kicked"
@@ -1696,7 +1697,6 @@
                                 "description": "Automatically throttles the engine and increases delays if the device temperature exceeds 40°C to prevent overheating"
                             },
                             "only_on_wifi": { "name": "Auto Open only on Wi-Fi", "description": "Only process queue when connected to a Wi-Fi network to save mobile data" },
-                            "pre_fetch_snaps": { "name": "Pre-fetch Snaps", "description": "Fetches snap media into Snapchat's internal cache once the snap arrives. Note: Turning it on increases background data usage." },
                             "content_type_snap": "Snap",
                             "only_when_idle": {
                                 "name": "Auto Open Schedule",
@@ -1706,9 +1706,13 @@
                                 "name": "Auto Open Scheduler",
                                 "description": "Define the start and end times for scheduled throttled processing."
                             },
-                            "pause_during_gaming": { "name": "Pause Auto Open During Gaming", "description": "Automatically slow down processing when a resource intensive app or a game is in the foreground" },
                             "safe_processing": { "name": "Auto Open with stealth pace", "description": "Adds variable delays and natural breaks to remain undetected. Turn off for maximum speed." }
                         }
+                    },
+                    "pre_fetch_snaps": { "name": "Snap Pre-Fetch", "description": "Fetches snap media into Snapchat's internal cache once the snap arrives. Note: Turning it on increases background data usage." },
+                    "instant_translation": {
+                        "name": "Message Translator",
+                        "description": "Configure the message translator"
                     },
                     "auto_delete_sent_messages": {
                         "name": "Auto Delete Sent Messages",
@@ -3677,12 +3681,13 @@
         "failed_gallery_toast": "Failed saving to gallery {error}",
         "dash_no_chapter": "No chapter found",
         "dash_dialog": {
-            "title": "Download dash media",
+            "title": "DASH Download",
             "download_all": "Download All",
-            "segment_text": "Segment {from} - {to}"
+            "snap_text": "Snap {from} - {to}"
         },
         "story_snap_dialog": {
             "title": "Download story snaps",
+            "download_all": "Download All",
             "select_all": "Select All",
             "deselect_all": "Deselect All",
             "snap_item": "Snap {index} of {total}"

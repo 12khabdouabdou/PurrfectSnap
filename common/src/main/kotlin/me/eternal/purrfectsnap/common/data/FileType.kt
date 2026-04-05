@@ -72,24 +72,10 @@ enum class FileType(
             if (majorBrand in imageBrands) return false
 
             return majorBrand in setOf(
-                "mp41",
-                "mp42",
-                "isom",
-                "iso2",
-                "iso3",
-                "iso4",
-                "iso5",
-                "iso6",
-                "avc1",
-                "dash",
-                "cmfc",
-                "msnv",
-                "3gp4",
-                "3gp5",
-                "3gp6",
-                "3g2a",
-                "3g2b"
-            ) || majorBrand.isNotEmpty() // FALLBACK: If it has the ftyp box and isn't a known image brand, it's a video
+                "mp41", "mp42", "isom", "iso2", "iso3", "iso4", "iso5", "iso6",
+                "avc1", "dash", "cmfc", "msnv", "3gp4", "3gp5", "3gp6", "3g2a", "3g2b",
+                "mp4v", "mp4a", "m4v ", "m4a ", "f4v ", "f4a "
+            ) || majorBrand.isNotEmpty()
         }
 
         fun fromFile(file: File): FileType {
