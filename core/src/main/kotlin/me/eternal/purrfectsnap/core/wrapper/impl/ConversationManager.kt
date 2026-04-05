@@ -30,6 +30,7 @@ class ConversationManager(
     private val fetchConversationWithMessagesMethod by lazy { findMethodByName("fetchConversationWithMessages") }
     private val fetchMessageByServerId by lazy { findMethodByName("fetchMessageByServerId") }
     private val fetchMessagesByServerIds by lazy { findMethodByName("fetchMessagesByServerIds") }
+    private val fetchPrefetchableMessagesForConversationsMethod by lazy { findMethodByName("fetchPrefetchableMessagesForConversations") }
     private val displayedMessagesMethod by lazy { findMethodByName("displayedMessages") }
     private val fetchMessage by lazy { findMethodByName("fetchMessage") }
     private val clearConversation by lazy { findMethodByName("clearConversation") }
@@ -156,6 +157,37 @@ class ConversationManager(
                     onSuccess(param.arg<List<*>>(0).mapNotNull {
                         Message(it?.getObjectField("mMessage") ?: return@mapNotNull null)
                     })
+                }
+                .override("onError") {
+                    onError(it.arg<Any>(0).toString())
+                }.build()
+        )
+    }
+
+    fun fetchPrefetchableMessagesForConversations(
+        conversationIds: List<String>,
+        strategyName: String,
+        messagesPerConversation: Int,
+        onSuccess: (List<Message>) -> Unit = {},
+        onError: (error: String) -> Unit = {}
+    ) {
+        val prefetchRequestClass = fetchPrefetchableMessagesForConversationsMethod.parameterTypes.firstOrNull {
+            it.name == "com.snapchat.client.messaging.PrefetchRequest"
+        } ?: error("PrefetchRequest parameter type not found")
+        val strategyClass = context.androidContext.classLoader.loadClass("com.snapchat.client.messaging.PrefetchStrategy")
+        val strategy = strategyClass.enumConstants?.firstOrNull { it.toString() == strategyName }
+            ?: error("PrefetchStrategy $strategyName not found")
+        val prefetchRequest = prefetchRequestClass
+            .getConstructor(strategyClass, Int::class.javaPrimitiveType)
+            .newInstance(strategy, messagesPerConversation)
+
+        fetchPrefetchableMessagesForConversationsMethod.invoke(
+            instanceNonNull(),
+            conversationIds.map { it.toSnapUUID().instanceNonNull() }.toCollection(ArrayList()),
+            prefetchRequest,
+            CallbackBuilder(getCallbackClass("FetchMessagesCallback"))
+                .override("onFetchMessagesComplete") { param ->
+                    onSuccess(param.arg<List<*>>(0).map { Message(it) })
                 }
                 .override("onError") {
                     onError(it.arg<Any>(0).toString())

@@ -168,11 +168,10 @@ class BridgeClient(
                 Log.d("BridgeClient", "service is dead, restarting")
                 val canLoad = connect {
                     Log.e("BridgeClient", "connection failed", it)
-                    context.softRestartApp()
                 }
                 if (canLoad != true) {
                     Log.e("BridgeClient", "failed to reconnect to service, result=$canLoad")
-                    context.softRestartApp()
+                    return@runBlocking
                 }
             }
         }
@@ -188,9 +187,6 @@ class BridgeClient(
                     block()
                 }.getOrElse {
                     Log.e("BridgeClient", "service call failed", it)
-                    if (it is DeadObjectException) {
-                        context.softRestartApp()
-                    }
                     throw it
                 }
             }

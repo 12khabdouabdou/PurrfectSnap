@@ -109,6 +109,10 @@ class ConfigurationOverride : Feature("Configuration Override") {
                 { true })
             overrideProperty("MEDIA_RECORDER_MAX_QUALITY_LEVEL", { context.config.camera.forceCameraSourceEncoding.get() },
                 { true })
+            overrideProperty("ENABLE_MESSAGE_WINDOW_MANAGER", { context.config.global.performanceMode.profile.getNullable() != null },
+                { true })
+            overrideProperty("ENABLE_SIMPLE_CONVERSATION_RESET", { context.config.global.performanceMode.profile.getNullable() == "max" },
+                { false })
             overrideProperty("PREVIEW_PRELOAD_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },
                 { true })
             overrideProperty("BUFFERED_VIDEO_RECORDING_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },
@@ -120,25 +124,30 @@ class ConfigurationOverride : Feature("Configuration Override") {
 
             arrayOf(
                 "FEATURE_PRELOADER",
-                "USER_STORY_PRELOAD",
-                "STARTUP_LENS_ACTIVATOR",
-                "LENSES_PREVIEW_ACTIVATOR",
-                "THUMBNAIL_PRESENTER_ACTIVATOR",
-                "SINGLE_SEGMENT_THUMBNAIL_ACTIVATOR",
                 "SERVER_PREFETCH",
                 "SERVER_PREFETCH_WITH_COF",
                 "DISCOVER_FEED_PERFORMANCE",
-                "DISCOVER_FEED_STORY_PREFETCH",
-                "DISCOVER_FEED_THUMBNAILS",
                 "LOGIN_PRELOAD",
                 "PREFETCH_REPO_SUBSCRIBE_ON_CPU",
                 "COMPUTE_FEED_CACHE_WITH_TTL",
                 "COMPUTE_FEED_NETWORK_WITH_CACHE",
                 "OPERA_WARMUP",
-                "REFACTORED_WITH_WARMUP_LENS",
                 "SHOW_PREFETCH",
             ).forEach { key ->
                 overrideProperty(key, { context.config.global.performanceMode.profile.getNullable() != null }, { true })
+            }
+
+            arrayOf(
+                "USER_STORY_PRELOAD",
+                "STARTUP_LENS_ACTIVATOR",
+                "LENSES_PREVIEW_ACTIVATOR",
+                "THUMBNAIL_PRESENTER_ACTIVATOR",
+                "SINGLE_SEGMENT_THUMBNAIL_ACTIVATOR",
+                "DISCOVER_FEED_STORY_PREFETCH",
+                "DISCOVER_FEED_THUMBNAILS",
+                "REFACTORED_WITH_WARMUP_LENS",
+            ).forEach { key ->
+                overrideProperty(key, { context.config.global.performanceMode.profile.getNullable() == "max" }, { false })
             }
 
             overrideProperty("LOAD_LATENCY_TRACKER_ACTIVATOR", { context.config.global.performanceMode.profile.getNullable() != null },

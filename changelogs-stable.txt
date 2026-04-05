@@ -1,3 +1,18 @@
+## v1.6.8
+- Fix: Many improvements to the Performance Mode feature(Max, turned on by Default), changes are pretty noticeable: faster loading of chats, long group messages optimizations, many snapmap optimizations
+- Fix: Crash issues for some devices
+- Fix: Block Ads
+- Fix: Snapchat automatically restarting if kept idle
+- Fix: Feed Flickering issue for some devices
+- Fix: Implemented Dual-Thread Sync Architecture with a 1,000 depth that proactively scans the database for missed history, thus resolving the "failed to open..." and "Tap to load" snaps before marking them, clearing historical gaps automatically(tq to Kaladin)
+- New: Implemented Screen Guard where Auto Open Engine now detects screen state and stops all notification work while the device is locked, thus reducing excessive battery drain and heat spike during background processing(tq to Kaladin)
+- Fix: Disk read/write frequency increased from 1s to 5 minutes, to eliminate constant background disk friction, thus reducing overheating of the device while processing(tq to Kaladin)
+- Fix: Slid chat switching delays from 2.0s down to 40ms, thus achieving near-instant processing of 1000+ snap bursts(tq to Kaladin)
+- Fix: Removed "Auto Open pause while Gaming" toggle(tq to Kaladin)
+- Fix: Reworked "Snap Pre-Fetch" toggle to the global Messaging settings page(tq to Kaladin)
+- Fix: Refactored Auto Open engine notification cards to declutter it and removed redundant stats(tq to Kaladin)
+- Fix: Corrected speed labels in the Auto Open notification to show "Idle" when monitoring and accurate notions (Full Speed/Throttled) when active(tq to Kaladin)
+
 ## v1.6.6
 - Fix: Persistent auto open snap disabled notification(tq to Kaladin)
 - Fix: Crash issues for some devices

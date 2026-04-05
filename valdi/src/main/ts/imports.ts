@@ -5,10 +5,16 @@ declare var _runtimeName: string;
 export const runtimeName = _runtimeName;
 
 let remoteImports: any = null;
-try {
-    remoteImports = require(_runtimeName + "_core/DeviceBridge")?.[_getImportsFunctionName]?.();
-} catch {
-    remoteImports = null;
+for (const moduleName of ["DeviceBridge", "Device"]) {
+    try {
+        const imports = require(_runtimeName + "_core/" + moduleName)?.[_getImportsFunctionName]?.();
+        if (imports != null) {
+            remoteImports = imports;
+            break;
+        }
+    } catch {
+        // Some Snapchat builds expose DeviceBridge, others only Device.
+    }
 }
 
 function callRemoteFunction(method: string, ...args: any[]): any | null {

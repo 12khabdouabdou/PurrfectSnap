@@ -12,6 +12,7 @@ import android.hardware.camera2.CameraCharacteristics.Key
 import android.hardware.camera2.CameraManager
 import android.media.Image
 import android.media.ImageReader
+import android.os.Build
 import android.util.Range
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.util.hook.HookStage
@@ -28,6 +29,9 @@ class CameraTweaks : Feature("Camera Tweaks") {
     @SuppressLint("MissingPermission", "DiscouragedApi")
     override fun init() {
         val config = context.config.camera
+        val skipUnstableStillCaptureTweaks = Build.MANUFACTURER.equals("samsung", ignoreCase = true) ||
+            Build.HARDWARE.contains("exynos", ignoreCase = true) ||
+            Build.BRAND.equals("samsung", ignoreCase = true)
 
         // Toggle A: Audio & Video Optimizations (Bitrates)
         if (config.audioVideoOptimizations.get()) {
@@ -44,7 +48,7 @@ class CameraTweaks : Feature("Camera Tweaks") {
         }
 
         // Toggle B: Camera Optimizations (Hardware ISP - UNSTABLE)
-        if (config.cameraOptimizations.get()) {
+        if (config.cameraOptimizations.get() && !skipUnstableStillCaptureTweaks) {
             CaptureRequest.Builder::class.java.hook("set", HookStage.BEFORE) { param ->
                 val key = param.arg<CaptureRequest.Key<*>>(0)
                 when (key) {

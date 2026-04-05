@@ -19,6 +19,14 @@ fun UUID.toBytes(): ByteArray =
 class SnapUUID(
     private val obj: Any?
 ) : AbstractWrapper(obj) {
+    private fun extractUuidBytesFromObject(any: Any): ByteArray? {
+        runCatching { any.getObjectField("mId") as? ByteArray }.getOrNull()?.let { return it }
+        runCatching { any.javaClass.getMethod("getId").invoke(any) as? ByteArray }.getOrNull()?.let { return it }
+        runCatching { any.javaClass.getMethod("getUuid").invoke(any) as? ByteArray }.getOrNull()?.let { return it }
+        runCatching { any.javaClass.getMethod("uuid").invoke(any) as? ByteArray }.getOrNull()?.let { return it }
+        return null
+    }
+
     private val uuidBytes by lazy {
         when {
             obj is String -> {
@@ -37,6 +45,10 @@ class SnapUUID(
                 runCatching { any.javaClass.getMethod("getId").invoke(any) as ByteArray }.getOrElse {
                     any.getObjectField("mId") as ByteArray
                 }
+            }
+            obj is Any -> {
+                extractUuidBytesFromObject(obj)
+                    ?: runCatching { UUID.fromString(obj.toString()).toBytes() }.getOrElse { ByteArray(16) }
             }
             else -> ByteArray(16)
         }

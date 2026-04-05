@@ -80,6 +80,7 @@ class FeatureManager(
             MessageLogger(),
             ConvertMessageLocally(),
             SnapchatPlus(),
+            AdBlockFix(),
             DisableMetrics(),
             EndpointsBlocker(),
             PreventMessageSending(),
