@@ -37,6 +37,8 @@ import me.eternal.purrfectsnap.common.data.MessagingFriendInfo
 import me.eternal.purrfectsnap.common.data.MessagingGroupInfo
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
 import me.eternal.purrfectsnap.common.data.SocialScope
+import me.eternal.purrfectsnap.common.data.normalizeStealthRules
+import me.eternal.purrfectsnap.common.data.withNormalizedRuleToggle
 import me.eternal.purrfectsnap.common.ui.AutoClearKeyboardFocus
 import me.eternal.purrfectsnap.common.ui.EditNoteTextField
 import me.eternal.purrfectsnap.common.ui.rememberAsyncMutableState
@@ -222,18 +224,30 @@ class ManageScope: Routes.Route() {
         Spacer(modifier = Modifier.height(16.dp))
 
         val rules = rememberAsyncMutableStateList(listOf()) {
-            context.database.getRules(id)
+            context.database.getRules(id).normalizeStealthRules().toList()
+        }
+
+        fun updateRules(ruleType: MessagingRuleType, enabled: Boolean) {
+            val previousRules = rules.toSet()
+            val updatedRules = previousRules.withNormalizedRuleToggle(ruleType, enabled)
+            val changedRules = (previousRules + updatedRules).filter { rule ->
+                (rule in previousRules) != (rule in updatedRules)
+            }
+
+            rules.clear()
+            rules.addAll(updatedRules)
+
+            changedRules.forEach { changedRule ->
+                context.database.setRule(id, changedRule.key, changedRule in updatedRules)
+            }
         }
 
         SectionTitle(translation["rules_title"])
 
         ContentCard {
             MessagingRuleType.entries.forEach { ruleType ->
-                var ruleEnabled by remember(rules.size) {
-                    mutableStateOf(rules.any { it.key == ruleType.key })
-                }
-
                 val ruleState = context.config.root.rules.getRuleState(ruleType)
+                val ruleEnabled = rules.any { it.key == ruleType.key }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -252,8 +266,7 @@ class ManageScope: Routes.Route() {
                         checked = ruleEnabled,
                         enabled = if (ruleType.listMode) ruleState != null else true,
                         onCheckedChange = {
-                            context.database.setRule(id, ruleType.key, it)
-                            ruleEnabled = it
+                            updateRules(ruleType, it)
                         },
                         colors = purrfectSwitchColors()
                     )

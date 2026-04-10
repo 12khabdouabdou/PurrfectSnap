@@ -779,11 +779,27 @@
                 }
             },
             "stealth": {
-                "name": "Stealth Mode",
-                "description": "Prevents anyone from knowing you've opened their Snaps/Chats and conversations",
+                "name": "Full Stealth Mode",
+                "description": "Applies both chat stealth and snap stealth for this conversation",
                 "options": {
-                    "blacklist": "Exclude from Stealth Mode",
-                    "whitelist": "Stealth mode"
+                    "blacklist": "Exclude from Full Stealth Mode",
+                    "whitelist": "Full Stealth Mode"
+                }
+            },
+            "snap_stealth": {
+                "name": "Snap Stealth Mode",
+                "description": "Prevents anyone from knowing you've opened their snaps",
+                "options": {
+                    "blacklist": "Exclude from Snap Stealth Mode",
+                    "whitelist": "Snap Stealth Mode"
+                }
+            },
+            "chat_stealth": {
+                "name": "Chat Stealth Mode",
+                "description": "Prevents anyone from knowing you've opened their chats or viewed their chat presence",
+                "options": {
+                    "blacklist": "Exclude from Chat Stealth Mode",
+                    "whitelist": "Chat Stealth Mode"
                 }
             },
             "auto_save": {
@@ -1885,7 +1901,13 @@
                         "name": "Auto Download"
                     },
                     "stealth": {
-                        "name": "Stealth Mode"
+                        "name": "Full Stealth Mode"
+                    },
+                    "snap_stealth": {
+                        "name": "Snap Stealth Mode"
+                    },
+                    "chat_stealth": {
+                        "name": "Chat Stealth Mode"
                     },
                     "auto_save": {
                         "name": "Auto Save"
@@ -2291,7 +2313,7 @@
                 "auto_save": "\ud83d\udcac Auto Save Messages",
                 "unsaveable_messages": "\u2b07\ufe0f Unsaveable Messages",
                 "auto_open_snaps": "\ud83d\udcf7 Auto Open Snaps",
-                "stealth": "\ud83d\udc7b Stealth Mode",
+                "stealth": "\ud83d\udc7b Full Stealth Mode",
                 "auto_reply": "\ud83d\udce8 Auto Reply",
                 "auto_delete_sent_messages": "\ud83d\uddd1\ufe0f Auto Delete Sent Messages",
                 "mark_snaps_as_seen": "\ud83d\udc40 Mark Snaps as seen",
@@ -2381,6 +2403,16 @@
                 "disabled": "Disabled"
             },
             "stealth": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "snap_stealth": {
+                "blacklist": "Blacklist",
+                "whitelist": "Whitelist",
+                "disabled": "Disabled"
+            },
+            "chat_stealth": {
                 "blacklist": "Blacklist",
                 "whitelist": "Whitelist",
                 "disabled": "Disabled"

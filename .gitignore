@@ -4,9 +4,11 @@ local.properties
 /.idea/
 .DS_Store
 /build
+**/build/
 /captures
 .externalNativeBuild
 .cxx
+.local/
 native/.omvll/
 cloudflare/**/.wrangler/
 cloudflare/**/node_modules/

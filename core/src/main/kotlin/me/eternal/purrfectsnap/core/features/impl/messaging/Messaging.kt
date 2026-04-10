@@ -57,7 +57,7 @@ class Messaging : Feature("Messaging") {
 
     private fun shouldHideBitmojiPresence(stealthMode: StealthMode): Boolean {
         return context.config.messaging.hideBitmojiPresence.get() ||
-            currentConversationId()?.let { stealthMode.canUseRule(it) } == true
+            currentConversationId()?.let { stealthMode.canUseChatStealth(it) } == true
     }
 
     private fun shouldSpoofViewingGalleryPresence(stealthMode: StealthMode): Boolean {
@@ -70,12 +70,12 @@ class Messaging : Feature("Messaging") {
 
     private fun shouldHideTyping(stealthMode: StealthMode, hideTypingIndicator: HideTypingIndicator): Boolean {
         return context.config.messaging.hideTypingNotifications.get() ||
-            currentConversationId()?.let { stealthMode.canUseRule(it) || hideTypingIndicator.canUseRule(it) } == true
+            currentConversationId()?.let { stealthMode.canUseChatStealth(it) || hideTypingIndicator.canUseRule(it) } == true
     }
 
     private fun shouldHidePeek(stealthMode: StealthMode): Boolean {
         return context.config.messaging.hidePeekAPeek.get() ||
-            currentConversationId()?.let { stealthMode.canUseRule(it) } == true
+            currentConversationId()?.let { stealthMode.canUseChatStealth(it) } == true
     }
 
     private fun clearField(instance: Any, typeNamePart: String, shouldClear: Boolean) {
@@ -361,4 +361,3 @@ class Messaging : Feature("Messaging") {
         return (future.get() as? List<*>)?.map { Snapchatter(it) } ?: return emptyList()
     }
 }
-
