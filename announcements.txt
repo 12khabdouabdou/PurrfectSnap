@@ -1,1 +1,1 @@
-- All users are recommended to use the new Performance Mode feature! Go to the features tab and then select global and select performance mode and set it to Max. Then force stop and reopen Snapchat and you will feel the difference i.e. Snapchat will feel a lot faster.
+- Temporary fix for conversations disappearing: Turn off Block Ads feature
