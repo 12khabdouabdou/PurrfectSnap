@@ -185,13 +185,24 @@ if [[ -z "$TOOLCHAIN" ]]; then
   fi
 fi
 
-# OMVLL is required and only supported on Linux/macOS/WSL. Fail fast on plain Windows.
-USE_OMVLL=true
+# OMVLL can be disabled for environments where the pass plugin is unstable.
+USE_OMVLL="${USE_OMVLL:-}"
 IS_WSL=false
 if grep -qi microsoft /proc/version 2>/dev/null; then
   IS_WSL=true
 fi
-if [[ "$HOST_TAG" == windows-* && "$IS_WSL" != true ]]; then
+
+# Default to disabling OMVLL on macOS CI where LLVM pass plugin loading is unstable.
+if [ -z "$USE_OMVLL" ]; then
+  if [[ "$HOST_TAG" == darwin-* && "${CI:-}" == "true" ]]; then
+    USE_OMVLL=false
+    echo "Disabling OMVLL on macOS CI to avoid LLVM pass plugin crashes." >&2
+  else
+    USE_OMVLL=true
+  fi
+fi
+
+if [[ "$USE_OMVLL" == "true" && "$HOST_TAG" == windows-* && "$IS_WSL" != true ]]; then
   echo "OMVLL requires a Linux/WSL environment. Please run the build via WSL (e.g., set BASH_PATH=C:\\Windows\\System32\\bash.exe)." >&2
   exit 1
 fi
@@ -261,17 +272,21 @@ if [[ "$HOST_TAG" == darwin-* ]]; then
   fi
 fi
 
-ensure_omvll_bundle
-append_rustflags CARGO_TARGET_AARCH64_LINUX_ANDROID_RUSTFLAGS
-append_rustflags CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_RUSTFLAGS
+if [[ "$USE_OMVLL" == "true" ]]; then
+  ensure_omvll_bundle
+  append_rustflags CARGO_TARGET_AARCH64_LINUX_ANDROID_RUSTFLAGS
+  append_rustflags CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_RUSTFLAGS
 
-if [ -z "${OMVLL_CONFIG:-}" ]; then
-  export OMVLL_CONFIG="$SCRIPT_DIR/omvll_config.py"
-fi
+  if [ -z "${OMVLL_CONFIG:-}" ]; then
+    export OMVLL_CONFIG="$SCRIPT_DIR/omvll_config.py"
+  fi
 
-if [ -z "${OMVLL_PYTHONPATH:-}" ] || [ ! -d "$OMVLL_PYTHONPATH" ]; then
-  echo "OMVLL_PYTHONPATH is not configured with a valid stdlib" >&2
-  exit 1
+  if [ -z "${OMVLL_PYTHONPATH:-}" ] || [ ! -d "$OMVLL_PYTHONPATH" ]; then
+    echo "OMVLL_PYTHONPATH is not configured with a valid stdlib" >&2
+    exit 1
+  fi
+else
+  echo "OMVLL disabled for this build (USE_OMVLL=$USE_OMVLL)." >&2
 fi
 
 rustup target add --toolchain "$TOOLCHAIN" "$1"
@@ -324,4 +339,3 @@ esac
 
 cd "$RUST_DIR"
 rustup run "$TOOLCHAIN" cargo build --release --target "$1"
-
