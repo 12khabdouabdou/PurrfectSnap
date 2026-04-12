@@ -49,15 +49,29 @@ require(ndkHome.exists()) { "Configured NDK directory $ndkHome does not exist" }
 
 val osName = System.getProperty("os.name").lowercase(Locale.ROOT)
 val osArch = System.getProperty("os.arch").lowercase(Locale.ROOT)
-val hostTag = when {
+val preferredHostTag = when {
     osName.contains("windows") -> "windows-x86_64"
     osName.contains("mac") && osArch.contains("arm") -> "darwin-arm64"
     osName.contains("mac") -> "darwin-x86_64"
     else -> "linux-x86_64"
 }
 
-val toolchainBin = File(ndkHome, "toolchains/llvm/prebuilt/$hostTag/bin")
-require(toolchainBin.exists()) { "Unable to locate NDK toolchain under $toolchainBin" }
+val prebuiltRoot = File(ndkHome, "toolchains/llvm/prebuilt")
+require(prebuiltRoot.exists()) { "Unable to locate NDK prebuilts under $prebuiltRoot" }
+val hostTagCandidates = mutableListOf(preferredHostTag)
+if (preferredHostTag == "darwin-arm64") {
+    hostTagCandidates.add("darwin-x86_64")
+}
+if (preferredHostTag.startsWith("darwin")) {
+    prebuiltRoot.listFiles()
+        ?.filter { it.isDirectory && it.name.startsWith("darwin-") }
+        ?.forEach { hostTagCandidates.add(it.name) }
+}
+val hostTag = hostTagCandidates
+    .firstOrNull { tag -> File(prebuiltRoot, "$tag/bin").exists() }
+    ?: error("Unable to locate NDK toolchain bin directory for $preferredHostTag under $prebuiltRoot")
+
+val toolchainBin = File(prebuiltRoot, "$hostTag/bin")
 
 val isWindowsHost = hostTag.startsWith("windows")
 val clangSuffix = if (isWindowsHost) ".cmd" else ""

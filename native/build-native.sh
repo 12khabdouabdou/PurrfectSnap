@@ -27,7 +27,7 @@ detect_host_tag() {
       HOST_LIB_SUBDIR="lib64"
       ;;
     darwin*)
-      if [[ "$arch" == "arm64" ]]; then
+      if [[ "$arch" == "arm64" || "$arch" == "aarch64" ]]; then
         HOST_TAG="darwin-arm64"
       else
         HOST_TAG="darwin-x86_64"
@@ -47,23 +47,37 @@ detect_host_tag() {
 
 ensure_ndk_for_host() {
   local try_home="$1"
-  local bin_dir="$try_home/toolchains/llvm/prebuilt/$HOST_TAG/bin"
-  local lib_root="$try_home/toolchains/llvm/prebuilt/$HOST_TAG"
-  local lib_dir="$lib_root/$HOST_LIB_SUBDIR"
-  if [ ! -d "$lib_dir" ]; then
-    if [ -d "$lib_root/lib64" ]; then
-      lib_dir="$lib_root/lib64"
-    elif [ -d "$lib_root/lib" ]; then
-      lib_dir="$lib_root/lib"
+  local prebuilt_root="$try_home/toolchains/llvm/prebuilt"
+  local requested_tag="$HOST_TAG"
+  local -a candidate_tags=("$requested_tag")
+  if [[ "$requested_tag" == "darwin-arm64" ]]; then
+    candidate_tags+=("darwin-x86_64")
+  fi
+
+  local candidate_tag
+  for candidate_tag in "${candidate_tags[@]}"; do
+    local bin_dir="$prebuilt_root/$candidate_tag/bin"
+    local lib_root="$prebuilt_root/$candidate_tag"
+    local lib_dir="$lib_root/$HOST_LIB_SUBDIR"
+    if [ ! -d "$lib_dir" ]; then
+      if [ -d "$lib_root/lib64" ]; then
+        lib_dir="$lib_root/lib64"
+      elif [ -d "$lib_root/lib" ]; then
+        lib_dir="$lib_root/lib"
+      fi
     fi
-  fi
-  if [ -d "$bin_dir" ] && [ -d "$lib_dir" ]; then
-    ANDROID_NDK_HOME="$try_home"
-    NDK_TOOLCHAIN_DIR="$bin_dir"
-    NDK_LIB_DIR="$lib_dir"
-    echo "$bin_dir"
-    return 0
-  fi
+    if [ -d "$bin_dir" ] && [ -d "$lib_dir" ]; then
+      HOST_TAG="$candidate_tag"
+      ANDROID_NDK_HOME="$try_home"
+      NDK_TOOLCHAIN_DIR="$bin_dir"
+      NDK_LIB_DIR="$lib_dir"
+      if [ "$candidate_tag" != "$requested_tag" ]; then
+        echo "Falling back to NDK host toolchain: $candidate_tag (requested $requested_tag)" >&2
+      fi
+      echo "$bin_dir"
+      return 0
+    fi
+  done
   return 1
 }
 
@@ -310,5 +324,4 @@ esac
 
 cd "$RUST_DIR"
 rustup run "$TOOLCHAIN" cargo build --release --target "$1"
-
 
