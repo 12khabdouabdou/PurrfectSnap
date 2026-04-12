@@ -1,16 +1,55 @@
 package me.eternal.purrfectsnap.core.features.impl.spying
 
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
+import me.eternal.purrfectsnap.common.data.RuleState
 import me.eternal.purrfectsnap.core.event.events.impl.OnSnapInteractionEvent
 import me.eternal.purrfectsnap.core.features.MessagingRuleFeature
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.wrapper.impl.SnapUUID
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.ConcurrentHashMap
 
 class StealthMode : MessagingRuleFeature("StealthMode", MessagingRuleType.STEALTH) {
     private val displayedMessageQueue = CopyOnWriteArraySet<Long>()
     private val snapInteractionQueue = CopyOnWriteArraySet<Long>()
+    private val ruleSnapshotCache = ConcurrentHashMap<String, Pair<Long, Set<MessagingRuleType>>>()
+
+    private fun getTargetId(conversationId: String): String {
+        return context.database.getDMOtherParticipant(conversationId) ?: conversationId
+    }
+
+    private fun getRuleSnapshot(conversationId: String): Set<MessagingRuleType> {
+        val targetId = getTargetId(conversationId)
+        val now = System.currentTimeMillis()
+        ruleSnapshotCache[targetId]?.takeIf { now - it.first < 1_000L }?.let { return it.second }
+        return context.bridgeClient.getRules(targetId).toSet().also { rules ->
+            ruleSnapshotCache[targetId] = now to rules
+        }
+    }
+
+    private fun isRuleActive(
+        conversationId: String,
+        ruleType: MessagingRuleType
+    ): Boolean {
+        val ruleState = context.config.rules.getRuleState(ruleType) ?: return false
+        val enabled = ruleType in getRuleSnapshot(conversationId)
+        return if (ruleState == RuleState.BLACKLIST) !enabled else enabled
+    }
+
+    fun canUseChatStealth(conversationId: String): Boolean {
+        return isRuleActive(conversationId, MessagingRuleType.STEALTH) ||
+            isRuleActive(conversationId, MessagingRuleType.CHAT_STEALTH)
+    }
+
+    fun canUseSnapStealth(conversationId: String): Boolean {
+        return isRuleActive(conversationId, MessagingRuleType.STEALTH) ||
+            isRuleActive(conversationId, MessagingRuleType.SNAP_STEALTH)
+    }
+
+    fun isAnyStealthEnabled(conversationId: String): Boolean {
+        return canUseChatStealth(conversationId) || canUseSnapStealth(conversationId)
+    }
 
     fun addDisplayedMessageException(clientMessageId: Long) {
         displayedMessageQueue.add(clientMessageId)
@@ -22,12 +61,10 @@ class StealthMode : MessagingRuleFeature("StealthMode", MessagingRuleType.STEALT
 
 
     override fun init() {
-        val isConversationInStealthMode: (SnapUUID) -> Boolean = { canUseRule(it.toString()) }
-
         arrayOf("mediaMessagesDisplayed", "displayedMessages").forEach { methodName: String ->
             context.classCache.conversationManager.hook(methodName, HookStage.BEFORE) { param ->
                 if (displayedMessageQueue.removeIf { param.arg<Long>(1) == it }) return@hook
-                if (isConversationInStealthMode(SnapUUID(param.arg(0)))) {
+                if (canUseChatStealth(SnapUUID(param.arg(0)).toString())) {
                     param.setResult(null)
                 }
             }
@@ -35,7 +72,7 @@ class StealthMode : MessagingRuleFeature("StealthMode", MessagingRuleType.STEALT
 
         context.event.subscribe(OnSnapInteractionEvent::class) { event ->
             if (snapInteractionQueue.removeIf { event.messageId == it }) return@subscribe
-            if (isConversationInStealthMode(event.conversationId)) {
+            if (canUseSnapStealth(event.conversationId.toString())) {
                 event.canceled = true
             }
         }

@@ -257,8 +257,8 @@ class AutoMarkAsRead : Feature("Auto Mark As Read") {
                 val snapManager = context.feature(Messaging::class).snapManager ?: return@hook
                 val stealthMode = context.feature(StealthMode::class)
 
-                // ignore non-stealth mode conversations
-                if (!stealthMode.canUseRule(conversationId.toString())) return@hook
+                // ignore conversations without snap stealth enabled
+                if (!stealthMode.canUseSnapStealth(conversationId.toString())) return@hook
 
                 stealthMode.addSnapInteractionException(clientMessageId)
 

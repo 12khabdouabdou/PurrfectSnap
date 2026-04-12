@@ -49,6 +49,8 @@ enum class MessagingRuleType(
     val configNotices: Array<FeatureNotice> = emptyArray()
 ) {
     STEALTH("stealth", true, Icons.Outlined.TrackChanges),
+    SNAP_STEALTH("snap_stealth", true, Icons.Outlined.PhotoCamera, showInFriendMenu = false),
+    CHAT_STEALTH("chat_stealth", true, Icons.Outlined.ChatBubbleOutline, showInFriendMenu = false),
     HIDE_TYPING_INDICATOR("hide_typing_indicator", true, Icons.Outlined.KeyboardHide, defaultValue = "whitelist"),
     AUTO_DOWNLOAD("auto_download", true, Icons.Outlined.DownloadForOffline),
     AUTO_SAVE("auto_save", true, Icons.Outlined.Save, defaultValue = "blacklist"),
@@ -69,6 +71,58 @@ enum class MessagingRuleType(
     companion object {
         fun getByName(name: String) = entries.firstOrNull { it.key == name }
     }
+}
+
+private val partialStealthRuleTypes = setOf(
+    MessagingRuleType.SNAP_STEALTH,
+    MessagingRuleType.CHAT_STEALTH
+)
+
+private val allStealthRuleTypes = partialStealthRuleTypes + MessagingRuleType.STEALTH
+
+fun MessagingRuleType.isStealthRule(): Boolean = this in allStealthRuleTypes
+
+fun Collection<MessagingRuleType>.normalizeStealthRules(): Set<MessagingRuleType> {
+    val normalizedRules = toMutableSet()
+    if (MessagingRuleType.STEALTH in normalizedRules) {
+        normalizedRules.removeAll(partialStealthRuleTypes)
+        return normalizedRules
+    }
+
+    if (partialStealthRuleTypes.all { it in normalizedRules }) {
+        normalizedRules.removeAll(partialStealthRuleTypes)
+        normalizedRules.add(MessagingRuleType.STEALTH)
+    }
+
+    return normalizedRules
+}
+
+fun Collection<MessagingRuleType>.withNormalizedRuleToggle(
+    ruleType: MessagingRuleType,
+    enabled: Boolean
+): Set<MessagingRuleType> {
+    val updatedRules = toMutableSet().apply {
+        if (enabled) {
+            add(ruleType)
+        } else {
+            remove(ruleType)
+        }
+    }
+
+    if (!ruleType.isStealthRule()) {
+        return updatedRules
+    }
+
+    if (enabled) {
+        when (ruleType) {
+            MessagingRuleType.STEALTH -> updatedRules.removeAll(partialStealthRuleTypes)
+            MessagingRuleType.SNAP_STEALTH,
+            MessagingRuleType.CHAT_STEALTH -> updatedRules.remove(MessagingRuleType.STEALTH)
+            else -> Unit
+        }
+    }
+
+    return updatedRules.normalizeStealthRules()
 }
 
 @Parcelize

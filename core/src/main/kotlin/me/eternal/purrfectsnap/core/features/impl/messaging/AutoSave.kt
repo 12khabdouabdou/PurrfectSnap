@@ -62,7 +62,7 @@ class AutoSave : MessagingRuleFeature("Auto Save", MessagingRuleType.AUTO_SAVE) 
             if (messaging.openedConversationUUID?.toString() != targetConversationId) return false
         }
 
-        if (context.feature(StealthMode::class).canUseRule(targetConversationId)) return false
+        if (context.feature(StealthMode::class).canUseChatStealth(targetConversationId)) return false
 
         return canUseRule(targetConversationId)
     }

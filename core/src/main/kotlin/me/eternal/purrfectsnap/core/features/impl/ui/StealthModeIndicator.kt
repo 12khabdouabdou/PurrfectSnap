@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.eternal.purrfectsnap.common.data.RuleState
 import me.eternal.purrfectsnap.core.event.events.impl.BindViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.features.impl.spying.StealthMode
@@ -31,7 +30,7 @@ class StealthModeIndicator : Feature("StealthModeIndicator") {
         private fun requestUpdate(conversationId: String) {
             fetchJob?.cancel()
             fetchJob = context.coroutineScope.launch {
-                val isStealth = stealthMode.canUseRule(conversationId)
+                val isStealth = stealthMode.isAnyStealthEnabled(conversationId)
                 withContext(Dispatchers.Main) {
                     listener(isStealth)
                 }
@@ -52,9 +51,9 @@ class StealthModeIndicator : Feature("StealthModeIndicator") {
         if (!context.config.userInterface.stealthModeIndicator.get()) return
 
         onNextActivityCreate {
-            stealthMode.addStateListener { conversationId, state ->
+            stealthMode.addStateListener { conversationId, _ ->
                 runCatching {
-                    listeners[conversationId]?.invoke(stealthMode.getRuleState()?.let { if (it == RuleState.BLACKLIST) !state else state } ?: state)
+                    listeners[conversationId]?.invoke(stealthMode.isAnyStealthEnabled(conversationId))
                 }.onFailure {
                     context.log.error("Failed to update stealth mode indicator", it)
                 }

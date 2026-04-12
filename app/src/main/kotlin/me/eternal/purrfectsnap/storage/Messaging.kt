@@ -4,6 +4,9 @@ import me.eternal.purrfectsnap.common.data.FriendStreaks
 import me.eternal.purrfectsnap.common.data.MessagingFriendInfo
 import me.eternal.purrfectsnap.common.data.MessagingGroupInfo
 import me.eternal.purrfectsnap.common.data.MessagingRuleType
+import me.eternal.purrfectsnap.common.data.isStealthRule
+import me.eternal.purrfectsnap.common.data.normalizeStealthRules
+import me.eternal.purrfectsnap.common.data.withNormalizedRuleToggle
 import me.eternal.purrfectsnap.common.util.ktx.getInteger
 import me.eternal.purrfectsnap.common.util.ktx.getLongOrNull
 import me.eternal.purrfectsnap.common.util.ktx.getStringOrNull
@@ -154,12 +157,42 @@ fun AppDatabase.getRules(targetUuid: String): List<MessagingRuleType> {
                 context.log.error("Failed to parse rule", it)
             }
         }
-        rules
+        rules.normalizeStealthRules().toList()
     }
 }
 
 fun AppDatabase.setRule(targetUuid: String, type: String, enabled: Boolean) {
     executeAsync {
+        val ruleType = MessagingRuleType.getByName(type)
+        if (ruleType?.isStealthRule() == true) {
+            val updatedStealthRules = getRules(targetUuid)
+                .withNormalizedRuleToggle(ruleType, enabled)
+                .filter { it.isStealthRule() }
+
+            database.beginTransaction()
+            try {
+                database.execSQL(
+                    "DELETE FROM rules WHERE targetUuid = ? AND type IN (?, ?, ?)",
+                    arrayOf(
+                        targetUuid,
+                        MessagingRuleType.STEALTH.key,
+                        MessagingRuleType.SNAP_STEALTH.key,
+                        MessagingRuleType.CHAT_STEALTH.key
+                    )
+                )
+                updatedStealthRules.forEach { stealthRule ->
+                    database.execSQL(
+                        "INSERT OR REPLACE INTO rules (targetUuid, type) VALUES (?, ?)",
+                        arrayOf(targetUuid, stealthRule.key)
+                    )
+                }
+                database.setTransactionSuccessful()
+            } finally {
+                database.endTransaction()
+            }
+            return@executeAsync
+        }
+
         if (enabled) {
             database.execSQL(
                 "INSERT OR REPLACE INTO rules (targetUuid, type) VALUES (?, ?)",
