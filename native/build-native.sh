@@ -27,7 +27,7 @@ detect_host_tag() {
       HOST_LIB_SUBDIR="lib64"
       ;;
     darwin*)
-      if [[ "$arch" == "arm64" ]]; then
+      if [[ "$arch" == "arm64" || "$arch" == "aarch64" ]]; then
         HOST_TAG="darwin-arm64"
       else
         HOST_TAG="darwin-x86_64"
@@ -47,23 +47,37 @@ detect_host_tag() {
 
 ensure_ndk_for_host() {
   local try_home="$1"
-  local bin_dir="$try_home/toolchains/llvm/prebuilt/$HOST_TAG/bin"
-  local lib_root="$try_home/toolchains/llvm/prebuilt/$HOST_TAG"
-  local lib_dir="$lib_root/$HOST_LIB_SUBDIR"
-  if [ ! -d "$lib_dir" ]; then
-    if [ -d "$lib_root/lib64" ]; then
-      lib_dir="$lib_root/lib64"
-    elif [ -d "$lib_root/lib" ]; then
-      lib_dir="$lib_root/lib"
+  local prebuilt_root="$try_home/toolchains/llvm/prebuilt"
+  local requested_tag="$HOST_TAG"
+  local -a candidate_tags=("$requested_tag")
+  if [[ "$requested_tag" == "darwin-arm64" ]]; then
+    candidate_tags+=("darwin-x86_64")
+  fi
+
+  local candidate_tag
+  for candidate_tag in "${candidate_tags[@]}"; do
+    local bin_dir="$prebuilt_root/$candidate_tag/bin"
+    local lib_root="$prebuilt_root/$candidate_tag"
+    local lib_dir="$lib_root/$HOST_LIB_SUBDIR"
+    if [ ! -d "$lib_dir" ]; then
+      if [ -d "$lib_root/lib64" ]; then
+        lib_dir="$lib_root/lib64"
+      elif [ -d "$lib_root/lib" ]; then
+        lib_dir="$lib_root/lib"
+      fi
     fi
-  fi
-  if [ -d "$bin_dir" ] && [ -d "$lib_dir" ]; then
-    ANDROID_NDK_HOME="$try_home"
-    NDK_TOOLCHAIN_DIR="$bin_dir"
-    NDK_LIB_DIR="$lib_dir"
-    echo "$bin_dir"
-    return 0
-  fi
+    if [ -d "$bin_dir" ] && [ -d "$lib_dir" ]; then
+      HOST_TAG="$candidate_tag"
+      ANDROID_NDK_HOME="$try_home"
+      NDK_TOOLCHAIN_DIR="$bin_dir"
+      NDK_LIB_DIR="$lib_dir"
+      if [ "$candidate_tag" != "$requested_tag" ]; then
+        echo "Falling back to NDK host toolchain: $candidate_tag (requested $requested_tag)" >&2
+      fi
+      echo "$bin_dir"
+      return 0
+    fi
+  done
   return 1
 }
 
@@ -171,13 +185,24 @@ if [[ -z "$TOOLCHAIN" ]]; then
   fi
 fi
 
-# OMVLL is required and only supported on Linux/macOS/WSL. Fail fast on plain Windows.
-USE_OMVLL=true
+# OMVLL can be disabled for environments where the pass plugin is unstable.
+USE_OMVLL="${USE_OMVLL:-}"
 IS_WSL=false
 if grep -qi microsoft /proc/version 2>/dev/null; then
   IS_WSL=true
 fi
-if [[ "$HOST_TAG" == windows-* && "$IS_WSL" != true ]]; then
+
+# Default to disabling OMVLL on macOS CI where LLVM pass plugin loading is unstable.
+if [ -z "$USE_OMVLL" ]; then
+  if [[ "$HOST_TAG" == darwin-* && "${CI:-}" == "true" ]]; then
+    USE_OMVLL=false
+    echo "Disabling OMVLL on macOS CI to avoid LLVM pass plugin crashes." >&2
+  else
+    USE_OMVLL=true
+  fi
+fi
+
+if [[ "$USE_OMVLL" == "true" && "$HOST_TAG" == windows-* && "$IS_WSL" != true ]]; then
   echo "OMVLL requires a Linux/WSL environment. Please run the build via WSL (e.g., set BASH_PATH=C:\\Windows\\System32\\bash.exe)." >&2
   exit 1
 fi
@@ -247,17 +272,21 @@ if [[ "$HOST_TAG" == darwin-* ]]; then
   fi
 fi
 
-ensure_omvll_bundle
-append_rustflags CARGO_TARGET_AARCH64_LINUX_ANDROID_RUSTFLAGS
-append_rustflags CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_RUSTFLAGS
+if [[ "$USE_OMVLL" == "true" ]]; then
+  ensure_omvll_bundle
+  append_rustflags CARGO_TARGET_AARCH64_LINUX_ANDROID_RUSTFLAGS
+  append_rustflags CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_RUSTFLAGS
 
-if [ -z "${OMVLL_CONFIG:-}" ]; then
-  export OMVLL_CONFIG="$SCRIPT_DIR/omvll_config.py"
-fi
+  if [ -z "${OMVLL_CONFIG:-}" ]; then
+    export OMVLL_CONFIG="$SCRIPT_DIR/omvll_config.py"
+  fi
 
-if [ -z "${OMVLL_PYTHONPATH:-}" ] || [ ! -d "$OMVLL_PYTHONPATH" ]; then
-  echo "OMVLL_PYTHONPATH is not configured with a valid stdlib" >&2
-  exit 1
+  if [ -z "${OMVLL_PYTHONPATH:-}" ] || [ ! -d "$OMVLL_PYTHONPATH" ]; then
+    echo "OMVLL_PYTHONPATH is not configured with a valid stdlib" >&2
+    exit 1
+  fi
+else
+  echo "OMVLL disabled for this build (USE_OMVLL=$USE_OMVLL)." >&2
 fi
 
 rustup target add --toolchain "$TOOLCHAIN" "$1"
@@ -310,5 +339,3 @@ esac
 
 cd "$RUST_DIR"
 rustup run "$TOOLCHAIN" cargo build --release --target "$1"
-
-

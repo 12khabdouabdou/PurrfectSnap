@@ -1,6 +1,7 @@
 package me.eternal.purrfectsnap.common.config
 
 import android.content.Context
+import com.google.gson.JsonNull
 import com.google.gson.JsonObject
 import me.eternal.purrfectsnap.common.logger.AbstractLogger
 import kotlin.reflect.KProperty
@@ -79,7 +80,9 @@ open class ConfigContainer(
         properties.forEach { (propertyKey, propertyValue) ->
             if (!exportSensitiveData && propertyKey.params.flags.contains(ConfigFlag.SENSITIVE)) return@forEach
             if (!includeSavedLocations && propertyKey.dataType.type == DataProcessors.Type.MAP_COORDINATES) return@forEach
-            val serializedValue = propertyValue.getRaw()?.let { propertyKey.dataType.serializeAny(it, exportSensitiveData, includeSavedLocations) }
+            val serializedValue = propertyValue.getRaw()?.let {
+                propertyKey.dataType.serializeAny(it, exportSensitiveData, includeSavedLocations)
+            } ?: JsonNull.INSTANCE
             json.add(propertyKey.name, serializedValue)
         }
         return json

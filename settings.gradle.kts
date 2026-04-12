@@ -128,4 +128,7 @@ include(":core")
 include(":valdi")
 include(":app")
 include(":mapper")
+include(":manager")
 include(":native")
+
+project(":manager").projectDir = file("mapper")
