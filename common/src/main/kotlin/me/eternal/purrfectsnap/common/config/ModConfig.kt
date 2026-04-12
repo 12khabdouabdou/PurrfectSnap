@@ -58,23 +58,6 @@ class ModConfig(
         val configObject = gson.fromJson(configFileContent.toString(Charsets.UTF_8), JsonObject::class.java)
         locale = configObject.get("_locale")?.asString ?: LocaleWrapper.DEFAULT_LOCALE
         config.fromJson(configObject)
-        migratePerformanceProfileIfMissing(configObject, config)
-    }
-
-    private fun migratePerformanceProfileIfMissing(configObject: JsonObject, config: RootConfig) {
-        runCatching {
-            val performanceModeProperties = configObject
-                .getAsJsonObject("global")
-                ?.getAsJsonObject("properties")
-                ?.getAsJsonObject("performance_mode")
-                ?.getAsJsonObject("properties")
-                ?: return@runCatching
-            if (!performanceModeProperties.has("performance_profile")) {
-                config.global.performanceMode.profile.set(null)
-            }
-        }.onFailure {
-            AbstractLogger.directError("Failed to migrate performance profile", it)
-        }
     }
 
     fun exportToString(
@@ -175,7 +158,6 @@ class ModConfig(
         val configObject = gson.fromJson(string, JsonObject::class.java)
         locale = configObject.get("_locale")?.asString ?: LocaleWrapper.DEFAULT_LOCALE
         root.fromJson(configObject)
-        migratePerformanceProfileIfMissing(configObject, root)
         writeConfig()
         
         // Return saved locations array if present (for caller to handle database import)
