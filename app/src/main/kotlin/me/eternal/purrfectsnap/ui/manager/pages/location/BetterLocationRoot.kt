@@ -44,11 +44,6 @@ import me.eternal.purrfectsnap.ui.util.AlertDialogs
 import me.eternal.purrfectsnap.ui.util.DialogProperties
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 import me.eternal.purrfectsnap.ui.util.coil.BitmojiImage
-import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteMockHandler
-import me.eternal.purrfectsnap.core.features.impl.experiments.router.Route
-import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteState
-import me.eternal.purrfectsnap.core.features.impl.experiments.router.ui.RoutePickerScreen
-import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -257,14 +252,11 @@ class BetterLocationRoot : Routes.Route() {
         ) {
             context.database.getLocationCoordinates()
         }
-    var showMap by remember { mutableStateOf(false) }
-    var addSavedCoordinateDialog by remember { mutableStateOf(false) }
-    var showTeleportDialog by remember { mutableStateOf(false) }
-    var showProviderDialog by remember { mutableStateOf(false) }
-    var showApiKeyDialog by remember { mutableStateOf(false) }
-    var showRoutePicker by remember { mutableStateOf(false) }
-
-    val routeMockHandler = remember { RouteMockHandler() }
+        var showMap by remember { mutableStateOf(false) }
+        var addSavedCoordinateDialog by remember { mutableStateOf(false) }
+        var showTeleportDialog by remember { mutableStateOf(false) }
+        var showProviderDialog by remember { mutableStateOf(false) }
+        var showApiKeyDialog by remember { mutableStateOf(false) }
 
         val marker = remember { mutableStateOf<Marker?>(null) }
         val mapView = remember { mutableStateOf<MapView?>(null) }
@@ -275,26 +267,13 @@ class BetterLocationRoot : Routes.Route() {
             )
         }
 
-    fun addSavedCoordinate(id: Int?, locationCoordinates: LocationCoordinates, onSuccess: suspend (id: Int) -> Unit = {}) {
-        context.coroutineScope.launch {
-            onSuccess(context.database.addOrUpdateLocationCoordinate(id, locationCoordinates))
+        fun addSavedCoordinate(id: Int?, locationCoordinates: LocationCoordinates, onSuccess: suspend (id: Int) -> Unit = {}) {
+            context.coroutineScope.launch {
+                onSuccess(context.database.addOrUpdateLocationCoordinate(id, locationCoordinates))
+            }
         }
-    }
 
-    fun buildCoordinatesJson(coordinates: List<GeoPoint>): String {
-        val json = JSONObject()
-        val coordsArray = org.json.JSONArray()
-        coordinates.forEach { point ->
-            val pointJson = JSONObject()
-            pointJson.put("lat", point.latitude)
-            pointJson.put("lng", point.longitude)
-            coordsArray.put(pointJson)
-        }
-        json.put("coords", coordsArray)
-        return json.toString()
-    }
-
-    if (showTeleportDialog) {
+        if (showTeleportDialog) {
             me.eternal.purrfectsnap.ui.util.Dialog(
                 properties = DialogProperties(usePlatformDefaultWidth = false),
                 onDismissRequest = { showTeleportDialog = false },
@@ -419,58 +398,21 @@ class BetterLocationRoot : Routes.Route() {
                                     context.config.writeConfig()
                                 }
                             }
-        }
-        DisposableEffect(Unit) {
-            onDispose {
-                marker.value = null
+                        }
+                        DisposableEffect(Unit) {
+                            onDispose {
+                                marker.value = null
+                            }
+                        }
+                    }
+                )
             }
-        }
-    }
-    )
 
-    if (showRoutePicker) {
-        me.eternal.purrfectsnap.ui.util.Dialog(
-            properties = DialogProperties(usePlatformDefaultWidth = false),
-            onDismissRequest = { showRoutePicker = false }
-        ) {
-            RoutePickerScreen(
-                handler = routeMockHandler,
-                onBack = { showRoutePicker = false },
-                onRouteStarted = { routeState ->
-                    val route = routeState.route ?: return@RoutePickerScreen
-                    val coordsJson = buildCoordinatesJson(route.coordinates)
-                    context.config.root.global.betterLocation.apply {
-                        routeMockEnabled.set(true)
-                        routeMockProfile.set(route.profile.profileName)
-                        routeMockSpeed.set(routeState.speedKmh.toFloat())
-                        routeMockStartTime.set(System.currentTimeMillis().toString())
-                        routeMockPausedProgress.set(0.0F)
-                        routeMockCoordinates.set(coordsJson)
-                    }
-                    context.coroutineScope.launch {
-                        context.config.writeConfig()
-                    }
-                },
-                onRouteStopped = {
-                    context.config.root.global.betterLocation.apply {
-                        routeMockEnabled.set(false)
-                        routeMockStartTime.set("0")
-                        routeMockCoordinates.set("")
-                    }
-                    context.coroutineScope.launch {
-                        context.config.writeConfig()
-                    }
-                }
-            )
-        }
-    }
-
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .clipToBounds()
-        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clipToBounds()
+            ) {
 
                 item {
                     @Composable
@@ -578,24 +520,6 @@ class BetterLocationRoot : Routes.Route() {
                                 Icon(Icons.Filled.Navigation, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(6.dp))
                                 Text(translation["teleport_to_friend_button"])
-                            }
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Button(
-                                onClick = { showRoutePicker = true },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF6C63FF).copy(alpha = 0.28f),
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Icon(Icons.Filled.Map, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text("Route Mocking")
                             }
                         }
                     }
@@ -767,12 +691,11 @@ class BetterLocationRoot : Routes.Route() {
                                 accent = PurrfectPalette.glowSecondary
                             ) {
                                 showDeleteDialog = true
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
-}
-}
-}
-}
-}
-}
 }
