@@ -465,12 +465,12 @@ class BetterLocationRoot : Routes.Route() {
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .weight(1f)
-            .clipToBounds()
-    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .clipToBounds()
+        ) {
 
                 item {
                     @Composable
