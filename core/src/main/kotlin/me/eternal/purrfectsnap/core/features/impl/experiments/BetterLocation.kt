@@ -77,11 +77,11 @@ class BetterLocation : Feature("Better Location") {
         RandomWalking(walkRadius?.toDoubleOrNull())
     }
 
-    private val routeMockHandler by lazy {
+    private val _routeMockHandler by lazy {
         RouteMockHandler()
     }
 
-    fun routeMockHandler(): RouteMockHandler = routeMockHandler
+    fun routeMockHandler(): RouteMockHandler = _routeMockHandler
 
     private fun getLat() : Double {
         try {
