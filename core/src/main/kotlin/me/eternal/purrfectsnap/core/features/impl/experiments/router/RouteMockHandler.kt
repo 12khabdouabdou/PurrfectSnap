@@ -1,5 +1,6 @@
 package me.eternal.purrfectsnap.core.features.impl.experiments.router
 
+import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -11,6 +12,54 @@ class RouteMockHandler(
     private val osrmClient: OsrmClient = OsrmClient(),
 ) {
     private var state: RouteState = RouteState()
+
+    fun getPositionFromConfig(
+        coordinatesJson: String,
+        startTimeMs: Long,
+        speedKmh: Double,
+        pausedProgress: Float,
+    ): GeoPoint? {
+        if (coordinatesJson.isEmpty() || startTimeMs == 0L) return null
+
+        val coordinates = parseCoordinatesFromJson(coordinatesJson)
+        if (coordinates.isEmpty()) return null
+
+        val totalDistance = calculateTotalDistance(coordinates)
+        val speedMetersPerSecond = speedKmh * 1000.0 / 3600.0
+        val totalDurationMs = (totalDistance / speedMetersPerSecond) * 1000.0
+
+        val elapsedMs = System.currentTimeMillis() - startTimeMs
+        val adjustedElapsedMs = elapsedMs + (pausedProgress * totalDurationMs)
+        val rawProgress = (adjustedElapsedMs / totalDurationMs).toFloat()
+
+        if (rawProgress >= 1.0f) {
+            return coordinates.last()
+        }
+
+        return calculatePositionAt(coordinates, rawProgress)
+    }
+
+    private fun parseCoordinatesFromJson(json: String): List<GeoPoint> {
+        val coordinates = mutableListOf<GeoPoint>()
+        try {
+            val jsonArray = JSONObject(json).optJSONArray("coords") ?: return emptyList()
+            for (i in 0 until jsonArray.length()) {
+                val point = jsonArray.getJSONObject(i)
+                coordinates.add(GeoPoint(point.getDouble("lat"), point.getDouble("lng")))
+            }
+        } catch (e: Exception) {
+            return emptyList()
+        }
+        return coordinates
+    }
+
+    private fun calculateTotalDistance(coordinates: List<GeoPoint>): Double {
+        var total = 0.0
+        for (i in 0 until coordinates.size - 1) {
+            total += haversineDistance(coordinates[i], coordinates[i + 1])
+        }
+        return total
+    }
 
     @Synchronized
     fun getState(): RouteState = state

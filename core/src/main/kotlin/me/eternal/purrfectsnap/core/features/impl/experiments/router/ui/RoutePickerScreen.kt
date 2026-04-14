@@ -47,7 +47,8 @@ import org.osmdroid.util.GeoPoint
 fun RoutePickerScreen(
     handler: RouteMockHandler,
     onBack: () -> Unit,
-    onRouteStarted: () -> Unit,
+    onRouteStarted: (RouteState) -> Unit,
+    onRouteStopped: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -124,32 +125,34 @@ fun RoutePickerScreen(
                     state = state,
                     handler = handler,
                     onStateUpdate = { state = it },
-                    onStart = {
-                        scope.launch {
-                            when (state.status) {
-                                RouteStatus.Ready -> {
-                                    state = handler.start()
-                                    onRouteStarted()
+                        onStart = {
+                            scope.launch {
+                                when (state.status) {
+                                    RouteStatus.Ready -> {
+                                        state = handler.start()
+                                        onRouteStarted(state)
+                                    }
+                                    RouteStatus.Paused -> {
+                                        state = handler.resume()
+                                        onRouteStarted(state)
+                                    }
+                                    else -> {}
                                 }
-                                RouteStatus.Paused -> {
-                                    state = handler.resume()
-                                    onRouteStarted()
-                                }
-                                else -> {}
                             }
-                        }
-                    },
+                        },
                     onPause = {
                         state = handler.pause()
                     },
-                    onStop = {
-                        state = handler.stop()
-                        showEmptyState = true
-                    },
-                    onClear = {
-                        state = handler.clearPoints()
-                        showEmptyState = true
-                    },
+                        onStop = {
+                            state = handler.stop()
+                            showEmptyState = true
+                            onRouteStopped()
+                        },
+                        onClear = {
+                            state = handler.clearPoints()
+                            showEmptyState = true
+                            onRouteStopped()
+                        },
                     onProfileChange = { profile ->
                         state = handler.setProfile(profile)
                         scope.launch {

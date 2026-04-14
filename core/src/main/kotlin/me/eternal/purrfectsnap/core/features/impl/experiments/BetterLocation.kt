@@ -83,9 +83,23 @@ class BetterLocation : Feature("Better Location") {
 
     fun routeMockHandler(): RouteMockHandler = _routeMockHandler
 
+    private fun isRouteMockPlaying(): Boolean {
+        return context.config.global.betterLocation.routeMockEnabled.get()
+    }
+
+    private fun getRouteMockPosition(): GeoPoint? {
+        if (!isRouteMockPlaying()) return null
+        return _routeMockHandler.getPositionFromConfig(
+            coordinatesJson = context.config.global.betterLocation.routeMockCoordinates.getNullable() ?: return null,
+            startTimeMs = context.config.global.betterLocation.routeMockStartTime.get(),
+            speedKmh = context.config.global.betterLocation.routeMockSpeed.get().toDouble(),
+            pausedProgress = context.config.global.betterLocation.routeMockPausedProgress.get(),
+        )
+    }
+
     private fun getLat() : Double {
         try {
-            val routePosition = routeMockHandler().getCurrentPosition()
+            val routePosition = getRouteMockPosition()
             if (routePosition != null) {
                 return routePosition.latitude
             }
@@ -102,7 +116,7 @@ class BetterLocation : Feature("Better Location") {
 
     private fun getLong() : Double {
         try {
-            val routePosition = routeMockHandler().getCurrentPosition()
+            val routePosition = getRouteMockPosition()
             if (routePosition != null) {
                 return routePosition.longitude
             }
