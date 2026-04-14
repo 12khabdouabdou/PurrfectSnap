@@ -81,7 +81,7 @@ class BetterLocation : Feature("Better Location") {
         RouteMockHandler()
     }
 
-    fun getRouteMockHandler(): RouteMockHandler = routeMockHandler
+    fun routeMockHandler(): RouteMockHandler = routeMockHandler
 
     private fun getLat() : Double {
         try {
