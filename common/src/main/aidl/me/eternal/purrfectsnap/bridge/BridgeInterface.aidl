@@ -107,7 +107,5 @@ interface BridgeInterface {
 
     @nullable String getDebugProp(String key, @nullable String defaultValue);
 
-    oneway void terminateModuleProcess();
-
     CallDownloadSession startCallDownload(long startTimestamp, String author);
 }

@@ -8,11 +8,9 @@ import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
 import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.mapper.impl.PlusSubscriptionMapper
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 class SnapchatPlus: Feature("SnapchatPlus") {
+    private val originalSubscriptionTime = (System.currentTimeMillis() - 7776000000L)
     private val expirationTimeMillis = (System.currentTimeMillis() + 15552000000L)
 
     override fun init() {
@@ -42,24 +40,7 @@ class SnapchatPlus: Feature("SnapchatPlus") {
                         //subscription status
                         set(statusField.getAsString()!!, 2)
 
-                        val fallbackOriginalSubscriptionTime = System.currentTimeMillis() - 7776000000L
-                        val customPurchaseDate = context.config.global.snapchatPlusPurchaseDate.get().trim()
-                        val customPurchaseDateMillis = if (customPurchaseDate.isNotEmpty()) {
-                            runCatching {
-                                LocalDate
-                                    .parse(customPurchaseDate, DateTimeFormatter.ISO_LOCAL_DATE)
-                                    .atStartOfDay(ZoneId.systemDefault())
-                                    .toInstant()
-                                    .toEpochMilli()
-                            }.getOrNull()
-                        } else {
-                            null
-                        }
-
-                        set(
-                            originalSubscriptionTimeMillisField.getAsString()!!,
-                            customPurchaseDateMillis ?: fallbackOriginalSubscriptionTime
-                        )
+                        set(originalSubscriptionTimeMillisField.getAsString()!!, originalSubscriptionTime)
                         set(expirationTimeMillisField.getAsString()!!, expirationTimeMillis)
                     }
                 }
