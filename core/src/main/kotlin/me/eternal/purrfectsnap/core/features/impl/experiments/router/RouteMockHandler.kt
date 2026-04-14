@@ -2,9 +2,10 @@ package me.eternal.purrfectsnap.core.features.impl.experiments.router
 
 import org.osmdroid.util.GeoPoint
 import kotlin.math.abs
+import kotlin.math.atan2
 import kotlin.math.cos
-import kotlin.math.floor
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class RouteMockHandler(
     private val osrmClient: OsrmClient = OsrmClient(),
