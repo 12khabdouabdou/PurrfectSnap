@@ -766,11 +766,12 @@ class BetterLocationRoot : Routes.Route() {
                                 accent = PurrfectPalette.glowSecondary
                             ) {
                                 showDeleteDialog = true
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
+}
+}
+}
+}
+}
+}
 }
