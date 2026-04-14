@@ -1231,6 +1231,20 @@
                         "name": "Settings Menu",
                         "description": "Choose between the new and legacy settings menu layouts"
                     },
+                    "chat_button_hold_kill": {
+                        "name": "Chat Button Hold Kill",
+                        "description": "Hold the chat button in friend feed to kill Snapchat and/or PurrfectSnap",
+                        "properties": {
+                            "enabled": {
+                                "name": "Enable Hold Kill",
+                                "description": "Enable long-press kill action on the chat button"
+                            },
+                            "target_apps": {
+                                "name": "Target Apps",
+                                "description": "Choose which apps are terminated when long-pressing the chat button"
+                            }
+                        }
+                    },
                     "spoof_snap_score": {
                         "name": "Spoof Snap Score",
                         "description": "Spoof your Snap Score (local only)",
@@ -1900,17 +1914,7 @@
                     },
                     "snapchat_plus": {
                         "name": "Snapchat Plus",
-                        "description": "Enables Snapchat Plus features\nSome Server-sided features may not work",
-                        "properties": {
-                            "snapchat_plus_custom_purchase_date": {
-                                "name": "Use Custom Purchase Date",
-                                "description": "Use your own Snapchat Plus purchase date override"
-                            },
-                            "snapchat_plus_purchase_date": {
-                                "name": "Purchase Date (YYYY-MM-DD)",
-                                "description": "Set a custom Snapchat Plus purchase date in YYYY-MM-DD format"
-                            }
-                        }
+                        "description": "Enables Snapchat Plus features\nSome Server-sided features may not work"
                     },
                     "media_upload_quality": {
                         "name": "Media Upload Quality",
@@ -2893,6 +2897,12 @@
             "settings_menu": {
                 "default": "Default",
                 "legacy": "Legacy"
+            },
+            "chat_button_hold_kill": {
+                "target_apps": {
+                    "kill_snapchat": "Kill Snapchat",
+                    "kill_purrfectsnap": "Kill PurrfectSnap"
+                }
             },
             "path_format": {
                 "create_author_folder": "Create folder for each author",
