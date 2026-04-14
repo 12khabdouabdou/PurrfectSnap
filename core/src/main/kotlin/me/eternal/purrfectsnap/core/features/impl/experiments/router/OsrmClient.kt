@@ -2,8 +2,6 @@ package me.eternal.purrfectsnap.core.features.impl.experiments.router
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.eternal.purrfectsnap.core.features.impl.experiments.router.Result.Companion.Error
-import me.eternal.purrfectsnap.core.features.impl.experiments.router.Result.Companion.Success
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -28,7 +26,7 @@ class OsrmClient(
         endLat: Double,
         endLng: Double,
         profile: OsrmProfile,
-    ): Result<Route> = withContext(Dispatchers.IO) {
+    ): RouteResult<Route> = withContext(Dispatchers.IO) {
         try {
             val url = buildUrl(startLng, startLat, endLng, endLat, profile)
             val request = Request.Builder()
@@ -39,20 +37,20 @@ class OsrmClient(
             val response = okHttpClient.newCall(request).execute()
 
             if (!response.isSuccessful) {
-                return@withContext Error("Server error: ${response.code}")
+                return@withContext RouteResult.Error<Route>("Server error: ${response.code}")
             }
 
             val responseBody = response.body?.string()
-                ?: return@withContext Error("Empty response from server")
+                ?: return@withContext RouteResult.Error<Route>("Empty response from server")
 
             val osrmResponse = parseOsrmResponse(responseBody)
 
             if (osrmResponse.code != "Ok") {
-                return@withContext Error("No route found between these points")
+                return@withContext RouteResult.Error<Route>("No route found between these points")
             }
 
             if (osrmResponse.routes.isEmpty()) {
-                return@withContext Error("No route available")
+                return@withContext RouteResult.Error<Route>("No route available")
             }
 
             val osrmRoute = osrmResponse.routes[0]
@@ -69,9 +67,9 @@ class OsrmClient(
                 durationSeconds = osrmRoute.duration,
             )
 
-            Success(route)
+            RouteResult.Success(route)
         } catch (e: Exception) {
-            Error("Failed to calculate route: ${e.message}", e)
+            RouteResult.Error("Failed to calculate route: ${e.message}", e)
         }
     }
 

@@ -4,9 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
 import android.widget.RelativeLayout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -15,9 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.toBitmap
-import me.eternal.purrfectsnap.core.R
 import me.eternal.purrfectsnap.core.features.impl.experiments.router.Route
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -35,7 +29,7 @@ fun RoutePickerMap(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    
+
     val mapView = remember {
         Configuration.getInstance().load(
             context,
@@ -93,9 +87,7 @@ fun RoutePickerMap(
             }
             mapView.overlays.add(polyline)
 
-            val bounds = org.osmdroid.util.BoundingBox.fromGeoPoints(
-                r.coordinates.map { it }
-            )
+            val bounds = org.osmdroid.util.BoundingBox.fromGeoPoints(r.coordinates)
             mapView.zoomToBoundingBox(bounds, true)
         }
 
@@ -140,15 +132,15 @@ private fun createMarker(
 private fun createColoredPin(context: Context, color: Int): android.graphics.drawable.Drawable {
     val bitmap = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
-    
+
     val paint = Paint().apply {
         this.color = color
         isAntiAlias = true
         style = Paint.Style.FILL
     }
-    
+
     canvas.drawCircle(32f, 24f, 20f, paint)
-    
+
     val path = android.graphics.Path().apply {
         moveTo(32f, 64f)
         lineTo(16f, 28f)
@@ -156,16 +148,12 @@ private fun createColoredPin(context: Context, color: Int): android.graphics.dra
         close()
     }
     canvas.drawPath(path, paint)
-    
-    val whitePaint = Paint().apply {
-        color = android.graphics.Color.WHITE
-        isAntiAlias = true
-        style = Paint.Style.FILL
-    }
+
+    val whitePaint = Paint()
+    whitePaint.color = android.graphics.Color.WHITE
+    whitePaint.isAntiAlias = true
+    whitePaint.style = Paint.Style.FILL
     canvas.drawCircle(32f, 24f, 8f, whitePaint)
-    
-    return android.graphics.drawable.BitmapDrawable(
-        context.resources,
-        bitmap
-    )
+
+    return android.graphics.drawable.BitmapDrawable(context.resources, bitmap)
 }

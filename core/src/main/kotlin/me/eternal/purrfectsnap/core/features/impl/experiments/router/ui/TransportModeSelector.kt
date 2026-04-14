@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsBike
+import androidx.compose.material.icons.filled.DirectionsCar
+import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -36,7 +39,7 @@ fun TransportModeSelector(
             selected = selectedProfile == OsrmProfile.WALKING,
             onClick = { onProfileSelected(OsrmProfile.WALKING) },
             label = "Walking",
-            icon = androidx.compose.material.icons.Icons.Default.DirectionsWalk,
+            icon = Icons.Default.DirectionsWalk,
             contentDescription = "Walking mode"
         )
 
@@ -46,7 +49,7 @@ fun TransportModeSelector(
             selected = selectedProfile == OsrmProfile.DRIVING,
             onClick = { onProfileSelected(OsrmProfile.DRIVING) },
             label = "Driving",
-            icon = androidx.compose.material.icons.Icons.Default.DirectionsCar,
+            icon = Icons.Default.DirectionsCar,
             contentDescription = "Driving mode"
         )
 
@@ -56,7 +59,7 @@ fun TransportModeSelector(
             selected = selectedProfile == OsrmProfile.CYCLING,
             onClick = { onProfileSelected(OsrmProfile.CYCLING) },
             label = "Cycling",
-            icon = androidx.compose.material.icons.Icons.Default.DirectionsBike,
+            icon = Icons.Default.DirectionsBike,
             contentDescription = "Cycling mode"
         )
     }

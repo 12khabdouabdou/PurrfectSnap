@@ -97,7 +97,7 @@ data class RouteState(
     }
 }
 
-sealed class Result<out T> {
-    data class Success<T>(val data: T) : Result<T>()
-    data class Error(val message: String, val cause: Throwable? = null) : Result<Nothing>()
+sealed class RouteResult<out T> {
+    data class Success<T>(val data: T) : RouteResult<T>()
+    data class Error(val message: String, val cause: Throwable? = null) : RouteResult<Nothing>()
 }

@@ -3,9 +3,13 @@ package me.eternal.purrfectsnap.core.features.impl.experiments.router.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.PauseCircle
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -52,35 +56,35 @@ fun StateIndicator(
         }
         is RouteStatus.Ready -> {
             StateChip(
-                icon = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                icon = Icons.Default.CheckCircle,
                 text = "Ready to start",
                 color = Color(0xFF4CAF50)
             )
         }
         is RouteStatus.Playing -> {
             StateChip(
-                icon = androidx.compose.material.icons.Icons.Default.PlayCircle,
+                icon = Icons.Default.PlayCircle,
                 text = "Simulating",
                 color = Color(0xFF4CAF50)
             )
         }
         is RouteStatus.Paused -> {
             StateChip(
-                icon = androidx.compose.material.icons.Icons.Default.PauseCircle,
+                icon = Icons.Default.PauseCircle,
                 text = "Paused",
                 color = Color(0xFFFFC107)
             )
         }
         is RouteStatus.Completed -> {
             StateChip(
-                icon = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                icon = Icons.Default.CheckCircle,
                 text = "Complete",
                 color = MaterialTheme.colorScheme.primary
             )
         }
         is RouteStatus.Error -> {
             StateChip(
-                icon = androidx.compose.material.icons.Icons.Default.Error,
+                icon = Icons.Default.Error,
                 text = "Error",
                 color = MaterialTheme.colorScheme.error
             )

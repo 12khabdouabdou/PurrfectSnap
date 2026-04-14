@@ -90,19 +90,19 @@ class RouteMockHandler(
             profile = profile,
         )
 
-        @Synchronized
-        fun updateWithResult() {
-            state = when (result) {
-                is Result.Success -> state.copy(
-                    route = result.data,
-                    status = RouteStatus.Ready,
-                    progress = 0f,
-                )
-                is Result.Error -> state.copy(
-                    status = RouteStatus.Error(result.message)
-                )
-            }
+    @Synchronized
+    fun updateWithResult() {
+        state = when (result) {
+            is RouteResult.Success -> state.copy(
+                route = result.data,
+                status = RouteStatus.Ready,
+                progress = 0f,
+            )
+            is RouteResult.Error -> state.copy(
+                status = RouteStatus.Error(result.message)
+            )
         }
+    }
         updateWithResult()
 
         return state
@@ -271,4 +271,4 @@ class RouteMockHandler(
     }
 }
 
-private fun <T : Number> kotlin.math.pow(x: T): Double = Math.pow(this.toDouble(), x.toDouble())
+
