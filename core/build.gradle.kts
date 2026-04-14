@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.androidx.documentfile)
     implementation(libs.rhino)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.osmdroid.android)
 
 
     implementation(project(":common"))

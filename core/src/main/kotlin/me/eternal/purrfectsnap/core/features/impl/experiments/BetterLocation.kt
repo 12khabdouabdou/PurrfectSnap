@@ -25,6 +25,8 @@ import me.eternal.purrfectsnap.common.util.protobuf.ProtoReader
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.event.events.impl.UnaryCallEvent
 import me.eternal.purrfectsnap.core.features.Feature
+import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteMockHandler
+import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteStatus
 import me.eternal.purrfectsnap.core.ui.children
 import me.eternal.purrfectsnap.core.util.RandomWalking
 import me.eternal.purrfectsnap.core.util.dataBuilder
@@ -35,6 +37,7 @@ import me.eternal.purrfectsnap.core.util.ktx.getId
 import me.eternal.purrfectsnap.core.util.ktx.getObjectField
 import me.eternal.purrfectsnap.core.util.ktx.isDarkTheme
 import me.eternal.purrfectsnap.mapper.impl.CallbackMapper
+import org.osmdroid.util.GeoPoint
 import java.nio.ByteBuffer
 import java.util.UUID
 import kotlin.math.atan2
@@ -74,7 +77,22 @@ class BetterLocation : Feature("Better Location") {
         RandomWalking(walkRadius?.toDoubleOrNull())
     }
 
+    private val routeMockHandler by lazy {
+        RouteMockHandler()
+    }
+
+    fun getRouteMockHandler(): RouteMockHandler = routeMockHandler
+
     private fun getLat() : Double {
+        try {
+            val routePosition = routeMockHandler.getCurrentPosition()
+            if (routePosition != null) {
+                return routePosition.latitude
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("BetterLocation", "Route mock error", e)
+        }
+
         var spoofedLatitude = context.config.global.betterLocation.coordinates.get().first
         walkRadius?.let {
             spoofedLatitude += randomWalking.current_x
@@ -83,6 +101,15 @@ class BetterLocation : Feature("Better Location") {
     }
 
     private fun getLong() : Double {
+        try {
+            val routePosition = routeMockHandler.getCurrentPosition()
+            if (routePosition != null) {
+                return routePosition.longitude
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("BetterLocation", "Route mock error", e)
+        }
+
         var spoofedLongitude = context.config.global.betterLocation.coordinates.get().second
         walkRadius?.let {
             spoofedLongitude += randomWalking.current_y
