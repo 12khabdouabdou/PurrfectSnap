@@ -443,7 +443,7 @@ class BetterLocationRoot : Routes.Route() {
                         routeMockEnabled.set(true)
                         routeMockProfile.set(route.profile.profileName)
                         routeMockSpeed.set(routeState.speedKmh.toFloat())
-                        routeMockStartTime.set(System.currentTimeMillis())
+                        routeMockStartTime.set(System.currentTimeMillis().toString())
                         routeMockPausedProgress.set(0.0F)
                         routeMockCoordinates.set(coordsJson)
                     }
@@ -454,7 +454,7 @@ class BetterLocationRoot : Routes.Route() {
                 onRouteStopped = {
                     context.config.root.global.betterLocation.apply {
                         routeMockEnabled.set(false)
-                        routeMockStartTime.set(0L)
+                        routeMockStartTime.set("0")
                         routeMockCoordinates.set("")
                     }
                     context.coroutineScope.launch {

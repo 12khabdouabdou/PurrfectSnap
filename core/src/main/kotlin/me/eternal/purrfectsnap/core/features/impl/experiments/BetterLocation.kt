@@ -91,7 +91,7 @@ class BetterLocation : Feature("Better Location") {
         if (!isRouteMockPlaying()) return null
         return _routeMockHandler.getPositionFromConfig(
             coordinatesJson = context.config.global.betterLocation.routeMockCoordinates.getNullable() ?: return null,
-            startTimeMs = context.config.global.betterLocation.routeMockStartTime.get(),
+            startTimeMs = context.config.global.betterLocation.routeMockStartTime.get().toLongOrNull() ?: return null,
             speedKmh = context.config.global.betterLocation.routeMockSpeed.get().toDouble(),
             pausedProgress = context.config.global.betterLocation.routeMockPausedProgress.get(),
         )
