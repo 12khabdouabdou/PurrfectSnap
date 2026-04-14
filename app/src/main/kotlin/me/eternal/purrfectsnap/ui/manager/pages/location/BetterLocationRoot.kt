@@ -44,6 +44,11 @@ import me.eternal.purrfectsnap.ui.util.AlertDialogs
 import me.eternal.purrfectsnap.ui.util.DialogProperties
 import me.eternal.purrfectsnap.ui.util.purrfectSwitchColors
 import me.eternal.purrfectsnap.ui.util.coil.BitmojiImage
+import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteMockHandler
+import me.eternal.purrfectsnap.core.features.impl.experiments.router.Route
+import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteState
+import me.eternal.purrfectsnap.core.features.impl.experiments.router.ui.RoutePickerScreen
+import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -252,14 +257,15 @@ class BetterLocationRoot : Routes.Route() {
         ) {
             context.database.getLocationCoordinates()
         }
-        var showMap by remember { mutableStateOf(false) }
-        var addSavedCoordinateDialog by remember { mutableStateOf(false) }
-        var showTeleportDialog by remember { mutableStateOf(false) }
-        var showProviderDialog by remember { mutableStateOf(false) }
-        var showApiKeyDialog by remember { mutableStateOf(false) }
-
-        val marker = remember { mutableStateOf<Marker?>(null) }
-        val mapView = remember { mutableStateOf<MapView?>(null) }
+  var showMap by remember { mutableStateOf(false) }
+  var addSavedCoordinateDialog by remember { mutableStateOf(false) }
+  var showTeleportDialog by remember { mutableStateOf(false) }
+  var showProviderDialog by remember { mutableStateOf(false) }
+  var showApiKeyDialog by remember { mutableStateOf(false) }
+  var showRoutePicker by remember { mutableStateOf(false) }
+  val routeMockHandler = remember { RouteMockHandler() }
+  val marker = remember { mutableStateOf<Marker?>(null) }
+  val mapView = remember { mutableStateOf<MapView?>(null) }
         var spoofedCoordinates by remember(showTeleportDialog, showMap) {
             mutableStateOf(
                 (coordinatesProperty.value.getNullable() as? Pair<*, *>)
@@ -267,13 +273,26 @@ class BetterLocationRoot : Routes.Route() {
             )
         }
 
-        fun addSavedCoordinate(id: Int?, locationCoordinates: LocationCoordinates, onSuccess: suspend (id: Int) -> Unit = {}) {
-            context.coroutineScope.launch {
-                onSuccess(context.database.addOrUpdateLocationCoordinate(id, locationCoordinates))
-            }
-        }
+  fun addSavedCoordinate(id: Int?, locationCoordinates: LocationCoordinates, onSuccess: suspend (id: Int) -> Unit = {}) {
+    context.coroutineScope.launch {
+      onSuccess(context.database.addOrUpdateLocationCoordinate(id, locationCoordinates))
+    }
+  }
 
-        if (showTeleportDialog) {
+  fun buildCoordinatesJson(coordinates: List<GeoPoint>): String {
+    val json = JSONObject()
+    val coordsArray = org.json.JSONArray()
+    coordinates.forEach { point ->
+      val pointJson = JSONObject()
+      pointJson.put("lat", point.latitude)
+      pointJson.put("lng", point.longitude)
+      coordsArray.put(pointJson)
+    }
+    json.put("coords", coordsArray)
+    return json.toString()
+  }
+
+  if (showTeleportDialog) {
             me.eternal.purrfectsnap.ui.util.Dialog(
                 properties = DialogProperties(usePlatformDefaultWidth = false),
                 onDismissRequest = { showTeleportDialog = false },
@@ -282,133 +301,49 @@ class BetterLocationRoot : Routes.Route() {
                         showTeleportDialog = false
                         context.coroutineScope.launch {
                             context.config.writeConfig()
-                        }
-                    }
-                }
-            )
+      }
+    }
+  }
+  )
+
+  if (showRoutePicker) {
+    me.eternal.purrfectsnap.ui.util.Dialog(
+      properties = DialogProperties(usePlatformDefaultWidth = false),
+      onDismissRequest = { showRoutePicker = false }
+    ) {
+      RoutePickerScreen(
+        handler = routeMockHandler,
+        onBack = { showRoutePicker = false },
+        onRouteStarted = { routeState ->
+          val route = routeState.route ?: return@RoutePickerScreen
+          val coordsJson = buildCoordinatesJson(route.coordinates)
+          context.config.root.global.betterLocation.apply {
+            routeMockEnabled.set(true)
+            routeMockProfile.set(route.profile.profileName)
+            routeMockSpeed.set(routeState.speedKmh.toFloat())
+            routeMockStartTime.set(System.currentTimeMillis().toString())
+            routeMockPausedProgress.set(0.0F)
+            routeMockCoordinates.set(coordsJson)
+          }
+          context.coroutineScope.launch {
+            context.config.writeConfig()
+          }
+        },
+        onRouteStopped = {
+          context.config.root.global.betterLocation.apply {
+            routeMockEnabled.set(false)
+            routeMockStartTime.set("0")
+            routeMockCoordinates.set("")
+          }
+          context.coroutineScope.launch {
+            context.config.writeConfig()
+          }
         }
+      )
+    }
+  }
 
-         var currentProvider by remember {
-             mutableStateOf(context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm")
-         }
-         var currentApiKey by remember {
-             mutableStateOf(context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: "")
-         }
-
-         if (showProviderDialog) {
-             me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = {
-                 showProviderDialog = false
-                 context.config.writeConfig()
-                 currentProvider = context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm"
-             }) {
-                 alertDialogs.UniqueSelectionDialog(providerProperty)
-             }
-         }
-         if (showApiKeyDialog) {
-             me.eternal.purrfectsnap.ui.util.Dialog(onDismissRequest = { 
-                 showApiKeyDialog = false
-                 context.config.writeConfig()
-                 currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: ""
-             }) {
-                  alertDialogs.KeyboardInputDialog(apiKeyProperty) {
-                      showApiKeyDialog = false
-                      context.config.writeConfig()
-                      currentApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: ""
-                  }
-             }
-         }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            GlassPanel(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    translation.format(
-                        "spoofed_coordinates_title",
-                        "latitude" to ((spoofedCoordinates?.first as? Double)?.toFloat() ?: "0.0").toString(),
-                        "longitude" to ((spoofedCoordinates?.second as? Double)?.toFloat() ?: "0.0").toString()
-                    ),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center,
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            if (addSavedCoordinateDialog) {
-                me.eternal.purrfectsnap.ui.util.Dialog(
-                    onDismissRequest = { addSavedCoordinateDialog = false },
-                    content = {
-                        AddCoordinatesDialog(
-                            alertDialogs,
-                            translation,
-                            LocationCoordinates().apply {
-                                this.latitude = marker.value?.position?.latitude ?: 0.0
-                                this.longitude = marker.value?.position?.longitude ?: 0.0
-                            },
-                        ) { coordinates ->
-                            addSavedCoordinateDialog = false
-                            addSavedCoordinate(null, coordinates) {
-                                withContext(Dispatchers.Main) {
-                                    savedCoordinates.add(0, coordinates.apply { id = it })
-                                }
-                            }
-                        }
-                    }
-                )
-            }
-
-            if (showMap) {
-                me.eternal.purrfectsnap.ui.util.Dialog(
-                    onDismissRequest = { showMap = false },
-                    content = {
-                        Surface(
-                            shape = RoundedCornerShape(24.dp),
-                            color = Color.White.copy(alpha = 0.06f),
-                            tonalElevation = 0.dp,
-                            shadowElevation = 16.dp,
-                            border = BorderStroke(
-                                1.dp,
-                                Brush.linearGradient(
-                                    listOf(
-                                        PurrfectPalette.glowPrimary.copy(alpha = 0.45f),
-                                        PurrfectPalette.glowSecondary.copy(alpha = 0.35f)
-                                    )
-                                )
-                            )
-                        ) {
-                            Box(modifier = Modifier.background(PurrfectPalette.cardOverlay)) {
-                                alertDialogs.ChooseLocationDialog(
-                                    property = coordinatesProperty,
-                                    marker = marker,
-                                    mapView = mapView,
-                                    locationSearchProvider = context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm",
-                                    googleMapsApiKey = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: "",
-                                    saveCoordinates = {
-                                        addSavedCoordinateDialog = true
-                                    }
-                                ) {
-                                    showMap = false
-                                    context.config.writeConfig()
-                                }
-                            }
-                        }
-                        DisposableEffect(Unit) {
-                            onDispose {
-                                marker.value = null
-                            }
-                        }
-                    }
-                )
-            }
-
-            LazyColumn(
+  LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .clipToBounds()
@@ -528,14 +463,7 @@ class BetterLocationRoot : Routes.Route() {
         verticalAlignment = Alignment.CenterVertically
       ) {
         Button(
-          onClick = { 
-            context.config.root.global.betterLocation.spoofLocation.set(
-              !context.config.root.global.betterLocation.spoofLocation.get()
-            )
-            context.coroutineScope.launch {
-              context.config.writeConfig()
-            }
-          },
+          onClick = { showRoutePicker = true },
           modifier = Modifier.weight(1f),
           colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFF6C63FF).copy(alpha = 0.28f),
@@ -544,7 +472,7 @@ class BetterLocationRoot : Routes.Route() {
         ) {
           Icon(Icons.Filled.Map, contentDescription = null, modifier = Modifier.size(18.dp))
           Spacer(Modifier.width(6.dp))
-          Text("Route Mocking (Coming Soon)")
+          Text("Route Mocking")
         }
       }
                     }
