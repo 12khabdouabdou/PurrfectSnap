@@ -509,19 +509,44 @@ class BetterLocationRoot : Routes.Route() {
                                 Spacer(Modifier.width(6.dp))
                                 Text(translation["choose_location_button"])
                             }
-                            Button(
-                                onClick = { showTeleportDialog = true },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = PurrfectPalette.glowSecondary.copy(alpha = 0.28f),
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Icon(Icons.Filled.Navigation, contentDescription = null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text(translation["teleport_to_friend_button"])
-                            }
-                        }
+        Button(
+          onClick = { showTeleportDialog = true },
+          modifier = Modifier.weight(1f),
+          colors = ButtonDefaults.buttonColors(
+            containerColor = PurrfectPalette.glowSecondary.copy(alpha = 0.28f),
+            contentColor = Color.White
+          )
+        ) {
+          Icon(Icons.Filled.Navigation, contentDescription = null, modifier = Modifier.size(18.dp))
+          Spacer(Modifier.width(6.dp))
+          Text(translation["teleport_to_friend_button"])
+        }
+      }
+      Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Button(
+          onClick = { 
+            context.config.root.global.betterLocation.spoofLocation.set(
+              !context.config.root.global.betterLocation.spoofLocation.get()
+            )
+            context.coroutineScope.launch {
+              context.config.writeConfig()
+            }
+          },
+          modifier = Modifier.weight(1f),
+          colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF6C63FF).copy(alpha = 0.28f),
+            contentColor = Color.White
+          )
+        ) {
+          Icon(Icons.Filled.Map, contentDescription = null, modifier = Modifier.size(18.dp))
+          Spacer(Modifier.width(6.dp))
+          Text("Route Mocking (Coming Soon)")
+        }
+      }
                     }
                 }
                 item {
