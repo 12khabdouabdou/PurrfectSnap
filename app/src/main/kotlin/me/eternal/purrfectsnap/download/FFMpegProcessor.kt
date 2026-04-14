@@ -92,6 +92,10 @@ class FFMpegProcessor(
 
     private val sharedExecutor = Executors.newSingleThreadExecutor()
 
+    protected fun finalize() {
+        runCatching { sharedExecutor.shutdown() }
+    }
+
     private suspend fun newFFMpegTask(globalArguments: ArgumentList, inputArguments: ArgumentList, outputArguments: ArgumentList) = suspendCancellableCoroutine<FFmpegSession> {
         val stringBuilder = StringBuilder()
         arrayOf(globalArguments, inputArguments, outputArguments).forEach { argumentList ->
