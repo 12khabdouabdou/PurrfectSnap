@@ -85,7 +85,7 @@ class BetterLocation : Feature("Better Location") {
 
     private fun getLat() : Double {
         try {
-            val routePosition = routeMockHandler.getCurrentPosition()
+            val routePosition = routeMockHandler().getCurrentPosition()
             if (routePosition != null) {
                 return routePosition.latitude
             }
@@ -102,7 +102,7 @@ class BetterLocation : Feature("Better Location") {
 
     private fun getLong() : Double {
         try {
-            val routePosition = routeMockHandler.getCurrentPosition()
+            val routePosition = routeMockHandler().getCurrentPosition()
             if (routePosition != null) {
                 return routePosition.longitude
             }
