@@ -241,9 +241,10 @@ class RouteMockHandler(
         val deltaLat = Math.toRadians(p2.latitude - p1.latitude)
         val deltaLng = Math.toRadians(p2.longitude - p1.longitude)
 
-        val a = sin(deltaLat / 2).pow(2) +
-                cos(lat1) * cos(lat2) * sin(deltaLng / 2).pow(2)
-        val c = 2 * kotlin.math.atan2(kotlin.math.sqrt(a), kotlin.math.sqrt(1 - a))
+        val sinDeltaLat = sin(deltaLat / 2)
+        val sinDeltaLng = sin(deltaLng / 2)
+        val a = sinDeltaLat * sinDeltaLat + cos(lat1) * cos(lat2) * sinDeltaLng * sinDeltaLng
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
         return earthRadius * c
     }

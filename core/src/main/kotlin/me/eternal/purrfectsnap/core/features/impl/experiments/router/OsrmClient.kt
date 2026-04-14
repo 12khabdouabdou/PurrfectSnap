@@ -37,20 +37,20 @@ class OsrmClient(
             val response = okHttpClient.newCall(request).execute()
 
             if (!response.isSuccessful) {
-                return@withContext RouteResult.Error<Route>("Server error: ${response.code}")
+                return@withContext RouteResult.Error("Server error: ${response.code}")
             }
 
             val responseBody = response.body?.string()
-                ?: return@withContext RouteResult.Error<Route>("Empty response from server")
+                ?: return@withContext RouteResult.Error("Empty response from server")
 
             val osrmResponse = parseOsrmResponse(responseBody)
 
             if (osrmResponse.code != "Ok") {
-                return@withContext RouteResult.Error<Route>("No route found between these points")
+                return@withContext RouteResult.Error("No route found between these points")
             }
 
             if (osrmResponse.routes.isEmpty()) {
-                return@withContext RouteResult.Error<Route>("No route available")
+                return@withContext RouteResult.Error("No route available")
             }
 
             val osrmRoute = osrmResponse.routes[0]
