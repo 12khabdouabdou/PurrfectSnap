@@ -18,6 +18,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import android.content.Context
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -49,6 +51,7 @@ import me.eternal.purrfectsnap.core.features.impl.experiments.router.Route
 import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteState
 import me.eternal.purrfectsnap.core.features.impl.experiments.router.ui.RoutePickerScreen
 import org.json.JSONObject
+import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -263,6 +266,14 @@ class BetterLocationRoot : Routes.Route() {
   var showProviderDialog by remember { mutableStateOf(false) }
   var showApiKeyDialog by remember { mutableStateOf(false) }
   var showRoutePicker by remember { mutableStateOf(false) }
+
+  // Initialize osmdroid configuration to prevent MapView crashes
+  val osmContext = LocalContext.current
+  LaunchedEffect(Unit) {
+    Configuration.getInstance().apply {
+      load(osmContext, osmContext.getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
+    }
+  }
 
   val routeMockHandler = remember { RouteMockHandler() }
   val marker = remember { mutableStateOf<Marker?>(null) }
