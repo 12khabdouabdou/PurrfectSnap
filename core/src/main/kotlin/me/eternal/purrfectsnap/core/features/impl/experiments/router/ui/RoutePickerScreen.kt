@@ -56,29 +56,15 @@ Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Starting composition ===")
 val scope = rememberCoroutineScope()
 Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Coroutine scope created ===")
 
-var handlerError: String? = null
-val initialState = try {
-Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Getting handler state ===")
-handler.getState().also { Log.d("RouteMocking", "Handler state obtained: $it") }
-} catch (e: Exception) {
-Log.e("RouteMocking", "=== ROUTE PICKER SCREEN: Handler getState() failed: ${e.javaClass.simpleName}: ${e.message} ===", e)
-handlerError = "${e.javaClass.simpleName}: ${e.message}"
-RouteState() // Fallback state
-}
-
-var state by remember { mutableStateOf(initialState) }
+// Simple state without try-catch to avoid Compose issues
+var state by remember { mutableStateOf(handler.getState()) }
 var showDisclaimer by remember { mutableStateOf(false) }
 var showEmptyState by remember { mutableStateOf(true) }
 
 LaunchedEffect(Unit) {
 Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: LaunchedEffect(Unit) triggered ===")
-try {
 showDisclaimer = true
 Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Disclaimer flag set to true ===")
-} catch (e: Exception) {
-Log.e("RouteMocking", "=== ROUTE PICKER SCREEN: Error in LaunchedEffect: ${e.message} ===", e)
-throw e
-}
 }
 
     LaunchedEffect(state.status) {

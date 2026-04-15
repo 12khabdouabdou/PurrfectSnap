@@ -279,7 +279,17 @@ var showTestDialog by remember { mutableStateOf(false) } // Temporary test dialo
     }
   }
 
-  val routeMockHandler = remember { RouteMockHandler() }
+  val routeMockHandler = remember { 
+  try {
+    Log.d("RouteMocking", "Creating RouteMockHandler instance")
+    RouteMockHandler().also { 
+      Log.d("RouteMocking", "RouteMockHandler created successfully") 
+    }
+  } catch (e: Exception) {
+    Log.e("RouteMocking", "Failed to create RouteMockHandler: ${e.javaClass.simpleName}: ${e.message}", e)
+    throw e // Re-throw to see the actual error in logcat
+  }
+}
   val marker = remember { mutableStateOf<Marker?>(null) }
   val mapView = remember { mutableStateOf<MapView?>(null) }
         var spoofedCoordinates by remember(showTeleportDialog, showMap) {
