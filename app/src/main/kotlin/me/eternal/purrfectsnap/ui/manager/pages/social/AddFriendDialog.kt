@@ -256,11 +256,7 @@ class AddFriendDialog(
                 )
             }
 
-            if (context.bridgeService != null) {
-                context.bridgeService?.requestEphemeralSocialSnapshot(updateSnapshot)
-            } else {
-                context.database.receiveMessagingDataCallback = updateSnapshot
-            }
+            context.database.receiveMessagingDataCallback = updateSnapshot
             context.requestSocialSnapshotRefresh()
 
             coroutineScope.launch(Dispatchers.IO) {
