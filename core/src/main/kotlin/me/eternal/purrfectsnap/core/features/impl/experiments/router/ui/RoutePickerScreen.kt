@@ -84,22 +84,17 @@ fun RoutePickerScreen(
 
   if (showDisclaimer) {
     Log.d("RouteMocking", "Rendering RiskDisclaimerDialog")
-    try {
-      RiskDisclaimerDialog(
-        onAccept = {
-          Log.d("RouteMocking", "Disclaimer accepted")
-          showDisclaimer = false
-        },
-        onDecline = {
-          Log.d("RouteMocking", "Disclaimer declined")
-          showDisclaimer = false
-          onBack()
-        }
-      )
-    } catch (e: Exception) {
-      Log.e("RouteMocking", "Error in RiskDisclaimerDialog: ${e.message}", e)
-      throw e
-    }
+    RiskDisclaimerDialog(
+      onAccept = {
+        Log.d("RouteMocking", "Disclaimer accepted")
+        showDisclaimer = false
+      },
+      onDecline = {
+        Log.d("RouteMocking", "Disclaimer declined")
+        showDisclaimer = false
+        onBack()
+      }
+    )
   }
 
   Log.d("RouteMocking", "About to render Scaffold, showEmptyState: $showEmptyState, route: ${state.route != null}")
