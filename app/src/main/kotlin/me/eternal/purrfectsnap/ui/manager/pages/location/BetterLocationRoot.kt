@@ -264,6 +264,8 @@ class BetterLocationRoot : Routes.Route() {
   var showApiKeyDialog by remember { mutableStateOf(false) }
   var showRoutePicker by remember { mutableStateOf(false) }
   val routeMockHandler = remember { RouteMockHandler() }
+  val currentProvider = remember { mutableStateOf(context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm") }
+  val currentApiKey = remember { mutableStateOf(context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: "") }
   val marker = remember { mutableStateOf<Marker?>(null) }
   val mapView = remember { mutableStateOf<MapView?>(null) }
         var spoofedCoordinates by remember(showTeleportDialog, showMap) {
@@ -411,15 +413,21 @@ class BetterLocationRoot : Routes.Route() {
 
                     ConfigSelector(
                         text = translation["location_search_provider_title"],
-                        value = translation["option_$currentProvider"]
-                    ) { showProviderDialog = true }
+      value = translation["option_${currentProvider.value}"]
+    ) { 
+      showProviderDialog = true
+      currentProvider.value = context.config.root.global.betterLocation.locationSearchProvider.getNullable() ?: "osm"
+    }
 
-                    if (currentProvider == "google_maps") {
-                        ConfigInput(
-                            text = translation["google_maps_api_key_title"],
-                            value = currentApiKey
-                        ) { showApiKeyDialog = true }
-                    }
+    if (currentProvider.value == "google_maps") {
+      ConfigInput(
+        text = translation["google_maps_api_key_title"],
+        value = currentApiKey.value
+      ) { 
+        showApiKeyDialog = true
+        currentApiKey.value = context.config.root.global.betterLocation.googleMapsApiKey.getNullable() ?: ""
+      }
+    }
                 }
                 item {
                     GlassPanel(
