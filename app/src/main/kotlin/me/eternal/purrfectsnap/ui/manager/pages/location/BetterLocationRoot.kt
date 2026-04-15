@@ -296,38 +296,39 @@ class BetterLocationRoot : Routes.Route() {
   if (showRoutePicker) {
     me.eternal.purrfectsnap.ui.util.Dialog(
       properties = DialogProperties(usePlatformDefaultWidth = false),
-      onDismissRequest = { showRoutePicker = false }
-    ) {
-      RoutePickerScreen(
-        handler = routeMockHandler,
-        onBack = { showRoutePicker = false },
-        onRouteStarted = { routeState ->
-          val route = routeState.route ?: return@RoutePickerScreen
-          val coordsJson = buildCoordinatesJson(route.coordinates)
-          context.config.root.global.betterLocation.apply {
-            routeMockEnabled.set(true)
-            routeMockProfile.set(route.profile.profileName)
-            routeMockSpeed.set(routeState.speedKmh.toFloat())
-            routeMockStartTime.set(System.currentTimeMillis().toString())
-            routeMockPausedProgress.set(0.0F)
-            routeMockCoordinates.set(coordsJson)
+      onDismissRequest = { showRoutePicker = false },
+      content = {
+        RoutePickerScreen(
+          handler = routeMockHandler,
+          onBack = { showRoutePicker = false },
+          onRouteStarted = { routeState ->
+            val route = routeState.route ?: return@RoutePickerScreen
+            val coordsJson = buildCoordinatesJson(route.coordinates)
+            context.config.root.global.betterLocation.apply {
+              routeMockEnabled.set(true)
+              routeMockProfile.set(route.profile.profileName)
+              routeMockSpeed.set(routeState.speedKmh.toFloat())
+              routeMockStartTime.set(System.currentTimeMillis().toString())
+              routeMockPausedProgress.set(0.0F)
+              routeMockCoordinates.set(coordsJson)
+            }
+            context.coroutineScope.launch {
+              context.config.writeConfig()
+            }
+          },
+          onRouteStopped = {
+            context.config.root.global.betterLocation.apply {
+              routeMockEnabled.set(false)
+              routeMockStartTime.set("0")
+              routeMockCoordinates.set("")
+            }
+            context.coroutineScope.launch {
+              context.config.writeConfig()
+            }
           }
-          context.coroutineScope.launch {
-            context.config.writeConfig()
-          }
-        },
-        onRouteStopped = {
-          context.config.root.global.betterLocation.apply {
-            routeMockEnabled.set(false)
-            routeMockStartTime.set("0")
-            routeMockCoordinates.set("")
-          }
-          context.coroutineScope.launch {
-            context.config.writeConfig()
-          }
-        }
-      )
-    }
+        )
+      }
+    )
   }
 
   if (showTeleportDialog) {
