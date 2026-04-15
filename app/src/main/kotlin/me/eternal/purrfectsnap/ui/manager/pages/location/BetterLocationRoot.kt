@@ -308,73 +308,51 @@ class BetterLocationRoot : Routes.Route() {
   }
 
   if (showRoutePicker) {
-    Log.d("RouteMocking", "Dialog rendering started")
-    try {
-      me.eternal.purrfectsnap.ui.util.Dialog(
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        onDismissRequest = {
-          Log.d("RouteMocking", "Dialog dismiss requested")
-          showRoutePicker = false
-        },
-        content = {
-          Log.d("RouteMocking", "Dialog content composing")
-          try {
-            AppMaterialTheme(themeMode = ThemeMode.DARK) {
-              Log.d("RouteMocking", "AppMaterialTheme composed, rendering RoutePickerScreen")
-              try {
-                RoutePickerScreen(
-                  handler = routeMockHandler,
-                  onBack = {
-                    Log.d("RouteMocking", "onBack called")
-                    showRoutePicker = false
-                  },
-                  onRouteStarted = { routeState ->
-                    Log.d("RouteMocking", "onRouteStarted called with route: ${routeState.route != null}")
-                    val route = routeState.route ?: return@RoutePickerScreen
-                    val coordsJson = buildCoordinatesJson(route.coordinates)
-                    context.config.root.global.betterLocation.apply {
-                      routeMockEnabled.set(true)
-                      routeMockProfile.set(route.profile.profileName)
-                      routeMockSpeed.set(routeState.speedKmh.toFloat())
-                      routeMockStartTime.set(System.currentTimeMillis().toString())
-                      routeMockPausedProgress.set(0.0F)
-                      routeMockCoordinates.set(coordsJson)
-                    }
-                    context.coroutineScope.launch {
-                      context.config.writeConfig()
-                      Log.d("RouteMocking", "Route config saved")
-                    }
-                  },
-                  onRouteStopped = {
-                    Log.d("RouteMocking", "onRouteStopped called")
-                    context.config.root.global.betterLocation.apply {
-                      routeMockEnabled.set(false)
-                      routeMockStartTime.set("0")
-                      routeMockCoordinates.set("")
-                    }
-                    context.coroutineScope.launch {
-                      context.config.writeConfig()
-                      Log.d("RouteMocking", "Route config cleared")
-                    }
-                  }
-                )
-                Log.d("RouteMocking", "RoutePickerScreen rendered successfully")
-              } catch (e: Exception) {
-                Log.e("RouteMocking", "Error rendering RoutePickerScreen: ${e.message}", e)
-                throw e
+    Log.d("RouteMocking", "Opening RoutePickerScreen dialog")
+    me.eternal.purrfectsnap.ui.util.Dialog(
+      properties = DialogProperties(usePlatformDefaultWidth = false),
+      onDismissRequest = { showRoutePicker = false },
+      content = {
+        Log.d("RouteMocking", "Dialog content: AppMaterialTheme starting")
+        AppMaterialTheme(themeMode = ThemeMode.DARK) {
+          Log.d("RouteMocking", "AppMaterialTheme applied, rendering RoutePickerScreen")
+          RoutePickerScreen(
+            handler = routeMockHandler,
+            onBack = { 
+              Log.d("RouteMocking", "RoutePickerScreen onBack called")
+              showRoutePicker = false 
+            },
+            onRouteStarted = { routeState ->
+              Log.d("RouteMocking", "Route started, route exists: ${routeState.route != null}")
+              val route = routeState.route ?: return@RoutePickerScreen
+              val coordsJson = buildCoordinatesJson(route.coordinates)
+              context.config.root.global.betterLocation.apply {
+                routeMockEnabled.set(true)
+                routeMockProfile.set(route.profile.profileName)
+                routeMockSpeed.set(routeState.speedKmh.toFloat())
+                routeMockStartTime.set(System.currentTimeMillis().toString())
+                routeMockPausedProgress.set(0.0F)
+                routeMockCoordinates.set(coordsJson)
+              }
+              context.coroutineScope.launch {
+                context.config.writeConfig()
+              }
+            },
+            onRouteStopped = {
+              Log.d("RouteMocking", "Route stopped")
+              context.config.root.global.betterLocation.apply {
+                routeMockEnabled.set(false)
+                routeMockStartTime.set("0")
+                routeMockCoordinates.set("")
+              }
+              context.coroutineScope.launch {
+                context.config.writeConfig()
               }
             }
-          } catch (e: Exception) {
-            Log.e("RouteMocking", "Error in Dialog content: ${e.message}", e)
-            throw e
-          }
+          )
         }
-      )
-      Log.d("RouteMocking", "Dialog setup completed")
-    } catch (e: Exception) {
-      Log.e("RouteMocking", "Critical error in Dialog: ${e.message}", e)
-      throw e
-    }
+      }
+    )
   }
 
   if (showTeleportDialog) {
