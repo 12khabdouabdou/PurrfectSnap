@@ -319,7 +319,6 @@ androidx.compose.material3.Text("TEST DIALOG: If you see this, Dialog infrastruc
 
 // Main Route Mocking Dialog
 if (showRoutePicker) {
-try {
 Log.d("RouteMocking", "=== STEP 1: Opening RoutePickerScreen dialog ===")
 me.eternal.purrfectsnap.ui.util.Dialog(
 properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -328,10 +327,8 @@ Log.d("RouteMocking", "Dialog dismiss requested")
 showRoutePicker = false 
 },
 content = {
-try {
 Log.d("RouteMocking", "=== STEP 2: Dialog content lambda executing ===")
 AppMaterialTheme(themeMode = ThemeMode.DARK) {
-try {
 Log.d("RouteMocking", "=== STEP 3: AppMaterialTheme applied ===")
 RoutePickerScreen(
 handler = routeMockHandler,
@@ -368,28 +365,10 @@ context.config.writeConfig()
 }
 )
 Log.d("RouteMocking", "=== STEP 4: RoutePickerScreen rendered successfully ===")
-} catch (e: Exception) {
-Log.e("RouteMocking", "=== ERROR in RoutePickerScreen: ${e.javaClass.simpleName} ===")
-Log.e("RouteMocking", "Message: ${e.message}")
-Log.e("RouteMocking", "Stack trace:", e)
-throw e
-}
-}
-} catch (e: Exception) {
-Log.e("RouteMocking", "=== ERROR in Dialog content/AppMaterialTheme: ${e.javaClass.simpleName} ===")
-Log.e("RouteMocking", "Message: ${e.message}")
-Log.e("RouteMocking", "Stack trace:", e)
-throw e
+Log.d("RouteMocking", "=== STEP 5: Dialog initialized successfully ===")
 }
 }
 )
-Log.d("RouteMocking", "=== STEP 5: Dialog initialized successfully ===")
-} catch (e: Exception) {
-Log.e("RouteMocking", "=== ERROR in Dialog initialization: ${e.javaClass.simpleName} ===")
-Log.e("RouteMocking", "Message: ${e.message}")
-Log.e("RouteMocking", "Stack trace:", e)
-throw e
-}
 }
 
   if (showTeleportDialog) {
