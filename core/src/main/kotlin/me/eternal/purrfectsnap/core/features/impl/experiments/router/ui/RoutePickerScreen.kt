@@ -46,35 +46,40 @@ import org.osmdroid.util.GeoPoint
 
 @Composable
 fun RoutePickerScreen(
-  handler: RouteMockHandler,
-  onBack: () -> Unit,
-  onRouteStarted: (RouteState) -> Unit,
-  onRouteStopped: () -> Unit = {},
-  modifier: Modifier = Modifier,
+handler: RouteMockHandler,
+onBack: () -> Unit,
+onRouteStarted: (RouteState) -> Unit,
+onRouteStopped: () -> Unit = {},
+modifier: Modifier = Modifier,
 ) {
-  val scope = rememberCoroutineScope()
-  Log.d("RouteMocking", "RoutePickerScreen composing, handler: $handler")
-  val initialState = try {
-    handler.getState()
-  } catch (e: Exception) {
-    Log.e("RouteMocking", "Error getting initial state: ${e.message}", e)
-    throw e
-  }
-  Log.d("RouteMocking", "Initial state obtained: $initialState")
-  var state by remember { mutableStateOf(initialState) }
-  var showDisclaimer by remember { mutableStateOf(false) }
-  var showEmptyState by remember { mutableStateOf(true) }
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Starting composition ===")
+val scope = rememberCoroutineScope()
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Coroutine scope created ===")
 
-  LaunchedEffect(Unit) {
-    Log.d("RouteMocking", "LaunchedEffect(Unit) triggered")
-    try {
-      showDisclaimer = true
-      Log.d("RouteMocking", "Disclaimer flag set to true")
-    } catch (e: Exception) {
-      Log.e("RouteMocking", "Error in LaunchedEffect: ${e.message}", e)
-      throw e
-    }
-  }
+var handlerError: String? = null
+val initialState = try {
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Getting handler state ===")
+handler.getState().also { Log.d("RouteMocking", "Handler state obtained: $it") }
+} catch (e: Exception) {
+Log.e("RouteMocking", "=== ROUTE PICKER SCREEN: Handler getState() failed: ${e.javaClass.simpleName}: ${e.message} ===", e)
+handlerError = "${e.javaClass.simpleName}: ${e.message}"
+RouteState() // Fallback state
+}
+
+var state by remember { mutableStateOf(initialState) }
+var showDisclaimer by remember { mutableStateOf(false) }
+var showEmptyState by remember { mutableStateOf(true) }
+
+LaunchedEffect(Unit) {
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: LaunchedEffect(Unit) triggered ===")
+try {
+showDisclaimer = true
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Disclaimer flag set to true ===")
+} catch (e: Exception) {
+Log.e("RouteMocking", "=== ROUTE PICKER SCREEN: Error in LaunchedEffect: ${e.message} ===", e)
+throw e
+}
+}
 
     LaunchedEffect(state.status) {
         if (state.status == RouteStatus.Completed) {
@@ -82,25 +87,25 @@ fun RoutePickerScreen(
         }
     }
 
-  if (showDisclaimer) {
-    Log.d("RouteMocking", "Rendering RiskDisclaimerDialog")
-    RiskDisclaimerDialog(
-      onAccept = {
-        Log.d("RouteMocking", "Disclaimer accepted")
-        showDisclaimer = false
-      },
-      onDecline = {
-        Log.d("RouteMocking", "Disclaimer declined")
-        showDisclaimer = false
-        onBack()
-      }
-    )
-  }
+if (showDisclaimer) {
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Rendering RiskDisclaimerDialog ===")
+RiskDisclaimerDialog(
+onAccept = {
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Disclaimer accepted ===")
+showDisclaimer = false
+},
+onDecline = {
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Disclaimer declined ===")
+showDisclaimer = false
+onBack()
+}
+)
+}
 
-  Log.d("RouteMocking", "About to render Scaffold, showEmptyState: $showEmptyState, route: ${state.route != null}")
-  Scaffold { padding ->
-    Log.d("RouteMocking", "Scaffold content rendering")
-    Box(
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: About to render Scaffold, showEmptyState: $showEmptyState ===")
+Scaffold { padding ->
+Log.d("RouteMocking", "=== ROUTE PICKER SCREEN: Scaffold content rendering with padding ===")
+Box(
       modifier = modifier
         .fillMaxSize()
         .padding(padding)

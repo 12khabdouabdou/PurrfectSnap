@@ -269,6 +269,7 @@ class BetterLocationRoot : Routes.Route() {
   var showProviderDialog by remember { mutableStateOf(false) }
   var showApiKeyDialog by remember { mutableStateOf(false) }
   var showRoutePicker by remember { mutableStateOf(false) }
+var showTestDialog by remember { mutableStateOf(false) } // Temporary test dialog
 
   // Initialize osmdroid configuration to prevent MapView crashes
   val osmContext = LocalContext.current
@@ -307,53 +308,89 @@ class BetterLocationRoot : Routes.Route() {
     return json.toString()
   }
 
-  if (showRoutePicker) {
-    Log.d("RouteMocking", "Opening RoutePickerScreen dialog")
-    me.eternal.purrfectsnap.ui.util.Dialog(
-      properties = DialogProperties(usePlatformDefaultWidth = false),
-      onDismissRequest = { showRoutePicker = false },
-      content = {
-        Log.d("RouteMocking", "Dialog content: AppMaterialTheme starting")
-        AppMaterialTheme(themeMode = ThemeMode.DARK) {
-          Log.d("RouteMocking", "AppMaterialTheme applied, rendering RoutePickerScreen")
-          RoutePickerScreen(
-            handler = routeMockHandler,
-            onBack = { 
-              Log.d("RouteMocking", "RoutePickerScreen onBack called")
-              showRoutePicker = false 
-            },
-            onRouteStarted = { routeState ->
-              Log.d("RouteMocking", "Route started, route exists: ${routeState.route != null}")
-              val route = routeState.route ?: return@RoutePickerScreen
-              val coordsJson = buildCoordinatesJson(route.coordinates)
-              context.config.root.global.betterLocation.apply {
-                routeMockEnabled.set(true)
-                routeMockProfile.set(route.profile.profileName)
-                routeMockSpeed.set(routeState.speedKmh.toFloat())
-                routeMockStartTime.set(System.currentTimeMillis().toString())
-                routeMockPausedProgress.set(0.0F)
-                routeMockCoordinates.set(coordsJson)
-              }
-              context.coroutineScope.launch {
-                context.config.writeConfig()
-              }
-            },
-            onRouteStopped = {
-              Log.d("RouteMocking", "Route stopped")
-              context.config.root.global.betterLocation.apply {
-                routeMockEnabled.set(false)
-                routeMockStartTime.set("0")
-                routeMockCoordinates.set("")
-              }
-              context.coroutineScope.launch {
-                context.config.writeConfig()
-              }
-            }
-          )
-        }
-      }
-    )
-  }
+// Test Dialog (isolation test - remove after debugging)
+if (showTestDialog) {
+me.eternal.purrfectsnap.ui.util.Dialog(
+onDismissRequest = { showTestDialog = false }
+) {
+androidx.compose.material3.Text("TEST DIALOG: If you see this, Dialog infrastructure works! Click outside to close.")
+}
+}
+
+// Main Route Mocking Dialog
+if (showRoutePicker) {
+try {
+Log.d("RouteMocking", "=== STEP 1: Opening RoutePickerScreen dialog ===")
+me.eternal.purrfectsnap.ui.util.Dialog(
+properties = DialogProperties(usePlatformDefaultWidth = false),
+onDismissRequest = { 
+Log.d("RouteMocking", "Dialog dismiss requested")
+showRoutePicker = false 
+},
+content = {
+try {
+Log.d("RouteMocking", "=== STEP 2: Dialog content lambda executing ===")
+AppMaterialTheme(themeMode = ThemeMode.DARK) {
+try {
+Log.d("RouteMocking", "=== STEP 3: AppMaterialTheme applied ===")
+RoutePickerScreen(
+handler = routeMockHandler,
+onBack = {
+Log.d("RouteMocking", "RoutePickerScreen onBack called")
+showRoutePicker = false
+},
+onRouteStarted = { routeState ->
+Log.d("RouteMocking", "Route started, route exists: ${routeState.route != null}")
+val route = routeState.route ?: return@RoutePickerScreen
+val coordsJson = buildCoordinatesJson(route.coordinates)
+context.config.root.global.betterLocation.apply {
+routeMockEnabled.set(true)
+routeMockProfile.set(route.profile.profileName)
+routeMockSpeed.set(routeState.speedKmh.toFloat())
+routeMockStartTime.set(System.currentTimeMillis().toString())
+routeMockPausedProgress.set(0.0F)
+routeMockCoordinates.set(coordsJson)
+}
+context.coroutineScope.launch {
+context.config.writeConfig()
+}
+},
+onRouteStopped = {
+Log.d("RouteMocking", "Route stopped")
+context.config.root.global.betterLocation.apply {
+routeMockEnabled.set(false)
+routeMockStartTime.set("0")
+routeMockCoordinates.set("")
+}
+context.coroutineScope.launch {
+context.config.writeConfig()
+}
+}
+)
+Log.d("RouteMocking", "=== STEP 4: RoutePickerScreen rendered successfully ===")
+} catch (e: Exception) {
+Log.e("RouteMocking", "=== ERROR in RoutePickerScreen: ${e.javaClass.simpleName} ===")
+Log.e("RouteMocking", "Message: ${e.message}")
+Log.e("RouteMocking", "Stack trace:", e)
+throw e
+}
+}
+} catch (e: Exception) {
+Log.e("RouteMocking", "=== ERROR in Dialog content/AppMaterialTheme: ${e.javaClass.simpleName} ===")
+Log.e("RouteMocking", "Message: ${e.message}")
+Log.e("RouteMocking", "Stack trace:", e)
+throw e
+}
+}
+)
+Log.d("RouteMocking", "=== STEP 5: Dialog initialized successfully ===")
+} catch (e: Exception) {
+Log.e("RouteMocking", "=== ERROR in Dialog initialization: ${e.javaClass.simpleName} ===")
+Log.e("RouteMocking", "Message: ${e.message}")
+Log.e("RouteMocking", "Stack trace:", e)
+throw e
+}
+}
 
   if (showTeleportDialog) {
             me.eternal.purrfectsnap.ui.util.Dialog(
@@ -609,18 +646,40 @@ class BetterLocationRoot : Routes.Route() {
       horizontalArrangement = Arrangement.spacedBy(10.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      Button(
-        onClick = { showRoutePicker = true },
-        modifier = Modifier.weight(1f),
-        colors = ButtonDefaults.buttonColors(
-          containerColor = Color(0xFF6C63FF).copy(alpha = 0.28f),
-          contentColor = Color.White
-        )
-      ) {
-        Icon(Icons.Filled.Map, contentDescription = null, modifier = Modifier.size(18.dp))
-        Spacer(Modifier.width(6.dp))
-        Text("Route Mocking")
-      }
+Row(
+modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+horizontalArrangement = Arrangement.spacedBy(10.dp),
+verticalAlignment = Alignment.CenterVertically
+) {
+Button(
+onClick = { 
+Log.d("RouteMocking", "TEST BUTTON: User clicked test dialog button")
+showTestDialog = true 
+},
+modifier = Modifier.weight(1f),
+colors = ButtonDefaults.buttonColors(
+containerColor = Color(0xFF00FF00).copy(alpha = 0.28f),
+contentColor = Color.White
+)
+) {
+Text("TEST DIALOG")
+}
+Button(
+onClick = { 
+Log.d("RouteMocking", "ROUTE MOCKING: User clicked route mocking button")
+showRoutePicker = true 
+},
+modifier = Modifier.weight(1f),
+colors = ButtonDefaults.buttonColors(
+containerColor = Color(0xFF6C63FF).copy(alpha = 0.28f),
+contentColor = Color.White
+)
+) {
+Icon(Icons.Filled.Map, contentDescription = null, modifier = Modifier.size(18.dp))
+Spacer(Modifier.width(6.dp))
+Text("Route Mocking")
+}
+}
     }
   }
   }
