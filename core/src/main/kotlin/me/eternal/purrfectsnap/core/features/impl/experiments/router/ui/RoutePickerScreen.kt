@@ -52,9 +52,6 @@ fun RoutePickerScreen(
   onRouteStopped: () -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
-  init {
-    Log.d("RouteMocking", "RoutePickerScreen instance created")
-  }
   val scope = rememberCoroutineScope()
   Log.d("RouteMocking", "RoutePickerScreen composing, handler: $handler")
   val initialState = try {
