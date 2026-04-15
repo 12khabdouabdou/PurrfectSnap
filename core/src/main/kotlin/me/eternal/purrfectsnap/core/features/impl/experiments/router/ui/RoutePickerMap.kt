@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.widget.RelativeLayout
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -28,24 +29,42 @@ fun RoutePickerMap(
     onMapTap: (GeoPoint) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
+  val context = LocalContext.current
+  Log.d("RouteMocking", "RoutePickerMap: Starting MapView initialization")
 
-    val mapView = remember {
-        Configuration.getInstance().load(
-            context,
-            context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
-        )
-        MapView(context).apply {
-            setTileSource(TileSourceFactory.MAPNIK)
-            setMultiTouchControls(true)
-            controller.setZoom(15.0)
-            controller.setCenter(GeoPoint(37.7749, -122.4194))
-            layoutParams = RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.MATCH_PARENT
-            )
+  val mapView = remember {
+    try {
+      Log.d("RouteMocking", "RoutePickerMap: Loading osmdroid configuration")
+      Configuration.getInstance().apply {
+        try {
+          load(context, context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
+          Log.d("RouteMocking", "RoutePickerMap: osmdroid configuration loaded successfully")
+        } catch (e: Exception) {
+          Log.e("RouteMocking", "RoutePickerMap: Failed to load osmdroid config: ${e.message}", e)
+          throw e
         }
+      }
+      Log.d("RouteMocking", "RoutePickerMap: Creating MapView instance")
+      MapView(context).apply {
+        Log.d("RouteMocking", "RoutePickerMap: Setting tile source")
+        setTileSource(TileSourceFactory.MAPNIK)
+        Log.d("RouteMocking", "RoutePickerMap: Setting multi-touch controls")
+        setMultiTouchControls(true)
+        Log.d("RouteMocking", "RoutePickerMap: Setting zoom and center")
+        controller.setZoom(15.0)
+        controller.setCenter(GeoPoint(37.7749, -122.4194))
+        Log.d("RouteMocking", "RoutePickerMap: Setting layout params")
+        layoutParams = RelativeLayout.LayoutParams(
+          RelativeLayout.LayoutParams.MATCH_PARENT,
+          RelativeLayout.LayoutParams.MATCH_PARENT
+        )
+        Log.d("RouteMocking", "RoutePickerMap: MapView initialization completed successfully")
+      }
+    } catch (e: Exception) {
+      Log.e("RouteMocking", "RoutePickerMap: MapView initialization failed: ${e.message}", e)
+      throw e
     }
+  }
 
     DisposableEffect(mapView) {
         onDispose {

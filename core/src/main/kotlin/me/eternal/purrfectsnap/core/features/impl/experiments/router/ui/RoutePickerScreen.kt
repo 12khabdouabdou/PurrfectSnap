@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import android.util.Log
 import kotlinx.coroutines.launch
 import me.eternal.purrfectsnap.core.features.impl.experiments.router.OsrmProfile
 import me.eternal.purrfectsnap.core.features.impl.experiments.router.RouteMockHandler
@@ -45,20 +46,38 @@ import org.osmdroid.util.GeoPoint
 
 @Composable
 fun RoutePickerScreen(
-    handler: RouteMockHandler,
-    onBack: () -> Unit,
-    onRouteStarted: (RouteState) -> Unit,
-    onRouteStopped: () -> Unit = {},
-    modifier: Modifier = Modifier,
+  handler: RouteMockHandler,
+  onBack: () -> Unit,
+  onRouteStarted: (RouteState) -> Unit,
+  onRouteStopped: () -> Unit = {},
+  modifier: Modifier = Modifier,
 ) {
-    val scope = rememberCoroutineScope()
-    var state by remember { mutableStateOf(handler.getState()) }
-    var showDisclaimer by remember { mutableStateOf(false) }
-    var showEmptyState by remember { mutableStateOf(true) }
+  init {
+    Log.d("RouteMocking", "RoutePickerScreen instance created")
+  }
+  val scope = rememberCoroutineScope()
+  Log.d("RouteMocking", "RoutePickerScreen composing, handler: $handler")
+  val initialState = try {
+    handler.getState()
+  } catch (e: Exception) {
+    Log.e("RouteMocking", "Error getting initial state: ${e.message}", e)
+    throw e
+  }
+  Log.d("RouteMocking", "Initial state obtained: $initialState")
+  var state by remember { mutableStateOf(initialState) }
+  var showDisclaimer by remember { mutableStateOf(false) }
+  var showEmptyState by remember { mutableStateOf(true) }
 
-    LaunchedEffect(Unit) {
-        showDisclaimer = true
+  LaunchedEffect(Unit) {
+    Log.d("RouteMocking", "LaunchedEffect(Unit) triggered")
+    try {
+      showDisclaimer = true
+      Log.d("RouteMocking", "Disclaimer flag set to true")
+    } catch (e: Exception) {
+      Log.e("RouteMocking", "Error in LaunchedEffect: ${e.message}", e)
+      throw e
     }
+  }
 
     LaunchedEffect(state.status) {
         if (state.status == RouteStatus.Completed) {
@@ -66,22 +85,34 @@ fun RoutePickerScreen(
         }
     }
 
-    if (showDisclaimer) {
-        RiskDisclaimerDialog(
-            onAccept = { showDisclaimer = false },
-            onDecline = {
-                showDisclaimer = false
-                onBack()
-            }
-        )
+  if (showDisclaimer) {
+    Log.d("RouteMocking", "Rendering RiskDisclaimerDialog")
+    try {
+      RiskDisclaimerDialog(
+        onAccept = {
+          Log.d("RouteMocking", "Disclaimer accepted")
+          showDisclaimer = false
+        },
+        onDecline = {
+          Log.d("RouteMocking", "Disclaimer declined")
+          showDisclaimer = false
+          onBack()
+        }
+      )
+    } catch (e: Exception) {
+      Log.e("RouteMocking", "Error in RiskDisclaimerDialog: ${e.message}", e)
+      throw e
     }
+  }
 
-    Scaffold { padding ->
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+  Log.d("RouteMocking", "About to render Scaffold, showEmptyState: $showEmptyState, route: ${state.route != null}")
+  Scaffold { padding ->
+    Log.d("RouteMocking", "Scaffold content rendering")
+    Box(
+      modifier = modifier
+        .fillMaxSize()
+        .padding(padding)
+    ) {
             if (state.startGeopoint == null && state.route == null) {
                 RoutePickerMap(
                     startGeopoint = state.startGeopoint,
