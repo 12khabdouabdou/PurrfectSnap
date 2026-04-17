@@ -229,7 +229,6 @@ class BridgeService : Service() {
             pendingSocialSnapshotCallback?.let { callback ->
                 pendingSocialSnapshotCallback = null
                 callback(parsedFriends, parsedGroups)
-                return
             }
             remoteSideContext.database.replaceMessagingData(parsedFriends, parsedGroups)
             remoteSideContext.database.receiveMessagingDataCallback(parsedFriends, parsedGroups)
