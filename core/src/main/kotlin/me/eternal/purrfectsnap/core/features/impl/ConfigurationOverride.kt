@@ -1,6 +1,7 @@
 package me.eternal.purrfectsnap.core.features.impl
 
 import me.eternal.purrfectsnap.core.features.Feature
+import me.eternal.purrfectsnap.core.features.impl.messaging.Messaging
 
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.Hooker
@@ -165,7 +166,10 @@ class ConfigurationOverride : Feature("Configuration Override") {
 
             overrideProperty("DF_VOPERA_FOR_STORIES", { context.config.userInterface.verticalStoryViewer.get() },
                 { true }, isAppExperiment = true)
-            overrideProperty("SPOTLIGHT_5TH_TAB_ENABLED", { context.config.userInterface.disableSpotlight.get() },
+            overrideProperty("SPOTLIGHT_5TH_TAB_ENABLED", {
+                context.config.userInterface.disableSpotlight.get() &&
+                    context.feature(Messaging::class).openedConversationUUID == null
+            },
                 { false })
 
             overrideProperty("BYPASS_AD_FEATURE_GATE", { context.config.global.blockAds.get() },
