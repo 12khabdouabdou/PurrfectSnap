@@ -373,7 +373,7 @@ class AutoOpenSnaps: MessagingRuleFeature("Auto Open Snaps", MessagingRuleType.A
 
         if (!isCompact) {
             val recentSnaps = synchronized(queuedSnaps) { queuedSnaps.takeLast(5) }
-            val bigTextStyle = Notification.BigTextStyle().setSummaryText("")
+            val bigTextStyle = Notification.BigTextStyle().setSummaryText(null)
             val detailText = buildString {
                 append("QUEUE STATISTICS\n")
                 append("├─ Opened: $processed snaps\n")

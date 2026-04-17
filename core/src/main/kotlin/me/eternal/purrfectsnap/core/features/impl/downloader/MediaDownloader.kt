@@ -76,6 +76,7 @@ import me.eternal.purrfectsnap.core.wrapper.impl.media.opera.ParamMap
 import me.eternal.purrfectsnap.core.wrapper.impl.media.toKeyPair
 import me.eternal.purrfectsnap.mapper.impl.OperaPageViewControllerMapper
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.absoluteValue
@@ -91,6 +92,8 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         private set
     @Volatile
     private var pendingBatchDownloadIndices: MutableList<Int>? = null
+    private val batchLock = Any()
+
     @Volatile
     private var batchForceAllowDuplicate: Boolean = false
     private val translations by lazy {
@@ -107,12 +110,9 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
     private fun logVerbose(msg: String) = this@MediaDownloader.context.log.verbose("[MediaDownloader] $msg")
     private fun logError(msg: String, e: Throwable? = null) = if (e != null) this@MediaDownloader.context.log.error("[MediaDownloader] $msg", e) else this@MediaDownloader.context.log.error("[MediaDownloader] $msg")
 
-    @Volatile
-    private var batchTotalCount: Int = 0
-    @Volatile
-    private var batchSuccessCount: Int = 0
-    @Volatile
-    private var batchFailureCount: Int = 0
+    private val batchTotalCount = AtomicInteger(0)
+    private val batchSuccessCount = AtomicInteger(0)
+    private val batchFailureCount = AtomicInteger(0)
     @Volatile
     private var initialBatchStoryIdentity: String? = null
 
@@ -179,11 +179,11 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                     }.onFailure { logError("Post-Processing Logic Failed for $outputFile", it) }
 
                     if (isBatch) {
-                        batchSuccessCount++
+                        batchSuccessCount.incrementAndGet()
                         if (downloadLogging.contains("success")) {
                             modCtx.inAppOverlay.showStatusToast(
                                 icon = Icons.Outlined.DownloadDone,
-                                text = translations.format("batch_progress_toast", "current" to (batchSuccessCount + batchFailureCount).toString(), "total" to batchTotalCount.toString()),
+                                text = translations.format("batch_progress_toast", "current" to (batchSuccessCount.get() + batchFailureCount.get()).toString(), "total" to batchTotalCount.get().toString()),
                                 durationMs = 1300
                             )
                         }
@@ -207,7 +207,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                 override fun onFailure(message: String, throwable: String?) {
                     if (!downloadLogging.contains("failure")) return
                     val errorText = translations[if (message == "Failed to download") "failed_generic_toast" else message] ?: message
-                    if (isBatch) { batchFailureCount++; return }
+                    if (isBatch) { batchFailureCount.incrementAndGet(); return }
                     if (modCtx.isMainActivityPaused) modCtx.shortToast(errorText)
                     modCtx.inAppOverlay.showStatusToast(Icons.Outlined.ErrorOutline, errorText, 1300)
                 }
@@ -283,9 +283,9 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         val mediaInfoMap = lastSeenMediaInfoMap ?: return
         val modCtx = this@MediaDownloader.context
 
-        batchTotalCount = indices.size
-        batchSuccessCount = 0; batchFailureCount = 0
-        pendingBatchDownloadIndices = indices
+        batchTotalCount.set(indices.size)
+        batchSuccessCount.set(0); batchFailureCount.set(0)
+        synchronized(batchLock) { pendingBatchDownloadIndices = indices }
         batchForceAllowDuplicate = allowDuplicate
         initialBatchStoryIdentity = paramMap.getStoryIdentity()
 
@@ -297,7 +297,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
             modCtx.coroutineScope.launch { processNextBatchDownload(paramMap, mediaInfoMap) }
         } else {
             val jumped = modCtx.feature(OperaStoryOverlay::class).requestJumpToSnap(targetIndex, totalCount)
-            if (!jumped) { pendingBatchDownloadIndices = null; modCtx.shortToast(translations["batch_download_jump_failed_toast"] ?: "Jump Failed") }
+            if (!jumped) { synchronized(batchLock) { pendingBatchDownloadIndices = null }; modCtx.shortToast(translations["batch_download_jump_failed_toast"] ?: "Jump Failed") }
         }
     }
 
@@ -305,13 +305,13 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         runCatching { 
             handleOperaMedia(paramMap, mediaInfoMap, forceDownload = true, forceAllowDuplicate = batchForceAllowDuplicate, isBatch = true) 
         }.onFailure {
-            batchFailureCount++
-            if (batchSuccessCount + batchFailureCount == batchTotalCount) flushPendingMergeAndComplete()
+            batchFailureCount.incrementAndGet()
+            if (batchSuccessCount.get() + batchFailureCount.get() == batchTotalCount.get()) flushPendingMergeAndComplete()
         }
     }
 
     private suspend fun processNextBatchDownload(paramMap: ParamMap, mediaInfoMap: Map<SplitMediaAssetType, MediaInfo>) {
-        val queue = pendingBatchDownloadIndices ?: return
+        val queue = synchronized(batchLock) { pendingBatchDownloadIndices } ?: return
         if (queue.isEmpty()) return
         val modCtx = this@MediaDownloader.context
 
@@ -323,7 +323,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
         val currentIndex = paramMap.getStorySnapIndex() ?: -1
         if (currentIndex != queue.first()) return
 
-        queue.removeAt(0)
+        synchronized(batchLock) { queue.removeAt(0) }
         downloadSingleSnap(paramMap, mediaInfoMap)
 
         if (queue.isNotEmpty()) {
@@ -333,7 +333,7 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         val jumped = runCatching { modCtx.feature(OperaStoryOverlay::class).requestJumpToSnap(queue.first(), totalCount) }.getOrNull() == true
                         if (!jumped && retryCount < 1) tryJump(retryCount + 1)
-                        else if (!jumped) { pendingBatchDownloadIndices = null; modCtx.shortToast(translations["batch_download_jump_failed_toast"] ?: "Jump Failed") }
+                        else if (!jumped) { synchronized(batchLock) { pendingBatchDownloadIndices = null }; modCtx.shortToast(translations["batch_download_jump_failed_toast"] ?: "Jump Failed") }
                     }, if (retryCount == 0) 120L else 220L)
                 }
                 tryJump()
@@ -343,8 +343,8 @@ class MediaDownloader : MessagingRuleFeature("MediaDownloader", MessagingRuleTyp
 
     private fun flushPendingMergeAndComplete() {
         val modCtx = this@MediaDownloader.context
-        pendingBatchDownloadIndices = null
-        modCtx.shortToast(if (batchFailureCount == 0) translations["batch_download_complete_toast"] ?: "Batch Complete" else "Batch complete: $batchSuccessCount succeeded, $batchFailureCount failed")
+        synchronized(batchLock) { pendingBatchDownloadIndices = null }
+        modCtx.shortToast(if (batchFailureCount.get() == 0) translations["batch_download_complete_toast"] ?: "Batch Complete" else "Batch complete: ${batchSuccessCount.get()} succeeded, ${batchFailureCount.get()} failed")
     }
 
     fun showLastOperaDebugMediaInfo() {

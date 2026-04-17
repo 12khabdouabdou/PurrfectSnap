@@ -121,6 +121,7 @@ class DownloadProcessor (
                     inputFile.outputStream().use {
                         bitmap.compress(compressFormat, 100, it)
                     }
+                    bitmap.recycle()
                     fileType = FileType.fromFile(inputFile)
                 }
             }
@@ -672,6 +673,10 @@ class DownloadProcessor (
                                 mergedImage.outputStream().use {
                                     mergedBitmap.compress(compressFormat, 100, it)
                                 }
+
+                                originalBitmap.recycle()
+                                overlayBitmap.recycle()
+                                mergedBitmap.recycle()
 
                                 saveMediaToGallery(pendingTask, mergedImage, downloadMetadata)
                                 mergedImage.delete()
