@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import android.widget.TextView
 import me.eternal.purrfectsnap.core.event.events.impl.AddViewEvent
 import me.eternal.purrfectsnap.core.event.events.impl.BindViewEvent
 import me.eternal.purrfectsnap.core.features.Feature
@@ -69,10 +70,157 @@ class UITweaks : Feature("UITweaks") {
         }
     }
 
+    private fun findSpotlightNavTarget(
+        event: AddViewEvent,
+        spotlightNavIds: Set<Int>,
+        spotlightNavNames: Set<String>
+    ): View? {
+        data class ViewMetadata(
+            val view: View,
+            val resourceEntryName: String?,
+            val contentDescription: String?,
+            val text: String?,
+            val className: String
+        )
+
+        fun resourceEntryNameOrNull(view: View): String? {
+            val id = view.id
+            if (id == View.NO_ID || id == 0) return null
+            return runCatching { context.resources.getResourceEntryName(id) }.getOrNull()
+        }
+
+        val markerKeywords = setOf("spotlight", "following", "discover")
+
+        val viewChain = buildList {
+            var current: View? = event.view
+            repeat(5) {
+                current ?: return@repeat
+                add(
+                    ViewMetadata(
+                        view = current!!,
+                        resourceEntryName = resourceEntryNameOrNull(current!!),
+                        contentDescription = current!!.contentDescription?.toString(),
+                        text = (current as? TextView)?.text?.toString(),
+                        className = current!!.javaClass.name
+                    )
+                )
+                current = current?.parent as? View
+            }
+        }
+
+        fun isExactMatch(metadata: ViewMetadata): Boolean {
+            return metadata.view.id in spotlightNavIds ||
+                metadata.resourceEntryName in spotlightNavNames
+        }
+
+        fun hasMarker(metadata: ViewMetadata): Boolean {
+            return listOfNotNull(
+                metadata.resourceEntryName,
+                metadata.contentDescription,
+                metadata.text
+            ).any { value ->
+                markerKeywords.any { keyword ->
+                    value.contains(keyword, ignoreCase = true)
+                }
+            }
+        }
+
+        fun isNavigationLike(metadata: ViewMetadata): Boolean {
+            val resourceEntryName = metadata.resourceEntryName.orEmpty()
+            val className = metadata.className
+            return resourceEntryName.contains("hova_nav", ignoreCase = true) ||
+                resourceEntryName.contains("bottom_nav", ignoreCase = true) ||
+                resourceEntryName.contains("nav", ignoreCase = true) ||
+                resourceEntryName.contains("tab", ignoreCase = true) ||
+                className.contains("navigation", ignoreCase = true) ||
+                className.contains("bottom", ignoreCase = true) ||
+                className.contains("tab", ignoreCase = true) ||
+                className.contains("hova", ignoreCase = true)
+        }
+
+        if (viewChain.none(::isExactMatch) && viewChain.none(::hasMarker)) {
+            return null
+        }
+
+        var sawSpotlightMarker = false
+        viewChain.forEach { metadata ->
+            if (isExactMatch(metadata) || hasMarker(metadata)) {
+                sawSpotlightMarker = true
+            }
+
+            if (sawSpotlightMarker && isNavigationLike(metadata)) {
+                return metadata.view
+            }
+        }
+
+        return viewChain.firstOrNull(::isExactMatch)?.view
+    }
+
+    private fun findSpotlightHeaderTabsTarget(view: View): View? {
+        fun collectTextLabels(current: View, depth: Int = 0, maxDepth: Int = 2): List<String> {
+            if (depth > maxDepth) return emptyList()
+
+            val ownText = listOfNotNull(
+                current.contentDescription?.toString(),
+                (current as? TextView)?.text?.toString()
+            ).filter { it.isNotBlank() }
+
+            if (current !is ViewGroup) return ownText
+
+            return ownText + current.children().flatMap { child ->
+                collectTextLabels(child, depth + 1, maxDepth)
+            }
+        }
+
+        fun isHeaderMarkerText(value: String): Boolean {
+            return value.contains("spotlight", ignoreCase = true) ||
+                value.contains("discover", ignoreCase = true) ||
+                value.contains("following", ignoreCase = true)
+        }
+
+        val candidateChain = buildList {
+            var current: View? = view
+            repeat(6) {
+                current ?: return@repeat
+                add(current!!)
+                current = current?.parent as? View
+            }
+        }
+
+        candidateChain.forEach { candidate ->
+            val group = candidate as? ViewGroup ?: return@forEach
+            if (group.childCount !in 2..4) return@forEach
+
+            val directMarkedChildren = group.children().count { child ->
+                collectTextLabels(child).any(::isHeaderMarkerText)
+            }
+
+            if (directMarkedChildren < 2) return@forEach
+
+            val texts = collectTextLabels(group)
+                .map { it.trim() }
+                .filter { it.isNotBlank() }
+                .distinct()
+
+            val hasSpotlightOrDiscover = texts.any {
+                it.contains("spotlight", ignoreCase = true) ||
+                    it.contains("discover", ignoreCase = true)
+            }
+            val hasFollowing = texts.any { it.contains("following", ignoreCase = true) }
+
+            if (hasSpotlightOrDiscover && hasFollowing) {
+                return group
+            }
+        }
+
+        return null
+    }
+
     private fun onActivityCreate() {
         val blockAds by context.config.global.blockAds
         val hiddenElements by context.config.userInterface.hideUiComponents
         val hideStorySuggestions by context.config.userInterface.hideStorySuggestions
+        val disableSpotlight by context.config.userInterface.disableSpotlight
         val isImmersiveCamera by context.config.camera.immersiveCameraPreview
 
         val displayMetrics = context.resources.displayMetrics
@@ -80,14 +228,36 @@ class UITweaks : Feature("UITweaks") {
 
         val chatNoteRecordButton = getId("chat_note_record_button", "id")
         val unreadHintButton = getId("unread_hint_button", "id")
+        val spotlightNavIds = listOf(
+            getId("hova_nav_spotlight", "id"),
+            getId("ngs_hova_nav_spotlight", "id"),
+            getId("hova_nav_spotlight_tab", "id"),
+            getId("hova_nav_spotlight_button", "id"),
+            getId("hova_nav_discover", "id"),
+            getId("ngs_hova_nav_discover", "id"),
+            getId("hova_nav_discover_tab", "id"),
+            getId("hova_nav_discover_button", "id")
+        ).filter { it != 0 }.toSet()
+        val spotlightNavNames = setOf(
+            "hova_nav_spotlight",
+            "ngs_hova_nav_spotlight",
+            "hova_nav_spotlight_tab",
+            "hova_nav_spotlight_button",
+            "hova_nav_discover",
+            "ngs_hova_nav_discover",
+            "hova_nav_discover_tab",
+            "hova_nav_discover_button"
+        )
 
-        Resources::class.java.methods.first { it.name == "getDimensionPixelSize"}.hook(
+        Resources::class.java.methods.first { it.name == "getDimensionPixelSize" }.hook(
             HookStage.AFTER,
             { isImmersiveCamera }
         ) { param ->
             val id = param.arg<Int>(0)
-            if (id == getId("capri_viewfinder_default_corner_radius", "dimen") ||
-                id == getId("ngs_hova_nav_larger_camera_button_size", "dimen")) {
+            if (
+                id == getId("capri_viewfinder_default_corner_radius", "dimen") ||
+                id == getId("ngs_hova_nav_larger_camera_button_size", "dimen")
+            ) {
                 param.setResult(0)
             }
         }
@@ -96,12 +266,17 @@ class UITweaks : Feature("UITweaks") {
             if (event.view is FrameLayout) {
                 fun removeView() {
                     event.view.layoutParams = event.view.layoutParams?.apply {
-                        width = 0; height = 0
+                        width = 0
+                        height = 0
                     } ?: return
                 }
 
                 val viewModelString = event.prevModel.toString()
-                val isMyStory by lazy { viewModelString.let { it.startsWith("StoryCarouselItemViewModel") && it.contains("storyId=") } }
+                val isMyStory by lazy {
+                    viewModelString.let {
+                        it.startsWith("StoryCarouselItemViewModel") && it.contains("storyId=")
+                    }
+                }
 
                 if (hideStorySuggestions.contains("hide_my_stories") && isMyStory) {
                     removeView()
@@ -110,12 +285,25 @@ class UITweaks : Feature("UITweaks") {
             }
         }
 
+        context.event.subscribe(BindViewEvent::class, { disableSpotlight }) { event ->
+            findSpotlightHeaderTabsTarget(event.view)?.hideViewCompletely()
+        }
+
         context.event.subscribe(AddViewEvent::class) { event ->
             val viewId = event.view.id
             val view = event.view
 
             if (blockAds && viewId == getId("df_promoted_story", "id")) {
                 hideStorySection(event)
+            }
+
+            findSpotlightNavTarget(event, spotlightNavIds, spotlightNavNames)?.takeIf { disableSpotlight }?.let { targetView ->
+                targetView.hideViewCompletely()
+                if (targetView !== view) {
+                    view.hideViewCompletely()
+                }
+                event.canceled = true
+                return@subscribe
             }
 
             if (isImmersiveCamera) {
@@ -134,7 +322,10 @@ class UITweaks : Feature("UITweaks") {
                 }
             }
 
-            if (hiddenElements.contains("hide_billboard_prompt") && event.parent.javaClass.name.endsWith("BillboardFeedHeaderPromptComponent")) {
+            if (
+                hiddenElements.contains("hide_billboard_prompt") &&
+                event.parent.javaClass.name.endsWith("BillboardFeedHeaderPromptComponent")
+            ) {
                 hideView(event.parent)
                 view.getValdiContext()?.componentContext?.get()?.dataBuilder {
                     val dismissFunction = get<Any>("_onDismiss") ?: return@subscribe
@@ -142,7 +333,11 @@ class UITweaks : Feature("UITweaks") {
                 }
             }
 
-            if (event.parent.javaClass.name.endsWith("ConstraintLayout") && event.view is LinearLayout && hiddenElements.contains("hide_map_reactions")) {
+            if (
+                event.parent.javaClass.name.endsWith("ConstraintLayout") &&
+                event.view is LinearLayout &&
+                hiddenElements.contains("hide_map_reactions")
+            ) {
                 val viewGroup = event.view as ViewGroup
                 val children = viewGroup.children()
 
@@ -154,7 +349,10 @@ class UITweaks : Feature("UITweaks") {
                 }
             }
 
-            if (event.parent.javaClass.name.endsWith("PreviewBottomToolbarView") && hiddenElements.contains("hide_post_to_story_buttons")) {
+            if (
+                event.parent.javaClass.name.endsWith("PreviewBottomToolbarView") &&
+                hiddenElements.contains("hide_post_to_story_buttons")
+            ) {
                 if (event.parent.childCount == 1) {
                     event.view.hideViewCompletely()
                 }
@@ -163,7 +361,8 @@ class UITweaks : Feature("UITweaks") {
             if (viewId == getId("send_btn", "id") && hiddenElements.contains("hide_post_to_story_buttons")) {
                 // hide previous view
                 if (event.parent.childCount > 0) {
-                    val lastChild = event.parent.getChildAt(event.parent.childCount - 1)?.takeIf { it is LinearLayout } ?: return@subscribe
+                    val lastChild = event.parent.getChildAt(event.parent.childCount - 1)
+                        ?.takeIf { it is LinearLayout } ?: return@subscribe
                     context.log.verbose("Hiding post to story button")
                     lastChild.hideViewCompletely()
                 }
@@ -174,7 +373,11 @@ class UITweaks : Feature("UITweaks") {
 
                 if (hiddenElements.contains("hide_live_location_share_button")) {
                     chatInputBar?.onLayoutChange {
-                        chatInputBar!!.children().lastOrNull { it.javaClass.name.endsWith("AppCompatImageButton") && runCatching { it.resources.getResourceName(it.id) }.getOrNull() == null }
+                        chatInputBar!!.children()
+                            .lastOrNull {
+                                it.javaClass.name.endsWith("AppCompatImageButton") &&
+                                    runCatching { it.resources.getResourceName(it.id) }.getOrNull() == null
+                            }
                             ?.hideViewCompletely()
                     }
                 }
