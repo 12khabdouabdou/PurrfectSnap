@@ -77,6 +77,7 @@ class Global : ConfigContainer() {
     val disableTelecomFramework = boolean("disable_telecom_framework") { requireRestart() }
     val hideActiveMusic = boolean("hide_active_music") { requireRestart() }
     val disableSnapSplitting = boolean("disable_snap_splitting") { addNotices(FeatureNotice.UNSTABLE) }
+    val enableNativeCameraRollSplitting = boolean("enable_native_camera_roll_splitting") { addNotices(FeatureNotice.UNSTABLE); requireRestart() }
 
     inner class UpdateSettings : ConfigContainer() {
         val autoUpdateCheck = boolean("auto_update_check", true)

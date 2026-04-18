@@ -168,6 +168,7 @@ class FeatureManager(
             CustomTheming(),
             HideTypingIndicator(),
             FakeSnapScore(),
+        CameraRollSourceOverride(),
         )
 
         features.values.toList().forEach { feature ->
