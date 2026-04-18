@@ -4,6 +4,7 @@ import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.util.ClassDetector
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
+import java.lang.reflect.Modifier
 
 /**
  * Feature to enable native video splitting for CAMERA_ROLL source type.
@@ -32,7 +33,7 @@ class CameraRollSourceOverride : Feature("Camera Roll Source Override") {
             methodSignature = { clazz ->
                 clazz.methods.any { method ->
                     method.name == "a" &&
-                    method.isStatic &&
+                    Modifier.isStatic(method.modifiers) &&
                     method.parameterCount == 3 &&
                     method.returnType == Boolean::class.javaPrimitiveType
                 }
