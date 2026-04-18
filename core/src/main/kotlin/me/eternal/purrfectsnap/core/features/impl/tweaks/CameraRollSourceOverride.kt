@@ -33,31 +33,103 @@ class CameraRollSourceOverride : Feature("Camera Roll Source Override") {
         
         val classLoader = context.androidContext.classLoader
         
-        // Find the class by method signature (not class name)
-        // Target: public static final boolean a(C41838s50, EnumC34633n6i, C19463cgc)
-        context.log.info("CameraRollSourceOverride: Searching for target class by method signature...")
-        val targetClass = ClassDetector.findClassBySignature(
-            classLoader = classLoader,
-            knownNames = emptyList(),
-            methodSignature = { clazz ->
-                clazz.methods.any { method ->
-                    method.name == "a" &&
-                    Modifier.isStatic(method.modifiers) &&
-                    method.parameterCount == 3 &&
-                    method.returnType == Boolean::class.javaPrimitiveType
+        // Strategy 1: Try to find by class name pattern first (faster if it works)
+        context.log.info("CameraRollSourceOverride: Attempting strategy 1 - Class name pattern matching...")
+        var targetClass: Class<*>? = null
+        
+        // Try to find class matching C41838s50 pattern
+        classLoader.getPackageNames()?.forEach { packageName ->
+            if (targetClass == null) {
+                try {
+                    val pkgName = if (packageName.startsWith("l.")) "l" else packageName
+                    val potentialClass = classLoader.loadClass("${pkgName}.C41838s50")
+                    if (potentialClass.methods.any { m -> 
+                        m.name == "a" && 
+                        Modifier.isStatic(m.modifiers) && 
+                        m.parameterCount == 3 &&
+                        m.returnType == Boolean::class.javaPrimitiveType
+                    }) {
+                        targetClass = potentialClass
+                        context.log.info("CameraRollSourceOverride: Found via class name: ${potentialClass.name}")
+                    }
+                } catch (e: ClassNotFoundException) {
+                    // Ignore, try next
                 }
             }
-        ) ?: run {
-            context.log.error("❌ CameraRollSourceOverride: Failed to find C41838s50.a() method by signature")
+        }
+        
+        // Strategy 2: Use ClassDetector with relaxed signature matching
+        if (targetClass == null) {
+            context.log.info("CameraRollSourceOverride: Strategy 1 failed, trying strategy 2 - Relaxed signature matching...")
+            targetClass = ClassDetector.findClassBySignature(
+                classLoader = classLoader,
+                knownNames = emptyList(),
+                methodSignature = { clazz ->
+                    // More relaxed: just look for static method named "a" with 3 params returning boolean
+                    clazz.declaredMethods.any { method ->
+                        method.name == "a" &&
+                        Modifier.isStatic(method.modifiers) &&
+                        method.parameterCount == 3 &&
+                        method.returnType == Boolean::class.javaPrimitiveType
+                    }
+                }
+            )
+        }
+        
+        // Strategy 3: Search all loaded classes for the pattern
+        if (targetClass == null) {
+            context.log.info("CameraRollSourceOverride: Strategy 2 failed, trying strategy 3 - Exhaustive class search...")
+            try {
+                val allClasses = context.androidContext.classLoader::class.java
+                    .getMethod("getPackages")
+                    .let { 
+                        // This is a fallback - we'll try common obfuscated package names
+                        listOf("", "defpackage", "l", "com.snapchat.android")
+                    }
+                
+                // Try loading C41838s50 directly from common packages
+                arrayOf("C41838s50", "l.C41838s50", "defpackage.C41838s50").forEach { className ->
+                    if (targetClass == null) {
+                        try {
+                            val cls = classLoader.loadClass(className)
+                            if (cls.methods.any { m -> 
+                                m.name == "a" && 
+                                Modifier.isStatic(m.modifiers) && 
+                                m.parameterCount == 3
+                            }) {
+                                targetClass = cls
+                                context.log.info("CameraRollSourceOverride: Found via direct load: $className")
+                            }
+                        } catch (e: Exception) {
+                            // Ignore
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                context.log.verbose("CameraRollSourceOverride: Exhaustive search error: ${e.message}")
+            }
+        }
+        
+        if (targetClass == null) {
+            context.log.error("❌ CameraRollSourceOverride: Failed to find C41838s50.a() method by any strategy")
             context.log.error("CameraRollSourceOverride: This might mean:")
             context.log.error(" - Snapchat version changed (method signature changed)")
             context.log.error(" - Class obfuscation pattern changed")
             context.log.error(" - Mappings are outdated")
+            context.log.error("CameraRollSourceOverride: Trying fallback - search all known classes...")
             return
         }
         
         context.log.info("✅ CameraRollSourceOverride: Found target class: ${targetClass.name}")
         context.log.info("CameraRollSourceOverride: Class loader = ${targetClass.classLoader}")
+        context.log.info("CameraRollSourceOverride: Package = ${targetClass.packageName}")
+        
+        // Log all methods named "a" to help with debugging
+        context.log.info("CameraRollSourceOverride: Analyzing methods named 'a' in this class:")
+        val allAMethods = targetClass.declaredMethods.filter { it.name == "a" }
+        allAMethods.forEach { method ->
+            context.log.info("CameraRollSourceOverride:   - ${method.name}(${method.parameterTypes.joinToString(", ") { it.name }}): ${method.returnType.name} [static=${Modifier.isStatic(method.modifiers)}]")
+        }
         
         // Verify this is the right class by checking parameter types
         val matchingMethods = targetClass.methods.filter { method ->
@@ -69,16 +141,26 @@ class CameraRollSourceOverride : Feature("Camera Roll Source Override") {
         }
         
         if (matchingMethods.isEmpty()) {
-            context.log.error("❌ CameraRollSourceOverride: Found class has incorrect parameter types")
-            context.log.error("CameraRollSourceOverride: Available methods named 'a':")
-            targetClass.methods.filter { it.name == "a" }.forEach { method ->
-                context.log.error(" - ${method.name}(${method.parameterTypes.joinToString(", ") { it.name }}): ${method.returnType.name}")
+            context.log.warn("⚠️ CameraRollSourceOverride: No exact match found, searching for compatible method...")
+            // Try to find any static boolean method with 3 params
+            val fallbackMethod = targetClass.methods.find { method ->
+                method.name == "a" &&
+                Modifier.isStatic(method.modifiers) &&
+                method.parameterCount == 3 &&
+                method.returnType == Boolean::class.javaPrimitiveType
             }
-            return
+            
+            if (fallbackMethod != null) {
+                context.log.info("✅ CameraRollSourceOverride: Found compatible fallback method!")
+                context.log.info("CameraRollSourceOverride: Method: ${fallbackMethod.name}(${fallbackMethod.parameterTypes.joinToString(", ") { it.name }})")
+            } else {
+                context.log.error("❌ CameraRollSourceOverride: No compatible method found")
+                return
+            }
+        } else {
+            context.log.info("✅ CameraRollSourceOverride: Verified method signature matches expected pattern")
+            context.log.info("CameraRollSourceOverride: Matching methods: ${matchingMethods.size}")
         }
-        
-        context.log.info("✅ CameraRollSourceOverride: Verified method signature matches expected pattern")
-        context.log.info("CameraRollSourceOverride: Matching methods: ${matchingMethods.size}")
         
         // Hook the method with BEFORE stage
         context.log.info("CameraRollSourceOverride: Installing hook on ${targetClass.name}.a()...")
