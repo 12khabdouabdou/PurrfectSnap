@@ -31,33 +31,45 @@ class CameraRollSourceOverride : Feature("Camera Roll Source Override") {
         
         context.log.info("CameraRollSourceOverride: Feature is ENABLED, proceeding with hook...")
         
-        val classLoader = context.androidContext.classLoader
-        
-        // Find class by signature: look for a class with a static method that:
-        // - Takes 3 parameters
-        // - Returns boolean
-        // - Second parameter is an Enum (the source type enum)
-        context.log.info("CameraRollSourceOverride: Searching for target class by method signature...")
-        val targetClass = ClassDetector.findClassBySignature(
-            classLoader = classLoader,
-            knownNames = emptyList(),
-            methodSignature = { clazz ->
-                clazz.declaredMethods.any { method ->
-                    Modifier.isStatic(method.modifiers) &&
-                    method.parameterCount == 3 &&
-                    method.returnType == Boolean::class.javaPrimitiveType &&
-                    // Second parameter should be an Enum (the source type enum)
-                    method.parameterTypes.getOrNull(1)?.isEnum == true
-                }
+    val classLoader = context.androidContext.classLoader
+
+    // Known obfuscated class names for different Snapchat versions
+    // The chunking decision method is in a class that gets obfuscated differently each version
+    // We try multiple patterns: direct name, with defpackage prefix, and variations
+    val knownClassNames = listOf(
+        "defpackage.C41838s50",  // Current known obfuscated name
+        "C41838s50",             // Without package prefix
+        "defpackage.s50",        // Original name before obfuscation
+        "s50"                    // Shortest variant
+    )
+
+    // Find class by signature: look for a class with a static method that:
+    // - Takes 3 parameters
+    // - Returns boolean
+    // - Second parameter is an Enum (the source type enum)
+    context.log.info("CameraRollSourceOverride: Searching for target class by method signature...")
+    context.log.info("CameraRollSourceOverride: Trying class names: ${knownClassNames.joinToString()}")
+    
+    val targetClass = ClassDetector.findClassBySignature(
+        classLoader = classLoader,
+        knownNames = knownClassNames,
+        methodSignature = { clazz ->
+            clazz.declaredMethods.any { method ->
+                Modifier.isStatic(method.modifiers) &&
+                method.parameterCount == 3 &&
+                method.returnType == Boolean::class.javaPrimitiveType &&
+                // Second parameter should be an Enum (the source type enum)
+                method.parameterTypes.getOrNull(1)?.isEnum == true
             }
-        ) ?: run {
-            context.log.error("❌ CameraRollSourceOverride: Failed to find target class by signature")
-            context.log.error("CameraRollSourceOverride: This might mean:")
-            context.log.error(" - Snapchat version changed (method signature changed)")
-            context.log.error(" - Class obfuscation pattern changed")
-            context.log.error(" - Mappings are outdated")
-            return
         }
+    ) ?: run {
+        context.log.error("❌ CameraRollSourceOverride: Failed to find target class by signature")
+        context.log.error("CameraRollSourceOverride: This might mean:")
+        context.log.error(" - Snapchat version changed (class names or method signature changed)")
+        context.log.error(" - Class obfuscation pattern changed")
+        context.log.error(" - Need to update knownClassNames list with new obfuscated name")
+        return
+    }
         
         context.log.info("✅ CameraRollSourceOverride: Found target class: ${targetClass.name}")
         context.log.info("CameraRollSourceOverride: Package = ${targetClass.packageName}")
