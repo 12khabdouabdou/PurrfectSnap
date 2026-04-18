@@ -33,25 +33,30 @@ class CameraRollSourceOverride : Feature("Camera Roll Source Override") {
         
         val classLoader = context.androidContext.classLoader
         
-        // Strategy 1: Try to find by class name pattern first (faster if it works)
-        context.log.info("CameraRollSourceOverride: Attempting strategy 1 - Class name pattern matching...")
-        var targetClass: Class<*>? = null
-        
-        // Try to find class matching C41838s50 pattern
-        classLoader.getPackageNames()?.forEach { packageName ->
-            if (targetClass == null) {
-                try {
-                    val pkgName = if (packageName.startsWith("l.")) "l" else packageName
-                    val potentialClass = classLoader.loadClass("${pkgName}.C41838s50")
-                    if (potentialClass.methods.any { m -> 
-                        m.name == "a" && 
-                        Modifier.isStatic(m.modifiers) && 
-                        m.parameterCount == 3 &&
-                        m.returnType == Boolean::class.javaPrimitiveType
-                    }) {
-                        targetClass = potentialClass
-                        context.log.info("CameraRollSourceOverride: Found via class name: ${potentialClass.name}")
-                    }
+        // Find class by signature: look for a class with a static method that:
+        // - Takes 3 parameters
+        // - Returns boolean
+        // - Second parameter is an Enum
+        context.log.info("CameraRollSourceOverride: Searching for target class by method signature...")
+        val targetClass = ClassDetector.findClassBySignature(
+            classLoader = classLoader,
+            knownNames = emptyList(),
+            methodSignature = { clazz ->
+                clazz.declaredMethods.any { method ->
+                    Modifier.isStatic(method.modifiers) &&
+                    method.parameterCount == 3 &&
+                    method.returnType == Boolean::class.javaPrimitiveType &&
+                    // Second parameter should be an Enum (the source type enum)
+                    method.parameterTypes.getOrNull(1)?.isEnum == true
+                }
+            }
+        ) ?: run {
+            context.log.error("❌ CameraRollSourceOverride: Failed to find target class by signature")
+            context.log.error("CameraRollSourceOverride: Looking for any class with static boolean method (3 params)...")
+            
+            // Fallback: Just log what we found
+            return
+        }
                 } catch (e: ClassNotFoundException) {
                     // Ignore, try next
                 }
@@ -121,50 +126,34 @@ class CameraRollSourceOverride : Feature("Camera Roll Source Override") {
         }
         
         context.log.info("✅ CameraRollSourceOverride: Found target class: ${targetClass.name}")
-        context.log.info("CameraRollSourceOverride: Class loader = ${targetClass.classLoader}")
         context.log.info("CameraRollSourceOverride: Package = ${targetClass.packageName}")
         
-        // Log all methods named "a" to help with debugging
-        context.log.info("CameraRollSourceOverride: Analyzing methods named 'a' in this class:")
-        val allAMethods = targetClass.declaredMethods.filter { it.name == "a" }
-        allAMethods.forEach { method ->
-            context.log.info("CameraRollSourceOverride:   - ${method.name}(${method.parameterTypes.joinToString(", ") { it.name }}): ${method.returnType.name} [static=${Modifier.isStatic(method.modifiers)}]")
-        }
-        
-        // Verify this is the right class by checking parameter types
-        val matchingMethods = targetClass.methods.filter { method ->
-            method.name == "a" &&
+        // Find the specific method to hook: static, 3 params, returns boolean, 2nd param is Enum
+        val targetMethod = targetClass.declaredMethods.find { method ->
+            Modifier.isStatic(method.modifiers) &&
             method.parameterCount == 3 &&
-            method.parameterTypes[0].name.contains("C41838s50") &&
-            method.parameterTypes[1].isEnum &&
-            method.parameterTypes[2].name.contains("C19463cgc")
+            method.returnType == Boolean::class.javaPrimitiveType &&
+            method.parameterTypes.getOrNull(1)?.isEnum == true
         }
         
-        if (matchingMethods.isEmpty()) {
-            context.log.warn("⚠️ CameraRollSourceOverride: No exact match found, searching for compatible method...")
-            // Try to find any static boolean method with 3 params
-            val fallbackMethod = targetClass.methods.find { method ->
-                method.name == "a" &&
-                Modifier.isStatic(method.modifiers) &&
-                method.parameterCount == 3 &&
-                method.returnType == Boolean::class.javaPrimitiveType
-            }
-            
-            if (fallbackMethod != null) {
-                context.log.info("✅ CameraRollSourceOverride: Found compatible fallback method!")
-                context.log.info("CameraRollSourceOverride: Method: ${fallbackMethod.name}(${fallbackMethod.parameterTypes.joinToString(", ") { it.name }})")
-            } else {
-                context.log.error("❌ CameraRollSourceOverride: No compatible method found")
-                return
-            }
-        } else {
-            context.log.info("✅ CameraRollSourceOverride: Verified method signature matches expected pattern")
-            context.log.info("CameraRollSourceOverride: Matching methods: ${matchingMethods.size}")
+        if (targetMethod == null) {
+            context.log.error("❌ CameraRollSourceOverride: No matching method found in this class")
+            context.log.error("CameraRollSourceOverride: Available static methods:")
+            targetClass.declaredMethods
+                .filter { Modifier.isStatic(it.modifiers) }
+                .forEach { method ->
+                    context.log.error("  - ${method.name}(${method.parameterTypes.joinToString(", ") { it.name }}): ${method.returnType.name}")
+                }
+            return
         }
+        
+        context.log.info("✅ CameraRollSourceOverride: Found target method: ${targetMethod.name}")
+        context.log.info("CameraRollSourceOverride: Method signature: ${targetMethod.name}(${targetMethod.parameterTypes.joinToString(", ") { it.name }}): ${targetMethod.returnType.name}")
+        context.log.info("CameraRollSourceOverride: 2nd param is Enum: ${targetMethod.parameterTypes.getOrNull(1)?.isEnum}")
         
         // Hook the method with BEFORE stage
-        context.log.info("CameraRollSourceOverride: Installing hook on ${targetClass.name}.a()...")
-        targetClass.hook("a", HookStage.BEFORE) { param ->
+        context.log.info("CameraRollSourceOverride: Installing hook on ${targetClass.name}.${targetMethod.name}()...")
+        targetClass.hook(targetMethod.name, HookStage.BEFORE) { param ->
             try {
                 context.log.verbose("🔍 CameraRollSourceOverride: Hook triggered!")
                 context.log.verbose("CameraRollSourceOverride: Thread = ${Thread.currentThread().name}")
