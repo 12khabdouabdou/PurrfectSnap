@@ -42,6 +42,7 @@ class ClassMapper(
             PlatformClientAttestationMapper(),
             ChatMediaDrawerMapper(),
             PlatformPresenceActionWrapperMapper(),
+        ChunkingDecisionMapper(),
         )
     }
 

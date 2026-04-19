@@ -1,162 +1,153 @@
 package me.eternal.purrfectsnap.core.features.impl.tweaks
 
 import me.eternal.purrfectsnap.core.features.Feature
-import me.eternal.purrfectsnap.core.util.ClassDetector
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
-import java.lang.reflect.Modifier
+import me.eternal.purrfectsnap.mapper.impl.ChunkingDecisionMapper
+import java.lang.reflect.Method
 
-/**
- * Feature to enable native video splitting for CAMERA_ROLL source type.
- *
- * Hooks the C41838s50.a() static method which determines whether chunking
- * is enabled based on the source type. By default, CAMERA_ROLL is excluded
- * from native splitting. This hook forces the method to return true for
- * CAMERA_ROLL, enabling native Snapchat splitting.
- *
- * Risk Level: MEDIUM
- */
 class CameraRollSourceOverride : Feature("Camera Roll Source Override") {
     override fun init() {
-        context.log.info("=== CameraRollSourceOverride initializing ===")
-        
-        // Check if feature is enabled
-        val isEnabled = context.config.global.enableNativeCameraRollSplitting.get()
-        context.log.info("CameraRollSourceOverride: Feature enabled = $isEnabled")
-        
-        if (!isEnabled) {
-            context.log.warn("CameraRollSourceOverride: Feature is DISABLED in config, skipping initialization")
+        context.log.info("CameraRollSourceOverride: === Initializing ===")
+
+        if (!context.config.global.enableNativeCameraRollSplitting.get()) {
+            context.log.warn("CameraRollSourceOverride: Feature DISABLED in config, skipping")
             return
         }
-        
-        context.log.info("CameraRollSourceOverride: Feature is ENABLED, proceeding with hook...")
-        
-    val classLoader = context.androidContext.classLoader
 
-    // Known obfuscated class names for different Snapchat versions
-    // The chunking decision method is in a class that gets obfuscated differently each version
-    // We try multiple patterns: direct name, with defpackage prefix, and variations
-    val knownClassNames = listOf(
-        "defpackage.C41838s50",  // Current known obfuscated name
-        "C41838s50",             // Without package prefix
-        "defpackage.s50",        // Original name before obfuscation
-        "s50"                    // Shortest variant
-    )
+        context.log.info("CameraRollSourceOverride: Feature ENABLED, loading mappings...")
 
-    // Find class by signature: look for a class with a static method that:
-    // - Takes 3 parameters
-    // - Returns boolean
-    // - Second parameter is an Enum (the source type enum)
-    context.log.info("CameraRollSourceOverride: Searching for target class by method signature...")
-    context.log.info("CameraRollSourceOverride: Trying class names: ${knownClassNames.joinToString()}")
-    
-    val targetClass = ClassDetector.findClassBySignature(
-        classLoader = classLoader,
-        knownNames = knownClassNames,
-        methodSignature = { clazz ->
-            clazz.declaredMethods.any { method ->
-                Modifier.isStatic(method.modifiers) &&
-                method.parameterCount == 3 &&
-                method.returnType == Boolean::class.javaPrimitiveType &&
-                // Second parameter should be an Enum (the source type enum)
-                method.parameterTypes.getOrNull(1)?.isEnum == true
+        context.mappings.useMapper(ChunkingDecisionMapper::class) {
+            val enumClass = sourceTypeEnumClass.getAsClass()
+            val decisionClass = chunkingDecisionClass.getAsClass()
+            val decisionMethodName = chunkingDecisionMethod.getAsString()
+            val selectorClass = uploadPathSelectorClass.getAsClass()
+
+            context.log.info("CameraRollSourceOverride: Mapping results:")
+            context.log.info(" - sourceTypeEnumClass = ${sourceTypeEnumClass.getAsString()}")
+            context.log.info(" - chunkingDecisionClass = ${chunkingDecisionClass.getAsString()}")
+            context.log.info(" - chunkingDecisionMethod = $decisionMethodName")
+            context.log.info(" - uploadPathSelectorClass = ${uploadPathSelectorClass.getAsString()}")
+
+            if (enumClass == null) {
+                context.log.error("CameraRollSourceOverride: sourceTypeEnumClass mapping FAILED - cannot proceed")
+                return@useMapper
+            }
+
+            val cameraRollEnum = enumClass.enumConstants?.firstOrNull { it.toString() == "CAMERA_ROLL" }
+            val galleryEnum = enumClass.enumConstants?.firstOrNull { it.toString() == "GALLERY" }
+            val galleryStoryEnum = enumClass.enumConstants?.firstOrNull { it.toString() == "GALLERY_STORY" }
+            val cameraEnum = enumClass.enumConstants?.firstOrNull { it.toString() == "CAMERA" }
+
+            context.log.info("CameraRollSourceOverride: Enum values resolved:")
+            context.log.info(" - CAMERA_ROLL = $cameraRollEnum (ordinal=${(cameraRollEnum as? Enum<*>)?.ordinal})")
+            context.log.info(" - GALLERY = $galleryEnum (ordinal=${(galleryEnum as? Enum<*>)?.ordinal})")
+            context.log.info(" - GALLERY_STORY = $galleryStoryEnum (ordinal=${(galleryStoryEnum as? Enum<*>)?.ordinal})")
+            context.log.info(" - CAMERA = $cameraEnum (ordinal=${(cameraEnum as? Enum<*>)?.ordinal})")
+            context.log.info("CameraRollSourceOverride: All enum constants = ${enumClass.enumConstants?.joinToString()}")
+
+            if (cameraRollEnum == null || galleryEnum == null) {
+                context.log.error("CameraRollSourceOverride: Failed to resolve CAMERA_ROLL or GALLERY enum values")
+                context.log.error("CameraRollSourceOverride: Available constants = ${enumClass.enumConstants?.joinToString()}")
+                return@useMapper
+            }
+
+            if (decisionClass != null && decisionMethodName != null) {
+                installHook1(decisionClass, decisionMethodName, enumClass, cameraRollEnum)
+            } else {
+                context.log.warn("CameraRollSourceOverride: chunkingDecision mapping FAILED - skipping Hook 1")
+            }
+
+            if (selectorClass != null) {
+                installHook2(selectorClass, enumClass, cameraRollEnum, galleryEnum)
+            } else {
+                context.log.warn("CameraRollSourceOverride: uploadPathSelector mapping FAILED - skipping Hook 2")
             }
         }
-    ) ?: run {
-        context.log.error("❌ CameraRollSourceOverride: Failed to find target class by signature")
-        context.log.error("CameraRollSourceOverride: This might mean:")
-        context.log.error(" - Snapchat version changed (class names or method signature changed)")
-        context.log.error(" - Class obfuscation pattern changed")
-        context.log.error(" - Need to update knownClassNames list with new obfuscated name")
-        return
-    }
-        
-        context.log.info("✅ CameraRollSourceOverride: Found target class: ${targetClass.name}")
-        context.log.info("CameraRollSourceOverride: Package = ${targetClass.packageName}")
-        
-        // Find the specific method to hook: static, 3 params, returns boolean, 2nd param is Enum
-        val targetMethod = targetClass.declaredMethods.find { method ->
-            Modifier.isStatic(method.modifiers) &&
-            method.parameterCount == 3 &&
-            method.returnType == Boolean::class.javaPrimitiveType &&
-            method.parameterTypes.getOrNull(1)?.isEnum == true
-        }
-        
-        if (targetMethod == null) {
-            context.log.error("❌ CameraRollSourceOverride: No matching method found in this class")
-            context.log.error("CameraRollSourceOverride: Available static methods:")
-            targetClass.declaredMethods
-                .filter { Modifier.isStatic(it.modifiers) }
-                .forEach { method ->
-                    context.log.error(" - ${method.name}(${method.parameterTypes.joinToString(", ") { it.name }}): ${method.returnType.name}")
-                }
-            return
-        }
-        
-        context.log.info("✅ CameraRollSourceOverride: Found target method: ${targetMethod.name}")
-        context.log.info("CameraRollSourceOverride: Method signature: ${targetMethod.name}(${targetMethod.parameterTypes.joinToString(", ") { it.name }}): ${targetMethod.returnType.name}")
-        context.log.info("CameraRollSourceOverride: 2nd param is Enum: ${targetMethod.parameterTypes.getOrNull(1)?.isEnum}")
-        
-        // Hook the method with BEFORE stage
-        context.log.info("CameraRollSourceOverride: Installing hook on ${targetClass.name}.${targetMethod.name}()...")
-        targetClass.hook(targetMethod.name, HookStage.BEFORE) { param ->
-            try {
-                context.log.verbose("🔍 CameraRollSourceOverride: Hook triggered!")
-                context.log.verbose("CameraRollSourceOverride: Thread = ${Thread.currentThread().name}")
-                
-                // Get the source type enum (parameter 1)
-                val sourceTypeEnum = param.argNullable<Any>(1)
-                if (sourceTypeEnum == null) {
-                    context.log.warn("⚠️ CameraRollSourceOverride: Source type enum is NULL (arg index 1)")
-                    return@hook
-                }
-                
-                context.log.verbose("CameraRollSourceOverride: Source type enum class = ${sourceTypeEnum.javaClass.name}")
-                context.log.verbose("CameraRollSourceOverride: Source type enum = ${sourceTypeEnum.toString()}")
-                
-                // Try to get enum ordinal
-                val ordinalField = sourceTypeEnum.javaClass.getDeclaredField("a").apply { isAccessible = true }
-                val ordinalValue = ordinalField.get(sourceTypeEnum) as? Int
-                context.log.verbose("CameraRollSourceOverride: Enum ordinal value = $ordinalValue")
-                
-                // Method 1: Check by enum name
-                val enumName = sourceTypeEnum.toString()
-                context.log.verbose("CameraRollSourceOverride: Enum name = '$enumName'")
-                
-                if (enumName == "CAMERA_ROLL") {
-                    context.log.info("✅✅✅ CameraRollSourceOverride: CAMERA_ROLL detected (by name)!")
-                    context.log.info("CameraRollSourceOverride: Forcing chunking ENABLED (returning true)")
-                    context.log.info("CameraRollSourceOverride: This should enable native splitting for gallery videos!")
-                    param.setResult(true)
-                    context.log.verbose("CameraRollSourceOverride: Hook completed successfully")
-                    return@hook
-                }
-                
-                // Method 2: Check by ordinal value (fallback)
-                if (ordinalValue != null && ordinalValue == 11) { // 11 = CAMERA_ROLL
-                    context.log.info("✅✅✅ CameraRollSourceOverride: CAMERA_ROLL detected (by ordinal=11)!")
-                    context.log.info("CameraRollSourceOverride: Forcing chunking ENABLED (returning true)")
-                    param.setResult(true)
-                    context.log.verbose("CameraRollSourceOverride: Hook completed successfully (ordinal match)")
-                    return@hook
-                }
-                
-                // Not CAMERA_ROLL - log but don't interfere
-                context.log.verbose("CameraRollSourceOverride: Not CAMERA_ROLL (ordinal=$ordinalValue, name=$enumName)")
-                context.log.verbose("CameraRollSourceOverride: Allowing original method to proceed")
-                
-            } catch (e: Exception) {
-                context.log.error("❌❌❌ CameraRollSourceOverride: ERROR in hook!")
-                context.log.error("CameraRollSourceOverride: Exception type = ${e.javaClass.name}")
-                context.log.error("CameraRollSourceOverride: Message = ${e.message}")
-                context.log.error("CameraRollSourceOverride: Stack trace:")
-                e.printStackTrace()?.let { context.log.error(it) }
-                // Don't setResult - let original method handle it on error
-            }
-        }
-        
-        context.log.info("✅ CameraRollSourceOverride: Hook installed successfully")
-        context.log.info("CameraRollSourceOverride: Native splitting should now be enabled for CAMERA_ROLL")
+
         context.log.info("CameraRollSourceOverride: === Initialization complete ===")
+    }
+
+    private fun installHook1(
+        decisionClass: Class<*>,
+        decisionMethodName: String,
+        enumClass: Class<*>,
+        cameraRollEnum: Any
+    ) {
+        context.log.info("CameraRollSourceOverride: [Hook 1] Installing on ${decisionClass.name}.$decisionMethodName()")
+
+        decisionClass.hook(decisionMethodName, HookStage.BEFORE) { param ->
+            try {
+                val sourceType = param.argNullable<Any>(1)
+                if (sourceType == null) {
+                    context.log.verbose("CameraRollSourceOverride: [Hook 1] source type arg is null")
+                    return@hook
+                }
+
+                val enumName = sourceType.toString()
+                val enumOrdinal = (sourceType as? Enum<*>)?.ordinal
+
+                context.log.verbose("CameraRollSourceOverride: [Hook 1] triggered: sourceType=$enumName ordinal=$enumOrdinal")
+
+                if (sourceType == cameraRollEnum) {
+                    context.log.info("CameraRollSourceOverride: [Hook 1] CAMERA_ROLL detected -> forcing chunking ENABLED (setResult true)")
+                    param.setResult(true)
+                }
+            } catch (e: Exception) {
+                context.log.error("CameraRollSourceOverride: [Hook 1] ERROR: ${e.javaClass.simpleName}: ${e.message}")
+                val method = param.method() as Method
+                context.log.error("CameraRollSourceOverride: [Hook 1] method signature: ${method.name}(${method.parameterTypes.joinToString(", ") { it.simpleName }}): ${method.returnType.simpleName}")
+            }
+        }
+
+        context.log.info("CameraRollSourceOverride: [Hook 1] Installed successfully")
+    }
+
+    private fun installHook2(
+        selectorClass: Class<*>,
+        enumClass: Class<*>,
+        cameraRollEnum: Any,
+        galleryEnum: Any
+    ) {
+        context.log.info("CameraRollSourceOverride: [Hook 2] Scanning ${selectorClass.name} for methods with source type enum params...")
+
+        val methodsWithEnum = selectorClass.declaredMethods.filter { method ->
+            method.parameterTypes.contains(enumClass)
+        }
+
+        context.log.info("CameraRollSourceOverride: [Hook 2] Found ${methodsWithEnum.size} methods with source type enum param:")
+        methodsWithEnum.forEach { method ->
+            context.log.info("CameraRollSourceOverride: [Hook 2]   - ${method.name}(${method.parameterTypes.joinToString(", ") { it.simpleName }}): ${method.returnType.simpleName}")
+        }
+
+        if (methodsWithEnum.isEmpty()) {
+            context.log.warn("CameraRollSourceOverride: [Hook 2] No methods with source type enum found - trying all public methods")
+            return
+        }
+
+        methodsWithEnum.forEach { method ->
+            context.log.info("CameraRollSourceOverride: [Hook 2] Hooking ${method.name}...")
+
+            try {
+                selectorClass.hook(method.name, HookStage.BEFORE) { param ->
+                    try {
+                        for (i in 0 until method.parameterCount) {
+                            val arg = param.argNullable<Any>(i) ?: continue
+                            if (arg == cameraRollEnum) {
+                                context.log.info("CameraRollSourceOverride: [Hook 2] ${method.name}: arg[$i] was CAMERA_ROLL -> replacing with GALLERY")
+                                param.setArg(i, galleryEnum)
+                                context.log.verbose("CameraRollSourceOverride: [Hook 2] ${method.name}: arg[$i] is now ${param.arg<Any>(i)}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        context.log.error("CameraRollSourceOverride: [Hook 2] ERROR in ${method.name}: ${e.javaClass.simpleName}: ${e.message}")
+                    }
+                }
+            } catch (e: Exception) {
+                context.log.error("CameraRollSourceOverride: [Hook 2] Failed to hook ${method.name}: ${e.message}")
+            }
+        }
+
+        context.log.info("CameraRollSourceOverride: [Hook 2] Installed successfully on ${methodsWithEnum.size} methods")
     }
 }
