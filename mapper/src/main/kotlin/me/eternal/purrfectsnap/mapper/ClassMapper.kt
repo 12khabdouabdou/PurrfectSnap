@@ -40,8 +40,9 @@ class ClassMapper(
             COFObservableMapper(),
             FoldingLayoutMapper(),
             PlatformClientAttestationMapper(),
-            ChatMediaDrawerMapper(),
-            PlatformPresenceActionWrapperMapper(),
+        ChatMediaDrawerMapper(),
+        MemoriesTwoChatMediaDrawerMapper(),
+        PlatformPresenceActionWrapperMapper(),
         ChunkingDecisionMapper(),
         )
     }
