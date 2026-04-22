@@ -54,6 +54,7 @@ import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.util.dataBuilder
+import me.eternal.purrfectsnap.core.util.hook.HookAdapter
 import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
@@ -570,20 +571,20 @@ class MediaFilePicker : Feature("Media File Picker") {
                         memoriesTwoSendItemsMethod = sendItems
                         context.log.info("MediaFilePicker[v2]: Found sendItems method: ${sendItems.name} on ${sendItems.declaringClass.name}")
 
-                        handlerParamMethod.hook(HookStage.AFTER) {
-                            val handlerInstance = it.arg(0)
-                            memoriesTwoActionHandler = handlerInstance
-                            context.log.info("MediaFilePicker[v2]: Captured MemoriesTwo action handler instance: ${handlerInstance.javaClass.name}")
+ handlerParamMethod.hook(HookStage.AFTER) {
+ val handlerInstance = it.arg(0) as Any
+ memoriesTwoActionHandler = handlerInstance
+ context.log.info("MediaFilePicker[v2]: Captured MemoriesTwo action handler instance: ${handlerInstance::class.java.name}")
 
-                            if (memoriesTwoSendItemsHookedHandler === handlerInstance) return@hook
-                            memoriesTwoSendItemsHookedHandler = handlerInstance
+ if (memoriesTwoSendItemsHookedHandler === handlerInstance) return@hook
+ memoriesTwoSendItemsHookedHandler = handlerInstance
 
-                            Hooker.hookObjectMethod(
-                                handlerInstance::class.java,
-                                handlerInstance,
-                                sendItemsName,
-                                HookStage.BEFORE
-                            ) { param ->
+ Hooker.hookObjectMethod(
+ handlerInstance::class.java,
+ handlerInstance,
+ sendItemsName,
+ HookStage.BEFORE
+ ) { param: HookAdapter ->
                                 if (bypassSplitOnce) {
                                     bypassSplitOnce = false
                                     context.log.verbose("MediaFilePicker[v2]: bypassSplitOnce set, skipping split")
