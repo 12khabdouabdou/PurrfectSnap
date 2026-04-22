@@ -1,6 +1,7 @@
 package me.eternal.purrfectsnap.mapper.impl
 
 import me.eternal.purrfectsnap.mapper.AbstractClassMapper
+import me.eternal.purrfectsnap.mapper.ext.getAllConstStrings
 import me.eternal.purrfectsnap.mapper.ext.getClassName
 import me.eternal.purrfectsnap.mapper.ext.getSuperClassName
 import me.eternal.purrfectsnap.mapper.ext.isEnum
