@@ -6,7 +6,6 @@ import me.eternal.purrfectsnap.mapper.ext.getClassName
 import me.eternal.purrfectsnap.mapper.ext.getSuperClassName
 import me.eternal.purrfectsnap.mapper.ext.isAbstract
 import me.eternal.purrfectsnap.mapper.ext.isEnum
-import me.eternal.purrfectsnap.mapper.ext.isFinal
 import me.eternal.purrfectsnap.mapper.ext.isInterface
 
 class MemoriesTwoChatMediaDrawerMapper : AbstractClassMapper("MemoriesTwoChatMediaDrawer") {
@@ -17,8 +16,6 @@ class MemoriesTwoChatMediaDrawerMapper : AbstractClassMapper("MemoriesTwoChatMed
     val memTwoDataEntityTypeClass = classReference("memTwoDataEntityTypeClass")
     val memTwoDataEntityClass = classReference("memTwoDataEntityClass")
     val memoriesTwoPickerMultiCallbacksClass = classReference("memoriesTwoPickerMultiCallbacksClass")
-    val memoriesTwoActionHandlerImplClass = classReference("memoriesTwoActionHandlerImplClass")
-    val memoriesTwoPickerMultiCallbacksImplClass = classReference("memoriesTwoPickerMultiCallbacksImplClass")
 
     init {
         mapper {
@@ -76,22 +73,7 @@ class MemoriesTwoChatMediaDrawerMapper : AbstractClassMapper("MemoriesTwoChatMed
         val callbacksClazz = classes.firstOrNull { clazz ->
             clazz.isInterface() && clazz.getClassName().contains("MemoriesTwoPickerMultiCallbacks")
         }
-        callbacksClazz?.let { memoriesTwoPickerMultiCallbacksClass.set(it.getClassName().replace("/", ".")) }
-
-        val actionHandlerImplClazz = classes.firstOrNull { clazz ->
-            !clazz.isInterface() && !clazz.isAbstract() &&
-                clazz.interfaces.any { it.contains("MemoriesTwoChatMediaDrawerActionHandler") }
-        }
-        actionHandlerImplClazz?.let { memoriesTwoActionHandlerImplClass.set(it.getClassName().replace("/", ".")) }
-
-        val callbacksImplClazzes = classes.filter { clazz ->
-            !clazz.isInterface() && !clazz.isAbstract() && clazz.isFinal() &&
-                clazz.interfaces.any { it.contains("MemoriesTwoPickerMultiCallbacks") }
-        }
-        val callbacksImplClazz = callbacksImplClazzes.maxByOrNull { clazz ->
-            clazz.methods.firstOrNull { it.name == "<init>" }?.parameterTypes?.size ?: 0
-        }
-        callbacksImplClazz?.let { memoriesTwoPickerMultiCallbacksImplClass.set(it.getClassName().replace("/", ".")) }
-        }
+    callbacksClazz?.let { memoriesTwoPickerMultiCallbacksClass.set(it.getClassName().replace("/", ".")) }
+    }
     }
 }

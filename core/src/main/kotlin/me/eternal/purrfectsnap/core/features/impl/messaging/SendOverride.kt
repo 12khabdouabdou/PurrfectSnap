@@ -101,6 +101,213 @@ class SendOverride : Feature("Send Override") {
         }
     }
     
+    private fun trySplitLongVideo(
+        event: SendMessageWithContentEvent,
+        localMessageContent: MessageContent,
+        messageProtoReader: ProtoReader
+    ): Boolean {
+        val mediaFilePicker = context.feature(MediaFilePicker::class)
+        val bypassEnabled = context.config.experimental.nativeHooks.valdiHooks.bypassCameraRollLimit.get()
+        if (!bypassEnabled) return false
+        if (localMessageContent.contentType != ContentType.EXTERNAL_MEDIA) return false
+        if (MediaFilePicker.getQueuedOverrideType() != null) return false
+
+        val contentUri = messageProtoReader.getString(3, 3, 3)
+        if (contentUri == null || !contentUri.startsWith("content://media/external/video")) {
+            context.log.verbose("SendOverride[split]: Not a MediaStore video URI (uri=$contentUri)")
+            return false
+        }
+
+        val uri = android.net.Uri.parse(contentUri)
+        val mediaStoreId = android.content.ContentUris.parseId(uri)
+        context.log.verbose("SendOverride[split]: Detected MediaStore video URI=$contentUri, id=$mediaStoreId")
+
+        val durationMs = mediaFilePicker.extractMediaDuration(uri)
+        if (durationMs == null || durationMs <= 10_000L) {
+            context.log.verbose("SendOverride[split]: Duration ${durationMs}ms <= 10s, no split needed")
+            return false
+        }
+
+        context.log.info("SendOverride[split]: Long video detected (${durationMs}ms), splitting into chunks")
+
+        val preparedItems = mediaFilePicker.prepareChunkedItemsFromMediaStoreId(mediaStoreId.toString(), durationMs)
+        if (preparedItems.isNullOrEmpty()) {
+            context.log.warn("SendOverride[split]: Failed to prepare split items for video $mediaStoreId")
+            return false
+        }
+
+        context.log.info("SendOverride[split]: Split into ${preparedItems.size} chunks, canceling original send")
+
+        event.canceled = true
+        event.adapter.setResult(null)
+
+        val sendMessageCallbackClass: Class<*> by lazy {
+            lateinit var result: Class<*>
+            context.mappings.useMapper(CallbackMapper::class) {
+                result = callbacks.getClass("SendMessageCallback") ?: error("Failed to resolve SendMessageCallback")
+            }
+            result
+        }
+
+        val sendMessageWithContentMethod by lazy {
+            sequence {
+                var current: Class<*>? = context.classCache.conversationManager
+                while (current != null && current != Any::class.java && current != Object::class.java) {
+                    yield(current)
+                    current = current.superclass
+                }
+            }.flatMap { it.declaredMethods.asSequence() }
+                .first { it.name == "sendMessageWithContent" }
+        }
+
+        val conversationManagerInstance by lazy {
+            context.feature(Messaging::class).conversationManager?.instanceNonNull()
+        }
+
+        fun cloneDestinations(source: MessageDestinations): Any {
+            return context.gson.fromJson(
+                context.gson.toJson(source.instanceNonNull()),
+                context.classCache.messageDestinations
+            )
+        }
+
+        val originalMessageJson = context.gson.toJson(localMessageContent.instanceNonNull())
+
+        fun createChunkMessageContent(chunkItem: MediaFilePicker.PreparedMediaItem): MessageContent {
+            val chunkContent = MessageContent(
+                context.gson.fromJson(originalMessageJson, context.classCache.localMessageContent)
+            )
+
+            val visited = Collections.newSetFromMap(IdentityHashMap<Any, Boolean>())
+            fun shouldScrubField(fieldName: String): Boolean {
+                if (fieldName == "mId") return false
+                return fieldName in setOf("mMessageId", "mQuotedMessageId") ||
+                    fieldName.contains("AttemptId", ignoreCase = true) ||
+                    fieldName.contains("ClientMessageId", ignoreCase = true) ||
+                    fieldName.contains("ClientId", ignoreCase = true) ||
+                    fieldName.contains("MessageUuid", ignoreCase = true) ||
+                    fieldName.contains("UUID", ignoreCase = true)
+            }
+            fun scrubValue(value: Any?) {
+                if (value == null) return
+                if (!visited.add(value)) return
+                when (value) {
+                    is String, is Number, is Boolean, is ByteArray, is Enum<*> -> return
+                    is Iterable<*> -> { value.forEach { scrubValue(it) }; return }
+                    is Map<*, *> -> { value.values.forEach { scrubValue(it) }; return }
+                }
+                sequence<Class<*>> {
+                    var current: Class<*>? = value.javaClass
+                    while (current != null && current != Any::class.java && current != Object::class.java) {
+                        yield(current)
+                        current = current.superclass
+                    }
+                }.flatMap { it.declaredFields.asSequence() }
+                    .forEach { field ->
+                        runCatching {
+                            field.isAccessible = true
+                            if (shouldScrubField(field.name)) {
+                                when (field.type) {
+                                    java.lang.Long.TYPE -> field.setLong(value, 0L)
+                                    java.lang.Integer.TYPE -> field.setInt(value, 0)
+                                    java.lang.Boolean.TYPE -> field.setBoolean(value, false)
+                                    else -> field.set(value, null)
+                                }
+                            } else {
+                                scrubValue(field.get(value))
+                            }
+                        }
+                    }
+            }
+            scrubValue(chunkContent.instanceNonNull())
+
+            val metadata = chunkContent.instanceNonNull().getObjectFieldOrNull("mExternalContentMetadata")
+            chunkContent.content = ProtoEditor(chunkContent.content ?: error("Chunk content is null")).apply {
+                edit(3) {
+                    edit(3) {
+                        remove(3)
+                        addString(3, chunkItem.uri)
+                        val chunkDurationSec = (chunkItem.durationMs / 1000).toInt()
+                        remove(1)
+                        addVarInt(1, chunkDurationSec.toLong())
+                        remove(15)
+                        addVarInt(15, chunkDurationSec.toLong())
+                    }
+                }
+            }.toByteArray()
+
+            chunkContent.localMediaReferences = arrayListOf<Any>()
+            metadata?.let {
+                runCatching {
+                    it.setObjectField("mContentReferences", arrayListOf<Any>())
+                    it.setObjectField("mRemoteMediaEncryption", arrayListOf<Any>())
+                }.onFailure { e ->
+                    context.log.verbose("SendOverride[split]: Failed to clear metadata refs: ${e.message}")
+                }
+            }
+
+            context.log.verbose("SendOverride[split]: Built chunk content uri=${chunkItem.uri}, duration=${chunkItem.durationMs}ms")
+            return chunkContent
+        }
+
+        fun invokeSendManually(messageContent: MessageContent, callback: Any?) {
+            val conversationManager = conversationManagerInstance ?: error("ConversationManager is null")
+            internalMultipartSend.set(true)
+            try {
+                sendMessageWithContentMethod.invoke(
+                    conversationManager,
+                    cloneDestinations(event.destinations),
+                    messageContent.instanceNonNull(),
+                    callback
+                )
+            } finally {
+                internalMultipartSend.set(false)
+            }
+        }
+
+        fun invokeCallbackError(callback: Any?, error: Any?) {
+            runCatching {
+                callback?.javaClass?.methods?.firstOrNull { method ->
+                    method.name == "onError" && method.parameterCount == 1
+                }?.invoke(callback, error)
+            }
+        }
+
+        val originalCallback = event.adapter.args().getOrNull(2)
+
+        fun sendChunk(index: Int) {
+            if (index >= preparedItems.size) {
+                context.log.info("SendOverride[split]: All ${preparedItems.size} chunks sent successfully")
+                return
+            }
+            val chunkItem = preparedItems[index]
+            val chunkContent = createChunkMessageContent(chunkItem)
+
+            val callback = if (index == preparedItems.size - 1) {
+                originalCallback
+            } else {
+                CallbackBuilder(sendMessageCallbackClass)
+                    .override("onSuccess") {
+                        context.runOnUiThread { sendChunk(index + 1) }
+                    }
+                    .override("onError", shouldUnhook = false) {
+                        context.log.error("SendOverride[split]: Chunk ${index + 1}/${preparedItems.size} failed, cleaning up")
+                        preparedItems.forEach { item ->
+                            MediaFilePicker.deleteTempVideoUri(context, item.uri)
+                        }
+                        invokeCallbackError(originalCallback, it.argNullable<Any>(0))
+                    }
+                    .build()
+            }
+
+            context.log.verbose("SendOverride[split]: Sending chunk ${index + 1}/${preparedItems.size} (uri=${chunkItem.uri}, duration=${chunkItem.durationMs}ms)")
+            invokeSendManually(chunkContent, callback)
+        }
+
+        context.runOnUiThread { sendChunk(0) }
+        return true
+    }
+
     private var selectedType by mutableStateOf("SNAP")
     private var disableSplitForCurrentSend by mutableStateOf(false)
     private var customDuration by mutableFloatStateOf(10f)
@@ -427,10 +634,17 @@ class SendOverride : Feature("Send Override") {
             val messageProtoReader = ProtoReader(localMessageContent.content ?: return@subscribe)
             if (messageProtoReader.contains(7)) return@subscribe
 
-            val conversationIds = event.destinations.conversations?.map { it.toString() } ?: return@subscribe
-            if (conversationIds.isEmpty()) return@subscribe
-            
-            val recipientNames = conversationIds.mapNotNull { convId ->
+        val conversationIds = event.destinations.conversations?.map { it.toString() } ?: return@subscribe
+        if (conversationIds.isEmpty()) return@subscribe
+
+        // Early split check — if this is a long camera roll video that wasn't handled by
+        // the v1 ChatMediaDrawerActionHandler hook, split it here at sendMessageWithContent level
+        if (trySplitLongVideo(event, localMessageContent, messageProtoReader)) {
+            context.log.info("SendOverride: Long video split handled at sendMessageWithContent level")
+            return@subscribe
+        }
+
+        val recipientNames = conversationIds.mapNotNull { convId ->
                 runCatching {
                     val dmParticipant = context.database.getDMOtherParticipant(convId)
                     if (dmParticipant != null) {

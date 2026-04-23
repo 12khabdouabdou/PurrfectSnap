@@ -54,14 +54,11 @@ import me.eternal.purrfectsnap.core.features.Feature
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfectsnap.core.ui.PurrfectOverlayTheme
 import me.eternal.purrfectsnap.core.util.dataBuilder
-import me.eternal.purrfectsnap.core.util.hook.HookAdapter
 import me.eternal.purrfectsnap.core.util.hook.Hooker
 import me.eternal.purrfectsnap.core.util.hook.HookStage
 import me.eternal.purrfectsnap.core.util.hook.hook
-import me.eternal.purrfectsnap.core.util.hook.hookConstructor
 import me.eternal.purrfectsnap.core.util.ktx.getObjectFieldOrNull
 import me.eternal.purrfectsnap.mapper.impl.ChatMediaDrawerMapper
-import me.eternal.purrfectsnap.mapper.impl.MemoriesTwoChatMediaDrawerMapper
 import java.io.File
 import java.io.InputStream
 import java.lang.reflect.Method
@@ -80,6 +77,14 @@ class MediaFilePicker : Feature("Media File Picker") {
         private var bypassSplitOnce = false
         private var sendSingleItemHandler: ((Any) -> Boolean)? = null
         private var cleanupItemHandler: ((String) -> Unit)? = null
+        fun deleteTempVideoUri(context: me.eternal.purrfectsnap.core.ModContext, uriString: String) {
+            runCatching {
+                context.androidContext.contentResolver.delete(Uri.parse(uriString), null, null)
+            }.onFailure {
+                context.log.warn("MediaFilePicker: Failed to delete temp split media: ${it.message}")
+            }
+        }
+
         fun hasQueuedSplitItems(): Boolean = queuedSplitItems.isNotEmpty()
         fun hasPendingSplitCleanup(): Boolean = queuedSplitItemIds.isNotEmpty()
         fun hasOriginalUnsplitItem(): Boolean = originalUnsplitItem != null
@@ -151,11 +156,11 @@ class MediaFilePicker : Feature("Media File Picker") {
     var lastMediaDuration: Long? = null
         private set
 
-    private data class PreparedMediaItem(
-        val itemId: String,
-        val durationMs: Long,
-        val uri: String
-    )
+data class PreparedMediaItem(
+    val itemId: String,
+    val durationMs: Long,
+    val uri: String
+)
 
     private fun splitVideoIntoChunks(
         inputFile: File,
@@ -329,7 +334,7 @@ class MediaFilePicker : Feature("Media File Picker") {
         }
     }
 
-    private fun prepareChunkedItemsFromMediaStoreId(itemId: String, durationMs: Long): List<PreparedMediaItem>? {
+    fun prepareChunkedItemsFromMediaStoreId(itemId: String, durationMs: Long): List<PreparedMediaItem>? {
         val numericId = itemId.toLongOrNull() ?: return null
         val effectiveDurationMs = durationMs.takeIf { it > 0 } ?: extractMediaDuration(
             ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, numericId)
@@ -358,7 +363,7 @@ class MediaFilePicker : Feature("Media File Picker") {
         }
     }
 
-    private fun extractMediaDuration(uri: Uri): Long? {
+    fun extractMediaDuration(uri: Uri): Long? {
         val retriever = MediaMetadataRetriever()
         return runCatching {
             retriever.setDataSource(context.androidContext, uri)
@@ -384,50 +389,6 @@ class MediaFilePicker : Feature("Media File Picker") {
             "audio/wav", "audio/x-wav", "wav" -> "wav"
             "audio/mp4a-latm", "audio/x-m4a", "m4a" -> "m4a"
             else -> FileType.fromString(extensionFromMime ?: extensionFromUri).fileExtension ?: "mp4"
-        }
-    }
-
-    private fun mutatePickerResultItemId(item: Any, newMediaStoreId: String, chunkIndex: Int): Any {
-        return runCatching {
-            val original = item.getObjectFieldOrNull("_original")
-                ?: item.javaClass.methods.firstOrNull { it.name == "a" && it.parameterTypes.isEmpty() }?.invoke(item)
-                ?: return item
-
-            val idObj = original.javaClass.methods.firstOrNull { it.name == "getId" && it.parameterTypes.isEmpty() }?.invoke(original)
-            if (idObj != null) {
-                runCatching {
-                    idObj.dataBuilder {
-                        set("_itemId", newMediaStoreId)
-                    }
-                }.onFailure {
-                    context.log.verbose("MediaFilePicker[v2]: dataBuilder set _itemId on Id object failed: ${it.message}, trying direct field")
-                }
-                val innerIdField = idObj.javaClass.declaredFields.firstOrNull { it.type == String::class.java || it.type == java.lang.String::class.java }
-                if (innerIdField != null) {
-                    runCatching {
-                        innerIdField.isAccessible = true
-                        innerIdField.set(idObj, newMediaStoreId)
-                    }.onFailure { e ->
-                        context.log.warn("MediaFilePicker[v2]: Failed to set inner ID field directly: ${e.message}")
-                    }
-                }
-            }
-
-            val durationField = item.javaClass.declaredFields.firstOrNull { it.name == "_durationMs" }
-            if (durationField != null) {
-                runCatching {
-                    durationField.isAccessible = true
-                    durationField.setDouble(item, SNAP_CHUNK_DURATION_MS.toDouble())
-                }.onFailure { e ->
-                    context.log.verbose("MediaFilePicker[v2]: Failed to set _durationMs on picker result: ${e.message}")
-                }
-            }
-
-            context.log.verbose("MediaFilePicker[v2]: Mutated picker result item for chunk $chunkIndex, newMediaStoreId=$newMediaStoreId")
-            item
-        }.getOrElse { e ->
-            context.log.error("MediaFilePicker[v2]: Failed to mutate picker result item ID", e)
-            item
         }
     }
 
@@ -528,223 +489,6 @@ class MediaFilePicker : Feature("Media File Picker") {
                     }
             }
         }
-
-        var memoriesTwoActionHandler: Any? = null
-        var memoriesTwoSendItemsMethod: Method? = null
-        var memoriesTwoSendItemsHookedHandler: Any? = null
-
-    context.mappings.useMapper(MemoriesTwoChatMediaDrawerMapper::class) {
-        val actionHandlerCls = memoriesTwoActionHandlerClass.getAsClass()
-        val actionHandlerImplCls = memoriesTwoActionHandlerImplClass.getAsClass()
-        val sendItemsName = memoriesTwoSendItemsMethodName.getAsString() ?: "sendItems"
-        val pickerResultCls = memoriesTwoPickerResultClass.getAsClass()
-        val entityTypeCls = memTwoDataEntityTypeClass.getAsClass()
-        val dataEntityCls = memTwoDataEntityClass.getAsClass()
-        val callbacksImplCls = memoriesTwoPickerMultiCallbacksImplClass.getAsClass()
-
-        context.log.verbose("MediaFilePicker[v2]: Mapper results - handler=${actionHandlerCls?.name}, handlerImpl=${actionHandlerImplCls?.name}, sendItems=$sendItemsName, pickerResult=${pickerResultCls?.name}, entityType=${entityTypeCls?.name}, dataEntity=${dataEntityCls?.name}, callbacksImpl=${callbacksImplCls?.name}")
-
-        if (actionHandlerCls == null) {
-            context.log.warn("MediaFilePicker[v2]: Action handler class not mapped, skipping Memories v2 hook")
-            return@useMapper
-        }
-
-        val hookTargetCls = actionHandlerImplCls
-        if (hookTargetCls == null) {
-            context.log.warn("MediaFilePicker[v2]: No concrete action handler impl class found, cannot hook constructor. Falling through to onItemsSelected fallback.")
-        } else {
-            context.log.info("MediaFilePicker[v2]: Hooking constructor on ${hookTargetCls.name} to capture handler instance")
-
-            hookTargetCls.hookConstructor(HookStage.AFTER) { param ->
-            val handlerInstance = param.nullableThisObject<Any>() ?: return@hookConstructor
-            memoriesTwoActionHandler = handlerInstance
-            context.log.info("MediaFilePicker[v2]: Captured MemoriesTwo action handler instance: ${handlerInstance::class.java.name}")
-
-            if (memoriesTwoSendItemsHookedHandler === handlerInstance) return@hookConstructor
-            memoriesTwoSendItemsHookedHandler = handlerInstance
-
-            val sendItems = handlerInstance.javaClass.methods.firstOrNull {
-                it.name == sendItemsName && it.parameterTypes.size == 1
-            }
-            if (sendItems == null) {
-                context.log.warn("MediaFilePicker[v2]: Could not find sendItems on handler impl class ${handlerInstance.javaClass.name}")
-                return@hookConstructor
-            }
-            memoriesTwoSendItemsMethod = sendItems
-            context.log.info("MediaFilePicker[v2]: Found sendItems method: ${sendItems.name} on ${sendItems.declaringClass.name}")
-
-            Hooker.hookObjectMethod(
-                handlerInstance::class.java,
-                handlerInstance,
-                sendItemsName,
-                HookStage.BEFORE
-            ) { param: HookAdapter ->
-                                if (bypassSplitOnce) {
-                                    bypassSplitOnce = false
-                                    context.log.verbose("MediaFilePicker[v2]: bypassSplitOnce set, skipping split")
-                                    return@hookObjectMethod
-                                }
-
-                                val currentItems = (param.argNullable<Any>(0) as? List<*>)?.filterNotNull()
-                                if (currentItems.isNullOrEmpty()) {
-                                    context.log.verbose("MediaFilePicker[v2]: sendItems called with empty/null items list")
-                                    return@hookObjectMethod
-                                }
-
-                                context.log.verbose("MediaFilePicker[v2]: sendItems called with ${currentItems.size} items")
-
-                                if (entityTypeCls == null) {
-                                    context.log.warn("MediaFilePicker[v2]: MemTwoDataEntityType class not mapped, cannot filter CAMERA_ROLL items")
-                                    return@hookObjectMethod
-                                }
-
-                                val cameraRollEnumValue = entityTypeCls.enumConstants?.firstOrNull {
-                                    it.toString() == "CAMERA_ROLL"
-                                }
-
-                                if (cameraRollEnumValue == null) {
-                                    context.log.warn("MediaFilePicker[v2]: CAMERA_ROLL enum value not found in ${entityTypeCls.name}, values: ${entityTypeCls.enumConstants?.map { it.toString() }}")
-                                    return@hookObjectMethod
-                                }
-
-                                context.log.verbose("MediaFilePicker[v2]: CAMERA_ROLL enum value=$cameraRollEnumValue")
-
-                                val preparedExpandedItems = mutableListOf<PreparedMediaItem>()
-                                var didExpand = false
-                                val expandedItems = currentItems.flatMap { item ->
-                                    val original = item.getObjectFieldOrNull("_original")
-                                        ?: run {
-                                            context.log.verbose("MediaFilePicker[v2]: Item has no _original field, trying .a() method")
-                                            runCatching { item.javaClass.methods.firstOrNull { it.name == "a" && it.parameterTypes.isEmpty() }?.invoke(item) }.getOrNull()
-                                        }
-                                        ?: run {
-                                            context.log.verbose("MediaFilePicker[v2]: Could not get _original from item of type ${item.javaClass.name}")
-                                            return@flatMap listOf(item)
-                                        }
-
-                                    val itemType = runCatching {
-                                        val getTypeMethod = original.javaClass.methods.firstOrNull { it.name == "getType" && it.parameterTypes.isEmpty() }
-                                        getTypeMethod?.invoke(original)
-                                    }.getOrNull()
-
-                                    context.log.verbose("MediaFilePicker[v2]: Item type=$itemType, isCAMERA_ROLL=${itemType == cameraRollEnumValue}")
-
-                                    if (itemType != cameraRollEnumValue) {
-                                        context.log.verbose("MediaFilePicker[v2]: Item is not CAMERA_ROLL, skipping")
-                                        return@flatMap listOf(item)
-                                    }
-
-                                    val itemId = runCatching {
-                                        val getIdMethod = original.javaClass.methods.firstOrNull { it.name == "getId" && it.parameterTypes.isEmpty() }
-                                        val idObj = getIdMethod?.invoke(original)
-                                        val innerGetIdMethod = idObj?.javaClass?.methods?.firstOrNull { it.name == "getId" && it.parameterTypes.isEmpty() }
-                                        innerGetIdMethod?.invoke(idObj)?.toString()
-                                    }.getOrNull()
-
-                                    if (itemId == null) {
-                                        context.log.warn("MediaFilePicker[v2]: Could not extract item ID from MemTwoDataEntity")
-                                        return@flatMap listOf(item)
-                                    }
-
-                                    context.log.verbose("MediaFilePicker[v2]: CAMERA_ROLL item ID=$itemId")
-
-                                    val durationMs = runCatching {
-                                        extractMediaDuration(
-                                            ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, itemId.toLongOrNull() ?: return@runCatching -1L)
-                                        )
-                                    }.getOrNull() ?: 0L
-
-                                    context.log.verbose("MediaFilePicker[v2]: Item duration=${durationMs}ms")
-
-                                    if (durationMs <= SNAP_CHUNK_DURATION_MS) {
-                                        context.log.verbose("MediaFilePicker[v2]: Item duration <= 10s, no splitting needed")
-                                        return@flatMap listOf(item)
-                                    }
-
-                                    val splitItems = prepareChunkedItemsFromMediaStoreId(itemId, durationMs)
-                                    if (splitItems.isNullOrEmpty()) {
-                                        context.log.warn("MediaFilePicker[v2]: Failed to split item $itemId (duration=${durationMs}ms)")
-                                        return@flatMap listOf(item)
-                                    }
-
-                                    context.log.info("MediaFilePicker[v2]: Split item $itemId into ${splitItems.size} chunks")
-                                    didExpand = true
-                                    preparedExpandedItems.addAll(splitItems)
-
-                                    splitItems.mapIndexed { index, mediaItem ->
-                                        mutatePickerResultItemId(item, mediaItem.itemId, index)
-                                    }
-                                }
-
-            if (didExpand && expandedItems.isNotEmpty()) {
-                queueSplitItems(expandedItems, preparedExpandedItems, currentItems.firstOrNull())
-                param.setArg(0, listOf(expandedItems.first()))
-                context.log.info("MediaFilePicker[v2]: Replaced items with first chunk, queued ${queuedSplitItems.size} remaining chunks")
-            }
-        }
-
-            val v2Handler = handlerInstance
-            val v2Method = sendItems
-            sendSingleItemHandler = sendSingleItem@{ item ->
-                runCatching {
-                    v2Method.invoke(v2Handler, listOf(item))
-                    true
-                }.getOrElse { throwable ->
-                    context.log.error("MediaFilePicker[v2]: Failed to send queued split item via MemoriesTwo handler", throwable)
-                    false
-                }
-            }
-            context.log.info("MediaFilePicker[v2]: sendSingleItemHandler set to MemoriesTwo handler")
-        }
-        }
-
-        if (callbacksImplCls != null) {
-            context.log.info("MediaFilePicker[v2]: Installing fallback onItemsSelected hook on concrete impl ${callbacksImplCls.name}")
-            Hooker.hook(callbacksImplCls, "onItemsSelected", HookStage.BEFORE) { param ->
-                val items = (param.argNullable<Any>(0) as? List<*>)?.filterNotNull()
-                if (items.isNullOrEmpty()) return@hook
-
-                context.log.verbose("MediaFilePicker[v2 fallback]: onItemsSelected called with ${items.size} items")
-
-                if (entityTypeCls == null) return@hook
-                val cameraRollEnumValue = entityTypeCls.enumConstants?.firstOrNull {
-                    it.toString() == "CAMERA_ROLL"
-                } ?: return@hook
-
-                val hasLongVideo = items.any { item ->
-                    val original = item.getObjectFieldOrNull("_original")
-                        ?: runCatching { item.javaClass.methods.firstOrNull { it.name == "a" && it.parameterTypes.isEmpty() }?.invoke(item) }.getOrNull()
-                        ?: return@any false
-
-                    val itemType = runCatching {
-                        original.javaClass.methods.firstOrNull { it.name == "getType" && it.parameterTypes.isEmpty() }?.invoke(original)
-                    }.getOrNull() ?: return@any false
-
-                    if (itemType != cameraRollEnumValue) return@any false
-
-                    val itemId = runCatching {
-                        val getIdMethod = original.javaClass.methods.firstOrNull { it.name == "getId" && it.parameterTypes.isEmpty() }
-                        val idObj = getIdMethod?.invoke(original)
-                        idObj?.javaClass?.methods?.firstOrNull { it.name == "getId" && it.parameterTypes.isEmpty() }?.invoke(idObj)?.toString()
-                    }.getOrNull() ?: return@any false
-
-                    val numericId = itemId.toLongOrNull() ?: return@any false
-                    val duration = runCatching {
-                        extractMediaDuration(ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, numericId))
-                    }.getOrNull() ?: 0L
-
-                    duration > SNAP_CHUNK_DURATION_MS
-                }
-
-                if (hasLongVideo) {
-                    context.log.warn("MediaFilePicker[v2 fallback]: Long video detected in onItemsSelected but cannot split without captured handler. Falling through.")
-                }
-            }
-            context.log.info("MediaFilePicker[v2]: Fallback onItemsSelected hook installed on ${callbacksImplCls.name}")
-        } else {
-            context.log.warn("MediaFilePicker[v2]: No concrete MemoriesTwoPickerMultiCallbacks impl class found for fallback hook")
-        }
-    }
 
         var requestCode: Int? = null
             var firstVideoId: Long? = null
