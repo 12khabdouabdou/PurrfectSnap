@@ -87,7 +87,7 @@ class MemoriesTwoChatMediaDrawerMapper : AbstractClassMapper("MemoriesTwoChatMed
         val callbacksImplClazz = classes.firstOrNull { clazz ->
             !clazz.isInterface() && !clazz.isAbstract() && clazz.isFinal() &&
                 clazz.interfaces.any { it.contains("MemoriesTwoPickerMultiCallbacks") } &&
-                clazz.methods.size > 5
+                clazz.methods.count() > 5
         }
         callbacksImplClazz?.let { memoriesTwoPickerMultiCallbacksImplClass.set(it.getClassName().replace("/", ".")) }
         }
