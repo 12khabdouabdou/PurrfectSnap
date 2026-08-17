@@ -58,7 +58,12 @@ class Experimental : ConfigContainer() {
 
     class SecurityConfig : ConfigContainer() {
         val muteGrapheneTelemetry = boolean("mute_graphene_telemetry", defaultValue = true)
-        val hardenedSeams = boolean("hardened_seams", defaultValue = true) { requireRestart() }
+        // Research toggle ONLY — default OFF. On-device proof (2026-08-18
+        // v3): enabling nulls attestation-required APIs (bitmoji, profiles,
+        // suggested friends, map all broke under auth_context/argos nulling).
+        // The bypass = launder + hide + taps + FSM; NEVER null the signed
+        // payload flow (BYPASS_ARCHITECTURE §3 "inspect, don't break").
+        val hardenedSeams = boolean("hardened_seams", defaultValue = false) { requireRestart() }
     }
 
     class E2EEConfig : ConfigContainer(hasGlobalState = true) {

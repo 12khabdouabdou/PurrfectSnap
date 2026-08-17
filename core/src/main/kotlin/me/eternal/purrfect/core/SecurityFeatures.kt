@@ -319,7 +319,8 @@ class SecurityFeatures(
         context.log.info(
             "SecurityFeatures gate | versionCode=$snapchatVersionCode maxVersionCode=${MOD_DETECTION_VERSION_CHECK.maxVersion?.second} " +
                 "disablePlugin=$shouldDisablePlugin testMode=$isTestModeEnabled " +
-                "seams=${if (shouldDisablePlugin) "INSTALL" else "SKIP"}"
+                "hardened=${context.config.experimental.security.hardenedSeams.get()} " +
+                "damageControl=${if (shouldDisablePlugin) "INSTALL" else "SKIP"}"
         )
 
         context.disablePlugin = shouldDisablePlugin
