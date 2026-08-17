@@ -72,7 +72,8 @@ pub fn bridge(level: log::Level, tag: &str, message: &str) {
     };
 
     let result = (|| -> jni::errors::Result<()> {
-        let mut env = java_vm().attach_current_thread()?;
+        let vm = java_vm();
+        let mut env = vm.attach_current_thread()?;
         let tag_str = env.new_string(tag)?;
         let msg_str = env.new_string(message)?;
         // `android/util/Log` is loaded by the time any native hook fires, so
