@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong
  */
 object BypassTrace {
 
-    private const val TAG = "PurrfectTrace"
+    internal const val TAG = "PurrfectTrace"
 
     /** Master gate, written by [BypassTraceController] on init. */
     @Volatile
@@ -105,7 +105,7 @@ class BypassTraceController : Feature("Bypass Trace") {
             if (native.isBlank() && kotlin.isEmpty()) return
             val nativeSummary = native.takeIf { it.isNotBlank() } ?: "{}"
             val kotlinSummary = kotlin.entries.joinToString(" ") { "${it.key}=${it.value}" }
-            context.log.info("Bypass summary | native=$nativeSummary kotlin=[$kotlinSummary]", TAG)
+            context.log.info("Bypass summary | native=$nativeSummary kotlin=[$kotlinSummary]", BypassTrace.TAG)
         } catch (t: Throwable) {
             BypassTrace.note("BypassTraceController", "summary failed: ${t.message}")
         }
