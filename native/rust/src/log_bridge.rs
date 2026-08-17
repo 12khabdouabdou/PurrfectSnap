@@ -1,9 +1,8 @@
 use std::cell::Cell;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use jni::objects::{GlobalRef, JValue};
+use jni::objects::JValue;
 use jni::sys::jint;
-use once_cell::sync::OnceCell;
 
 use crate::common::java_vm;
 
@@ -11,15 +10,11 @@ use crate::common::java_vm;
 /// NativeConfig). Default off: zero behavior change until a user enables it.
 static BRIDGE_ENABLED: AtomicBool = AtomicBool::new(false);
 
-/// Cached `android.util.Log` class (JNI class lookups are comparatively
-/// expensive; do them once).
-static LOG_CLASS: OnceCell<GlobalRef> = OnceCell::new();
-
-/// Thread-local re-entrancy guard. The bridge calls Java `Log.println`,
-/// which purrfect's CoreLogger hooks at BEFORE stage and broadcasts to the
-/// app log tab. If anything on that Java path reads a system property, our
-/// property hook fires, would log via the bridge again -> infinite loop.
-/// This flag breaks the cycle on the same thread.
+// Thread-local re-entrancy guard. The bridge calls Java `Log.println`,
+// which purrfect's CoreLogger hooks at BEFORE stage and broadcasts to the
+// app log tab. If anything on that Java path reads a system property, our
+// property hook fires, would log via the bridge again -> infinite loop.
+// This flag breaks the cycle on the same thread.
 thread_local! {
     static IN_BRIDGE: Cell<bool> = const { Cell::new(false) };
 }
@@ -77,19 +72,13 @@ pub fn bridge(level: log::Level, tag: &str, message: &str) {
     };
 
     let result = (|| -> jni::errors::Result<()> {
-        let class = LOG_CLASS
-            .get_or_try_init(|| {
-                let mut env = java_vm().attach_current_thread()?;
-                let class = env.find_class("android/util/Log")?;
-                Ok(env.new_global_ref(class)?) as jni::errors::Result<GlobalRef>
-            })?
-            .as_obj();
-
         let mut env = java_vm().attach_current_thread()?;
         let tag_str = env.new_string(tag)?;
         let msg_str = env.new_string(message)?;
+        // `android/util/Log` is loaded by the time any native hook fires, so
+        // FindClass-by-name is a cheap VM hash lookup; no caching needed.
         env.call_static_method(
-            class,
+            "android/util/Log",
             "println",
             "(ILjava/lang/String;Ljava/lang/String;)I",
             &[
