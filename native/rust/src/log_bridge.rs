@@ -78,7 +78,7 @@ pub fn bridge(level: log::Level, tag: &str, message: &str) {
 
     let result = (|| -> jni::errors::Result<()> {
         let class = LOG_CLASS
-            .get_or_try(|| {
+            .get_or_try_init(|| {
                 let mut env = java_vm().attach_current_thread()?;
                 let class = env.find_class("android/util/Log")?;
                 Ok(env.new_global_ref(class)?) as jni::errors::Result<GlobalRef>
