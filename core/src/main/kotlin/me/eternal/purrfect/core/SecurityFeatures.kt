@@ -310,6 +310,18 @@ class SecurityFeatures(
             shouldDisablePlugin = false
         }
 
+        // G3 gate-truth probe (always-on, independent of bypass_trace): the
+        // entire seams block below is gated on disablePlugin. On any supported
+        // Snapchat version (versionCode < max 84704), disablePlugin is false
+        // and NONE of the defensive seams install — documented from live trace
+        // data (zero seam fires across all sessions). This line makes the gate
+        // state visible at boot without needing trace enabled.
+        context.log.info(
+            "SecurityFeatures gate | versionCode=$snapchatVersionCode maxVersionCode=${MOD_DETECTION_VERSION_CHECK.maxVersion?.second} " +
+                "disablePlugin=$shouldDisablePlugin testMode=$isTestModeEnabled " +
+                "seams=${if (shouldDisablePlugin) "INSTALL" else "SKIP"}"
+        )
+
         context.disablePlugin = shouldDisablePlugin
 
         if (context.disablePlugin && !isTestModeEnabled) {
@@ -353,6 +365,14 @@ class SecurityFeatures(
         context.inAppOverlay.addCustomComposable(loginHelpComposable)
 
         if (!context.disablePlugin) return
+
+        // G3: reachable only in the damage-control mode (unsupported/newer
+        // Snapchat). Proves WHICH seams got installed when the gate passed.
+        BypassTrace.note(
+            "SEC",
+            "INSTALL | seams: unary_call_attestation_cancelled, argos_ctor, argos_get_token, argos_headers, argos_create_instance, " +
+                "sc_client_attestation_job, duplex_hermod_dup, auth_context_attestation, platform_attestation, play_integrity_http, graphene_metrics"
+        )
 
         val allowedEPs = listOf(
             "/messagingcoreservice.MessagingCoreService/",

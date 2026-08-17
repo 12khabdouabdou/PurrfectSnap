@@ -36,20 +36,37 @@ object BypassTrace {
     @Volatile
     var enabled: Boolean = false
 
+    /**
+     * Optional second sink routed through the feature logger (`context.log`).
+     *
+     * On-device evidence (trace build v1) showed raw `Log.i` lines from the
+     * target process did NOT reach the manager-side log file exports reliably,
+     * while `context.log.info` lines demonstrably did. The controller installs
+     * this sink so every trace line rides the exact same proven path as the
+     * 60s summary.
+     */
+    @Volatile
+    internal var sink: ((line: String, tag: String) -> Unit)? = null
+
     private val latched = Collections.synchronizedSet(mutableSetOf<String>())
     private val counters = ConcurrentHashMap<String, AtomicLong>()
+
+    private fun emit(line: String) {
+        val s = sink
+        if (s != null) s(line, TAG) else Log.i(TAG, line)
+    }
 
     /** Level-1 event log; no-op when disabled. */
     fun note(subject: String, message: String) {
         if (!enabled) return
-        Log.i(TAG, "$subject | $message")
+        emit("$subject | $message")
     }
 
     /** First occurrence only — repeated identical events log exactly once per process. */
     fun latch(key: String, subject: String, message: String) {
         if (!enabled) return
         if (latched.add(key)) {
-            Log.i(TAG, "$subject | $message")
+            emit("$subject | $message")
         }
     }
 
@@ -83,6 +100,7 @@ class BypassTraceController : Feature("Bypass Trace") {
         context.config.experimental.nativeHooks.bypassTrace.get()
 
     override fun init() {
+        BypassTrace.sink = { line, tag -> context.log.info(line, tag) }
         BypassTrace.enabled = isEnabled()
         if (!BypassTrace.enabled) {
             context.log.info("Bypass trace disabled")

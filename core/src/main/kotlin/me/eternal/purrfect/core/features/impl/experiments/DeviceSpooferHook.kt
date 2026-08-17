@@ -811,21 +811,37 @@ class DeviceSpooferHook : Feature("Device Spoofer") {
         }
 
         context.native.pushLaunderedProperties(map)
-        context.native.pushHiddenModules(
-            setOf(
-                "purrfect",
-                "lspatch",
-                "lsposed",
-                "zygisk",
-                "riru",
-                "gadget",
-                "frida",
-                "dexkit"
-            )
-        )
+        pushModuleDenyList()
         context.native.pushPlatformOverride("aarch64")
         BypassTrace.noteSeamFired("launder_map_pushed")
         BypassTrace.note("SPOOFER", "launder push: ${map.size} keys ${map.keys.sorted()}")
+    }
+
+    /**
+     * G1: module-hiding deny list, decoupled from the randomizer.
+     *
+     * Previously the deny list was only pushed inside [pushNativeLaunderMap]
+     * (randomizer path only) — so the daily-driver identity (randomizer OFF)
+     * ran with an empty dlfilter (`dl_filtered=0` across all trace v1
+     * sessions). [init] now pushes the list whenever `hide_injected_modules`
+     * is on, independent of both the spoof global toggle and the randomizer.
+     */
+    private fun hiddenModuleDenyList(): Set<String> =
+        setOf(
+            "purrfect",
+            "lspatch",
+            "lsposed",
+            "zygisk",
+            "riru",
+            "gadget",
+            "frida",
+            "dexkit"
+        )
+
+    private fun pushModuleDenyList() {
+        val denyList = hiddenModuleDenyList()
+        context.native.pushHiddenModules(denyList)
+        BypassTrace.note("SPOOFER", "module deny list pushed: ${denyList.size} entries $denyList")
     }
 
     /**
@@ -949,6 +965,15 @@ class DeviceSpooferHook : Feature("Device Spoofer") {
         val randomizeDeviceProfile by context.config.experimental.spoof.randomizeDeviceProfile
         val spoofDevice by context.config.experimental.spoof.spoofDevice
         val randomizeDeviceProfileEnabled = randomizeDeviceProfile == true
+
+        // G1: deny list pushed independent of the randomizer/spoof toggles, so
+        // the clean daily-driver identity still hides injected modules.
+        if (context.config.experimental.nativeHooks.hideInjectedModules.get()) {
+            pushModuleDenyList()
+            context.log.info(
+                "Module deny list pushed (hide_injected_modules=true, randomizer=$randomizeDeviceProfileEnabled)"
+            )
+        }
 
         if (!randomizeDeviceProfileEnabled && spoofDevice) {
             val deviceInfo = getSpoofedDeviceInfo()
