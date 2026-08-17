@@ -111,6 +111,7 @@ class FeatureManager(
             PerformanceMode(),
             InfiniteStoryBoost(),
             PinConversations(),
+            BypassTraceController(),
             DeviceSpooferHook(),
             HermodTapHooks(),
             RotationFSM(),

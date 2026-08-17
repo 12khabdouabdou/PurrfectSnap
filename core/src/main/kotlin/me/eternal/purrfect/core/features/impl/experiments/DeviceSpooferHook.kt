@@ -824,6 +824,8 @@ class DeviceSpooferHook : Feature("Device Spoofer") {
             )
         )
         context.native.pushPlatformOverride("aarch64")
+        BypassTrace.noteSeamFired("launder_map_pushed")
+        BypassTrace.note("SPOOFER", "launder push: ${map.size} keys ${map.keys.sorted()}")
     }
 
     /**
@@ -875,8 +877,11 @@ class DeviceSpooferHook : Feature("Device Spoofer") {
                 "rotateProfile: new profile indistinguishable from current " +
                     "(same androidId/fingerprint/ip) — skipping rotation"
             )
+            BypassTrace.inc("rotation_skip_indistinguishable")
             return null
         }
+
+        BypassTrace.inc("rotations")
 
         val toggles = getRandomizedProfileToggleState()
         val buildToggles = getRandomizedBuildToggleState()

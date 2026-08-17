@@ -1,13 +1,35 @@
 use std::collections::HashMap;
 use std::ffi::{c_char, c_void, CStr, CString};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use jni::{objects::JString, JNIEnv};
+use jni::sys::jboolean;
 use once_cell::sync::Lazy;
 
 use crate::{config::native_config, def_hook, dobby_hook_sym, bridged_log};
 
 const BRIDGE_TAG: &str = "PurrfectNative";
+
+/// Bypass trace gate, driven from Kotlin (`BypassTraceController`). When off,
+/// counter increments are skipped (single relaxed load) — zero behavior change.
+static TRACE_ENABLED: AtomicBool = AtomicBool::new(false);
+
+// Cumulative counters, snapshotted (and reset) by `snapshot_bypass_trace`.
+static COUNTER_PROP_READS: AtomicU64 = AtomicU64::new(0);
+static COUNTER_LAUNDER_HITS: AtomicU64 = AtomicU64::new(0);
+static COUNTER_AT_OVERRIDES: AtomicU64 = AtomicU64::new(0);
+static COUNTER_DL_ENUMERATIONS: AtomicU64 = AtomicU64::new(0);
+static COUNTER_DL_FILTERED: AtomicU64 = AtomicU64::new(0);
+
+/// Cheap, branch-predictable counter bump for hot native paths.
+macro_rules! trace_count {
+    ($counter:ident) => {
+        if TRACE_ENABLED.load(Ordering::Relaxed) {
+            $counter.fetch_add(1, Ordering::Relaxed);
+        }
+    };
+}
 
 /// Laundered property name -> value overrides pushed from Kotlin.
 /// Mirrors the Java-side `android.os.SystemProperties` hook surface but at
@@ -32,12 +54,14 @@ def_hook!(
     system_property_get,
     i32,
     |name: *const c_char, value: *mut c_char| {
+        trace_count!(COUNTER_PROP_READS);
         if LAUNDERED_PROPERTIES.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).is_empty() {
             return system_property_get_original.unwrap()(name, value);
         }
 
         let name_str = unsafe { CStr::from_ptr(name) }.to_string_lossy().into_owned();
         if let Some(laundered) = LAUNDERED_PROPERTIES.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).get(&name_str) {
+            trace_count!(COUNTER_LAUNDER_HITS);
             let bytes = laundered.as_bytes();
             // PROP_VALUE_MAX = 92 (libc contract: callers pass a 92-byte
             // buffer). Clamp to 91 + NUL — an unbounded copy overflows the
@@ -68,6 +92,7 @@ def_hook!(
     |typ: libc::c_ulong| {
         if typ == AT_PLATFORM as libc::c_ulong {
             if let Some(platform) = PLATFORM_OVERRIDE.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).as_ref() {
+                trace_count!(COUNTER_AT_OVERRIDES);
                 bridged_log!(log::Level::Debug, BRIDGE_TAG, "laundered AT_PLATFORM");
                 return platform.as_ptr() as libc::c_ulong;
             }
@@ -109,6 +134,7 @@ def_hook!(
     dl_iterate_phdr_hook,
     i32,
     |callback: Option<DlCallback>, data: *mut c_void| {
+        trace_count!(COUNTER_DL_ENUMERATIONS);
         unsafe extern "C" fn filter_cb(info: *mut DlPhdrInfo, size: usize, data: *mut c_void) -> i32 {
             let real = REAL_CALLBACK.with(|stack| stack.borrow().last().copied());
             if real.is_none() {
@@ -120,6 +146,7 @@ def_hook!(
                 if !name_ptr.is_null() {
                     let name = unsafe { CStr::from_ptr(name_ptr) }.to_string_lossy();
                     if HIDDEN_MODULES.lock().unwrap_or_else(|poisoned| poisoned.into_inner()).iter().any(|h| name.contains(h.as_str())) {
+                        trace_count!(COUNTER_DL_FILTERED);
                         bridged_log!(log::Level::Debug, BRIDGE_TAG, "filtered module from dl_iterate_phdr: {}", name);
                         return 0;
                     }
@@ -164,6 +191,31 @@ pub extern "system" fn push_platform_override(mut env: JNIEnv, _: *mut c_void, v
     let value_str = env.get_string(&value).unwrap().to_str().unwrap().to_string();
     bridged_log!(log::Level::Info, BRIDGE_TAG, "AT_PLATFORM override: {}", value_str);
     *PLATFORM_OVERRIDE.lock().unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(CString::new(value_str).expect("NUL in platform override"));
+}
+
+// ---------------------------------------------------------------------------
+// bypass trace surface
+// ---------------------------------------------------------------------------
+
+/// Enables/disables native trace counting. Called once from Kotlin when the
+/// `bypass_trace` config flag changes at init.
+pub extern "system" fn set_bypass_trace(_env: JNIEnv, _: *mut c_void, enabled: jboolean) {
+    TRACE_ENABLED.store(enabled != 0, Ordering::Relaxed);
+}
+
+/// Returns a JSON snapshot of the native counters and resets them to zero, so
+/// consecutive calls yield per-interval deltas. Aligns with the BypassTrace
+/// 60s summary loop.
+pub extern "system" fn snapshot_bypass_trace(mut env: JNIEnv, _: *mut c_void) -> JString {
+    let json = format!(
+        "{{\"prop_reads\":{},\"launder_hits\":{},\"at_overrides\":{},\"dl_enumerations\":{},\"dl_filtered\":{}}}",
+        COUNTER_PROP_READS.swap(0, Ordering::Relaxed),
+        COUNTER_LAUNDER_HITS.swap(0, Ordering::Relaxed),
+        COUNTER_AT_OVERRIDES.swap(0, Ordering::Relaxed),
+        COUNTER_DL_ENUMERATIONS.swap(0, Ordering::Relaxed),
+        COUNTER_DL_FILTERED.swap(0, Ordering::Relaxed),
+    );
+    env.new_string(json).expect("snapshot trace jstring alloc failed")
 }
 
 // ---------------------------------------------------------------------------

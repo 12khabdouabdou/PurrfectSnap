@@ -52,6 +52,7 @@ class Experimental : ConfigContainer() {
         val nativeLogBridge = boolean("native_log_bridge")
         val hermodTaps = boolean("hermod_taps")
         val rotationFsm = boolean("rotation_fsm") { requireRestart() }
+        val bypassTrace = boolean("bypass_trace") { requireRestart() }
         val zeroizeDetectionBuffers = boolean("zeroize_detection_buffers", defaultValue = true)
     }
 

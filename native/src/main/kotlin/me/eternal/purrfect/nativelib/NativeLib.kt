@@ -168,6 +168,16 @@ class NativeLib {
         pushPlatformOverrideNative(value)
     }
 
+    fun setBypassTrace(enabled: Boolean) {
+        if (!initialized) return
+        setBypassTraceNative(enabled)
+    }
+
+    fun snapshotBypassTrace(): String {
+        if (!initialized) return "{}"
+        return snapshotBypassTraceNative() ?: "{}"
+    }
+
     private fun flushPendingNativeState() {
         if (!initialized) return
         if (pendingLaunderedProperties.isNotEmpty()) {
@@ -213,6 +223,8 @@ class NativeLib {
     private external fun setChecksums(checksums: String)
     external fun setTestMode(testMode: Boolean)
     external fun setInLoginSignup(inLoginSignup: Boolean)
+    external fun setBypassTraceNative(enabled: Boolean)
+    external fun snapshotBypassTraceNative(): String?
     private external fun pushLaunderedPropertiesNative(json: String)
     private external fun pushHiddenModulesNative(json: String)
     private external fun pushPlatformOverrideNative(value: String)

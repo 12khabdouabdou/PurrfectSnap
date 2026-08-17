@@ -156,6 +156,16 @@ pub extern "system" fn JNI_OnLoad(_vm: JavaVM, _: *mut c_void) -> jint {
                 sig: "(Ljava/lang/String;)V".into(),
                 fn_ptr: property_hook::push_platform_override as *mut c_void,
             },
+            NativeMethod {
+                name: "setBypassTraceNative".into(),
+                sig: "(Z)V".into(),
+                fn_ptr: property_hook::set_bypass_trace as *mut c_void,
+            },
+            NativeMethod {
+                name: "snapshotBypassTraceNative".into(),
+                sig: "()Ljava/lang/String;".into(),
+                fn_ptr: property_hook::snapshot_bypass_trace as *mut c_void,
+            },
         ]
     ).expect("Failed to register native methods");
 

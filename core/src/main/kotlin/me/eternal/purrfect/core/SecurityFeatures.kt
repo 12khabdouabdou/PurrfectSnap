@@ -43,6 +43,7 @@ import me.eternal.purrfect.common.config.VersionRequirement
 import me.eternal.purrfect.common.ui.createComposeView
 import me.eternal.purrfect.core.event.events.impl.NetworkApiRequestEvent
 import me.eternal.purrfect.core.event.events.impl.UnaryCallEvent
+import me.eternal.purrfect.core.features.impl.experiments.BypassTrace
 import me.eternal.purrfect.core.ui.CustomComposable
 import me.eternal.purrfect.core.ui.PurrfectOverlayPalette
 import me.eternal.purrfect.core.ui.PurrfectOverlayTheme
@@ -363,6 +364,7 @@ class SecurityFeatures(
         context.event.subscribe(UnaryCallEvent::class) { event ->
             val callOptions = event.adapter.arg<Any>(2).let { it.javaClass.getMethod("build").invoke(it) } ?: return@subscribe
             if (callOptions.getObjectField("mAttestation") != null || event.uri.endsWith("/IncomingFriendSync")) {
+                BypassTrace.noteSeamFired("unary_call_attestation_cancelled")
                 event.canceled = true
                 val eventHandler = event.adapter.arg<Any>(3)
                 eventHandler.javaClass.methods.first { it.name == "onEvent" }.also { method ->
@@ -376,14 +378,25 @@ class SecurityFeatures(
         context.androidContext.classLoader.apply {
             val argosClientClass = loadSnapClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy")
             argosClientClass.apply {
-                hookConstructor(HookStage.BEFORE) { it.setResult(null) }
-                hook("getArgosTokenAsync", HookStage.BEFORE) { it.setResult(null) }
-                hook("getAttestationHeaders", HookStage.BEFORE) { it.setResult(null) }
+                hookConstructor(HookStage.BEFORE) {
+                    BypassTrace.noteSeamFired("argos_ctor_intercepted")
+                    it.setResult(null)
+                }
+                hook("getArgosTokenAsync", HookStage.BEFORE) {
+                    BypassTrace.noteSeamFired("argos_get_token_nulled")
+                    it.setResult(null)
+                }
+                hook("getAttestationHeaders", HookStage.BEFORE) {
+                    BypassTrace.noteSeamFired("argos_attestation_headers_nulled")
+                    it.setResult(null)
+                }
             }
             loadSnapClass("com.snapchat.client.client_attestation.ArgosClient").hook("createInstance", HookStage.BEFORE) { param ->
+                BypassTrace.noteSeamFired("argos_create_instance_spoofed")
                 param.setResult(argosClientClass.declaredConstructors.first().also { it.isAccessible = true }.newInstance(0))
             }
             loadSnapClass("com.snap.security.attestation.impl.SCClientAttestationDurableJob").hookConstructor(HookStage.BEFORE) { param ->
+                BypassTrace.noteSeamFired("sc_client_attestation_job_suppressed")
                 param.setArg(0, null)
             }
             loadSnapClass("com.snapchat.client.grpc.AuthContext").hookConstructor(HookStage.AFTER) { param ->
@@ -400,6 +413,7 @@ class SecurityFeatures(
                 HookStage.BEFORE) { param ->
                 val path = param.arg<String>(0)
                 if (path == "hermod_dup") {
+                    BypassTrace.noteSeamFired("duplex_hermod_dup_blocked")
                     param.setResult(null)
                     return@hook
                 }
@@ -416,6 +430,7 @@ class SecurityFeatures(
                         return@hook
                     }
 
+                    BypassTrace.noteSeamFired("auth_context_attestation_nulled")
                     param.setResult(null)
                 }
             } ?: error("AuthContextDelegate not found in mappings")
@@ -426,6 +441,7 @@ class SecurityFeatures(
                 val method = param.arg<Method>(1)
                 if (method.annotations.any { it.toString().contains("attestation") }) {
                     if (method.returnType.name.endsWith("Single")) {
+                        BypassTrace.noteSeamFired("platform_attestation_single_err")
                         param.setResult(
                             method.returnType.methods.first {
                                 java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 1 && it.parameterTypes[0] == Throwable::class.java
@@ -434,6 +450,7 @@ class SecurityFeatures(
                         return@hook
                     }
 
+                    BypassTrace.noteSeamFired("platform_attestation_nulled")
                     param.setResult(null)
                 }
             } ?: context.log.warn("apiInvocationHandler not found in mappings")
@@ -465,6 +482,7 @@ class SecurityFeatures(
         //    — gated by `experimental.security.muteGrapheneTelemetry` (default true).
         context.event.subscribe(NetworkApiRequestEvent::class) { event ->
             if (event.url.contains("PlayIntegrity", ignoreCase = true)) {
+                BypassTrace.noteSeamFired("play_integrity_http_muted")
                 event.canceled = true
                 context.log.verbose("Play Integrity HTTP muted (NetworkApi) url=${event.url}")
                 return@subscribe
@@ -473,6 +491,7 @@ class SecurityFeatures(
         if (context.config.experimental.security.muteGrapheneTelemetry.get()) {
             context.event.subscribe(NetworkApiRequestEvent::class) { event ->
                 if (event.url.contains("/v1/metrics") || event.url.endsWith("v1/metrics")) {
+                    BypassTrace.noteSeamFired("graphene_metrics_muted")
                     event.canceled = true
                     context.log.verbose("Graphene emitMetricFrame muted (NetworkApi) url=${event.url}")
                 }

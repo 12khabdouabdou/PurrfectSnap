@@ -103,6 +103,7 @@ class RotationFSM : Feature("Rotation FSM") {
     fun ingest(tap: TapSignal) {
         if (!isEnabled()) return
         if (suppressTaps()) return
+        BypassTrace.inc("fsm_ingest_${tap.kind.name}")
         defer {
             mutex.withLock {
                 signals.add(tap)
@@ -135,8 +136,14 @@ class RotationFSM : Feature("Rotation FSM") {
                 }
             }
             State.ARMED -> {
+                val marker = hasServerPressureMarker()
+                if (s >= alertThreshold && marker) {
+                    BypassTrace.note("FSM", "ALERT candidate: score=$s markerWithin90s=true")
+                } else {
+                    BypassTrace.note("FSM", "ARMED eval: score=$s markerWithin90s=$marker")
+                }
                 when {
-                    s >= alertThreshold && hasServerPressureMarker() -> {
+                    s >= alertThreshold && marker -> {
                         setState(State.ALERT, s)
                         onAlert()
                     }
@@ -177,6 +184,7 @@ class RotationFSM : Feature("Rotation FSM") {
     private fun setState(next: State, score: Double) {
         if (state == next) return
         context.log.warn("Rotation FSM: state=$state -> $next score=${"%.2f".format(score)}")
+        BypassTrace.inc("fsm_state_${next.name}")
         state = next
     }
 

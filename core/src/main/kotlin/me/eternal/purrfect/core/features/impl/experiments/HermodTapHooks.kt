@@ -130,6 +130,7 @@ class HermodTapHooks : Feature("Hermod Taps") {
      */
     private fun observeAndIngest(uriOrUrl: String, seam: String) {
         if (!isEnabled()) return
+        BypassTrace.inc("wire_${seam}")
         val fsm = fsmIfRotationActive()
         // Cooldown suppresses BOTH evidence collection AND the observation
         // logs that feed the retry churn. When FSM is off (hermodTaps-only
@@ -142,16 +143,27 @@ class HermodTapHooks : Feature("Hermod Taps") {
         val path = uriOrUrl.substringBefore('?').substringBefore('#').trimEnd('/')
         when {
             path.endsWith("/scauth/validate") -> {
+                BypassTrace.inc("tap_scauth_validate")
                 context.log.info("Hermod tap: /scauth/validate (UserSessionValidation) [$seam] uri=$uriOrUrl")
                 fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SCAUTH_VALIDATE, now))
             }
             path.endsWith("/snap_token/pb/snap_session") -> {
+                BypassTrace.inc("tap_snap_session")
                 context.log.info("Hermod tap: /snap_token/pb/snap_session [$seam] uri=$uriOrUrl")
                 fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SNAP_SESSION, now))
             }
             path.endsWith("/snap_token/pb/snap_access_tokens") -> {
+                BypassTrace.inc("tap_snap_access")
                 context.log.verbose("Hermod tap: /snap_token/pb/snap_access_tokens [$seam] uri=$uriOrUrl")
                 fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SNAP_ACCESS, now))
+            }
+            // URI census: every unmatched endpoint becomes visible (latched, so
+            // one line per unique URI per process) — the raw material to
+            // re-match /snap_token/pb/snap_session when this build routes it
+            // through a path variant the endsWith matcher misses.
+            else -> {
+                BypassTrace.inc("census_unmatched_${seam}")
+                BypassTrace.latch("census_${seam}_$path", "CENSUS", "[$seam] $uriOrUrl")
             }
         }
     }
