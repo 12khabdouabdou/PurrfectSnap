@@ -364,160 +364,21 @@ class SecurityFeatures(
         }
         context.inAppOverlay.addCustomComposable(loginHelpComposable)
 
+        // Hardened seams: installed whenever `security.hardenedSeams` is on,
+        // INDEPENDENT of the version-gate. The 2026-08-18 gate-truth probe
+        // proved the old arrangement never installed them in normal operation
+        // (supported versions → disablePlugin=false → bare `return` before any
+        // seam: "seams=SKIP" in the live log). Each seam is individually
+        // runCatching-wrapped, so a missing mapping on any Snapchat build logs
+        // a SKIP note instead of crashing init.
+        if (context.config.experimental.security.hardenedSeams.get()) {
+            installHardenedSeams()
+        }
+
+        // Version-gate damage control (login toast, scplugin skip): stays
+        // STRICTLY behind disablePlugin — it must never appear on supported
+        // versions or on the test-mode bridge (14.19.0.47 daily driver).
         if (!context.disablePlugin) return
-
-        // G3: reachable only in the damage-control mode (unsupported/newer
-        // Snapchat). Proves WHICH seams got installed when the gate passed.
-        BypassTrace.note(
-            "SEC",
-            "INSTALL | seams: unary_call_attestation_cancelled, argos_ctor, argos_get_token, argos_headers, argos_create_instance, " +
-                "sc_client_attestation_job, duplex_hermod_dup, auth_context_attestation, platform_attestation, play_integrity_http, graphene_metrics"
-        )
-
-        val allowedEPs = listOf(
-            "/messagingcoreservice.MessagingCoreService/",
-            "/GetSnapchatterPublicInfo",
-            "/UserRecentlyActive",
-            "/socialsms.SocialSms/UpdateLink", // Direct link sharing
-        )
-
-        context.event.subscribe(UnaryCallEvent::class) { event ->
-            val callOptions = event.adapter.arg<Any>(2).let { it.javaClass.getMethod("build").invoke(it) } ?: return@subscribe
-            if (callOptions.getObjectField("mAttestation") != null || event.uri.endsWith("/IncomingFriendSync")) {
-                BypassTrace.noteSeamFired("unary_call_attestation_cancelled")
-                event.canceled = true
-                val eventHandler = event.adapter.arg<Any>(3)
-                eventHandler.javaClass.methods.first { it.name == "onEvent" }.also { method ->
-                    method.invoke(eventHandler, null, method.parameterTypes[0].dataBuilder {
-                        set("mStatusCode", "CANCELLED")
-                    })
-                }
-            }
-        }
-
-        context.androidContext.classLoader.apply {
-            val argosClientClass = loadSnapClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy")
-            argosClientClass.apply {
-                hookConstructor(HookStage.BEFORE) {
-                    BypassTrace.noteSeamFired("argos_ctor_intercepted")
-                    it.setResult(null)
-                }
-                hook("getArgosTokenAsync", HookStage.BEFORE) {
-                    BypassTrace.noteSeamFired("argos_get_token_nulled")
-                    it.setResult(null)
-                }
-                hook("getAttestationHeaders", HookStage.BEFORE) {
-                    BypassTrace.noteSeamFired("argos_attestation_headers_nulled")
-                    it.setResult(null)
-                }
-            }
-            loadSnapClass("com.snapchat.client.client_attestation.ArgosClient").hook("createInstance", HookStage.BEFORE) { param ->
-                BypassTrace.noteSeamFired("argos_create_instance_spoofed")
-                param.setResult(argosClientClass.declaredConstructors.first().also { it.isAccessible = true }.newInstance(0))
-            }
-            loadSnapClass("com.snap.security.attestation.impl.SCClientAttestationDurableJob").hookConstructor(HookStage.BEFORE) { param ->
-                BypassTrace.noteSeamFired("sc_client_attestation_job_suppressed")
-                param.setArg(0, null)
-            }
-            loadSnapClass("com.snapchat.client.grpc.AuthContext").hookConstructor(HookStage.AFTER) { param ->
-                val headers by lazy { (param.thisObject<Any>().getObjectField("mHeaders") as? List<*>)?.filterNotNull() ?: emptyList() }
-
-                if (param.thisObject<Any>().getObjectField("mAuthTokenErrorCode") != null ||
-                    headers.isEmpty() ||
-                    headers.mapNotNull { it.getObjectField("mKey")?.toString()?.lowercase() }.any { it != "x-snap-access-token" }
-                ) {
-                    // Intentionally do nothing to avoid terminating the host process.
-                }
-            }
-            loadSnapClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").hook("registerHandler",
-                HookStage.BEFORE) { param ->
-                val path = param.arg<String>(0)
-                if (path == "hermod_dup") {
-                    BypassTrace.noteSeamFired("duplex_hermod_dup_blocked")
-                    param.setResult(null)
-                    return@hook
-                }
-            }
-        }
-
-        context.mappings.useMapper(CallbackMapper::class) {
-            callbacks.getClass("AuthContextDelegate")?.hook("getAuthContext", HookStage.BEFORE) { param ->
-                val authContextRequest = param.arg<Any>(0)
-                val requestPath = authContextRequest.getObjectField("mRequestPath").toString()
-
-                if (authContextRequest.getObjectField("mAttestationRequired") == true) {
-                    if (allowedEPs.any { requestPath.contains(it) }) {
-                        return@hook
-                    }
-
-                    BypassTrace.noteSeamFired("auth_context_attestation_nulled")
-                    param.setResult(null)
-                }
-            } ?: error("AuthContextDelegate not found in mappings")
-        }
-
-        context.mappings.useMapper(PlatformClientAttestationMapper::class) {
-            apiInvocationHandler.getAsClass()?.hook("invoke", HookStage.BEFORE) { param ->
-                val method = param.arg<Method>(1)
-                if (method.annotations.any { it.toString().contains("attestation") }) {
-                    if (method.returnType.name.endsWith("Single")) {
-                        BypassTrace.noteSeamFired("platform_attestation_single_err")
-                        param.setResult(
-                            method.returnType.methods.first {
-                                java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 1 && it.parameterTypes[0] == Throwable::class.java
-                            }.invoke(null, IOException())
-                        )
-                        return@hook
-                    }
-
-                    BypassTrace.noteSeamFired("platform_attestation_nulled")
-                    param.setResult(null)
-                }
-            } ?: context.log.warn("apiInvocationHandler not found in mappings")
-        }
-
-        // Tier-2a + Tier-2c: Play Integrity + Graphene HTTP-layer mute (canonical NetworkApi seam).
-        //
-        // Purrfectsnap hooks these the SAME way `EndpointsBlocker` does: a
-        // `NetworkApiRequestEvent` subscriber that cancels the matching HTTP URL.
-        // The naive "hook the Java interface method" approach misses here — both
-        // `StandardIntegrityManager$StandardIntegrityTokenProvider` (Play) and
-        // `GrapheneHttpInterface` (graphene) are plain Retrofit-style Java
-        // INTERFACES (verified in the decompile — `@LMce` HTTP path annotations,
-        // `Single<Ekg<...>>` returns, no `$CppProxy` generated for either; the
-        // impls are DI-bound at runtime and unhookable by class name). LSPosed
-        // can't instrument abstract methods.
-        //
-        // Both interfaces route their requests through `com.snapchat.client.
-        // network_api.NetworkApi.submit` — purrfect's universal HTTP seam —
-        // which fires `NetworkApiRequestEvent` with `event.url`. So we cancel
-        // the URL match there: identical to `EndpointsBlocker`'s pattern. The
-        // NATIVE risk-blocklist (DET keywords 9-14/52-57 + 74/75) is the belt
-        // to this Java braces (and covers any path that bypasses NetworkApi).
-        //
-        //  - Play Integrity (`url` contains "PlayIntegrity") — always-on, mirrors
-        //    the native posture (Play Core's own SDK traffic is unhookable, but
-        //    Snapchat's direct /PlayIntegrity HTTP requests go through NetworkApi).
-        //  - Graphene metrics (`url` ends with /v1/metrics — the localhost drain)
-        //    — gated by `experimental.security.muteGrapheneTelemetry` (default true).
-        context.event.subscribe(NetworkApiRequestEvent::class) { event ->
-            if (event.url.contains("PlayIntegrity", ignoreCase = true)) {
-                BypassTrace.noteSeamFired("play_integrity_http_muted")
-                event.canceled = true
-                context.log.verbose("Play Integrity HTTP muted (NetworkApi) url=${event.url}")
-                return@subscribe
-            }
-        }
-        if (context.config.experimental.security.muteGrapheneTelemetry.get()) {
-            context.event.subscribe(NetworkApiRequestEvent::class) { event ->
-                if (event.url.contains("/v1/metrics") || event.url.endsWith("v1/metrics")) {
-                    BypassTrace.noteSeamFired("graphene_metrics_muted")
-                    event.canceled = true
-                    context.log.verbose("Graphene emitMetricFrame muted (NetworkApi) url=${event.url}")
-                }
-            }
-            context.log.info("Graphene emitMetricFrame mute active (NetworkApi seam, gated by muteGrapheneTelemetry)")
-        }
 
 
         context.features.addActivityCreateListener { activity ->
@@ -560,6 +421,200 @@ class SecurityFeatures(
                     })
                 }
             }
+        }
+    }
+
+    /**
+     * Hardened seams installer — the REAL defensive half of the bypass.
+     *
+     * Decoupled from the version-gate (disablePlugin): runs whenever
+     * `experimental.security.hardenedSeams` is on (default), in every
+     * configuration — supported versions, test-mode bridge, damage-control
+     * mode. Each seam is runCatching-wrapped so a mapping/class missing on
+     * any given Snapchat build produces a `SKIP | seam=...` note instead of
+     * crashing init. Damage-control behavior (login toast, scplugin skip)
+     * remains gated on disablePlugin in [init].
+     */
+    private fun installSeam(name: String, block: () -> Unit) {
+        BypassTrace.note("SEC", "INSTALL | seam=$name")
+        runCatching(block).onFailure {
+            BypassTrace.note("SEC", "SKIP | seam=$name reason=${it.javaClass.simpleName}: ${it.message}")
+            context.log.warn("Hardened seam $name failed to install: ${it.message}")
+        }
+    }
+
+    private fun installHardenedSeams() {
+        BypassTrace.note("SEC", "INSTALL | bundle=hardened_seams")
+
+        // 1. UnaryCallEvent attestation cancellation — the universal seam,
+        //    same one FriendMutationObserver uses; no class loading involved.
+        installSeam("unary_call_attestation_cancelled") {
+            context.event.subscribe(UnaryCallEvent::class) { event ->
+                val callOptions = event.adapter.arg<Any>(2).let { it.javaClass.getMethod("build").invoke(it) } ?: return@subscribe
+                if (callOptions.getObjectField("mAttestation") != null || event.uri.endsWith("/IncomingFriendSync")) {
+                    BypassTrace.noteSeamFired("unary_call_attestation_cancelled")
+                    event.canceled = true
+                    val eventHandler = event.adapter.arg<Any>(3)
+                    eventHandler.javaClass.methods.first { it.name == "onEvent" }.also { method ->
+                        method.invoke(eventHandler, null, method.parameterTypes[0].dataBuilder {
+                            set("mStatusCode", "CANCELLED")
+                        })
+                    }
+                }
+            }
+        }
+
+        // 2. ArgosClient family: ctor nulling + token/headers nulling + fake
+        //    createInstance — kills the native attestation payload source.
+        installSeam("argos_client") {
+            val argosClientClass = loadSnapClass("com.snapchat.client.client_attestation.ArgosClient\$CppProxy")
+            argosClientClass.apply {
+                hookConstructor(HookStage.BEFORE) {
+                    BypassTrace.noteSeamFired("argos_ctor_intercepted")
+                    it.setResult(null)
+                }
+                hook("getArgosTokenAsync", HookStage.BEFORE) {
+                    BypassTrace.noteSeamFired("argos_get_token_nulled")
+                    it.setResult(null)
+                }
+                hook("getAttestationHeaders", HookStage.BEFORE) {
+                    BypassTrace.noteSeamFired("argos_attestation_headers_nulled")
+                    it.setResult(null)
+                }
+            }
+            loadSnapClass("com.snapchat.client.client_attestation.ArgosClient").hook("createInstance", HookStage.BEFORE) { param ->
+                BypassTrace.noteSeamFired("argos_create_instance_spoofed")
+                param.setResult(argosClientClass.declaredConstructors.first().also { it.isAccessible = true }.newInstance(0))
+            }
+        }
+
+        // 3. SCClientAttestationDurableJob ctor null — rotation job never schedules.
+        installSeam("sc_client_attestation_job") {
+            loadSnapClass("com.snap.security.attestation.impl.SCClientAttestationDurableJob").hookConstructor(HookStage.BEFORE) { param ->
+                BypassTrace.noteSeamFired("sc_client_attestation_job_suppressed")
+                param.setArg(0, null)
+            }
+        }
+
+        // 4. AuthContext ctor AFTER noop-guard — keeps the host process alive.
+        installSeam("auth_context_ctor") {
+            loadSnapClass("com.snapchat.client.grpc.AuthContext").hookConstructor(HookStage.AFTER) { param ->
+                val headers by lazy { (param.thisObject<Any>().getObjectField("mHeaders") as? List<*>)?.filterNotNull() ?: emptyList() }
+
+                if (param.thisObject<Any>().getObjectField("mAuthTokenErrorCode") != null ||
+                    headers.isEmpty() ||
+                    headers.mapNotNull { it.getObjectField("mKey")?.toString()?.lowercase() }.any { it != "x-snap-access-token" }
+                ) {
+                    // Intentionally do nothing to avoid terminating the host process.
+                }
+            }
+        }
+
+        // 5. hermod_dup push-channel registration block.
+        installSeam("duplex_hermod_dup") {
+            loadSnapClass("com.snapchat.client.duplex.DuplexClient\$CppProxy").hook("registerHandler",
+                HookStage.BEFORE) { param ->
+                val path = param.arg<String>(0)
+                if (path == "hermod_dup") {
+                    BypassTrace.noteSeamFired("duplex_hermod_dup_blocked")
+                    param.setResult(null)
+                    return@hook
+                }
+            }
+        }
+
+        // 6. Attestation-required endpoint block (AuthContextDelegate).
+        installSeam("auth_context_delegate") {
+            val allowedEPs = listOf(
+                "/messagingcoreservice.MessagingCoreService/",
+                "/GetSnapchatterPublicInfo",
+                "/UserRecentlyActive",
+                "/socialsms.SocialSms/UpdateLink", // Direct link sharing
+            )
+            context.mappings.useMapper(CallbackMapper::class) {
+                val authContextDelegate = callbacks.getClass("AuthContextDelegate")
+                if (authContextDelegate == null) {
+                    BypassTrace.note("SEC", "SKIP | seam=auth_context_delegate reason=mapping missing")
+                    context.log.warn("AuthContextDelegate not found in mappings — attestation EP block unavailable")
+                    return@useMapper
+                }
+                authContextDelegate.hook("getAuthContext", HookStage.BEFORE) { param ->
+                    val authContextRequest = param.arg<Any>(0)
+                    val requestPath = authContextRequest.getObjectField("mRequestPath").toString()
+
+                    if (authContextRequest.getObjectField("mAttestationRequired") == true) {
+                        if (allowedEPs.any { requestPath.contains(it) }) {
+                            return@hook
+                        }
+
+                        BypassTrace.noteSeamFired("auth_context_attestation_nulled")
+                        param.setResult(null)
+                    }
+                }
+            }
+        }
+
+        // 7. PlatformClientAttestationMapper invoke nulling.
+        installSeam("platform_attestation_mapper") {
+            context.mappings.useMapper(PlatformClientAttestationMapper::class) {
+                val handlerClass = apiInvocationHandler.getAsClass()
+                if (handlerClass == null) {
+                    BypassTrace.note("SEC", "SKIP | seam=platform_attestation_mapper reason=mapping missing")
+                    context.log.warn("apiInvocationHandler not found in mappings")
+                    return@useMapper
+                }
+                handlerClass.hook("invoke", HookStage.BEFORE) { param ->
+                    val method = param.arg<Method>(1)
+                    if (method.annotations.any { it.toString().contains("attestation") }) {
+                        if (method.returnType.name.endsWith("Single")) {
+                            BypassTrace.noteSeamFired("platform_attestation_single_err")
+                            param.setResult(
+                                method.returnType.methods.first {
+                                    java.lang.reflect.Modifier.isStatic(it.modifiers) && it.parameterCount == 1 && it.parameterTypes[0] == Throwable::class.java
+                                }.invoke(null, IOException())
+                            )
+                            return@hook
+                        }
+
+                        BypassTrace.noteSeamFired("platform_attestation_nulled")
+                        param.setResult(null)
+                    }
+                }
+            }
+        }
+
+        // 8. Play Integrity HTTP mute — canonical NetworkApi seam.
+        //
+        // `StandardIntegrityManager$StandardIntegrityTokenProvider` (Play) is a
+        // plain Retrofit-style Java INTERFACE (verified in the decompile — `@LMce`
+        // HTTP path annotations, no `$CppProxy`): LSPosed can't instrument abstract
+        // members. Its requests route through `NetworkApi.submit` — purrfect's
+        // universal HTTP seam — so we cancel by URL there, identical to
+        // `EndpointsBlocker`'s pattern. The NATIVE risk-blocklist (DET keywords
+        // 9-14/52-57 + 74/75) remains the belt to this braces.
+        installSeam("play_integrity_http") {
+            context.event.subscribe(NetworkApiRequestEvent::class) { event ->
+                if (event.url.contains("PlayIntegrity", ignoreCase = true)) {
+                    BypassTrace.noteSeamFired("play_integrity_http_muted")
+                    event.canceled = true
+                    context.log.verbose("Play Integrity HTTP muted (NetworkApi) url=${event.url}")
+                    return@subscribe
+                }
+            }
+        }
+
+        // 9. Graphene metrics mute — same NetworkApi seam, config-gated.
+        if (context.config.experimental.security.muteGrapheneTelemetry.get()) {
+            installSeam("graphene_metrics") {
+                context.event.subscribe(NetworkApiRequestEvent::class) { event ->
+                    if (event.url.contains("/v1/metrics") || event.url.endsWith("v1/metrics")) {
+                        BypassTrace.noteSeamFired("graphene_metrics_muted")
+                        event.canceled = true
+                        context.log.verbose("Graphene emitMetricFrame muted (NetworkApi) url=${event.url}")
+                    }
+                }
+            }
+            context.log.info("Graphene emitMetricFrame mute active (NetworkApi seam, gated by muteGrapheneTelemetry)")
         }
     }
 }

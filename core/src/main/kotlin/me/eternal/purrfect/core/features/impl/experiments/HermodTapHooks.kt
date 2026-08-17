@@ -142,17 +142,22 @@ class HermodTapHooks : Feature("Hermod Taps") {
         // trailing-slash variant (PREBUILD_AUDIT LOW-4).
         val path = uriOrUrl.substringBefore('?').substringBefore('#').trimEnd('/')
         when {
-            path.endsWith("/scauth/validate") -> {
+            // Pattern-based matching (G2, widened 2026-08-18): exact endsWith
+            // silently misses path variants (gRPC-style "/snap_token/.../SnapSession",
+            // host-prefixed trailers, versioned prefixes). A segment-pair match
+            // (e.g. path contains "snap_token" AND "snap_session") keeps the
+            // tap honest without over-matching other endpoints.
+            path.endsWith("/scauth/validate") || (path.contains("scauth") && path.contains("validate")) -> {
                 BypassTrace.inc("tap_scauth_validate")
                 context.log.info("Hermod tap: /scauth/validate (UserSessionValidation) [$seam] uri=$uriOrUrl")
                 fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SCAUTH_VALIDATE, now))
             }
-            path.endsWith("/snap_token/pb/snap_session") -> {
+            path.endsWith("/snap_token/pb/snap_session") || (path.contains("snap_token") && path.contains("snap_session")) -> {
                 BypassTrace.inc("tap_snap_session")
                 context.log.info("Hermod tap: /snap_token/pb/snap_session [$seam] uri=$uriOrUrl")
                 fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SNAP_SESSION, now))
             }
-            path.endsWith("/snap_token/pb/snap_access_tokens") -> {
+            path.endsWith("/snap_token/pb/snap_access_tokens") || (path.contains("snap_token") && path.contains("snap_access")) -> {
                 BypassTrace.inc("tap_snap_access")
                 context.log.verbose("Hermod tap: /snap_token/pb/snap_access_tokens [$seam] uri=$uriOrUrl")
                 fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SNAP_ACCESS, now))

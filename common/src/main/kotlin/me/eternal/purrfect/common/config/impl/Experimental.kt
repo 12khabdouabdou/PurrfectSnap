@@ -58,6 +58,7 @@ class Experimental : ConfigContainer() {
 
     class SecurityConfig : ConfigContainer() {
         val muteGrapheneTelemetry = boolean("mute_graphene_telemetry", defaultValue = true)
+        val hardenedSeams = boolean("hardened_seams", defaultValue = true) { requireRestart() }
     }
 
     class E2EEConfig : ConfigContainer(hasGlobalState = true) {
