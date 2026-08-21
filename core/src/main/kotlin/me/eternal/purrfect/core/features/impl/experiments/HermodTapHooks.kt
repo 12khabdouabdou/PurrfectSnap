@@ -196,7 +196,7 @@ class HermodTapHooks : Feature("Hermod Taps") {
         // a bare endsWith silently misses "/scauth/validate?foo=bar" or a
         // trailing-slash variant (PREBUILD_AUDIT LOW-4).
         val path = uriOrUrl.substringBefore('?').substringBefore('#').trimEnd('/')
-        when {
+        return when {
             // SERVER-INITIATED: Janus verification challenge. The server only
             // issues these when it demands proof — highest-value signal.
             path.contains("challengeorchestration") || (path.contains("janus") && path.contains("verifychallenge")) -> {
