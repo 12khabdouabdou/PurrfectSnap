@@ -156,11 +156,13 @@ class HermodTapHooks : Feature("Hermod Taps") {
                 // how much data came back. A routine validate returns a tiny
                 // ack; a challenge-bearing response carries payload. Log-only.
                 runCatching {
-                    event.addResponseCallback { resp ->
+                    event.addResponseCallback {
+                        // Receiver is the response UnaryCallEvent — `buffer`
+                        // below is ITS buffer, not the request's.
                         context.log.verbose(
-                            "Hermod tap response: uri=${event.uri} bytes=${resp.buffer.size} [fg=${isAppForeground()}]"
+                            "Hermod tap response: uri=${uri} bytes=${buffer.size} [fg=${isAppForeground()}]"
                         )
-                        BypassTrace.inc("tap_response_${resp.buffer.size.coerceAtMost(4096) / 1024}k")
+                        BypassTrace.inc("tap_response_${buffer.size.coerceAtMost(4096) / 1024}k")
                     }
                 }
             }
