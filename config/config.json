@@ -1,4 +1,11 @@
 {
+  "coherent_block_list": [
+    "thirdpartyaccess",
+    "recordthirdpartyaccessaction",
+    "/com.snapchat.auth.proto.tpa.thirdpartyaccessservice/",
+    "/v1/metrics",
+    "http://127.0.0.1/v1/metrics"
+  ],
   "allowed_eps_active": [
     "/messagingcoreservice.MessagingCoreService/",
     "/GetConvoSafetyPrompt",

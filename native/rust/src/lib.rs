@@ -272,6 +272,7 @@ fn evaluate_endpoint_logic(
     arg0: &str,
     has_attestation: bool,
 ) -> BlockerDecision {
+    let coherent = config::is_coherent_presence();
     let targets = [uri, arg0];
     if let Some(matched) = find_keyword(&targets, &config.allowed_eps_active) {
         return BlockerDecision {
@@ -283,6 +284,32 @@ fn evaluate_endpoint_logic(
             match_value: Some(matched),
         };
     }
+
+    // Coherent Presence: stock traffic flows. Attestation-bearing calls are the
+    // MOST stock-like calls a client can make — suppressing them is what built
+    // the always-absent fingerprint that gets accounts flagged. Only the true
+    // self-report/telemetry set is suppressed.
+    if coherent {
+        if let Some(matched) = find_keyword(&targets, &config.coherent_block_list) {
+            return BlockerDecision {
+                blocked: true,
+                reason: "coherent_block",
+                keyword: None,
+                keyword_context: None,
+                match_type: Some("coherent_block_list"),
+                match_value: Some(matched),
+            };
+        }
+        return BlockerDecision {
+            blocked: false,
+            reason: "coherent_allowed",
+            keyword: None,
+            keyword_context: None,
+            match_type: None,
+            match_value: None,
+        };
+    }
+
     let detection_keyword = find_keyword(&targets, &config.detection_keywords);
     if let Some(matched) = find_keyword(&targets, &config.risk_block_list) {
         return BlockerDecision {
@@ -325,6 +352,27 @@ fn evaluate_network_request_logic(
     config: &config::BlockerConfig,
     url: &str,
 ) -> BlockerDecision {
+    if config::is_coherent_presence() {
+        if let Some(keyword) = find_keyword(&[url], &config.coherent_block_list) {
+            return BlockerDecision {
+                blocked: true,
+                reason: "coherent_block",
+                keyword: Some(keyword.clone()),
+                keyword_context: None,
+                match_type: Some("coherent_block_list"),
+                match_value: Some(keyword),
+            };
+        }
+        return BlockerDecision {
+            blocked: false,
+            reason: "coherent_allowed",
+            keyword: None,
+            keyword_context: None,
+            match_type: None,
+            match_value: None,
+        };
+    }
+
     if let Some(keyword) = find_keyword(&[url], &config.detection_keywords) {
         return BlockerDecision {
             blocked: true,
@@ -351,6 +399,7 @@ fn evaluate_auth_context_logic(
     request_path: &str,
     attestation_required: bool,
 ) -> BlockerDecision {
+    let coherent = config::is_coherent_presence();
     let targets = [request_path];
     if let Some(matched) = find_keyword(&targets, &config.allowed_eps_active) {
         return BlockerDecision {
@@ -362,6 +411,28 @@ fn evaluate_auth_context_logic(
             match_value: Some(matched),
         };
     }
+
+    if coherent {
+        if let Some(matched) = find_keyword(&targets, &config.coherent_block_list) {
+            return BlockerDecision {
+                blocked: true,
+                reason: "coherent_block",
+                keyword: None,
+                keyword_context: None,
+                match_type: Some("coherent_block_list"),
+                match_value: Some(matched),
+            };
+        }
+        return BlockerDecision {
+            blocked: false,
+            reason: "coherent_allowed",
+            keyword: None,
+            keyword_context: None,
+            match_type: None,
+            match_value: None,
+        };
+    }
+
     let detection_keyword = find_keyword(&targets, &config.detection_keywords);
     if let Some(matched) = find_keyword(&targets, &config.risk_block_list) {
         return BlockerDecision {
@@ -413,6 +484,19 @@ fn evaluate_api_invocation_logic(
             keyword_context: None,
             match_type: Some("allowed_whitelist"),
             match_value: Some(matched),
+        };
+    }
+
+    // Coherent Presence: attestation-annotated API invocations are stock
+    // behavior — they must execute so their signed payloads reach the wire.
+    if config::is_coherent_presence() {
+        return BlockerDecision {
+            blocked: false,
+            reason: "coherent_allowed",
+            keyword: None,
+            keyword_context: None,
+            match_type: None,
+            match_value: None,
         };
     }
 
@@ -558,6 +642,14 @@ extern "system" fn shouldBlockDuplexClient(
 
     let path_str: String = env.get_string(&path).unwrap().into();
 
+    // Coherent Presence: hermod_dup is a STOCK push channel. Blocking its
+    // registration tells the server our client never listens for attestation
+    // pushes — another absence-fingerprint. Let it register; HermodTapHooks
+    // observes the traffic and feeds the rotation FSM.
+    if config::is_coherent_presence() {
+        return JNI_FALSE;
+    }
+
     let hermod = secstrings::get_hermod_dup();
     if path_str == hermod {
         JNI_TRUE
@@ -612,6 +704,7 @@ fn run_blocker_self_test(allow_unverified: bool) -> bool {
     if config.allowed_eps_active.is_empty()
         || config.detection_keywords.is_empty()
         || config.risk_block_list.is_empty()
+        || config.coherent_block_list.is_empty()
     {
         return false;
     }
@@ -623,6 +716,48 @@ fn run_blocker_self_test(allow_unverified: bool) -> bool {
     let allowed_decision = evaluate_endpoint_logic(&config, &allowed_sample, &allowed_sample, false);
     if allowed_decision.blocked || allowed_decision.reason != "allowed_whitelist" {
         return false;
+    }
+
+    // Coherent Presence mode: verify the inverted doctrine.
+    // - attestation/detection/risk traffic flows through (coherent_allowed)
+    // - TPA/telemetry self-reports are still suppressed (coherent_block)
+    if config::is_coherent_presence() {
+        let coherent_sample = config.coherent_block_list[0].clone();
+
+        let coherent_tpa = evaluate_endpoint_logic(&config, &coherent_sample, "", true);
+        if !coherent_tpa.blocked || coherent_tpa.reason != "coherent_block" {
+            return false;
+        }
+
+        let coherent_attestation_flow =
+            evaluate_endpoint_logic(&config, "/self_test/attestation", "", true);
+        if coherent_attestation_flow.blocked || coherent_attestation_flow.reason != "coherent_allowed" {
+            return false;
+        }
+
+        let coherent_risk_flow = evaluate_endpoint_logic(&config, &risk_sample, "", false);
+        if coherent_risk_flow.blocked {
+            return false;
+        }
+
+        let coherent_auth_attestation =
+            evaluate_auth_context_logic(&config, "/self_test/integrity", true);
+        if coherent_auth_attestation.blocked {
+            return false;
+        }
+
+        let coherent_api = evaluate_api_invocation_logic(&config, "com.snap.attestation.SelfTest", "@RequiresAttestation");
+        if coherent_api.blocked {
+            return false;
+        }
+
+        let coherent_network = evaluate_network_request_logic(&config, "https://gcp.attestation.snapchat.com/PlayIntegrity");
+        if coherent_network.blocked {
+            return false;
+        }
+
+        info!("Blocker self-test PASSED (coherent_presence mode)");
+        return true;
     }
 
     let detection_path = format!("/self_test/{}", detection_sample);
@@ -663,6 +798,7 @@ fn run_blocker_self_test(allow_unverified: bool) -> bool {
         return false;
     }
 
+    info!("Blocker self-test PASSED (legacy block mode)");
     true
 }
 

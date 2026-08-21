@@ -26,4 +26,6 @@ data class NativeConfig(
     val nativeLogBridge: Boolean = false,
     @JvmField
     val zeroizeDetectionBuffers: Boolean = true,
+    @JvmField
+    val coherentPresence: Boolean = true,
 )

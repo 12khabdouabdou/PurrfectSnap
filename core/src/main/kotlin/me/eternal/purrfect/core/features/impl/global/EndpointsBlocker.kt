@@ -3,6 +3,7 @@ package me.eternal.purrfect.core.features.impl.global
 import me.eternal.purrfect.core.features.Feature
 import me.eternal.purrfect.core.event.events.impl.NetworkApiRequestEvent
 import me.eternal.purrfect.core.event.events.impl.UnaryCallEvent
+import me.eternal.purrfect.core.features.impl.experiments.BypassTrace
 import me.eternal.purrfect.core.util.dataBuilder
 import me.eternal.purrfect.core.util.hook.HookStage
 import me.eternal.purrfect.core.util.hook.hook
@@ -49,6 +50,16 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
             context.native.setTestMode(false)
         }
 
+        // Doctrine visibility: which decision regime is live this session.
+        // coherent_presence=true → stock attestation/integrity traffic FLOWS
+        // (native-signed over the laundered identity); only TPA self-reports
+        // and local telemetry are suppressed. false → legacy deny-list engine.
+        val coherentMode = context.config.experimental.security.coherentPresence.get()
+        context.log.info(
+            "EndpointsBlocker doctrine: ${if (coherentMode) "COHERENT_PRESENCE" else "LEGACY_BLOCK"} " +
+                "(coherent_presence=$coherentMode)"
+        )
+
         context.event.subscribe(NetworkApiRequestEvent::class) { event ->
             val bypassToggleEnabled = context.bridgeClient.getDebugProp("test_mode", "false") == "true"
             if (!bypassToggleEnabled && context.disablePlugin) {
@@ -58,7 +69,10 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
 
             val decision = context.native.evaluateNetworkRequest(event.url)
             if (decision.blocked) {
+                BypassTrace.inc("blocker_network_blocked")
                 event.canceled = true
+            } else {
+                BypassTrace.inc("blocker_network_allowed_${decision.reason}")
             }
         }
 
@@ -68,13 +82,14 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
                 return@subscribe
             }
             if (isInLoginSignup) return@subscribe
-            
+
             val callOptions = event.adapter.arg<Any>(2).let { it.javaClass.getMethod("build").invoke(it) } ?: return@subscribe
             val hasAttestation = callOptions.getObjectField("mAttestation") != null
             val arg0 = event.adapter.arg<Any>(0).toString()
 
             val decision = context.native.evaluateEndpoint(event.uri, arg0, hasAttestation)
             if (decision.blocked) {
+                BypassTrace.inc("blocker_unary_blocked_${decision.reason}")
                 event.canceled = true
                 val eventHandler = event.adapter.arg<Any>(3)
                 eventHandler.javaClass.methods.first { it.name == "onEvent" }.also { method ->
@@ -82,6 +97,12 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
                         set("mStatusCode", "CANCELLED")
                     })
                 }
+            } else {
+                // Presence census — proof the server-visible pattern changed:
+                // attested calls now reach the wire instead of vanishing.
+                // Coherent suppressions surface as
+                // blocker_unary_blocked_coherent_block from the branch above.
+                if (hasAttestation) BypassTrace.inc("blocker_unary_attested_allowed")
             }
         }
 

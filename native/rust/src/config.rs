@@ -23,6 +23,7 @@ pub(crate) struct NativeConfig {
     pub hide_injected_modules: bool,
     pub native_log_bridge: bool,
     pub zeroize_detection_buffers: bool,
+    pub coherent_presence: bool,
 }
 
 impl NativeConfig {
@@ -55,6 +56,7 @@ impl NativeConfig {
             hide_injected_modules: get_boolean!("hideInjectedModules"),
             native_log_bridge: get_boolean!("nativeLogBridge"),
             zeroize_detection_buffers: get_boolean!("zeroizeDetectionBuffers"),
+            coherent_presence: get_boolean!("coherentPresence"),
         })
     }
 }
@@ -64,6 +66,29 @@ pub struct BlockerConfig {
     pub allowed_eps_active: Vec<String>,
     pub detection_keywords: Vec<String>,
     pub risk_block_list: Vec<String>,
+    pub coherent_block_list: Vec<String>,
+}
+
+/// Coherent Presence doctrine (2026-08 bypass rework):
+///
+/// The legacy strategy BLOCKED every attestation/integrity/TPA surface. From the
+/// server's perspective that is an "always-absent attestation" fingerprint — the
+/// exact third-party-client signal Snap now enforces on trust score. Coherent
+/// Presence inverts this: stock attestation traffic flows through and is signed
+/// NATIVELY over the laundered identity (libclient reads ro.* via
+/// __system_property_get, which our Tier-A hooks serve), so every signed payload
+/// is internally consistent with what we claim to be. Only surfaces that are
+/// (a) genuine self-reports (ThirdPartyAccess audit) or (b) local telemetry that
+/// a stock client emits nowhere on the wire continue to be suppressed.
+///
+/// Panic-safe: falls back to `true` (the shipped default) when the native config
+/// hasn't been pushed yet — evaluators may fire before `load_config`, and the
+/// old code path never panicked here either.
+pub fn is_coherent_presence() -> bool {
+    NATIVE_CONFIG.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+        .as_ref()
+        .map(|c| c.coherent_presence)
+        .unwrap_or(true)
 }
 
 static BLOCKER_CONFIG: Mutex<Option<BlockerConfig>> = Mutex::new(None);
@@ -85,6 +110,7 @@ fn build_blocker_config(zeroize: bool) -> BlockerConfig {
     let raw: serde_json::Value = serde_json::from_str(config_str).unwrap();
 
     let allowed = raw["allowed_eps_active"].as_array().cloned().unwrap_or_default();
+    let coherent = raw["coherent_block_list"].as_array().cloned().unwrap_or_default();
 
     let detection = secstrings::get_detection_keywords()
         .into_iter()
@@ -108,6 +134,10 @@ fn build_blocker_config(zeroize: bool) -> BlockerConfig {
             .collect(),
         detection_keywords: detection,
         risk_block_list: risk,
+        coherent_block_list: coherent
+            .into_iter()
+            .filter_map(|value| value.as_str().map(|s| s.to_lowercase()))
+            .collect(),
     }
 }
 

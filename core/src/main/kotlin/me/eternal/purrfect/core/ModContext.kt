@@ -169,7 +169,8 @@ class ModContext(
                 launderNativeProps = config.experimental.nativeHooks.launderNativeProps.get(),
                 hideInjectedModules = config.experimental.nativeHooks.hideInjectedModules.get(),
                 nativeLogBridge = config.experimental.nativeHooks.nativeLogBridge.get(),
-                zeroizeDetectionBuffers = config.experimental.nativeHooks.zeroizeDetectionBuffers.get()
+                zeroizeDetectionBuffers = config.experimental.nativeHooks.zeroizeDetectionBuffers.get(),
+                coherentPresence = config.experimental.security.coherentPresence.get()
             )
         )
     }

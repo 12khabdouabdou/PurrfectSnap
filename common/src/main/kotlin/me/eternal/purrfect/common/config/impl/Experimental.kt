@@ -58,6 +58,17 @@ class Experimental : ConfigContainer() {
 
     class SecurityConfig : ConfigContainer() {
         val muteGrapheneTelemetry = boolean("mute_graphene_telemetry", defaultValue = true)
+        // Coherent Presence doctrine (2026-08 bypass rework) — default ON.
+        //
+        // The legacy block strategy (suppress attestation/integrity/hermod
+        // traffic wholesale) produced an "always-absent attestation" pattern —
+        // the exact third-party-client fingerprint Snap now enforces on trust
+        // score (delayed bans). Coherent Presence inverts it: stock traffic
+        // flows and is signed NATIVELY over the laundered identity, so every
+        // signed payload stays internally consistent. Only genuine self-report
+        // surfaces stay suppressed (ThirdPartyAccess audit, Graphene metrics).
+        // Legacy deny-list behavior remains available by turning this OFF.
+        val coherentPresence = boolean("coherent_presence", defaultValue = true) { requireRestart() }
         // Research toggle ONLY — default OFF. On-device proof (2026-08-18
         // v3): enabling nulls attestation-required APIs (bitmoji, profiles,
         // suggested friends, map all broke under auth_context/argos nulling).
