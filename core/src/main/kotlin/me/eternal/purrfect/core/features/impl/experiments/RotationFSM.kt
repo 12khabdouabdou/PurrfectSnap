@@ -43,8 +43,32 @@ import me.eternal.purrfect.core.features.Feature
 class RotationFSM : Feature("Rotation FSM") {
 
     enum class State { IDLE, ARMED, ALERT, ROTATING, COOLDOWN }
-    enum class TapKind { TOKEN_REFRESH, SCAUTH_VALIDATE, SNAP_SESSION, SNAP_ACCESS }
-    data class TapSignal(val kind: TapKind, val ts: Long)
+
+    /**
+     * Pressure signal taxonomy, classified by INITIATOR:
+     *
+     *  - CLIENT_INITIATED (SCAUTH_VALIDATE, SNAP_SESSION, SNAP_ACCESS,
+     *    TOKEN_REFRESH): the app itself fires these during normal usage —
+     *    every profile view triggers a session validation, messaging refreshes
+     *    snap tokens. On-device proof (2026-08-21): 5 profile opens = 5
+     *    validates = false ALERT under the old weights. Routine usage must
+     *    NEVER rotate identity, so these carry LOW weight and can NEVER
+     *    satisfy the server-pressure marker.
+     *  - SERVER_INITIATED (HERMOD_PUSH, JANUS_CHALLENGE): the server pushed
+     *    a hermod_dup attestation demand or issued a Janus verification
+     *    challenge. Physically cannot be caused by user navigation — these
+     *    are the ONLY markers that prove actual server suspicion.
+     */
+    enum class TapKind { TOKEN_REFRESH, SCAUTH_VALIDATE, SNAP_SESSION, SNAP_ACCESS, JANUS_CHALLENGE, HERMOD_PUSH }
+
+    data class TapSignal(
+        val kind: TapKind,
+        val ts: Long,
+        /** App foreground at emission — background traffic is rarer, mildly more notable. */
+        val foreground: Boolean = true,
+        /** Free-form provenance (seam name, response hint) for the log line. */
+        val note: String? = null,
+    )
 
     private val mutex = Mutex()
     @Volatile
@@ -61,6 +85,25 @@ class RotationFSM : Feature("Rotation FSM") {
     private val armedThreshold = 4.0
     private val alertThreshold = 8.0
 
+    /**
+     * Per-kind base weights, calibrated against the 2026-08-21 false positive:
+     * five profile opens (5× SCAUTH_VALIDATE) must stay below `armedThreshold`
+     * even at full decay — 5 × 0.75 = 3.75 < 4.0. Server-initiated signals
+     * alone can cross ARMED on a single hit (3.5 + decay tail), which is
+     * correct: an unsolicited Janus challenge IS worth watching.
+     */
+    private fun baseWeight(kind: TapKind): Double = when (kind) {
+        TapKind.TOKEN_REFRESH -> 1.0
+        TapKind.SCAUTH_VALIDATE -> 0.75   // routine: fires per profile view / nav
+        TapKind.SNAP_SESSION -> 1.25      // session fetches: token lifecycle
+        TapKind.SNAP_ACCESS -> 1.0
+        TapKind.JANUS_CHALLENGE -> 3.5    // SERVER-initiated verification gate
+        TapKind.HERMOD_PUSH -> 3.0        // SERVER-pushed attestation demand
+    }
+
+    /** Background traffic multiplier — modest: sync jobs are legit but rarer. */
+    private val BACKGROUND_MULTIPLIER = 1.5
+
     private val cooldownMs = 5 * 60 * 1000L
     private val minRotationIntervalMs = 2 * 60 * 60 * 1000L
     private val maxRotationsPer24h = 4
@@ -73,7 +116,13 @@ class RotationFSM : Feature("Rotation FSM") {
             context.log.info("Rotation FSM disabled")
             return
         }
-        context.log.info("Rotation FSM initialized (IDLE) — armed=${armedThreshold} alert=${alertThreshold} cooldown=${cooldownMs}ms")
+        context.log.info(
+            "Rotation FSM initialized (IDLE) — armed=${armedThreshold} alert=${alertThreshold} cooldown=${cooldownMs}ms | " +
+                "weights: SCAUTH_VALIDATE=${baseWeight(TapKind.SCAUTH_VALIDATE)} SNAP_SESSION=${baseWeight(TapKind.SNAP_SESSION)} " +
+                "SNAP_ACCESS=${baseWeight(TapKind.SNAP_ACCESS)} TOKEN_REFRESH=${baseWeight(TapKind.TOKEN_REFRESH)} " +
+                "JANUS_CHALLENGE=${baseWeight(TapKind.JANUS_CHALLENGE)} HERMOD_PUSH=${baseWeight(TapKind.HERMOD_PUSH)} | " +
+                "server-pressure markers: JANUS_CHALLENGE/HERMOD_PUSH only"
+        )
         defer {
             while (currentCoroutineContext().isActive && isEnabled()) {
                 delay(60_000)
@@ -107,7 +156,19 @@ class RotationFSM : Feature("Rotation FSM") {
         defer {
             mutex.withLock {
                 signals.add(tap)
-                context.log.verbose("FSM ingest: $tap total=${signals.size}")
+                // Contribution of THIS signal at full freshness + running total,
+                // so a log export shows exactly why the score is what it is.
+                var w = baseWeight(tap.kind)
+                if (!tap.foreground) w *= BACKGROUND_MULTIPLIER
+                val initiator = when (tap.kind) {
+                    TapKind.HERMOD_PUSH, TapKind.JANUS_CHALLENGE -> "SERVER_INITIATED"
+                    else -> "client_initiated"
+                }
+                context.log.verbose(
+                    "FSM ingest: kind=${tap.kind} [$initiator fg=${tap.foreground}] " +
+                        "weight=${"%.2f".format(w)} note=${tap.note ?: "-"} " +
+                        "total_signals=${signals.size} window_score=${"%.2f".format(score())}"
+                )
                 maybeAdvanceFromScore()
             }
         }
@@ -118,13 +179,9 @@ class RotationFSM : Feature("Rotation FSM") {
         if (age > windowMs) return@sumOf 0.0
         // Linear decay from 1.0 (just-fired) to 0.0 (oldest in window).
         val decayFactor = 1.0 - (age.toDouble() / windowMs.toDouble())
-        val weight = when (it.kind) {
-            TapKind.TOKEN_REFRESH -> 1.0
-            TapKind.SCAUTH_VALIDATE -> 2.0
-            TapKind.SNAP_SESSION -> 2.0
-            TapKind.SNAP_ACCESS -> 1.0
-        }
-        weight * decayFactor
+        var w = baseWeight(it.kind)
+        if (!it.foreground) w *= BACKGROUND_MULTIPLIER
+        w * decayFactor
     }
 
     private fun maybeAdvanceFromScore() {
@@ -138,9 +195,15 @@ class RotationFSM : Feature("Rotation FSM") {
             State.ARMED -> {
                 val marker = hasServerPressureMarker()
                 if (s >= alertThreshold && marker) {
-                    BypassTrace.note("FSM", "ALERT candidate: score=$s markerWithin90s=true")
+                    BypassTrace.note("FSM", "ALERT candidate: score=$s server_initiated_marker=true")
                 } else {
-                    BypassTrace.note("FSM", "ARMED eval: score=$s markerWithin90s=$marker")
+                    // Visibility: when score alone crosses but no SERVER-initiated
+                    // signal exists, say so explicitly — this is the profile-browse
+                    // false-positive path, now correctly held at ARMED.
+                    BypassTrace.note(
+                        "FSM", "ARMED eval: score=$s server_initiated_marker=false " +
+                            "(client-initiated churn cannot escalate — holding)"
+                    )
                 }
                 when {
                     s >= alertThreshold && marker -> {
@@ -168,16 +231,18 @@ class RotationFSM : Feature("Rotation FSM") {
     }
 
     /**
-     * "Server pressure" = evidence that the server is actually engaging the
-     * attestation/rotation surface, not just the client retry-loop burning on
-     * its own. Requires a SC-AUTH/validate OR a snap_session fetch within the
-     * last 90 seconds, clustered with the burst.
+     * "Server pressure" = evidence the SERVER initiated something, not the
+     * client. Only server-INITIATED signals qualify (hermod_dup push, Janus
+     * challenge). Client-initiated calls (/scauth/validate, snap_token) are
+     * EXCLUDED — on-device proof 2026-08-21: counting them made the marker
+     * check circular (user browsing fires validates; validates were the
+     * marker; every browsing session escalated to ALERT).
      */
     private fun hasServerPressureMarker(): Boolean {
-        val cutoff = now() - 90_000
+        val cutoff = now() - 120_000
         return signals.any {
             it.ts >= cutoff &&
-                (it.kind == TapKind.SCAUTH_VALIDATE || it.kind == TapKind.SNAP_SESSION)
+                (it.kind == TapKind.HERMOD_PUSH || it.kind == TapKind.JANUS_CHALLENGE)
         }
     }
 

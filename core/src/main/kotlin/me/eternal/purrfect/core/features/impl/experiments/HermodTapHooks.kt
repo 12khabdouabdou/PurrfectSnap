@@ -49,6 +49,38 @@ import me.eternal.purrfect.core.util.hook.hookConstructor
  */
 class HermodTapHooks : Feature("Hermod Taps") {
 
+    companion object {
+        /**
+         * Foreground tracker — counts started-but-not-stopped activities via
+         * application-level lifecycle callbacks. Cheap, no per-view hooks.
+         * Used to classify tap signals: user-driven traffic happens in the
+         * foreground; background bursts are rarer and mildly more notable
+         * (FSM applies a small multiplier).
+         */
+        @Volatile
+        private var resumedCount: Int = 0
+
+        fun isAppForeground(): Boolean = resumedCount > 0
+
+        private fun registerForegroundTracker(feature: Feature) {
+            runCatching {
+                val app = feature.context.androidContext as? android.app.Application ?: return
+                app.registerActivityLifecycleCallbacks(object : android.app.Application.ActivityLifecycleCallbacks {
+                    override fun onActivityStarted(activity: android.app.Activity) { resumedCount++ }
+                    override fun onActivityStopped(activity: android.app.Activity) { resumedCount = (resumedCount - 1).coerceAtLeast(0) }
+                    override fun onActivityCreated(activity: android.app.Activity, savedInstanceState: android.os.Bundle?) {}
+                    override fun onActivityResumed(activity: android.app.Activity) {}
+                    override fun onActivityPaused(activity: android.app.Activity) {}
+                    override fun onActivitySaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle) {}
+                    override fun onActivityDestroyed(activity: android.app.Activity) {}
+                })
+                feature.context.log.verbose("Tap foreground tracker registered (resumed=${resumedCount})")
+            }.onFailure {
+                feature.context.log.warn("Foreground tracker unavailable (${it.message}) — taps default to fg=true")
+            }
+        }
+    }
+
     override fun init() {
         if (!isEnabled()) {
             context.log.info(
@@ -57,6 +89,7 @@ class HermodTapHooks : Feature("Hermod Taps") {
             )
             return
         }
+        registerForegroundTracker(this)
         runCatching {
             installTokenRefreshTap()
             installUnaryCallTaps()
@@ -93,9 +126,14 @@ class HermodTapHooks : Feature("Hermod Taps") {
                 if (!isEnabled()) return@hookConstructor
                 if (isSuppressedByFsm()) return@hookConstructor
                 val args = param.args().joinToString(", ") { it?.javaClass?.simpleName ?: "null" }
-                context.log.info("Hermod tap: TokenRefreshDurableJob scheduled [$args]")
+                context.log.info("Hermod tap: TokenRefreshDurableJob scheduled [fg=${isAppForeground()}] [$args]")
                 fsmIfRotationActive()?.ingest(
-                    RotationFSM.TapSignal(RotationFSM.TapKind.TOKEN_REFRESH, System.currentTimeMillis())
+                    RotationFSM.TapSignal(
+                        RotationFSM.TapKind.TOKEN_REFRESH,
+                        System.currentTimeMillis(),
+                        foreground = isAppForeground(),
+                        note = "durable_job_ctor"
+                    )
                 )
             }
         }.onFailure {
@@ -112,7 +150,20 @@ class HermodTapHooks : Feature("Hermod Taps") {
      */
     private fun installUnaryCallTaps() {
         context.event.subscribe(UnaryCallEvent::class) { event ->
-            observeAndIngest(event.uri, "UnaryCallEvent")
+            val matched = observeAndIngest(event.uri, "UnaryCallEvent")
+            if (matched) {
+                // Response-size capture: attach a response callback that logs
+                // how much data came back. A routine validate returns a tiny
+                // ack; a challenge-bearing response carries payload. Log-only.
+                runCatching {
+                    event.addResponseCallback { resp ->
+                        context.log.verbose(
+                            "Hermod tap response: uri=${event.uri} bytes=${resp.buffer.size} [fg=${isAppForeground()}]"
+                        )
+                        BypassTrace.inc("tap_response_${resp.buffer.size.coerceAtMost(4096) / 1024}k")
+                    }
+                }
+            }
         }
         // Retrofit-style `*HttpInterface` calls (scauth/validate, snap_token) go
         // through NetworkApi.submit, so we ALSO subscribe on the URL event — the
@@ -124,51 +175,80 @@ class HermodTapHooks : Feature("Hermod Taps") {
 
     /**
      * Shared filter+ingest: emit the relevant FSM TapSignal when the URI/URL
-     * ends with one of the pressure-marker paths (verified against the
-     * decompiled `@LMce` annotations). Surfaces which seam fired in the log
-     * line so LO can confirm which transport a build actually routes through.
+     * matches a pressure-marker path. Returns true when this URI was consumed
+     * as a known tap (caller may enrich with response callbacks). Every log
+     * line carries the initiator classification and foreground state so a log
+     * export alone explains any FSM decision.
      */
-    private fun observeAndIngest(uriOrUrl: String, seam: String) {
-        if (!isEnabled()) return
+    private fun observeAndIngest(uriOrUrl: String, seam: String): Boolean {
+        if (!isEnabled()) return false
         BypassTrace.inc("wire_${seam}")
         val fsm = fsmIfRotationActive()
         // Cooldown suppresses BOTH evidence collection AND the observation
         // logs that feed the retry churn. When FSM is off (hermodTaps-only
         // observation mode) there is no cooldown to respect.
-        if (fsm != null && fsm.suppressTaps()) return
+        if (fsm != null && fsm.suppressTaps()) return false
         val now = System.currentTimeMillis()
+        val fg = isAppForeground()
         // Strip query strings / fragments and trailing slashes before matching —
         // a bare endsWith silently misses "/scauth/validate?foo=bar" or a
         // trailing-slash variant (PREBUILD_AUDIT LOW-4).
         val path = uriOrUrl.substringBefore('?').substringBefore('#').trimEnd('/')
         when {
-            // Pattern-based matching (G2, widened 2026-08-18): exact endsWith
-            // silently misses path variants (gRPC-style "/snap_token/.../SnapSession",
-            // host-prefixed trailers, versioned prefixes). A segment-pair match
-            // (e.g. path contains "snap_token" AND "snap_session") keeps the
-            // tap honest without over-matching other endpoints.
+            // SERVER-INITIATED: Janus verification challenge. The server only
+            // issues these when it demands proof — highest-value signal.
+            path.contains("challengeorchestration") || (path.contains("janus") && path.contains("verifychallenge")) -> {
+                BypassTrace.inc("tap_janus_challenge")
+                context.log.info("Hermod tap: JANUS CHALLENGE (server-initiated!) [$seam] [fg=$fg] uri=$uriOrUrl")
+                fsm?.ingest(
+                    RotationFSM.TapSignal(
+                        RotationFSM.TapKind.JANUS_CHALLENGE, now,
+                        foreground = fg, note = seam
+                    )
+                )
+                true
+            }
+            // CLIENT-initiated: fires per profile view / navigation. LOW weight.
             path.endsWith("/scauth/validate") || (path.contains("scauth") && path.contains("validate")) -> {
                 BypassTrace.inc("tap_scauth_validate")
-                context.log.info("Hermod tap: /scauth/validate (UserSessionValidation) [$seam] uri=$uriOrUrl")
-                fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SCAUTH_VALIDATE, now))
+                context.log.info("Hermod tap: /scauth/validate (client-initiated, routine) [$seam] [fg=$fg] uri=$uriOrUrl")
+                fsm?.ingest(
+                    RotationFSM.TapSignal(
+                        RotationFSM.TapKind.SCAUTH_VALIDATE, now,
+                        foreground = fg, note = seam
+                    )
+                )
+                true
             }
             path.endsWith("/snap_token/pb/snap_session") || (path.contains("snap_token") && path.contains("snap_session")) -> {
                 BypassTrace.inc("tap_snap_session")
-                context.log.info("Hermod tap: /snap_token/pb/snap_session [$seam] uri=$uriOrUrl")
-                fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SNAP_SESSION, now))
+                context.log.info("Hermod tap: /snap_token/pb/snap_session (client-initiated) [$seam] [fg=$fg] uri=$uriOrUrl")
+                fsm?.ingest(
+                    RotationFSM.TapSignal(
+                        RotationFSM.TapKind.SNAP_SESSION, now,
+                        foreground = fg, note = seam
+                    )
+                )
+                true
             }
             path.endsWith("/snap_token/pb/snap_access_tokens") || (path.contains("snap_token") && path.contains("snap_access")) -> {
                 BypassTrace.inc("tap_snap_access")
-                context.log.verbose("Hermod tap: /snap_token/pb/snap_access_tokens [$seam] uri=$uriOrUrl")
-                fsm?.ingest(RotationFSM.TapSignal(RotationFSM.TapKind.SNAP_ACCESS, now))
+                context.log.verbose("Hermod tap: /snap_token/pb/snap_access_tokens (client-initiated) [$seam] [fg=$fg] uri=$uriOrUrl")
+                fsm?.ingest(
+                    RotationFSM.TapSignal(
+                        RotationFSM.TapKind.SNAP_ACCESS, now,
+                        foreground = fg, note = seam
+                    )
+                )
+                true
             }
             // URI census: every unmatched endpoint becomes visible (latched, so
             // one line per unique URI per process) — the raw material to
-            // re-match /snap_token/pb/snap_session when this build routes it
-            // through a path variant the endsWith matcher misses.
+            // re-match missed pressure paths.
             else -> {
                 BypassTrace.inc("census_unmatched_${seam}")
                 BypassTrace.latch("census_${seam}_$path", "CENSUS", "[$seam] $uriOrUrl")
+                false
             }
         }
     }

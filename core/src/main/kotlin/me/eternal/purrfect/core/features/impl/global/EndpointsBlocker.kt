@@ -69,7 +69,10 @@ class EndpointsBlocker : Feature("EndpointsBlocker") {
 
             val decision = context.native.evaluateNetworkRequest(event.url)
             if (decision.blocked) {
-                BypassTrace.inc("blocker_network_blocked")
+                // Split by reason so the trace summary shows WHAT was
+                // suppressed (coherent_block = TPA/metrics, legacy reasons =
+                // old deny-list mode).
+                BypassTrace.inc("blocker_network_blocked_${decision.reason}")
                 event.canceled = true
             } else {
                 BypassTrace.inc("blocker_network_allowed_${decision.reason}")
