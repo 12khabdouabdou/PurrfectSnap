@@ -53,18 +53,38 @@ class HermodTapHooks : Feature("Hermod Taps") {
         /**
          * Foreground tracker — counts started-but-not-stopped activities via
          * application-level lifecycle callbacks. Cheap, no per-view hooks.
-         * Used to classify tap signals: user-driven traffic happens in the
-         * foreground; background bursts are rarer and mildly more notable
-         * (FSM applies a small multiplier).
+         *
+         * On-device lesson (2026-08-22, v6): the original registration used a
+         * bare `androidContext as? Application ?: return` inside runCatching —
+         * when ModContext carries a non-Application Context the cast silently
+         * returned null, registration never happened, and EVERY signal logged
+         * fg=false → BACKGROUND_MULTIPLIER inflated all weights 1.5× (5 profile
+         * views hit ARMED instead of staying IDLE). Fixed two ways:
+         *  1. resolution tries the context itself AND applicationContext;
+         *  2. unregistered/failed trackers DEFAULT to fg=true (no inflation) —
+         *     user-active is the common case; and every outcome logs loudly.
          */
         @Volatile
         private var resumedCount: Int = 0
 
-        fun isAppForeground(): Boolean = resumedCount > 0
+        @Volatile
+        private var trackerReady: Boolean = false
+
+        /** Foreground state; unregistered trackers assume fg=true (fail-safe). */
+        fun isAppForeground(): Boolean = if (trackerReady) resumedCount > 0 else true
 
         private fun registerForegroundTracker(feature: Feature) {
             runCatching {
-                val app = feature.context.androidContext as? android.app.Application ?: return
+                val ctx = feature.context.androidContext
+                val app: android.app.Application? =
+                    ctx as? android.app.Application
+                        ?: ctx.applicationContext as? android.app.Application
+                if (app == null) {
+                    feature.context.log.warn(
+                        "Foreground tracker: no Application handle on context (${ctx.javaClass.name}) — signals default to fg=true"
+                    )
+                    return
+                }
                 app.registerActivityLifecycleCallbacks(object : android.app.Application.ActivityLifecycleCallbacks {
                     override fun onActivityStarted(activity: android.app.Activity) { resumedCount++ }
                     override fun onActivityStopped(activity: android.app.Activity) { resumedCount = (resumedCount - 1).coerceAtLeast(0) }
@@ -74,9 +94,10 @@ class HermodTapHooks : Feature("Hermod Taps") {
                     override fun onActivitySaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle) {}
                     override fun onActivityDestroyed(activity: android.app.Activity) {}
                 })
-                feature.context.log.verbose("Tap foreground tracker registered (resumed=${resumedCount})")
+                trackerReady = true
+                feature.context.log.info("Tap foreground tracker registered")
             }.onFailure {
-                feature.context.log.warn("Foreground tracker unavailable (${it.message}) — taps default to fg=true")
+                feature.context.log.warn("Foreground tracker unavailable (${it.message}) — signals default to fg=true")
             }
         }
     }
