@@ -326,6 +326,21 @@ class MessagingTweaks : ConfigContainer() {
     }
 
     val galleryMediaSendOverride = container("gallery_media_send_override", GalleryMediaSendOverrideConfig()) { requireRestart() }
+
+    class NativeSplitThresholdsConfig : ConfigContainer() {
+        val enabled = boolean("enabled", false) { requireRestart() }
+        val thresholdSeconds = integer("threshold_seconds", defaultValue = 10) { requireRestart() }
+        val applyToSharingGate = boolean("apply_to_sharing_gate", true) { requireRestart() }
+        val applyToCameraRollEdit = boolean("apply_to_camera_roll_edit", true) { requireRestart() }
+    }
+
+    // Forces Snapchat's own multi-snap split pipeline by lowering the native
+    // duration gates (SHARING_VIDEO_MAX_UNDER_DURATION, camera-roll edit
+    // threshold). Over-limit media is diverted into the Snap Editor split
+    // flow natively. NOTE: CAMERA_ROLL_VIDEO_DURATION_LIMITATION_IN_SEC is
+    // deliberately NOT overridden — it gates Memories backup and must stay
+    // untouched (shared-constant trap).
+    val nativeSplitThresholds = container("native_split_thresholds", NativeSplitThresholdsConfig()) { requireRestart(); addNotices(FeatureNotice.UNSTABLE) }
     val scheduledSendAllowRunningInBackground = boolean("scheduled_send_allow_running_in_background", false)
     val stripMediaMetadata = multiple("strip_media_metadata", "hide_caption_text", "hide_snap_filters", "hide_extras", "remove_audio_note_duration", "remove_audio_note_transcript_capability") { requireRestart() }
     val bypassMessageRetentionPolicy = boolean("bypass_message_retention_policy") { addNotices(FeatureNotice.UNSTABLE); requireRestart() }

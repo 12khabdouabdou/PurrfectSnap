@@ -174,6 +174,47 @@ class ConfigurationOverride : Feature("Configuration Override") {
                 overrideProperty(it, { context.config.global.disableSnapSplitting.get() }, { true })
             }
 
+            // NativeSplitThresholds: lower Snapchat's own duration gates so
+            // over-limit videos divert into the native Snap Editor split
+            // pipeline (SHARING_VIDEO_MAX_UNDER_DURATION gates the share-sheet
+            // single-snap path; CAMERA_ROLL_VIDEO_MAX_DURATION_FOR_EDIT_IN_SEC
+            // gates the camera-roll/Memories edit threshold). Values are
+            // coerced to each key's default type to survive facade boxing.
+            // Deliberately NOT overridden: CAMERA_ROLL_VIDEO_DURATION_LIMITATION_IN_SEC
+            // (Memories backup limiter — shared-constant trap).
+            run {
+                val splitThresholds = context.config.messaging.nativeSplitThresholds
+                val splitValue = { info: ConfigKeyInfo ->
+                    val seconds = splitThresholds.thresholdSeconds.get()
+                    when (info.defaultValue) {
+                        is Long -> seconds.toLong()
+                        is Int -> seconds
+                        is Short -> seconds.toShort()
+                        is Double -> seconds.toDouble()
+                        else -> seconds
+                    }.also { value ->
+                        synchronized(loggedOverrides) {
+                            if (loggedOverrides.add("native_split_${info.name}")) {
+                                context.log.info(
+                                    "NativeSplitThresholds: ${info.name} -> $value (was ${info.defaultValue})",
+                                    "NativeSplitThresholds"
+                                )
+                            }
+                        }
+                    }
+                }
+                overrideProperty(
+                    "SHARING_VIDEO_MAX_UNDER_DURATION",
+                    { splitThresholds.enabled.get() && splitThresholds.applyToSharingGate.get() },
+                    splitValue
+                )
+                overrideProperty(
+                    "CAMERA_ROLL_VIDEO_MAX_DURATION_FOR_EDIT_IN_SEC",
+                    { splitThresholds.enabled.get() && splitThresholds.applyToCameraRollEdit.get() },
+                    splitValue
+                )
+            }
+
             overrideProperty("DF_VOPERA_FOR_STORIES", { context.config.userInterface.verticalStoryViewer.get() },
                 { true }, isAppExperiment = true)
             overrideProperty("SPOTLIGHT_5TH_TAB_ENABLED", {
